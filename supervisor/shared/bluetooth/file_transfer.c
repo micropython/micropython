@@ -47,6 +47,7 @@
 #include "supervisor/usb.h"
 
 #include "py/mpstate.h"
+#include "py/stackctrl.h"
 
 STATIC bleio_service_obj_t supervisor_ble_service;
 STATIC bleio_uuid_obj_t supervisor_ble_service_uuid;
@@ -97,7 +98,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
         NULL,                                       // no initial value
         NULL); // no description
 
-    uint32_t version = 1;
+    uint32_t version = 2;
     mp_buffer_info_t bufinfo;
     bufinfo.buf = &version;
     bufinfo.len = sizeof(version);
@@ -291,7 +292,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_now();
+        autoreload_start();
         return ANY_COMMAND;
     }
 
@@ -345,10 +346,43 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_now();
+        autoreload_start();
         return ANY_COMMAND;
     }
     return WRITE_DATA;
+}
+
+STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
+    FF_DIR dir;
+    FRESULT res = f_opendir(fs, &dir, path);
+    FILINFO file_info;
+    // Check the stack since we're putting paths on it.
+    if (mp_stack_usage() >= MP_STATE_THREAD(stack_limit)) {
+        return FR_INT_ERR;
+    }
+    while (res == FR_OK) {
+        res = f_readdir(&dir, &file_info);
+        if (res != FR_OK || file_info.fname[0] == '\0') {
+            break;
+        }
+        size_t pathlen = strlen(path);
+        size_t fnlen = strlen(file_info.fname);
+        TCHAR full_path[pathlen + 1 + fnlen];
+        memcpy(full_path, path, pathlen);
+        full_path[pathlen] = '/';
+        size_t full_pathlen = pathlen + 1 + fnlen;
+        memcpy(full_path + pathlen + 1, file_info.fname, fnlen);
+        full_path[full_pathlen] = '\0';
+        if ((file_info.fattrib & AM_DIR) != 0) {
+            res = _delete_directory_contents(fs, full_path);
+        }
+        if (res != FR_OK) {
+            break;
+        }
+        res = f_unlink(fs, full_path);
+    }
+    f_closedir(&dir);
+    return res;
 }
 
 STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
@@ -370,7 +404,16 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
-    FRESULT result = f_unlink(fs, path);
+    FRESULT result;
+    FILINFO file;
+    if (f_stat(fs, path, &file) == FR_OK) {
+        if ((file.fattrib & AM_DIR) != 0) {
+            result = _delete_directory_contents(fs, path);
+        }
+        if (result == FR_OK) {
+            result = f_unlink(fs, path);
+        }
+    }
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
@@ -504,6 +547,7 @@ void supervisor_bluetooth_file_transfer_background(void) {
         if (size == 0) {
             break;
         }
+        autoreload_suspend(AUTORELOAD_LOCK_BLE);
         // TODO: If size < 0 return an error.
         current_offset += size;
         #if CIRCUITPY_VERBOSE_BLE
@@ -521,6 +565,7 @@ void supervisor_bluetooth_file_transfer_background(void) {
             response[0] = next_command;
             response[1] = STATUS_ERROR_PROTOCOL;
             common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, response, 2, NULL, 0);
+            autoreload_resume(AUTORELOAD_LOCK_BLE);
             break;
         }
         switch (current_state) {
@@ -550,6 +595,9 @@ void supervisor_bluetooth_file_transfer_background(void) {
         if (next_command != THIS_COMMAND) {
             current_offset = 0;
         }
+        if (next_command == ANY_COMMAND) {
+            autoreload_resume(AUTORELOAD_LOCK_BLE);
+        }
     }
     running = false;
 }
@@ -558,4 +606,5 @@ void supervisor_bluetooth_file_transfer_disconnected(void) {
     next_command = ANY_COMMAND;
     current_offset = 0;
     f_close(&active_file);
+    autoreload_resume(AUTORELOAD_LOCK_BLE);
 }
