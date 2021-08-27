@@ -1,5 +1,5 @@
 USB_VID = 0x1d50
-USB_PID = 0x616f
+USB_PID = 0x6154
 USB_PRODUCT = "EncoderPad RP2040"
 USB_MANUFACTURER = "JPConstantineau"
 
