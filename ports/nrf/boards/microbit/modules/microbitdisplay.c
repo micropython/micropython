@@ -149,7 +149,7 @@ STATIC void async_stop(void) {
 STATIC void wait_for_event(void) {
     while (!wakeup_event) {
         // allow CTRL-C to stop the animation
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
             async_stop();
             return;
         }

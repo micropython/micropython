@@ -39,7 +39,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "bufhelper.h"
 #include "storage.h"
 #include "sdcard.h"
@@ -412,7 +412,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_port, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = USBD_VID} },
+        { MP_QSTR_vid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MICROPY_HW_USB_VID} },
         { MP_QSTR_pid, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         #if MICROPY_HW_USB_MSC
         { MP_QSTR_msc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_const_empty_tuple_obj)} },
@@ -489,61 +489,61 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     uint8_t mode;
     if (strcmp(mode_str, "CDC+MSC") == 0 || strcmp(mode_str, "VCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_MSC;
+            pid = MICROPY_HW_USB_PID_CDC_MSC;
         }
         mode = USBD_MODE_CDC_MSC;
     } else if (strcmp(mode_str, "VCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC_MSC_HID;
         }
         mode = USBD_MODE_CDC_MSC_HID;
     #if MICROPY_HW_USB_CDC_NUM >= 2
     } else if (strcmp(mode_str, "VCP+VCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2;
+            pid = MICROPY_HW_USB_PID_CDC2;
         }
         mode = USBD_MODE_CDC2;
     } else if (strcmp(mode_str, "VCP+VCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2_MSC;
+            pid = MICROPY_HW_USB_PID_CDC2_MSC;
         }
         mode = USBD_MODE_CDC2_MSC;
     } else if (strcmp(mode_str, "2xVCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC2_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC2_MSC_HID;
         }
         mode = USBD_MODE_CDC2_MSC_HID;
     #endif
     #if MICROPY_HW_USB_CDC_NUM >= 3
     } else if (strcmp(mode_str, "3xVCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3;
+            pid = MICROPY_HW_USB_PID_CDC3;
         }
         mode = USBD_MODE_CDC3;
     } else if (strcmp(mode_str, "3xVCP+MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3_MSC;
+            pid = MICROPY_HW_USB_PID_CDC3_MSC;
         }
         mode = USBD_MODE_CDC3_MSC;
     } else if (strcmp(mode_str, "3xVCP+MSC+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC3_MSC_HID;
+            pid = MICROPY_HW_USB_PID_CDC3_MSC_HID;
         }
         mode = USBD_MODE_CDC3_MSC_HID;
     #endif
     } else if (strcmp(mode_str, "CDC+HID") == 0 || strcmp(mode_str, "VCP+HID") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC_HID;
+            pid = MICROPY_HW_USB_PID_CDC_HID;
         }
         mode = USBD_MODE_CDC_HID;
     } else if (strcmp(mode_str, "CDC") == 0 || strcmp(mode_str, "VCP") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_CDC;
+            pid = MICROPY_HW_USB_PID_CDC;
         }
         mode = USBD_MODE_CDC;
     } else if (strcmp(mode_str, "MSC") == 0) {
         if (pid == -1) {
-            pid = USBD_PID_MSC;
+            pid = MICROPY_HW_USB_PID_MSC;
         }
         mode = USBD_MODE_MSC;
     } else {
@@ -829,11 +829,17 @@ STATIC mp_obj_t pyb_usb_vcp_recv(size_t n_args, const mp_obj_t *args, mp_map_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_recv_obj, 1, pyb_usb_vcp_recv);
 
-// irq(handler=None, trigger=0, hard=False)
+// irq(handler=None, trigger=IRQ_RX, hard=False)
 STATIC mp_obj_t pyb_usb_vcp_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_val_t args[MP_IRQ_ARG_INIT_NUM_ARGS];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_IRQ_ARG_INIT_NUM_ARGS, mp_irq_init_args, args);
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = USBD_CDC_IRQ_RX} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (n_args > 1 || kw_args->used != 0) {
         // Check the handler.

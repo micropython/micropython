@@ -47,8 +47,8 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
-#include "lib/utils/pyexec.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/pyexec.h"
+#include "shared/readline/readline.h"
 #include "extmod/modbluetooth.h"
 
 #if MICROPY_VFS
@@ -59,9 +59,9 @@
 #include "modzephyr.h"
 
 #ifdef TEST
-#include "lib/upytesthelper/upytesthelper.h"
+#include "shared/upytesthelper/upytesthelper.h"
 #include "lib/tinytest/tinytest.c"
-#include "lib/upytesthelper/upytesthelper.c"
+#include "shared/upytesthelper/upytesthelper.c"
 #include TEST
 #endif
 

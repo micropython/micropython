@@ -32,9 +32,9 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/stackctrl.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 #include "tusb.h"
 #include "uart.h"
 #include "modmachine.h"
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
         .year = 2021,
         .month = 1,
         .day = 1,
-        .dotw = 5, // 0 is Sunday, so 5 is Friday
+        .dotw = 4, // 0 is Monday, so 4 is Friday
         .hour = 0,
         .min = 0,
         .sec = 0,

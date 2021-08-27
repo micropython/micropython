@@ -31,6 +31,9 @@
 
 #if MICROPY_PY_UASYNCIO
 
+// Used when task cannot be guaranteed to be non-NULL.
+#define TASK_PAIRHEAP(task) ((task) ? &(task)->pairheap : NULL)
+
 #define TASK_STATE_RUNNING_NOT_WAITED_ON (mp_const_true)
 #define TASK_STATE_DONE_NOT_WAITED_ON (mp_const_none)
 #define TASK_STATE_DONE_WAS_WAITED_ON (mp_const_false)
@@ -110,7 +113,7 @@ STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
         assert(mp_obj_is_small_int(args[2]));
         task->ph_key = args[2];
     }
-    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, &self->heap->pairheap, &task->pairheap);
+    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, TASK_PAIRHEAP(self->heap), TASK_PAIRHEAP(task));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_sorted_obj, 2, 3, task_queue_push_sorted);

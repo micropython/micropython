@@ -123,7 +123,7 @@ This is a process known as profiling and is covered in textbooks and
 (for standard Python) supported by various software tools. For the type of
 smaller embedded application likely to be running on MicroPython platforms
 the slowest function or method can usually be established by judicious use
-of the timing ``ticks`` group of functions documented in `utime`.
+of the timing ``ticks`` group of functions documented in `time`.
 Code execution time can be measured in ms, us, or CPU cycles.
 
 The following enables any function or method to be timed by adding an
@@ -134,9 +134,9 @@ The following enables any function or method to be timed by adding an
     def timed_function(f, *args, **kwargs):
         myname = str(f).split(' ')[1]
         def new_func(*args, **kwargs):
-            t = utime.ticks_us()
+            t = time.ticks_us()
             result = f(*args, **kwargs)
-            delta = utime.ticks_diff(utime.ticks_us(), t)
+            delta = time.ticks_diff(time.ticks_us(), t)
             print('Function {} Time = {:6.3f}ms'.format(myname, delta/1000))
             return result
         return new_func

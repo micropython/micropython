@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "extmod/misc.h"

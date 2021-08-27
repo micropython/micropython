@@ -62,6 +62,12 @@ STATIC bool is_char_or3(mp_lexer_t *lex, byte c1, byte c2, byte c3) {
     return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3;
 }
 
+#if MICROPY_PY_FSTRINGS
+STATIC bool is_char_or4(mp_lexer_t *lex, byte c1, byte c2, byte c3, byte c4) {
+    return lex->chr0 == c1 || lex->chr0 == c2 || lex->chr0 == c3 || lex->chr0 == c4;
+}
+#endif
+
 STATIC bool is_char_following(mp_lexer_t *lex, byte c) {
     return lex->chr1 == c;
 }
@@ -105,7 +111,13 @@ STATIC bool is_following_odigit(mp_lexer_t *lex) {
 
 STATIC bool is_string_or_bytes(mp_lexer_t *lex) {
     return is_char_or(lex, '\'', '\"')
+           #if MICROPY_PY_FSTRINGS
+           || (is_char_or4(lex, 'r', 'u', 'b', 'f') && is_char_following_or(lex, '\'', '\"'))
+           || (((is_char_and(lex, 'r', 'f') || is_char_and(lex, 'f', 'r'))
+               && is_char_following_following_or(lex, '\'', '\"')))
+           #else
            || (is_char_or3(lex, 'r', 'u', 'b') && is_char_following_or(lex, '\'', '\"'))
+           #endif
            || ((is_char_and(lex, 'r', 'b') || is_char_and(lex, 'b', 'r'))
                && is_char_following_following_or(lex, '\'', '\"'));
 }
@@ -132,9 +144,35 @@ STATIC void next_char(mp_lexer_t *lex) {
         ++lex->column;
     }
 
+    // shift the input queue forward
     lex->chr0 = lex->chr1;
     lex->chr1 = lex->chr2;
-    lex->chr2 = lex->reader.readbyte(lex->reader.data);
+
+    // and add the next byte from either the fstring args or the reader
+    #if MICROPY_PY_FSTRINGS
+    if (lex->fstring_args_idx) {
+        // if there are saved chars, then we're currently injecting fstring args
+        if (lex->fstring_args_idx < lex->fstring_args.len) {
+            lex->chr2 = lex->fstring_args.buf[lex->fstring_args_idx++];
+        } else {
+            // no more fstring arg bytes
+            lex->chr2 = '\0';
+        }
+
+        if (lex->chr0 == '\0') {
+            // consumed all fstring data, restore saved input queue
+            lex->chr0 = lex->chr0_saved;
+            lex->chr1 = lex->chr1_saved;
+            lex->chr2 = lex->chr2_saved;
+            // stop consuming fstring arg data
+            vstr_reset(&lex->fstring_args);
+            lex->fstring_args_idx = 0;
+        }
+    } else
+    #endif
+    {
+        lex->chr2 = lex->reader.readbyte(lex->reader.data);
+    }
 
     if (lex->chr1 == '\r') {
         // CR is a new line, converted to LF
@@ -272,7 +310,7 @@ STATIC bool get_hex(mp_lexer_t *lex, size_t num_digits, mp_uint_t *result) {
     return true;
 }
 
-STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
+STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) {
     // get first quoting character
     char quote_char = '\'';
     if (is_char(lex, '\"')) {
@@ -293,12 +331,57 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw) {
     }
 
     size_t n_closing = 0;
+    #if MICROPY_PY_FSTRINGS
+    if (is_fstring) {
+        // assume there's going to be interpolation, so prep the injection data
+        // fstring_args_idx==0 && len(fstring_args)>0 means we're extracting the args.
+        // only when fstring_args_idx>0 will we consume the arg data
+        // note: lex->fstring_args will be empty already (it's reset when finished)
+        vstr_add_str(&lex->fstring_args, ".format(");
+    }
+    #endif
+
     while (!is_end(lex) && (num_quotes > 1 || !is_char(lex, '\n')) && n_closing < num_quotes) {
         if (is_char(lex, quote_char)) {
             n_closing += 1;
             vstr_add_char(&lex->vstr, CUR_CHAR(lex));
         } else {
             n_closing = 0;
+
+            #if MICROPY_PY_FSTRINGS
+            while (is_fstring && is_char(lex, '{')) {
+                next_char(lex);
+                if (is_char(lex, '{')) {
+                    // "{{" is passed through unchanged to be handled by str.format
+                    vstr_add_byte(&lex->vstr, '{');
+                    next_char(lex);
+                } else {
+                    // remember the start of this argument (if we need it for f'{a=}').
+                    size_t i = lex->fstring_args.len;
+                    // extract characters inside the { until we reach the
+                    // format specifier or closing }.
+                    // (MicroPython limitation) note: this is completely unaware of
+                    // Python syntax and will not handle any expression containing '}' or ':'.
+                    // e.g. f'{"}"}' or f'{foo({})}'.
+                    while (!is_end(lex) && !is_char_or(lex, ':', '}')) {
+                        // like the default case at the end of this function, stay 8-bit clean
+                        vstr_add_byte(&lex->fstring_args, CUR_CHAR(lex));
+                        next_char(lex);
+                    }
+                    if (lex->fstring_args.buf[lex->fstring_args.len - 1] == '=') {
+                        // if the last character of the arg was '=', then inject "arg=" before the '{'.
+                        // f'{a=}' --> 'a={}'.format(a)
+                        vstr_add_strn(&lex->vstr, lex->fstring_args.buf + i, lex->fstring_args.len - i);
+                        // remove the trailing '='
+                        lex->fstring_args.len--;
+                    }
+                    // comma-separate args
+                    vstr_add_byte(&lex->fstring_args, ',');
+                }
+                vstr_add_byte(&lex->vstr, '{');
+            }
+            #endif
+
             if (is_char(lex, '\\')) {
                 next_char(lex);
                 unichar c = CUR_CHAR(lex);
@@ -451,6 +534,23 @@ STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
+    #if MICROPY_PY_FSTRINGS
+    if (lex->fstring_args.len && lex->fstring_args_idx == 0) {
+        // moving onto the next token means the literal string is complete.
+        // switch into injecting the format args.
+        vstr_add_byte(&lex->fstring_args, ')');
+        lex->chr0_saved = lex->chr0;
+        lex->chr1_saved = lex->chr1;
+        lex->chr2_saved = lex->chr2;
+        lex->chr0 = lex->fstring_args.buf[0];
+        lex->chr1 = lex->fstring_args.buf[1];
+        lex->chr2 = lex->fstring_args.buf[2];
+        // we've already extracted 3 chars, but setting this non-zero also
+        // means we'll start consuming the fstring data
+        lex->fstring_args_idx = 3;
+    }
+    #endif
+
     // start new token text
     vstr_reset(&lex->vstr);
 
@@ -506,6 +606,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         do {
             // parse type codes
             bool is_raw = false;
+            bool is_fstring = false;
             mp_token_kind_t kind = MP_TOKEN_STRING;
             int n_char = 0;
             if (is_char(lex, 'u')) {
@@ -524,7 +625,25 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
                     kind = MP_TOKEN_BYTES;
                     n_char = 2;
                 }
+                #if MICROPY_PY_FSTRINGS
+                if (is_char_following(lex, 'f')) {
+                    // raw-f-strings unsupported, immediately return (invalid) token.
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
+                }
+                #endif
             }
+            #if MICROPY_PY_FSTRINGS
+            else if (is_char(lex, 'f')) {
+                if (is_char_following(lex, 'r')) {
+                    // raw-f-strings unsupported, immediately return (invalid) token.
+                    lex->tok_kind = MP_TOKEN_FSTRING_RAW;
+                    break;
+                }
+                n_char = 1;
+                is_fstring = true;
+            }
+            #endif
 
             // Set or check token kind
             if (lex->tok_kind == MP_TOKEN_END) {
@@ -543,7 +662,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             }
 
             // Parse the literal
-            parse_string_literal(lex, is_raw);
+            parse_string_literal(lex, is_raw, is_fstring);
 
             // Skip whitespace so we can check if there's another string following
             skip_whitespace(lex, true);
@@ -703,6 +822,9 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     lex->num_indent_level = 1;
     lex->indent_level = m_new(uint16_t, lex->alloc_indent_level);
     vstr_init(&lex->vstr, 32);
+    #if MICROPY_PY_FSTRINGS
+    vstr_init(&lex->fstring_args, 0);
+    #endif
 
     // store sentinel for first indentation level
     lex->indent_level[0] = 0;
@@ -756,6 +878,9 @@ void mp_lexer_free(mp_lexer_t *lex) {
     if (lex) {
         lex->reader.close(lex->reader.data);
         vstr_clear(&lex->vstr);
+        #if MICROPY_PY_FSTRINGS
+        vstr_clear(&lex->fstring_args);
+        #endif
         m_del(uint16_t, lex->indent_level, lex->alloc_indent_level);
         m_del_obj(mp_lexer_t, lex);
     }

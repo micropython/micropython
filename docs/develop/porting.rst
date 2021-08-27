@@ -42,8 +42,8 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
    #include "py/gc.h"
    #include "py/mperrno.h"
    #include "py/stackctrl.h"
-   #include "lib/utils/gchelper.h"
-   #include "lib/utils/pyexec.h"
+   #include "shared/runtime/gchelper.h"
+   #include "shared/runtime/pyexec.h"
 
    // Allocate memory for the MicroPython GC heap.
    static char heap[4096];
@@ -106,10 +106,10 @@ We also need a Makefile at this point for the port:
    SRC_C = \
        main.c \
        mphalport.c \
-       lib/mp-readline/readline.c \
-       lib/utils/gchelper_generic.c \
-       lib/utils/pyexec.c \
-       lib/utils/stdout_helpers.c \
+       shared/readline/readline.c \
+       shared/runtime/gchelper_generic.c \
+       shared/runtime/pyexec.c \
+       shared/runtime/stdout_helpers.c \
 
    # Define the required object files.
    OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -245,8 +245,8 @@ That should give a MicroPython REPL.  You can then run commands like:
 .. code-block:: bash
 
    MicroPython v1.13 on 2021-01-01; example-board with unknown-cpu
-   >>> import usys
-   >>> usys.implementation
+   >>> import sys
+   >>> sys.implementation
    ('micropython', (1, 13, 0))
    >>>
 

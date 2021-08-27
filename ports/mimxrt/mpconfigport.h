@@ -30,6 +30,8 @@
 #include "mpconfigboard.h"
 #include "fsl_common.h"
 
+uint32_t trng_random_u32(void);
+
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)
@@ -118,9 +120,11 @@
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
 #define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
@@ -141,6 +145,7 @@ __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
 
 __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     uint32_t state = __get_PRIMASK();
+    __disable_irq();
     return state;
 }
 

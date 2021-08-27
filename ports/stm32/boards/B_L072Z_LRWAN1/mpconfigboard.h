@@ -7,6 +7,7 @@
 
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_PY_BUILTINS_COMPLEX (0)
 #define MICROPY_PY_GENERATOR_PEND_THROW (0)
 #define MICROPY_PY_MATH             (0)
@@ -67,5 +68,5 @@
 #define MICROPY_HW_USB_FS           (1)
 #define MICROPY_HW_USB_MSC          (0)
 #define MICROPY_HW_USB_HID          (0)
-#define USBD_CDC_RX_DATA_SIZE       (256)
-#define USBD_CDC_TX_DATA_SIZE       (256)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (256)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (256)

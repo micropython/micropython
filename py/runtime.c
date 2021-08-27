@@ -62,7 +62,7 @@ void mp_init(void) {
     qstr_init();
 
     // no pending exceptions to start with
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
     MP_STATE_VM(sched_idx) = 0;
@@ -284,6 +284,12 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 return result;
             }
         }
+        if (op == MP_UNARY_OP_BOOL) {
+            // Type doesn't have unary_op (or didn't handle MP_UNARY_OP_BOOL),
+            // so is implicitly True as this code path is impossible to reach
+            // if arg==mp_const_none.
+            return mp_const_true;
+        }
         // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
         // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
@@ -392,7 +398,7 @@ mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
                         goto generic_binary_op;
                     } else {
                         // use standard precision
-                        lhs_val <<= rhs_val;
+                        lhs_val = (mp_uint_t)lhs_val << rhs_val;
                     }
                     break;
                 }
@@ -1217,6 +1223,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         return type->iternext(o_in);
     } else {
         // check for __next__ method
@@ -1242,6 +1249,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
     MP_STACK_CHECK(); // enumerate, filter, map and zip can recursively call mp_iternext
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     if (type->iternext != NULL) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         return type->iternext(o_in);
     } else {
         // check for __next__ method
@@ -1256,7 +1264,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 return ret;
             } else {
                 if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                    return MP_OBJ_STOP_ITERATION;
+                    return mp_make_stop_iteration(mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val)));
                 } else {
                     nlr_jump(nlr.ret_val);
                 }
@@ -1272,7 +1280,6 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
     }
 }
 
-// TODO: Unclear what to do with StopIterarion exception here.
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
@@ -1282,13 +1289,18 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     }
 
     if (type->iternext != NULL && send_value == mp_const_none) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         mp_obj_t ret = type->iternext(self_in);
         *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
             return MP_VM_RETURN_YIELD;
         } else {
-            // Emulate raise StopIteration()
-            // Special case, handled in vm.c
+            // The generator is finished.
+            // This is an optimised "raise StopIteration(*ret_val)".
+            *ret_val = MP_STATE_THREAD(stop_iteration_arg);
+            if (*ret_val == MP_OBJ_NULL) {
+                *ret_val = mp_const_none;
+            }
             return MP_VM_RETURN_NORMAL;
         }
     }
@@ -1559,13 +1571,24 @@ NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg) {
 
 #endif
 
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
+}
+
+NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
+    if (arg == MP_OBJ_NULL) {
+        mp_raise_type(&mp_type_StopIteration);
+    } else {
+        mp_raise_type_arg(&mp_type_StopIteration, arg);
+    }
+}
+
 NORETURN void mp_raise_OSError(int errno_) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_)));
+    mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
 NORETURN void mp_raise_recursion_depth(void) {
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
-        MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded)));
+    mp_raise_type_arg(&mp_type_RuntimeError, MP_OBJ_NEW_QSTR(MP_QSTR_maximum_space_recursion_space_depth_space_exceeded));
 }
 #endif

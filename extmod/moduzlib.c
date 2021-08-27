@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_UZLIB
 
-#include "uzlib/tinf.h"
+#include "lib/uzlib/tinf.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -201,7 +201,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     return res;
 
 error:
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
+    mp_raise_type_arg(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
@@ -223,10 +223,10 @@ const mp_obj_module_t mp_module_uzlib = {
 // Source files #include'd here to make sure they're compiled in
 // only if module is enabled by config setting.
 
-#include "uzlib/tinflate.c"
-#include "uzlib/tinfzlib.c"
-#include "uzlib/tinfgzip.c"
-#include "uzlib/adler32.c"
-#include "uzlib/crc32.c"
+#include "lib/uzlib/tinflate.c"
+#include "lib/uzlib/tinfzlib.c"
+#include "lib/uzlib/tinfgzip.c"
+#include "lib/uzlib/adler32.c"
+#include "lib/uzlib/crc32.c"
 
 #endif // MICROPY_PY_UZLIB

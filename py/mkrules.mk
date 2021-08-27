@@ -100,7 +100,7 @@ $(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h $(OBJ
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
 # See more information about this process in docs/develop/qstr.rst.
-$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GLOBAL_REQUIREMENTS)
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) $(HEADER_BUILD)/moduledefs.h | $(QSTR_GLOBAL_REQUIREMENTS)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py pp $(CPP) output $(HEADER_BUILD)/qstr.i.last cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^ dependencies $(QSTR_GLOBAL_DEPENDENCIES) changed_sources $?
 
@@ -136,10 +136,16 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
+ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
+# to automatically build mpy-cross, if needed
+$(MICROPY_MPYCROSS_DEPENDENCY):
+	$(MAKE) -C $(dir $@)
+endif
+
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h
-	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) $(FROZEN_MANIFEST)
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY)
+	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 
 ifneq ($(FROZEN_DIR),)
 $(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
@@ -164,10 +170,10 @@ FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | 
 FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
 
 # to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py
+$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py | $(MICROPY_MPYCROSS_DEPENDENCY)
 	@$(ECHO) "MPY $<"
 	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MPY_CROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
+	$(Q)$(MICROPY_MPYCROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
 
 # to build frozen_mpy.c from all .mpy files
 $(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
@@ -178,6 +184,13 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
+# The executable should have an .exe extension for builds targetting 'pure'
+# Windows, i.e. msvc or mingw builds, but not when using msys or cygwin's gcc.
+COMPILER_TARGET := $(shell $(CC) -dumpmachine)
+ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
+PROG := $(PROG).exe
+endif
+
 all: $(PROG)
 
 $(PROG): $(OBJ)
@@ -186,9 +199,9 @@ $(PROG): $(OBJ)
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
-	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $(PROG)
+	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
 endif
-	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $(PROG)
+	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $@
 
 clean: clean-prog
 clean-prog:
@@ -201,6 +214,7 @@ endif
 submodules:
 	$(ECHO) "Updating submodules: $(GIT_SUBMODULES)"
 ifneq ($(GIT_SUBMODULES),)
+	$(Q)git submodule sync $(addprefix $(TOP)/,$(GIT_SUBMODULES))
 	$(Q)git submodule update --init $(addprefix $(TOP)/,$(GIT_SUBMODULES))
 endif
 .PHONY: submodules

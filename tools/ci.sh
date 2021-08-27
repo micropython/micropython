@@ -86,12 +86,19 @@ function ci_esp32_setup_helper {
     git clone https://github.com/espressif/esp-idf.git
     git -C esp-idf checkout $1
     git -C esp-idf submodule update --init \
-        components/bt/controller/lib \
         components/bt/host/nimble/nimble \
         components/esp_wifi \
         components/esptool_py/esptool \
         components/lwip/lwip \
         components/mbedtls/mbedtls
+    if [ -d esp-idf/components/bt/controller/esp32 ]; then
+        git -C esp-idf submodule update --init \
+            components/bt/controller/lib_esp32 \
+            components/bt/controller/lib_esp32c3_family
+    else
+        git -C esp-idf submodule update --init \
+            components/bt/controller/lib
+    fi
     ./esp-idf/install.sh
 }
 
@@ -100,7 +107,7 @@ function ci_esp32_idf402_setup {
 }
 
 function ci_esp32_idf43_setup {
-    ci_esp32_setup_helper v4.3-beta2
+    ci_esp32_setup_helper v4.3
 }
 
 function ci_esp32_build {
@@ -110,6 +117,9 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C ports/esp32
     make ${MAKEOPTS} -C ports/esp32 clean
     make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest.py
+    if [ -d $IDF_PATH/components/esp32c3 ]; then
+        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
+    fi
     if [ -d $IDF_PATH/components/esp32s2 ]; then
         make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
     fi
@@ -139,6 +149,24 @@ function ci_esp8266_build {
 }
 
 ########################################################################################
+# ports/javascript
+
+function ci_javascript_setup {
+    git clone https://github.com/emscripten-core/emsdk.git
+    (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
+}
+
+function ci_javascript_build {
+    source emsdk/emsdk_env.sh
+    make ${MAKEOPTS} -C ports/javascript
+}
+
+function ci_javascript_run_tests {
+    # This port is very slow at running, so only run a few of the tests.
+    (cd tests && MICROPY_MICROPYTHON=../ports/javascript/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
+}
+
+########################################################################################
 # ports/mimxrt
 
 function ci_mimxrt_setup {
@@ -161,6 +189,7 @@ function ci_nrf_setup {
 
 function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
     make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
     make ${MAKEOPTS} -C ports/nrf BOARD=microbit
@@ -172,6 +201,7 @@ function ci_nrf_build {
 # ports/powerpc
 
 function ci_powerpc_setup {
+    sudo apt-get update
     sudo apt-get install gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 }
 
@@ -238,6 +268,7 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 submodules
     git submodule update --init lib/btstack
+    git submodule update --init lib/mynewt-nimble
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBV11 MICROPY_PY_WIZNET5K=5200 MICROPY_PY_CC3K=1 USER_C_MODULES=../../examples/usercmodule
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
@@ -248,6 +279,7 @@ function ci_stm32_pyb_build {
 function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 submodules
+    git submodule update --init lib/mynewt-nimble
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
@@ -374,8 +406,15 @@ function ci_unix_standard_run_perfbench {
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 }
 
+function ci_unix_dev_build {
+    ci_unix_build_helper VARIANT=dev
+}
+
+function ci_unix_dev_run_tests {
+    ci_unix_run_tests_helper VARIANT=dev
+}
+
 function ci_unix_coverage_setup {
-    sudo apt-get install lcov
     sudo pip3 install setuptools
     sudo pip3 install pyelftools
     gcc --version
@@ -489,6 +528,8 @@ function ci_unix_macos_build {
     #make ${MAKEOPTS} -C ports/unix deplibs
     make ${MAKEOPTS} -C ports/unix
     # check for additional compiler errors/warnings
+    make ${MAKEOPTS} -C ports/unix VARIANT=dev submodules
+    make ${MAKEOPTS} -C ports/unix VARIANT=dev
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage submodules
     make ${MAKEOPTS} -C ports/unix VARIANT=coverage
 }

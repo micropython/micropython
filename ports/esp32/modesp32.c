@@ -30,7 +30,6 @@
 #include <time.h>
 #include <sys/time.h>
 #include "soc/rtc_cntl_reg.h"
-#include "soc/sens_reg.h"
 #include "driver/gpio.h"
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
@@ -40,7 +39,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 #include "modesp32.h"
@@ -109,7 +108,7 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     // Check that all pins are allowed
     if (args[ARG_pins].u_obj != mp_const_none) {
-        mp_uint_t len = 0;
+        size_t len = 0;
         mp_obj_t *elem;
         mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
         ext1_pins = 0;
@@ -133,6 +132,8 @@ STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_ext1_obj, 0, esp32_wake_on_ext1);
 
 #if CONFIG_IDF_TARGET_ESP32
+
+#include "soc/sens_reg.h"
 
 STATIC mp_obj_t esp32_raw_temperature(void) {
     SET_PERI_REG_BITS(SENS_SAR_MEAS_WAIT2_REG, SENS_FORCE_XPD_SAR, 3, SENS_FORCE_XPD_SAR_S);

@@ -39,9 +39,9 @@ SRC_C = \
 	modpyb.c \
 	modpybled.c \
 	modpybswitch.c \
-	lib/utils/pyexec.c \
-	lib/utils/sys_stdio_mphal.c \
-	lib/mp-readline/readline.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/sys_stdio_mphal.c \
+	shared/readline/readline.c \
 
 SRC_S = \
 #	gchelper.s \

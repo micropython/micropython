@@ -334,8 +334,8 @@ int mp_bluetooth_gatts_register_service_end(void);
 
 // Read the value from the local gatts db (likely this has been written by a central).
 int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len);
-// Write a value to the local gatts db (ready to be queried by a central).
-int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len);
+// Write a value to the local gatts db (ready to be queried by a central). Optionally send notifications/indications.
+int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len, bool send_update);
 // Notify the central that it should do a read.
 int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle);
 // Notify the central, including a data payload. (Note: does not set the gatts db value).

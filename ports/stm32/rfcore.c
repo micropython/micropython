@@ -32,6 +32,7 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
+#include "mpbthciport.h"
 #include "rtc.h"
 #include "rfcore.h"
 
@@ -714,8 +715,7 @@ void IPCC_C1_RX_IRQHandler(void) {
 
         #if MICROPY_PY_BLUETOOTH
         // Queue up the scheduler to process UART data and run events.
-        extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
-        mp_bluetooth_hci_systick(0);
+        mp_bluetooth_hci_poll_now();
         #endif
     }
 

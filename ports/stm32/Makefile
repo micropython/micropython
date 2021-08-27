@@ -34,7 +34,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/libhydrogen lib/lwip lib/mbedtls lib/mynewt-nimble lib/stm32lib
+GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
 
 MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
 CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
@@ -100,7 +100,7 @@ CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
 CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
-CFLAGS += -D$(CMSIS_MCU)
+CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
 CFLAGS += -I$(BOARD_DIR)
@@ -130,7 +130,7 @@ endif
 
 LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
 LDFLAGS += --defsym=_estack_reserve=8
-LIBS = "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
+LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
@@ -157,18 +157,19 @@ endif
 # Options for mpy-cross
 MPY_CROSS_FLAGS += -march=armv7m
 
-LIB_SRC_C += $(addprefix lib/,\
+SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
-	mp-readline/readline.c \
+	netutils/dhcpserver.c \
 	netutils/netutils.c \
 	netutils/trace.c \
-	netutils/dhcpserver.c \
+	readline/readline.c \
+	runtime/gchelper_native.c \
+	runtime/interrupt_char.c \
+	runtime/mpirq.c \
+	runtime/pyexec.c \
+	runtime/stdout_helpers.c \
+	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
-	utils/gchelper_native.c \
-	utils/pyexec.c \
-	utils/interrupt_char.c \
-	utils/sys_stdio_mphal.c \
-	utils/mpirq.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
@@ -317,7 +318,9 @@ SRC_C += \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
+	machine_bitstream.c \
 	machine_i2c.c \
+	machine_i2s.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
@@ -357,18 +360,18 @@ SRC_O += \
 ifeq ($(MCU_SERIES),f0)
 SRC_O += \
 	resethandler_m0.o \
-	lib/utils/gchelper_m0.o
+	shared/runtime/gchelper_m0.o
 else
 ifeq ($(MCU_SERIES),l0)
 CSUPEROPT = -Os # save some code space
 SRC_O += \
 	resethandler_m0.o \
-	lib/utils/gchelper_m0.o
+	shared/runtime/gchelper_m0.o
 else
 SRC_O += \
 	system_stm32.o \
 	resethandler.o \
-	lib/utils/gchelper_m3.o
+	shared/runtime/gchelper_m3.o
 endif
 endif
 
@@ -394,6 +397,7 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	ll_utils.c \
 	)
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l0 l4 wb))
@@ -425,6 +429,18 @@ else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))
     HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
 endif
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 l0))
+HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_i2s.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
+HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_i2s_ex.c \
+	)
 endif
 
 USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
@@ -508,12 +524,14 @@ endif
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+GIT_SUBMODULES += lib/mynewt-nimble
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
 include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += mpnimbleport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+GIT_SUBMODULES += lib/btstack
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 include $(TOP)/extmod/btstack/btstack.mk
 SRC_C += mpbtstackport.c
@@ -528,6 +546,7 @@ endif
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
@@ -541,7 +560,7 @@ OBJ += $(BUILD)/pins_$(BOARD).o
 # This file contains performance critical functions so turn up the optimisation
 # level.  It doesn't add much to the code size and improves performance a bit.
 # Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
-$(BUILD)/lib/libc/string0.o: COPT += -O2
+$(BUILD)/shared/libc/string0.o: COPT += -O2
 
 # We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
@@ -708,13 +727,13 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
 FILE2H = $(TOP)/tools/file2h.py
 
-USB_IDS_FILE = usb.h
+USB_IDS_FILE = mpconfigboard_common.h
 CDCINF_TEMPLATE = pybcdc.inf_template
 GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
 GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(LIB_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)

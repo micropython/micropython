@@ -6,8 +6,17 @@ sys.path.append(os.getenv("IDF_PATH") + "/components/partition_table")
 
 import gen_esp32part
 
-OFFSET_BOOTLOADER = 0x1000
-OFFSET_PARTITIONS = 0x8000
+OFFSET_BOOTLOADER_DEFAULT = 0x1000
+OFFSET_PARTITIONS_DEFAULT = 0x8000
+
+
+def load_sdkconfig_hex_value(filename, value, default):
+    value = "CONFIG_" + value + "="
+    with open(filename, "r") as f:
+        for line in f:
+            if line.startswith(value):
+                return int(line.split("=", 1)[1], 16)
+    return default
 
 
 def load_partition_table(filename):
@@ -15,28 +24,47 @@ def load_partition_table(filename):
         return gen_esp32part.PartitionTable.from_binary(f.read())
 
 
-partition_table = load_partition_table(sys.argv[2])
+# Extract command-line arguments.
+arg_sdkconfig = sys.argv[1]
+arg_bootloader_bin = sys.argv[2]
+arg_partitions_bin = sys.argv[3]
+arg_application_bin = sys.argv[4]
+arg_output_bin = sys.argv[5]
 
-max_size_bootloader = OFFSET_PARTITIONS - OFFSET_BOOTLOADER
+# Load required sdkconfig values.
+offset_bootloader = load_sdkconfig_hex_value(
+    arg_sdkconfig, "BOOTLOADER_OFFSET_IN_FLASH", OFFSET_BOOTLOADER_DEFAULT
+)
+offset_partitions = load_sdkconfig_hex_value(
+    arg_sdkconfig, "PARTITION_TABLE_OFFSET", OFFSET_PARTITIONS_DEFAULT
+)
+
+# Load the partition table.
+partition_table = load_partition_table(arg_partitions_bin)
+
+max_size_bootloader = offset_partitions - offset_bootloader
 max_size_partitions = 0
 offset_application = 0
 max_size_application = 0
 
+# Inspect the partition table to find offsets and maximum sizes.
 for part in partition_table:
     if part.name == "nvs":
-        max_size_partitions = part.offset - OFFSET_PARTITIONS
+        max_size_partitions = part.offset - offset_partitions
     elif part.type == gen_esp32part.APP_TYPE and offset_application == 0:
         offset_application = part.offset
         max_size_application = part.size
 
+# Define the input files, their location and maximum size.
 files_in = [
-    ("bootloader", OFFSET_BOOTLOADER, max_size_bootloader, sys.argv[1]),
-    ("partitions", OFFSET_PARTITIONS, max_size_partitions, sys.argv[2]),
-    ("application", offset_application, max_size_application, sys.argv[3]),
+    ("bootloader", offset_bootloader, max_size_bootloader, arg_bootloader_bin),
+    ("partitions", offset_partitions, max_size_partitions, arg_partitions_bin),
+    ("application", offset_application, max_size_application, arg_application_bin),
 ]
-file_out = sys.argv[4]
+file_out = arg_output_bin
 
-cur_offset = OFFSET_BOOTLOADER
+# Write output file with combined firmware.
+cur_offset = offset_bootloader
 with open(file_out, "wb") as fout:
     for name, offset, max_size, file_in in files_in:
         assert offset >= cur_offset

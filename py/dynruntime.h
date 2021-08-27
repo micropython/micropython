@@ -215,6 +215,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_obj_new_exception_arg1(e_type, arg)  (mp_obj_new_exception_arg1_dyn((e_type), (arg)))
 
 #define nlr_raise(o)                            (mp_raise_dyn(o))
+#define mp_raise_type_arg(type, arg)            (mp_raise_dyn(mp_obj_new_exception_arg1_dyn((type), (arg))))
 #define mp_raise_msg(type, msg)                 (mp_fun_table.raise_msg((type), (msg)))
 #define mp_raise_OSError(er)                    (mp_raise_OSError_dyn(er))
 #define mp_raise_NotImplementedError(msg)       (mp_raise_msg(&mp_type_NotImplementedError, (msg)))

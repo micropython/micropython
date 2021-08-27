@@ -1,10 +1,10 @@
-image: Visual Studio 2013
+image: Visual Studio 2017
 clone_depth: 1
 skip_tags: true
 
 environment:
   # Python version used
-  MICROPY_CPYTHON3: c:/python34/python.exe
+  MICROPY_CPYTHON3: c:/python38/python.exe
 
 init:
   # Set build version number to commit to be travis-like
@@ -63,10 +63,7 @@ after_test:
       throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
     }
     cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'mpy-cross')
-    # Building of mpy-cross hasn't been fixed across all possible windows/WSL/...
-    # variations and the STRIP step tries to strip mpy-cross whereas that should be
-    # mpy-cross.exe. Workaround for now by skipping actual strip and size commands.
-    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 STRIP=echo SIZE=echo"
+    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1"
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM mpy_cross build exited with code $LASTEXITCODE"
     }

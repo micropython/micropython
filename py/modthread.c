@@ -174,6 +174,8 @@ STATIC void *thread_entry(void *args_in) {
     // The GC starts off unlocked on this thread.
     ts.gc_lock_depth = 0;
 
+    ts.mp_pending_exception = MP_OBJ_NULL;
+
     // set locals and globals from the calling context
     mp_locals_set(args->dict_locals);
     mp_globals_set(args->dict_globals);
@@ -184,7 +186,6 @@ STATIC void *thread_entry(void *args_in) {
     mp_thread_start();
 
     // TODO set more thread-specific state here:
-    //  mp_pending_exception? (root pointer)
     //  cur_exception (root pointer)
 
     DEBUG_printf("[thread] start ts=%p args=%p stack=%p\n", &ts, &args, MP_STATE_THREAD(stack_top));

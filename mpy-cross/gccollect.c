@@ -29,7 +29,7 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/gchelper.h"
 
 #if MICROPY_ENABLE_GC
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George and 2017, 2018 Rami Ali
+ * Copyright (c) 2013-2021 Damien P. George and 2017, 2018 Rami Ali
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,9 @@
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
+#include "emscripten.h"
 #include "library.h"
 
 #if MICROPY_ENABLE_COMPILER
@@ -70,8 +71,6 @@ int do_str(const char *src, mp_parse_input_kind_t input_kind) {
 }
 #endif
 
-static char *stack_top;
-
 int mp_js_do_str(const char *code) {
     return do_str(code, MP_PARSE_FILE_INPUT);
 }
@@ -81,9 +80,6 @@ int mp_js_process_char(int c) {
 }
 
 void mp_js_init(int heap_size) {
-    int stack_dummy;
-    stack_top = (char *)&stack_dummy;
-
     #if MICROPY_ENABLE_GC
     char *heap = (char *)malloc(heap_size * sizeof(char));
     gc_init(heap, heap + heap_size);
@@ -105,15 +101,14 @@ void mp_js_init_repl() {
     pyexec_event_repl_init();
 }
 
+STATIC void gc_scan_func(void *begin, void *end) {
+    gc_collect_root((void **)begin, (void **)end - (void **)begin + 1);
+}
+
 void gc_collect(void) {
-    // WARNING: This gc_collect implementation doesn't try to get root
-    // pointers from CPU registers, and thus may function incorrectly.
-    jmp_buf dummy;
-    if (setjmp(dummy) == 0) {
-        longjmp(dummy, 1);
-    }
     gc_collect_start();
-    gc_collect_root((void *)stack_top, ((mp_uint_t)(void *)(&dummy + 1) - (mp_uint_t)stack_top) / sizeof(mp_uint_t));
+    emscripten_scan_stack(gc_scan_func);
+    emscripten_scan_registers(gc_scan_func);
     gc_collect_end();
 }
 

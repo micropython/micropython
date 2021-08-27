@@ -312,7 +312,7 @@ dispatch_loop:
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT): {
-                    mp_int_t num = 0;
+                    mp_uint_t num = 0;
                     if ((ip[0] & 0x40) != 0) {
                         // Number is negative
                         num--;
@@ -1257,16 +1257,9 @@ yield:
                         PUSH(ret_value);
                         goto yield;
                     } else if (ret_kind == MP_VM_RETURN_NORMAL) {
-                        // Pop exhausted gen
-                        sp--;
-                        if (ret_value == MP_OBJ_STOP_ITERATION) {
-                            // Optimize StopIteration
-                            // TODO: get StopIteration's value
-                            PUSH(mp_const_none);
-                        } else {
-                            PUSH(ret_value);
-                        }
-
+                        // The generator has finished, and returned a value via StopIteration
+                        // Replace exhausted generator with the returned value
+                        SET_TOP(ret_value);
                         // If we injected GeneratorExit downstream, then even
                         // if it was swallowed, we re-raise GeneratorExit
                         GENERATOR_EXIT_IF_NEEDED(t_exc);
@@ -1375,9 +1368,9 @@ pending_exception_check:
                     // Re-check state is still pending now that we're in the atomic section.
                     if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
                         MARK_EXC_IP_SELECTIVE();
-                        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+                        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
                         if (obj != MP_OBJ_NULL) {
-                            MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
                             if (!mp_sched_num_pending()) {
                                 MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
                             }
@@ -1391,10 +1384,10 @@ pending_exception_check:
                 }
                 #else
                 // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+                if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                    mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+                    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
                     RAISE(obj);
                 }
                 #endif

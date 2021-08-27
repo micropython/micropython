@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "fsl_common.h"
+#include "fsl_flexspi.h"
 
 /*! @name Driver version */
 /*@{*/
@@ -19,9 +19,9 @@
 /*@}*/
 
 /* FLEXSPI memory config block related defintions */
-#define FLEXSPI_CFG_BLK_TAG (0x42464346UL)     // ascii "FCFB" Big Endian
+#define FLEXSPI_CFG_BLK_TAG     (0x42464346UL) // ascii "FCFB" Big Endian
 #define FLEXSPI_CFG_BLK_VERSION (0x56010400UL) // V1.4.0
-#define FLEXSPI_CFG_BLK_SIZE (512)
+#define FLEXSPI_CFG_BLK_SIZE    (512)
 
 /* FLEXSPI Feature related definitions */
 #define FLEXSPI_FEATURE_HAS_PARALLEL_MODE 1
@@ -223,6 +223,15 @@ typedef struct _FlexSPIConfig
 #define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
 #define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11
 #define NOR_CMD_LUT_SEQ_IDX_EXITQPI 12
+
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READDATA    0
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEDATA   1
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READSTATUS  2
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEENABLE 4
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASESECTOR 6
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_PAGEPROGRAM 10
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASECHIP   12
+
 /*
  *  Serial NOR configuration block
  */

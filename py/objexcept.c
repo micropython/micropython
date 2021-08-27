@@ -111,6 +111,15 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 #endif
 #endif  // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 
+STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
+    assert(mp_obj_is_exception_instance(self_in));
+    if (mp_obj_is_native_exception_instance(self_in)) {
+        return MP_OBJ_TO_PTR(self_in);
+    } else {
+        return MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]);
+    }
+}
+
 STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #if MICROPY_ROM_TEXT_COMPRESSION
     if (o->args->len == 1 && mp_obj_is_type(o->args->items[0], &mp_type_str)) {
@@ -163,17 +172,24 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
         if (o->args == NULL || o->args->len == 0) {
             mp_print_str(print, "");
             return;
-        } else if (o->args->len == 1) {
-            #if MICROPY_PY_UERRNO
-            // try to provide a nice OSError error message
-            if (o->base.type == &mp_type_OSError && mp_obj_is_small_int(o->args->items[0])) {
-                qstr qst = mp_errno_to_str(o->args->items[0]);
-                if (qst != MP_QSTRnull) {
-                    mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
-                    return;
+        }
+
+        #if MICROPY_PY_UERRNO
+        // try to provide a nice OSError error message
+        if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
+            qstr qst = mp_errno_to_str(o->args->items[0]);
+            if (qst != MP_QSTRnull) {
+                mp_printf(print, "[Errno " INT_FMT "] %q", MP_OBJ_SMALL_INT_VALUE(o->args->items[0]), qst);
+                if (o->args->len > 1) {
+                    mp_print_str(print, ": ");
+                    mp_obj_print_helper(print, o->args->items[1], PRINT_STR);
                 }
+                return;
             }
-            #endif
+        }
+        #endif
+
+        if (o->args->len == 1) {
             mp_obj_print_helper(print, o->args->items[0], PRINT_STR);
             return;
         }
@@ -233,7 +249,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 // Get exception "value" - that is, first argument, or None
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_exception_t *self = get_native_exception(self_in);
     if (self->args->len == 0) {
         return mp_const_none;
     } else {
@@ -360,12 +376,6 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
-}
-
-// "Optimized" version for common(?) case of having 1 exception arg
-mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    assert(exc_type->make_new == mp_obj_exception_make_new);
-    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
@@ -552,25 +562,15 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
 
 // traceback handling functions
 
-#define GET_NATIVE_EXCEPTION(self, self_in) \
-    /* make sure self_in is an exception instance */ \
-    assert(mp_obj_is_exception_instance(self_in)); \
-    mp_obj_exception_t *self; \
-    if (mp_obj_is_native_exception_instance(self_in)) { \
-        self = MP_OBJ_TO_PTR(self_in); \
-    } else { \
-        self = MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]); \
-    }
-
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
-    GET_NATIVE_EXCEPTION(self, self_in);
+    mp_obj_exception_t *self = get_native_exception(self_in);
     // just set the traceback to the null object
     // we don't want to call any memory management functions here
     self->traceback_data = NULL;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
-    GET_NATIVE_EXCEPTION(self, self_in);
+    mp_obj_exception_t *self = get_native_exception(self_in);
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
@@ -623,7 +623,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 }
 
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
-    GET_NATIVE_EXCEPTION(self, self_in);
+    mp_obj_exception_t *self = get_native_exception(self_in);
 
     if (self->traceback_data == NULL) {
         *n = 0;
