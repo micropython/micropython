@@ -32,6 +32,10 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+#if MICROPY_DEBUG_VALGRIND
+#include <valgrind/memcheck.h>
+#endif
+
 #if MICROPY_ENABLE_GC
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -449,6 +453,11 @@ void gc_collect_start(void) {
 __attribute__((no_sanitize_address))
 #endif
 static void *gc_get_ptr(void **ptrs, int i) {
+    #if MICROPY_DEBUG_VALGRIND
+    if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
+        return NULL;
+    }
+    #endif
     return ptrs[i];
 }
 

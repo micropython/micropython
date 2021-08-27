@@ -510,6 +510,11 @@
 #define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
 #endif
 
+// Whether to enable extra instrumentation for valgrind
+#ifndef MICROPY_DEBUG_VALGRIND
+#define MICROPY_DEBUG_VALGRIND (0)
+#endif
+
 /*****************************************************************************/
 /* Optimisations                                                             */
 
