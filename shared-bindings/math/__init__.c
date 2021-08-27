@@ -427,4 +427,6 @@ const mp_obj_module_t math_module = {
     .globals = (mp_obj_dict_t *)&mp_module_math_globals,
 };
 
-#endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
+MP_REGISTER_MODULE(MP_QSTR_math, math_module, CIRCUITPY_MATH);
+
+#endif // MICROPY_PY_BUILTINS_FLOAT
