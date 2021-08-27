@@ -76,7 +76,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // Wait for txstall
-        false, 32, true); // in settings
+        false, 32, true, // in settings
+        false);   // Not user-interruptible
 
     uint32_t actual_frequency = common_hal_rp2pio_statemachine_get_frequency(&self->state_machine);
     if (actual_frequency < MIN_MIC_CLOCK) {

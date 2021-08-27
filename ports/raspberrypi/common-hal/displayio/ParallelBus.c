@@ -104,8 +104,8 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
         true, // exclusive pin usage
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
         false, // wait for TX stall
-        false, 32, true // RX setting we don't use
-        );
+        false, 32, true, // RX setting we don't use
+        false); // Not user-interruptible.
 
     common_hal_rp2pio_statemachine_never_reset(&self->state_machine);
 }

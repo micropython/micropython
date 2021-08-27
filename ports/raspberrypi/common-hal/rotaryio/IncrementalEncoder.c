@@ -89,7 +89,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // Wait for txstall
-        false, 32, false); // in settings
+        false, 32, false, // in settings
+        false); // Not user-interruptible.
 
     common_hal_rp2pio_statemachine_run(&self->state_machine, encoder_init, MP_ARRAY_SIZE(encoder_init));
 

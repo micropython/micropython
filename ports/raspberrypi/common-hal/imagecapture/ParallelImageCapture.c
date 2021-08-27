@@ -116,7 +116,9 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // wait for txstall
-        true, 32, true); // in settings
+        true, 32, true,  // in settings
+        false); // Not user-interruptible.
+
 
     PIO pio = self->state_machine.pio;
     uint8_t pio_index = pio_get_index(pio);

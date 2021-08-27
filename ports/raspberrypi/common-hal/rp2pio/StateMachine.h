@@ -43,15 +43,16 @@ typedef struct {
     uint32_t initial_pin_direction;
     uint32_t pull_pin_up;
     uint32_t pull_pin_down;
+    uint tx_dreq;
+    uint rx_dreq;
+    uint32_t actual_frequency;
+    pio_sm_config sm_config;
     bool in;
     bool out;
     bool wait_for_txstall;
-    uint tx_dreq;
-    uint rx_dreq;
     bool out_shift_right;
     bool in_shift_right;
-    uint32_t actual_frequency;
-    pio_sm_config sm_config;
+    bool user_interruptible;
     uint8_t offset;
 } rp2pio_statemachine_obj_t;
 
@@ -73,7 +74,8 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
-    bool claim_pins);
+    bool claim_pins,
+    bool interruptible);
 
 uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self);
 void rp2pio_statemachine_set_wrap(rp2pio_statemachine_obj_t *self, uint wrap_target, uint wrap);
