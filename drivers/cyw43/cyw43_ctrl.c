@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/cyw43/cyw43.h"
 #include "pendsv.h"
@@ -51,6 +52,9 @@
 #define WIFI_JOIN_STATE_LINK    (0x0400)
 #define WIFI_JOIN_STATE_KEYED   (0x0800)
 #define WIFI_JOIN_STATE_ALL     (0x0e01)
+
+#define CYW43_STA_IS_ACTIVE(self) (((self)->itf_state >> CYW43_ITF_STA) & 1)
+#define CYW43_AP_IS_ACTIVE(self) (((self)->itf_state >> CYW43_ITF_AP) & 1)
 
 cyw43_t cyw43_state;
 void (*cyw43_poll)(void);
@@ -475,7 +479,7 @@ void cyw43_wifi_set_up(cyw43_t *self, int itf, bool up) {
 
 int cyw43_wifi_scan(cyw43_t *self, cyw43_wifi_scan_options_t *opts, void *env, int (*result_cb)(void*, const cyw43_ev_scan_result_t*)) {
     if (self->itf_state == 0) {
-        return -1;
+        return -MP_EPERM;
     }
 
     cyw43_ensure_up(self);
@@ -518,6 +522,10 @@ int cyw43_wifi_link_status(cyw43_t *self, int itf) {
 // WiFi STA
 
 int cyw43_wifi_join(cyw43_t *self, size_t ssid_len, const uint8_t *ssid, size_t key_len, const uint8_t *key, uint32_t auth_type, const uint8_t *bssid, uint32_t channel) {
+    if (!CYW43_STA_IS_ACTIVE(self)) {
+        return -MP_EPERM;
+    }
+
     int ret = cyw43_ensure_up(self);
     if (ret) {
         return ret;
