@@ -163,6 +163,13 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t *self,
     }
 }
 
+void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisplay_obj_t *self,
+    mp_buffer_info_t *start_sequence, float seconds_per_frame) {
+    self->start_sequence = (uint8_t *)start_sequence->buf;
+    self->start_sequence_len = start_sequence->len;
+    self->milliseconds_per_frame = seconds_per_frame * 1000;
+}
+
 void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t *self) {
     // run start sequence
     self->core.bus_reset(self->core.bus);
