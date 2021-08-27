@@ -290,6 +290,7 @@ jobs:
         - "itsybitsy_m0_express"
         - "itsybitsy_m4_express"
         - "itsybitsy_nrf52840_express"
+        - "jpconstantineau_encoderpad_rp2040"
         - "kicksat-sprite"
         - "loc_ber_m4_base_board"
         - "makerdiary_m60_keyboard"
