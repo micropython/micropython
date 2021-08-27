@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-25 15:34+0000\n"
+"PO-Revision-Date: 2021-08-26 17:10+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -41,6 +41,16 @@ msgstr ""
 "\n"
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
+
+#: lib/utils/pyexec.c
+msgid ""
+"\n"
+"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+"=== "
+msgstr ""
+"\n"
+"modo colar; Ctrl-C para cancelar, Ctrl-D para concluir\n"
+"=== "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -105,8 +115,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "Os índices %q devem ser inteiros, e não %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
-msgstr "o comprimento %q deve ser %q"
+msgid "%q length must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
@@ -4073,6 +4083,10 @@ msgstr "O pull_threshold deve ser entre 1 e 32"
 msgid "queue overflow"
 msgstr "estouro de fila"
 
+#: lib/utils/pyexec.c
+msgid "raw REPL; CTRL-B to exit\n"
+msgstr "REPL bruto; CTRL-B para encerrar\n"
+
 #: py/parse.c
 msgid "raw f-strings are not implemented"
 msgstr "o f-strings bruto não estão implementados"
@@ -4566,6 +4580,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "o comprimento %q deve ser %q"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q deve ser entre 0-255"

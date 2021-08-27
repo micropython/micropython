@@ -44,6 +44,13 @@ msgstr ""
 "Presente un problema con el contenido de su unidad CIRCUITPY en\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
+#: lib/utils/pyexec.c
+msgid ""
+"\n"
+"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+"=== "
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Archivo \"%q\""
@@ -107,8 +114,8 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indices deben ser enteros, no %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
-msgstr "el tamaño de %q debe ser %q"
+msgid "%q length must be %d-%d"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
@@ -4062,6 +4069,10 @@ msgstr "push_threshold debe esta entre 1 y 32"
 msgid "queue overflow"
 msgstr "desbordamiento de cola(queue)"
 
+#: lib/utils/pyexec.c
+msgid "raw REPL; CTRL-B to exit\n"
+msgstr ""
+
 #: py/parse.c
 msgid "raw f-strings are not implemented"
 msgstr "no está implementado cadenas-f sin procesar"
@@ -4556,6 +4567,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "el tamaño de %q debe ser %q"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q debe ser de 0-255"

@@ -38,6 +38,13 @@ msgstr ""
 "Meld een probleem met de inhoud van de CIRCUITPY drive op:\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
+#: lib/utils/pyexec.c
+msgid ""
+"\n"
+"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+"=== "
+msgstr ""
+
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Bestand"
@@ -99,7 +106,7 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q indexen moeten integers zijn, niet %s"
 
 #: py/argcheck.c
-msgid "%q length must be %q"
+msgid "%q length must be %d-%d"
 msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
@@ -4018,6 +4025,10 @@ msgstr ""
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "wachtrij overloop"
+
+#: lib/utils/pyexec.c
+msgid "raw REPL; CTRL-B to exit\n"
+msgstr ""
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
