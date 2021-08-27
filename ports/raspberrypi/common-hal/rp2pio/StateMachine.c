@@ -553,6 +553,8 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t *sel
 }
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
+    common_hal_rp2pio_statemachine_stop(self);
+
     uint8_t sm = self->state_machine;
     uint8_t pio_index = pio_get_index(self->pio);
     common_hal_mcu_disable_interrupts();

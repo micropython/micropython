@@ -91,8 +91,6 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         false, // Wait for txstall
         false, 32, false); // in settings
 
-    common_hal_rp2pio_statemachine_run(&self->state_machine, encoder_init, MP_ARRAY_SIZE(encoder_init));
-
     // We're guaranteed by the init code that some output will be available promptly
     uint8_t quiescent_state;
     common_hal_rp2pio_statemachine_readinto(&self->state_machine, &quiescent_state, 1, 1);
