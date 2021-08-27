@@ -108,7 +108,7 @@ CircuitPython:
 -  Supports native USB on most boards and BLE otherwise, allowing file editing without special tools.
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
--  Concurrenncy within Python is not well supported. Interrupts and threading are disabled.
+-  Concurrency within Python is not well supported. Interrupts and threading are disabled.
    async/await keywords are available on some boards for cooperative multitasking. Some concurrency
    is achieved with native modules for tasks that require it such as audio file playback.
 
