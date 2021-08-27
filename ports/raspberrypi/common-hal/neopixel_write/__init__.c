@@ -76,7 +76,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         true, 8, false, // TX, auto pull every 8 bits. shift left to output msb first
         true, // Wait for txstall. If we don't, then we'll deinit too quickly.
         false, 32, true, // RX setting we don't use
-        false); // claim pins
+        false, // claim pins
+        false); // Not user-interruptible.
     if (!ok) {
         // Do nothing. Maybe bitbang?
         return;
