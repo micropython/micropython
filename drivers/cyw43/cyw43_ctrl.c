@@ -102,27 +102,24 @@ void cyw43_init(cyw43_t *self) {
 }
 
 void cyw43_deinit(cyw43_t *self) {
+    if (cyw43_poll == NULL) {
+        return;
+    }
+
     CYW_ENTER
 
-    cyw43_ll_bus_sleep(&self->cyw43_ll, true);
-    cyw43_delay_ms(2);
+    // Stop the TCP/IP network interfaces.
     cyw43_tcpip_deinit(self, 0);
     cyw43_tcpip_deinit(self, 1);
 
-    self->itf_state = 0;
-
-    // Disable async polling
+    // Turn off the SDIO bus.
+    #if USE_SDIOIT
     sdio_enable_irq(false);
-    cyw43_poll = NULL;
-
-    #ifdef pyb_pin_WL_RFSW_VDD
-    // Turn the RF-switch off
-    mp_hal_pin_low(pyb_pin_WL_RFSW_VDD);
     #endif
-
-    // Power down the WL chip and the SDIO bus
-    mp_hal_pin_low(pyb_pin_WL_REG_ON);
     sdio_deinit();
+
+    // Power off the WLAN chip and make sure all state is reset.
+    cyw43_init(self);
 
     CYW_EXIT
 }
