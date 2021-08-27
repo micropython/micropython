@@ -91,9 +91,11 @@ code these should be pre-allocated and passed as arguments or as bound objects.
 
 When passing slices of objects such as `bytearray` instances, Python creates
 a copy which involves allocation of the size proportional to the size of slice.
-This can be alleviated using a `memoryview` object. `memoryview` itself
-is allocated on heap, but is a small, fixed-size object, regardless of the size
-of slice it points too.
+This can be alleviated using a `memoryview` object. The `memoryview` itself
+is allocated on the heap, but is a small, fixed-size object, regardless of the size
+of slice it points too. Slicing a `memoryview` creates a new `memoryview`, so this
+cannot be done in an interrupt service routine. Further, the slice syntax ``a:b``
+causes further allocation by instantiating a ``slice(a, b)`` object.
 
 .. code:: python
 
