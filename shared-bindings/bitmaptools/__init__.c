@@ -578,6 +578,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
@@ -591,3 +592,5 @@ const mp_obj_module_t bitmaptools_module = {
     .base = {&mp_type_module },
     .globals = (mp_obj_dict_t *)&bitmaptools_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_bitmaptools, bitmaptools_module, CIRCUITPY_BITMAPTOOLS);

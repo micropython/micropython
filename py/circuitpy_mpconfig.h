@@ -280,19 +280,8 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define BINASCII_MODULE
 #endif
 
-#if CIRCUITPY_BITBANGIO
-#define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
-extern const struct _mp_obj_module_t bitbangio_module;
-#else
-#define BITBANGIO_MODULE
-#endif
-
-#if CIRCUITPY_BITMAPTOOLS
-#define BITMAPTOOLS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bitmaptools), (mp_obj_t)&bitmaptools_module },
-extern const struct _mp_obj_module_t bitmaptools_module;
-#else
-#define BITMAPTOOLS_MODULE
-#endif
+// CIRCUITPY_BITBANGIO uses MP_REGISTER_MODULE
+// CIRCUITPY_BITMAPTOOLS uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_BITOPS
 extern const struct _mp_obj_module_t bitops_module;
@@ -301,17 +290,10 @@ extern const struct _mp_obj_module_t bitops_module;
 #define BITOPS_MODULE
 #endif
 
-#if CIRCUITPY_BLEIO
-#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
-extern const struct _mp_obj_module_t bleio_module;
-#else
-#define BLEIO_MODULE
-#endif
+// CIRCUITPY_BLEIO uses MP_REGISTER_MODULE
+// CIRCUITPY_BOARD uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_BOARD
-#define BOARD_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module },
-extern const struct _mp_obj_module_t board_module;
-
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
@@ -325,18 +307,11 @@ extern const struct _mp_obj_module_t board_module;
 #endif
 
 #else
-#define BOARD_MODULE
 #define BOARD_UART_ROOT_POINTER
 #endif
 
 // CIRCUITPY_BUSDEVICE (adafruit_bus_device_module) uses MP_REGISTER_MODULE
-
-#if CIRCUITPY_BUSIO
-extern const struct _mp_obj_module_t busio_module;
-#define BUSIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
-#else
-#define BUSIO_MODULE
-#endif
+// CIRCUITPY_BUSIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_CAMERA
 extern const struct _mp_obj_module_t camera_module;
@@ -352,20 +327,8 @@ extern const struct _mp_obj_module_t canio_module;
 #define CANIO_MODULE
 #endif
 
-#if CIRCUITPY_COUNTIO
-extern const struct _mp_obj_module_t countio_module;
-#define COUNTIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_countio), (mp_obj_t)&countio_module },
-#else
-#define COUNTIO_MODULE
-#endif
-
-#if CIRCUITPY_DIGITALIO
-extern const struct _mp_obj_module_t digitalio_module;
-#define DIGITALIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module },
-#else
-#define DIGITALIO_MODULE
-#endif
-
+// CIRCUITPY_COUNTIO uses MP_REGISTER_MODULE
+// CIRCUITPY_DIGITALIO uses MP_REGISTER_MODULE
 // CIRCUITPY_DISPLAYIO uses MP_REGISTER_MODULE
 // CIRCUITPY_TERMINALIO uses MP_REGISTER_MODULE
 // CIRCUITPY_FONTIO uses MP_REGISTER_MODULE
@@ -409,12 +372,7 @@ extern const struct _mp_obj_module_t _eve_module;
 #define _EVE_MODULE
 #endif
 
-#if CIRCUITPY_FRAMEBUFFERIO
-extern const struct _mp_obj_module_t framebufferio_module;
-#define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
-#else
-#define FRAMEBUFFERIO_MODULE
-#endif
+// CIRCUITPY_FRAMEBUFFERIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_VECTORIO
 extern const struct _mp_obj_module_t vectorio_module;
@@ -423,19 +381,8 @@ extern const struct _mp_obj_module_t vectorio_module;
 #define VECTORIO_MODULE
 #endif
 
-#if CIRCUITPY_FREQUENCYIO
-extern const struct _mp_obj_module_t frequencyio_module;
-#define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
-#else
-#define FREQUENCYIO_MODULE
-#endif
-
-#if CIRCUITPY_GAMEPADSHIFT
-extern const struct _mp_obj_module_t gamepadshift_module;
-#define GAMEPADSHIFT_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepadshift),(mp_obj_t)&gamepadshift_module },
-#else
-#define GAMEPADSHIFT_MODULE
-#endif
+// CIRCUITPY_FREQUENCYIO uses MP_REGISTER_MODULE
+// CIRCUITPY_GAMEPADSHIFT uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
@@ -445,12 +392,7 @@ extern const struct _mp_obj_module_t gamepadshift_module;
 #define GAMEPAD_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_GETPASS
-extern const struct _mp_obj_module_t getpass_module;
-#define GETPASS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_getpass), (mp_obj_t)&getpass_module },
-#else
-#define GETPASS_MODULE
-#endif
+// CIRCUITPY_GETPASS uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_GNSS
 extern const struct _mp_obj_module_t gnss_module;
@@ -492,29 +434,15 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #define JSON_MODULE
 #endif
 
+// CIRCUITPY_KEYPAD uses MP_REGISTER_MODULE
+
 #if CIRCUITPY_KEYPAD
-extern const struct _mp_obj_module_t keypad_module;
-#define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
 #define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
 #else
-#define KEYPAD_MODULE
 #define KEYPAD_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_GAMEPADSHIFT
-// Scan gamepadshift every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
-#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
-#else
-#define GAMEPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_MATH
-extern const struct _mp_obj_module_t math_module;
-#define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
-#else
-#define MATH_MODULE
-#endif
+// CIRCUITPY_MATH uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_MEMORYMONITOR
 extern const struct _mp_obj_module_t memorymonitor_module;
@@ -526,12 +454,7 @@ extern const struct _mp_obj_module_t memorymonitor_module;
 #define MEMORYMONITOR_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_MICROCONTROLLER
-extern const struct _mp_obj_module_t microcontroller_module;
-#define MICROCONTROLLER_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module },
-#else
-#define MICROCONTROLLER_MODULE
-#endif
+// CIRCUITPY_MICROCONTROLLER uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_NEOPIXEL_WRITE
 extern const struct _mp_obj_module_t neopixel_write_module;
@@ -803,12 +726,7 @@ extern const struct _mp_obj_module_t wifi_module;
 #define WIFI_MODULE
 #endif
 
-#if CIRCUITPY_MSGPACK
-extern const struct _mp_obj_module_t msgpack_module;
-#define MSGPACK_MODULE { MP_ROM_QSTR(MP_QSTR_msgpack), MP_ROM_PTR(&msgpack_module) },
-#else
-#define MSGPACK_MODULE
-#endif
+// CIRCUITPY_MSGPACK uses MP_REGISTER_MODULE
 
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
@@ -833,35 +751,20 @@ extern const struct _mp_obj_module_t msgpack_module;
     ALARM_MODULE \
     AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
-    BITBANGIO_MODULE \
-    BITMAPTOOLS_MODULE \
     BITOPS_MODULE \
-    BLEIO_MODULE \
-    BOARD_MODULE \
-    BUSIO_MODULE \
     CAMERA_MODULE \
     CANIO_MODULE \
-    COUNTIO_MODULE \
-    DIGITALIO_MODULE \
     DUALBANK_MODULE \
     VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
     _EVE_MODULE \
-    FRAMEBUFFERIO_MODULE \
-    FREQUENCYIO_MODULE \
-    GAMEPADSHIFT_MODULE \
-    GETPASS_MODULE \
     GNSS_MODULE \
     I2CPERIPHERAL_MODULE \
     IPADDRESS_MODULE \
     IMAGECAPTURE_MODULE \
     JSON_MODULE \
-    KEYPAD_MODULE \
-    MATH_MODULE \
     MEMORYMONITOR_MODULE \
-    MICROCONTROLLER_MODULE \
-    MSGPACK_MODULE \
     NEOPIXEL_WRITE_MODULE \
     ONEWIREIO_MODULE \
     PEW_MODULE \
