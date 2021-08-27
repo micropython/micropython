@@ -57,6 +57,34 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+#ifndef N_X64
+#define N_X64 (0)
+#endif
+
+#ifndef N_X86
+#define N_X86 (0)
+#endif
+
+#ifndef N_THUMB
+#define N_THUMB (0)
+#endif
+
+#ifndef N_ARM
+#define N_ARM (0)
+#endif
+
+#ifndef N_XTENSA
+#define N_XTENSA (0)
+#endif
+
+#ifndef N_NLR_SETJMP
+#define N_NLR_SETJMP (0)
+#endif
+
+#ifndef N_PRELUDE_AS_BYTES_OBJ
+#define N_PRELUDE_AS_BYTES_OBJ (0)
+#endif
+
 // wrapper around everything in this file
 #if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 
 #include "py/runtime.h"
 #include "py/builtin.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_BUILTINS_SET
 
@@ -99,8 +101,8 @@ STATIC void set_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     #endif
 }
 
-STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t set_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0: {
@@ -292,7 +294,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(self_in)) {
         self = MP_OBJ_TO_PTR(self_in);
     } else {
-        self = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &self_in));
+        self = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, &self_in, NULL));
         cleanup_self = true;
     }
 
@@ -301,7 +303,7 @@ STATIC mp_obj_t set_issubset_internal(mp_obj_t self_in, mp_obj_t other_in, bool 
     if (is_set_or_frozenset(other_in)) {
         other = MP_OBJ_TO_PTR(other_in);
     } else {
-        other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, 0, &other_in));
+        other = MP_OBJ_TO_PTR(set_make_new(&mp_type_set, 1, &other_in, NULL));
         cleanup_other = true;
     }
     mp_obj_t out = mp_const_true;
@@ -362,7 +364,7 @@ STATIC mp_obj_t set_pop(mp_obj_t self_in) {
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_t obj = mp_set_remove_first(&self->set);
     if (obj == MP_OBJ_NULL) {
-        mp_raise_msg(&mp_type_KeyError, MP_ERROR_TEXT("pop from an empty set"));
+        mp_raise_msg_varg(&mp_type_KeyError, MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_set);
     }
     return obj;
 }
@@ -372,7 +374,7 @@ STATIC mp_obj_t set_remove(mp_obj_t self_in, mp_obj_t item) {
     check_set(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_set_lookup(&self->set, item, MP_MAP_LOOKUP_REMOVE_IF_FOUND) == MP_OBJ_NULL) {
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, item));
+        mp_raise_arg1(&mp_type_KeyError, item);
     }
     return mp_const_none;
 }
@@ -447,6 +449,7 @@ STATIC mp_obj_t set_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             MP_FALLTHROUGH
         #endif
+        /* FALLTHROUGH */
         default:
             return MP_OBJ_NULL;      // op not supported
     }
@@ -542,13 +545,16 @@ STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
 const mp_obj_type_t mp_type_set = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_set,
     .print = set_print,
     .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
     .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = set_unary_op,
+        .binary_op = set_binary_op,
+        .getiter = set_getiter,
+        ),
 };
 
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -567,14 +573,16 @@ STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
 const mp_obj_type_t mp_type_frozenset = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_frozenset,
     .print = set_print,
     .make_new = set_make_new,
-    .unary_op = set_unary_op,
-    .binary_op = set_binary_op,
-    .getiter = set_getiter,
     .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = set_unary_op,
+        .binary_op = set_binary_op,
+        .getiter = set_getiter,
+        ),
 };
 #endif
 

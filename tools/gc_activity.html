@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+
+        html, body, svg {
+            margin: 0px;
+            min-height: 100%;
+            height: 100%;
+            width: 100%;
+        }
+
+        .chart rect {
+          fill: steelblue;
+        }
+
+        .axis text {
+          font: 10px sans-serif;
+        }
+
+        .axis path,
+        .axis line {
+          fill: none;
+          stroke: #000;
+          shape-rendering: crispEdges;
+        }
+
+        div.tooltip {
+          position: absolute;
+          # text-align: center;
+          # width: 60px;
+          # height: 28px;
+          padding: 2px;
+          font: 12px sans-serif;
+          background: lightsteelblue;
+          border: 0px;
+        }
+
+        </style>
+    </head>
+    <body>
+        <svg class="chart"></svg>
+        <script src="https://d3js.org/d3.v4.js"></script>
+        <script>
+            var barHeight = 2;
+
+            var chart = d3.select(".chart");
+
+            var margin = {top: 20, right: 30, bottom: 30, left: 40},
+                width = chart.style("width").replace("px", "") - margin.left - margin.right,
+                height = chart.style("height").replace("px", "") - margin.top - margin.bottom;
+
+            var x = d3.scaleLinear().range([0, width]);
+            var y = d3.scaleLinear().range([0, height]);
+
+            var chart = chart.append("g")
+                             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            var xAxis = d3.axisBottom().scale(x);
+            var yAxis = d3.axisLeft().scale(y);
+
+            var div = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            d3.json("/allocation_history.json", function(error, data) {
+                console.log(data[0]);
+                x.domain([0, d3.max(data, function(d) { return d.end_time; })]);
+                y.domain([0, d3.max(data, function(d) { return d.start_block + d.size; })]);
+
+                chart.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(xAxis);
+
+                chart.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+                var bar = chart.selectAll("g")
+                               .data(data)
+                               .enter().append("g")
+                               .attr("transform", function(d, i) { return "translate(" + x(d.start_time) + "," + y(d.start_block) + ")"; });
+
+                bar.append("rect")
+                   .attr("width", function(d) { return x(d.end_time - d.start_time); })
+                   .attr("height", function(d) { return y(d.size) - 1; })
+                   .on("mouseover", function(d) {
+                       var trace = "";
+                       for (var i = 0, len = d.start_trace.length; i < len; i++) {
+                           var frame = d.start_trace[i];
+                           trace += frame[2] + " " + frame[1] + "<br/>";
+                       }
+                       trace += "<br/>End Trace:<br/>";
+                       for (var i = 0, len = d.end_trace.length; i < len; i++) {
+                           var frame = d.end_trace[i];
+                           trace += frame[2] + " " + frame[1] + "<br/>";
+                       }
+                       var side = "left";
+                       var other_side = "right";
+                       var pos_x = x(d.start_time) + margin.left;
+                       if (width - pos_x < 300) {
+                           side = "right";
+                           other_side = "left";
+                           pos_x = width - x(d.start_time) + margin.right;
+                       }
+                       var pos_y = (height - y(d.start_block) + margin.bottom)
+                       var edge = "bottom";
+                       var other_edge = "top";
+                       if ((height - pos_y) < 300) {
+                           edge = "top";
+                           other_edge = "bottom";
+                           pos_y = y(d.start_block) + margin.top + y(d.size);
+                       }
+                       div.style("opacity", 1)
+                          .html("Start block: " + d.start_block + " Size: " + d.size + " blocks<br/><br/>" + trace)
+                          .style(side, pos_x + "px")
+                          .style(other_side, null)
+                          .style(edge, pos_y + "px")
+                          .style(other_edge, null);
+                   });
+
+            //  bar.append("text")
+            //      .attr("x", function(d) { return x(d.value) - 3; })
+            //      .attr("y", barHeight / 2)
+            //      .attr("dy", ".35em")
+            //      .text(function(d) { return d.value; });
+            });
+
+            function type(d) {
+              d.value = +d.value; // coerce to number
+              return d;
+            }
+            </script>
+    </body>
+</html>

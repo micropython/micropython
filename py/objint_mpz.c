@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -47,22 +49,22 @@ STATIC const mpz_dig_t maxsize_dig[] = {
     #define NUM_DIG 1
     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) & DIG_MASK,
     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 0) > DIG_MASK
-     #undef NUM_DIG
+#undef NUM_DIG
      #define NUM_DIG 2
-     (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
-     #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
-      #undef NUM_DIG
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 1) > DIG_MASK
+#undef NUM_DIG
       #define NUM_DIG 3
-      (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
-      #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
-       #undef NUM_DIG
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 2) > DIG_MASK
+#undef NUM_DIG
        #define NUM_DIG 4
-       (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
-       #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
-        #error cannot encode MP_SSIZE_MAX as mpz
-       #endif
-      #endif
-     #endif
+    (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) & DIG_MASK,
+    #if (MP_SSIZE_MAX >> MPZ_DIG_SIZE * 3) > DIG_MASK
+    #error cannot encode MP_SSIZE_MAX as mpz
+    #endif
+    #endif
+    #endif
     #endif
 };
 // *FORMAT-ON*
@@ -105,6 +107,12 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     *fmt_size = mpz_as_str_inpl(&self->mpz, base, prefix, base_char, comma, str);
 
     return str;
+}
+
+mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
+    assert(mp_obj_is_type(self_in, &mp_type_int));
+    mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mpz_num_bits(&self->mpz));
 }
 
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf) {
@@ -353,6 +361,10 @@ mp_obj_t mp_obj_int_pow3(mp_obj_t base, mp_obj_t exponent,  mp_obj_t modulus) {
         mpz_t *lhs = mp_mpz_for_int(base,     &l_temp);
         mpz_t *rhs = mp_mpz_for_int(exponent, &r_temp);
         mpz_t *mod = mp_mpz_for_int(modulus,  &m_temp);
+
+        if (mpz_is_zero(mod)) {
+            mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("pow() 3rd argument cannot be 0"));
+        }
 
         mpz_pow3_inpl(&(res_p->mpz), lhs, rhs, mod);
 

@@ -56,13 +56,13 @@ def test(bdev, vfs_class):
     # create binary, print, write, flush, close
     f = vfs.open("test.bin", "wb")
     print(f)
-    f.write("littlefs")
+    f.write(b"littlefs")
     f.flush()
     f.close()
 
     # create for append
     f = vfs.open("test.bin", "ab")
-    f.write("more")
+    f.write(b"more")
     f.close()
 
     # create exclusive
@@ -90,7 +90,7 @@ def test(bdev, vfs_class):
     # create read and write
     with vfs.open("test.bin", "r+b") as f:
         print(f.read(8))
-        f.write("MORE")
+        f.write(b"MORE")
     with vfs.open("test.bin", "rb") as f:
         print(f.read())
 

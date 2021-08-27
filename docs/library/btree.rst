@@ -1,11 +1,13 @@
 :mod:`btree` -- simple BTree database
 =====================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: btree
    :synopsis: simple BTree database
 
 The ``btree`` module implements a simple key-value database using external
-storage (disk files, or in general case, a random-access `stream`). Keys are
+storage (disk files, or in general case, a random-access ``stream``). Keys are
 stored sorted in the database, and besides efficient retrieval by a key
 value, a database also supports efficient ordered range scans (retrieval
 of values with the keys in a given range). On the application interface
@@ -78,7 +80,7 @@ Functions
 
 .. function:: open(stream, *, flags=0, pagesize=0, cachesize=0, minkeypage=0)
 
-   Open a database from a random-access `stream` (like an open file). All
+   Open a database from a random-access ``stream`` (like an open file). All
    other parameters are optional and keyword-only, and allow to tweak advanced
    parameters of the database operation (most users will not need them):
 

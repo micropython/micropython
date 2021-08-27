@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -174,7 +174,7 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
                 num--;
             }
             do {
-                num = (num << 7) | (*ip & 0x7f);
+                num = (num * 128) | (*ip & 0x7f);
             } while ((*ip++ & 0x80) != 0);
             mp_printf(print, "LOAD_CONST_SMALL_INT " INT_FMT, num);
             break;

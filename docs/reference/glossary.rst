@@ -112,24 +112,6 @@ Glossary
         require much less power. MicroPython is designed to be small and
         optimized enough to run on an average modern microcontroller.
 
-    micropython-lib
-        MicroPython is (usually) distributed as a single executable/binary
-        file with just few builtin modules. There is no extensive standard
-        library comparable with :term:`CPython`'s. Instead, there is a related,
-        but separate project `micropython-lib
-        <https://github.com/micropython/micropython-lib>`_ which provides
-        implementations for many modules from CPython's standard library.
-
-        Some of the modules are are implemented in pure Python, and are able to
-        be used on all ports. However, the majority of these modules use
-        :term:`FFI` to access operating system functionality, and as such can
-        only be used on the :term:`MicroPython Unix port` (with limited support
-        for Windows).
-
-        Unlike the :term:`CPython` stdlib, micropython-lib modules are
-        intended to be installed individually - either using manual copying or
-        using :term:`upip`.
-
     MicroPython port
         MicroPython supports different :term:`boards <board>`, RTOSes, and
         OSes, and can be relatively easily adapted to new systems. MicroPython
@@ -177,24 +159,17 @@ Glossary
         typically accessible on a host PC via USB.
 
     stream
-        Also known as a "file-like object". A Python object which provides
+        Also known as a "file-like object". An Python object which provides
         sequential read-write access to the underlying data. A stream object
         implements a corresponding interface, which consists of methods like
         ``read()``, ``write()``, ``readinto()``, ``seek()``, ``flush()``,
         ``close()``, etc. A stream is an important concept in MicroPython;
         many I/O objects implement the stream interface, and thus can be used
         consistently and interchangeably in different contexts. For more
-        information on streams in MicroPython, see the `uio` module.
+        information on streams in MicroPython, see the `io` module.
 
     UART
         Acronym for "Universal Asynchronous Receiver/Transmitter". This is a
         peripheral that sends data over a pair of pins (TX & RX). Many boards
         include a way to make at least one of the UARTs available to a host PC
         as a serial port over USB.
-
-    upip
-        (Literally, "micro pip"). A package manager for MicroPython, inspired
-        by :term:`CPython`'s pip, but much smaller and with reduced
-        functionality.
-        upip runs both on the :term:`Unix port <MicroPython Unix port>` and on
-        :term:`baremetal` ports which offer filesystem and networking support.

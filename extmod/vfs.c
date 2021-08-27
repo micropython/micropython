@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdint.h>
 #include <string.h>
@@ -42,7 +21,7 @@
 #include "extmod/vfs_lfs.h"
 #endif
 
-#if MICROPY_VFS_POSIX
+#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
 #endif
 
@@ -96,6 +75,7 @@ mp_vfs_mount_t *mp_vfs_lookup_path(const char *path, const char **path_out) {
 STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     const char *path = mp_obj_str_get_str(path_in);
     const char *p_out;
+    *path_out = mp_const_none;
     mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &p_out);
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
@@ -130,7 +110,7 @@ mp_import_stat_t mp_vfs_import_stat(const char *path) {
     }
 
     // If the mounted object has the VFS protocol, call its import_stat helper
-    const mp_vfs_proto_t *proto = mp_obj_get_type(vfs->obj)->protocol;
+    const mp_vfs_proto_t *proto = (mp_vfs_proto_t *)mp_proto_get(MP_QSTR_protocol_vfs, vfs->obj);
     if (proto != NULL) {
         return proto->import_stat(MP_OBJ_TO_PTR(vfs->obj), path_out);
     }
@@ -170,7 +150,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS1
             if (memcmp(&buf[32], "littlefs", 8) == 0) {
                 // LFS1
-                mp_obj_t vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, 0, &bdev_obj);
+                mp_obj_t vfs = mp_type_vfs_lfs1.make_new(&mp_type_vfs_lfs1, 1, &bdev_obj, NULL);
                 nlr_pop();
                 return vfs;
             }
@@ -178,7 +158,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
             #if MICROPY_VFS_LFS2
             if (memcmp(&buf[0], "littlefs", 8) == 0) {
                 // LFS2
-                mp_obj_t vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, 0, &bdev_obj);
+                mp_obj_t vfs = mp_type_vfs_lfs2.make_new(&mp_type_vfs_lfs2, 1, &bdev_obj, NULL);
                 nlr_pop();
                 return vfs;
             }
@@ -191,7 +171,7 @@ STATIC mp_obj_t mp_vfs_autodetect(mp_obj_t bdev_obj) {
     #endif
 
     #if MICROPY_VFS_FAT
-    return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, 0, &bdev_obj);
+    return mp_fat_vfs_type.make_new(&mp_fat_vfs_type, 1, &bdev_obj, NULL);
     #endif
 
     // no filesystem found
@@ -307,7 +287,7 @@ mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args)
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    #if MICROPY_VFS_POSIX
+    #if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
     // If the file is an integer then delegate straight to the POSIX handler
     if (mp_obj_is_small_int(args[ARG_file].u_obj)) {
         return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
@@ -362,18 +342,7 @@ mp_obj_t mp_vfs_getcwd(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
 
-typedef struct _mp_vfs_ilistdir_it_t {
-    mp_obj_base_t base;
-    mp_fun_1_t iternext;
-    union {
-        mp_vfs_mount_t *vfs;
-        mp_obj_t iter;
-    } cur;
-    bool is_str;
-    bool is_iter;
-} mp_vfs_ilistdir_it_t;
-
-STATIC mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
+mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
     mp_vfs_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->is_iter) {
         // continue delegating to root dir
@@ -412,7 +381,7 @@ mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args) {
         path_in = MP_OBJ_NEW_QSTR(MP_QSTR_);
     }
 
-    mp_obj_t path_out;
+    mp_obj_t path_out = mp_const_none;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
 
     if (vfs == MP_VFS_ROOT) {
@@ -442,7 +411,7 @@ mp_obj_t mp_vfs_listdir(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_vfs_listdir_obj, 0, 1, mp_vfs_listdir);
 
 mp_obj_t mp_vfs_mkdir(mp_obj_t path_in) {
-    mp_obj_t path_out;
+    mp_obj_t path_out = mp_const_none;
     mp_vfs_mount_t *vfs = lookup_path(path_in, &path_out);
     if (vfs == MP_VFS_ROOT || (vfs != MP_VFS_NONE && !strcmp(mp_obj_str_get_str(path_out), "/"))) {
         mp_raise_OSError(MP_EEXIST);

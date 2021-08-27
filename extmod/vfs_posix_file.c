@@ -1,36 +1,16 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2013-2018 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2013-2018 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "extmod/vfs_posix.h"
+#include "supervisor/shared/translate.h"
 
-#if MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
+#if (defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX) || (defined(MICROPY_VFS_POSIX_FILE) && MICROPY_VFS_POSIX_FILE)
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -57,7 +37,7 @@ STATIC void check_fd_is_open(const mp_obj_vfs_posix_file_t *o) {
 STATIC void vfs_posix_file_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_vfs_posix_file_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<io.%s %d>", mp_obj_get_type_str(self_in), self->fd);
+    mp_printf(print, "<io.%q %d>", mp_obj_get_type_qstr(self_in), self->fd);
 }
 
 mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in) {
@@ -109,14 +89,14 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
     };
 
     mp_arg_val_t arg_vals[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
     return mp_vfs_posix_file_open(type, arg_vals[0].u_obj, arg_vals[1].u_obj);
 }
 
@@ -147,12 +127,6 @@ STATIC mp_uint_t vfs_posix_file_read(mp_obj_t o_in, void *buf, mp_uint_t size, i
 STATIC mp_uint_t vfs_posix_file_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_vfs_posix_file_t *o = MP_OBJ_TO_PTR(o_in);
     check_fd_is_open(o);
-    #if MICROPY_PY_OS_DUPTERM
-    if (o->fd <= STDERR_FILENO) {
-        mp_hal_stdout_tx_strn(buf, size);
-        return size;
-    }
-    #endif
     ssize_t r;
     MP_HAL_RETRY_SYSCALL(r, write(o->fd, buf, size), {
         *errcode = err;
@@ -231,6 +205,7 @@ STATIC MP_DEFINE_CONST_DICT(vfs_posix_rawfile_locals_dict, vfs_posix_rawfile_loc
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
     .ioctl = vfs_posix_file_ioctl,
@@ -238,17 +213,21 @@ STATIC const mp_stream_p_t vfs_posix_fileio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_posix_fileio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     .print = vfs_posix_file_print,
     .make_new = vfs_posix_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &vfs_posix_fileio_stream_p,
+        ),
 };
 #endif
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = vfs_posix_file_read,
     .write = vfs_posix_file_write,
     .ioctl = vfs_posix_file_ioctl,
@@ -257,13 +236,16 @@ STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_posix_textio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TextIOWrapper,
     .print = vfs_posix_file_print,
     .make_new = vfs_posix_file_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_posix_textio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &vfs_posix_textio_stream_p,
+        ),
 };
 
 const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};

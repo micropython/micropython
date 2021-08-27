@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 # Reads the USB VID and PID from the file specified by sys.argv[1] and then
 # inserts those values into the template file specified by sys.argv[2],
 # printing the result to stdout

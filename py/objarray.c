@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,6 +33,8 @@
 #include "py/binary.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_BUILTINS_MEMORYVIEW
 
@@ -64,6 +66,10 @@ STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_bu
 STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg);
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in);
 STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args);
+#endif
+
 
 /******************************************************************************/
 // array
@@ -94,6 +100,9 @@ STATIC void array_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
 STATIC mp_obj_array_t *array_new(char typecode, size_t n) {
+    if (typecode == 'x') {
+        mp_raise_ValueError(MP_ERROR_TEXT("bad typecode"));
+    }
     int typecode_size = mp_binary_get_size('@', typecode, NULL);
     mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
     #if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_PY_ARRAY
@@ -123,8 +132,10 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
                  || (MICROPY_PY_BUILTINS_BYTEARRAY && mp_obj_is_type(initializer, &mp_type_bytearray)))))
         && mp_get_buffer(initializer, &bufinfo, MP_BUFFER_READ)) {
         // construct array from raw bytes
-        // we round-down the len to make it a multiple of sz (CPython raises error)
         size_t sz = mp_binary_get_size('@', typecode, NULL);
+        if (bufinfo.len % sz) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bytes length not a multiple of item size"));
+        }
         size_t len = bufinfo.len / sz;
         mp_obj_array_t *o = array_new(typecode, len);
         memcpy(o->items, bufinfo.buf, len * sz);
@@ -158,9 +169,9 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 #endif
 
 #if MICROPY_PY_ARRAY
-STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
 
     // get typecode
     const char *typecode = mp_obj_str_get_str(args[0]);
@@ -176,15 +187,17 @@ STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    // Can take 2nd/3rd arg if constructs from str
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
+    mp_arg_check_num(n_args, kw_args, 0, 3, false);
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
         return MP_OBJ_FROM_PTR(array_new(BYTEARRAY_TYPECODE, 0));
     } else if (mp_obj_is_int(args[0])) {
+        if (n_args > 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("wrong number of arguments"));
+        }
         // 1 arg, an integer: construct a blank bytearray of that length
         mp_uint_t len = mp_obj_get_int(args[0]);
         mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, len);
@@ -205,13 +218,13 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
 
     // TODO possibly allow memoryview constructor to take start/stop so that one
     // can do memoryview(b, 4, 8) instead of memoryview(b)[4:8] (uses less RAM)
 
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -235,6 +248,26 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
 }
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_in) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+    const char *typecode = mp_obj_str_get_str(typecode_in);
+    size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
+    size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
+    if (bytelen % element_size != 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("memoryview: length is not a multiple of itemsize"));
+    }
+    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
+
+    // test if the object can be written to
+    if (self->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW) {
+        result->typecode |= MP_OBJ_ARRAY_TYPECODE_FLAG_RW; // indicate writable buffer
+    }
+    return MP_OBJ_FROM_PTR(result);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
+#endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
 STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
@@ -276,6 +309,40 @@ STATIC int typecode_for_comparison(int typecode, bool *is_unsigned) {
 STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_array_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
+        case MP_BINARY_OP_MULTIPLY:
+        case MP_BINARY_OP_INPLACE_MULTIPLY: {
+            if (!mp_obj_is_int(rhs_in)) {
+                return MP_OBJ_NULL; // op not supported
+            }
+            mp_uint_t repeat = mp_obj_get_int(rhs_in);
+            bool inplace = (op == MP_BINARY_OP_INPLACE_MULTIPLY);
+            mp_buffer_info_t lhs_bufinfo;
+            array_get_buffer(lhs_in, &lhs_bufinfo, MP_BUFFER_READ);
+            mp_obj_array_t *res;
+            byte *ptr;
+            size_t orig_lhs_bufinfo_len = lhs_bufinfo.len;
+            if (inplace) {
+                res = lhs;
+                size_t item_sz = mp_binary_get_size('@', lhs->typecode, NULL);
+                lhs->items = m_renew(byte, lhs->items, (lhs->len + lhs->free) * item_sz, lhs->len * repeat * item_sz);
+                lhs->len = lhs->len * repeat;
+                lhs->free = 0;
+                if (!repeat) {
+                    return MP_OBJ_FROM_PTR(res);
+                }
+                repeat--;
+                ptr = (byte *)res->items + orig_lhs_bufinfo_len;
+            } else {
+                res = array_new(lhs_bufinfo.typecode, lhs->len * repeat);
+                ptr = (byte *)res->items;
+            }
+            if (orig_lhs_bufinfo_len) {
+                for (; repeat--; ptr += orig_lhs_bufinfo_len) {
+                    memcpy(ptr, lhs_bufinfo.buf, orig_lhs_bufinfo_len);
+                }
+            }
+            return MP_OBJ_FROM_PTR(res);
+        }
         case MP_BINARY_OP_ADD: {
             // allow to add anything that has the buffer protocol (extension to CPython)
             mp_buffer_info_t lhs_bufinfo;
@@ -416,6 +483,66 @@ STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(array_extend_obj, array_extend);
 #endif
 
+#if MICROPY_PY_BUILTINS_BYTEARRAY && MICROPY_CPYTHON_COMPAT
+STATIC mp_obj_t buffer_finder(size_t n_args, const mp_obj_t *args, int direction, bool is_index) {
+    mp_check_self(mp_obj_is_type(args[0], &mp_type_bytearray));
+    const mp_obj_type_t *self_type = mp_obj_get_type(args[0]);
+
+    mp_buffer_info_t haystack_bufinfo;
+    mp_get_buffer_raise(args[0], &haystack_bufinfo, MP_BUFFER_READ);
+
+    mp_buffer_info_t needle_bufinfo;
+    mp_get_buffer_raise(args[1], &needle_bufinfo, MP_BUFFER_READ);
+
+    if (mp_binary_get_size('@', needle_bufinfo.typecode, NULL) != 1) {
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
+    }
+
+    const byte *start = haystack_bufinfo.buf;
+    const byte *end = ((const byte *)haystack_bufinfo.buf) + haystack_bufinfo.len;
+    if (n_args >= 3 && args[2] != mp_const_none) {
+        start += mp_get_index(self_type, haystack_bufinfo.len, args[2], true);
+    }
+    if (n_args >= 4 && args[3] != mp_const_none) {
+        end = ((const byte *)haystack_bufinfo.buf) + mp_get_index(self_type, haystack_bufinfo.len, args[3], true);
+    }
+
+    const byte *p = NULL;
+    if (end >= start) {
+        p = find_subbytes(start, end - start, needle_bufinfo.buf, needle_bufinfo.len, direction);
+    }
+
+    if (p == NULL) {
+        if (is_index) {
+            mp_raise_ValueError(MP_ERROR_TEXT("substring not found"));
+        } else {
+            return MP_OBJ_NEW_SMALL_INT(-1);
+        }
+    }
+    return MP_OBJ_NEW_SMALL_INT(p - (const byte *)haystack_bufinfo.buf);
+}
+
+STATIC mp_obj_t buffer_find(size_t n_args, const mp_obj_t *args) {
+    return buffer_finder(n_args, args, 1, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_find_obj, 2, 4, buffer_find);
+
+STATIC mp_obj_t buffer_rfind(size_t n_args, const mp_obj_t *args) {
+    return buffer_finder(n_args, args, -1, false);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_rfind_obj, 2, 4, buffer_rfind);
+
+STATIC mp_obj_t buffer_index(size_t n_args, const mp_obj_t *args) {
+    return buffer_finder(n_args, args, 1, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_index_obj, 2, 4, buffer_index);
+
+STATIC mp_obj_t buffer_rindex(size_t n_args, const mp_obj_t *args) {
+    return buffer_finder(n_args, args, -1, true);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(buffer_rindex_obj, 2, 4, buffer_rindex);
+#endif
+
 STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete item
@@ -437,7 +564,7 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 size_t src_len;
                 void *src_items;
                 size_t item_sz = mp_binary_get_size('@', o->typecode & TYPECODE_MASK, NULL);
-                if (mp_obj_is_obj(value) && ((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type->subscr == array_subscr) {
+                if (mp_obj_is_obj(value) && mp_type_get_subscr_slot(((mp_obj_base_t *)MP_OBJ_TO_PTR(value))->type) == array_subscr) {
                     // value is array, bytearray or memoryview
                     mp_obj_array_t *src_slice = MP_OBJ_TO_PTR(value);
                     if (item_sz != mp_binary_get_size('@', src_slice->typecode & TYPECODE_MASK, NULL)) {
@@ -490,9 +617,11 @@ STATIC mp_obj_t array_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value
                 } else {
                     mp_seq_replace_slice_no_grow(dest_items, o->len,
                         slice.start, slice.stop, src_items, src_len, item_sz);
+                    #if MICROPY_NONSTANDARD_TYPECODES
                     // Clear "freed" elements at the end of list
                     // TODO: This is actually only needed for typecode=='O'
                     mp_seq_clear(dest_items, o->len + len_adj, o->len, item_sz);
+                    #endif
                     // TODO: alloc policy after shrinking
                 }
                 o->free -= len_adj;
@@ -564,7 +693,24 @@ STATIC mp_int_t array_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_ui
     return 0;
 }
 
-#if MICROPY_PY_BUILTINS_BYTEARRAY || MICROPY_PY_ARRAY
+
+#if MICROPY_CPYTHON_COMPAT && MICROPY_PY_BUILTINS_BYTEARRAY
+// Directly lifted from objstr.c
+STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t new_args[2];
+    if (n_args == 1) {
+        new_args[0] = args[0];
+        new_args[1] = MP_OBJ_NEW_QSTR(MP_QSTR_utf_hyphen_8);
+        args = new_args;
+        n_args++;
+    }
+    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(array_decode_obj, 1, 3, array_decode);
+#endif
+
+
+#if MICROPY_PY_ARRAY
 STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
@@ -576,51 +722,89 @@ STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
 #endif
 
+#if MICROPY_PY_BUILTINS_BYTEARRAY
+STATIC const mp_rom_map_elem_t bytearray_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&array_append_obj) },
+    { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&array_extend_obj) },
+
+    #if MICROPY_CPYTHON_COMPAT
+    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&buffer_find_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&buffer_rfind_obj) },
+    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&buffer_index_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&buffer_rindex_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_decode), MP_ROM_PTR(&array_decode_obj) },
+    #endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
+#endif
+
+
 #if MICROPY_PY_ARRAY
 const mp_obj_type_t mp_type_array = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_array,
     .print = array_print,
     .make_new = array_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
     .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
 const mp_obj_type_t mp_type_bytearray = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_bytearray,
     .print = array_print,
     .make_new = bytearray_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
-    .locals_dict = (mp_obj_dict_t *)&array_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&bytearray_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+
+#if MICROPY_CPYTHON_COMPAT
+STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
+#endif
+
 const mp_obj_type_t mp_type_memoryview = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
-    .getiter = array_iterator_new,
-    .unary_op = array_unary_op,
-    .binary_op = array_binary_op,
+    #if MICROPY_CPYTHON_COMPAT
+    .locals_dict = (mp_obj_dict_t *)&memoryview_locals_dict,
+    #endif
     #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .attr = memoryview_attr,
     #endif
-    .subscr = array_subscr,
-    .buffer_p = { .get_buffer = array_get_buffer },
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = array_iterator_new,
+        .unary_op = array_unary_op,
+        .binary_op = array_binary_op,
+        .subscr = array_subscr,
+        .buffer_p = { .get_buffer = array_get_buffer },
+        ),
 };
 #endif
 
@@ -634,6 +818,12 @@ size_t mp_obj_array_len(mp_obj_t self_in) {
 mp_obj_t mp_obj_new_bytearray(size_t n, void *items) {
     mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
     memcpy(o->items, items, n);
+    return MP_OBJ_FROM_PTR(o);
+}
+
+mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n) {
+    mp_obj_array_t *o = array_new(BYTEARRAY_TYPECODE, n);
+    memset(o->items, 0, n);
     return MP_OBJ_FROM_PTR(o);
 }
 
@@ -670,9 +860,12 @@ STATIC mp_obj_t array_it_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t mp_type_array_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = array_it_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = array_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t array_iterator_new(mp_obj_t array_in, mp_obj_iter_buf_t *iter_buf) {

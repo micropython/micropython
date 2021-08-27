@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
+
+#include "supervisor/shared/translate.h"
 
 /******************************************************************************/
 /* range iterator                                                             */
@@ -52,9 +54,12 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
 
 STATIC const mp_obj_type_t mp_type_range_it = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = range_it_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = range_it_iternext,
+        ),
 };
 
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
@@ -89,8 +94,8 @@ STATIC void range_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
     }
 }
 
-STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 3, false);
+STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 3, false);
 
     mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
     o->base.type = type;
@@ -212,16 +217,19 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 
 const mp_obj_type_t mp_type_range = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_range,
     .print = range_print,
     .make_new = range_make_new,
-    .unary_op = range_unary_op,
-    #if MICROPY_PY_BUILTINS_RANGE_BINOP
-    .binary_op = range_binary_op,
-    #endif
-    .subscr = range_subscr,
-    .getiter = range_getiter,
     #if MICROPY_PY_BUILTINS_RANGE_ATTRS
     .attr = range_attr,
     #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = range_unary_op,
+        #if MICROPY_PY_BUILTINS_RANGE_BINOP
+        .binary_op = range_binary_op,
+        #endif
+        .subscr = range_subscr,
+        .getiter = range_getiter,
+        ),
 };

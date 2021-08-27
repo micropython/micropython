@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 #
 # Create frozen modules structure for MicroPython.
 #
@@ -32,11 +37,11 @@ if len(sys.argv) > 1:
     root = sys.argv[1].rstrip("/")
     root_len = len(root)
 
-    for dirpath, dirnames, filenames in os.walk(root):
-        for f in filenames:
-            fullpath = dirpath + "/" + f
-            st = os.stat(fullpath)
-            modules.append((fullpath[root_len + 1 :], st))
+for dirpath, dirnames, filenames in os.walk(root):
+    for f in filenames:
+        fullpath = dirpath + "/" + f
+        st = os.stat(fullpath)
+        modules.append((fullpath[root_len + 1 :], st))
 
 print("#include <stdint.h>")
 print("const char mp_frozen_str_names[] = {")

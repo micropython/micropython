@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,19 +78,22 @@ typedef struct _mp_state_mem_t {
     byte *gc_pool_start;
     byte *gc_pool_end;
 
+    void *gc_lowest_long_lived_ptr;
+
     int gc_stack_overflow;
     MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
 
-    // This variable controls auto garbage collection.  If set to 0 then the
+    // This variable controls auto garbage collection.  If set to false then the
     // GC won't automatically run when gc_alloc can't find enough blocks.  But
     // you can still allocate/free memory and also explicitly call gc_collect.
-    uint16_t gc_auto_collect_enabled;
+    bool gc_auto_collect_enabled;
 
     #if MICROPY_GC_ALLOC_THRESHOLD
     size_t gc_alloc_amount;
     size_t gc_alloc_threshold;
     #endif
 
+    size_t gc_first_free_atb_index[MICROPY_ATB_INDICES];
     size_t gc_last_free_atb_index;
 
     #if MICROPY_PY_GC_COLLECT_RETVAL
@@ -101,6 +104,8 @@ typedef struct _mp_state_mem_t {
     // This is a global mutex used to make the GC thread-safe.
     mp_thread_mutex_t gc_mutex;
     #endif
+
+    void **permanent_pointers;
 } mp_state_mem_t;
 
 // This structure hold runtime and VM information.  It includes a section
@@ -114,6 +119,9 @@ typedef struct _mp_state_vm_t {
     //
 
     qstr_pool_t *last_pool;
+
+    // non-heap memory for creating a traceback if we can't allocate RAM
+    mp_obj_traceback_t mp_emergency_traceback_obj;
 
     // non-heap memory for creating an exception if we can't allocate RAM
     mp_obj_exception_t mp_emergency_exception_obj;
@@ -132,7 +140,14 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_KBD_EXCEPTION
     // exception object of type KeyboardInterrupt
     mp_obj_exception_t mp_kbd_exception;
+    // traceback object to store traceback
+    mp_obj_traceback_t mp_kbd_traceback;
     #endif
+
+    // exception object of type ReloadException
+    mp_obj_exception_t mp_reload_exception;
+    // traceback object to store traceback
+    mp_obj_traceback_t mp_reload_traceback;
 
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
@@ -180,21 +195,9 @@ typedef struct _mp_state_vm_t {
     vstr_t *repl_line;
     #endif
 
-    #if MICROPY_PY_OS_DUPTERM
-    mp_obj_t dupterm_objs[MICROPY_PY_OS_DUPTERM];
-    #endif
-
-    #if MICROPY_PY_LWIP_SLIP
-    mp_obj_t lwip_slip_stream;
-    #endif
-
     #if MICROPY_VFS
     struct _mp_vfs_mount_t *vfs_cur;
     struct _mp_vfs_mount_t *vfs_mount_table;
-    #endif
-
-    #if MICROPY_PY_BLUETOOTH
-    mp_obj_t bluetooth;
     #endif
 
     //
@@ -203,7 +206,7 @@ typedef struct _mp_state_vm_t {
 
     // pointer and sizes to store interned string data
     // (qstr_last_chunk can be root pointer but is also stored in qstr pool)
-    byte *qstr_last_chunk;
+    char *qstr_last_chunk;
     size_t qstr_last_alloc;
     size_t qstr_last_used;
 
@@ -241,6 +244,10 @@ typedef struct _mp_state_vm_t {
 typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
+
+    #if MICROPY_MAX_STACK_USAGE
+    char *stack_bottom;
+    #endif
 
     #if MICROPY_STACK_CHECK
     size_t stack_limit;

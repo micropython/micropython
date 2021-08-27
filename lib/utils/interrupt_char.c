@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,11 @@ int mp_interrupt_char = -1;
 
 void mp_hal_set_interrupt_char(int c) {
     mp_interrupt_char = c;
+}
+
+// Check to see if we've been CTRL-C'ed by autoreload or the user.
+bool mp_hal_is_interrupted(void) {
+    return MP_STATE_VM(mp_pending_exception) != NULL;
 }
 
 #endif

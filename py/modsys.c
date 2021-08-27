@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,6 +43,8 @@
 
 #if MICROPY_PY_SYS
 
+#include "genhdr/mpversion.h"
+
 // defined per port; type of these is irrelevant, just need pointer
 extern struct _mp_dummy_t mp_sys_stdin_obj;
 extern struct _mp_dummy_t mp_sys_stdout_obj;
@@ -69,12 +71,12 @@ STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
 };
 #if MICROPY_PERSISTENT_CODE_LOAD
 #define SYS_IMPLEMENTATION_ELEMS \
-    MP_ROM_QSTR(MP_QSTR_micropython), \
+    MP_ROM_QSTR(MP_QSTR_circuitpython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
     MP_ROM_INT(MPY_FILE_HEADER_INT)
 #else
 #define SYS_IMPLEMENTATION_ELEMS \
-    MP_ROM_QSTR(MP_QSTR_micropython), \
+    MP_ROM_QSTR(MP_QSTR_circuitpython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
 #endif
 #if MICROPY_PY_ATTRTUPLE
@@ -110,34 +112,13 @@ STATIC const MP_DEFINE_STR_OBJ(mp_sys_platform_obj, MICROPY_PY_SYS_PLATFORM);
 
 // exit([retval]): raise SystemExit, with optional argument given to the exception
 STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t exc;
     if (n_args == 0) {
-        exc = mp_obj_new_exception(&mp_type_SystemExit);
+        nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
     } else {
-        exc = mp_obj_new_exception_arg1(&mp_type_SystemExit, args[0]);
+        mp_raise_arg1(&mp_type_SystemExit, args[0]);
     }
-    nlr_raise(exc);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
-
-STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
-    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-    void *stream_obj = &mp_sys_stdout_obj;
-    if (n_args > 1) {
-        mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE);
-        stream_obj = MP_OBJ_TO_PTR(args[1]);
-    }
-
-    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
-    mp_obj_print_exception(&print, args[0]);
-    #else
-    (void)n_args;
-    mp_obj_print_exception(&mp_plat_print, args[0]);
-    #endif
-
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
 
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC mp_obj_t mp_sys_exc_info(void) {
@@ -153,7 +134,7 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 
     t->items[0] = MP_OBJ_FROM_PTR(mp_obj_get_type(cur_exc));
     t->items[1] = cur_exc;
-    t->items[2] = mp_const_none;
+    t->items[2] = mp_obj_exception_get_traceback_obj(cur_exc);
     return MP_OBJ_FROM_PTR(t);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_sys_exc_info_obj, mp_sys_exc_info);
@@ -242,7 +223,6 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
      * Extensions to CPython
      */
 
-    { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
     #if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
     #endif

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_MPERRNO_H
 
 #include "py/mpconfig.h"
+#include "py/obj.h"
 
 #if MICROPY_USE_INTERNAL_ERRNO
 
@@ -139,12 +140,7 @@
 
 #endif
 
-#if MICROPY_PY_UERRNO
-
-#include "py/obj.h"
-
 qstr mp_errno_to_str(mp_obj_t errno_val);
-
-#endif
+const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len);
 
 #endif // MICROPY_INCLUDED_PY_MPERRNO_H

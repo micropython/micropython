@@ -1,3 +1,6 @@
+import skip_if
+skip_if.no_reverse_ops()
+
 class A:
 
     def __init__(self, v):

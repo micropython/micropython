@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2020 Diego Elio Pettenò
+#
+# SPDX-License-Identifier: Unlicense
+
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/esp32s2/esp-idf-config/.*|ports/esp32s2/boards/.*/sdkconfig)'
+    -   id: trailing-whitespace
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+-   repo: local
+    hooks:
+    -   id: translations
+        name: Translations
+        entry: sh -c "if ! make check-translate; then make translate; fi"
+        types: [c]
+        pass_filenames: false
+        language: system
+    -   id: formatting
+        name: Formatting
+        entry: python3 tools/codeformat.py
+        types_or: [c, python]
+        language: system

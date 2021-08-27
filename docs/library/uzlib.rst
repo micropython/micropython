@@ -1,10 +1,12 @@
 :mod:`uzlib` -- zlib decompression
 ==================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uzlib
    :synopsis: zlib decompression
 
-|see_cpython_module| :mod:`python:zlib`.
+|see_cpython_module| :mod:`cpython:zlib`.
 
 This module allows to decompress binary data compressed with
 `DEFLATE algorithm <https://en.wikipedia.org/wiki/DEFLATE>`_
@@ -25,7 +27,7 @@ Functions
 
 .. class:: DecompIO(stream, wbits=0, /)
 
-   Create a `stream` wrapper which allows transparent decompression of
+   Create a ``stream`` wrapper which allows transparent decompression of
    compressed data in another *stream*. This allows to process compressed
    streams with data larger than available heap size. In addition to
    values described in :func:`decompress`, *wbits* may take values

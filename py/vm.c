@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2019 Damien P. George
- * Copyright (c) 2014-2015 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 #include "py/profile.h"
+
+#include "supervisor/linker.h"
 
 // *FORMAT-OFF*
 
@@ -203,7 +205,7 @@ static inline mp_map_elem_t *mp_map_cached_lookup(mp_map_t *map, qstr qst, uint8
 //  MP_VM_RETURN_NORMAL, sp valid, return value in *sp
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in state[0]
-mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
+mp_vm_return_kind_t PLACE_IN_ITCM(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
 #define SELECTIVE_EXC_IP (0)
 #if SELECTIVE_EXC_IP
 #define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
@@ -214,12 +216,22 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 #endif
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
+    #if MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+    #define ONE_TRUE_DISPATCH() one_true_dispatch : do { \
+        TRACE(ip); \
+        MARK_EXC_IP_GLOBAL(); \
+        goto *(void *)((char *) && entry_MP_BC_LOAD_CONST_FALSE + entry_table[*ip++]); \
+} while (0)
+    #define DISPATCH() do { goto one_true_dispatch; } while (0)
+    #else
+    #define ONE_TRUE_DISPATCH() DISPATCH()
     #define DISPATCH() do { \
         TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
         TRACE_TICK(ip, sp, false); \
         goto *entry_table[*ip++]; \
-    } while (0)
+} while (0)
+    #endif
     #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
     #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
@@ -291,7 +303,7 @@ outer_dispatch_loop:
             for (;;) {
 dispatch_loop:
 #if MICROPY_OPT_COMPUTED_GOTO
-                DISPATCH();
+                ONE_TRUE_DISPATCH();
 #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
@@ -839,7 +851,7 @@ unwind_jump:;
                         }
                         #endif
                     }
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
                 ENTRY(MP_BC_POP_EXCEPT_JUMP): {
@@ -1088,7 +1100,7 @@ unwind_jump:;
                     }
                     #endif
                     SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
-                    DISPATCH();
+                    DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
                 ENTRY(MP_BC_CALL_METHOD_VAR_KW): {
@@ -1362,7 +1374,7 @@ yield:
                 }
 
 #if !MICROPY_OPT_COMPUTED_GOTO
-                } // switch
+            } // switch
 #endif
 
 pending_exception_check:
@@ -1412,8 +1424,8 @@ pending_exception_check:
                     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE)
                     #endif
                     {
-                    MP_THREAD_GIL_EXIT();
-                    MP_THREAD_GIL_ENTER();
+                        MP_THREAD_GIL_EXIT();
+                        MP_THREAD_GIL_ENTER();
                     }
                 }
                 #endif

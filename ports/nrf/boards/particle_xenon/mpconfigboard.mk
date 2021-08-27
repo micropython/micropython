@@ -1,11 +1,9 @@
-MCU_SERIES = m4
-MCU_VARIANT = nrf52
-MCU_SUB_VARIANT = nrf52840
-SOFTDEV_VERSION = 6.1.1
-LD_FILES += boards/nrf52840_1M_256k.ld
+USB_VID = 0x2b04
+USB_PID = 0xc00e # argon is 0xc00c
+USB_PRODUCT = "Xenon"
+USB_MANUFACTURER = "Particle"
 
-NRF_DEFINES += -DNRF52840_XXAA
+MCU_CHIP = nrf52840
 
-# The nrf52-particle.cfg is not included here, it can be found in the Particle Workbench
-# Note: This requires openocd >0.10
-OPENOCD_TARGET ?= boards/$(BOARD)/nrf52-particle.cfg
+QSPI_FLASH_FILESYSTEM = 1
+EXTERNAL_FLASH_DEVICES = "MX25L3233F"

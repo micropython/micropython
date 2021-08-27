@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,15 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_BUILTINS_FLOAT
 
 #include <math.h>
 #include "py/formatfloat.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
@@ -116,9 +121,9 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     }
 }
 
-STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     switch (n_args) {
         case 0:
@@ -176,12 +181,14 @@ STATIC mp_obj_t float_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
 
 const mp_obj_type_t mp_type_float = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_float,
     .print = float_print,
     .make_new = float_make_new,
-    .unary_op = float_unary_op,
-    .binary_op = float_binary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = float_unary_op,
+        .binary_op = float_binary_op,
+        ),
 };
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
@@ -335,5 +342,23 @@ mp_obj_t mp_obj_float_binary_op(mp_binary_op_t op, mp_float_t lhs_val, mp_obj_t 
     }
     return mp_obj_new_float(lhs_val);
 }
+
+// Convert a uint64_t to a 32-bit float without invoking the double-precision math routines,
+// which are large.
+mp_float_t uint64_to_float(uint64_t ui64) {
+    // 4294967296 = 2^32
+    return (mp_float_t)((uint32_t)(ui64 >> 32) * 4294967296.0f + (uint32_t)(ui64 & 0xffffffff));
+}
+
+// Convert a uint64_t to a 32-bit float to a uint64_t without invoking extra math routines.
+// which are large.
+// Assume f >= 0.
+uint64_t float_to_uint64(float f) {
+    // 4294967296 = 2^32
+    const uint32_t upper_half = (uint32_t)(f / 4294967296.0f);
+    const uint32_t lower_half = (uint32_t)f;
+    return (((uint64_t)upper_half) << 32) + lower_half;
+}
+#pragma GCC diagnostic pop
 
 #endif // MICROPY_PY_BUILTINS_FLOAT

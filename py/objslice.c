@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "py/obj.h"
 #include "py/runtime.h"
+
+#include "supervisor/shared/translate.h"
 
 /******************************************************************************/
 /* slice object                                                               */
@@ -85,6 +88,33 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
+    size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    if (type != &mp_type_slice) {
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot subclass slice"));
+    }
+    // check number of arguments
+    mp_arg_check_num(n_args, kw_args, 1, 3, false);
+
+    // 1st argument is the pin
+    mp_obj_t start = mp_const_none;
+    mp_obj_t stop = mp_const_none;
+    mp_obj_t step = mp_const_none;
+    if (n_args == 1) {
+        stop = args[0];
+    } else {
+        start = args[0];
+        stop = args[1];
+        if (n_args == 3) {
+            step = args[2];
+        }
+    }
+
+    return mp_obj_new_slice(start, stop, step);
+}
+#endif
+
 #if MICROPY_PY_BUILTINS_SLICE_INDICES && !MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_indices), MP_ROM_PTR(&slice_indices_obj) },
@@ -96,6 +126,9 @@ const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
+    #if MICROPY_PY_BUILTINS_SLICE_INDICES || MICROPY_PY_BUILTINS_SLICE_ATTRS
+    .make_new = slice_make_new,
+    #endif
     #if MICROPY_PY_BUILTINS_SLICE_ATTRS
     .attr = slice_attr,
     #elif MICROPY_PY_BUILTINS_SLICE_INDICES
@@ -124,7 +157,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     } else {
         step = mp_obj_get_int(self->step);
         if (step == 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("slice step can't be zero"));
+            mp_raise_ValueError(MP_ERROR_TEXT("slice step cannot be zero"));
         }
     }
 

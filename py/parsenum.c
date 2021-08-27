@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

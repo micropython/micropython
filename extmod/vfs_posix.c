@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017-2018 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2017-2018 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -31,7 +10,7 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 
-#if MICROPY_VFS_POSIX
+#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 
 #include <stdio.h>
 #include <string.h>
@@ -92,8 +71,8 @@ STATIC mp_import_stat_t mp_vfs_posix_import_stat(void *self_in, const char *path
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     mp_obj_vfs_posix_t *vfs = m_new_obj(mp_obj_vfs_posix_t);
     vfs->base.type = type;
@@ -367,15 +346,19 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
 STATIC const mp_vfs_proto_t vfs_posix_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = mp_vfs_posix_import_stat,
 };
 
 const mp_obj_type_t mp_type_vfs_posix = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_VfsPosix,
-    .make_new = vfs_posix_make_new,
-    .protocol = &vfs_posix_proto,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
+    .make_new = vfs_posix_make_new,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &vfs_posix_proto,
+        ),
 };
 
 #endif // MICROPY_VFS_POSIX

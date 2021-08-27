@@ -1,7 +1,7 @@
 # test importing of .mpy files with native code (x64 only)
 
 try:
-    import usys, uio, uos
+    import sys, uio, uos
 
     uio.IOBase
     uos.mount
@@ -9,7 +9,7 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
-if not (usys.platform == "linux" and usys.maxsize > 2 ** 32):
+if not (sys.platform == "linux" and sys.maxsize > 2 ** 32):
     print("SKIP")
     raise SystemExit
 
@@ -52,11 +52,11 @@ class UserFS:
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x05\xff\x00\x10',
+    '/mod0.mpy': b'C\x05\xff\x00\x10',
 
     # test loading of viper and asm
     '/mod1.mpy': (
-        b'M\x05\x0b\x1f\x20' # header
+        b'C\x05\x0b\x1f\x20' # header
 
         b'\x20' # n bytes, bytecode
             b'\x00\x08\x02m\x02m' # prelude
@@ -78,7 +78,7 @@ user_files = {
 
     # test loading viper with additional scope flags and relocation
     '/mod2.mpy': (
-        b'M\x05\x0b\x1f\x20' # header
+        b'C\x05\x0b\x1f\x20' # header
 
         b'\x20' # n bytes, bytecode
             b'\x00\x08\x02m\x02m' # prelude
@@ -90,7 +90,7 @@ user_files = {
         b'\x12' # n bytes(=4), viper code
             b'\x00\x00\x00\x00' # dummy machine code
             b'\x00' # n_qstr
-            b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
+            b'\x81\x60' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
             b'\x00\x00' # n_obj, n_raw_code
             b'\x06rodata' # rodata, 6 bytes
             b'\x04' # bss, 4 bytes
@@ -101,7 +101,7 @@ user_files = {
 
 # create and mount a user filesystem
 uos.mount(UserFS(user_files), "/userfs")
-usys.path.append("/userfs")
+sys.path.append("/userfs")
 
 # import .mpy files from the user filesystem
 for i in range(len(user_files)):
@@ -114,4 +114,4 @@ for i in range(len(user_files)):
 
 # unmount and undo path addition
 uos.umount("/userfs")
-usys.path.pop()
+sys.path.pop()

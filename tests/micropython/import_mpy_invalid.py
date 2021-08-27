@@ -1,7 +1,7 @@
 # test importing of invalid .mpy files
 
 try:
-    import usys, uio, uos
+    import sys, uio, uos
 
     uio.IOBase
     uos.mount
@@ -14,6 +14,9 @@ class UserFile(uio.IOBase):
     def __init__(self, data):
         self.data = memoryview(data)
         self.pos = 0
+
+    def read(self):
+        return self.data
 
     def readinto(self, buf):
         n = min(len(buf), len(self.data) - self.pos)
@@ -54,16 +57,16 @@ user_files = {
 
 # create and mount a user filesystem
 uos.mount(UserFS(user_files), "/userfs")
-usys.path.append("/userfs")
+sys.path.append("/userfs")
 
 # import .mpy files from the user filesystem
 for i in range(len(user_files)):
     mod = "mod%u" % i
     try:
         __import__(mod)
-    except ValueError as er:
-        print(mod, "ValueError", er)
+    except Exception as e:
+        print(mod, type(e).__name__, e)
 
 # unmount and undo path addition
 uos.umount("/userfs")
-usys.path.pop()
+sys.path.pop()

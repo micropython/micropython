@@ -218,6 +218,7 @@ STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_loca
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),
@@ -225,16 +226,20 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     .print = MP_VFS_LFSx(file_print),
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &MP_VFS_LFSx(fileio_stream_p),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &MP_VFS_LFSx(fileio_stream_p),
+        ),
 };
 #endif
 
 STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),
@@ -243,10 +248,13 @@ STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TextIOWrapper,
     .print = MP_VFS_LFSx(file_print),
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &MP_VFS_LFSx(textio_stream_p),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &MP_VFS_LFSx(textio_stream_p),
+        ),
 };

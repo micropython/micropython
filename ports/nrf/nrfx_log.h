@@ -1,84 +1,138 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
+/**
+ * Copyright (c) 2017 - 2018, Nordic Semiconductor ASA
  *
- * The MIT License (MIT)
+ * All rights reserved.
  *
- * Copyright (c) 2018 Glenn Ruben Bakke
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * 2. Redistributions in binary form, except as embedded into a Nordic
+ *    Semiconductor ASA integrated circuit in a product or a software update for
+ *    such product, must reproduce the above copyright notice, this list of
+ *    conditions and the following disclaimer in the documentation and/or other
+ *    materials provided with the distribution.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ * 3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ *    contributors may be used to endorse or promote products derived from this
+ *    software without specific prior written permission.
+ *
+ * 4. This software, with or without modification, must only be used with a
+ *    Nordic Semiconductor ASA integrated circuit.
+ *
+ * 5. Any software provided in binary form under this license must not be reverse
+ *    engineered, decompiled, modified and/or disassembled.
+ *
+ * THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef NRFX_LOG_H
-#define NRFX_LOG_H
+#ifndef NRFX_LOG_H__
+#define NRFX_LOG_H__
 
-#include <stdio.h>
-#include "mphalport.h"
-#include "nrfx_config.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define LOG_TEST_UART 1
+/**
+ * @defgroup nrfx_log nrfx_log.h
+ * @{
+ * @ingroup nrfx
+ *
+ * @brief This file contains macros that should be implemented according to
+ *        the needs of the host environment into which @em nrfx is integrated.
+ */
 
-#define TEST_MODULE_IMPL(x, y) LOG_TEST_##x == LOG_TEST_##y
-#define TEST_MODULE(x, y) TEST_MODULE_IMPL(x, y)
+/**
+ * @brief Macro for logging a message with the severity level ERROR.
+ *
+ * @param format  printf-style format string, optionally followed by arguments
+ *                to be formatted and inserted in the resulting string.
+ */
+#define NRFX_LOG_ERROR(format, ...)
 
-#if (!defined(NRFX_LOG_ENABLED) || (NRFX_LOG_ENABLED == 0)) || \
-    (TEST_MODULE(NRFX_LOG_MODULE, UART) && defined(NRFX_LOG_UART_DISABLED) && NRFX_LOG_UART_DISABLED)
+/**
+ * @brief Macro for logging a message with the severity level WARNING.
+ *
+ * @param format  printf-style format string, optionally followed by arguments
+ *                to be formatted and inserted in the resulting string.
+ */
+#define NRFX_LOG_WARNING(format, ...)
 
-    #define NRFX_LOG_DEBUG(fmt, ...)
-    #define NRFX_LOG_ERROR(fmt, ...)
-    #define NRFX_LOG_WARNING(fmt, ...)
-    #define NRFX_LOG_INFO(fmt, ...)
+/**
+ * @brief Macro for logging a message with the severity level INFO.
+ *
+ * @param format  printf-style format string, optionally followed by arguments
+ *                to be formatted and inserted in the resulting string.
+ */
+#define NRFX_LOG_INFO(format, ...)
 
-    #define NRFX_LOG_HEXDUMP_ERROR(p_memory, length)
-    #define NRFX_LOG_HEXDUMP_WARNING(p_memory, length)
-    #define NRFX_LOG_HEXDUMP_INFO(p_memory, length)
-    #define NRFX_LOG_HEXDUMP_DEBUG(p_memory, length)
-    #define NRFX_LOG_ERROR_STRING_GET(error_code) ""
-
-#else
-
-    #define VALUE_TO_STR(x) #x
-    #define VALUE(x) VALUE_TO_STR(x)
-
-    #define LOG_PRINTF(fmt, ...) \
-    do { \
-        printf("%s: ", VALUE(NRFX_LOG_MODULE)); \
-        printf(fmt,##__VA_ARGS__); \
-        printf("\n"); \
-    } while (0)
-
-    #define NRFX_LOG_DEBUG   LOG_PRINTF
-    #define NRFX_LOG_ERROR   LOG_PRINTF
-    #define NRFX_LOG_WARNING LOG_PRINTF
-    #define NRFX_LOG_INFO    LOG_PRINTF
+/**
+ * @brief Macro for logging a message with the severity level DEBUG.
+ *
+ * @param format  printf-style format string, optionally followed by arguments
+ *                to be formatted and inserted in the resulting string.
+ */
+#define NRFX_LOG_DEBUG(format, ...)
 
 
-    #define NRFX_LOG_HEXDUMP_ERROR(p_memory, length)
+/**
+ * @brief Macro for logging a memory dump with the severity level ERROR.
+ *
+ * @param[in] p_memory  Pointer to the memory region to be dumped.
+ * @param[in] length    Length of the memory region in bytes.
+ */
+#define NRFX_LOG_HEXDUMP_ERROR(p_memory, length)
 
-    #define NRFX_LOG_HEXDUMP_WARNING(p_memory, length)
+/**
+ * @brief Macro for logging a memory dump with the severity level WARNING.
+ *
+ * @param[in] p_memory  Pointer to the memory region to be dumped.
+ * @param[in] length    Length of the memory region in bytes.
+ */
+#define NRFX_LOG_HEXDUMP_WARNING(p_memory, length)
 
-    #define NRFX_LOG_HEXDUMP_INFO(p_memory, length)
+/**
+ * @brief Macro for logging a memory dump with the severity level INFO.
+ *
+ * @param[in] p_memory  Pointer to the memory region to be dumped.
+ * @param[in] length    Length of the memory region in bytes.
+ */
+#define NRFX_LOG_HEXDUMP_INFO(p_memory, length)
 
-    #define NRFX_LOG_HEXDUMP_DEBUG(p_memory, length)
+/**
+ * @brief Macro for logging a memory dump with the severity level DEBUG.
+ *
+ * @param[in] p_memory  Pointer to the memory region to be dumped.
+ * @param[in] length    Length of the memory region in bytes.
+ */
+#define NRFX_LOG_HEXDUMP_DEBUG(p_memory, length)
 
-    #define NRFX_LOG_ERROR_STRING_GET(error_code) \
-    nrfx_error_code_lookup(error_code)
 
-#endif // NRFX_LOG_ENABLED
+/**
+ * @brief Macro for getting the textual representation of a given error code.
+ *
+ * @param[in] error_code  Error code.
+ *
+ * @return String containing the textual representation of the error code.
+ */
+#define NRFX_LOG_ERROR_STRING_GET(error_code)
 
-#endif // NRFX_LOG_H
+/** @} */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // NRFX_LOG_H__

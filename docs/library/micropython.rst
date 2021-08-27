@@ -1,6 +1,8 @@
 :mod:`micropython` -- access and control MicroPython internals
 ==============================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: micropython
    :synopsis: access and control MicroPython internals
 
@@ -44,17 +46,6 @@ Functions
      they occurred at; at levels 3 and higher line numbers are not stored.
 
    The default optimisation level is usually level 0.
-
-.. function:: alloc_emergency_exception_buf(size)
-
-   Allocate *size* bytes of RAM for the emergency exception buffer (a good
-   size is around 100 bytes).  The buffer is used to create exceptions in cases
-   when normal RAM allocation would fail (eg within an interrupt handler) and
-   therefore give useful traceback information in these situations.
-
-   A good way to use this function is to put it at the start of your main script
-   (eg ``boot.py`` or ``main.py``) and then the emergency exception buffer will be active
-   for all the code following it.
 
 .. function:: mem_info([verbose])
 
@@ -141,9 +132,7 @@ Functions
    a bound method, passing this directly will fail. This is because creating a
    reference to a bound method causes memory allocation. A solution is to
    create a reference to the method in the class constructor and to pass that
-   reference to `schedule()`. This is discussed in detail here
-   :ref:`reference documentation <isr_rules>` under "Creation of Python
-   objects".
+   reference to `schedule()`.
 
    There is a finite queue to hold the scheduled functions and `schedule()`
    will raise a `RuntimeError` if the queue is full.

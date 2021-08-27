@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,6 +33,7 @@
 #include "py/objtuple.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_STRUCT
 
@@ -96,7 +97,10 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
             total_cnt += 1;
             size += cnt;
         } else {
-            total_cnt += cnt;
+            // Pad bytes are skipped and don't get included in the item count.
+            if (*fmt != 'x') {
+                total_cnt += cnt;
+            }
             size_t align;
             size_t sz = mp_binary_get_size(fmt_type, *fmt, &align);
             while (cnt--) {
@@ -166,7 +170,10 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
         } else {
             while (cnt--) {
                 item = mp_binary_get_val(fmt_type, *fmt, p_base, &p);
-                res->items[i++] = item;
+                // Pad bytes ('x') are just skipped.
+                if (*fmt != 'x') {
+                    res->items[i++] = item;
+                }
             }
         }
         fmt++;
@@ -177,6 +184,15 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_
 
 // This function assumes there is enough room in p to store all the values
 STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
+    size_t size;
+    size_t count = calc_size_items(mp_obj_str_get_str(fmt_in), &size);
+    if (count != n_args) {
+        #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(NULL);
+        #else
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("pack expected %d items for packing (got %d)"), count, n_args);
+        #endif
+    }
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
@@ -184,10 +200,6 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
     size_t i;
     for (i = 0; i < n_args;) {
         mp_uint_t cnt = 1;
-        if (*fmt == '\0') {
-            // more arguments given than used by format string; CPython raises struct.error here
-            break;
-        }
         if (unichar_isdigit(*fmt)) {
             cnt = get_fmt_num(&fmt);
         }
@@ -203,9 +215,14 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
             memset(p + to_copy, 0, cnt - to_copy);
             p += cnt;
         } else {
-            // If we run out of args then we just finish; CPython would raise struct.error
-            while (cnt-- && i < n_args) {
-                mp_binary_set_val(fmt_type, *fmt, args[i++], p_base, &p);
+            while (cnt--) {
+                // Pad bytes don't have a corresponding argument.
+                if (*fmt == 'x') {
+                    mp_binary_set_val(fmt_type, *fmt, MP_OBJ_NEW_SMALL_INT(0), p_base, &p);
+                } else {
+                    mp_binary_set_val(fmt_type, *fmt, args[i], p_base, &p);
+                    i++;
+                }
             }
         }
         fmt++;
@@ -213,7 +230,6 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
 }
 
 STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
-    // TODO: "The arguments must match the values required by the format exactly."
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
     vstr_init_len(&vstr, size);

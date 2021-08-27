@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,12 @@
 
 #include "py/obj.h"
 #include "py/objtuple.h"
+#include "py/objtraceback.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;
-    size_t traceback_alloc : (8 * sizeof(size_t) / 2);
-    size_t traceback_len : (8 * sizeof(size_t) / 2);
-    size_t *traceback_data;
     mp_obj_tuple_t *args;
+    mp_obj_traceback_t *traceback;
 } mp_obj_exception_t;
 
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);

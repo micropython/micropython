@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,11 +46,11 @@ STATIC const mp_obj_type_t mp_type_iobase;
 
 STATIC const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
-STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type;
     (void)n_args;
-    (void)n_kw;
     (void)args;
+    (void)kw_args;
     return MP_OBJ_FROM_PTR(&iobase_singleton);
 }
 
@@ -95,6 +95,7 @@ STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, in
 }
 
 STATIC const mp_stream_p_t iobase_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = iobase_read,
     .write = iobase_write,
     .ioctl = iobase_ioctl,
@@ -102,9 +103,12 @@ STATIC const mp_stream_p_t iobase_p = {
 
 STATIC const mp_obj_type_t mp_type_iobase = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_IOBase,
     .make_new = iobase_make_new,
-    .protocol = &iobase_p,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &iobase_p,
+        ),
 };
 
 #endif // MICROPY_PY_IO_IOBASE
@@ -118,8 +122,8 @@ typedef struct _mp_obj_bufwriter_t {
     byte buf[0];
 } mp_obj_bufwriter_t;
 
-STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, 2, false);
     size_t alloc = mp_obj_get_int(args[1]);
     mp_obj_bufwriter_t *o = m_new_obj_var(mp_obj_bufwriter_t, byte, alloc);
     o->base.type = type;
@@ -192,15 +196,19 @@ STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
 STATIC const mp_stream_p_t bufwriter_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .write = bufwriter_write,
 };
 
 STATIC const mp_obj_type_t mp_type_bufwriter = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_BufferedWriter,
     .make_new = bufwriter_make_new,
-    .protocol = &bufwriter_stream_p,
     .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &bufwriter_stream_p,
+        ),
 };
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
@@ -230,14 +238,14 @@ STATIC mp_obj_t resource_stream(mp_obj_t package_in, mp_obj_t path_in) {
     const char *path = mp_obj_str_get_data(path_in, &len);
     vstr_add_strn(&path_buf, path, len);
 
-    len = path_buf.len;
-    const char *data = mp_find_frozen_str(path_buf.buf, &len);
+    size_t file_len;
+    const char *data = mp_find_frozen_str(path_buf.buf, path_buf.len, &file_len);
     if (data != NULL) {
         mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
         o->base.type = &mp_type_bytesio;
         o->vstr = m_new_obj(vstr_t);
-        vstr_init_fixed_buf(o->vstr, len + 1, (char *)data);
-        o->vstr->len = len;
+        vstr_init_fixed_buf(o->vstr, file_len + 1, (char *)data);
+        o->vstr->len = file_len;
         o->pos = 0;
         return MP_OBJ_FROM_PTR(o);
     }

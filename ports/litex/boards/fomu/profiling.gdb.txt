@@ -1,0 +1,16 @@
+set pagination 0
+set logging file profile.txt
+set logging overwrite
+
+server define poor_profile
+set $total = $arg0
+set $i = 0
+   set logging on
+   while($i<$total)
+     set $i = $i + 1
+     cont
+     p $pc
+     bt
+   end
+   set logging off
+end

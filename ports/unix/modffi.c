@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014-2018 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@
 #include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/objint.h"
+
+#include "supervisor/shared/translate.h"
 
 /*
  * modffi uses character codes to encode a value type, based on "struct"
@@ -241,7 +243,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -299,7 +301,7 @@ STATIC mp_obj_t mod_ffi_callback(mp_obj_t rettype_in, mp_obj_t func_in, mp_obj_t
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
     }
 
     res = ffi_prep_closure_loc(o->clo, &o->cif, call_py_func, MP_OBJ_TO_PTR(func_in), o->func);
@@ -341,9 +343,9 @@ STATIC mp_obj_t ffimod_addr(mp_obj_t self_in, mp_obj_t symname_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(ffimod_addr_obj, ffimod_addr);
 
-STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)n_args;
-    (void)n_kw;
+    (void)kw_args;
 
     const char *fname = NULL;
     if (args[0] != mp_const_none) {
@@ -453,19 +455,22 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
         } else if (mp_obj_is_str(a)) {
             const char *s = mp_obj_str_get_str(a);
             values[i].ffi = (ffi_arg)(intptr_t)s;
-        } else if (((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type->buffer_p.get_buffer != NULL) {
-            mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
-            mp_buffer_info_t bufinfo;
-            int ret = o->type->buffer_p.get_buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
-            if (ret != 0) {
+        } else {
+            mp_getbuffer_fun_t get_buffer = mp_type_get_getbuffer_slot(((mp_obj_base_t *)MP_OBJ_TO_PTR(a))->type);
+            if (get_buffer != NULL) {
+                mp_obj_base_t *o = (mp_obj_base_t *)MP_OBJ_TO_PTR(a);
+                mp_buffer_info_t bufinfo;
+                int ret = get_buffer(MP_OBJ_FROM_PTR(o), &bufinfo, MP_BUFFER_READ); // TODO: MP_BUFFER_READ?
+                if (ret != 0) {
+                    goto error;
+                }
+                values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
+            } else if (mp_obj_is_type(a, &fficallback_type)) {
+                mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
+                values[i].ffi = (ffi_arg)(intptr_t)p->func;
+            } else {
                 goto error;
             }
-            values[i].ffi = (ffi_arg)(intptr_t)bufinfo.buf;
-        } else if (mp_obj_is_type(a, &fficallback_type)) {
-            mp_obj_fficallback_t *p = MP_OBJ_TO_PTR(a);
-            values[i].ffi = (ffi_arg)(intptr_t)p->func;
-        } else {
-            goto error;
         }
         valueptrs[i] = &values[i];
     }
@@ -475,14 +480,17 @@ STATIC mp_obj_t ffifunc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     return return_ffi_value(&retval, self->rettype);
 
 error:
-    mp_raise_TypeError(MP_ERROR_TEXT("don't know how to pass object to native function"));
+    mp_raise_TypeError(MP_ERROR_TEXT("Don't know how to pass object to native function"));
 }
 
 STATIC const mp_obj_type_t ffifunc_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_ffifunc,
     .print = ffifunc_print,
-    .call = ffifunc_call,
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = ffifunc_call,
+        ),
 };
 
 // FFI callback for Python function
@@ -546,7 +554,7 @@ STATIC const mp_obj_type_t opaque_type = {
 */
 
 STATIC mp_obj_t mod_ffi_open(size_t n_args, const mp_obj_t *args) {
-    return ffimod_make_new(&ffimod_type, n_args, 0, args);
+    return ffimod_make_new(&ffimod_type, n_args, args, NULL);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_ffi_open_obj, 1, 2, mod_ffi_open);
 

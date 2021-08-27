@@ -1,10 +1,12 @@
 :mod:`gc` -- control the garbage collector
 ==========================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: gc
    :synopsis: control the garbage collector
 
-|see_cpython_module| :mod:`python:gc`.
+|see_cpython_module| :mod:`cpython:gc`.
 
 Functions
 ---------
@@ -29,7 +31,7 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      This function is MicroPython extension.
+      This function is a MicroPython extension.
 
 .. function:: mem_free()
 
@@ -39,7 +41,7 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      This function is MicroPython extension.
+      This function is a MicroPython extension.
 
 .. function:: threshold([amount])
 
@@ -61,6 +63,6 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      This function is a MicroPython extension. CPython has a similar
+      This function is a a MicroPython extension. CPython has a similar
       function - ``set_threshold()``, but due to different GC
       implementations, its signature and semantics are different.

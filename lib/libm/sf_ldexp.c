@@ -17,7 +17,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice 
+ * software is freely granted, provided that this notice
  * is preserved.
  * ====================================================
  */
@@ -31,7 +31,10 @@
 	float value; int exp;
 #endif
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(!isfinite(value)||value==(float)0.0) return value;
+#pragma GCC diagnostic pop
 	value = scalbnf(value,exp);
 	//if(!finitef(value)||value==(float)0.0) errno = ERANGE;
 	return value;

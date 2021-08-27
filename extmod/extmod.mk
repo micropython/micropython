@@ -28,6 +28,8 @@ SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs1.c \
 	lfs1_util.c \
 	)
+else
+CFLAGS_MOD += -DMICROPY_VFS_LFS1=0
 endif
 
 ifeq ($(MICROPY_VFS_LFS2),1)
@@ -37,6 +39,8 @@ SRC_MOD += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2.c \
 	lfs2_util.c \
 	)
+else
+CFLAGS_MOD += -DMICROPY_VFS_LFS2=0
 
 $(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
 endif
@@ -228,4 +232,3 @@ CFLAGS_MOD += -DMICROPY_PY_BTREE=1
 $(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
-

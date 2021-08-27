@@ -20,13 +20,18 @@ ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
 ifndef BUILD_VERBOSE
-$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
+$(info Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
 BUILD_VERBOSE = 0
 endif
 ifeq ($(BUILD_VERBOSE),0)
 Q = @
+STEPECHO = @:
+else ifeq ($(BUILD_VERBOSE),1)
+Q = @
+STEPECHO = @echo
 else
 Q =
+STEPECHO = @echo
 endif
 
 # default settings; can be overridden in main Makefile
@@ -34,14 +39,23 @@ endif
 PY_SRC ?= $(TOP)/py
 BUILD ?= build
 
-RM = rm
 ECHO = @echo
-CP = cp
-MKDIR = mkdir
-SED = sed
+
 CAT = cat
+CD = cd
+CP = cp
+FIND = find
+MKDIR = mkdir
+PYTHON = python
+# Set default python interpreters
+PYTHON2 ?= $(which python2 || which python2.7)
+PYTHON3 ?= python3
+RM = rm
+RSYNC = rsync
+SED = sed
 TOUCH = touch
-PYTHON = python3
+# Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
+NPROC = $(PYTHON3) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
@@ -53,10 +67,12 @@ SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
 
-MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
-MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
+MAKE_FROZEN = $(PYTHON3) $(TOP)/tools/make-frozen.py
 MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
-MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
+MPY_TOOL = $(PYTHON3) $(TOP)/tools/mpy-tool.py
+PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
+
+MPY_LIB_DIR = $(TOP)/../micropython-lib
 
 MPY_LIB_DIR = $(TOP)/../micropython-lib
 

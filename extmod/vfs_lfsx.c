@@ -113,9 +113,9 @@ const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     return path;
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(lfs_make_allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
 
     MP_OBJ_VFS_LFSx *self = m_new0(MP_OBJ_VFS_LFSx, 1);
     self->base.type = type;
@@ -484,12 +484,15 @@ STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
 
 const mp_obj_type_t MP_TYPE_VFS_LFSx = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     #if LFS_BUILD_VERSION == 1
     .name = MP_QSTR_VfsLfs1,
     #else
     .name = MP_QSTR_VfsLfs2,
     #endif
     .make_new = MP_VFS_LFSx(make_new),
-    .protocol = &MP_VFS_LFSx(proto),
     .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &MP_VFS_LFSx(proto),
+        ),
 };

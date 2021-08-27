@@ -1,0 +1,8 @@
+USB_VID = 0x2786
+USB_PID = 0x9207
+USB_PRODUCT = "BLE-SS dev board Multi Sensor"
+USB_MANUFACTURER = "Switch Science, Inc."
+
+MCU_CHIP = nrf52840
+
+INTERNAL_FLASH_FILESYSTEM = 1

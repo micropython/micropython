@@ -29,24 +29,22 @@ RuntimeError:
 ame__
 mport 
 
-builtins        micropython     _thread         _uasyncio
-btree           cexample        cmath           cppexample
-ffi             framebuf        gc              math
-termios         uarray          ubinascii       ucollections
-ucryptolib      uctypes         uerrno          uhashlib
-uheapq          uio             ujson           umachine
+builtins        micropython     _thread         array
+btree           cexample        cmath           collections
+cppexample      ffi             framebuf        gc
+hashlib         math            qrio            sys
+termios         ubinascii       uctypes         uerrno
+uheapq          uio             ujson           ulab
 uos             urandom         ure             uselect
-usocket         ussl            ustruct         usys
-utime           utimeq          uwebsocket      uzlib
+ustruct         utime           utimeq          uzlib
 ime
 
 utime           utimeq
 
-argv            atexit          byteorder       exc_info
-exit            getsizeof       implementation  maxsize
-modules         path            platform        print_exception
-stderr          stdin           stdout          version
-version_info
+argv            byteorder       exc_info        exit
+getsizeof       implementation  maxsize         modules
+path            platform        stderr          stdin
+stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -164,11 +162,11 @@ cpp None
 frzstr1
 frzstr1.py
 frzmpy1
-frzmpy1.py
+.frozen/frzmpy1.py
 frzstr_pkg1.__init__
 frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-frzmpy_pkg1/__init__.py 1
+.frozen/frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod

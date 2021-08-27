@@ -3831,7 +3831,7 @@ int lfs2_fs_rawtraverse(lfs2_t *lfs2,
                 if (err) {
                     return err;
                 }
-            } else if (includeorphans && 
+            } else if (includeorphans &&
                     lfs2_tag_type3(tag) == LFS2_TYPE_DIRSTRUCT) {
                 for (int i = 0; i < 2; i++) {
                     err = cb(data, (&ctz.head)[i]);
@@ -5389,4 +5389,3 @@ int lfs2_migrate(lfs2_t *lfs2, const struct lfs2_config *cfg) {
     return err;
 }
 #endif
-

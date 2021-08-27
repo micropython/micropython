@@ -1,9 +1,5 @@
-# test the builtin reverse() function
-try:
-    reversed
-except:
-    print("SKIP")
-    raise SystemExit
+import skip_if
+skip_if.no_reversed()
 
 # list
 print(list(reversed([])))

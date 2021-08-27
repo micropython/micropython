@@ -1,35 +1,16 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Damien P. George
- * Copyright (c) 2016-2017 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2016-2017 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include <string.h>
 
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_UTIMEQ
 
@@ -74,8 +55,8 @@ STATIC bool time_less_than(struct qentry *item, struct qentry *parent) {
     return res && res < (MODULO / 2);
 }
 
-STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
     mp_uint_t alloc = mp_obj_get_int(args[0]);
     mp_obj_utimeq_t *o = m_new_obj_var(mp_obj_utimeq_t, struct qentry, alloc);
     o->base.type = type;
@@ -126,7 +107,7 @@ STATIC mp_obj_t mod_utimeq_heappush(size_t n_args, const mp_obj_t *args) {
     mp_obj_t heap_in = args[0];
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == heap->alloc) {
-        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("queue overflow"));
+        mp_raise_IndexError(MP_ERROR_TEXT("queue overflow"));
     }
     mp_uint_t l = heap->len;
     heap->items[l].time = MP_OBJ_SMALL_INT_VALUE(args[1]);
@@ -142,7 +123,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_utimeq_heappush_obj, 4, 4, mod_ut
 STATIC mp_obj_t mod_utimeq_heappop(mp_obj_t heap_in, mp_obj_t list_ref) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
     mp_obj_list_t *ret = MP_OBJ_TO_PTR(list_ref);
     if (!mp_obj_is_type(list_ref, &mp_type_list) || ret->len < 3) {
@@ -167,7 +148,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_utimeq_heappop_obj, mod_utimeq_heappop);
 STATIC mp_obj_t mod_utimeq_peektime(mp_obj_t heap_in) {
     mp_obj_utimeq_t *heap = utimeq_get_heap(heap_in);
     if (heap->len == 0) {
-        mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty heap"));
     }
 
     struct qentry *item = &heap->items[0];
@@ -212,10 +193,13 @@ STATIC MP_DEFINE_CONST_DICT(utimeq_locals_dict, utimeq_locals_dict_table);
 
 STATIC const mp_obj_type_t utimeq_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_utimeq,
     .make_new = utimeq_make_new,
-    .unary_op = utimeq_unary_op,
     .locals_dict = (void *)&utimeq_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = utimeq_unary_op,
+        ),
 };
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {

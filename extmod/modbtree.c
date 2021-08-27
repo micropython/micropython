@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2016 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2016 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <string.h>
@@ -251,7 +230,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
-    mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_btree_t *self = mp_obj_cast_to_native_base(self_in, &btree_type);
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
@@ -316,13 +295,16 @@ STATIC MP_DEFINE_CONST_DICT(btree_locals_dict, btree_locals_dict_table);
 STATIC const mp_obj_type_t btree_type = {
     { &mp_type_type },
     // Save on qstr's, reuse same as for module
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_btree,
     .print = btree_print,
-    .getiter = btree_getiter,
-    .iternext = btree_iternext,
-    .binary_op = btree_binary_op,
-    .subscr = btree_subscr,
     .locals_dict = (void *)&btree_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = btree_getiter,
+        .iternext = btree_iternext,
+        .binary_op = btree_binary_op,
+        .subscr = btree_subscr,
+        ),
 };
 #endif
 

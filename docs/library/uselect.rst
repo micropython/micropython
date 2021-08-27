@@ -1,13 +1,15 @@
 :mod:`uselect` -- wait for events on a set of streams
 ========================================================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uselect
    :synopsis: wait for events on a set of streams
 
-|see_cpython_module| :mod:`python:select`.
+|see_cpython_module| :mod:`cpython:select`.
 
 This module provides functions to efficiently wait for events on multiple
-`streams <stream>` (select streams which are ready for operations).
+``stream`` objects (select streams which are ready for operations).
 
 Functions
 ---------
@@ -33,7 +35,7 @@ Methods
 
 .. method:: poll.register(obj[, eventmask])
 
-   Register `stream` *obj* for polling. *eventmask* is logical OR of:
+   Register ``stream`` *obj* for polling. *eventmask* is logical OR of:
 
    * ``uselect.POLLIN``  - data available for reading
    * ``uselect.POLLOUT`` - more data can be written
@@ -84,7 +86,7 @@ Methods
 .. method:: poll.ipoll(timeout=-1, flags=0, /)
 
    Like :meth:`poll.poll`, but instead returns an iterator which yields a
-   `callee-owned tuple`. This function provides an efficient, allocation-free
+   ``callee-owned tuples``. This function provides efficient, allocation-free
    way to poll on streams.
 
    If *flags* is 1, one-shot behaviour for events is employed: streams for

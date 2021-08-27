@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/stream.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -79,7 +81,7 @@ STATIC mp_obj_t mp_builtin___build_class__(size_t n_args, const mp_obj_t *args) 
     meta_args[2] = class_locals; // dict of members
     mp_obj_t new_class = mp_call_function_n_kw(meta, 3, 0, meta_args);
 
-    // store into cell if neede
+    // store into cell if needed
     if (cell != mp_const_none) {
         mp_obj_cell_set(cell, new_class);
     }
@@ -375,7 +377,7 @@ STATIC mp_obj_t mp_builtin_ord(mp_obj_t o_in) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     mp_raise_TypeError(MP_ERROR_TEXT("ord expects a character"));
     #else
-    mp_raise_msg_varg(&mp_type_TypeError,
+    mp_raise_TypeError_varg(
         MP_ERROR_TEXT("ord() expected a character, but string of length %d found"), (int)len);
     #endif
 }
@@ -398,10 +400,11 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
 STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_sep, ARG_end, ARG_file };
+    enum { ARG_sep, ARG_end, ARG_flush, ARG_file };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sep, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__space_)} },
         { MP_QSTR_end, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR__0x0a_)} },
+        { MP_QSTR_flush, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
         { MP_QSTR_file, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&mp_sys_stdout_obj)} },
         #endif
@@ -441,6 +444,9 @@ STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map
     }
     #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
     mp_stream_write_adaptor(print.data, end_data, u.len[1]);
+    if (u.args[ARG_flush].u_bool) {
+        mp_stream_flush(MP_OBJ_FROM_PTR(print.data));
+    }
     #else
     mp_print_strn(&mp_plat_print, end_data, u.len[1], 0, 0, 0);
     #endif
@@ -478,13 +484,13 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
             return o_in;
         }
 
-        #if !MICROPY_PY_BUILTINS_ROUND_INT
-        mp_raise_NotImplementedError(NULL);
-        #else
         mp_int_t num_dig = mp_obj_get_int(args[1]);
         if (num_dig >= 0) {
             return o_in;
         }
+        #if !MICROPY_PY_BUILTINS_ROUND_INT
+        mp_raise_NotImplementedError(NULL);
+        #else
 
         mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
         mp_obj_t half_mult = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
@@ -547,7 +553,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
     if (n_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
-    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
+    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, args, NULL);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;
@@ -749,12 +755,17 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IndentationError), MP_ROM_PTR(&mp_type_IndentationError) },
     { MP_ROM_QSTR(MP_QSTR_IndexError), MP_ROM_PTR(&mp_type_IndexError) },
     { MP_ROM_QSTR(MP_QSTR_KeyboardInterrupt), MP_ROM_PTR(&mp_type_KeyboardInterrupt) },
+    { MP_ROM_QSTR(MP_QSTR_ReloadException), MP_ROM_PTR(&mp_type_ReloadException) },
     { MP_ROM_QSTR(MP_QSTR_KeyError), MP_ROM_PTR(&mp_type_KeyError) },
     { MP_ROM_QSTR(MP_QSTR_LookupError), MP_ROM_PTR(&mp_type_LookupError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError), MP_ROM_PTR(&mp_type_MemoryError) },
+    { MP_ROM_QSTR(MP_QSTR_MpyError), MP_ROM_PTR(&mp_type_MpyError) },
     { MP_ROM_QSTR(MP_QSTR_NameError), MP_ROM_PTR(&mp_type_NameError) },
     { MP_ROM_QSTR(MP_QSTR_NotImplementedError), MP_ROM_PTR(&mp_type_NotImplementedError) },
     { MP_ROM_QSTR(MP_QSTR_OSError), MP_ROM_PTR(&mp_type_OSError) },
+    { MP_ROM_QSTR(MP_QSTR_TimeoutError), MP_ROM_PTR(&mp_type_TimeoutError) },
+    { MP_ROM_QSTR(MP_QSTR_ConnectionError), MP_ROM_PTR(&mp_type_ConnectionError) },
+    { MP_ROM_QSTR(MP_QSTR_BrokenPipeError), MP_ROM_PTR(&mp_type_BrokenPipeError) },
     { MP_ROM_QSTR(MP_QSTR_OverflowError), MP_ROM_PTR(&mp_type_OverflowError) },
     { MP_ROM_QSTR(MP_QSTR_RuntimeError), MP_ROM_PTR(&mp_type_RuntimeError) },
     #if MICROPY_PY_ASYNC_AWAIT

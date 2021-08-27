@@ -49,7 +49,7 @@
 /******************************************************************************/
 // Memory allocation
 
-#define m_malloc(n)                     (m_malloc_dyn((n)))
+#define m_malloc(n,_)                   (m_malloc_dyn((n)))
 #define m_free(ptr)                     (m_free_dyn((ptr)))
 #define m_realloc(ptr, new_num_bytes)   (m_realloc_dyn((ptr), (new_num_bytes)))
 
@@ -125,6 +125,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_get_array(o, len, items)     (mp_obj_get_array_dyn((o), (len), (items)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
+#define mp_obj_assert_native_inited(o)      (mp_fun_table.assert_native_inited((o)))
+
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
     if (type == &mp_type_str) {
         return mp_obj_new_str((const char *)data, len);
@@ -138,7 +140,9 @@ static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const
 
     if (MP_OBJ_FROM_PTR(self_type) == native_type) {
         return self_in;
-    } else if (self_type->parent != native_type) {
+    }
+    mp_parent_t parent = mp_type_get_parent_slot(self_type);
+    if (parent != native_type) {
         // The self_in object is not a direct descendant of native_type, so fail the cast.
         // This is a very simple version of mp_obj_is_subclass_fast that could be improved.
         return MP_OBJ_NULL;
@@ -162,6 +166,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     return mp_fun_table.call_function_n_kw(mp_fun_table.load_name(MP_QSTR_len), 1, &o);
 }
 
+
 /******************************************************************************/
 // General runtime functions
 
@@ -183,7 +188,10 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_call_function_n_kw(fun, n_args, n_kw, args) \
     (mp_fun_table.call_function_n_kw((fun), (n_args) | ((n_kw) << 8), args))
 
-#define mp_arg_check_num(n_args, n_kw, n_args_min, n_args_max, takes_kw) \
+#define mp_arg_check_num(n_args, kw_args, n_args_min, n_args_max, takes_kw) \
+    (mp_fun_table.arg_check_num_sig((n_args), (kw_args) ? kw_args->used : 0, MP_OBJ_FUN_MAKE_SIG((n_args_min), (n_args_max), (takes_kw))))
+
+#define mp_arg_check_num_mp(n_args, n_kw, n_args_min, n_args_max, takes_kw) \
     (mp_fun_table.arg_check_num_sig((n_args), (n_kw), MP_OBJ_FUN_MAKE_SIG((n_args_min), (n_args_max), (takes_kw))))
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
@@ -215,7 +223,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_obj_new_exception_arg1(e_type, arg)  (mp_obj_new_exception_arg1_dyn((e_type), (arg)))
 
 #define nlr_raise(o)                            (mp_raise_dyn(o))
-#define mp_raise_msg(type, msg)                 (mp_fun_table.raise_msg((type), (msg)))
+#define mp_raise_msg(type, msg)                 (mp_fun_table.raise_msg_str((type), (msg)))
 #define mp_raise_OSError(er)                    (mp_raise_OSError_dyn(er))
 #define mp_raise_NotImplementedError(msg)       (mp_raise_msg(&mp_type_NotImplementedError, (msg)))
 #define mp_raise_TypeError(msg)                 (mp_raise_msg(&mp_type_TypeError, (msg)))
@@ -231,6 +239,13 @@ static NORETURN inline void mp_raise_dyn(mp_obj_t o) {
     for (;;) {
     }
 }
+
+static NORETURN inline void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    mp_fun_table.raise(mp_obj_new_exception_arg1_dyn(exc_type, arg));
+    for (;;) {
+    }
+}
+
 
 static inline void mp_raise_OSError_dyn(int er) {
     mp_obj_t args[1] = { MP_OBJ_NEW_SMALL_INT(er) };

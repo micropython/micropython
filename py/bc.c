@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,6 +32,8 @@
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -83,10 +85,10 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, 
     mp_arg_error_terse_mismatch();
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NORMAL
     (void)f;
-    mp_raise_msg_varg(&mp_type_TypeError,
+    mp_raise_TypeError_varg(
         MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), expected, given);
     #elif MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    mp_raise_msg_varg(&mp_type_TypeError,
+    mp_raise_TypeError_varg(
         MP_ERROR_TEXT("%q() takes %d positional arguments but %d were given"),
         mp_obj_fun_get_name(MP_OBJ_FROM_PTR(f)), expected, given);
     #endif
@@ -200,10 +202,17 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
+            if (MP_UNLIKELY(!mp_obj_is_qstr(wanted_arg_name))) {
+                #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_TERSE
+                mp_raise_TypeError(MP_ERROR_TEXT("unexpected keyword argument"));
+                #else
+                mp_raise_TypeError(MP_ERROR_TEXT("keywords must be strings"));
+                #endif
+            }
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
                 if (wanted_arg_name == arg_names[j]) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
-                        mp_raise_msg_varg(&mp_type_TypeError,
+                        mp_raise_TypeError_varg(
                             MP_ERROR_TEXT("function got multiple values for argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                     }
                     code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
@@ -215,7 +224,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                 mp_raise_TypeError(MP_ERROR_TEXT("unexpected keyword argument"));
                 #else
-                mp_raise_msg_varg(&mp_type_TypeError,
+                mp_raise_TypeError_varg(
                     MP_ERROR_TEXT("unexpected keyword argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                 #endif
             }
@@ -241,7 +250,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         // Check that all mandatory positional args are specified
         while (d < &code_state->state[n_state]) {
             if (*d++ == MP_OBJ_NULL) {
-                mp_raise_msg_varg(&mp_type_TypeError,
+                mp_raise_TypeError_varg(
                     MP_ERROR_TEXT("function missing required positional argument #%d"), &code_state->state[n_state] - d);
             }
         }
@@ -257,8 +266,9 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
-                    mp_raise_msg_varg(&mp_type_TypeError,
-                        MP_ERROR_TEXT("function missing required keyword argument '%q'"), MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
+                    mp_raise_TypeError_varg(
+                        MP_ERROR_TEXT("function missing required keyword argument '%q'"),
+                        MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
                 }
             }
         }

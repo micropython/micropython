@@ -45,9 +45,9 @@ MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
-MP_SCOPE_FLAG_VIPERRELOC = 0x10
-MP_SCOPE_FLAG_VIPERRODATA = 0x20
-MP_SCOPE_FLAG_VIPERBSS = 0x40
+MP_SCOPE_FLAG_VIPERRELOC = 0x20
+MP_SCOPE_FLAG_VIPERRODATA = 0x40
+MP_SCOPE_FLAG_VIPERBSS = 0x80
 MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE = 1
 MICROPY_PY_BUILTINS_STR_UNICODE = 2
 MP_SMALL_INT_BITS = 31
@@ -762,7 +762,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
     fun_table = {
-        key: 67 + idx
+        key: 68 + idx
         for idx, key in enumerate(
             [
                 "mp_type_type",
@@ -912,7 +912,13 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     # MPY: header
     out.write_bytes(
         bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS, QSTR_WINDOW_SIZE]
+            [
+                ord("C"),
+                MPY_VERSION,
+                env.arch.mpy_feature,
+                MP_SMALL_INT_BITS,
+                QSTR_WINDOW_SIZE,
+            ]
         )
     )
 

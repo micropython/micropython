@@ -1,10 +1,12 @@
 :mod:`uheapq` -- heap queue algorithm
 =====================================
 
+.. include:: ../templates/unsupported_in_circuitpython.inc
+
 .. module:: uheapq
    :synopsis: heap queue algorithm
 
-|see_cpython_module| :mod:`python:heapq`.
+|see_cpython_module| :mod:`cpython:heapq`.
 
 This module implements the
 `min heap queue algorithm <https://en.wikipedia.org/wiki/Heap_%28data_structure%29>`_.
@@ -23,7 +25,7 @@ Functions
 
    Pop the first item from the ``heap``, and return it.  Raise ``IndexError`` if
    ``heap`` is empty.
-   
+
    The returned item will be the smallest item in the ``heap``.
 
 .. function:: heapify(x)

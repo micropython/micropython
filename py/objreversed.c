@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ typedef struct _mp_obj_reversed_t {
     mp_uint_t cur_index;    // current index, plus 1; 0=no more, 1=last one (index 0)
 } mp_obj_reversed_t;
 
-STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // check if __reversed__ exists, and if so delegate to it
     mp_obj_t dest[2];
@@ -71,10 +71,13 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_reversed = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_reversed,
     .make_new = reversed_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = reversed_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = reversed_iternext,
+        ),
 };
 
 #endif // MICROPY_PY_BUILTINS_REVERSED

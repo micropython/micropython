@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@
 
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
@@ -50,8 +52,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_msg_varg(&mp_type_TypeError,
-                MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("function takes %d positional arguments but %d were given"),
                 n_args_min, n_args);
             #endif
         }
@@ -60,7 +61,7 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_msg_varg(&mp_type_TypeError,
+            mp_raise_TypeError_varg(
                 MP_ERROR_TEXT("function missing %d required positional arguments"),
                 n_args_min - n_args);
             #endif
@@ -68,12 +69,24 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_msg_varg(&mp_type_TypeError,
+            mp_raise_TypeError_varg(
                 MP_ERROR_TEXT("function expected at most %d arguments, got %d"),
                 n_args_max, n_args);
             #endif
         }
     }
+}
+
+inline void mp_arg_check_num(size_t n_args, mp_map_t *kw_args, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+    size_t n_kw = 0;
+    if (kw_args != NULL) {
+        n_kw = kw_args->used;
+    }
+    mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
+}
+
+inline void mp_arg_check_num_kw_array(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+    mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
 
 void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals) {
@@ -87,13 +100,16 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
             pos_found++;
             given_arg = pos[i];
         } else {
-            mp_map_elem_t *kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
+            mp_map_elem_t *kw = NULL;
+            if (kws != NULL) {
+                kw = mp_map_lookup(kws, MP_OBJ_NEW_QSTR(allowed[i].qst), MP_MAP_LOOKUP);
+            }
             if (kw == NULL) {
                 if (allowed[i].flags & MP_ARG_REQUIRED) {
                     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
                     mp_arg_error_terse_mismatch();
                     #else
-                    mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("'%q' argument required"), allowed[i].qst);
+                    mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' argument required"), allowed[i].qst);
                     #endif
                 }
                 out_vals[i] = allowed[i].defval;
@@ -121,7 +137,7 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         mp_raise_TypeError(MP_ERROR_TEXT("extra positional arguments given"));
         #endif
     }
-    if (kws_found < kws->used) {
+    if (kws != NULL && kws_found < kws->used) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else
@@ -146,3 +162,56 @@ NORETURN void mp_arg_error_unimpl_kw(void) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not yet implemented - use normal args instead"));
 }
 #endif
+
+
+mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
+    if (i < min) {
+        mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, min);
+    }
+    return i;
+}
+
+mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name) {
+    if (i > max) {
+        mp_raise_ValueError_varg(translate("%q must <= %d"), arg_name, max);
+    }
+    return i;
+}
+
+mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name) {
+    if (i < min || i > max) {
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), arg_name, min, max);
+    }
+    return i;
+}
+
+mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name) {
+    const mp_float_t f = (float_in == MP_OBJ_NULL)
+        ? default_for_null
+        : mp_obj_get_float(float_in);
+    if (f <= (mp_float_t)0.0) {
+        mp_raise_ValueError_varg(translate("%q must be >= 0"), arg_name);
+    }
+    return f;
+}
+
+mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_t max, qstr arg_name) {
+    if (length < min || length > max) {
+        mp_raise_ValueError_varg(translate("%q length must be %d-%d"), arg_name, min, max);
+    }
+    return length;
+}
+
+mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
+    if (!mp_obj_is_type(obj, type)) {
+        mp_raise_TypeError_varg(translate("%q must of type %q"), arg_name, type->name);
+    }
+    return obj;
+}
+
+mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name) {
+    if (!mp_obj_is_str(obj)) {
+        mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
+    }
+    return obj;
+}

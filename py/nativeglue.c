@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/nativeglue.h"
+#include "py/objtype.h"
 #include "py/gc.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
@@ -317,7 +318,7 @@ const mp_fun_table_t mp_fun_table = {
     gc_realloc,
     mp_printf,
     mp_vprintf,
-    mp_raise_msg,
+    mp_raise_msg_str,
     mp_obj_get_type,
     mp_obj_new_str,
     mp_obj_new_bytes,
@@ -328,6 +329,7 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_get_float_to_d,
     mp_get_buffer_raise,
     mp_get_stream_raise,
+    mp_obj_assert_native_inited,
     &mp_plat_print,
     &mp_type_type,
     &mp_type_str,

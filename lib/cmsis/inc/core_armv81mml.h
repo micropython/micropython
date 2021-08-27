@@ -61,7 +61,7 @@
  */
 
 #include "cmsis_version.h"
- 
+
 #define __ARM_ARCH_8M_MAIN__    1  // patching for now
 /*  CMSIS ARMV81MML definitions */
 #define __ARMv81MML_CMSIS_VERSION_MAIN  (__CM_CMSIS_VERSION_MAIN)                   /*!< \deprecated [31:16] CMSIS HAL main version */
@@ -91,12 +91,12 @@
       #define __DSP_USED       1U
     #else
       #error "Compiler generates DSP (SIMD) instructions for a devices without DSP extensions (check __DSP_PRESENT)"
-      #define __DSP_USED         0U    
+      #define __DSP_USED         0U
     #endif
   #else
     #define __DSP_USED         0U
   #endif
-  
+
 #elif defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6010050)
   #if defined __ARM_FP
     #if defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)
@@ -114,7 +114,7 @@
       #define __DSP_USED       1U
     #else
       #error "Compiler generates DSP (SIMD) instructions for a devices without DSP extensions (check __DSP_PRESENT)"
-      #define __DSP_USED         0U    
+      #define __DSP_USED         0U
     #endif
   #else
     #define __DSP_USED         0U
@@ -131,18 +131,18 @@
   #else
     #define __FPU_USED         0U
   #endif
-  
+
   #if defined(__ARM_FEATURE_DSP)
     #if defined(__DSP_PRESENT) && (__DSP_PRESENT == 1U)
       #define __DSP_USED       1U
     #else
       #error "Compiler generates DSP (SIMD) instructions for a devices without DSP extensions (check __DSP_PRESENT)"
-      #define __DSP_USED         0U    
+      #define __DSP_USED         0U
     #endif
   #else
     #define __DSP_USED         0U
   #endif
-  
+
 #elif defined ( __ICCARM__ )
   #if defined __ARMVFP__
     #if defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)
@@ -160,12 +160,12 @@
       #define __DSP_USED       1U
     #else
       #error "Compiler generates DSP (SIMD) instructions for a devices without DSP extensions (check __DSP_PRESENT)"
-      #define __DSP_USED         0U    
+      #define __DSP_USED         0U
     #endif
   #else
     #define __DSP_USED         0U
   #endif
-  
+
 #elif defined ( __TI_ARM__ )
   #if defined __TI_VFP_SUPPORT__
     #if defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)

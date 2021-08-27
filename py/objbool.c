@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,9 +60,9 @@ STATIC void bool_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
-STATIC mp_obj_t bool_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t bool_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)type_in;
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
 
     if (n_args == 0) {
         return mp_const_false;
@@ -86,12 +86,14 @@ STATIC mp_obj_t bool_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
 
 const mp_obj_type_t mp_type_bool = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, // can match all numeric types
+    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED, // can match all numeric types
     .name = MP_QSTR_bool,
     .print = bool_print,
     .make_new = bool_make_new,
-    .unary_op = bool_unary_op,
-    .binary_op = bool_binary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = bool_unary_op,
+        .binary_op = bool_binary_op,
+        ),
 };
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS

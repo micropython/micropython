@@ -207,7 +207,7 @@ struct lfs2_config {
     // Number of erasable blocks on the device.
     lfs2_size_t block_count;
 
-    // Number of erase cycles before littlefs evicts metadata logs and moves 
+    // Number of erase cycles before littlefs evicts metadata logs and moves
     // the metadata to another block. Suggested values are in the
     // range 100-1000, with large values having better performance at the cost
     // of less consistent wear distribution.

@@ -1,0 +1,8 @@
+sphinx<4
+myst-parser==0.14.0
+sphinxcontrib-svg2pdfconverter==0.1.0
+astroid
+sphinx-autoapi
+isort
+black
+readthedocs-sphinx-search

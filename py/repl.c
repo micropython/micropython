@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,7 +153,7 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
     } else {
         // try builtin module
         return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
-            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) != NULL;
     }
 }
 

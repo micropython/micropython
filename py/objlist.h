@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,5 +36,7 @@ typedef struct _mp_obj_list_t {
 } mp_obj_list_t;
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);
+mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index);
+void mp_obj_list_insert(mp_obj_list_t *self, size_t index, mp_obj_t obj);
 
 #endif // MICROPY_INCLUDED_PY_OBJLIST_H

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@
 // *FORMAT-OFF*
 
 // If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
-#if !MICROPY_NLR_SETJMP
+#if !defined(MICROPY_NLR_SETJMP) || !MICROPY_NLR_SETJMP
 // A lot of nlr-related things need different treatment on Windows
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define MICROPY_NLR_OS_WINDOWS 1
@@ -54,9 +54,11 @@
 #define MICROPY_NLR_OS_WINDOWS 0
 #endif
 #if defined(__i386__)
+    #define MICROPY_NLR_SETJMP (0)
     #define MICROPY_NLR_X86 (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X86)
 #elif defined(__x86_64__)
+    #define MICROPY_NLR_SETJMP (0)
     #define MICROPY_NLR_X64 (1)
     #if MICROPY_NLR_OS_WINDOWS
         #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X64_WIN)
@@ -64,6 +66,7 @@
         #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X64)
     #endif
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
+    #define MICROPY_NLR_SETJMP (0)
     #define MICROPY_NLR_THUMB (1)
     #if defined(__SOFTFP__)
         #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_ARM_THUMB)
@@ -77,16 +80,23 @@
     #define MICROPY_NLR_AARCH64 (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_AARCH64)
 #elif defined(__xtensa__)
+    #define MICROPY_NLR_SETJMP (0)
     #define MICROPY_NLR_XTENSA (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_XTENSA)
 #elif defined(__powerpc__)
+    #define MICROPY_NLR_SETJMP (0)
     #define MICROPY_NLR_POWERPC (1)
     // this could be less but using 128 for safety
     #define MICROPY_NLR_NUM_REGS (128)
 #else
     #define MICROPY_NLR_SETJMP (1)
-    //#warning "No native NLR support for this arch, using setjmp implementation"
+// #warning "No native NLR support for this arch, using setjmp implementation"
 #endif
+#endif
+
+// If MICROPY_NLR_SETJMP is not defined above -  define/disable it here
+#if !defined(MICROPY_NLR_SETJMP)
+    #define MICROPY_NLR_SETJMP (0)
 #endif
 
 // *FORMAT-ON*

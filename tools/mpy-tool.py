@@ -1,28 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: Copyright (c) 2016-2019 Damien P. George
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
-# This file is part of the MicroPython project, http://micropython.org/
-#
-# The MIT License (MIT)
-#
-# Copyright (c) 2016-2019 Damien P. George
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# SPDX-License-Identifier: MIT
 
 # Python 2/3 compatibility code
 from __future__ import print_function
@@ -792,8 +773,8 @@ def read_raw_code(f, qstr_win):
 def read_mpy(filename):
     with open(filename, "rb") as f:
         header = bytes_cons(f.read(4))
-        if header[0] != ord("M"):
-            raise Exception("not a valid .mpy file")
+        if header[0] != ord("C"):
+            raise Exception("not a valid CircuitPython .mpy file")
         if header[1] != config.MPY_VERSION:
             raise Exception("incompatible .mpy version")
         feature_byte = header[2]
@@ -829,6 +810,7 @@ def freeze_mpy(base_qstrs, raw_codes):
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
     new = sorted(new.values(), key=lambda x: x[0])
 
+    print('#include "py/bc0.h"')
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
     print('#include "py/objstr.h"')
@@ -872,7 +854,7 @@ def freeze_mpy(base_qstrs, raw_codes):
     print("#endif")
     print()
 
-    if len(new) > 0:
+    if new:
         print("enum {")
         for i in range(len(new)):
             if i == 0:
@@ -881,24 +863,35 @@ def freeze_mpy(base_qstrs, raw_codes):
                 print("    MP_QSTR_%s," % new[i][1])
         print("};")
 
+    print()
+    print("const qstr_attr_t mp_qstr_frozen_const_attr[] = {")
+    qstr_size = {"metadata": 0, "data": 0}
+    for _, _, qstr in new:
+        qbytes = qstrutil.bytes_cons(qstr, "utf8")
+        print(
+            "    {%d, %d},"
+            % (qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH), len(qbytes))
+        )
+        qstr_size["metadata"] += (
+            config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
+        )
+        qstr_size["data"] += len(qbytes)
+    print("};")
+
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
     qstr_pool_alloc = min(len(new), 10)
 
     print()
     print("extern const qstr_pool_t mp_qstr_const_pool;")
     print("const qstr_pool_t mp_qstr_frozen_const_pool = {")
-    print("    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool")
+    print("    &mp_qstr_const_pool, // previous pool")
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
+    print("    (qstr_attr_t *)mp_qstr_frozen_const_attr,")
     print("    {")
     for _, _, qstr in new:
-        print(
-            "        %s,"
-            % qstrutil.make_bytes(
-                config.MICROPY_QSTR_BYTES_IN_LEN, config.MICROPY_QSTR_BYTES_IN_HASH, qstr
-            )
-        )
+        print('        "%s",' % qstrutil.escape_bytes(qstr))
     print("    },")
     print("};")
 
@@ -938,7 +931,7 @@ def merge_mpy(raw_codes, output_file):
             merged_mpy.extend(f.read())
     else:
         header = bytearray(5)
-        header[0] = ord("M")
+        header[0] = ord("C")
         header[1] = config.MPY_VERSION
         header[2] = (
             config.native_arch << 2
@@ -1019,7 +1012,7 @@ def main():
 
     # set config values for qstrs, and get the existing base set of qstrs
     if args.qstr_header:
-        qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        qcfgs, base_qstrs, _ = qstrutil.parse_input_headers([args.qstr_header])
         config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs["BYTES_IN_LEN"])
         config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs["BYTES_IN_HASH"])
     else:

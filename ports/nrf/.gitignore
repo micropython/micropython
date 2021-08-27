@@ -1,3 +1,9 @@
-# Nordic files
+# Old Nordic soft devices that don't allow redistribution
+#########################################################
+drivers/bluetooth/s132_nrf52_2.0.1/
+
+!drivers/bluetooth/*/*.hex
+
+# Build files
 #####################
-drivers/bluetooth/s1*/
+build-*/

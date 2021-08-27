@@ -1,0 +1,7 @@
+contact_links:
+  - name: 🔗 Adafruit Forum
+    url: https://forums.adafruit.com/
+    about: Official Adafruit technical support forum. Good for getting help on getting a project working.
+  - name: 🔗 Adafruit Discord
+    url: https://adafru.it/discord
+    about: Unofficial chat with many helpful folks and normally prompt replies.

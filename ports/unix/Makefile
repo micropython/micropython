@@ -13,11 +13,6 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
 
-# use FROZEN_MANIFEST for new projects, others are legacy
-FROZEN_MANIFEST ?= variants/manifest.py
-FROZEN_DIR =
-FROZEN_MPY_DIR =
-
 # This should be configured by the mpconfigvariant.mk
 PROG ?= micropython
 
@@ -31,7 +26,7 @@ UNAME_S := $(shell uname -s)
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -134,61 +129,6 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
-# If the variant enables it, enable modbluetooth.
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-
-HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
-
-# Only one stack can be enabled.
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-$(error Cannot enable both NimBLE and BTstack at the same time)
-endif
-endif
-
-# Default to btstack, but a variant (or make command line) can set NimBLE
-# explicitly (which is always via H4 UART).
-ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-MICROPY_BLUETOOTH_BTSTACK ?= 1
-endif
-endif
-
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-
-# Figure out which BTstack transport to use.
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
-$(error Cannot enable BTstack support for USB and H4 UART at the same time)
-endif
-else
-ifeq ($(HAVE_LIBUSB),1)
-# Default to btstack-over-usb.
-MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
-else
-# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
-MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
-endif
-endif
-
-# BTstack is enabled.
-GIT_SUBMODULES += lib/btstack
-include $(TOP)/extmod/btstack/btstack.mk
-
-else
-
-# NimBLE is enabled.
-GIT_SUBMODULES += lib/mynewt-nimble
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
-include $(TOP)/extmod/nimble/nimble.mk
-
-endif
-
-endif
-
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
@@ -225,18 +165,16 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modmachine.c \
 	modos.c \
 	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
 	fatfs_port.c \
-	mpbthciport.c \
-	mpbtstackport_common.c \
-	mpbtstackport_h4.c \
-	mpbtstackport_usb.c \
-	mpnimbleport.c \
+	supervisor/stub/filesystem.c \
+	supervisor/stub/safe_mode.c \
+	supervisor/stub/stack.c \
+	supervisor/shared/translate.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
@@ -261,17 +199,12 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(LIB_SRC_C) $(EXTMOD_SRC_C)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
-# To use frozen code create a manifest.py file with a description of files to
-# freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
+ifneq ($(FROZEN_MPY_DIR),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 MPY_CROSS_FLAGS += -mcache-lookup-bc
-endif
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
@@ -308,6 +241,18 @@ test_full: $(PROG) $(TOP)/tests/run-tests.py
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c
 	gcov -o $(BUILD)/extmod $(TOP)/extmod/*.c
+
+# build an interpreter for fuzzing
+fuzz:
+	$(MAKE) \
+	    CC=afl-clang-fast DEBUG=1 \
+	    CFLAGS_EXTRA='$(CFLAGS_EXTRA) -ffunction-sections' \
+	    LDFLAGS_EXTRA='$(LDFLAGS_EXTRA)' \
+	    BUILD=build-fuzz PROG=micropython_fuzz
+
+fuzz_clean:
+	$(MAKE) V=2 BUILD=build-fuzz PROG=micropython_fuzz clean
+
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
@@ -346,3 +291,5 @@ install: $(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)
+
+$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h

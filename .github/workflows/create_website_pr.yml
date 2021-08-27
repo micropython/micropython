@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+name: Update CircuitPython.org
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  website:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: echo "$GITHUB_CONTEXT"
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: true
+        fetch-depth: 0
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install deps
+      run: |
+        pip install -r requirements-dev.txt
+    - name: Versions
+      run: |
+        gcc --version
+        python3 --version
+    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: git describe --dirty --tags
+    - name: Website
+      run: python3 build_board_info.py
+      working-directory: tools
+      env:
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+        ADABOT_GITHUB_ACCESS_TOKEN: ${{ secrets.BLINKA_GITHUB_ACCESS_TOKEN }}
+      if: github.event_name == 'release' && (github.event.action == 'published'  || github.event.action == 'rerequested')

@@ -34,7 +34,7 @@ else:
 
 # Use CPython options to not save .pyc files, to only access the core standard library
 # (not site packages which may clash with u-module names), and improve start up time.
-CPYTHON3_CMD = [CPYTHON3, "-BS"]
+CPYTHON3_CMD = [CPYTHON3, "-Wignore", "-BS"]
 
 # mpy-cross is only needed if --via-mpy command-line arg is passed
 MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross"))
@@ -112,22 +112,30 @@ def run_micropython(pyb, args, test_file, is_special=False):
                     def get(required=False):
                         rv = b""
                         while True:
-                            ready = select.select([master], [], [], 0.02)
-                            if ready[0] == [master]:
-                                rv += os.read(master, 1024)
+                            ready = select.select([emulator], [], [], 0.02)
+                            if ready[0] == [emulator]:
+                                rv += os.read(emulator, 1024)
                             else:
                                 if not required or rv:
                                     return rv
 
                     def send_get(what):
-                        os.write(master, what)
+                        os.write(emulator, what)
                         return get()
 
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
-                        master, slave = pty.openpty()
+                        # openpty returns two read/write file descriptors.  The first one is
+                        # used by the program which provides the virtual
+                        # terminal service, and the second one is used by the
+                        # subprogram which requires a tty to work.
+                        emulator, subterminal = pty.openpty()
                         p = subprocess.Popen(
-                            args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
+                            args,
+                            stdin=subterminal,
+                            stdout=subterminal,
+                            stderr=subprocess.STDOUT,
+                            bufsize=0,
                         )
                         banner = get(True)
                         output_mupy = banner + b"".join(send_get(line) for line in f)
@@ -142,14 +150,15 @@ def run_micropython(pyb, args, test_file, is_special=False):
                             p.kill()
                         except ProcessLookupError:
                             pass
-                        os.close(master)
-                        os.close(slave)
+                        os.close(emulator)
+                        os.close(subterminal)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
                     )
-            except subprocess.CalledProcessError:
-                return b"CRASH"
+
+            except subprocess.CalledProcessError as error:
+                return error.output + b"CRASH"
 
         else:
             # a standard test run on PC
@@ -573,14 +582,17 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(test_file_expected, "rb") as f:
                 output_expected = f.read()
         else:
+            e = {"PYTHONPATH": os.getcwd(), "PATH": os.environ["PATH"], "LANG": "en_US.UTF-8"}
             # run CPython to work out expected output
             try:
-                output_expected = subprocess.check_output(CPYTHON3_CMD + [test_file])
+                output_expected = subprocess.check_output(
+                    CPYTHON3_CMD + [test_file], env=e, stderr=subprocess.STDOUT
+                )
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:
                         f.write(output_expected)
-            except subprocess.CalledProcessError:
-                output_expected = b"CPYTHON3 CRASH"
+            except subprocess.CalledProcessError as error:
+                output_expected = error.output + b"CPYTHON3 CRASH"
 
         # canonical form for all host platforms is to use \n for end-of-line
         output_expected = output_expected.replace(b"\r\n", b"\n")
@@ -821,6 +833,7 @@ the last matching regex is used:
                     "unicode",
                     "unix",
                     "cmdline",
+                    "../extmod/ulab/tests",
                 )
             elif args.target == "qemu-arm":
                 if not args.write_exp:

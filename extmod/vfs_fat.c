@@ -1,29 +1,8 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Damien P. George
- * Copyright (c) 2016 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2016 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/mpconfig.h"
 #if MICROPY_VFS_FAT
@@ -33,11 +12,15 @@
 #endif
 
 #include <string.h>
+#include "py/obj.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
 #include "lib/timeutils/timeutils.h"
+#include "supervisor/filesystem.h"
+#include "supervisor/shared/translate.h"
 
 #if FF_MAX_SS == FF_MIN_SS
 #define SECSIZE(fs) (FF_MIN_SS)
@@ -62,8 +45,8 @@ STATIC mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
     return MP_IMPORT_STAT_NO_EXIST;
 }
 
-STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 1, false);
 
     // create new object
     fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
@@ -87,7 +70,13 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(vfs);
 }
 
-#if _FS_REENTRANT
+STATIC void verify_fs_writable(fs_user_mount_t *vfs) {
+    if (!filesystem_is_writable_by_python(vfs)) {
+        mp_raise_OSError(MP_EROFS);
+    }
+}
+
+#if FF_FS_REENTRANT
 STATIC mp_obj_t fat_vfs_del(mp_obj_t self_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(self_in);
     // f_umount only needs to be called to release the sync object
@@ -99,7 +88,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_del_obj, fat_vfs_del);
 
 STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
     // create new object
-    fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, 0, &bdev_in));
+    fs_user_mount_t *vfs = MP_OBJ_TO_PTR(fat_vfs_make_new(&mp_fat_vfs_type, 1, &bdev_in, NULL));
 
     // make the filesystem
     uint8_t working_buf[FF_MAX_SS];
@@ -192,6 +181,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(fat_vfs_ilistdir_obj, 1, 2, fat_vfs_i
 
 STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_int_t attr) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *path = mp_obj_str_get_str(path_in);
 
     FILINFO fno;
@@ -226,9 +216,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_rmdir_obj, fat_vfs_rmdir);
 
 STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_out) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
-    FRESULT res = f_rename(&self->fatfs, old_path, new_path);
+
+    // Check to see if we're moving a directory into itself. This occurs when we're moving a
+    // directory where the old path is a prefix of the new and the next character is a "/" and thus
+    // preserves the original directory name.
+    FILINFO fno;
+    FRESULT res = f_stat(&self->fatfs, old_path, &fno);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    if ((fno.fattrib & AM_DIR) != 0 &&
+        strlen(new_path) > strlen(old_path) &&
+        new_path[strlen(old_path)] == '/' &&
+        strncmp(old_path, new_path, strlen(old_path)) == 0) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+
+    res = f_rename(&self->fatfs, old_path, new_path);
     if (res == FR_EXIST) {
         // if new_path exists then try removing it (but only if it's a file)
         fat_vfs_remove_internal(vfs_in, path_out, 0); // 0 == file attribute
@@ -246,6 +253,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_rename_obj, fat_vfs_rename);
 
 STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
+    verify_fs_writable(self);
     const char *path = mp_obj_str_get_str(path_o);
     FRESULT res = f_mkdir(&self->fatfs, path);
     if (res == FR_OK) {
@@ -310,14 +318,21 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         mode |= MP_S_IFREG;
     }
-    mp_int_t seconds = timeutils_seconds_since_epoch(
-        1980 + ((fno.fdate >> 9) & 0x7f),
-        (fno.fdate >> 5) & 0x0f,
-        fno.fdate & 0x1f,
-        (fno.ftime >> 11) & 0x1f,
-        (fno.ftime >> 5) & 0x3f,
-        2 * (fno.ftime & 0x1f)
-        );
+    #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
+    // On non-longint builds, the number of seconds since 1970 (epoch) is too
+    // large to fit in a smallint, so just return 31-DEC-1999 (0).
+    mp_obj_t seconds = MP_OBJ_NEW_SMALL_INT(946684800);
+    #else
+    mp_obj_t seconds = mp_obj_new_int_from_uint(
+        timeutils_seconds_since_epoch(
+            1980 + ((fno.fdate >> 9) & 0x7f),
+            (fno.fdate >> 5) & 0x0f,
+            fno.fdate & 0x1f,
+            (fno.ftime >> 11) & 0x1f,
+            (fno.ftime >> 5) & 0x3f,
+            2 * (fno.ftime & 0x1f)
+            ));
+    #endif
     t->items[0] = MP_OBJ_NEW_SMALL_INT(mode); // st_mode
     t->items[1] = MP_OBJ_NEW_SMALL_INT(0); // st_ino
     t->items[2] = MP_OBJ_NEW_SMALL_INT(0); // st_dev
@@ -325,9 +340,9 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     t->items[4] = MP_OBJ_NEW_SMALL_INT(0); // st_uid
     t->items[5] = MP_OBJ_NEW_SMALL_INT(0); // st_gid
     t->items[6] = mp_obj_new_int_from_uint(fno.fsize); // st_size
-    t->items[7] = mp_obj_new_int_from_uint(seconds); // st_atime
-    t->items[8] = mp_obj_new_int_from_uint(seconds); // st_mtime
-    t->items[9] = mp_obj_new_int_from_uint(seconds); // st_ctime
+    t->items[7] = seconds; // st_atime
+    t->items[8] = seconds; // st_mtime
+    t->items[9] = seconds; // st_ctime
 
     return MP_OBJ_FROM_PTR(t);
 }
@@ -395,8 +410,42 @@ STATIC mp_obj_t vfs_fat_umount(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_umount_obj, vfs_fat_umount);
 
+#if MICROPY_FATFS_USE_LABEL
+STATIC mp_obj_t vfs_fat_getlabel(mp_obj_t self_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    char working_buf[12];
+    FRESULT res = f_getlabel(&self->fatfs, working_buf, NULL);
+    if (res != FR_OK) {
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    return mp_obj_new_str(working_buf, strlen(working_buf));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getlabel_obj, vfs_fat_getlabel);
+
+STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+    verify_fs_writable(self);
+    const char *label_str = mp_obj_str_get_str(label_in);
+    FRESULT res = f_setlabel(&self->fatfs, label_str);
+    if (res != FR_OK) {
+        if (res == FR_WRITE_PROTECTED) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Read-only filesystem"));
+        }
+        mp_raise_OSError(fresult_to_errno_table[res]);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_setlabel_obj, vfs_fat_setlabel);
+STATIC const mp_obj_property_t fat_vfs_label_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&fat_vfs_getlabel_obj,
+              (mp_obj_t)&fat_vfs_setlabel_obj,
+              MP_ROM_NONE},
+};
+#endif
+
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
-    #if _FS_REENTRANT
+    #if FF_FS_REENTRANT
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&fat_vfs_del_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },
@@ -412,19 +461,26 @@ STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&fat_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_fat_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&fat_vfs_umount_obj) },
+    #if MICROPY_FATFS_USE_LABEL
+    { MP_ROM_QSTR(MP_QSTR_label), MP_ROM_PTR(&fat_vfs_label_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(fat_vfs_locals_dict, fat_vfs_locals_dict_table);
 
 STATIC const mp_vfs_proto_t fat_vfs_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = fat_vfs_import_stat,
 };
 
 const mp_obj_type_t mp_fat_vfs_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_VfsFat,
     .make_new = fat_vfs_make_new,
-    .protocol = &fat_vfs_proto,
     .locals_dict = (mp_obj_dict_t *)&fat_vfs_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &fat_vfs_proto,
+        ),
 
 };
 

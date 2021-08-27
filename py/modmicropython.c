@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,12 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#include "supervisor/shared/translate.h"
+
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
-#if MICROPY_ENABLE_COMPILER
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_COMPILER
 STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(MP_STATE_VM(mp_optimise_value));
@@ -47,7 +49,7 @@ STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
 #endif
 
-#if MICROPY_PY_MICROPYTHON_MEM_INFO
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_PY_MICROPYTHON_MEM_INFO
 
 #if MICROPY_MEM_STATS
 STATIC mp_obj_t mp_micropython_mem_total(void) {
@@ -107,21 +109,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_qstr_info_obj, 0, 1, m
 
 #endif // MICROPY_PY_MICROPYTHON_MEM_INFO
 
-#if MICROPY_PY_MICROPYTHON_STACK_USE
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_PY_MICROPYTHON_STACK_USE
 STATIC mp_obj_t mp_micropython_stack_use(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_stack_usage());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_use_obj, mp_micropython_stack_use);
 #endif
 
-#if MICROPY_ENABLE_PYSTACK
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_PYSTACK
 STATIC mp_obj_t mp_micropython_pystack_use(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_pystack_usage());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_pystack_use_obj, mp_micropython_pystack_use);
 #endif
 
-#if MICROPY_ENABLE_GC
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_GC
 STATIC mp_obj_t mp_micropython_heap_lock(void) {
     gc_lock();
     return mp_const_none;
@@ -142,11 +144,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_
 #endif
 #endif
 
-#if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
 
-#if MICROPY_KBD_EXCEPTION
+#if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_KBD_EXCEPTION
 STATIC mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
     mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
     return mp_const_none;
@@ -167,10 +169,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_sch
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
-    #if MICROPY_ENABLE_COMPILER
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_COMPILER
     { MP_ROM_QSTR(MP_QSTR_opt_level), MP_ROM_PTR(&mp_micropython_opt_level_obj) },
     #endif
-    #if MICROPY_PY_MICROPYTHON_MEM_INFO
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_PY_MICROPYTHON_MEM_INFO
     #if MICROPY_MEM_STATS
     { MP_ROM_QSTR(MP_QSTR_mem_total), MP_ROM_PTR(&mp_micropython_mem_total_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem_current), MP_ROM_PTR(&mp_micropython_mem_current_obj) },
@@ -179,23 +181,23 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem_info), MP_ROM_PTR(&mp_micropython_mem_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_qstr_info), MP_ROM_PTR(&mp_micropython_qstr_info_obj) },
     #endif
-    #if MICROPY_PY_MICROPYTHON_STACK_USE
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_PY_MICROPYTHON_STACK_USE
     { MP_ROM_QSTR(MP_QSTR_stack_use), MP_ROM_PTR(&mp_micropython_stack_use_obj) },
     #endif
-    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
     { MP_ROM_QSTR(MP_QSTR_alloc_emergency_exception_buf), MP_ROM_PTR(&mp_alloc_emergency_exception_buf_obj) },
     #endif
-    #if MICROPY_ENABLE_PYSTACK
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_PYSTACK
     { MP_ROM_QSTR(MP_QSTR_pystack_use), MP_ROM_PTR(&mp_micropython_pystack_use_obj) },
     #endif
-    #if MICROPY_ENABLE_GC
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },
     #if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
     { MP_ROM_QSTR(MP_QSTR_heap_locked), MP_ROM_PTR(&mp_micropython_heap_locked_obj) },
     #endif
     #endif
-    #if MICROPY_KBD_EXCEPTION
+    #if CIRCUITPY_MICROPYTHON_ADVANCED && MICROPY_KBD_EXCEPTION
     { MP_ROM_QSTR(MP_QSTR_kbd_intr), MP_ROM_PTR(&mp_micropython_kbd_intr_obj) },
     #endif
     #if MICROPY_ENABLE_SCHEDULER

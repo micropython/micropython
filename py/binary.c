@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Paul Sokolovsky
- * Copyright (c) 2014-2019 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
+#include "supervisor/shared/translate.h"
+
 // Helpers to work with binary-encoded data
 
 #ifndef alignof
@@ -51,6 +53,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
             switch (val_type) {
                 case 'b':
                 case 'B':
+                case 'x':
                     size = 1;
                     break;
                 case 'h':
@@ -69,11 +72,13 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case 'Q':
                     size = 8;
                     break;
+                #if MICROPY_NONSTANDARD_TYPECODES
                 case 'P':
                 case 'O':
                 case 'S':
                     size = sizeof(void *);
                     break;
+                #endif
                 case 'f':
                     size = sizeof(float);
                     break;
@@ -94,6 +99,7 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case BYTEARRAY_TYPECODE:
                 case 'b':
                 case 'B':
+                case 'x':
                     align = size = 1;
                     break;
                 case 'h':
@@ -116,12 +122,14 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                     align = alignof(long long);
                     size = sizeof(long long);
                     break;
+                #if MICROPY_NONSTANDARD_TYPECODES
                 case 'P':
                 case 'O':
                 case 'S':
                     align = alignof(void *);
                     size = sizeof(void *);
                     break;
+                #endif
                 case 'f':
                     align = alignof(float);
                     size = sizeof(float);
@@ -180,12 +188,14 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
         case 'd':
             return mp_obj_new_float_from_d(((double *)p)[index]);
         #endif
+            #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of objects
         case 'O':
             return ((mp_obj_t *)p)[index];
         // Extension to CPython: array of pointers
         case 'P':
             return mp_obj_new_int((mp_int_t)(uintptr_t)((void **)p)[index]);
+            #endif
     }
     return MP_OBJ_NEW_SMALL_INT(val);
 }
@@ -207,7 +217,7 @@ long long mp_binary_get_int(size_t size, bool is_signed, bool big_endian, const 
         val = -1;
     }
     for (uint i = 0; i < size; i++) {
-        val <<= 8;
+        val *= 256;
         val |= *src;
         src += delta;
     }
@@ -234,11 +244,13 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
 
     long long val = mp_binary_get_int(size, is_signed(val_type), (struct_type == '>'), p);
 
-    if (val_type == 'O') {
+    if (MICROPY_NONSTANDARD_TYPECODES && (val_type == 'O')) {
         return (mp_obj_t)(mp_uint_t)val;
+    #if MICROPY_NONSTANDARD_TYPECODES
     } else if (val_type == 'S') {
         const char *s_val = (const char *)(uintptr_t)(mp_uint_t)val;
         return mp_obj_new_str(s_val, strlen(s_val));
+    #endif
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
         union { uint32_t i;
@@ -303,9 +315,11 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
 
     mp_uint_t val;
     switch (val_type) {
+        #if MICROPY_NONSTANDARD_TYPECODES
         case 'O':
             val = (mp_uint_t)val_in;
             break;
+        #endif
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': {
             union { uint32_t i;
@@ -332,24 +346,31 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
             break;
         }
         #endif
-        default:
+        default: {
+            bool signed_type = is_signed(val_type);
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_type(val_in, &mp_type_int)) {
+                // It's a longint.
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
                 return;
             }
             #endif
-
-            val = mp_obj_get_int(val_in);
-            // zero/sign extend if needed
-            if (MP_BYTES_PER_OBJ_WORD < 8 && size > sizeof(val)) {
-                int c = (mp_int_t)val < 0 ? 0xff : 0x00;
-                memset(p, c, size);
-                if (struct_type == '>') {
-                    p += size - sizeof(val);
+            {
+                val = mp_obj_get_int(val_in);
+                // Small int checking is separate, to be fast.
+                mp_small_int_buffer_overflow_check(val, size, signed_type);
+                // zero/sign extend if needed
+                if (MP_BYTES_PER_OBJ_WORD < 8 && size > sizeof(val)) {
+                    int c = (is_signed(val_type) && (mp_int_t)val < 0) ? 0xff : 0x00;
+                    memset(p, c, size);
+                    if (struct_type == '>') {
+                        p += size - sizeof(val);
+                    }
                 }
+                break;
             }
-            break;
+        }
     }
 
     mp_binary_set_int(MIN((size_t)size, sizeof(val)), struct_type == '>', p, val);
@@ -365,20 +386,30 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             ((double *)p)[index] = mp_obj_get_float_to_d(val_in);
             break;
         #endif
+        #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of objects
         case 'O':
             ((mp_obj_t *)p)[index] = val_in;
             break;
-        default:
+        #endif
+        default: {
+            size_t size = mp_binary_get_size('@', typecode, NULL);
+            bool signed_type = is_signed(typecode);
+
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_type(val_in, &mp_type_int)) {
-                size_t size = mp_binary_get_size('@', typecode, NULL);
+                // It's a long int.
+                mp_obj_int_buffer_overflow_check(val_in, size, signed_type);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
                     size, (uint8_t *)p + index * size);
                 return;
             }
             #endif
-            mp_binary_set_val_array_from_int(typecode, p, index, mp_obj_get_int(val_in));
+            mp_int_t val = mp_obj_get_int(val_in);
+            // Small int checking is separate, to be fast.
+            mp_small_int_buffer_overflow_check(val, size, signed_type);
+            mp_binary_set_val_array_from_int(typecode, p, index, val);
+        }
     }
 }
 
@@ -425,9 +456,11 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_i
             ((double *)p)[index] = (double)val;
             break;
         #endif
+            #if MICROPY_NONSTANDARD_TYPECODES
         // Extension to CPython: array of pointers
         case 'P':
             ((void **)p)[index] = (void *)(uintptr_t)val;
             break;
+            #endif
     }
 }

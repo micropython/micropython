@@ -1,33 +1,14 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2017 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+//
+// SPDX-License-Identifier: MIT
+
 #ifndef MICROPY_INCLUDED_EXTMOD_VFS_H
 #define MICROPY_INCLUDED_EXTMOD_VFS_H
 
 #include "py/lexer.h"
 #include "py/obj.h"
+#include "py/proto.h"
 
 // return values of mp_vfs_lookup_path
 // ROOT is 0 so that the default current directory is the root directory
@@ -43,6 +24,10 @@
 #define MP_BLOCKDEV_FLAG_FREE_OBJ       (0x0002) // fs_user_mount_t obj should be freed on umount
 #define MP_BLOCKDEV_FLAG_HAVE_IOCTL     (0x0004) // new protocol with ioctl
 #define MP_BLOCKDEV_FLAG_NO_FILESYSTEM  (0x0008) // the block device has no filesystem on it
+// Device is writable over USB and read-only to MicroPython.
+#define MP_BLOCKDEV_FLAG_USB_WRITABLE             (0x0010)
+// Bit set when the above flag is checked before opening a file for write.
+#define MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED (0x0020)
 
 // constants for block protocol ioctl
 #define MP_BLOCKDEV_IOCTL_INIT          (1)
@@ -52,8 +37,10 @@
 #define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
 #define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
 
+
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {
+    MP_PROTOCOL_HEAD
     mp_import_stat_t (*import_stat)(void *self, const char *path);
 } mp_vfs_proto_t;
 
@@ -79,6 +66,18 @@ typedef struct _mp_vfs_mount_t {
     struct _mp_vfs_mount_t *next;
 } mp_vfs_mount_t;
 
+typedef struct _mp_vfs_ilistdir_it_t {
+    mp_obj_base_t base;
+    mp_fun_1_t iternext;
+    union {
+        mp_vfs_mount_t *vfs;
+        mp_obj_t iter;
+    } cur;
+    bool is_str;
+    bool is_iter;
+} mp_vfs_ilistdir_it_t;
+
+mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in);
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev);
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf);
 int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t block_off, size_t len, uint8_t *buf);
@@ -103,6 +102,7 @@ mp_obj_t mp_vfs_stat(mp_obj_t path_in);
 mp_obj_t mp_vfs_statvfs(mp_obj_t path_in);
 
 int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point);
+mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in);
 
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_vfs_umount_obj);

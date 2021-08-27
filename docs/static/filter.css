@@ -1,0 +1,17 @@
+#support-matrix-filter-block { position: relative; }
+#support-matrix-filter {
+	width: 100%;
+}
+#support-matrix-filter-num {
+	position: absolute;
+	right: 10px;
+	top: 4px;
+}
+.support-matrix-table .this_module code,
+.support-matrix-table .this_module span {
+	background: black;
+	color: white;
+}
+.support-matrix-table .board_hidden {
+	display: none;
+}

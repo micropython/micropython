@@ -26,6 +26,13 @@ print(hashlib.sha256(b"\xff" * 64).digest())
 # 56 bytes is a boundary case in the algorithm
 print(hashlib.sha256(b"\xff" * 56).digest())
 
+sha256 = hashlib.sha256(b"hello")
+try:
+    sha256.update(u"world")
+except TypeError as e:
+    print("TypeError")
+print(sha256.digest())
+
 # TODO: running .digest() several times in row is not supported()
 # h = hashlib.sha256(b'123')
 # print(h.digest())

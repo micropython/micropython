@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
  */
 #ifndef MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 #define MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
+
+#include "py/misc.h"
 
 #define CHAR_CTRL_A (1)
 #define CHAR_CTRL_B (2)

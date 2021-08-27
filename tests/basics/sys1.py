@@ -1,9 +1,6 @@
 # test sys module
 
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 
 print(sys.__name__)
 print(type(sys.path))
@@ -17,7 +14,7 @@ except AttributeError:
     print(True)
 
 try:
-    print(sys.implementation.name in ('cpython', 'micropython'))
+    print(sys.implementation.name in ('cpython', 'micropython', 'circuitpython'))
 except AttributeError:
     # Effectively skip subtests
     print(True)

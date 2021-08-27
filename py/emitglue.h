@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,9 +55,9 @@ typedef struct _mp_qstr_link_entry_t {
 } mp_qstr_link_entry_t;
 
 typedef struct _mp_raw_code_t {
-    mp_uint_t kind : 3; // of type mp_raw_code_kind_t
-    mp_uint_t scope_flags : 7;
-    mp_uint_t n_pos_args : 11;
+    uint8_t kind; // of type mp_raw_code_kind_t
+    uint8_t scope_flags;
+    uint16_t n_pos_args;
     const void *fun_data;
     const mp_uint_t *const_table;
     #if MICROPY_PERSISTENT_CODE_SAVE

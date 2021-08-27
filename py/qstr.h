@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,21 +38,39 @@
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
 enum {
     #ifndef NO_QSTR
-#define QDEF(id, str) id,
-    #include "genhdr/qstrdefs.generated.h"
-#undef QDEF
+#define QENUM(id) id,
+    #include "genhdr/qstrdefs.enum.h"
+#undef QENUM
     #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 
 typedef size_t qstr;
 
+typedef struct _qstr_attr_t {
+    #if MICROPY_QSTR_BYTES_IN_HASH == 1
+    uint8_t hash;
+    #elif MICROPY_QSTR_BYTES_IN_HASH == 2
+    uint16_t hash;
+    #else
+    #error unimplemented qstr hash decoding
+    #endif
+    #if MICROPY_QSTR_BYTES_IN_LEN == 1
+    uint8_t len;
+    #elif MICROPY_QSTR_BYTES_IN_LEN == 2
+    uint16_t len;
+    #else
+    #error unimplemented qstr length decoding
+    #endif
+} qstr_attr_t;
+
 typedef struct _qstr_pool_t {
-    struct _qstr_pool_t *prev;
+    const struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;
-    const byte *qstrs[];
+    qstr_attr_t *attrs;
+    const char *qstrs[];
 } qstr_pool_t;
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
@@ -72,10 +90,5 @@ const byte *qstr_data(qstr q, size_t *len);
 
 void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes);
 void qstr_dump_data(void);
-
-#if MICROPY_ROM_TEXT_COMPRESSION
-void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
-#define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
-#endif
 
 #endif // MICROPY_INCLUDED_PY_QSTR_H

@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2019 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,7 +73,7 @@
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_FASTSEEK 0
+#define FF_USE_FASTSEEK   1
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
@@ -163,8 +163,11 @@
 /  memory for the working buffer, memory management functions, ff_memalloc() and
 /  ff_memfree() in ffsystem.c, need to be added to the project. */
 
-
+#ifdef MICROPY_FATFS_LFN_UNICODE
+#define FF_LFN_UNICODE  (MICROPY_FATFS_LFN_UNICODE)
+#else
 #define FF_LFN_UNICODE  0
+#endif
 /* This option switches the character encoding on the API when LFN is enabled.
 /
 /   0: ANSI/OEM in current CP (TCHAR = char)

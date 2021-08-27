@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Paul Sokolovsky
- * Copyright (c) 2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,14 +43,20 @@ extern const char mp_frozen_str_names[];
 extern const uint32_t mp_frozen_str_sizes[];
 extern const char mp_frozen_str_content[];
 
-// On input, *len contains size of name, on output - size of content
-const char *mp_find_frozen_str(const char *str, size_t *len) {
+// str_len is length of str. *len is set on on output to size of content
+const char *mp_find_frozen_str(const char *str, size_t str_len, size_t *len) {
+    // If the frozen module pseudo dir (e.g., ".frozen/") is a prefix of str, remove it.
+    if (strncmp(str, MP_FROZEN_FAKE_DIR_SLASH, MP_FROZEN_FAKE_DIR_SLASH_LENGTH) == 0) {
+        str = str + MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+        str_len = str_len - MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+    }
+
     const char *name = mp_frozen_str_names;
 
     size_t offset = 0;
     for (int i = 0; *name != 0; i++) {
         size_t l = strlen(name);
-        if (l == *len && !memcmp(str, name, l)) {
+        if (l == str_len && !memcmp(str, name, l)) {
             *len = mp_frozen_str_sizes[i];
             return mp_frozen_str_content + offset;
         }
@@ -60,19 +66,18 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
     return NULL;
 }
 
-STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
-    size_t name_len = len;
-    const char *content = mp_find_frozen_str(str, &len);
+STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t str_len) {
+    size_t file_len;
+    const char *content = mp_find_frozen_str(str, str_len, &file_len);
 
     if (content == NULL) {
         return NULL;
     }
 
-    qstr source = qstr_from_strn(str, name_len);
-    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, len, 0);
+    qstr source = qstr_from_strn(str, str_len);
+    mp_lexer_t *lex = MICROPY_MODULE_FROZEN_LEXER(source, content, file_len, 0);
     return lex;
 }
-
 #endif
 
 #if MICROPY_MODULE_FROZEN_MPY
@@ -82,11 +87,11 @@ STATIC mp_lexer_t *mp_lexer_frozen_str(const char *str, size_t len) {
 extern const char mp_frozen_mpy_names[];
 extern const mp_raw_code_t *const mp_frozen_mpy_content[];
 
-STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t len) {
+STATIC const mp_raw_code_t *mp_find_frozen_mpy(const char *str, size_t str_len) {
     const char *name = mp_frozen_mpy_names;
     for (size_t i = 0; *name != 0; i++) {
         size_t l = strlen(name);
-        if (l == len && !memcmp(str, name, l)) {
+        if (l == str_len && !memcmp(str, name, l)) {
             return mp_frozen_mpy_content[i];
         }
         name += l + 1;
@@ -136,6 +141,12 @@ mp_import_stat_t mp_frozen_stat(const char *str) {
 }
 
 int mp_find_frozen_module(const char *str, size_t len, void **data) {
+    // If the frozen module pseudo dir (e.g., ".frozen/") is a prefix of str, remove it.
+    if (strncmp(str, MP_FROZEN_FAKE_DIR_SLASH, MP_FROZEN_FAKE_DIR_SLASH_LENGTH) == 0) {
+        str = str + MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+        len = len - MP_FROZEN_FAKE_DIR_SLASH_LENGTH;
+    }
+
     #if MICROPY_MODULE_FROZEN_STR
     mp_lexer_t *lex = mp_lexer_frozen_str(str, len);
     if (lex != NULL) {

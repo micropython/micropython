@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,6 +55,9 @@ float copysignf(float x, float y) {
 
 static const float _M_LN10 = 2.30258509299404f; // 0x40135d8e
 float log10f(float x) { return logf(x) / (float)_M_LN10; }
+#undef _M_LN2
+static const float _M_LN2 = 0.6931472;
+float log2f(float x) { return logf(x) / (float)_M_LN2; }
 
 float tanhf(float x) {
     int sign = 0;
@@ -342,7 +345,7 @@ float powf(float x, float y)
 			return sn*huge*huge;  /* overflow */
 	} else if ((j&0x7fffffff) > 0x43160000)  /* z < -150 */ // FIXME: check should be  (uint32_t)j > 0xc3160000
 		return sn*tiny*tiny;  /* underflow */
-	else if (j == 0xc3160000) {  /* z == -150 */
+	else if (j == (int32_t) 0xc3160000) {  /* z == -150 */
 		if (p_l <= z-p_h)
 			return sn*tiny*tiny;  /* underflow */
 	}
@@ -589,13 +592,13 @@ float expm1f(float x)
 /*****************************************************************************/
 /*****************************************************************************/
 
-/* k is such that k*ln2 has minimal relative error and x - kln2 > log(FLT_MIN) */
-static const int k = 235;
-static const float kln2 = 0x1.45c778p+7f;
 
 /* expf(x)/2 for x >= log(FLT_MAX), slightly better than 0.5f*expf(x/2)*expf(x/2) */
 float __expo2f(float x)
 {
+	/* k is such that k*ln2 has minimal relative error and x - kln2 > log(FLT_MIN) */
+	static const int k = 235;
+	static const float kln2 = 0x1.45c778p+7f;
 	float scale;
 
 	/* note that k is odd and scale*scale overflows */

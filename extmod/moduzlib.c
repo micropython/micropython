@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014-2016 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2014-2016 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <string.h>
@@ -31,9 +10,12 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_PY_UZLIB
 
-#include "uzlib/tinf.h"
+#define UZLIB_CONF_PARANOID_CHECKS (1)
+#include "../lib/uzlib/src/tinf.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -53,7 +35,7 @@ STATIC int read_src_stream(TINF_DATA *data) {
     p -= offsetof(mp_obj_decompio_t, decomp);
     mp_obj_decompio_t *self = (mp_obj_decompio_t *)p;
 
-    const mp_stream_p_t *stream = mp_get_stream(self->src_stream);
+    const mp_stream_p_t *stream = mp_get_stream_raise(self->src_stream, MP_STREAM_OP_READ);
     int err;
     byte c;
     mp_uint_t out_sz = stream->read(self->src_stream, &c, 1, &err);
@@ -66,8 +48,8 @@ STATIC int read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
     o->base.type = type;
@@ -110,7 +92,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     }
 
     o->decomp.dest = buf;
-    o->decomp.dest_limit = (byte *)buf + size;
+    o->decomp.dest_limit = (unsigned char *)buf + size;
     int st = uzlib_uncompress_chksum(&o->decomp);
     if (st == TINF_DONE) {
         o->eof = true;
@@ -133,16 +115,20 @@ STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
 #endif
 
 STATIC const mp_stream_p_t decompio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = decompio_read,
 };
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_obj_type_t decompio_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_DecompIO,
     .make_new = decompio_make_new,
-    .protocol = &decompio_stream_p,
     .locals_dict = (void *)&decompio_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &decompio_stream_p,
+        ),
 };
 #endif
 
@@ -160,10 +146,9 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
 
     decomp->dest = dest_buf;
     decomp->dest_limit = dest_buf + dest_buf_size;
-    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", dest_buf_size);
+    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
     decomp->source = bufinfo.buf;
-    decomp->source_limit = (byte *)bufinfo.buf + bufinfo.len;
-
+    decomp->source_limit = (unsigned char *)bufinfo.buf + bufinfo.len;
     int st;
     bool is_zlib = true;
 
@@ -190,7 +175,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
         dest_buf = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
         dest_buf_size += 256;
         decomp->dest = dest_buf + offset;
-        decomp->dest_limit = decomp->dest + 256;
+        decomp->dest_limit = dest_buf + offset + 256;
     }
 
     mp_uint_t final_sz = decomp->dest - dest_buf;
@@ -201,7 +186,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     return res;
 
 error:
-    nlr_raise(mp_obj_new_exception_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st)));
+    mp_raise_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
@@ -223,10 +208,11 @@ const mp_obj_module_t mp_module_uzlib = {
 // Source files #include'd here to make sure they're compiled in
 // only if module is enabled by config setting.
 
-#include "uzlib/tinflate.c"
-#include "uzlib/tinfzlib.c"
-#include "uzlib/tinfgzip.c"
-#include "uzlib/adler32.c"
-#include "uzlib/crc32.c"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#include "../lib/uzlib/src/tinflate.c"
+#include "../lib/uzlib/src/tinfzlib.c"
+#include "../lib/uzlib/src/tinfgzip.c"
+#include "../lib/uzlib/src/adler32.c"
+#include "../lib/uzlib/src/crc32.c"
 
 #endif // MICROPY_PY_UZLIB

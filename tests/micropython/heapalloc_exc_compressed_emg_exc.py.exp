@@ -1,4 +1,4 @@
-NameError name 'name' isn't defined
-KeyError pop from an empty set
-name 'name' isn't defined
-pop from an empty set
+NameError name 'name' is not defined
+KeyError pop from empty set
+name 'name' is not defined
+pop from empty set

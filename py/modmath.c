@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 
 #include "py/builtin.h"
 #include "py/runtime.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
@@ -252,7 +254,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         if (base <= (mp_float_t)0.0) {
             math_error();
         } else if (base == (mp_float_t)1.0) {
-            mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("divide by zero"));
+            mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));
     }

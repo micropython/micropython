@@ -1,4 +1,4 @@
-mod0 ValueError incompatible .mpy file
-mod1 ValueError incompatible .mpy file
-mod2 ValueError incompatible .mpy file
-mod3 ValueError incompatible .mpy file
+mod0 RuntimeError Corrupt .mpy file
+mod1 RuntimeError Corrupt .mpy file
+mod2 MpyError Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.
+mod3 MpyError Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info.

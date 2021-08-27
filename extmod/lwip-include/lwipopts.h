@@ -23,7 +23,7 @@ typedef uint32_t sys_prot_t;
 #define LWIP_NETCONN 0
 #define LWIP_SOCKET 0
 
-#ifdef MICROPY_PY_LWIP_SLIP
+#if MICROPY_PY_LWIP_SLIP
 #define LWIP_HAVE_SLIPIF 1
 #endif
 

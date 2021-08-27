@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,9 +45,12 @@ STATIC void none_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
 
 const mp_obj_type_t mp_type_NoneType = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_NoneType,
     .print = none_print,
-    .unary_op = mp_generic_unary_op,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS

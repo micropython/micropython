@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 
 #include "py/mpstate.h"
 
-#if MICROPY_NLR_XTENSA
+#if defined(MICROPY_NLR_XTENSA) && MICROPY_NLR_XTENSA
 
 #undef nlr_push
 

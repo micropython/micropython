@@ -55,7 +55,7 @@ typedef struct _mp_obj_task_queue_t {
 STATIC const mp_obj_type_t task_queue_type;
 STATIC const mp_obj_type_t task_type;
 
-STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
@@ -81,9 +81,9 @@ STATIC int task_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
 /******************************************************************************/
 // TaskQueue class
 
-STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     (void)args;
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+    mp_arg_check_num(n_args, kw_args, 0, 0, false);
     mp_obj_task_queue_t *self = m_new_obj(mp_obj_task_queue_t);
     self->base.type = type;
     self->heap = (mp_obj_task_t *)mp_pairheap_new(task_lt);
@@ -156,8 +156,8 @@ STATIC const mp_obj_type_t task_queue_type = {
 // This is the core uasyncio context with cur_task, _task_queue and CancelledError.
 STATIC mp_obj_t uasyncio_context = MP_OBJ_NULL;
 
-STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 1, 2, false);
     mp_obj_task_t *self = m_new_obj(mp_obj_task_t);
     self->pairheap.base.type = type;
     mp_pairheap_init_node(task_lt, &self->pairheap);
@@ -284,11 +284,14 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
 
 STATIC const mp_obj_type_t task_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Task,
     .make_new = task_make_new,
     .attr = task_attr,
-    .getiter = task_getiter,
-    .iternext = task_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = task_getiter,
+        .iternext = task_iternext,
+        ),
 };
 
 /******************************************************************************/

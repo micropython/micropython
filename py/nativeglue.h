@@ -145,7 +145,7 @@ typedef struct _mp_fun_table_t {
     #if defined(__GNUC__)
     NORETURN // Only certain compilers support no-return attributes in function pointer declarations
     #endif
-    void (*raise_msg)(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+    void (*raise_msg_str)(const mp_obj_type_t *exc_type, const char *msg);
     const mp_obj_type_t *(*obj_get_type)(mp_const_obj_t o_in);
     mp_obj_t (*obj_new_str)(const char *data, size_t len);
     mp_obj_t (*obj_new_bytes)(const byte *data, size_t len);
@@ -156,6 +156,7 @@ typedef struct _mp_fun_table_t {
     double (*obj_get_float_to_d)(mp_obj_t o);
     void (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
+    void (*assert_native_inited)(mp_obj_t native_object);
     const mp_print_t *plat_print;
     const mp_obj_type_t *type_type;
     const mp_obj_type_t *type_str;

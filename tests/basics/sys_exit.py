@@ -1,9 +1,6 @@
 # test sys module's exit function
 
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 
 try:
     sys.exit

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,8 @@
 #undef malloc
 #undef free
 #undef realloc
-#define malloc(b) gc_alloc((b), false)
-#define malloc_with_finaliser(b) gc_alloc((b), true)
+#define malloc_ll(b, ll) gc_alloc((b), false, (ll))
+#define malloc_with_finaliser(b, ll) gc_alloc((b), true, (ll))
 #define free gc_free
 #define realloc(ptr, n) gc_realloc(ptr, n, true)
 #define realloc_ext(ptr, n, mv) gc_realloc(ptr, n, mv)
@@ -68,6 +68,9 @@
 #if MICROPY_ENABLE_FINALISER
 #error MICROPY_ENABLE_FINALISER requires MICROPY_ENABLE_GC
 #endif
+
+#define malloc_ll(b, ll) malloc(b)
+#define malloc_with_finaliser(b) malloc((b))
 
 STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
     if (allow_move) {
@@ -82,8 +85,8 @@ STATIC void *realloc_ext(void *ptr, size_t n_bytes, bool allow_move) {
 
 #endif // MICROPY_ENABLE_GC
 
-void *m_malloc(size_t num_bytes) {
-    void *ptr = malloc(num_bytes);
+void *m_malloc(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_ll(num_bytes, long_lived);
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }
@@ -96,8 +99,8 @@ void *m_malloc(size_t num_bytes) {
     return ptr;
 }
 
-void *m_malloc_maybe(size_t num_bytes) {
-    void *ptr = malloc(num_bytes);
+void *m_malloc_maybe(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_ll(num_bytes, long_lived);
     #if MICROPY_MEM_STATS
     MP_STATE_MEM(total_bytes_allocated) += num_bytes;
     MP_STATE_MEM(current_bytes_allocated) += num_bytes;
@@ -108,8 +111,8 @@ void *m_malloc_maybe(size_t num_bytes) {
 }
 
 #if MICROPY_ENABLE_FINALISER
-void *m_malloc_with_finaliser(size_t num_bytes) {
-    void *ptr = malloc_with_finaliser(num_bytes);
+void *m_malloc_with_finaliser(size_t num_bytes, bool long_lived) {
+    void *ptr = malloc_with_finaliser(num_bytes, long_lived);
     if (ptr == NULL && num_bytes != 0) {
         m_malloc_fail(num_bytes);
     }
@@ -123,8 +126,8 @@ void *m_malloc_with_finaliser(size_t num_bytes) {
 }
 #endif
 
-void *m_malloc0(size_t num_bytes) {
-    void *ptr = m_malloc(num_bytes);
+void *m_malloc0(size_t num_bytes, bool long_lived) {
+    void *ptr = m_malloc(num_bytes, long_lived);
     // If this config is set then the GC clears all memory, so we don't need to.
     #if !MICROPY_GC_CONSERVATIVE_CLEAR
     memset(ptr, 0, num_bytes);
@@ -133,11 +136,10 @@ void *m_malloc0(size_t num_bytes) {
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes)
+void *m_realloc(void *ptr, size_t old_num_bytes, size_t new_num_bytes) {
 #else
-void *m_realloc(void *ptr, size_t new_num_bytes)
-#endif
-{
+void *m_realloc(void *ptr, size_t new_num_bytes) {
+    #endif
     void *new_ptr = realloc(ptr, new_num_bytes);
     if (new_ptr == NULL && new_num_bytes != 0) {
         m_malloc_fail(new_num_bytes);
@@ -162,11 +164,10 @@ void *m_realloc(void *ptr, size_t new_num_bytes)
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move)
+void *m_realloc_maybe(void *ptr, size_t old_num_bytes, size_t new_num_bytes, bool allow_move) {
 #else
-void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
-#endif
-{
+void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
+    #endif
     void *new_ptr = realloc_ext(ptr, new_num_bytes, allow_move);
     #if MICROPY_MEM_STATS
     // At first thought, "Total bytes allocated" should only grow,
@@ -191,11 +192,10 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void m_free(void *ptr, size_t num_bytes)
+void m_free(void *ptr, size_t num_bytes) {
 #else
-void m_free(void *ptr)
-#endif
-{
+void m_free(void *ptr) {
+    #endif
     free(ptr);
     #if MICROPY_MEM_STATS
     MP_STATE_MEM(current_bytes_allocated) -= num_bytes;

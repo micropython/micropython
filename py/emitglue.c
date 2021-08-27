@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,7 +112,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     // so that the generated native code which was created in data RAM will
     // be available for execution from instruction RAM.
     #if MICROPY_EMIT_THUMB || MICROPY_EMIT_INLINE_THUMB
-    #if __ICACHE_PRESENT == 1
+    #if defined(__ICACHE_PRESENT) && __ICACHE_PRESENT == 1
     // Flush D-cache, so the code emitted is stored in RAM.
     MP_HAL_CLEAN_DCACHE(fun_data, fun_len);
     // Invalidate I-cache, so the newly-created code is reloaded from RAM.
@@ -187,10 +187,6 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
         case MP_CODE_NATIVE_PY:
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, def_kw_args, rc->fun_data, rc->const_table);
-            // Check for a generator function, and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
-            }
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM
@@ -202,18 +198,20 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             // rc->kind should always be set and BYTECODE is the only remaining case
             assert(rc->kind == MP_CODE_BYTECODE);
             fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->fun_data, rc->const_table);
-            // check for generator functions and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
-                ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
-            }
-
-            #if MICROPY_PY_SYS_SETTRACE
-            mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);
-            self_fun->rc = rc;
-            #endif
-
             break;
     }
+
+    // check for generator functions and if so wrap in generator object
+    if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+        fun = mp_obj_new_gen_wrap(fun, (rc->scope_flags & MP_SCOPE_FLAG_ASYNC) != 0);
+    }
+
+    #if MICROPY_PY_SYS_SETTRACE
+    if (rc->kind == MP_CODE_BYTECODE) {
+        mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)MP_OBJ_TO_PTR(fun);
+        self_fun->rc = rc;
+    }
+    #endif
 
     return fun;
 }

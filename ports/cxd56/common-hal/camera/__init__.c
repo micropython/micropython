@@ -1,0 +1,1 @@
+// No camera module functions.

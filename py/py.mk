@@ -7,6 +7,8 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+TRANSLATION ?= en_US
+
 # If qstr autogeneration is not disabled we specify the output header
 # for all collected qstrings.
 ifneq ($(QSTR_AUTOGEN_DISABLE),1)
@@ -50,6 +52,13 @@ CXXFLAGS_MOD += $(CXXFLAGS_USERMOD)
 LDFLAGS_MOD += $(LDFLAGS_USERMOD)
 endif
 
+ifeq ($(CIRCUITPY_ULAB),1)
+ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
+SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
+CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/ulab/code
+$(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
+endif
+
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
 	mpstate.o \
@@ -63,6 +72,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrsetjmp.o \
 	malloc.o \
 	gc.o \
+	gc_long_lived.o \
 	pystack.o \
 	qstr.o \
 	vstr.o \
@@ -106,6 +116,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	warning.o \
 	profile.o \
 	map.o \
+	enum.o \
 	obj.o \
 	objarray.o \
 	objattrtuple.o \
@@ -142,10 +153,13 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objstr.o \
 	objstrunicode.o \
 	objstringio.o \
+	objtraceback.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
 	opmethods.o \
+	proto.o \
+	reload.o \
 	sequence.o \
 	stream.o \
 	binary.o \
@@ -181,22 +195,10 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/moduheapq.o \
 	extmod/modutimeq.o \
 	extmod/moduhashlib.o \
-	extmod/moducryptolib.o \
 	extmod/modubinascii.o \
 	extmod/virtpin.o \
-	extmod/machine_mem.o \
-	extmod/machine_pinbase.o \
-	extmod/machine_signal.o \
-	extmod/machine_pulse.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o \
-	extmod/modbluetooth.o \
-	extmod/modussl_axtls.o \
-	extmod/modussl_mbedtls.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
-	extmod/moduwebsocket.o \
-	extmod/modwebrepl.o \
 	extmod/modframebuf.o \
 	extmod/vfs.o \
 	extmod/vfs_blockdev.o \
@@ -208,7 +210,6 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/vfs_fat_file.o \
 	extmod/vfs_lfs.o \
 	extmod/utime_mphal.o \
-	extmod/uos_dupterm.o \
 	lib/embed/abort_.o \
 	lib/utils/printf.o \
 
@@ -226,50 +227,69 @@ endif
 
 # object file for frozen files
 ifneq ($(FROZEN_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen.o
+PY_O += $(BUILD)/frozen.o
 endif
 
+# Combine old singular FROZEN_MPY_DIR with new multiple value form.
+FROZEN_MPY_DIRS += $(FROZEN_MPY_DIR)
+
 # object file for frozen bytecode (frozen .mpy files)
-ifneq ($(FROZEN_MPY_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
+ifneq ($(FROZEN_MPY_DIRS),)
+PY_O += $(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
+SRC_QSTR_EMITNATIVE = py/emitn%
 SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
+# Sources that only hold QSTRs after pre-processing.
+SRC_QSTR_PREPROCESSOR = $(addprefix $(TOP)/, $(filter $(SRC_QSTR_EMITNATIVE),$(PY_CORE_O_BASENAME:.o=.c)))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
 .PHONY: FORCE
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
-	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(PY_SRC)/makeversionhdr.py $@
+
+# build a list of registered modules for py/objmodule.c.
+$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+	@$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
+
+SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
+$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
+	$(Q)msgfmt -o $@ $^
+
+$(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+	$(STEPECHO) "GEN $@"
+	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $@
+
 # qstr data
+$(HEADER_BUILD)/qstrdefs.enum.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
-# See more information about this process in docs/develop/qstr.rst.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
-	$(ECHO) "GEN $@"
-	$(Q)$(CAT) $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^\"\(Q(.*)\)\"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
-$(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
-	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
+$(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
-# build a list of registered modules for py/objmodule.c.
-$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
-	@$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
-
-SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
+# Standard C functions like memset need to be compiled with special flags so
+# the compiler does not optimise these functions in terms of themselves.
+CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
+$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
@@ -281,10 +301,23 @@ $(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
 # optimising gc for speed; 5ms down to 4ms on pybv2
+ifndef SUPEROPT_GC
+  SUPEROPT_GC = 1
+endif
+
+ifeq ($(SUPEROPT_GC),1)
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
+endif
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
+ifndef SUPEROPT_VM
+  SUPEROPT_VM = 1
+endif
+
+ifeq ($(SUPEROPT_VM),1)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
+endif
+
 # Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,8 @@ void *mp_pystack_alloc(size_t n_bytes) {
     #endif
     if (MP_STATE_THREAD(pystack_cur) + n_bytes > MP_STATE_THREAD(pystack_end)) {
         // out of memory in the pystack
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_RuntimeError,
-            MP_OBJ_NEW_QSTR(MP_QSTR_pystack_space_exhausted)));
+        mp_raise_arg1(&mp_type_RuntimeError,
+            MP_OBJ_NEW_QSTR(MP_QSTR_pystack_space_exhausted));
     }
     void *ptr = MP_STATE_THREAD(pystack_cur);
     MP_STATE_THREAD(pystack_cur) += n_bytes;

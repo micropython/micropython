@@ -1,7 +1,9 @@
 # test capability for threads to access a shared mutable data structure
 # (without contention because they access different parts of the structure)
 #
-# MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+# SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+#
+# SPDX-License-Identifier: MIT
 
 import _thread
 

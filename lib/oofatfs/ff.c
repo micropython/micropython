@@ -1175,6 +1175,7 @@ static DWORD get_fat (      /* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FF
                     break;
                 }
             }
+            MP_FALLTHROUGH
             /* go to default */
 #endif
         default:
@@ -5518,6 +5519,7 @@ FRESULT f_mkfs (
                 }
                 st = 1;         /* Do not compress short run */
                 /* go to next case */
+                MP_FALLTHROUGH
             case 1:
                 ch = si++;      /* Fill the short run */
                 if (--j == 0) st = 0;
@@ -5944,4 +5946,3 @@ FRESULT f_setcp (
     return FR_OK;
 }
 #endif  /* FF_CODE_PAGE == 0 */
-

@@ -1,5 +1,8 @@
 # test [0,-0,1,-1] edge cases of bignum
 
+import skip_if
+skip_if.no_bigint()
+
 long_zero = (2**64) >> 65
 long_neg_zero = -long_zero
 long_one = long_zero + 1

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@
 #include "py/objstr.h"
 #include "py/builtin.h"
 
+#include "supervisor/shared/translate.h"
+
 #if MICROPY_ENABLE_COMPILER
 
 #define RULE_ACT_ARG_MASK       (0x0f)
@@ -61,7 +63,7 @@ enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     RULE_const_object, // special node for a constant, generic Python object
@@ -69,7 +71,7 @@ enum {
 // define rules without a compile function
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_##rule,
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -86,7 +88,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) kind,
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -94,7 +96,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) kind,
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -115,13 +117,13 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) __VA_ARGS__,
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...)  __VA_ARGS__,
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -141,12 +143,12 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 enum {
 #define DEF_RULE(rule, comp, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -164,13 +166,13 @@ enum {
 STATIC const uint8_t rule_arg_offset_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     0, // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -187,20 +189,20 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-0;
+    0;
 
 #if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
 #define DEF_RULE_NC(rule, kind, ...)
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     "", // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) #rule,
-#include "py/grammar.h"
+    #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -250,6 +252,9 @@ STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     return &rule_arg_combined_table[off];
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+
 STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     // use a custom memory allocator to store parse nodes sequentially in large chunks
 
@@ -290,6 +295,7 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     chunk->union_.used += num_bytes;
     return ret;
 }
+#pragma GCC diagnostic pop
 
 STATIC void push_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
@@ -838,11 +844,30 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
-    parser.rule_stack = m_new(rule_stack_t, parser.rule_stack_alloc);
+    parser.rule_stack = NULL;
+    while (parser.rule_stack_alloc > 1) {
+        parser.rule_stack = m_new_maybe(rule_stack_t, parser.rule_stack_alloc);
+        if (parser.rule_stack != NULL) {
+            break;
+        } else {
+            parser.rule_stack_alloc /= 2;
+        }
+    }
 
     parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
-    parser.result_stack = m_new(mp_parse_node_t, parser.result_stack_alloc);
+    parser.result_stack = NULL;
+    while (parser.result_stack_alloc > 1) {
+        parser.result_stack = m_new_maybe(mp_parse_node_t, parser.result_stack_alloc);
+        if (parser.result_stack != NULL) {
+            break;
+        } else {
+            parser.result_stack_alloc /= 2;
+        }
+    }
+    if (parser.rule_stack == NULL || parser.result_stack == NULL) {
+        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Unable to init parser"));
+    }
 
     parser.lexer = lex;
 
@@ -902,6 +927,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     backtrack = false;
                 }
                 for (; i < n; ++i) {
+                    // printf("--> inside for @L924\n");
                     uint16_t kind = rule_arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
                         if (lex->tok_kind == (rule_arg[i] & RULE_ARG_ARG_MASK)) {
@@ -1146,15 +1172,57 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         ) {
     syntax_error:;
         mp_obj_t exc;
-        if (lex->tok_kind == MP_TOKEN_INDENT) {
-            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                MP_ERROR_TEXT("unexpected indent"));
-        } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
-            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
-        } else {
-            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                MP_ERROR_TEXT("invalid syntax"));
+        switch (lex->tok_kind) {
+            case MP_TOKEN_INDENT:
+                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                    MP_ERROR_TEXT("unexpected indent"));
+                break;
+            case MP_TOKEN_DEDENT_MISMATCH:
+                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                    MP_ERROR_TEXT("unindent does not match any outer indentation level"));
+                break;
+                #if MICROPY_COMP_FSTRING_LITERAL
+            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+            case MP_TOKEN_FSTRING_BACKSLASH:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("f-string expression part cannot include a backslash"));
+                break;
+            case MP_TOKEN_FSTRING_COMMENT:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("f-string expression part cannot include a '#'"));
+                break;
+            case MP_TOKEN_FSTRING_UNCLOSED:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("f-string: expecting '}'"));
+                break;
+            case MP_TOKEN_FSTRING_UNOPENED:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("f-string: single '}' is not allowed"));
+                break;
+            case MP_TOKEN_FSTRING_EMPTY_EXP:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("f-string: empty expression not allowed"));
+                break;
+            case MP_TOKEN_FSTRING_RAW:
+                exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
+                    MP_ERROR_TEXT("raw f-strings are not implemented"));
+                break;
+            #else
+            case MP_TOKEN_FSTRING_BACKSLASH:
+            case MP_TOKEN_FSTRING_COMMENT:
+            case MP_TOKEN_FSTRING_UNCLOSED:
+            case MP_TOKEN_FSTRING_UNOPENED:
+            case MP_TOKEN_FSTRING_EMPTY_EXP:
+            case MP_TOKEN_FSTRING_RAW:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("malformed f-string"));
+                break;
+            #endif
+                #endif
+            default:
+                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                    MP_ERROR_TEXT("invalid syntax"));
+                break;
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this

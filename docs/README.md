@@ -1,53 +1,48 @@
-MicroPython Documentation
+Adafruit's CircuitPython Documentation
 =========================
 
-The MicroPython documentation can be found at:
-http://docs.micropython.org/en/latest/
+The latest documentation can be found at:
+http://circuitpython.readthedocs.io/en/latest/
 
-The documentation you see there is generated from the files in the docs tree:
-https://github.com/micropython/micropython/tree/master/docs
+The documentation you see there is generated from the files in the whole tree:
+https://github.com/adafruit/circuitpython/tree/main
 
 Building the documentation locally
 ----------------------------------
 
-If you're making changes to the documentation, you may want to build the
+If you're making changes to the documentation, you should build the
 documentation locally so that you can preview your changes.
 
-Install Sphinx, and optionally (for the RTD-styling), sphinx_rtd_theme,
+Install Sphinx, recommonmark, and optionally (for the RTD-styling), sphinx_rtd_theme,
 preferably in a virtualenv:
 
      pip install sphinx
+     pip install recommonmark
      pip install sphinx_rtd_theme
 
-In `micropython/docs`, build the docs:
+In `circuitpython/`, build the docs:
 
     make html
 
-You'll find the index page at `micropython/docs/build/html/index.html`.
+You'll find the index page at `_build/html/index.html`.
 
-Having readthedocs.org build the documentation
-----------------------------------------------
+### More flexibility
 
-If you would like to have docs for forks/branches hosted on GitHub, GitLab or
-BitBucket an alternative to building the docs locally is to sign up for a free
-https://readthedocs.org account. The rough steps to follow are:
-1. sign-up for an account, unless you already have one
-2. in your account settings: add GitHub as a connected service (assuming
-you have forked this repo on github)
-3. in your account projects: import your forked/cloned micropython repository
-into readthedocs
-4. in the project's versions: add the branches you are developing on or
-for which you'd like readthedocs to auto-generate docs whenever you
-push a change
+Running `make` by itself will list out the multiple doc generating commands available.
 
-PDF manual generation
----------------------
+All commands will, by default, run with `-E` (forces a rebuild from scratch of docs) and `-v` (verbosity level 1).  This can be customized as desired:
 
-This can be achieved with:
+    # will turn OFF the force rebuild
+    make html FORCE=
 
-    make latexpdf
+    # will turn OFF the verbosity
+    make html VERBOSE=
 
-but require rather complete install of LaTeX with various extensions. On
-Debian/Ubuntu, try (500MB+ download):
+    # will turn OFF the force rebuild and make it doubly verbose when running
+    make html FORCE= VERBOSE="-v -v"
 
-    apt-get install texlive-latex-recommended texlive-latex-extra
+You can also pass other options to sphinx by using `SPHINXOPTS`.
+
+    make html SPHINXOPTS="-T"
+
+For more flexibility and customization, take a look at the Makefile for all variables you can pass in and overwrite.

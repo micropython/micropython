@@ -1,28 +1,7 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2014 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+//
+// SPDX-License-Identifier: MIT
 
 #include <stdio.h>
 #include <assert.h>
@@ -31,13 +10,20 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 
-#if MICROPY_PY_UBINASCII
+static void check_not_unicode(const mp_obj_t arg) {
+    #if MICROPY_CPYTHON_COMPAT
+    if (mp_obj_is_str(arg)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
+    }
+    #endif
+}
 
 STATIC mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     // First argument is the data to convert.
     // Second argument is an optional separator to be used between values.
     const char *sep = NULL;
     mp_buffer_info_t bufinfo;
+    check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     // Code below assumes non-zero buffer length when computing size with
@@ -166,6 +152,7 @@ STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
 STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
+    check_not_unicode(data);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
@@ -218,10 +205,11 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
-#include "uzlib/tinf.h"
+#include "../../lib/uzlib/src/tinf.h"
 
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
+    check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
     crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
@@ -231,7 +219,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_bin
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubinascii) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_binascii) },
     { MP_ROM_QSTR(MP_QSTR_hexlify), MP_ROM_PTR(&mod_binascii_hexlify_obj) },
     { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
@@ -247,5 +235,3 @@ const mp_obj_module_t mp_module_ubinascii = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_binascii_globals,
 };
-
-#endif // MICROPY_PY_UBINASCII

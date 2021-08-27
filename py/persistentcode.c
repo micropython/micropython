@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2020 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@
 #include "py/bc0.h"
 #include "py/objstr.h"
 #include "py/mpthread.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -147,6 +149,10 @@ STATIC byte *extract_prelude(const byte **ip, bytecode_prelude_t *prelude) {
 
 #include "py/parsenum.h"
 
+STATIC void raise_corrupt_mpy(void) {
+    mp_raise_RuntimeError(MP_ERROR_TEXT("Corrupt .mpy file"));
+}
+
 STATIC int read_byte(mp_reader_t *reader);
 STATIC size_t read_uint(mp_reader_t *reader, byte **out);
 
@@ -159,11 +165,13 @@ typedef struct _reloc_info_t {
 
 #if MICROPY_EMIT_THUMB
 STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     // high part
     *(uint16_t *)pc = (*(uint16_t *)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
     // low part
     *(uint16_t *)(pc + 2) = (*(uint16_t *)(pc + 2) & 0x0f00) | (val << 4 & 0x7000) | (val & 0x00ff);
-
+    #pragma GCC diagnostic pop
 }
 #endif
 
@@ -192,15 +200,20 @@ STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
 void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
     // Relocate native code
     reloc_info_t *ri = ri_in;
-    uint8_t op;
     uintptr_t *addr_to_adjust = NULL;
-    while ((op = read_byte(ri->reader)) != 0xff) {
+
+    // Read the byte directly so that we don't error on EOF.
+    mp_uint_t op = ri->reader->readbyte(ri->reader->data);
+    while (op != 0xff && op != MP_READER_EOF) {
         if (op & 1) {
             // Point to new location to make adjustments
             size_t addr = read_uint(ri->reader, NULL);
             if ((addr & 1) == 0) {
                 // Point to somewhere in text
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wcast-align"
                 addr_to_adjust = &((uintptr_t *)text)[addr >> 1];
+                #pragma GCC diagnostic pop
             } else {
                 // Point to somewhere in rodata
                 addr_to_adjust = &((uintptr_t *)ri->const_table[1])[addr >> 1];
@@ -232,25 +245,37 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
         while (n--) {
             *addr_to_adjust++ += dest;
         }
+        op = ri->reader->readbyte(ri->reader->data);
     }
 }
 
 #endif
 
 STATIC int read_byte(mp_reader_t *reader) {
-    return reader->readbyte(reader->data);
+    mp_uint_t b = reader->readbyte(reader->data);
+    if (b == MP_READER_EOF) {
+        raise_corrupt_mpy();
+    }
+    return b;
 }
 
 STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
-        *buf++ = reader->readbyte(reader->data);
+        mp_uint_t b = reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
+        *buf++ = b;
     }
 }
 
 STATIC size_t read_uint(mp_reader_t *reader, byte **out) {
     size_t unum = 0;
     for (;;) {
-        byte b = reader->readbyte(reader->data);
+        mp_uint_t b = reader->readbyte(reader->data);
+        if (b == MP_READER_EOF) {
+            raise_corrupt_mpy();
+        }
         if (out != NULL) {
             **out = b;
             ++*out;
@@ -357,7 +382,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 
     #if !MICROPY_EMIT_MACHINE_CODE
     if (kind != MP_CODE_BYTECODE) {
-        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+
     }
     #endif
 
@@ -400,7 +425,10 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
                     dest[1] = (qst >> 8) & 0xff;
                 } else if ((off & 3) == 3) {
                     // Generic, aligned qstr-object link
+                    #pragma GCC diagnostic push
+                    #pragma GCC diagnostic ignored "-Wcast-align"
                     *(mp_obj_t *)dest = MP_OBJ_NEW_QSTR(qst);
+                    #pragma GCC diagnostic pop
                 } else {
                     // Architecture-specific link
                     arch_link_qstr(dest, (off & 3) == 2, qst);
@@ -549,17 +577,17 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, qstr_window_t *qw) {
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
-    if (header[0] != 'M'
+    if (header[0] != 'C'
         || header[1] != MPY_VERSION
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()
         || read_uint(reader, NULL) > QSTR_WINDOW_SIZE) {
-        mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
+        mp_raise_MpyError(MP_ERROR_TEXT("Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/mpy-update for more info."));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
         byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy arch"));
+            mp_raise_ValueError(MP_ERROR_TEXT("incompatible native .mpy architecture"));
         }
     }
     qstr_window_t qw;
@@ -798,13 +826,13 @@ STATIC bool mp_raw_code_has_native(mp_raw_code_t *rc) {
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
     // header contains:
-    //  byte  'M'
+    //  byte  'C'
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
     //  uint  size of qstr window
     byte header[4] = {
-        'M',
+        'C',
         MPY_VERSION,
         MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
         #if MICROPY_DYNAMIC_COMPILER

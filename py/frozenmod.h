@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
- * Copyright (c) 2016 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2015 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,18 @@ enum {
     MP_FROZEN_MPY,
 };
 
+// Frozen modules are in a pseudo-directory, so sys.path can control how they're found.
+#define MP_FROZEN_FAKE_DIR ".frozen"
+#define MP_FROZEN_FAKE_DIR_LENGTH (sizeof(MP_FROZEN_FAKE_DIR) - 1)
+
+#define MP_FROZEN_FAKE_DIR_SLASH (MP_FROZEN_FAKE_DIR "/")
+#define MP_FROZEN_FAKE_DIR_SLASH_LENGTH (sizeof(MP_FROZEN_FAKE_DIR_SLASH) - 1)
+
+// This should match MP_FROZEN_FAKE_DIR.
+#define MP_FROZEN_FAKE_DIR_QSTR MP_QSTR__dot_frozen
+
 int mp_find_frozen_module(const char *str, size_t len, void **data);
-const char *mp_find_frozen_str(const char *str, size_t *len);
+const char *mp_find_frozen_str(const char *str, size_t str_len, size_t *len);
 mp_import_stat_t mp_frozen_stat(const char *str);
 
 #endif // MICROPY_INCLUDED_PY_FROZENMOD_H

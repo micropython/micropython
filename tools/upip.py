@@ -1,10 +1,10 @@
-#
 # upip - Package manager for MicroPython
+
+# SPDX-FileCopyrightText: Copyright (c) 2015-2018 Paul Sokolovsky
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
 #
-# Copyright (c) 2015-2018 Paul Sokolovsky
-#
-# Licensed under the MIT license.
-#
+# SPDX-License-Identifier: MIT
+
 import sys
 import gc
 import uos as os

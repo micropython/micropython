@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,12 @@ typedef enum {
     PYEXEC_MODE_RAW_REPL,
 } pyexec_mode_kind_t;
 
+typedef struct {
+    int return_code;
+    mp_obj_t exception;
+    int exception_line;
+} pyexec_result_t;
+
 extern pyexec_mode_kind_t pyexec_mode_kind;
 
 // Set this to the value (eg PYEXEC_FORCED_EXIT) that will be propagated through
@@ -41,15 +47,21 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
 extern int pyexec_system_exit;
 
 #define PYEXEC_FORCED_EXIT (0x100)
+#define PYEXEC_EXCEPTION   (0x200)
+#define PYEXEC_DEEP_SLEEP  (0x400)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);
-int pyexec_file(const char *filename);
-int pyexec_file_if_exists(const char *filename);
-int pyexec_frozen_module(const char *name);
+int pyexec_file(const char *filename, pyexec_result_t *result);
+int pyexec_file_if_exists(const char *filename, pyexec_result_t *result);
+int pyexec_frozen_module(const char *name, pyexec_result_t *result);
 void pyexec_event_repl_init(void);
 int pyexec_event_repl_process_char(int c);
 extern uint8_t pyexec_repl_active;
+
+#if CIRCUITPY_ATEXIT
+int pyexec_exit_handler(const void *source, pyexec_result_t *result);
+#endif
 
 #if MICROPY_REPL_INFO
 mp_obj_t pyb_set_repl_info(mp_obj_t o_value);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,7 +89,7 @@ MP_DECLARE_CONST_FUN_OBJ_2(mp_op_delitem_obj);
 
 extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_builtins;
-extern const mp_obj_module_t mp_module_uarray;
+extern const mp_obj_module_t mp_module_array;
 extern const mp_obj_module_t mp_module_collections;
 extern const mp_obj_module_t mp_module_io;
 extern const mp_obj_module_t mp_module_math;
@@ -115,15 +115,17 @@ extern const mp_obj_module_t mp_module_ucryptolib;
 extern const mp_obj_module_t mp_module_ubinascii;
 extern const mp_obj_module_t mp_module_urandom;
 extern const mp_obj_module_t mp_module_uselect;
-extern const mp_obj_module_t mp_module_ussl;
 extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
-extern const mp_obj_module_t mp_module_lwip;
-extern const mp_obj_module_t mp_module_uwebsocket;
-extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
-extern const mp_obj_module_t mp_module_ubluetooth;
+extern const mp_obj_module_t ulab_user_cmodule;
+extern mp_obj_module_t ulab_fft_module;
+extern mp_obj_module_t ulab_filter_module;
+extern mp_obj_module_t ulab_linalg_module;
+extern mp_obj_module_t ulab_numerical_module;
+extern mp_obj_module_t ulab_poly_module;
+
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

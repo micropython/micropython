@@ -1,9 +1,6 @@
 # test sys.getsizeof() function
 
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 try:
     sys.getsizeof
 except AttributeError:

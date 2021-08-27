@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 import argparse
 import os
 import os.path
@@ -12,10 +17,7 @@ argparser.add_argument(
 argparser.add_argument("dir", help="input directory")
 args = argparser.parse_args()
 
-TARGET_OPTS = {
-    "unix": "-mcache-lookup-bc",
-    "baremetal": "",
-}
+TARGET_OPTS = {"unix": "-mcache-lookup-bc", "baremetal": ""}
 
 args.dir = args.dir.rstrip("/")
 

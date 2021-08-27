@@ -1,0 +1,5 @@
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="cucumber_m"
+# end of LWIP

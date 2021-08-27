@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@ typedef struct _mp_obj_filter_t {
     mp_obj_t iter;
 } mp_obj_filter_t;
 
-STATIC mp_obj_t filter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, false);
+STATIC mp_obj_t filter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, 2, false);
     mp_obj_filter_t *o = m_new_obj(mp_obj_filter_t);
     o->base.type = type;
     o->fun = args[0];
@@ -63,10 +63,13 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_filter = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_filter,
     .make_new = filter_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = filter_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = filter_iternext,
+        ),
 };
 
 #endif // MICROPY_PY_BUILTINS_FILTER

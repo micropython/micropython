@@ -23,7 +23,7 @@ def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--dirty", "--always", "--match", "v[1-9].*"],
+            ["git", "describe", "--dirty", "--always", "--tags", "--match", "[1-9].*"],
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         ).strip()
@@ -59,16 +59,22 @@ def get_version_info_from_git():
     except OSError:
         return None
 
-    return git_tag, git_hash
+    # Try to extract MicroPython version from git tag
+    ver = git_tag.split("-")[0].split(".")
+
+    return git_tag, git_hash, ver
 
 
 def get_version_info_from_docs_conf():
-    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "docs", "conf.py")) as f:
+    with open(os.path.join(os.path.dirname(sys.argv[0]), "..", "conf.py")) as f:
         for line in f:
             if line.startswith("version = release = '"):
                 ver = line.strip().split(" = ")[2].strip("'")
                 git_tag = "v" + ver
-                return git_tag, "<no hash>"
+                ver = ver.split(".")
+                if len(ver) == 2:
+                    ver.append("0")
+                return git_tag, "<no hash>", ver
     return None
 
 
@@ -78,7 +84,12 @@ def make_version_header(filename):
     if info is None:
         info = get_version_info_from_docs_conf()
 
-    git_tag, git_hash = info
+    git_tag, git_hash, ver = info
+    if len(ver) < 3:
+        ver = ("0", "0", "0")
+        version_string = git_hash
+    else:
+        version_string = ".".join(ver)
 
     build_date = datetime.date.today()
     if "SOURCE_DATE_EPOCH" in os.environ:
@@ -92,10 +103,19 @@ def make_version_header(filename):
 #define MICROPY_GIT_TAG "%s"
 #define MICROPY_GIT_HASH "%s"
 #define MICROPY_BUILD_DATE "%s"
+#define MICROPY_VERSION_MAJOR (%s)
+#define MICROPY_VERSION_MINOR (%s)
+#define MICROPY_VERSION_MICRO (%s)
+#define MICROPY_VERSION_STRING "%s"
+#define MICROPY_FULL_VERSION_INFO ("Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME)
 """ % (
         git_tag,
         git_hash,
-        build_date.strftime("%Y-%m-%d"),
+        datetime.date.today().strftime("%Y-%m-%d"),
+        ver[0].replace("v", ""),
+        ver[1],
+        ver[2],
+        version_string,
     )
 
     # Check if the file contents changed from last time
@@ -108,7 +128,6 @@ def make_version_header(filename):
 
     # Only write the file if we need to
     if write_file:
-        print("GEN %s" % filename)
         with open(filename, "w") as f:
             f.write(file_data)
 

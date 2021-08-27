@@ -62,7 +62,7 @@ for i in range(N):
     f = vfs.open(n, "w")
     f.write(n)
     f = None  # release f without closing
-    [0, 1, 2, 3]  # use up Python stack so f is really gone
+    [0, 1, 2, 3, 4, 5]  # use up Python stack so f is really gone
 gc.collect()  # should finalise all N files by closing them
 for i in range(N):
     with vfs.open("x%d" % i, "r") as f:

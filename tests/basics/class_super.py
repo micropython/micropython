@@ -35,6 +35,13 @@ class B(A):
         return super().foo().count(2) # calling a subsequent method
 print(B().foo())
 
+try:
+    super(1, 1).x
+except TypeError:
+    print(True)
+else:
+    print(False)
+
 # first arg to super must be a type
 try:
     super(1, 1)

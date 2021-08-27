@@ -1,39 +1,20 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2013, 2014 Damien P. George
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+//
+// SPDX-License-Identifier: MIT
 
 #include "py/mpconfig.h"
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs_fat.h"
+#include "supervisor/filesystem.h"
 
 // this table converts from FRESULT to POSIX errno
 const byte fresult_to_errno_table[20] = {
@@ -59,14 +40,9 @@ const byte fresult_to_errno_table[20] = {
     [FR_INVALID_PARAMETER] = MP_EINVAL,
 };
 
-typedef struct _pyb_file_obj_t {
-    mp_obj_base_t base;
-    FIL fp;
-} pyb_file_obj_t;
-
 STATIC void file_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_printf(print, "<io.%s %p>", mp_obj_get_type_str(self_in), MP_OBJ_TO_PTR(self_in));
+    mp_printf(print, "<io.%q %p>", mp_obj_get_type_qstr(self_in), MP_OBJ_TO_PTR(self_in));
 }
 
 STATIC mp_uint_t file_obj_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
@@ -191,16 +167,38 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
                 break;
         }
     }
+    assert(vfs != NULL);
+    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(vfs)) {
+        mp_raise_OSError(MP_EROFS);
+    }
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
 
     const char *fname = mp_obj_str_get_str(args[0].u_obj);
-    assert(vfs != NULL);
     FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_errno_str(fresult_to_errno_table[res], args[0].u_obj);
+    }
+    // If we're reading, turn on fast seek.
+    if (mode == FA_READ) {
+        // One call to determine how much space we need.
+        DWORD temp_table[2];
+        temp_table[0] = 2;
+        o->fp.cltbl = temp_table;
+        f_lseek(&o->fp, CREATE_LINKMAP);
+        DWORD size = (temp_table[0] + 1) * 2;
+
+        // Now allocate the size and construct the map.
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
+        if (o->fp.cltbl != NULL) {
+            o->fp.cltbl[0] = size;
+            res = f_lseek(&o->fp, CREATE_LINKMAP);
+            if (res != FR_OK) {
+                o->fp.cltbl = NULL;
+            }
+        }
     }
 
     // for 'a' mode, we must begin at the end of the file
@@ -211,9 +209,9 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
+    mp_arg_parse_all(n_args, args, kw_args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
     return file_open(NULL, type, arg_vals);
 }
 
@@ -238,6 +236,7 @@ STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_
 
 #if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
@@ -245,17 +244,21 @@ STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_fat_fileio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_FileIO,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_fileio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &vfs_fat_fileio_stream_p,
+        ),
 };
 #endif
 
 STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = file_obj_read,
     .write = file_obj_write,
     .ioctl = file_obj_ioctl,
@@ -264,13 +267,16 @@ STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
 
 const mp_obj_type_t mp_type_vfs_fat_textio = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_TextIOWrapper,
     .print = file_obj_print,
     .make_new = file_obj_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &vfs_fat_textio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = mp_stream_unbuffered_iter,
+        .protocol = &vfs_fat_textio_stream_p,
+        ),
 };
 
 // Factory function for I/O stream classes

@@ -1,4 +1,4 @@
-# test + + 
+# test + +
 
 print(0 ^ (1 << 80))
 print((1 << 80) ^ (1 << 80))
@@ -10,7 +10,7 @@ print(a ^ (1 << 200))
 print(a ^ a == 0)
 print(bool(a ^ a))
 
-# test - + 
+# test - +
 
 print((-1 << 80) ^ (1 << 80))
 print((-1 << 80) ^ 0)
@@ -22,7 +22,7 @@ print(bool((-a) ^ a))
 i = -1
 print(i ^ 0xffffffffffffffff) # carry overflows to higher digit
 
-# test + - 
+# test + -
 
 print(0 ^ (-1 << 80))
 print((1 << 80) ^ (-1 << 80))
@@ -32,7 +32,7 @@ print(a ^ (-1 << 200))
 print(a ^ (-a) == 0)
 print(bool(a ^ (-a)))
 
-# test - - 
+# test - -
 
 print((-1 << 80) ^ (-1 << 80))
 

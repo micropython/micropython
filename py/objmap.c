@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ typedef struct _mp_obj_map_t {
     mp_obj_t iters[];
 } mp_obj_map_t;
 
-STATIC mp_obj_t map_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, false);
+STATIC mp_obj_t map_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 2, MP_OBJ_FUN_ARGS_MAX, false);
     mp_obj_map_t *o = m_new_obj_var(mp_obj_map_t, mp_obj_t, n_args - 1);
     o->base.type = type;
     o->n_iters = n_args - 1;
@@ -66,8 +66,11 @@ STATIC mp_obj_t map_iternext(mp_obj_t self_in) {
 
 const mp_obj_type_t mp_type_map = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_map,
     .make_new = map_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = map_iternext,
+    MP_TYPE_EXTENDED_FIELDS(
+        .getiter = mp_identity_getiter,
+        .iternext = map_iternext,
+        ),
 };

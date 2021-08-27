@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,6 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
-// Current version of MicroPython
-#define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 16
-#define MICROPY_VERSION_MICRO 0
-
-// Combined version as a 32-bit number for convenience
-#define MICROPY_VERSION ( \
-    MICROPY_VERSION_MAJOR << 16 \
-        | MICROPY_VERSION_MINOR << 8 \
-        | MICROPY_VERSION_MICRO)
-
-// String version
-#define MICROPY_VERSION_STRING \
-    MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
-    MP_STRINGIFY(MICROPY_VERSION_MICRO)
-
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file
 // located in a directory of your port.
@@ -60,6 +43,11 @@
 #include MP_CONFIGFILE
 #else
 #include <mpconfigport.h>
+#endif
+
+// Is this a CircuitPython build?
+#ifndef CIRCUITPY
+#define CIRCUITPY 0
 #endif
 
 // Any options not explicitly set in mpconfigport.h will get default
@@ -165,6 +153,12 @@
 // space at the end when no more strings need interning.
 #ifndef MICROPY_ALLOC_QSTR_CHUNK_INIT
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (128)
+#endif
+
+// Max number of entries in newly allocated QSTR pools. Smaller numbers may make QSTR lookups
+// slightly slower but reduce the waste of unused spots.
+#ifndef MICROPY_QSTR_POOL_MAX_ENTRIES
+#define MICROPY_QSTR_POOL_MAX_ENTRIES (64)
 #endif
 
 // Initial amount for lexer indentation level
@@ -273,6 +267,14 @@
 #if defined(MICROPY_NO_ALLOCA) && MICROPY_NO_ALLOCA
 #undef alloca
 #define alloca(x) m_malloc(x)
+#endif
+
+// Number of atb indices to cache. Allocations of fewer blocks will be faster
+// because the search will be accelerated by the index cache. This only applies
+// to short lived allocations because we assume the long lived allocations are
+// contiguous.
+#ifndef MICROPY_ATB_INDICES
+#define MICROPY_ATB_INDICES (8)
 #endif
 
 /*****************************************************************************/
@@ -439,6 +441,11 @@
 #define MICROPY_COMP_RETURN_IF_EXPR (0)
 #endif
 
+// Whether to include parsing of f-string literals
+#ifndef MICROPY_COMP_FSTRING_LITERAL
+#define MICROPY_COMP_FSTRING_LITERAL (1)
+#endif
+
 /*****************************************************************************/
 /* Internal debugging stuff                                                  */
 
@@ -495,6 +502,14 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// Whether to save trade flash space for speed in MICROPY_OPT_COMPUTED_GOTO.
+// Costs about 3% speed, saves about 1500 bytes space.  In addition to the assumptions
+// of MICROPY_OPT_COMPUTED_GOTO, also assumes that mp_execute_bytecode is less than
+// 32kB in size.
+#ifndef MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (0)
+#endif
+
 // Whether to cache result of map lookups in LOAD_NAME, LOAD_GLOBAL, LOAD_ATTR,
 // STORE_ATTR bytecodes.  Uses 1 byte extra RAM for each of these opcodes and
 // uses a bit of extra code ROM, but greatly improves lookup speed.
@@ -537,6 +552,11 @@
 // Whether any readers have been defined
 #ifndef MICROPY_HAS_FILE_READER
 #define MICROPY_HAS_FILE_READER (MICROPY_READER_POSIX || MICROPY_READER_VFS)
+#endif
+
+// Number of VFS mounts to persist across soft-reset.
+#ifndef MICROPY_FATFS_NUM_PERSISTENT
+#define MICROPY_FATFS_NUM_PERSISTENT (0)
 #endif
 
 // Hook for the VM at the start of the opcode loop (can contain variable
@@ -586,6 +606,11 @@
 // etc. Not checking means segfault on overflow.
 #ifndef MICROPY_STACK_CHECK
 #define MICROPY_STACK_CHECK (0)
+#endif
+
+// Whether to measure maximum stack excursion
+#ifndef MICROPY_MAX_STACK_USAGE
+#define MICROPY_MAX_STACK_USAGE (0)
 #endif
 
 // Whether to have an emergency exception buffer
@@ -844,6 +869,11 @@ typedef double mp_float_t;
 // Support for VFS FAT component, to mount a FAT filesystem within VFS
 #ifndef MICROPY_VFS
 #define MICROPY_VFS_FAT (0)
+#endif
+
+// 1 when building C code for native mpy files. 0 otherwise.
+#ifndef MICROPY_ENABLE_DYNRUNTIME
+#define MICROPY_ENABLE_DYNRUNTIME (0)
 #endif
 
 /*****************************************************************************/
@@ -1132,6 +1162,12 @@ typedef double mp_float_t;
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (0)
 #endif
 
+// Whether to support nonstandard typecodes "O", "P" and "S"
+// in array and struct modules.
+#ifndef MICROPY_NONSTANDARD_TYPECODES
+#define MICROPY_NONSTANDARD_TYPECODES (1)
+#endif
+
 // Whether to support attrtuple type (MicroPython extension)
 // It provides space-efficient tuples with attribute access
 #ifndef MICROPY_PY_ATTRTUPLE
@@ -1378,6 +1414,10 @@ typedef double mp_float_t;
 #define MICROPY_PY_UJSON (0)
 #endif
 
+#ifndef CIRCUITPY_ULAB
+#define CIRCUITPY_ULAB (0)
+#endif
+
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (0)
 #endif
@@ -1454,33 +1494,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (0)
 #endif
 
-#ifndef MICROPY_PY_MACHINE
-#define MICROPY_PY_MACHINE (0)
-#endif
-
-// Whether to include: time_pulse_us
-#ifndef MICROPY_PY_MACHINE_PULSE
-#define MICROPY_PY_MACHINE_PULSE (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_I2C
-#define MICROPY_PY_MACHINE_I2C (0)
-#endif
-
-#ifndef MICROPY_PY_MACHINE_SPI
-#define MICROPY_PY_MACHINE_SPI (0)
-#endif
-
-#ifndef MICROPY_PY_USSL
-#define MICROPY_PY_USSL (0)
-// Whether to add finaliser code to ussl objects
-#define MICROPY_PY_USSL_FINALISER (0)
-#endif
-
-#ifndef MICROPY_PY_UWEBSOCKET
-#define MICROPY_PY_UWEBSOCKET (0)
-#endif
-
 #ifndef MICROPY_PY_FRAMEBUF
 #define MICROPY_PY_FRAMEBUF (0)
 #endif
@@ -1489,6 +1502,9 @@ typedef double mp_float_t;
 #define MICROPY_PY_BTREE (0)
 #endif
 
+#ifndef MICROPY_HW_ENABLE_USB
+#define MICROPY_HW_ENABLE_USB (0)
+#endif
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 

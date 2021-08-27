@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014-2017 Paul Sokolovsky
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@
 #include <signal.h>
 
 #include "py/compile.h"
+#include "py/frozenmod.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/repl.h"
@@ -46,7 +47,6 @@
 #include "py/stackctrl.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
-#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
@@ -66,7 +66,6 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDERR_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
 }
 
 const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
@@ -501,8 +500,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
         path = "~/.micropython/lib:/usr/lib/micropython";
         #endif
     }
-    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
-    if (*path == PATHLIST_SEP_CHAR) {
+    size_t path_num = 2; // [0] is for current dir (or base dir of the script)
+                         // [1] is for frozen files.
+    size_t builtin_path_count = path_num;
+    if (*path == ':') {
         path_num++;
     }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
@@ -515,9 +516,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
+    path_items[1] = MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR);
     {
         char *p = path;
-        for (mp_uint_t i = 1; i < path_num; i++) {
+        for (mp_uint_t i = builtin_path_count; i < path_num; i++) {
             char *p1 = strchr(p, PATHLIST_SEP_CHAR);
             if (p1 == NULL) {
                 p1 = p + strlen(p);
@@ -698,11 +701,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     if (mp_verbose_flag) {
         mp_micropython_mem_info(0, NULL);
     }
-    #endif
-
-    #if MICROPY_PY_BLUETOOTH
-    void mp_bluetooth_deinit(void);
-    mp_bluetooth_deinit();
     #endif
 
     #if MICROPY_PY_THREAD

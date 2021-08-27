@@ -15,5 +15,8 @@ for endian in ("NATIVE", "LITTLE_ENDIAN", "BIG_ENDIAN"):
         data = bytearray(sz)
         s = uctypes.struct(uctypes.addressof(data), desc, getattr(uctypes, endian))
         for i in range(N):
-            s.arr[i] = i - 2
+            try:
+                s.arr[i] = i - 2
+            except OverflowError:
+                print("OverflowError")
         print(endian, type_, sz, *(s.arr[i] for i in range(N)))

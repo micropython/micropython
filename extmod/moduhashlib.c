@@ -1,33 +1,14 @@
-/*
- * This file is part of the MicroPython project, http://micropython.org/
- *
- * The MIT License (MIT)
- *
- * Copyright (c) 2014 Paul Sokolovsky
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+// Copyright (c) 2014 Paul Sokolovsky
+// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+//
+// SPDX-License-Identifier: MIT
 
 #include <assert.h>
 #include <string.h>
 
 #include "py/runtime.h"
+
+#include "supervisor/shared/translate.h"
 
 #if MICROPY_PY_UHASHLIB
 
@@ -57,6 +38,7 @@
 #endif
 
 #endif
+
 
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;
@@ -115,10 +97,20 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
 
 #else
 
-#include "crypto-algorithms/sha256.c"
+static void check_not_unicode(const mp_obj_t arg) {
+    #if MICROPY_CPYTHON_COMPAT
+    if (mp_obj_is_str(arg)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("a bytes-like object is required"));
+    }
+    #endif
+}
 
-STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+#if MICROPY_PY_UHASHLIB_SHA256
+#include "crypto-algorithms/sha256.c"
+#endif
+
+STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
     o->base.type = type;
     o->final = false;
@@ -130,6 +122,7 @@ STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
+    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     uhashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
@@ -171,8 +164,8 @@ STATIC const mp_obj_type_t uhashlib_sha256_type = {
 STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
-STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_arg_check_num(n_args, kw_args, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(SHA1_CTX));
     o->base.type = type;
     o->final = false;
@@ -184,6 +177,7 @@ STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
+    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     uhashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
@@ -358,7 +352,7 @@ STATIC const mp_obj_type_t uhashlib_md5_type = {
 #endif // MICROPY_PY_UHASHLIB_MD5
 
 STATIC const mp_rom_map_elem_t mp_module_uhashlib_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uhashlib) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_hashlib) },
     #if MICROPY_PY_UHASHLIB_SHA256
     { MP_ROM_QSTR(MP_QSTR_sha256), MP_ROM_PTR(&uhashlib_sha256_type) },
     #endif

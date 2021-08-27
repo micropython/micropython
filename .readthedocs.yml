@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+# .readthedocs.yml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+submodules:
+    include:
+        - extmod/ulab
+
+formats:
+  - pdf
+
+python:
+    version: 3
+    install:
+        - requirements: docs/requirements.txt

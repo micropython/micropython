@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
+PROG=mpy-cross.static-raspbian
+BUILD=build-static-raspbian
+STATIC_BUILD=1
+
+$(shell if ! [ -d pitools ]; then echo 1>&2 "Fetching pi build tools.  This may take awhile."; git clone -q https://github.com/raspberrypi/tools.git --depth=1 pitools; fi)
+CROSS_COMPILE = pitools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin/arm-linux-gnueabihf-
+include mpy-cross.mk

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,12 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
 int mp_printf(const mp_print_t *print, const char *fmt, ...);
 #ifdef va_start
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
+#endif
+
+struct compressed_string;
+int mp_cprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, ...);
+#ifdef va_start
+int mp_vcprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, va_list args);
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPPRINT_H

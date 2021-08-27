@@ -13,4 +13,3 @@ except KeyError:
 else:
     print("Did not raise KeyError")
 print(sorted(els))
-

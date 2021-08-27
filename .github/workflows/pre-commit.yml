@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: Copyright (c) 2019 Anthony Sottile
+#
+# SPDX-License-Identifier: MIT
+
+name: pre-commit
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+    - name: Install deps
+      run: |
+        sudo apt-add-repository -y -u ppa:pybricks/ppa
+        sudo apt-get install -y black gettext uncrustify
+        pip3 install -r requirements-dev.txt
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ulab
+    - name: Set PY
+      run: echo >>$GITHUB_ENV PY="$(python -c 'import hashlib, sys;print(hashlib.sha256(sys.version.encode()+sys.executable.encode()).hexdigest())')"
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pre-commit
+        key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+    - uses: pre-commit/action@v1.1.0
