@@ -252,8 +252,8 @@ void usb_hid_gc_collect(void) {
 
         // Collect all the report buffers for this device.
         for (size_t id_idx = 0; id_idx < hid_devices[device_idx].num_report_ids; id_idx++) {
-            gc_collect_ptr(hid_devices[id_idx].in_report_buffers[id_idx]);
-            gc_collect_ptr(hid_devices[id_idx].out_report_buffers[id_idx]);
+            gc_collect_ptr(hid_devices[device_idx].in_report_buffers[id_idx]);
+            gc_collect_ptr(hid_devices[device_idx].out_report_buffers[id_idx]);
         }
     }
 }
