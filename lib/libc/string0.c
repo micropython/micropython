@@ -27,7 +27,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifndef likely
 #define likely(x) __builtin_expect((x), 1)
+#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
