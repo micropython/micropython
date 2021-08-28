@@ -468,4 +468,3 @@ const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
-
