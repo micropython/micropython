@@ -36,6 +36,7 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
@@ -133,6 +134,10 @@ void reset_port(void) {
     reset_i2c();
     reset_spi();
     reset_uart();
+    #endif
+
+    #if CIRCUITPY_COUNTIO
+    reset_countio();
     #endif
 
     #if CIRCUITPY_PWMIO

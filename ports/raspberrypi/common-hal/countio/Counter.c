@@ -1,4 +1,4 @@
-#include "common-hal/countio/Counter.h"
+#include "shared-bindings/countio/Counter.h"
 
 #include "py/runtime.h"
 #include "py/mpstate.h"
@@ -46,6 +46,15 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
     self->count = 0;
     pwm_set_enabled(self->slice_num, true);
+}
+
+
+void reset_countio(void) {
+    for (size_t i = 0; i < NUM_PWM_SLICES; i++) {
+        if (MP_STATE_PORT(counting)[i] != NULL) {
+            common_hal_countio_counter_deinit(MP_STATE_PORT(counting)[i]);
+        }
+    }
 }
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
