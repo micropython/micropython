@@ -8,6 +8,11 @@ use a :manifest.py: file to add and remove files from source distribution.
 MicroPython manifest file
 ==========================
 
+The MicroPython manifest files supports various methods which are
+
+Include
+-------
+
 .. code-block:: python3
 
   include(manifest, **kwargs)
@@ -16,6 +21,9 @@ The manifest argument can be a string (filename) or an iterable of strings.
 Relative paths are resolved with respect to the current manifest file.
 Optional kwargs can be provided which will be available to the included script
 via the *options* variable. e.g. include("path.py", extra_features=True).
+
+Freeze
+------
 
 In path.py:
 
@@ -32,8 +40,8 @@ In path.py:
 Freeze the input, automatically determining its type.  A .py script will be
 compiled to a .mpy first then frozen, and a .mpy file will be frozen directly.
 
-*path* must be a directory, which is the base directory to search for files
-from.  When importing the resulting frozen modules, the name of the module
+*path* must be a directory, which is the base directory to begin searching for 
+files. When importing the resulting frozen modules, the name of the module
 will start after *path*, ie *path* is excluded from the module name.
 
 If *path* is relative, it is resolved to the current manifest.py. Use
@@ -51,25 +59,21 @@ directory will be searched for in *path*.  If *script* is a directory then all
 files in that directory will be frozen. *opt* is the optimisation level to
 pass to mpy-cross when compiling .py to .mpy.  
   
-         
-The MicroPython manifest files supports various methods which are - 
-
-* Freeze the given *path* and all .py scripts within it as a string,  which will be compiled upon import.
-  
-  .. code-block:: python3
+.. code-block:: python3
   
       freeze_as_str(path) 
 
-* Freeze the input (see below) by first compiling the .py scripts  to .mpy files, then freezing the resulting .mpy files.
+* Freeze the given *path* and all .py scripts within it as a string,  which will be compiled upon import.
 
-
-  .. code-block:: python3
+.. code-block:: python3
   
       freeze_as_mpy(path, script=None, opt=0)  
-    
-* Freeze the input (see below), which must be .mpy files that are frozen directly.
 
+* Freeze the input (see below) by first compiling the .py scripts  to .mpy files, then freezing the resulting .mpy files.
 
-  .. code-block:: python3
+.. code-block:: python3
   
       freeze_mpy(path, script=None, opt=0)
+
+* Freeze the input (see below), which must be .mpy files that are frozen directly.
+
