@@ -26,5 +26,5 @@
 // Board does not have a 32kHz crystal. It does have a 32MHz crystal, in the module.
 #define BOARD_HAS_32KHZ_XTAL (0)
 
-#define DEFAULT_I2C_BUS_SCL         (&pin_P0_14)
-#define DEFAULT_I2C_BUS_SDA         (&pin_P0_16)
+#define DEFAULT_I2C_BUS_SCL         (&pin_P0_08)
+#define DEFAULT_I2C_BUS_SDA         (&pin_P0_06)
