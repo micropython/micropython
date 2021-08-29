@@ -213,7 +213,7 @@ ifeq ($(HASCPP17), 1)
 else
 	CXXFLAGS += -std=c++11
 endif
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99 -std=gnu11,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
