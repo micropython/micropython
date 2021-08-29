@@ -23,7 +23,7 @@ If you are only starting with Micropython+LVGL, it's recommended that you use `l
 
 ## Build Instructions
 
-1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8`
+1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8 parallel`
 Python 3 is required, but you can install some other version of python3 instead of 3.8, if needed.
 2. `git clone --recurse-submodules https://github.com/lvgl/lv_micropython.git`
 3. `cd lv_micropython`
