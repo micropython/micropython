@@ -1,17 +1,23 @@
 .. _mpremote_files:
 
-MicroPython .mpremote files
-===========================
+MicroPython mpremote
+====================
 
 This CLI tool provides an integrated set of utilities to remotely interact with and automate a MicroPython device over a serial connection.
 
-The simplest way to use this tool is-
+To use the mpremote file, install it using
+
+..code-block:: bash
+
+  $ pip install mpremote
+  
+The simplest way to use this tool is
 
 .. code-block:: bash
 
   mpremote
 
-This command automatically connects to the device and provide an interactive REPL.
+This command automatically connects to the device and provides an interactive REPL.
 
 The full list of supported commands are:
 
