@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELDISPLAY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELDISPLAY_H
+#pragma once
 
 #include "common-hal/paralleldisplay/ParallelBus.h"
 
@@ -50,5 +49,3 @@ void common_hal_paralleldisplay_parallelbus_send(mp_obj_t self, display_byte_typ
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length);
 
 void common_hal_paralleldisplay_parallelbus_end_transaction(mp_obj_t self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYBUSIO_PARALLELDISPLAY_H
