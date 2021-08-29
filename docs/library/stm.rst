@@ -80,8 +80,9 @@ Example:-
         # read PA3
         value = (stm.mem32[stm.GPIOA + stm.GPIO_IDR] >> 3) & 1
         
+Functions for RF core on STM32WB MCUs
+-------------------------------------
 
-We also have the following functions:-
 
     * rfcore_status() : 
 
