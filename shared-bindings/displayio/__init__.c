@@ -50,6 +50,8 @@
 //| including synchronizing with refresh rates and partial updating."""
 //|
 
+//| import paralleldisplay
+
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
 //|     release the builtin display on boards that have one. You will need to reinitialize it yourself
