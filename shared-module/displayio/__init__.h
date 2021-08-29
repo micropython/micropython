@@ -35,7 +35,7 @@
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
 #if CIRCUITPY_RGBMATRIX
 #include "shared-bindings/rgbmatrix/RGBMatrix.h"
 #endif
@@ -48,7 +48,7 @@ typedef struct {
         mp_obj_base_t bus_base;
         displayio_fourwire_obj_t fourwire_bus;
         displayio_i2cdisplay_obj_t i2cdisplay_bus;
-        displayio_parallelbus_obj_t parallel_bus;
+        paralleldisplay_parallelbus_obj_t parallel_bus;
         #if CIRCUITPY_RGBMATRIX
         rgbmatrix_rgbmatrix_obj_t rgbmatrix;
         #endif
