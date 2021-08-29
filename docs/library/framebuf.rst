@@ -103,16 +103,23 @@ Other methods
     Shift the contents of the FrameBuffer by the given vector. This may
     leave a footprint of the previous colors in the FrameBuffer.
 
-.. method:: FrameBuffer.blit(fbuf, x, y[, key])
+.. method:: FrameBuffer.blit(fbuf, x, y, key=-1, palette=None)
 
     Draw another FrameBuffer on top of the current one at the given coordinates.
     If *key* is specified then it should be a color integer and the
     corresponding color will be considered transparent: all pixels with that
     color value will not be drawn.
 
-    This method works between FrameBuffer instances utilising different formats,
-    but the resulting colors may be unexpected due to the mismatch in color
-    formats.
+    The *palette* argument enables blitting between FrameBuffers with differing
+    formats. Typical usage is to render a monochrome or grayscale glyph/icon to
+    a color display. The *palette* is a FrameBuffer instance whose format is
+    that of the current FrameBuffer. The *palette* height is one pixel and its
+    pixel width is the number of colors in the source FrameBuffer. The *palette*
+    for an N-bit source needs 2**N pixels; the *palette* for a monochrome source
+    would have 2 pixels representing background and foreground colors. The
+    application assigns a color to each pixel in the *palette*. The color of the
+    current pixel will be that of that *palette* pixel whose x position is the
+    color of the corresponding source pixel.
 
 Constants
 ---------
