@@ -230,6 +230,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_BLUETOOTH
     { MP_ROM_QSTR(MP_QSTR_ubluetooth), MP_ROM_PTR(&mp_module_ubluetooth) },
     #endif
+    #if MICROPY_PY_UPLATFORM
+    { MP_ROM_QSTR(MP_QSTR_uplatform), MP_ROM_PTR(&mp_module_uplatform) },
+    #endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
