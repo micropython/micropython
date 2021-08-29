@@ -3,8 +3,7 @@
 General Information about the STM32 port
 ========================================
 
-The STM microcontroller boards provides the facility of accessing the memory
-directly, to perform any read or write function.
+This module provides functionality specific to stm32 MCUs, including direct access to peripheral registers.Accessing peripheral registers requires a base address of the peripheral, eg GPIOA, plus the offset of the register to read/write, eg GPIO_BSRR. Combined, it would be GPIOA + GPIO_BSRR which would be the full absolute address of the GPIOA->BSRR register.
 
 It exposes three objects::
 
