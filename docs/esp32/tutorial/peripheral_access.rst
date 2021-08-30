@@ -31,7 +31,7 @@ The ESP32's peripherals can be controlled via direct register writes. This requi
 	mem32[MCPWM0] = 0x55      # try to change PWM_CLK_PRESCALE
 	print(hex(mem32[MCPWM0])) # read PWM_CLK_CFG_REG
 
-The commands have the following functionality - 
+The commands have the following functionality:
 
 * DPORT_PERI_CLK_EN_REG: used to enable a peripheral clock.
 
