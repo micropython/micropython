@@ -1,6 +1,6 @@
 .. _esp32_tutorial:
 
-MicroPython tutorial for ESP8266
+MicroPython tutorial for ESP32
 ================================
 
 This tutorial is intended to get you started using MicroPython on the ESP32
