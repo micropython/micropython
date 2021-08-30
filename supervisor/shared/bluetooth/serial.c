@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "genhdr/mpversion.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 #include "shared-bindings/_bleio/Characteristic.h"
@@ -39,15 +40,17 @@
 
 #include "py/mpstate.h"
 
-STATIC bleio_service_obj_t supervisor_ble_serial_service;
-STATIC bleio_uuid_obj_t supervisor_ble_serial_service_uuid;
-STATIC bleio_characteristic_obj_t supervisor_ble_rx_characteristic;
-STATIC bleio_uuid_obj_t supervisor_ble_rx_uuid;
-STATIC bleio_characteristic_obj_t supervisor_ble_tx_characteristic;
-STATIC bleio_uuid_obj_t supervisor_ble_tx_uuid;
+STATIC bleio_service_obj_t supervisor_ble_circuitpython_service;
+STATIC bleio_uuid_obj_t supervisor_ble_circuitpython_service_uuid;
+STATIC bleio_characteristic_obj_t supervisor_ble_circuitpython_rx_characteristic;
+STATIC bleio_uuid_obj_t supervisor_ble_circuitpython_rx_uuid;
+STATIC bleio_characteristic_obj_t supervisor_ble_circuitpython_tx_characteristic;
+STATIC bleio_uuid_obj_t supervisor_ble_circuitpython_tx_uuid;
+STATIC bleio_characteristic_obj_t supervisor_ble_circuitpython_version_characteristic;
+STATIC bleio_uuid_obj_t supervisor_ble_circuitpython_version_uuid;
 
-// This is the base UUID for the nordic uart service.
-const uint8_t nordic_uart_base_uuid[16] = {0x9e, 0xca, 0xdc, 0x24, 0x0e, 0xe5, 0xa9, 0xe0, 0x93, 0xf3, 0xa3, 0xb5, 0x00, 0x00, 0x40, 0x6e };
+// This is the base UUID for the CircuitPython service.
+const uint8_t circuitpython_base_uuid[16] = {0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x00, 0x00, 0xaf, 0xad };
 
 STATIC mp_obj_list_t characteristic_list;
 STATIC mp_obj_t characteristic_list_items[2];
@@ -64,8 +67,8 @@ STATIC bleio_characteristic_buffer_obj_t _rx_buffer;
 STATIC bool _enabled;
 
 void supervisor_start_bluetooth_serial(void) {
-    supervisor_ble_serial_service_uuid.base.type = &bleio_uuid_type;
-    common_hal_bleio_uuid_construct(&supervisor_ble_serial_service_uuid, 0x0001, nordic_uart_base_uuid);
+    supervisor_ble_circuitpython_service_uuid.base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_service_uuid, 0x0001, circuitpython_base_uuid);
 
     // We know we'll only be N characteristics so we can statically allocate it.
     characteristic_list.base.type = &mp_type_list;
@@ -74,50 +77,72 @@ void supervisor_start_bluetooth_serial(void) {
     characteristic_list.items = characteristic_list_items;
     mp_seq_clear(characteristic_list.items, 0, characteristic_list.alloc, sizeof(*characteristic_list.items));
 
-    supervisor_ble_serial_service.base.type = &bleio_service_type;
-    _common_hal_bleio_service_construct(&supervisor_ble_serial_service, &supervisor_ble_serial_service_uuid, false /* is secondary */, &characteristic_list);
+    supervisor_ble_circuitpython_service.base.type = &bleio_service_type;
+    _common_hal_bleio_service_construct(&supervisor_ble_circuitpython_service, &supervisor_ble_circuitpython_service_uuid, false /* is secondary */, &characteristic_list);
 
     // RX
-    supervisor_ble_rx_uuid.base.type = &bleio_uuid_type;
-    common_hal_bleio_uuid_construct(&supervisor_ble_rx_uuid, 0x0002, nordic_uart_base_uuid);
-    common_hal_bleio_characteristic_construct(&supervisor_ble_rx_characteristic,
-        &supervisor_ble_serial_service,
+    supervisor_ble_circuitpython_rx_uuid.base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_rx_uuid, 0x0002, circuitpython_base_uuid);
+    common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_rx_characteristic,
+        &supervisor_ble_circuitpython_service,
         0,                                       // handle (for remote only)
-        &supervisor_ble_rx_uuid,
+        &supervisor_ble_circuitpython_rx_uuid,
         CHAR_PROP_WRITE | CHAR_PROP_WRITE_NO_RESPONSE,
         SECURITY_MODE_NO_ACCESS,
         SECURITY_MODE_ENC_NO_MITM,
         BLE_GATTS_VAR_ATTR_LEN_MAX,                 // max length
         false,                                      // fixed length
         NULL,                                      // no initial value
-        "CircuitPython Serial");
+        NULL);
 
     // TX
-    supervisor_ble_tx_uuid.base.type = &bleio_uuid_type;
-    common_hal_bleio_uuid_construct(&supervisor_ble_tx_uuid, 0x0003, nordic_uart_base_uuid);
-    common_hal_bleio_characteristic_construct(&supervisor_ble_tx_characteristic,
-        &supervisor_ble_serial_service,
+    supervisor_ble_circuitpython_tx_uuid.base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_tx_uuid, 0x0003, circuitpython_base_uuid);
+    common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_tx_characteristic,
+        &supervisor_ble_circuitpython_service,
         0,                                       // handle (for remote only)
-        &supervisor_ble_tx_uuid,
+        &supervisor_ble_circuitpython_tx_uuid,
         CHAR_PROP_NOTIFY,
         SECURITY_MODE_ENC_NO_MITM,
         SECURITY_MODE_NO_ACCESS,
         BLE_GATTS_VAR_ATTR_LEN_MAX,                  // max length
         false,                                       // fixed length
         NULL,                                       // no initial value
-        "CircuitPython Serial");
+        NULL);
+
+    // Version number
+    const char *version = MICROPY_GIT_TAG;
+    mp_buffer_info_t bufinfo;
+    bufinfo.buf = (uint8_t *)version;
+    bufinfo.len = strlen(version);
+
+    supervisor_ble_circuitpython_version_uuid.base.type = &bleio_uuid_type;
+    common_hal_bleio_uuid_construct(&supervisor_ble_circuitpython_version_uuid, 0x0100, circuitpython_base_uuid);
+    common_hal_bleio_characteristic_construct(&supervisor_ble_circuitpython_version_characteristic,
+        &supervisor_ble_circuitpython_service,
+        0,                                       // handle (for remote only)
+        &supervisor_ble_circuitpython_version_uuid,
+        CHAR_PROP_READ,
+        SECURITY_MODE_OPEN,
+        SECURITY_MODE_NO_ACCESS,
+        bufinfo.len,                                // max length
+        true,                                       // fixed length
+        NULL,                                       // no initial value
+        NULL); // no description
+
+    common_hal_bleio_characteristic_set_value(&supervisor_ble_circuitpython_version_characteristic, &bufinfo);
 
     // Use a PacketBuffer to transmit so that we glom characters to transmit
     // together and save BLE overhead.
     _common_hal_bleio_packet_buffer_construct(
-        &_tx_packet_buffer, &supervisor_ble_tx_characteristic,
+        &_tx_packet_buffer, &supervisor_ble_circuitpython_tx_characteristic,
         NULL, 0,
         _outgoing1, _outgoing2, BLE_GATTS_VAR_ATTR_LEN_MAX,
         &tx_static_handler_entry);
 
     // Use a CharacteristicBuffer for rx so we can read a single character at a time.
     _common_hal_bleio_characteristic_buffer_construct(&_rx_buffer,
-        &supervisor_ble_rx_characteristic,
+        &supervisor_ble_circuitpython_rx_characteristic,
         0.1f,
         (uint8_t *)_incoming, sizeof(_incoming) * sizeof(uint32_t),
         &rx_static_handler_entry);
