@@ -22,3 +22,6 @@ LD_FILE = boards/STM32F401xe_boot.ld
 
 CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_ULAB = 0
+CIRCUITPY_STAGE = 1
+
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/meowbit
