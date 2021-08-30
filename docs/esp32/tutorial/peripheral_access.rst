@@ -29,14 +29,5 @@ Accessing peripherals using mem32 command
 
 The commands have the following functionality - 
 
-* DPORT_PERI_CLK_EN_REG: enables the hardware accelerator clock.
+* DPORT_PERI_CLK_EN_REG: used to enable a peripheral clock.
 
-* DPORT_PERI_RST_EN_REG: resets the accelerator.
-
-* DPORT_PERIP_CLK_EN_REG=1: enables the peripheral clock.
-
-* DPORT_PERIP_RST_EN_REG: resets peripherals.
-
-* DPORT_WIFI_CLK_EN_REG: used for Wi-Fi and BT clock gating.
-
-* DPORT_WIFI_RST_EN_REG: used for Wi-Fi and BT reset.
