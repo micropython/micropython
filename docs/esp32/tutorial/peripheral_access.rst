@@ -35,3 +35,4 @@ The commands have the following functionality:
 
 * DPORT_PERI_CLK_EN_REG: used to enable a peripheral clock.
 
+* DPORT_PERI_RST_EN_REG: udes to reset( or take out of reset) a peripheral.
