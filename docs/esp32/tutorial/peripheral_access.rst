@@ -3,7 +3,9 @@
 Accessing peripherals using mem32 command
 =========================================
 
-The ESP32's peripherals can be controlled via direct register writes. This requires reading the datasheet to know what registers to use and what values to write to them.
+The ESP32's peripherals can be controlled via direct register writes. This requires reading the datasheet to know what registers to use and what values to write to them.The following example shows how to turn on and change the prescaler of the MCPWM0 peripheral:
+
+
 
 .. code-block:: python3
 
