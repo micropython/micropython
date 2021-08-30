@@ -138,12 +138,14 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
         r = RESET_REASON_WATCHDOG;
     } else if (reset_reason_saved & POWER_RESETREAS_SREQ_Msk) {
         r = RESET_REASON_SOFTWARE;
+        #if CIRCUITPY_ALARM
         // Our "deep sleep" is still actually light sleep followed by a software
         // reset. Adding this check here ensures we treat it as-if we're waking
         // from deep sleep.
         if (sleepmem_wakeup_event != SLEEPMEM_WAKEUP_BY_NONE) {
             r = RESET_REASON_DEEP_SLEEP_ALARM;
         }
+        #endif
     } else if ((reset_reason_saved & POWER_RESETREAS_OFF_Msk) ||
                (reset_reason_saved & POWER_RESETREAS_LPCOMP_Msk) ||
                (reset_reason_saved & POWER_RESETREAS_NFC_Msk) ||
