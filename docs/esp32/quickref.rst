@@ -16,7 +16,7 @@ working with this board it may be useful to get an overview of the microcontroll
    :maxdepth: 1
 
    general.rst
-   tutorial/intro.rst
+   tutorial/index.rst
 
 Installing MicroPython
 ----------------------
