@@ -40,7 +40,7 @@
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
-#if CIRCUITPY_PARALLELBUS
+#if CIRCUITPY_PARALLELDISPLAY
 #include "shared-bindings/paralleldisplay/ParallelBus.h"
 #endif
 #include "shared-bindings/displayio/Shape.h"
