@@ -45,3 +45,5 @@ const mp_obj_module_t sharpdisplay_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&sharpdisplay_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_sharpdisplay, sharpdisplay_module, CIRCUITPY_SHARPDISPLAY);

@@ -320,3 +320,5 @@ const mp_obj_module_t supervisor_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&supervisor_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_supervisor, supervisor_module, CIRCUITPY_SUPERVISOR);

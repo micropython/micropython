@@ -111,3 +111,5 @@ const mp_obj_module_t stage_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&stage_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__stage, stage_module, CIRCUITPY_STAGE);

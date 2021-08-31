@@ -184,3 +184,5 @@ const mp_obj_module_t random_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_random_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_random, random_module, CIRCUITPY_RANDOM);
