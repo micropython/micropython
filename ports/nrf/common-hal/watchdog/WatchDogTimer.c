@@ -28,6 +28,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "py/gc.h"
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -94,7 +95,11 @@ void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     if (self->mode == WATCHDOGMODE_RESET) {
-        mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
+        if (gc_alloc_possible()) {
+            mp_raise_NotImplementedError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
+        }
+        // Don't change anything because RESET cannot be undone.
+        return;
     }
     if (timer) {
         timer_free();

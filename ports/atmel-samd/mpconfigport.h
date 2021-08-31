@@ -61,6 +61,9 @@
 
 #define MICROPY_FATFS_EXFAT 0
 
+// Only support simpler HID descriptors on SAMD21.
+#define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (1)
+
 #endif // SAMD21
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

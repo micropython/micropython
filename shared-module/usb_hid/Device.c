@@ -81,7 +81,7 @@ const usb_hid_device_obj_t usb_hid_device_keyboard_obj = {
     .usage = 0x06,
     .num_report_ids = 1,
     .report_ids = { 0x01, },
-    .in_report_lengths = { 8, 0, 0, 0, 0, 0, },
+    .in_report_lengths = { 8, },
     .out_report_lengths = { 1, },
 };
 
@@ -131,7 +131,7 @@ const usb_hid_device_obj_t usb_hid_device_mouse_obj = {
     .usage = 0x02,
     .num_report_ids = 1,
     .report_ids = { 0x02, },
-    .in_report_lengths = { 4, 0, 0, 0, 0, 0, },
+    .in_report_lengths = { 4, },
     .out_report_lengths = { 0, },
 };
 
@@ -160,7 +160,7 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
     .usage = 0x01,
     .num_report_ids = 1,
     .report_ids = { 0x03 },
-    .in_report_lengths = { 2, 0, 0, 0, 0, 0, },
+    .in_report_lengths = { 2, },
     .out_report_lengths = { 0, },
 };
 
@@ -170,7 +170,7 @@ STATIC size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
             return i;
         }
     }
-    return MAX_REPORT_IDS_PER_DESCRIPTOR;
+    return CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR;
 }
 
 // See if report_id is used by this device. If it is -1, then return the sole report id used by this device,
@@ -180,16 +180,16 @@ uint8_t common_hal_usb_hid_device_validate_report_id(usb_hid_device_obj_t *self,
         return self->report_ids[0];
     }
     if (!(report_id_arg >= 0 &&
-          get_report_id_idx(self, (size_t)report_id_arg) < MAX_REPORT_IDS_PER_DESCRIPTOR)) {
+          get_report_id_idx(self, (size_t)report_id_arg) < CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR)) {
         mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_report_id);
     }
     return (uint8_t)report_id_arg;
 }
 
 void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, size_t num_report_ids, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths) {
-    if (num_report_ids > MAX_REPORT_IDS_PER_DESCRIPTOR) {
+    if (num_report_ids > CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR) {
         mp_raise_ValueError_varg(translate("More than %d report ids not supported"),
-            MAX_REPORT_IDS_PER_DESCRIPTOR);
+            CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR);
     }
 
     // report buffer pointers are NULL at start, and are created when USB is initialized.
