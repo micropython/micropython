@@ -147,7 +147,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 // TODO: this handles all possible types of wakeup, which is redundant with main.
 // revise to extract all parts essential to enabling sleep wakeup, but leave the
 // alarm/non-alarm sorting to the existing main loop.
-void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
+void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
     int64_t tickdiff;
@@ -179,7 +179,7 @@ void system_on_idle_until_alarm(int64_t timediff_ms, uint32_t prescaler) {
         if (mp_hal_is_interrupted()) {
             break;
         }
-        if (serial_connected() && serial_bytes_available()) {
+        if (wake_from_serial && serial_connected() && serial_bytes_available()) {
             break;
         }
         RUN_BACKGROUND_TASKS;
@@ -220,7 +220,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     #endif
 
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
-    system_on_idle_until_alarm(timediff_ms, 0);
+    system_on_idle_until_alarm(timediff_ms, false, 0);
 
     if (mp_hal_is_interrupted()) {
         wake_alarm = mp_const_none;
@@ -262,7 +262,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     #endif
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
     tick_set_prescaler(PRESCALER_VALUE_IN_DEEP_SLEEP - 1);
-    system_on_idle_until_alarm(timediff_ms, PRESCALER_VALUE_IN_DEEP_SLEEP);
+    system_on_idle_until_alarm(timediff_ms, false, PRESCALER_VALUE_IN_DEEP_SLEEP);
 
     #ifdef NRF_DEBUG_PRINT
     mp_printf(&mp_plat_print, "RESET...\r\n\r\n");
@@ -285,7 +285,7 @@ void common_hal_alarm_pretending_deep_sleep(void) {
     #endif
 
     int64_t timediff_ms = alarm_time_timealarm_get_wakeup_timediff_ms();
-    system_on_idle_until_alarm(timediff_ms, 0);
+    system_on_idle_until_alarm(timediff_ms, true, 0);
 
     alarm_reset();
 }
