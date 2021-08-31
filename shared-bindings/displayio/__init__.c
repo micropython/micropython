@@ -40,7 +40,9 @@
 #include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+#if CIRCUITPY_PARALLELDISPLAY
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
+#endif
 #include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
 
@@ -49,6 +51,8 @@
 //| The `displayio` module contains classes to manage display output
 //| including synchronizing with refresh rates and partial updating."""
 //|
+
+//| import paralleldisplay
 
 //| def release_displays() -> None:
 //|     """Releases any actively used displays so their busses and pins can be used again. This will also
@@ -125,7 +129,9 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },
     { MP_ROM_QSTR(MP_QSTR_I2CDisplay), MP_ROM_PTR(&displayio_i2cdisplay_type) },
-    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&displayio_parallelbus_type) },
+    #if CIRCUITPY_PARALLELDISPLAY
+    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&paralleldisplay_parallelbus_type) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },
 };

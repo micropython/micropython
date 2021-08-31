@@ -61,9 +61,9 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_parallelbus_obj_t *bus = &displays[0].parallel_bus;
-    bus->base.type = &displayio_parallelbus_type;
-    common_hal_displayio_parallelbus_construct(bus,
+    paralleldisplay_parallelbus_obj_t *bus = &displays[0].parallel_bus;
+    bus->base.type = &paralleldisplay_parallelbus_type;
+    common_hal_paralleldisplay_parallelbus_construct(bus,
         &pin_PA16, // Data0
         &pin_PB05, // Command or data
         &pin_PB06, // Chip select

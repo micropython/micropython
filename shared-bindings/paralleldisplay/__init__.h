@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#include <stdint.h>
 
-#include "common-hal/digitalio/DigitalInOut.h"
+#include "py/enum.h"
+#include "py/obj.h"
+#include "py/runtime.h"
 
-typedef struct {
-    mp_obj_base_t base;
-} displayio_parallelbus_obj_t;
+#include "shared-bindings/paralleldisplay/__init__.h"
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
 
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+//| """Native helpers for driving parallel displays"""
+
+
+STATIC const mp_rom_map_elem_t paralleldisplay_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_paralleldisplay) },
+    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&paralleldisplay_parallelbus_type) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(paralleldisplay_module_globals, paralleldisplay_module_globals_table);
+
+const mp_obj_module_t paralleldisplay_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&paralleldisplay_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_paralleldisplay, paralleldisplay_module, CIRCUITPY_PARALLELDISPLAY);

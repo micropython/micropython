@@ -71,7 +71,7 @@ shared-bindings/displayio/Group.rst shared-bindings/displayio/#displayio.Group
 shared-bindings/displayio/I2CDisplay.rst shared-bindings/displayio/#displayio.I2CDisplay
 shared-bindings/displayio/OnDiskBitmap.rst shared-bindings/displayio/#displayio.OnDiskBitmap
 shared-bindings/displayio/Palette.rst shared-bindings/displayio/#displayio.Palette
-shared-bindings/displayio/ParallelBus.rst shared-bindings/displayio/#displayio.ParallelBus
+shared-bindings/paralleldisplay/ParallelBus.rst shared-bindings/paralleldisplay/#paralleldisplay.ParallelBus
 shared-bindings/displayio/Shape.rst shared-bindings/displayio/#displayio.Shape
 shared-bindings/displayio/TileGrid.rst shared-bindings/displayio/#displayio.TileGrid
 shared-bindings/displayio/__init__.rst shared-bindings/displayio/

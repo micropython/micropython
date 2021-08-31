@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/displayio/ParallelBus.h"
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
 
 #include <stdint.h>
 
@@ -33,7 +33,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *self,
+void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbus_obj_t *self,
     const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
     const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
 
@@ -46,20 +46,16 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
             mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
         }
     }
-    NRF_GPIO_Type *g;
-    uint8_t num_pins_in_port;
-    if (data0->number < P0_PIN_NUM) {
-        g = NRF_P0;
-        num_pins_in_port = P0_PIN_NUM;
+    PortGroup *const g = &PORT->Group[data0->number / 32];
+    g->DIRSET.reg = 0xff << (data_pin % 32);
+    uint32_t wrconfig = PORT_WRCONFIG_WRPINCFG | PORT_WRCONFIG_DRVSTR;
+    if (data_pin % 32 > 15) {
+        wrconfig |= PORT_WRCONFIG_HWSEL | (0xff << ((data_pin % 32) - 16));
     } else {
-        g = NRF_P1;
-        num_pins_in_port = P1_PIN_NUM;
+        wrconfig |= 0xff << (data_pin % 32);
     }
-    g->DIRSET = 0xff << (data_pin % num_pins_in_port);
-    for (uint8_t i = 0; i < 8; i++) {
-        g->PIN_CNF[data_pin + i] |= NRF_GPIO_PIN_S0S1 << GPIO_PIN_CNF_DRIVE_Pos;
-    }
-    self->bus = ((uint8_t *)&g->OUT) + (data0->number % num_pins_in_port / 8);
+    g->WRCONFIG.reg = wrconfig;
+    self->bus = ((uint8_t *)&g->OUT.reg) + (data0->number % 32 / 8);
 
     self->command.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&self->command, command);
@@ -78,15 +74,8 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
     common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
 
     self->data0_pin = data_pin;
-    uint8_t num_pins_in_write_port;
-    if (data0->number < P0_PIN_NUM) {
-        self->write_group = NRF_P0;
-        num_pins_in_write_port = P0_PIN_NUM;
-    } else {
-        self->write_group = NRF_P1;
-        num_pins_in_write_port = P1_PIN_NUM;
-    }
-    self->write_mask = 1 << (write->number % num_pins_in_write_port);
+    self->write_group = &PORT->Group[write->number / 32];
+    self->write_mask = 1 << (write->number % 32);
 
     self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
@@ -94,7 +83,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
         common_hal_digitalio_digitalinout_construct(&self->reset, reset);
         common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
         never_reset_pin_number(reset->number);
-        common_hal_displayio_parallelbus_reset(self);
+        common_hal_paralleldisplay_parallelbus_reset(self);
     }
 
     never_reset_pin_number(command->number);
@@ -106,7 +95,7 @@ void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *sel
     }
 }
 
-void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) {
+void common_hal_paralleldisplay_parallelbus_deinit(paralleldisplay_parallelbus_obj_t *self) {
     for (uint8_t i = 0; i < 8; i++) {
         reset_pin_number(self->data0_pin + i);
     }
@@ -118,8 +107,8 @@ void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) 
     reset_pin_number(self->reset.pin->number);
 }
 
-bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
+bool common_hal_paralleldisplay_parallelbus_reset(mp_obj_t obj) {
+    paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     if (self->reset.base.type == &mp_type_NoneType) {
         return false;
     }
@@ -130,23 +119,22 @@ bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
     return true;
 }
 
-bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
+bool common_hal_paralleldisplay_parallelbus_bus_free(mp_obj_t obj) {
     return true;
 }
 
-bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
-    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
+bool common_hal_paralleldisplay_parallelbus_begin_transaction(mp_obj_t obj) {
+    paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
     return true;
 }
 
-// This ignores chip_select behaviour because data is clocked in by the write line toggling.
-void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
+void common_hal_paralleldisplay_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
-    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
+    paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-    uint32_t *clear_write = (uint32_t *)&self->write_group->OUTCLR;
-    uint32_t *set_write = (uint32_t *)&self->write_group->OUTSET;
+    uint32_t *clear_write = (uint32_t *)&self->write_group->OUTCLR.reg;
+    uint32_t *set_write = (uint32_t *)&self->write_group->OUTSET.reg;
     uint32_t mask = self->write_mask;
     for (uint32_t i = 0; i < data_length; i++) {
         *clear_write = mask;
@@ -155,7 +143,7 @@ void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byt
     }
 }
 
-void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
-    displayio_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
+void common_hal_paralleldisplay_parallelbus_end_transaction(mp_obj_t obj) {
+    paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
 }

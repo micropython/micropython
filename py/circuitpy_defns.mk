@@ -175,6 +175,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
+ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
+SRC_PATTERNS += paralleldisplay/%
+endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
 endif
@@ -385,7 +388,6 @@ SRC_COMMON_HAL_ALL = \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
-	displayio/ParallelBus.c \
 	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
@@ -404,6 +406,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	paralleldisplay/ParallelBus.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
