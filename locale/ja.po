@@ -3961,6 +3961,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
 #: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
+#: ports/esp32s2/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
