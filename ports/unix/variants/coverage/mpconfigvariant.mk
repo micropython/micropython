@@ -22,7 +22,6 @@ FROZEN_DIR=variants/coverage/frzstr
 FROZEN_MPY_DIR=variants/coverage/frzmpy
 
 SRC_QRIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/qrio/*.c ../../shared-module/qrio/*.c ../../lib/quirc/lib/*.c))
-$(info SRC_QRIO = $(SRC_QRIO))
 SRC_C += $(SRC_QRIO)
 
 CFLAGS += -DCIRCUITPY_QRIO=1
