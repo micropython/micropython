@@ -650,7 +650,21 @@ friendly_repl_reset:
         }
 
         vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
+
+        nlr_buf_t nlr;
+        nlr.ret_val = NULL;
+        int ret = 0;
+        if (nlr_push(&nlr) == 0) {
+            ret = readline(&line, ">>> ");
+        } else {
+            // Uncaught exception
+            mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
+
+            // Print exceptions but stay in the REPL. There are very few delayed
+            // exceptions. The WatchDogTimer can raise one though.
+            mp_hal_stdout_tx_str("\r\n");
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_A) {
