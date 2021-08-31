@@ -404,7 +404,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
-    FRESULT result;
+    FRESULT result = FR_OK;
     FILINFO file;
     if (f_stat(fs, path, &file) == FR_OK) {
         if ((file.fattrib & AM_DIR) != 0) {
