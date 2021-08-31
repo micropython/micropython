@@ -64,7 +64,7 @@
 //|                  busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True,
 //|                  seconds_per_frame: float = 180, always_toggle_chip_select: bool = False,
 //|                  grayscale: bool = False) -> None:
-//|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
+//|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `paralleldisplay.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
 //|         command begins with a command byte followed by a byte to determine the parameter count and
@@ -75,7 +75,7 @@
 //|         extra long 500 ms delay instead of 255 ms. The next byte will begin a new command definition.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type _DisplayBus: displayio.FourWire or displayio.ParallelBus
+//|         :type _DisplayBus: displayio.FourWire or paralleldisplay.ParallelBus
 //|         :param ~_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
 //|         :param ~_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels

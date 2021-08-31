@@ -330,6 +330,7 @@ extern const struct _mp_obj_module_t canio_module;
 // CIRCUITPY_COUNTIO uses MP_REGISTER_MODULE
 // CIRCUITPY_DIGITALIO uses MP_REGISTER_MODULE
 // CIRCUITPY_DISPLAYIO uses MP_REGISTER_MODULE
+// CIRCUITPY_PARALLELDISPLAY uses MP_REGISTER_MODULE
 // CIRCUITPY_TERMINALIO uses MP_REGISTER_MODULE
 // CIRCUITPY_FONTIO uses MP_REGISTER_MODULE
 
@@ -373,13 +374,7 @@ extern const struct _mp_obj_module_t _eve_module;
 #endif
 
 // CIRCUITPY_FRAMEBUFFERIO uses MP_REGISTER_MODULE
-
-#if CIRCUITPY_VECTORIO
-extern const struct _mp_obj_module_t vectorio_module;
-#define VECTORIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_vectorio), (mp_obj_t)&vectorio_module },
-#else
-#define VECTORIO_MODULE
-#endif
+// CIRCUITPY_VECTORIO uses MP_REGISTER_MODULE
 
 // CIRCUITPY_FREQUENCYIO uses MP_REGISTER_MODULE
 // CIRCUITPY_GAMEPADSHIFT uses MP_REGISTER_MODULE
@@ -455,25 +450,14 @@ extern const struct _mp_obj_module_t memorymonitor_module;
 #endif
 
 // CIRCUITPY_MICROCONTROLLER uses MP_REGISTER_MODULE
-
-#if CIRCUITPY_NEOPIXEL_WRITE
-extern const struct _mp_obj_module_t neopixel_write_module;
-#define NEOPIXEL_WRITE_MODULE  { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module },
-#else
-#define NEOPIXEL_WRITE_MODULE
-#endif
+// CIRCUITPY_NEOPIXEL_WRITE uses MP_REGISTER_MODULE
 
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
-#if CIRCUITPY_ONEWIREIO
-extern const struct _mp_obj_module_t onewireio_module;
-#define ONEWIREIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_onewireio), (mp_obj_t)&onewireio_module },
-#else
-#define ONEWIREIO_MODULE
-#endif
+// CIRCUITPY_ONEWIREIO_WRITE uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_OS
 extern const struct _mp_obj_module_t os_module;
@@ -492,43 +476,12 @@ extern const struct _mp_obj_module_t pew_module;
 #endif
 
 // CIRCUITPY_PIXELBUF (pixelbuf_module) uses MP_REGISTER_MODULE
-
-#if CIRCUITPY_PS2IO
-extern const struct _mp_obj_module_t ps2io_module;
-#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
-#else
-#define PS2IO_MODULE
-#endif
-
-#if CIRCUITPY_PULSEIO
-extern const struct _mp_obj_module_t pulseio_module;
-#define PULSEIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
-#else
-#define PULSEIO_MODULE
-#endif
-
-#if CIRCUITPY_PWMIO
-extern const struct _mp_obj_module_t pwmio_module;
-#define PWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pwmio), (mp_obj_t)&pwmio_module },
-#else
-#define PWMIO_MODULE
-#endif
-
+// CIRCUITPY_PS2IO uses MP_REGISTER_MODULE
+// CIRCUITPY_PULSEIO uses MP_REGISTER_MODULE
+// CIRCUITPY_PWMIO uses MP_REGISTER_MODULE
 // CIRCUITPY_QRIO uses MP_REGISTER_MODULE
-
-#if CIRCUITPY_RAINBOWIO
-extern const struct _mp_obj_module_t rainbowio_module;
-#define RAINBOWIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rainbowio), (mp_obj_t)&rainbowio_module },
-#else
-#define RAINBOWIO_MODULE
-#endif
-
-#if CIRCUITPY_RANDOM
-extern const struct _mp_obj_module_t random_module;
-#define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
-#else
-#define RANDOM_MODULE
-#endif
+// CIRCUITPY_RAINBOWIO uses MP_REGISTER_MODULE
+// CIRCUITPY_RANDOM uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_RE
 #define MICROPY_PY_URE (1)
@@ -537,19 +490,8 @@ extern const struct _mp_obj_module_t random_module;
 #define RE_MODULE
 #endif
 
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
-#else
-#define RGBMATRIX_MODULE
-#endif
-
-#if CIRCUITPY_ROTARYIO
-extern const struct _mp_obj_module_t rotaryio_module;
-#define ROTARYIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module },
-#else
-#define ROTARYIO_MODULE
-#endif
+// CIRCUITPY_RGBMATRIX uses MP_REGISTER_MODULE
+// CIRCUITPY_ROTARYIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_RP2PIO
 extern const struct _mp_obj_module_t rp2pio_module;
@@ -558,12 +500,7 @@ extern const struct _mp_obj_module_t rp2pio_module;
 #define RP2PIO_MODULE
 #endif
 
-#if CIRCUITPY_RTC
-extern const struct _mp_obj_module_t rtc_module;
-#define RTC_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_rtc), (mp_obj_t)&rtc_module },
-#else
-#define RTC_MODULE
-#endif
+// CIRCUITPY_RTC uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_SAMD
 extern const struct _mp_obj_module_t samd_module;
@@ -572,12 +509,7 @@ extern const struct _mp_obj_module_t samd_module;
 #define SAMD_MODULE
 #endif
 
-#if CIRCUITPY_SDCARDIO
-extern const struct _mp_obj_module_t sdcardio_module;
-#define SDCARDIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdcardio), (mp_obj_t)&sdcardio_module },
-#else
-#define SDCARDIO_MODULE
-#endif
+// CIRCUITPY_SDCARDIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_SDIOIO
 extern const struct _mp_obj_module_t sdioio_module;
@@ -586,12 +518,7 @@ extern const struct _mp_obj_module_t sdioio_module;
 #define SDIOIO_MODULE
 #endif
 
-#if CIRCUITPY_SHARPDISPLAY
-extern const struct _mp_obj_module_t sharpdisplay_module;
-#define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
-#else
-#define SHARPDISPLAY_MODULE
-#endif
+// CIRCUITPY_SHARPDISPLAY uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_SOCKETPOOL
 extern const struct _mp_obj_module_t socketpool_module;
@@ -607,40 +534,11 @@ extern const struct _mp_obj_module_t ssl_module;
 #define SSL_MODULE
 #endif
 
-#if CIRCUITPY_STAGE
-extern const struct _mp_obj_module_t stage_module;
-#define STAGE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
-#else
-#define STAGE_MODULE
-#endif
-
-#if CIRCUITPY_STORAGE
-extern const struct _mp_obj_module_t storage_module;
-#define STORAGE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module },
-#else
-#define STORAGE_MODULE
-#endif
-
-#if CIRCUITPY_STRUCT
-extern const struct _mp_obj_module_t struct_module;
-#define STRUCT_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module },
-#else
-#define STRUCT_MODULE
-#endif
-
-#if CIRCUITPY_SUPERVISOR
-extern const struct _mp_obj_module_t supervisor_module;
-#define SUPERVISOR_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module },
-#else
-#define SUPERVISOR_MODULE
-#endif
-
-#if CIRCUITPY_SYNTHIO
-#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
-extern const struct _mp_obj_module_t synthio_module;
-#else
-#define SYNTHIO_MODULE
-#endif
+// CIRCUITPY_STAGE uses MP_REGISTER_MODULE
+// CIRCUITPY_STORAGE uses MP_REGISTER_MODULE
+// CIRCUITPY_STRUCT uses MP_REGISTER_MODULE
+// CIRCUITPY_SUPERVISOR uses MP_REGISTER_MODULE
+// CIRCUITPY_SYNTHIO uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_TIME
 extern const struct _mp_obj_module_t time_module;
@@ -651,19 +549,8 @@ extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE_ALT_NAME
 #endif
 
-#if CIRCUITPY_TOUCHIO
-extern const struct _mp_obj_module_t touchio_module;
-#define TOUCHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
-#else
-#define TOUCHIO_MODULE
-#endif
-
-#if CIRCUITPY_TRACEBACK
-extern const struct _mp_obj_module_t traceback_module;
-#define TRACEBACK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_traceback), (mp_obj_t)&traceback_module },
-#else
-#define TRACEBACK_MODULE
-#endif
+// CIRCUITPY_TOUCHIO uses MP_REGISTER_MODULE
+// CIRCUITPY_TRACEBACK uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_UHEAP
 extern const struct _mp_obj_module_t uheap_module;
@@ -672,26 +559,9 @@ extern const struct _mp_obj_module_t uheap_module;
 #define UHEAP_MODULE
 #endif
 
-#if CIRCUITPY_USB_CDC
-extern const struct _mp_obj_module_t usb_cdc_module;
-#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
-#else
-#define USB_CDC_MODULE
-#endif
-
-#if CIRCUITPY_USB_HID
-extern const struct _mp_obj_module_t usb_hid_module;
-#define USB_HID_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
-#else
-#define USB_HID_MODULE
-#endif
-
-#if CIRCUITPY_USB_MIDI
-extern const struct _mp_obj_module_t usb_midi_module;
-#define USB_MIDI_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_usb_midi),(mp_obj_t)&usb_midi_module },
-#else
-#define USB_MIDI_MODULE
-#endif
+// CIRCUITPY_USB_CDC uses MP_REGISTER_MODULE
+// CIRCUITPY_USB_HID uses MP_REGISTER_MODULE
+// CIRCUITPY_USB_MIDI uses MP_REGISTER_MODULE
 
 #if CIRCUITPY_USTACK
 extern const struct _mp_obj_module_t ustack_module;
@@ -755,7 +625,6 @@ extern const struct _mp_obj_module_t wifi_module;
     CAMERA_MODULE \
     CANIO_MODULE \
     DUALBANK_MODULE \
-    VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
     _EVE_MODULE \
@@ -765,36 +634,14 @@ extern const struct _mp_obj_module_t wifi_module;
     IMAGECAPTURE_MODULE \
     JSON_MODULE \
     MEMORYMONITOR_MODULE \
-    NEOPIXEL_WRITE_MODULE \
-    ONEWIREIO_MODULE \
     PEW_MODULE \
-    PS2IO_MODULE \
-    PULSEIO_MODULE \
-    PWMIO_MODULE \
-    RAINBOWIO_MODULE \
-    RANDOM_MODULE \
     RE_MODULE \
-    RGBMATRIX_MODULE \
-    ROTARYIO_MODULE \
     RP2PIO_MODULE \
-    RTC_MODULE \
     SAMD_MODULE \
-    SDCARDIO_MODULE \
     SDIOIO_MODULE \
-    SHARPDISPLAY_MODULE \
     SOCKETPOOL_MODULE \
     SSL_MODULE \
-    STAGE_MODULE \
-    STORAGE_MODULE \
-    STRUCT_MODULE \
-    SUPERVISOR_MODULE \
-    SYNTHIO_MODULE \
-    TOUCHIO_MODULE \
-    TRACEBACK_MODULE \
     UHEAP_MODULE \
-    USB_CDC_MODULE \
-    USB_HID_MODULE \
-    USB_MIDI_MODULE \
     USTACK_MODULE \
     WATCHDOG_MODULE \
     WIFI_MODULE \

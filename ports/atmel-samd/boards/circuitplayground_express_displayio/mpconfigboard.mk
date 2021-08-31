@@ -20,6 +20,7 @@ CIRCUITPY_USB_MIDI = 0
 # So not all of displayio, sorry!
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_BITMAPTOOLS = 0
+CIRCUITPY_PARALLELDISPLAY = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground

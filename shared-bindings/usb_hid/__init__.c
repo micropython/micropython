@@ -116,3 +116,5 @@ void usb_hid_set_devices(mp_obj_t devices) {
         elem->value = devices;
     }
 }
+
+MP_REGISTER_MODULE(MP_QSTR_usb_hid, usb_hid_module, CIRCUITPY_USB_HID);

@@ -109,8 +109,10 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_fourwire_deinit(&displays[i].fourwire_bus);
         } else if (bus_type == &displayio_i2cdisplay_type) {
             common_hal_displayio_i2cdisplay_deinit(&displays[i].i2cdisplay_bus);
-        } else if (bus_type == &displayio_parallelbus_type) {
-            common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
+        #if CIRCUITPY_PARALLELDISPLAY
+        } else if (bus_type == &paralleldisplay_parallelbus_type) {
+            common_hal_paralleldisplay_parallelbus_deinit(&displays[i].parallel_bus);
+        #endif
         #if CIRCUITPY_RGBMATRIX
         } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);

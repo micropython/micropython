@@ -94,3 +94,5 @@ const mp_obj_module_t usb_midi_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&usb_midi_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_usb_midi, usb_midi_module, CIRCUITPY_USB_MIDI);

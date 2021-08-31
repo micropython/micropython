@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -42,6 +42,6 @@ typedef struct {
     uint32_t *write_set_register; // pointer to the write group for setting the write bit to latch the data on the LCD
     uint32_t *write_clear_register; // pointer to the write group for clearing the write bit to latch the data on the LCD
     uint32_t write_mask; // bit mask for the single bit for the write pin register
-} displayio_parallelbus_obj_t;
+} paralleldisplay_parallelbus_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H

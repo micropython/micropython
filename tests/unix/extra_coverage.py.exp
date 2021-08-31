@@ -15,8 +15,8 @@ false true
 abc
 %
 # GC
-0
-0
+0x0
+0x0
 # vstr
 tests
 sts

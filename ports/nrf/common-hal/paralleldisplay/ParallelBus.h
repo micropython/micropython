@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#ifndef MICROPY_INCLUDED_NRF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+#define MICROPY_INCLUDED_NRF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
@@ -40,6 +40,6 @@ typedef struct {
     uint8_t data0_pin;
     NRF_GPIO_Type *write_group;
     uint32_t write_mask;
-} displayio_parallelbus_obj_t;
+} paralleldisplay_parallelbus_obj_t;
 
-#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#endif // MICROPY_INCLUDED_NRF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
