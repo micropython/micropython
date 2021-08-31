@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
 
 #include "common-hal/digitalio/DigitalInOut.h"
+#include "bindings/rp2pio/StateMachine.h"
+#include "common-hal/rp2pio/StateMachine.h"
 
 typedef struct {
     mp_obj_base_t base;
-} displayio_parallelbus_obj_t;
+    digitalio_digitalinout_obj_t command;
+    digitalio_digitalinout_obj_t chip_select;
+    digitalio_digitalinout_obj_t reset;
+    digitalio_digitalinout_obj_t read;
+    uint8_t write;
+    uint8_t data0_pin;
+    rp2pio_statemachine_obj_t state_machine;
+} paralleldisplay_parallelbus_obj_t;
 
-#endif // MICROPY_INCLUDED_STM32F4_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H

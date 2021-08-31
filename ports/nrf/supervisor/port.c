@@ -33,6 +33,7 @@
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
+#include "nrfx/drivers/include/nrfx_gpiote.h"
 #include "nrfx/drivers/include/nrfx_power.h"
 #include "nrfx/drivers/include/nrfx_rtc.h"
 
@@ -251,6 +252,12 @@ void reset_port(void) {
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif
+
+    // Always reset GPIOTE because it is shared.
+    if (nrfx_gpiote_is_init()) {
+        nrfx_gpiote_uninit();
+    }
+    nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
 
     reset_all_pins();
 }

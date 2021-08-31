@@ -30,7 +30,9 @@
 #include "py/runtime.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/I2CDisplay.h"
-#include "shared-bindings/displayio/ParallelBus.h"
+#if CIRCUITPY_PARALLELDISPLAY
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
+#endif
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
@@ -61,13 +63,16 @@ void displayio_display_core_construct(displayio_display_core_t *self,
 
     // (framebufferdisplay already validated its 'bus' is a buffer-protocol object)
     if (bus) {
-        if (mp_obj_is_type(bus, &displayio_parallelbus_type)) {
-            self->bus_reset = common_hal_displayio_parallelbus_reset;
-            self->bus_free = common_hal_displayio_parallelbus_bus_free;
-            self->begin_transaction = common_hal_displayio_parallelbus_begin_transaction;
-            self->send = common_hal_displayio_parallelbus_send;
-            self->end_transaction = common_hal_displayio_parallelbus_end_transaction;
-        } else if (mp_obj_is_type(bus, &displayio_fourwire_type)) {
+        #if CIRCUITPY_PARALLELDISPLAY
+        if (mp_obj_is_type(bus, &paralleldisplay_parallelbus_type)) {
+            self->bus_reset = common_hal_paralleldisplay_parallelbus_reset;
+            self->bus_free = common_hal_paralleldisplay_parallelbus_bus_free;
+            self->begin_transaction = common_hal_paralleldisplay_parallelbus_begin_transaction;
+            self->send = common_hal_paralleldisplay_parallelbus_send;
+            self->end_transaction = common_hal_paralleldisplay_parallelbus_end_transaction;
+        } else
+        #endif
+        if (mp_obj_is_type(bus, &displayio_fourwire_type)) {
             self->bus_reset = common_hal_displayio_fourwire_reset;
             self->bus_free = common_hal_displayio_fourwire_bus_free;
             self->begin_transaction = common_hal_displayio_fourwire_begin_transaction;

@@ -13,7 +13,7 @@ sys.path.insert(0, "../../tools/bitmap_font")
 
 from adafruit_bitmap_font import bitmap_font
 
-parser = argparse.ArgumentParser(description="Generate USB descriptors.")
+parser = argparse.ArgumentParser(description="Generate displayio resources.")
 parser.add_argument("--font", type=str, help="Font path", required=True)
 parser.add_argument("--extra_characters", type=str, help="Unicode string of extra characters")
 parser.add_argument(
@@ -49,7 +49,7 @@ if args.sample_file:
 
 # Merge visible ascii, sample characters and extra characters.
 visible_ascii = bytes(range(0x20, 0x7F)).decode("utf-8")
-all_characters = visible_ascii
+all_characters = list(visible_ascii)
 for c in sample_characters:
     if c not in all_characters:
         all_characters += c

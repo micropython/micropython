@@ -545,7 +545,12 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'
                 // Use unsigned long int to work on both ILP32 and LP64 systems
-                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width);
+                #if SUPPORT_INT_BASE_PREFIX
+                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags | PF_FLAG_SHOW_PREFIX, fill, width);
+                #else
+                print->print_strn(print->data, "0x", 2);
+                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width) + 2;
+                #endif
                 break;
             #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':

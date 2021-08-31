@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,28 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/displayio/ParallelBus.h"
-
 #include <stdint.h>
 
-#include "common-hal/microcontroller/Pin.h"
+#include "py/enum.h"
+#include "py/obj.h"
 #include "py/runtime.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/microcontroller/__init__.h"
 
-void common_hal_displayio_parallelbus_construct(displayio_parallelbus_obj_t *self,
-    const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
-    const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
+#include "shared-bindings/paralleldisplay/__init__.h"
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
 
-    mp_raise_NotImplementedError(translate("ParallelBus not yet supported"));
-}
+//| """Native helpers for driving parallel displays"""
 
-void common_hal_displayio_parallelbus_deinit(displayio_parallelbus_obj_t *self) {
 
-}
+STATIC const mp_rom_map_elem_t paralleldisplay_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_paralleldisplay) },
+    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&paralleldisplay_parallelbus_type) },
+};
 
-bool common_hal_displayio_parallelbus_reset(mp_obj_t obj) {
-    return false;
-}
+STATIC MP_DEFINE_CONST_DICT(paralleldisplay_module_globals, paralleldisplay_module_globals_table);
 
-bool common_hal_displayio_parallelbus_bus_free(mp_obj_t obj) {
-    return false;
-}
+const mp_obj_module_t paralleldisplay_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&paralleldisplay_module_globals,
+};
 
-bool common_hal_displayio_parallelbus_begin_transaction(mp_obj_t obj) {
-
-    return false;
-}
-
-void common_hal_displayio_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
-    display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
-
-}
-
-void common_hal_displayio_parallelbus_end_transaction(mp_obj_t obj) {
-
-}
+MP_REGISTER_MODULE(MP_QSTR_paralleldisplay, paralleldisplay_module, CIRCUITPY_PARALLELDISPLAY);

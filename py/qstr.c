@@ -76,8 +76,11 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     }
     return hash;
 }
-
-const qstr_attr_t mp_qstr_const_attr[] = {
+#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
+#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
+#endif
+#if CIRCUITPY_PRECOMPUTE_QSTR_ATTR == 1
+const qstr_attr_t mp_qstr_const_attr[MP_QSTRnumber_of] = {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) { hash, len },
 #define TRANSLATION(id, length, compressed ...)
@@ -86,6 +89,9 @@ const qstr_attr_t mp_qstr_const_attr[] = {
 #undef QDEF
     #endif
 };
+#else
+qstr_attr_t mp_qstr_const_attr[MP_QSTRnumber_of];
+#endif
 
 const qstr_pool_t mp_qstr_const_pool = {
     NULL,               // no previous pool
@@ -114,6 +120,16 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
+
+    #if CIRCUITPY_PRECOMPUTE_QSTR_ATTR == 0
+    if (mp_qstr_const_attr[MP_QSTR_circuitpython].len == 0) {
+        for (size_t i = 0; i < mp_qstr_const_pool.len; i++) {
+            size_t len = strlen(mp_qstr_const_pool.qstrs[i]);
+            mp_qstr_const_attr[i].hash = qstr_compute_hash((const byte *)mp_qstr_const_pool.qstrs[i], len);
+            mp_qstr_const_attr[i].len = len;
+        }
+    }
+    #endif
 
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));

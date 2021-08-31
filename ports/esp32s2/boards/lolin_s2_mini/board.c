@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "common-hal/digitalio/DigitalInOut.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t *bus;
-    digitalio_digitalinout_obj_t command;
-    digitalio_digitalinout_obj_t chip_select;
-    digitalio_digitalinout_obj_t reset;
-    digitalio_digitalinout_obj_t write;
-    digitalio_digitalinout_obj_t read;
-    uint8_t data0_pin;
-    PortGroup *write_group;
-    uint32_t write_mask;
-} displayio_parallelbus_obj_t;
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+    // SPI Flash and RAM
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
+}

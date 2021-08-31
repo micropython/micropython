@@ -65,7 +65,7 @@ vpath %.cpp . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
 
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR
+QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -x c
 
 # frozen.c and frozen_mpy.c are created in $(BUILD), so use our rule
 # for those as well.

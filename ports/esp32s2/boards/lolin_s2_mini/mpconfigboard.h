@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+// Micropython setup
 
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "bindings/rp2pio/StateMachine.h"
-#include "common-hal/rp2pio/StateMachine.h"
+#define MICROPY_HW_BOARD_NAME       "S2Mini"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t command;
-    digitalio_digitalinout_obj_t chip_select;
-    digitalio_digitalinout_obj_t reset;
-    digitalio_digitalinout_obj_t read;
-    uint8_t write;
-    uint8_t data0_pin;
-    rp2pio_statemachine_obj_t state_machine;
-} displayio_parallelbus_obj_t;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO15)
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#define AUTORESET_DELAY_MS 500
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO37)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO36)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)

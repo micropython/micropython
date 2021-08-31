@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
 
 #include "common-hal/digitalio/DigitalInOut.h"
 
 typedef struct {
     mp_obj_base_t base;
-    uint32_t *bus; // pointer where 8 bits of data are written to the display
+    uint8_t *bus;
     digitalio_digitalinout_obj_t command;
     digitalio_digitalinout_obj_t chip_select;
     digitalio_digitalinout_obj_t reset;
     digitalio_digitalinout_obj_t write;
     digitalio_digitalinout_obj_t read;
-    uint8_t data0_pin; // pin number for the lowest number data pin.  Must be 8-bit aligned
-    bool data_write_same_register; // if data and write pins are in the sare
-    uint32_t *write_set_register; // pointer to the write group for setting the write bit to latch the data on the LCD
-    uint32_t *write_clear_register; // pointer to the write group for clearing the write bit to latch the data on the LCD
-    uint32_t write_mask; // bit mask for the single bit for the write pin register
-} displayio_parallelbus_obj_t;
+    uint8_t data0_pin;
+    PortGroup *write_group;
+    uint32_t write_mask;
+} paralleldisplay_parallelbus_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_DISPLAYIO_PARALLELBUS_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H

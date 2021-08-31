@@ -112,11 +112,6 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
 }
 
 void pulsein_reset(void) {
-    if (nrfx_gpiote_is_init()) {
-        nrfx_gpiote_uninit();
-    }
-    nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
-
     if (timer != NULL) {
         nrf_peripherals_free_timer(timer);
     }
@@ -178,7 +173,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
         .hi_accuracy = true,
         .skip_gpio_setup = false
     };
-    nrfx_gpiote_in_init(self->pin, &cfg, _pulsein_handler);
+    nrfx_err_t err = nrfx_gpiote_in_init(self->pin, &cfg, _pulsein_handler);
+    if (err != NRFX_SUCCESS) {
+        mp_raise_RuntimeError(translate("All channels in use"));
+    }
     nrfx_gpiote_in_event_enable(self->pin, true);
 }
 

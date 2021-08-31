@@ -141,14 +141,6 @@ void alarm_pin_pinalarm_reset(void) {
 }
 
 static void configure_pins_for_sleep(void) {
-    nrfx_err_t err;
-    if (nrfx_gpiote_is_init()) {
-        nrfx_gpiote_uninit();
-    }
-    err = nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
-    assert(err == NRFX_SUCCESS);
-    (void)err; // to suppress unused warning
-
     _pinhandler_gpiote_count = 0;
 
     nrfx_gpiote_in_config_t cfg = {
@@ -176,9 +168,10 @@ static void configure_pins_for_sleep(void) {
             cfg.sense = NRF_GPIOTE_POLARITY_TOGGLE;
             cfg.pull = NRF_GPIO_PIN_NOPULL;
         }
-        err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
+        nrfx_err_t err = nrfx_gpiote_in_init((nrfx_gpiote_pin_t)i, &cfg,
             pinalarm_gpiote_handler);
         assert(err == NRFX_SUCCESS);
+        (void)err;  // In case the assert doesn't use err.
         nrfx_gpiote_in_event_enable((nrfx_gpiote_pin_t)i, true);
         if (((high_alarms & mask) != 0) && ((low_alarms & mask) == 0)) {
             nrf_gpio_cfg_sense_set((uint32_t)i, NRF_GPIO_PIN_SENSE_HIGH);
