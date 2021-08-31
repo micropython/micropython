@@ -76,8 +76,10 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     }
     return hash;
 }
-
-#if CIRCUITPY_PRECOMPUTE_QSTR_ATTR
+#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
+#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
+#endif
+#if CIRCUITPY_PRECOMPUTE_QSTR_ATTR == 1
 const qstr_attr_t mp_qstr_const_attr[MP_QSTRnumber_of] = {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) { hash, len },
