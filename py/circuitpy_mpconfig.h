@@ -717,6 +717,13 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #define CIRCUITPY_VERBOSE_BLE 0
 
+// This trades ~1k flash space (1) for that much in RAM plus the cost to compute
+// the values once on init (0). Only turn it off, when you really need the flash
+// space and are willing to trade the RAM.
+#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
+#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
+#endif
+
 // USB settings
 
 // If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
@@ -759,6 +766,16 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #ifndef USB_HID_EP_NUM_IN
 #define USB_HID_EP_NUM_IN (0)
+#endif
+
+// The most complicated device currently known of is the head and eye tracker, which requires 5
+// report ids.
+// https://usb.org/sites/default/files/hutrr74_-_usage_page_for_head_and_eye_trackers_0.pdf
+// The default descriptors only use 1, so that is the minimum.
+#ifndef CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR
+#define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (6)
+#elif CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR < 1
+#error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
 #ifndef USB_MIDI_EP_NUM_OUT
