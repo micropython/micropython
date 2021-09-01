@@ -64,3 +64,5 @@ const mp_obj_module_t ssl_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&ssl_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ssl, ssl_module, CIRCUITPY_SSL);
