@@ -78,8 +78,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     gpio_pulldown_dis(sda->number);
     gpio_pulldown_dis(scl->number);
 
+    #if CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
+    gpio_pullup_en(sda->number);
+    gpio_pullup_en(scl->number);
+    #endif
+
     // We must pull up within 3us to achieve 400khz.
-    common_hal_mcu_delay_us(3);
+    common_hal_mcu_delay_us((1200000 + frequency - 1) / frequency);
 
     if (gpio_get_level(sda->number) == 0 || gpio_get_level(scl->number) == 0) {
         reset_pin_number(sda->number);
@@ -112,8 +117,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         .mode = I2C_MODE_MASTER,
         .sda_io_num = self->sda_pin->number,
         .scl_io_num = self->scl_pin->number,
+        #if CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,  /*!< Internal GPIO pull mode for I2C sda signal*/
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,  /*!< Internal GPIO pull mode for I2C scl signal*/
+        #else
         .sda_pullup_en = GPIO_PULLUP_DISABLE,  /*!< Internal GPIO pull mode for I2C sda signal*/
         .scl_pullup_en = GPIO_PULLUP_DISABLE,  /*!< Internal GPIO pull mode for I2C scl signal*/
+        #endif
 
         .master = {
             .clk_speed = frequency,

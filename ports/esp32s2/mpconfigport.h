@@ -52,4 +52,13 @@
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8 * 1024)
 #endif
 
+// Define to (1) in mpconfigboard.h if the board has a defined I2C port that
+// lacks pull up resistors (Espressif's HMI Devkit), and the internal pull-up
+// resistors will be enabled for all busio.I2C objects. This is only to
+// compensate for design decisions that are out of the control of the authors
+// of CircuitPython and is not an endorsement of running without appropriate
+// external pull up resistors.
+#ifndef CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
+#define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
+#endif
 #endif  // __INCLUDED_ESP32S2_MPCONFIGPORT_H
