@@ -36,7 +36,7 @@ class Event:
 # MicroPython-extension: This can be set from outside the asyncio event loop,
 # such as other threads, IRQs or scheduler context. Implementation is a stream
 # that asyncio will poll until a flag is set.
-# Note: Unlike Event, this is self-clearing.
+# Note: Unlike Event, this is self-clearing after a wait().
 try:
     import uio
 
@@ -51,6 +51,9 @@ try:
 
         def set(self):
             self._flag = 1
+
+        def clear(self):
+            self._flag = 0
 
         async def wait(self):
             if not self._flag:
