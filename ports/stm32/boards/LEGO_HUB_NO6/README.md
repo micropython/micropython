@@ -28,6 +28,26 @@ firmware at 0x08010000.  When mboot is installed it can be entered programatical
 via machine.bootloader(), or by holding down the left arrow button when powering
 on the Hub and waiting until the display says "B" before releasing the button.
 
+Backing up original Hub firmware
+--------------------------------
+
+Before install MicroPython it is advised to backup the original LEGO firmware that
+the Hub comes installed with.  To do this, enter the built-in bootloader by holding
+down the Bluetooth button for 5 seconds while powering up the Hub via USB.  Then
+run the following command from the root of this repository:
+
+    $ cd ports/stm32
+    $ make BOARD=LEGO_HUB_NO6 backup-hub-firmware
+
+This will create a file called `lego_hub_firmware.dfu`.  Put this file in a safe
+location.  To restore it, enter the built-in bootloader again and run:
+
+    $ make BOARD=LEGO_HUB_NO6 restore-hub-firmware
+
+This will restore the original firmware but not the filesystem.  To recreate the
+original filesystem the Hub must be updated using the appropriate LEGO PC
+application.
+
 Installing MicroPython
 ----------------------
 

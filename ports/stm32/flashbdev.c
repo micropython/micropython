@@ -157,6 +157,7 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
             return 0;
 
         case BDEV_IOCTL_NUM_BLOCKS:
+            // Units are FLASH_BLOCK_SIZE
             return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
 
         case BDEV_IOCTL_IRQ_HANDLER:

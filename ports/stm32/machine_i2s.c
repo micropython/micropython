@@ -1123,4 +1123,3 @@ const mp_obj_type_t machine_i2s_type = {
 };
 
 #endif // MICROPY_HW_ENABLE_I2S
-

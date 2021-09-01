@@ -20,3 +20,26 @@ endif
 # Bootloader settings
 MBOOT_TEXT0_ADDR = 0x08008000
 MBOOT_LD_FILES = ../boards/LEGO_HUB_NO6/mboot_memory.ld stm32_sections.ld
+
+# Backup/restore original Hub firmware
+
+HUB_FIRMWARE = lego_hub_firmware.dfu
+HUB_FIRMWARE_ADDR = $(MBOOT_TEXT0_ADDR)
+HUB_FIRMWARE_SIZE = 0xf8000
+
+backup-hub-firmware:
+	$(Q)$(DFU_UTIL) -a 0 \
+		-d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+		-U $(HUB_FIRMWARE).bin \
+		-s $(HUB_FIRMWARE_ADDR):$(HUB_FIRMWARE_SIZE)
+	$(Q)$(PYTHON) $(DFU) \
+		-b $(HUB_FIRMWARE_ADDR):$(HUB_FIRMWARE).bin \
+		-D $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+		$(HUB_FIRMWARE)
+	$(Q)$(RM) $(HUB_FIRMWARE).bin
+	$(ECHO) "Backup created in $(HUB_FIRMWARE)"
+
+restore-hub-firmware:
+	$(Q)$(DFU_UTIL) -a 0 \
+		-d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) \
+		-D $(HUB_FIRMWARE)
