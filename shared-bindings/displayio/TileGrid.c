@@ -48,14 +48,14 @@
 //|
 //|     A single tile grid is also known as a Sprite."""
 //|
-//|     def __init__(self, bitmap: Bitmap, *, pixel_shader: Union[ColorConverter, Palette], width: int = 1, height: int = 1, tile_width: Optional[int] = None, tile_height: Optional[int] = None, default_tile: int = 0, x: int = 0, y: int = 0) -> None:
+//|     def __init__(self, bitmap: Union[Bitmap, Shape], *, pixel_shader: Union[ColorConverter, Palette], width: int = 1, height: int = 1, tile_width: Optional[int] = None, tile_height: Optional[int] = None, default_tile: int = 0, x: int = 0, y: int = 0) -> None:
 //|         """Create a TileGrid object. The bitmap is source for 2d pixels. The pixel_shader is used to
 //|         convert the value and its location to a display native pixel color. This may be a simple color
 //|         palette lookup, a gradient, a pattern or a color transformer.
 //|
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
-//|         :param Bitmap bitmap: The bitmap storing one or more tiles.
+//|         :param Bitmap,Shape bitmap: The bitmap storing one or more tiles.
 //|         :param ColorConverter,Palette pixel_shader: The pixel shader that produces colors from values
 //|         :param int width: Width of the grid in tiles.
 //|         :param int height: Height of the grid in tiles.
