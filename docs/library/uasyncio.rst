@@ -153,8 +153,13 @@ class ThreadSafeFlag
 
 .. method:: ThreadSafeFlag.set()
 
-    Set the flag.  If there is a task waiting on the event, it will be scheduled
+    Set the flag.  If there is a task waiting on the flag, it will be scheduled
     to run.
+
+.. method:: ThreadSafeFlag.clear()
+
+    Clear the flag. This may be used to ensure that a possibly previously-set
+    flag is clear before waiting for it.
 
 .. method:: ThreadSafeFlag.wait()
 
