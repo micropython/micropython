@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Feather",
+        "Battery Charging",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
+    "id": "featherS2",
+    "images": [
+        "unexpectedmaker_feathers2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Feather S2",
+    "thumbnail": "",
+    "url": "https://feathers2.io/",
+    "vendor": "Unexpected Maker"
+}

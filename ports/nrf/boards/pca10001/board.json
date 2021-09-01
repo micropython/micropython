@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf51",
+    "product": "pca10001",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Nordic Semiconductor"
+}

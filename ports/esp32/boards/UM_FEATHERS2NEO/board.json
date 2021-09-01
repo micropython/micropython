@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Feather",
+        "Battery Charging",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "Neopixels"
+    ],
+    "id": "featherS2neo",
+    "images": [],
+    "mcu": "esp32s2",
+    "product": "Feather S2 Neo",
+    "thumbnail": "",
+    "url": "https://unexpectedmaker.com/feathers2-neo",
+    "vendor": "Unexpected Maker"
+}

@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "nrf52840-mdk-usb-dongle",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

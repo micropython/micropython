@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32h7",
+    "product": "Nucleo H743ZI",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

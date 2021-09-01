@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32f7",
+    "product": "Nucleo F767ZI",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

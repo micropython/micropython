@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "esp32c3-usb",
+    "images": [],
+    "mcu": "esp32c3",
+    "product": "ESP32-C3 with USB",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}
