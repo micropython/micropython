@@ -81,6 +81,7 @@ tasks. These instructions are -
 
 jmp(cond, label=None)
    This can take two forms: 
+   
    jmp(label)
        label : label to jump to unconditionally
 
@@ -144,13 +145,12 @@ irq(mod, index = None)
     These can be summarised as two forms:
     * form 1: irq(index)
     * form 2: irq(mode,index)
+      
       where
       * index can be an integer or rel(integer)
       * mode can be: block or clear or block | clear
       
-    Allowed IRQ numbers are 0-7 (0-3 are visible from to the processor, 4-7 are 
-    internal to the state machines).          
-   see sec 3.4.9 of RPi docs for details
+    Allowed IRQ numbers are 0-7 (0-3 are visible from to the processor, 4-7 are internal to the state machines). See sec 3.4.9 of RPi docs for details
 
 nop(self)
     see sec 3.3.7 of RPi docs for details
