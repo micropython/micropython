@@ -75,5 +75,24 @@ async def main():
     print("wait task")
     await t
 
+    # Flag set, cleared, and set again.
+    print("set event")
+    flag.set()
+    print("yield")
+    await asyncio.sleep(0)
+    print("clear event")
+    flag.clear()
+    print("yield")
+    await asyncio.sleep(0)
+    t = asyncio.create_task(task(4, flag))
+    print("yield")
+    await asyncio.sleep(0)
+    print("set event")
+    flag.set()
+    print("yield")
+    await asyncio.sleep(0)
+    print("wait task")
+    await t
+
 
 asyncio.run(main())
