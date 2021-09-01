@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "mimxrt",
+    "product": "MIMXRT1064_EVK",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "NXP"
+}

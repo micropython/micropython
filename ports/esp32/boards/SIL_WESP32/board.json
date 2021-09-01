@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "wesp32",
+    "images": [],
+    "mcu": "esp32",
+    "product": "SIL WESP32",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

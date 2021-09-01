@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "feather_m0_express.jpg"
+    ],
+    "mcu": "samd21",
+    "product": "Feather M0 Express",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/3403",
+    "vendor": "Adafruit"
+}

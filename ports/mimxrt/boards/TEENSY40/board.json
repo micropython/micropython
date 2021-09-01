@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "mimxrt",
+    "product": "Teensy 4.0",
+    "thumbnail": "",
+    "url": "https://www.pjrc.com/store/teensy40.html",
+    "vendor": "PJRC"
+}

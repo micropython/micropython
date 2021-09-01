@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "4888-05.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "ItsyBitsy RP2040",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4888",
+    "vendor": "Adafruit"
+}

@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "esp32-ota",
+    "images": [],
+    "mcu": "esp32",
+    "product": "ESP32 with OTA support",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

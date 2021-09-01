@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "esp32s2",
+    "product": "S2 mini",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/s2/s2_mini.html",
+    "vendor": "Wemos"
+}

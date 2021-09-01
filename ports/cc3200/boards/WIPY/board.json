@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "https://docs.pycom.io/datasheets/development/wipy3/",
+    "features": [],
+    "id": "wipy",
+    "images": [
+        "wipy.jpg"
+    ],
+    "mcu": "cc3200",
+    "product": "WiPy Module",
+    "thumbnail": "",
+    "url": "https://pycom.io/product/wipy-3-0/",
+    "vendor": "Pycom"
+}
