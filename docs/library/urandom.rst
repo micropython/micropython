@@ -4,7 +4,7 @@
 .. module:: urandom
    :synopsis: random numbers
 
-This module implements a pseudo-random number generator.ALso see CPython docs 
+This module implements a pseudo-random number generator. Also see CPython docs 
 for more details |see_cpython_module| :mod:`python:random` .
 
 Function for Integers
@@ -46,7 +46,7 @@ Other Functions
   .. method:: urandom.choice(sequence)
    
     Chooses one item at random from a *sequence* (list  or 
-    any data structure).
+    any object that supports the subscript operation).
     
   .. method:: urandom.seed(n=None, /)
   
