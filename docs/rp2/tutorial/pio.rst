@@ -3,7 +3,7 @@
 RP2040 has standard hardware support like I2C, SPI and UART for communication
 protocols with standard devices. For devices where we do not have hardware
 support for such protocols or where there is a requirement of more I/O
-channels, PIO(Programmable Input Ouput) comes into play. Also, typical
+channels, PIO(Programmable Input Output) comes into play. Also, typical
 micropython devices make use of a technique called bit banging in which pins
 are rapidly turned on and off to transmit data. This makes the entire process
 very slow as the processor concentrates on bit banging rather than excecuting
@@ -34,15 +34,15 @@ The state machines have 9 instructions which can perform the following tasks:
 
 * PUSH : sends data to RX FIFO
 
-* PULL : recieves data from TX FIFO
+* PULL : receives data from TX FIFO
 
-* MOV : moves data from a souce to a destination
+* MOV : moves data from a source to a destination
 
 * IRQ : sets or clears the input flag
 
 * WAIT : pauses until a particular action happens
 
-* JMP : moves to some target locations in differnt parts of code
+* JMP : moves to some target locations in different parts of code
 
 * SET : writes data at destination
 
