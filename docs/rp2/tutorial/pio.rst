@@ -6,7 +6,7 @@ support for such protocols or where there is a requirement of more I/O
 channels, PIO(Programmable Input Ouput) comes into play. Also, typical
 micropython devices make use of a technique called bit banging in which pins
 are rapidly turned on and off to transmit data. This makes the entire process
-very slow as the processor concentrates on bit banging rather than exceuting
+very slow as the processor concentrates on bit banging rather than excecuting
 any other process. However, PIO allows it to carry on with the bit banging
 process while the processor resources are used for executing some other work. 
 
@@ -25,7 +25,7 @@ instant of time.
 All pioasm instructions follow a common pattern:
 <instruction> (side <side_set_value>) ([<delay_value>])
 
-The state machines have 9 instructions which can perform the following tasks:-
+The state machines have 9 instructions which can perform the following tasks:
 
 * IN : shifts the bits from a source (scratch register or set of pins) to the
 * input shift register.
@@ -46,7 +46,7 @@ The state machines have 9 instructions which can perform the following tasks:-
 
 * SET : writes data at destination
 
-Apart from the PIO assembly instructions we have the following :-
+Apart from the PIO assembly instructions we have the following:
 
 <side_set_value> : value applied to the side set pins at the start of the
                    instruction which helps configure the side pin of the 
@@ -55,7 +55,7 @@ Apart from the PIO assembly instructions we have the following :-
 <delay_value> : the number of clock cycles to delay after execution of 
                 any instruction.
  
-We also have directives which are listed as :-
+We also have directives which are listed as:
 
 * .wrap_target : specifies where the program execution will get continued from 
 
@@ -67,7 +67,7 @@ We also have directives which are listed as :-
 
 * label : instruction offset of label used with jmp instruction.
 
-We can take the pio_1hz example for a sinple understanding. Below is the code
+We can take the pio_1hz example for a simple understanding. Below is the code
 of pio_1hz.py for reference. 
 
 .. code-block:: python3
