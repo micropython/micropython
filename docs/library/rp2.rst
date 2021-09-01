@@ -82,7 +82,7 @@ tasks. These instructions are -
 jmp(cond, label=None)
    This can take two forms: 
    jmp(label)
-       label : label to jump to unconditionlly
+       label : label to jump to unconditionally
 
     jmp(cond,label)
         cond: not_x, x_dec, not_y, y_dec, x_not_y, pin, not_osre
