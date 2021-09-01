@@ -62,8 +62,8 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
-        *(.text)           /* .text sections (code) */
-        *(.text*)          /* .text* sections (code) */
+        *SORT_BY_ALIGNMENT(SORT_BY_NAME(.text))           /* .text sections (code) */
+        *SORT_BY_ALIGNMENT(SORT_BY_NAME(.text*))          /* .text* sections (code) */
         *(.rodata)         /* .rodata sections (constants, strings, etc.) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
@@ -73,14 +73,11 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
     } >FLASH_FIRMWARE
 
-    /* used by the startup to initialize data */
-    _sidata = .;
-
     /* This is the initialized data section
     The program executes knowing that the data is in the RAM
     but the loader puts the initial values in the FLASH (inidata).
     It is one task of the startup to copy the initial values from FLASH to RAM. */
-    .data : AT (_sidata)
+    .data :
     {
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
@@ -90,7 +87,10 @@ SECTIONS
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
-    } >APP_RAM
+    } >APP_RAM AT > FLASH_FIRMWARE
+
+    /* used by the startup to initialize data */
+    _sidata = LOADADDR(.data);
 
     /* Zero-initialized data section */
     .bss :
