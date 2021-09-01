@@ -53,7 +53,7 @@ STATIC bleio_uuid_obj_t supervisor_ble_circuitpython_version_uuid;
 const uint8_t circuitpython_base_uuid[16] = {0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x00, 0x00, 0xaf, 0xad };
 
 STATIC mp_obj_list_t characteristic_list;
-STATIC mp_obj_t characteristic_list_items[2];
+STATIC mp_obj_t characteristic_list_items[3];
 
 STATIC uint32_t _outgoing1[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];
 STATIC uint32_t _outgoing2[BLE_GATTS_VAR_ATTR_LEN_MAX / 4];

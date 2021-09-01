@@ -62,8 +62,8 @@ SECTIONS
     .text :
     {
         . = ALIGN(4);
-        *SORT_BY_ALIGNMENT(SORT_BY_NAME(.text))           /* .text sections (code) */
-        *SORT_BY_ALIGNMENT(SORT_BY_NAME(.text*))          /* .text* sections (code) */
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.text)))           /* .text sections (code) */
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.text*)))          /* .text* sections (code) */
         *(.rodata)         /* .rodata sections (constants, strings, etc.) */
         *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     /*  *(.glue_7)   */    /* glue arm to thumb code */
@@ -82,8 +82,8 @@ SECTIONS
         . = ALIGN(4);
         _sdata = .;        /* create a global symbol at data start; used by startup code in order to initialise the .data section in RAM */
         _ram_start = .;    /* create a global symbol at ram start for garbage collector */
-        *(.data)           /* .data sections */
-        *(.data*)          /* .data* sections */
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.data)))           /* .data sections */
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.data*)))          /* .data* sections */
 
         . = ALIGN(4);
         _edata = .;        /* define a global symbol at data end; used by startup code in order to initialise the .data section in RAM */
@@ -97,8 +97,8 @@ SECTIONS
     {
         . = ALIGN(4);
         _sbss = .;         /* define a global symbol at bss start; used by startup code */
-        *(.bss)
-        *(.bss*)
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss)))
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss*)))
         *(COMMON)
 
         . = ALIGN(4);
