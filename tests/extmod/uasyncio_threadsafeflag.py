@@ -76,6 +76,7 @@ async def main():
     await t
 
     # Flag set, cleared, and set again.
+    print("----")
     print("set event")
     flag.set()
     print("yield")

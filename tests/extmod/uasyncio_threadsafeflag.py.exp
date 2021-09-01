@@ -24,6 +24,7 @@ set event
 yield
 clear event
 yield
+yield
 task 4
 set event
 yield
