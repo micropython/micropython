@@ -1517,6 +1517,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_BTREE (0)
 #endif
 
+// Whether to provide the low-level "_onewire" module
+#ifndef MICROPY_PY_ONEWIRE
+#define MICROPY_PY_ONEWIRE (0)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
