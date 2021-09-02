@@ -136,6 +136,7 @@
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
+#define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_FRAMEBUF                     (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)

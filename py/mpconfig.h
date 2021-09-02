@@ -1494,6 +1494,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_SPI (0)
 #endif
 
+// Whether to provide the "machine.SoftSPI" class
+#ifndef MICROPY_PY_MACHINE_SOFTSPI
+#define MICROPY_PY_MACHINE_SOFTSPI (0)
+#endif
+
 #ifndef MICROPY_PY_USSL
 #define MICROPY_PY_USSL (0)
 // Whether to add finaliser code to ussl objects
