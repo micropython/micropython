@@ -533,6 +533,7 @@ jobs:
         - "targett_module_clip_wroom"
         - "targett_module_clip_wrover"
         - "unexpectedmaker_feathers2"
+        - "unexpectedmaker_feathers2_neo"
         - "unexpectedmaker_feathers2_prerelease"
         - "unexpectedmaker_tinys2"
 
