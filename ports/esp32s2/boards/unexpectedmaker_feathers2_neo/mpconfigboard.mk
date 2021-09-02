@@ -1,4 +1,4 @@
-USB_VID = 0x239A
+USB_VID = 0x303A
 USB_PID = 0x80B5
 USB_PRODUCT = "FeatherS2 Neo"
 USB_MANUFACTURER = "UnexpectedMaker"
