@@ -42,7 +42,7 @@
 //|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|
-//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin) -> None:
+//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin, frequency: int = 30_000_000) -> None:
 //|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|         by implying the next 7 additional pins on a given GPIO port.
 //|
@@ -56,7 +56,8 @@
 //|         :param microcontroller.Pin chip_select: Chip select pin
 //|         :param microcontroller.Pin write: Write pin
 //|         :param microcontroller.Pin read: Read pin
-//|         :param microcontroller.Pin reset: Reset pin"""
+//|         :param microcontroller.Pin reset: Reset pin
+//|         :param int frequency: The communication frequency in Hz for the display on the bus"""
 //|         ...
 //|
 STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
