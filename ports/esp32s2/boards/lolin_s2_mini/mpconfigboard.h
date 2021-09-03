@@ -36,12 +36,12 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO35) // no I2C labels on S2 Mini, def from Espressif MP
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33) // no I2C labels on S2 Mini, def from Espressif MP
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO35) // no I2C labels on S2 Mini, def from Wemos MP
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33) // no I2C labels on S2 Mini, def from Wemos MP
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO7)   // no SPI labels on S2 Mini, def from Espressif MP
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11) // no SPI labels on S2 Mini, def from Espressif MP
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO9)  // no SPI labels on S2 Mini, def from Espressif MP
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO7)   // no SPI labels on S2 Mini, def from Wemos MP
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11) // no SPI labels on S2 Mini, def from Wemos MP
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO9)  // no SPI labels on S2 Mini, def from Wemos MP
 
 // #define DEFAULT_UART_BUS_RX (&pin_GPIO44) // no UART pins on S2 Mini
 // #define DEFAULT_UART_BUS_TX (&pin_GPIO43) // no UART pins on S2 Mini
