@@ -40,4 +40,3 @@
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO7)   // no SPI labels on S2 Mini, def from Wemos MP
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11) // no SPI labels on S2 Mini, def from Wemos MP
 #define DEFAULT_SPI_BUS_MISO (&pin_GPIO9)  // no SPI labels on S2 Mini, def from Wemos MP
-
