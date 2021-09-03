@@ -18,7 +18,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_IO6), MP_ROM_PTR(&pin_GPIO6) },  // RTC_GPIO6,GPIO6,TOUCH6,ADC1_CH5
     { MP_ROM_QSTR(MP_QSTR_IO7), MP_ROM_PTR(&pin_GPIO7) },  // RTC_GPIO7,GPIO7,TOUCH7,ADC1_CH6
-    { MP_ROM_QSTR(MP_QSTR_SCK),  MP_ROM_PTR(&pin_GPI7) },  // def from Wemos MP
+    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO7) },  // def from Wemos MP
     { MP_ROM_QSTR(MP_QSTR_D5),  MP_ROM_PTR(&pin_GPIO7) },  // D1 mini pin D5 GPIO14
 
     // mpconfigboard.h: GPIO8/GPIO9: SCL/SDA I2C0
