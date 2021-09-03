@@ -120,6 +120,7 @@
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_URE_SUB                      (1)
+#define MICROPY_PY_UHEAPQ                       (1)
 #define MICROPY_PY_UHASHLIB                     (1)
 #define MICROPY_PY_UBINASCII                    (1)
 #define MICROPY_PY_UBINASCII_CRC32              (1)
