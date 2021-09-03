@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-08-23 14:19+0000\n"
-"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
+"PO-Revision-Date: 2021-09-04 23:34+0000\n"
+"Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -49,6 +49,9 @@ msgid ""
 "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
 "=== "
 msgstr ""
+"\n"
+"zhān tiē mó shì; Ctrl-C qǔ xiāo, Ctrl-D wán chéngh\n"
+"=== "
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -85,11 +88,11 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q hé %q bāo hán chóng fù yǐn jiǎo"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q bāo hán chóng fù de yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -114,11 +117,11 @@ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "%q cháng dù bì xū wéi %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
-msgstr ""
+msgstr "%q cháng dù bì xū >= 1"
 
 #: shared-bindings/vectorio/Polygon.c
 msgid "%q list must be a list"
@@ -162,7 +165,7 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q bì xū shì 2 de gōng lǜ"
 
 #: py/argcheck.c
 msgid "%q must of type %q"
@@ -187,7 +190,7 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "%q, %q, hé %q bì xū cháng dù xiāng tóng"
 
 #: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
 #, c-format
@@ -341,7 +344,7 @@ msgstr "'yield' wàibù gōngnéng"
 
 #: shared-module/vectorio/VectorShape.c
 msgid "(x,y) integers required"
-msgstr ""
+msgstr "(x,y) suǒ xū de zhěng shù"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -516,7 +519,7 @@ msgstr "dāng VM bú yùn xíng shí, cháng shì duī fēn pèi."
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "wèi shí xiàn yīn pín zhuǎn huàn"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -1256,7 +1259,7 @@ msgstr "Jiāmì bùzú"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
-msgstr ""
+msgstr "nèi bù yīn pín huǎn chōng qì tài xiǎo"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -1551,12 +1554,12 @@ msgstr "quē shǎo dì yī zǔ yǐn jiǎo. zhǐ lìng %d shè zhì yǐn jiǎo"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
+msgstr "shī zōng de jmp_pin. zhǐ lìng %d zài yǐn jiǎo shàng tiào yuè"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "More than %d report ids not supported"
-msgstr ""
+msgstr "chāo guò %d bào gào bù zhī chí de ID"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -2637,7 +2640,7 @@ msgstr "zhóu tài cháng"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
-msgstr ""
+msgstr "bèi jǐng zhí tuō lí mù biāo fàn wéi"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2859,7 +2862,7 @@ msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduà
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
-msgstr ""
+msgstr "wú fǎ fēn pèi xīn xíng zhuàng"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
@@ -3166,7 +3169,7 @@ msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "wén jiàn biān xiě bù kě yòng"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3457,7 +3460,7 @@ msgstr "wú xiào element_size %d, bì xū shì, 1, 2, huò 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "wú xiào lì wài"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3498,7 +3501,7 @@ msgstr "wúxiào de hàomǎ yǔfǎ"
 
 #: py/objexcept.c shared-bindings/traceback/__init__.c
 msgid "invalid traceback"
-msgstr ""
+msgstr "wú xiào zhuī sù"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3626,7 +3629,7 @@ msgstr "nèi cún shì tú: cháng dù bú shì xiàng mù huà de bèi shù"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
-msgstr ""
+msgstr "mó shì bì xū wán chéng huò jiǎn shǎo"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -3868,11 +3871,11 @@ msgstr "cāozuò shǔ bùnéng yīqǐ guǎngbò"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for 2D arrays only"
-msgstr ""
+msgstr "jǐn zhēn duì 2D zhèn liè dìng yì cāo zuò"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr ""
+msgstr "cāo zuò jǐn dìng yì wéi ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
@@ -4042,7 +4045,7 @@ msgstr "duìliè yìchū"
 
 #: lib/utils/pyexec.c
 msgid "raw REPL; CTRL-B to exit\n"
-msgstr ""
+msgstr "yuán shǐ REPL; CTRL-B tuì chū\n"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
@@ -4451,7 +4454,7 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr ""
+msgstr "zhí fàn wéi wài de mù biāo"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
