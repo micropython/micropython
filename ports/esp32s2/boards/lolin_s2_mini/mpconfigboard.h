@@ -27,7 +27,7 @@
 // Micropython setup
 
 #define MICROPY_HW_BOARD_NAME       "S2Mini"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#define MICROPY_HW_MCU_NAME         "ESP32S2-S2FN4R2" // from Wemos MP
 
 // #define MICROPY_HW_NEOPIXEL (&pin_GPIO1) // no NeoPixel on S2 Mini
 // #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO15)
