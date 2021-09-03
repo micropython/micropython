@@ -38,7 +38,7 @@ static uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 static int pulse_fd = -1;
 
-static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
+static bool pulseout_timer_handler(uint32_t *next_interval_us, void *arg) {
     uint8_t pwm_num = (uint8_t)(int)arg;
     pulse_index++;
 
@@ -46,7 +46,7 @@ static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
         return false;
     }
 
-    *next_interval_us = pulse_buffer[pulse_index] * 1000;
+    *next_interval_us = pulse_buffer[pulse_index];
 
     if (pulse_index % 2 == 0) {
         pwmout_start(pwm_num);
@@ -108,7 +108,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     pulse_index = 0;
     pulse_length = len;
 
-    unsigned long timeout = pulse_buffer[0] * 1000;
+    unsigned long timeout = pulse_buffer[0];
 
     ioctl(pulse_fd, TCIOC_SETTIMEOUT, timeout);
 
