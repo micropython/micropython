@@ -40,7 +40,7 @@ STATIC const mp_rom_obj_tuple_t sdio_data_tuple = {
 };
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_UART2_RXD) },
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_UART2_TXD) },
