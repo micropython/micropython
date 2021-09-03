@@ -29,19 +29,19 @@
 #define MICROPY_HW_BOARD_NAME       "S2Mini"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO1)
+// #define MICROPY_HW_NEOPIXEL (&pin_GPIO1) // no NeoPixel on S2 Mini
 #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO15)
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
 #define AUTORESET_DELAY_MS 500
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+// #define DEFAULT_I2C_BUS_SCL (&pin_GPIO9) // no I2C labels on S2 Mini
+// #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8) // no I2C labels on S2 Mini
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO37)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO36)
+// #define DEFAULT_SPI_BUS_SCK (&pin_GPIO37)  // no SPI labels on S2 Mini
+// #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35) // no SPI labels on S2 Mini
+// #define DEFAULT_SPI_BUS_MISO (&pin_GPIO36) // no SPI labels on S2 Mini
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+// #define DEFAULT_UART_BUS_RX (&pin_GPIO44) // no UART pins on S2 Mini
+// #define DEFAULT_UART_BUS_TX (&pin_GPIO43) // no UART pins on S2 Mini
