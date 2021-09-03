@@ -79,6 +79,7 @@
 
 // SPI flash, for R/W storage
 // The first 1MiB is skipped because it's used by the built-in bootloader
+// Note: MICROPY_HW_SPIFLASH_OFFSET_BYTES must be a multiple of MP_SPIFLASH_ERASE_BLOCK_SIZE
 #define MICROPY_HW_SPIFLASH_OFFSET_BYTES         (1024 * 1024)
 #define MICROPY_HW_SPIFLASH_BLOCKMAP(bl)         ((bl) + MICROPY_HW_SPIFLASH_OFFSET_BYTES / FLASH_BLOCK_SIZE)
 #define MICROPY_HW_SPIFLASH_BLOCKMAP_EXT(bl)     ((bl) + MICROPY_HW_SPIFLASH_OFFSET_BYTES / MP_SPIFLASH_ERASE_BLOCK_SIZE)
