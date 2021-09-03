@@ -29,8 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "S2Mini"
 #define MICROPY_HW_MCU_NAME         "ESP32S2-S2FN4R2" // from Wemos MP
 
-// #define MICROPY_HW_NEOPIXEL (&pin_GPIO1) // no NeoPixel on S2 Mini
-// #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO15)
 #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
@@ -43,5 +41,3 @@
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11) // no SPI labels on S2 Mini, def from Wemos MP
 #define DEFAULT_SPI_BUS_MISO (&pin_GPIO9)  // no SPI labels on S2 Mini, def from Wemos MP
 
-// #define DEFAULT_UART_BUS_RX (&pin_GPIO44) // no UART pins on S2 Mini
-// #define DEFAULT_UART_BUS_TX (&pin_GPIO43) // no UART pins on S2 Mini
