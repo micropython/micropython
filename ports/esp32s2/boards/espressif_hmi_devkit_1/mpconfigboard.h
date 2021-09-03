@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,24 @@
  * THE SOFTWARE.
  */
 
+// Micropython setup
 
-#include <stdint.h>
+#define MICROPY_HW_BOARD_NAME       "HMI-DevKit-1.1"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
 
-#include "shared-bindings/sdioio/SDCard.h"
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-//| """Interface to an SD card via the SDIO bus"""
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-STATIC const mp_rom_map_elem_t sdioio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sdio) },
-    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&sdioio_SDCard_type) },
-};
+#define AUTORESET_DELAY_MS 500
 
-STATIC MP_DEFINE_CONST_DICT(sdioio_module_globals, sdioio_module_globals_table);
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO39)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO40)
 
-const mp_obj_module_t sdioio_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&sdioio_module_globals,
-};
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
 
-MP_REGISTER_MODULE(MP_QSTR_sdio, sdioio_module, CIRCUITPY_SDIOIO);
+#define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (1)

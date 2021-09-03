@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,27 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include <stdint.h>
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
 
-#include "py/obj.h"
-#include "py/runtime.h"
+    // Debug UART
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+}
 
-#include "shared-bindings/sdioio/SDCard.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-//| """Interface to an SD card via the SDIO bus"""
+void reset_board(void) {
 
-STATIC const mp_rom_map_elem_t sdioio_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sdio) },
-    { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&sdioio_SDCard_type) },
-};
+}
 
-STATIC MP_DEFINE_CONST_DICT(sdioio_module_globals, sdioio_module_globals_table);
-
-const mp_obj_module_t sdioio_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&sdioio_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_sdio, sdioio_module, CIRCUITPY_SDIOIO);
+void board_deinit(void) {
+}

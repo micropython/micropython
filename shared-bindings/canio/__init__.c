@@ -108,6 +108,7 @@ MAKE_PRINTER(canio, canio_bus_state);
 MAKE_ENUM_TYPE(canio, BusState, canio_bus_state);
 
 STATIC const mp_rom_map_elem_t canio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_canio) },
     { MP_ROM_QSTR(MP_QSTR_BusState), MP_ROM_PTR(&canio_bus_state_type) },
     { MP_ROM_QSTR(MP_QSTR_CAN), MP_ROM_PTR(&canio_can_type) },
     { MP_ROM_QSTR(MP_QSTR_Listener), MP_ROM_PTR(&canio_listener_type) },
@@ -123,3 +124,5 @@ const mp_obj_module_t canio_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&canio_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_canio, canio_module, CIRCUITPY_CANIO);

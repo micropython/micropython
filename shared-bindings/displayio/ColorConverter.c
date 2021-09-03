@@ -86,7 +86,7 @@ STATIC mp_obj_t displayio_colorconverter_obj_convert(mp_obj_t self_in, mp_obj_t 
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_convert_obj, displayio_colorconverter_obj_convert);
 
 //|     dither: bool
-//|     """When true the color converter dithers the output by adding random noise when
+//|     """When `True` the ColorConverter dithers the output by adding random noise when
 //|     truncating to display bitdepth"""
 //|
 STATIC mp_obj_t displayio_colorconverter_obj_get_dither(mp_obj_t self_in) {
@@ -111,8 +111,11 @@ const mp_obj_property_t displayio_colorconverter_dither_obj = {
               MP_ROM_NONE},
 };
 
-//|     def make_transparent(self, pixel: int) -> None:
-//|         """Sets a pixel to not opaque."""
+//|     def make_transparent(self, color: int) -> None:
+//|         """Set the transparent color or index for the ColorConverter. This will
+//|         raise an Exception if there is already a selected transparent index.
+//|
+//|         :param int color: The color to be transparent"""
 //|
 STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);
@@ -123,8 +126,10 @@ STATIC mp_obj_t displayio_colorconverter_make_transparent(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_make_transparent_obj, displayio_colorconverter_make_transparent);
 
-//|     def make_opaque(self, pixel: int) -> None:
-//|         """Sets a pixel to opaque."""
+//|     def make_opaque(self, color: int) -> None:
+//|         """Make the ColorConverter be opaque and have no transparent pixels.
+//|
+//|         :param int color: [IGNORED] Use any value"""
 //|
 STATIC mp_obj_t displayio_colorconverter_make_opaque(mp_obj_t self_in, mp_obj_t transparent_color_obj) {
     displayio_colorconverter_t *self = MP_OBJ_TO_PTR(self_in);

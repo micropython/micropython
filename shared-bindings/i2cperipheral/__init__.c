@@ -104,3 +104,5 @@ const mp_obj_module_t i2cperipheral_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&i2cperipheral_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_i2cperipheral, i2cperipheral_module, CIRCUITPY_I2CPERIPHERAL);
