@@ -219,6 +219,26 @@ has the same methods as software I2C above::
     i2c = I2C(0)   # default assignment: scl=Pin(9), sda=Pin(8)
     i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400_000)
 
+I2S bus
+-------
+
+See :ref:`machine.I2S <machine.I2S>`. ::
+
+    from machine import I2S, Pin
+
+    i2s = I2S(0, sck=Pin(16), ws=Pin(17), sd=Pin(18), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
+    i2s.write(buf)             # write buffer of audio samples to I2S device
+
+    i2s = I2S(1, sck=Pin(0), ws=Pin(1), sd=Pin(2), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
+    i2s.readinto(buf)          # fill buffer with audio samples from I2S device
+
+The ``ws`` pin number must be one greater than the ``sck`` pin number.
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
+users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
+
+Two I2S buses are supported with id=0 and id=1.
+
 Real time clock (RTC)
 ---------------------
 

@@ -176,6 +176,7 @@ struct _mp_bluetooth_nimble_malloc_t;
     void *rp2_state_machine_irq_obj[8]; \
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
+    void *machine_i2s_obj[2]; \
     NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
