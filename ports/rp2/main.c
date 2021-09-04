@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
         readline_init0();
         machine_pin_init();
         rp2_pio_init();
+        machine_i2s_init0();
 
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_hci_init();
@@ -154,6 +155,7 @@ int main(int argc, char **argv) {
         mp_bluetooth_deinit();
         #endif
         machine_pin_deinit();
+        machine_i2s_deinit0();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
