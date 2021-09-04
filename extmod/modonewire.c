@@ -30,6 +30,8 @@
 #include "py/obj.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_ONEWIRE
+
 /******************************************************************************/
 // Low-level 1-Wire routines
 
@@ -160,3 +162,5 @@ const mp_obj_module_t mp_module_onewire = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };
+
+#endif // MICROPY_PY_ONEWIRE

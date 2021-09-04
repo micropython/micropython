@@ -136,4 +136,3 @@ enum {
 };
 
 typedef GPIO_TypeDef pin_gpio_t;
-

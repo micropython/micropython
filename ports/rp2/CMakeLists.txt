@@ -85,7 +85,6 @@ set(MICROPY_SOURCE_PORT
     machine_adc.c
     machine_i2c.c
     machine_pin.c
-    machine_pwm.c
     machine_rtc.c
     machine_spi.c
     machine_timer.c
@@ -113,7 +112,6 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
-    ${PROJECT_SOURCE_DIR}/machine_pwm.c
     ${PROJECT_SOURCE_DIR}/machine_rtc.c
     ${PROJECT_SOURCE_DIR}/machine_spi.c
     ${PROJECT_SOURCE_DIR}/machine_timer.c
@@ -221,6 +219,13 @@ target_compile_definitions(${MICROPY_TARGET} PRIVATE
 target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}
 )
+
+if (MICROPY_HW_ENABLE_DOUBLE_TAP)
+# Enable double tap reset into bootrom.
+target_link_libraries(${MICROPY_TARGET}
+    pico_bootsel_via_double_reset
+)
+endif()
 
 # todo this is a bit brittle, but we want to move a few source files into RAM (which requires
 #  a linker script modification) until we explicitly add  macro calls around the function

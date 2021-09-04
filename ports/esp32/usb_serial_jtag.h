@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2021 Patrick Van Oosterwijck
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_ESP32_USB_SERIAL_JTAG_H
+#define MICROPY_INCLUDED_ESP32_USB_SERIAL_JTAG_H
 
-#include "py/obj.h"
-#include "storage.h"
-#include "spi.h"
+void usb_serial_jtag_init(void);
+void usb_serial_jtag_tx_strn(const char *str, size_t len);
 
-#define CMD_EXIT_4_BYTE_ADDRESS_MODE (0xE9)
-
-STATIC const spi_proto_cfg_t spi_bus = {
-    .spi = &spi_obj[1], // SPI2 hardware peripheral
-    .baudrate = 25000000,
-    .polarity = 0,
-    .phase = 0,
-    .bits = 8,
-    .firstbit = SPI_FIRSTBIT_MSB,
-};
-
-STATIC mp_spiflash_cache_t spi_bdev_cache;
-
-const mp_spiflash_config_t spiflash_config = {
-    .bus_kind = MP_SPIFLASH_BUS_SPI,
-    .bus.u_spi.cs = MICROPY_HW_SPIFLASH_CS,
-    .bus.u_spi.data = (void *)&spi_bus,
-    .bus.u_spi.proto = &spi_proto,
-    .cache = &spi_bdev_cache,
-};
-
-spi_bdev_t spi_bdev;
-
-int32_t board_bdev_ioctl(void) {
-    int32_t ret = spi_bdev_ioctl(&spi_bdev, BDEV_IOCTL_INIT, (uint32_t)&spiflash_config);
-
-    // Exit 4-byte address mode
-    uint8_t cmd = CMD_EXIT_4_BYTE_ADDRESS_MODE;
-    mp_hal_pin_write(MICROPY_HW_SPIFLASH_CS, 0);
-    spi_proto.transfer(MP_OBJ_FROM_PTR(&spi_bus), 1, &cmd, NULL);
-    mp_hal_pin_write(MICROPY_HW_SPIFLASH_CS, 1);
-
-    return ret;
-}
+#endif // MICROPY_INCLUDED_ESP32_USB_SERIAL_JTAG_H

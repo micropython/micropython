@@ -96,7 +96,6 @@ SRC_C = \
 	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
-	machine_pwm.c \
 	machine_rtc.c \
 	machine_adc.c \
 	machine_uart.c \
