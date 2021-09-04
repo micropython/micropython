@@ -1,6 +1,8 @@
 #include "shared-bindings/board/__init__.h"
 
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     // S2 Mini Board bottom, right, top-bottom
     // GPIO0-GPIO14: broken out as a bloc on ESP32-S2FN4R2 SoC
     // mpconfigboard.h: GPIO0: CIRCUITPY_BOOT_BUTTON
@@ -80,4 +82,4 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO46), MP_ROM_PTR(&pin_GPIO46) },// GPIO46
     */
 };
-MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
