@@ -220,8 +220,7 @@ def create_pr(changes, updated, git_info, user):
     }
 
     response = github.put(
-        "/repos/{}/circuitpython-org/contents/_data/files.json".format(user),
-        json=update_file,
+        "/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file
     )
     if not response.ok:
         print("unable to post new file")
