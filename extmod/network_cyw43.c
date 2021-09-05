@@ -196,7 +196,7 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     int scan_res = cyw43_wifi_scan(self->cyw, &opts, MP_OBJ_TO_PTR(res), network_cyw43_scan_cb);
 
     if (scan_res < 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
+        mp_raise_OSError(-scan_res);
     }
 
     // Wait for scan to finish, with a 10s timeout
@@ -240,7 +240,7 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
     }
     int ret = cyw43_wifi_join(self->cyw, ssid.len, ssid.buf, key.len, key.buf, args[ARG_auth].u_int, bssid.buf, args[ARG_channel].u_int);
     if (ret != 0) {
-        mp_raise_OSError(ret);
+        mp_raise_OSError(-ret);
     }
     return mp_const_none;
 }

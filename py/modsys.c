@@ -110,13 +110,11 @@ STATIC const MP_DEFINE_STR_OBJ(mp_sys_platform_obj, MICROPY_PY_SYS_PLATFORM);
 
 // exit([retval]): raise SystemExit, with optional argument given to the exception
 STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t exc;
     if (n_args == 0) {
-        exc = mp_obj_new_exception(&mp_type_SystemExit);
+        mp_raise_type(&mp_type_SystemExit);
     } else {
-        exc = mp_obj_new_exception_arg1(&mp_type_SystemExit, args[0]);
+        mp_raise_type_arg(&mp_type_SystemExit, args[0]);
     }
-    nlr_raise(exc);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
 

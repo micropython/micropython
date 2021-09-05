@@ -26,8 +26,10 @@
 
 #include "tusb.h"
 
-#define USBD_VID (0xf055)
-#define USBD_PID (0x9802)
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0xf055)
+#define MICROPY_HW_USB_PID (0x9802)
+#endif
 
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
 #define USBD_MAX_POWER_MA (250)
@@ -57,8 +59,8 @@ static const tusb_desc_device_t usbd_desc_device = {
     .bDeviceSubClass = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol = MISC_PROTOCOL_IAD,
     .bMaxPacketSize0 = CFG_TUD_ENDPOINT0_SIZE,
-    .idVendor = USBD_VID,
-    .idProduct = USBD_PID,
+    .idVendor = MICROPY_HW_USB_VID,
+    .idProduct = MICROPY_HW_USB_PID,
     .bcdDevice = 0x0100,
     .iManufacturer = USBD_STR_MANUF,
     .iProduct = USBD_STR_PRODUCT,

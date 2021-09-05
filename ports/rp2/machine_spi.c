@@ -38,12 +38,18 @@
 #define DEFAULT_SPI_PHASE       (0)
 #define DEFAULT_SPI_BITS        (8)
 #define DEFAULT_SPI_FIRSTBIT    (SPI_MSB_FIRST)
-#define DEFAULT_SPI0_SCK        (6)
-#define DEFAULT_SPI0_MOSI       (7)
-#define DEFAULT_SPI0_MISO       (4)
-#define DEFAULT_SPI1_SCK        (10)
-#define DEFAULT_SPI1_MOSI       (11)
-#define DEFAULT_SPI1_MISO       (8)
+
+#ifndef MICROPY_HW_SPI0_SCK
+#define MICROPY_HW_SPI0_SCK     (6)
+#define MICROPY_HW_SPI0_MOSI    (7)
+#define MICROPY_HW_SPI0_MISO    (4)
+#endif
+
+#ifndef MICROPY_HW_SPI1_SCK
+#define MICROPY_HW_SPI1_SCK     (10)
+#define MICROPY_HW_SPI1_MOSI    (11)
+#define MICROPY_HW_SPI1_MISO    (8)
+#endif
 
 #define IS_VALID_PERIPH(spi, pin)   ((((pin) & 8) >> 3) == (spi))
 #define IS_VALID_SCK(spi, pin)      (((pin) & 3) == 2 && IS_VALID_PERIPH(spi, pin))
@@ -68,13 +74,13 @@ STATIC machine_spi_obj_t machine_spi_obj[] = {
     {
         {&machine_spi_type}, spi0, 0,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        DEFAULT_SPI0_SCK, DEFAULT_SPI0_MOSI, DEFAULT_SPI0_MISO,
+        MICROPY_HW_SPI0_SCK, MICROPY_HW_SPI0_MOSI, MICROPY_HW_SPI0_MISO,
         0,
     },
     {
         {&machine_spi_type}, spi1, 1,
         DEFAULT_SPI_POLARITY, DEFAULT_SPI_PHASE, DEFAULT_SPI_BITS, DEFAULT_SPI_FIRSTBIT,
-        DEFAULT_SPI1_SCK, DEFAULT_SPI1_MOSI, DEFAULT_SPI1_MISO,
+        MICROPY_HW_SPI1_SCK, MICROPY_HW_SPI1_MOSI, MICROPY_HW_SPI1_MISO,
         0,
     },
 };

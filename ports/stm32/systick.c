@@ -96,12 +96,12 @@ void mp_hal_delay_ms(mp_uint_t Delay) {
         // IRQs enabled, so can use systick counter to do the delay
         uint32_t start = uwTick;
         // Wraparound of tick is taken care of by 2's complement arithmetic.
-        while (uwTick - start < Delay) {
+        do {
             // This macro will execute the necessary idle behaviour.  It may
             // raise an exception, switch threads or enter sleep mode (waiting for
             // (at least) the SysTick interrupt).
             MICROPY_EVENT_POLL_HOOK
-        }
+        } while (uwTick - start < Delay);
     } else {
         // IRQs disabled, so need to use a busy loop for the delay.
         // To prevent possible overflow of the counter we use a double loop.

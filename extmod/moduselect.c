@@ -107,6 +107,7 @@ STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
     return n_ready;
 }
 
+#if MICROPY_PY_USELECT_SELECT
 // select(rlist, wlist, xlist[, timeout])
 STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     // get array data from tuple/list arguments
@@ -173,6 +174,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
+#endif // MICROPY_PY_USELECT_SELECT
 
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
@@ -355,7 +357,9 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_select_poll_obj, select_poll);
 
 STATIC const mp_rom_map_elem_t mp_module_select_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uselect) },
+    #if MICROPY_PY_USELECT_SELECT
     { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_select_select_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_poll), MP_ROM_PTR(&mp_select_poll_obj) },
     { MP_ROM_QSTR(MP_QSTR_POLLIN), MP_ROM_INT(MP_STREAM_POLL_RD) },
     { MP_ROM_QSTR(MP_QSTR_POLLOUT), MP_ROM_INT(MP_STREAM_POLL_WR) },

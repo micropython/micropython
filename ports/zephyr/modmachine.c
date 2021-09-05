@@ -36,6 +36,7 @@
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
+#include "extmod/machine_spi.h"
 #include "modmachine.h"
 
 #if MICROPY_PY_MACHINE
@@ -69,6 +70,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     #if MICROPY_PY_MACHINE_I2C
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_hard_i2c_type) },
+    #endif
+    #if MICROPY_PY_MACHINE_SPI
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hard_spi_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },

@@ -20,3 +20,8 @@ all:
 
 clean:
 	$(RM) -rf $(BUILD)
+
+GIT_SUBMODULES += lib/pico-sdk lib/tinyusb
+
+submodules:
+	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules

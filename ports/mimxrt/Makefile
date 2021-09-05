@@ -123,6 +123,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
+	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
@@ -132,7 +133,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 
-SRC_C = \
+SRC_C += \
 	main.c \
 	led.c \
 	pin.c \
@@ -142,6 +143,7 @@ SRC_C = \
 	dma_channel.c \
 	$(BOARD_DIR)/flash_config.c \
 	machine_adc.c \
+	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
@@ -154,16 +156,15 @@ SRC_C = \
 	modmimxrt.c \
 	moduos.c \
 	mphalport.c \
-	hal/flexspi_nor_flash.c \
-	lib/mp-readline/readline.c \
-	lib/libc/string0.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/gchelper_native.c \
-	lib/utils/mpirq.c \
-	lib/utils/printf.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/gchelper_native.c \
+	shared/runtime/mpirq.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
+	shared/runtime/sys_stdio_mphal.c \
+	shared/timeutils/timeutils.c \
 	drivers/bus/softspi.c \
 	extmod/modonewire.c \
 	$(SRC_TINYUSB_C) \
@@ -264,7 +265,7 @@ endif
 
 SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 
-SRC_S = lib/utils/gchelper_m3.s \
+SRC_S = shared/runtime/gchelper_m3.s \
 
 # List of sources for qstr extraction
 SRC_QSTR += \
@@ -281,8 +282,8 @@ SRC_QSTR += \
 	modmimxrt.c \
 	moduos.c \
 	pin.c \
-	lib/utils/mpirq.c \
-	lib/utils/sys_stdio_mphal.c \
+	shared/runtime/mpirq.c \
+	shared/runtime/sys_stdio_mphal.c \
 	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \
 

@@ -74,6 +74,7 @@
 #define MICROPY_PY_FUNCTION_ATTRS               (1)
 #define MICROPY_PY_DESCRIPTORS                  (1)
 #define MICROPY_PY_DELATTR_SETATTR              (1)
+#define MICROPY_PY_FSTRINGS                     (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE         (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER          (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION       (1)
@@ -170,6 +171,10 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
 
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     void *machine_pin_irq_obj[30]; \
@@ -177,6 +182,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
     void *rp2_state_machine_irq_obj[8]; \
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
+    MICROPY_BOARD_ROOT_POINTERS \
 
 #define MP_STATE_PORT MP_STATE_VM
 

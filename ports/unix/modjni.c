@@ -102,9 +102,9 @@ STATIC void check_exception(void) {
         mp_obj_t py_e = new_jobject(exc);
         JJ1(ExceptionClear);
         if (JJ(IsInstanceOf, exc, IndexException_class)) {
-            nlr_raise(mp_obj_new_exception_arg1(&mp_type_IndexError, py_e));
+            mp_raise_type_arg(&mp_type_IndexError, py_e);
         }
-        nlr_raise(mp_obj_new_exception_arg1(&mp_type_Exception, py_e));
+        mp_raise_type_arg(&mp_type_Exception, py_e);
     }
 }
 

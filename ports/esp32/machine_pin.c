@@ -40,10 +40,20 @@
 #include "machine_rtc.h"
 #include "modesp32.h"
 
+#if CONFIG_IDF_TARGET_ESP32C3
+#include "hal/gpio_ll.h"
+#endif
+
 // Used to implement a range of pull capabilities
 #define GPIO_PULL_DOWN (1)
 #define GPIO_PULL_UP   (2)
 #define GPIO_PULL_HOLD (4)
+
+#if CONFIG_IDF_TARGET_ESP32
+#define GPIO_FIRST_NON_OUTPUT (34)
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define GPIO_FIRST_NON_OUTPUT (46)
+#endif
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
@@ -98,6 +108,36 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, GPIO_NUM_37},
     {{&machine_pin_type}, GPIO_NUM_38},
     {{&machine_pin_type}, GPIO_NUM_39},
+
+    #elif CONFIG_IDF_TARGET_ESP32C3
+
+    {{&machine_pin_type}, GPIO_NUM_0},
+    {{&machine_pin_type}, GPIO_NUM_1},
+    {{&machine_pin_type}, GPIO_NUM_2},
+    {{&machine_pin_type}, GPIO_NUM_3},
+    {{&machine_pin_type}, GPIO_NUM_4},
+    {{&machine_pin_type}, GPIO_NUM_5},
+    {{&machine_pin_type}, GPIO_NUM_6},
+    {{&machine_pin_type}, GPIO_NUM_7},
+    {{&machine_pin_type}, GPIO_NUM_8},
+    {{&machine_pin_type}, GPIO_NUM_9},
+    {{&machine_pin_type}, GPIO_NUM_10},
+    {{&machine_pin_type}, GPIO_NUM_11},
+    {{&machine_pin_type}, GPIO_NUM_12},
+    {{&machine_pin_type}, GPIO_NUM_13},
+    {{NULL}, -1}, // 14 FLASH
+    {{NULL}, -1}, // 15 FLASH
+    {{NULL}, -1}, // 16 FLASH
+    {{NULL}, -1}, // 17 FLASH
+    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    {{NULL}, -1}, // 18 is for native USB D-
+    {{NULL}, -1}, // 19 is for native USB D+
+    #else
+    {{&machine_pin_type}, GPIO_NUM_18},
+    {{&machine_pin_type}, GPIO_NUM_19},
+    #endif
+    {{&machine_pin_type}, GPIO_NUM_20},
+    {{&machine_pin_type}, GPIO_NUM_21},
 
     #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 
@@ -213,9 +253,17 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
         if (rtc_gpio_is_valid_gpio(self->id)) {
+            #if !CONFIG_IDF_TARGET_ESP32C3
             rtc_gpio_deinit(self->id);
+            #endif
         }
     }
+
+    #if CONFIG_IDF_TARGET_ESP32C3
+    if (self->id == 18 || self->id == 19) {
+        CLEAR_PERI_REG_MASK(USB_DEVICE_CONF0_REG, USB_DEVICE_USB_PAD_ENABLE);
+    }
+    #endif
 
     // configure the pin for gpio
     gpio_pad_select_gpio(self->id);
@@ -228,11 +276,12 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // configure mode
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
-        if (self->id >= 34 && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
+        #ifdef GPIO_FIRST_NON_OUTPUT
+        if (self->id >= GPIO_FIRST_NON_OUTPUT && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
-        } else {
-            gpio_set_direction(self->id, pin_io_mode);
         }
+        #endif
+        gpio_set_direction(self->id, pin_io_mode);
     }
 
     // configure pull
@@ -493,6 +542,31 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{&machine_pin_irq_type}, GPIO_NUM_37},
     {{&machine_pin_irq_type}, GPIO_NUM_38},
     {{&machine_pin_irq_type}, GPIO_NUM_39},
+
+    #elif CONFIG_IDF_TARGET_ESP32C3
+
+    {{&machine_pin_irq_type}, GPIO_NUM_0},
+    {{&machine_pin_irq_type}, GPIO_NUM_1},
+    {{&machine_pin_irq_type}, GPIO_NUM_2},
+    {{&machine_pin_irq_type}, GPIO_NUM_3},
+    {{&machine_pin_irq_type}, GPIO_NUM_4},
+    {{&machine_pin_irq_type}, GPIO_NUM_5},
+    {{&machine_pin_irq_type}, GPIO_NUM_6},
+    {{&machine_pin_irq_type}, GPIO_NUM_7},
+    {{&machine_pin_irq_type}, GPIO_NUM_8},
+    {{&machine_pin_irq_type}, GPIO_NUM_9},
+    {{&machine_pin_irq_type}, GPIO_NUM_10},
+    {{&machine_pin_irq_type}, GPIO_NUM_11},
+    {{&machine_pin_irq_type}, GPIO_NUM_12},
+    {{&machine_pin_irq_type}, GPIO_NUM_13},
+    {{&machine_pin_irq_type}, GPIO_NUM_14},
+    {{&machine_pin_irq_type}, GPIO_NUM_15},
+    {{&machine_pin_irq_type}, GPIO_NUM_16},
+    {{&machine_pin_irq_type}, GPIO_NUM_17},
+    {{&machine_pin_irq_type}, GPIO_NUM_18},
+    {{&machine_pin_irq_type}, GPIO_NUM_19},
+    {{&machine_pin_irq_type}, GPIO_NUM_20},
+    {{&machine_pin_irq_type}, GPIO_NUM_21},
 
     #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 

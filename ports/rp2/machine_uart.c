@@ -38,10 +38,23 @@
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_UART_BITS (8)
 #define DEFAULT_UART_STOP (1)
-#define DEFAULT_UART0_TX (0)
-#define DEFAULT_UART0_RX (1)
-#define DEFAULT_UART1_TX (4)
-#define DEFAULT_UART1_RX (5)
+
+// UART 0 default pins
+#if !defined(MICROPY_HW_UART0_TX)
+#define MICROPY_HW_UART0_TX (0)
+#define MICROPY_HW_UART0_RX (1)
+#define MICROPY_HW_UART0_CTS (2)
+#define MICROPY_HW_UART0_RTS (3)
+#endif
+
+// UART 1 default pins
+#if !defined(MICROPY_HW_UART1_TX)
+#define MICROPY_HW_UART1_TX (4)
+#define MICROPY_HW_UART1_RX (5)
+#define MICROPY_HW_UART1_CTS (6)
+#define MICROPY_HW_UART1_RTS (7)
+#endif
+
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
@@ -49,10 +62,15 @@
 #define IS_VALID_PERIPH(uart, pin)  (((((pin) + 4) & 8) >> 3) == (uart))
 #define IS_VALID_TX(uart, pin)      (((pin) & 3) == 0 && IS_VALID_PERIPH(uart, pin))
 #define IS_VALID_RX(uart, pin)      (((pin) & 3) == 1 && IS_VALID_PERIPH(uart, pin))
+#define IS_VALID_CTS(uart, pin)     (((pin) & 3) == 2 && IS_VALID_PERIPH(uart, pin))
+#define IS_VALID_RTS(uart, pin)     (((pin) & 3) == 3 && IS_VALID_PERIPH(uart, pin))
 
 #define UART_INVERT_TX (1)
 #define UART_INVERT_RX (2)
 #define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
+
+#define UART_HWCONTROL_CTS  (1)
+#define UART_HWCONTROL_RTS  (2)
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -64,9 +82,12 @@ typedef struct _machine_uart_obj_t {
     uint8_t stop;
     uint8_t tx;
     uint8_t rx;
+    uint8_t cts;
+    uint8_t rts;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     uint8_t invert;
+    uint8_t flow;
     ringbuf_t read_buffer;
     bool read_lock;
     ringbuf_t write_buffer;
@@ -75,9 +96,11 @@ typedef struct _machine_uart_obj_t {
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART0_TX, DEFAULT_UART0_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+     MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX, MICROPY_HW_UART0_CTS, MICROPY_HW_UART0_RTS,
+     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
-     DEFAULT_UART1_TX, DEFAULT_UART1_RX, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0,},
+     MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX, MICROPY_HW_UART1_CTS, MICROPY_HW_UART1_RTS,
+     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
@@ -140,8 +163,8 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
-           ARG_timeout, ARG_timeout_char, ARG_invert, ARG_txbuf, ARG_rxbuf};
+    enum { ARG_id, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_cts, ARG_rts,
+           ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow, ARG_txbuf, ARG_rxbuf};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
@@ -150,9 +173,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
@@ -212,6 +238,22 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         self->rx = rx;
     }
 
+    // Set CTS/RTS pins if configured.
+    if (args[ARG_cts].u_obj != mp_const_none) {
+        int cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
+        if (!IS_VALID_CTS(self->uart_id, cts)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad CTS pin"));
+        }
+        self->cts = cts;
+    }
+    if (args[ARG_rts].u_obj != mp_const_none) {
+        int rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
+        if (!IS_VALID_RTS(self->uart_id, rts)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad RTS pin"));
+        }
+        self->rts = rts;
+    }
+
     // Set timeout if configured.
     if (args[ARG_timeout].u_int >= 0) {
         self->timeout = args[ARG_timeout].u_int;
@@ -228,6 +270,14 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
             mp_raise_ValueError(MP_ERROR_TEXT("bad inversion mask"));
         }
         self->invert = args[ARG_invert].u_int;
+    }
+
+    // Set hardware flow control if configured.
+    if (args[ARG_flow].u_int >= 0) {
+        if (args[ARG_flow].u_int & ~(UART_HWCONTROL_CTS | UART_HWCONTROL_RTS)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad hardware flow control mask"));
+        }
+        self->flow = args[ARG_flow].u_int;
     }
 
     self->read_lock = false;
@@ -277,6 +327,15 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         if (self->invert & UART_INVERT_TX) {
             gpio_set_outover(self->tx, GPIO_OVERRIDE_INVERT);
         }
+
+        // Set hardware flow control if configured.
+        if (self->flow & UART_HWCONTROL_CTS) {
+            gpio_set_function(self->cts, GPIO_FUNC_UART);
+        }
+        if (self->flow & UART_HWCONTROL_RTS) {
+            gpio_set_function(self->rts, GPIO_FUNC_UART);
+        }
+        uart_set_hw_flow(self->uart, self->flow & UART_HWCONTROL_CTS, self->flow & UART_HWCONTROL_RTS);
 
         // Allocate the RX/TX buffers.
         ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
@@ -333,6 +392,9 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
 
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
+
 };
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
 
@@ -345,6 +407,13 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     for (size_t i = 0; i < size; i++) {
         // Wait for the first/next character
         while (ringbuf_avail(&self->read_buffer) == 0) {
+            if (uart_is_readable(self->uart)) {
+                // Force a few incoming bytes to the buffer
+                self->read_lock = true;
+                uart_drain_rx_fifo(self);
+                self->read_lock = false;
+                break;
+            }
             if (time_us_64() > t) {  // timed out
                 if (i <= 0) {
                     *errcode = MP_EAGAIN;
@@ -354,10 +423,6 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
                 }
             }
             MICROPY_EVENT_POLL_HOOK
-            // Force a few incoming bytes to the buffer
-            self->read_lock = true;
-            uart_drain_rx_fifo(self);
-            self->read_lock = false;
         }
         *dest++ = ringbuf_get(&(self->read_buffer));
         t = time_us_64() + timeout_char_us;
@@ -415,7 +480,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && ringbuf_avail(&self->read_buffer) > 0) {
+        if ((flags & MP_STREAM_POLL_RD) && (uart_is_readable(self->uart) || ringbuf_avail(&self->read_buffer) > 0)) {
             ret |= MP_STREAM_POLL_RD;
         }
         if ((flags & MP_STREAM_POLL_WR) && ringbuf_free(&self->write_buffer) > 0) {

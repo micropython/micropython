@@ -1,14 +1,14 @@
 .. currentmodule:: machine
 .. _machine.SPI:
 
-class SPI -- a Serial Peripheral Interface bus protocol (master side)
-=====================================================================
+class SPI -- a Serial Peripheral Interface bus protocol (controller side)
+=========================================================================
 
-SPI is a synchronous serial protocol that is driven by a master. At the
+SPI is a synchronous serial protocol that is driven by a controller. At the
 physical level, a bus consists of 3 lines: SCK, MOSI, MISO. Multiple devices
 can share the same bus. Each device should have a separate, 4th signal,
-SS (Slave Select), to select a particular device on a bus with which
-communication takes place. Management of an SS signal should happen in
+CS (Chip Select), to select a particular device on a bus with which
+communication takes place. Management of a CS signal should happen in
 user code (via machine.Pin class).
 
 Both hardware and software SPI implementations exist via the
@@ -102,9 +102,9 @@ Methods
 Constants
 ---------
 
-.. data:: SPI.MASTER
+.. data:: SPI.CONTROLLER
 
-   for initialising the SPI bus to master; this is only used for the WiPy
+   for initialising the SPI bus to controller; this is only used for the WiPy
 
 .. data:: SPI.MSB
 

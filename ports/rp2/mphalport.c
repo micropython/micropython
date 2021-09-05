@@ -27,7 +27,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"

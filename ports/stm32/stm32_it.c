@@ -625,7 +625,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void) {
     IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
 }
 
-#if defined(STM32L4)
+#if defined(STM32L4) || defined(STM32WB)
 void TIM1_TRG_COM_TIM17_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
     timer_irq_handler(17);

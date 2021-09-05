@@ -32,18 +32,18 @@
 /******************************************************************************/
 // MicroPython bindings for legacy pyb API
 
-// class pyb.SPI - a master-driven serial protocol
+// class pyb.SPI - a controller-driven serial protocol
 //
-// SPI is a serial protocol that is driven by a master.  At the physical level
+// SPI is a serial protocol that is driven by a controller.  At the physical level
 // there are 3 lines: SCK, MOSI, MISO.
 //
 // See usage model of I2C; SPI is very similar.  Main difference is
 // parameters to init the SPI bus:
 //
 //     from pyb import SPI
-//     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+//     spi = SPI(1, SPI.CONTROLLER, baudrate=600000, polarity=1, phase=0, crc=0x7)
 //
-// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+// Only required parameter is mode, SPI.CONTROLLER or SPI.PERIPHERAL.  Polarity can be
 // 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 // to sample data on the first or second clock edge respectively.  Crc can be
 // None for no CRC, or a polynomial specifier.
@@ -72,8 +72,8 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 // init(mode, baudrate=328125, *, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
 //
 // Initialise the SPI bus with the given parameters:
-//   - `mode` must be either `SPI.MASTER` or `SPI.SLAVE`.
-//   - `baudrate` is the SCK clock rate (only sensible for a master).
+//   - `mode` must be either `SPI.CONTROLLER` or `SPI.PERIPHERAL`.
+//   - `baudrate` is the SCK clock rate (only sensible for a controller).
 STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -319,10 +319,13 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_recv), MP_ROM_PTR(&pyb_spi_send_recv_obj) },
 
     // class constants
-    /// \constant MASTER - for initialising the bus to master mode
-    /// \constant SLAVE - for initialising the bus to slave mode
+    /// \constant CONTROLLER - for initialising the bus to controller mode
+    /// \constant PERIPHERAL - for initialising the bus to peripheral mode
     /// \constant MSB - set the first bit to MSB
     /// \constant LSB - set the first bit to LSB
+    { MP_ROM_QSTR(MP_QSTR_CONTROLLER), MP_ROM_INT(SPI_MODE_MASTER) },
+    { MP_ROM_QSTR(MP_QSTR_PERIPHERAL),  MP_ROM_INT(SPI_MODE_SLAVE) },
+    // TODO - remove MASTER/SLAVE when CONTROLLER/PERIPHERAL gain wide adoption
     { MP_ROM_QSTR(MP_QSTR_MASTER), MP_ROM_INT(SPI_MODE_MASTER) },
     { MP_ROM_QSTR(MP_QSTR_SLAVE),  MP_ROM_INT(SPI_MODE_SLAVE) },
     { MP_ROM_QSTR(MP_QSTR_MSB),    MP_ROM_INT(SPI_FIRSTBIT_MSB) },

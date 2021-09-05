@@ -36,7 +36,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -121,7 +121,7 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
         return mp_const_none;
     }
 }
-STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     return machine_rtc_datetime_helper(n_args, args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
@@ -142,7 +142,7 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 #if MICROPY_HW_RTC_USER_MEM_MAX > 0
-STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t machine_rtc_memory(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // read RTC memory
         uint8_t rtcram[MICROPY_HW_RTC_USER_MEM_MAX];

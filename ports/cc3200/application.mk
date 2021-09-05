@@ -140,14 +140,18 @@ APP_MAIN_SRC_C = \
 APP_LIB_SRC_C = $(addprefix lib/,\
 	oofatfs/ff.c \
 	oofatfs/ffunicode.c \
+	)
+
+APP_SHARED_SRC_C = $(addprefix shared/,\
 	libc/string0.c \
-	mp-readline/readline.c \
+	readline/readline.c \
 	netutils/netutils.c \
 	timeutils/timeutils.c \
-	utils/gchelper_native.c \
-	utils/pyexec.c \
-	utils/interrupt_char.c \
-	utils/sys_stdio_mphal.c \
+	runtime/gchelper_native.c \
+	runtime/pyexec.c \
+	runtime/interrupt_char.c \
+	runtime/stdout_helpers.c \
+	runtime/sys_stdio_mphal.c \
 	)
 
 APP_STM_SRC_C = $(addprefix ports/stm32/,\
@@ -157,12 +161,12 @@ APP_STM_SRC_C = $(addprefix ports/stm32/,\
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_CC3100_SRC_C:.c=.o) $(APP_SL_SRC_C:.c=.o) $(APP_TELNET_SRC_C:.c=.o) $(APP_UTIL_SRC_C:.c=.o) $(APP_UTIL_SRC_S:.s=.o))
-OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_LIB_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o))
-OBJ += $(BUILD)/lib/utils/gchelper_m3.o
+OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_SHARED_SRC_C:.c=.o) $(APP_LIB_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o))
+OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
 OBJ += $(BUILD)/pins.o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C)
+SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C) $(APP_SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
