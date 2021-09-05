@@ -1,9 +1,8 @@
 
-#define MICROPY_HW_BOARD_NAME "PyCubedv04"
+#define MICROPY_HW_BOARD_NAME "PyCubedv05"
 #define MICROPY_HW_MCU_NAME "samd51j19"
 #define CIRCUITPY_MCU_FAMILY samd51
 
-#define MICROPY_HW_LED_STATUS (&pin_PA16)
 #define MICROPY_HW_NEOPIXEL   (&pin_PA21)
 
 #define AUTORESET_DELAY_MS 500
@@ -14,6 +13,8 @@
 
 // External flash W25Q80DV
 #define EXTERNAL_FLASH_QSPI_DUAL
+
+#define CIRCUITPY_DRIVE_LABEL "PYCUBED"
 
 #define BOARD_HAS_CRYSTAL 1
 
