@@ -162,13 +162,13 @@ cpp None
 5
 (3, 'hellocpp')
 frzstr1
-frzstr1.py
+|frozen/frzstr1.py
 frzmpy1
-frzmpy1.py
+|frozen/frzmpy1.py
 frzstr_pkg1.__init__
-frzstr_pkg1/__init__.py 1
+|frozen/frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-frzmpy_pkg1/__init__.py 1
+|frozen/frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod

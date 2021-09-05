@@ -56,6 +56,9 @@ STATIC void mp_reset(void) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
+    #if MICROPY_MODULE_FROZEN
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__pipe_frozen));
+    #endif
     mp_obj_list_init(mp_sys_argv, 0);
     #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
     extern void esp_native_code_init(void);

@@ -47,6 +47,7 @@
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
 
 #define PATH_SEP_CHAR '/'
+#define PATH_FROZEN "|frozen/"
 
 bool mp_obj_is_package(mp_obj_t module) {
     mp_obj_t dest[2];
@@ -58,9 +59,11 @@ bool mp_obj_is_package(mp_obj_t module) {
 // (whatever is available, if at all).
 STATIC mp_import_stat_t mp_import_stat_any(const char *path) {
     #if MICROPY_MODULE_FROZEN
-    mp_import_stat_t st = mp_frozen_stat(path);
-    if (st != MP_IMPORT_STAT_NO_EXIST) {
-        return st;
+    if (strncmp(path, PATH_FROZEN, strlen(PATH_FROZEN)) == 0) {
+        mp_import_stat_t st = mp_frozen_stat(path + strlen(PATH_FROZEN));
+        if (st != MP_IMPORT_STAT_NO_EXIST) {
+            return st;
+        }
     }
     #endif
     return mp_import_stat(path);
@@ -188,13 +191,17 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // requested filename in the list of frozen module filenames.
     #if MICROPY_MODULE_FROZEN
     void *modref;
-    int frozen_type = mp_find_frozen_module(file_str, file->len, &modref);
+    int frozen_type = MP_FROZEN_NONE;
+    if (strncmp(file_str, PATH_FROZEN, strlen(PATH_FROZEN)) == 0) {
+        frozen_type = mp_find_frozen_module(file_str + strlen(PATH_FROZEN), file->len - strlen(PATH_FROZEN), &modref);
+    }
     #endif
 
     // If we support frozen str modules and the compiler is enabled, and we
     // found the filename in the list of frozen files, then load and execute it.
     #if MICROPY_MODULE_FROZEN_STR
     if (frozen_type == MP_FROZEN_STR) {
+        ((mp_lexer_t *)modref)->source_name = qstr_from_str(file_str);
         do_load_from_lexer(module_obj, modref);
         return;
     }

@@ -47,6 +47,9 @@ Q({:#o})
 Q({:#x})
 #endif
 Q({:#b})
+#if MICROPY_MODULE_FROZEN
+Q(|frozen)
+#endif
 Q( )
 Q(\n)
 Q(maximum recursion depth exceeded)
