@@ -66,7 +66,6 @@
 #endif
 
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (0)
 
 // fatfs configuration used in ffconf.h
