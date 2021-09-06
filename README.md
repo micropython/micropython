@@ -58,6 +58,15 @@ For more details please refer to [Micropython ESP32 README](https://github.com/m
 
 Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript#for-javascript-port
 
+### For Raspberry Pi Pico port
+
+This port uses [Micropython infrastructure for C modules](https://docs.micropython.org/en/latest/develop/cmodules.html#compiling-the-cmodule-into-micropython) and `USER_C_MODULES` must be given:
+
+```
+cd ports/rp2
+make USER_C_MODULES=../../lv_bindings/bindings.cmake
+```
+
 ## Super Simple Example
 
 First, LVGL needs to be imported and initialized
