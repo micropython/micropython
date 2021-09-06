@@ -742,9 +742,7 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "--via-mpy", action="store_true", help="compile .py files to .mpy first"
     )
-    cmd_parser.add_argument(
-        "--mpy-cross-flags", default="-mcache-lookup-bc", help="flags to pass to mpy-cross"
-    )
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
     )

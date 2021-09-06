@@ -119,11 +119,11 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ UNARY_OP 3
 \\d\+ STORE_FAST 10
 \\d\+ LOAD_DEREF 14
-\\d\+ LOAD_ATTR c (cache=0)
+\\d\+ LOAD_ATTR c
 \\d\+ STORE_FAST 11
 \\d\+ LOAD_FAST 11
 \\d\+ LOAD_DEREF 14
-\\d\+ STORE_ATTR c (cache=0)
+\\d\+ STORE_ATTR c
 \\d\+ LOAD_DEREF 14
 \\d\+ LOAD_CONST_SMALL_INT 0
 \\d\+ LOAD_SUBSCR
@@ -233,7 +233,7 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 \\d\+ LOAD_DEREF 16
 \\d\+ POP_TOP
 \\d\+ JUMP \\d\+
-\\d\+ LOAD_GLOBAL y (cache=0)
+\\d\+ LOAD_GLOBAL y
 \\d\+ POP_TOP
 \\d\+ JUMP \\d\+
 \\d\+ LOAD_DEREF 14
@@ -418,13 +418,13 @@ arg names:
 (N_EXC_STACK 0)
   bc=0 line=1
 ########
-  bc=13 line=150
-00 LOAD_NAME __name__ (cache=0)
-04 STORE_NAME __module__
-07 LOAD_CONST_STRING 'Class'
-10 STORE_NAME __qualname__
-13 LOAD_CONST_NONE
-14 RETURN_VALUE
+  bc=12 line=150
+00 LOAD_NAME __name__
+03 STORE_NAME __module__
+06 LOAD_CONST_STRING 'Class'
+09 STORE_NAME __qualname__
+12 LOAD_CONST_NONE
+13 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 ########
@@ -434,8 +434,8 @@ arg names: self
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=157
-00 LOAD_GLOBAL super (cache=0)
-\\d\+ LOAD_GLOBAL __class__ (cache=0)
+00 LOAD_GLOBAL super
+\\d\+ LOAD_GLOBAL __class__
 \\d\+ LOAD_FAST 0
 \\d\+ LOAD_SUPER_METHOD f
 \\d\+ CALL_METHOD n=0 nkw=0
