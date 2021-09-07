@@ -174,14 +174,19 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     uint16_t bits_per_sample_output = bits_per_sample * 2;
     size_t clocks_per_bit = 6;
     uint32_t frequency = bits_per_sample_output * audiosample_sample_rate(sample);
-    common_hal_rp2pio_statemachine_set_frequency(&self->state_machine, clocks_per_bit * frequency);
-    common_hal_rp2pio_statemachine_restart(&self->state_machine);
-
     uint8_t channel_count = audiosample_channel_count(sample);
     if (channel_count > 2) {
         mp_raise_ValueError(translate("Too many channels in sample."));
     }
 
+    common_hal_rp2pio_statemachine_set_frequency(&self->state_machine, clocks_per_bit * frequency);
+    common_hal_rp2pio_statemachine_restart(&self->state_machine);
+
+    // On the RP2040, output registers are always written with a 32-bit write.
+    // If the write is 8 or 16 bits wide, the data will be replicated in upper bytes.
+    // See section 2.1.4 Narrow IO Register Writes in the RP2040 datasheet.
+    // This means that identical 16-bit audio data will be written in both halves of the incoming PIO
+    // FIFO register. Thus we get mono-to-stereo conversion for the I2S output for free.
     audio_dma_result result = audio_dma_setup_playback(
         &self->dma,
         sample,
@@ -200,8 +205,6 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
         common_hal_audiobusio_i2sout_stop(self);
         mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
     }
-
-    // Turn on the state machine's clock.
 
     self->playing = true;
 }

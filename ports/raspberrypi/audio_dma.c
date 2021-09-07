@@ -49,92 +49,74 @@ void audio_dma_reset(void) {
 }
 
 
-STATIC void audio_dma_convert_samples(
-    audio_dma_t *dma,
-    uint8_t *input, uint32_t input_length,
-    uint8_t *available_output_buffer, uint32_t available_output_buffer_length,
-    uint8_t **output, uint32_t *output_length) {
-
+STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32_t input_length, uint8_t *output, uint32_t output_length) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
 
-    // Check whether a conversion is necessary
-    if (dma->signed_to_unsigned ||
-        dma->unsigned_to_signed ||
-        dma->sample_spacing > 1 ||
-        (dma->sample_resolution != dma->output_resolution)) {
+    uint32_t output_length_used = input_length / dma->sample_spacing;
 
-        // Must convert.
-        // Write the conversion into the passed-in output buffer
-        *output = available_output_buffer;
-        *output_length = input_length / dma->sample_spacing;
+    if (output_length_used > output_length) {
+        mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+    }
 
-        if (*output_length > available_output_buffer_length) {
+    uint32_t out_i = 0;
+    if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
+        // reading bytes, writing 16-bit words, so output buffer will be bigger.
+
+        output_length_used = output_length * 2;
+        if (output_length_used > output_length) {
             mp_raise_RuntimeError(translate("Internal audio buffer too small"));
         }
 
-        uint32_t out_i = 0;
-        if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
-            // reading bytes, writing 16-bit words, so output buffer will be bigger.
+        size_t shift = dma->output_resolution - dma->sample_resolution;
 
-            *output_length = *output_length * 2;
-            if (*output_length > available_output_buffer_length) {
-                mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+        for (uint32_t i = 0; i < input_length; i += dma->sample_spacing) {
+            if (dma->signed_to_unsigned) {
+                ((uint16_t *)output)[out_i] = ((uint16_t)((int8_t *)input)[i] + 0x80) << shift;
+            } else if (dma->unsigned_to_signed) {
+                ((int16_t *)output)[out_i] = ((int16_t)((uint8_t *)input)[i] - 0x80) << shift;
+            } else {
+                ((uint16_t *)output)[out_i] = ((uint16_t)((uint8_t *)input)[i]) << shift;
             }
-
-            size_t shift = dma->output_resolution - dma->sample_resolution;
-
-            for (uint32_t i = 0; i < input_length; i += dma->sample_spacing) {
-                if (dma->signed_to_unsigned) {
-                    ((uint16_t *)*output)[out_i] = ((uint16_t)((int8_t *)input)[i] + 0x80) << shift;
-                } else if (dma->unsigned_to_signed) {
-                    ((int16_t *)*output)[out_i] = ((int16_t)((uint8_t *)input)[i] - 0x80) << shift;
+            out_i += 1;
+        }
+    } else if (dma->sample_resolution <= 8 && dma->output_resolution <= 8) {
+        for (uint32_t i = 0; i < input_length; i += dma->sample_spacing) {
+            if (dma->signed_to_unsigned) {
+                ((uint8_t *)output)[out_i] = ((int8_t *)input)[i] + 0x80;
+            } else if (dma->unsigned_to_signed) {
+                ((int8_t *)output)[out_i] = ((uint8_t *)input)[i] - 0x80;
+            } else {
+                ((uint8_t *)output)[out_i] = ((uint8_t *)input)[i];
+            }
+            out_i += 1;
+        }
+    } else if (dma->sample_resolution > 8 && dma->output_resolution > 8) {
+        size_t shift = 16 - dma->output_resolution;
+        for (uint32_t i = 0; i < input_length / 2; i += dma->sample_spacing) {
+            if (dma->signed_to_unsigned) {
+                ((uint16_t *)output)[out_i] = ((int16_t *)input)[i] + 0x8000;
+            } else if (dma->unsigned_to_signed) {
+                ((int16_t *)output)[out_i] = ((uint16_t *)input)[i] - 0x8000;
+            } else {
+                ((uint16_t *)output)[out_i] = ((uint16_t *)input)[i];
+            }
+            if (dma->output_resolution < 16) {
+                if (dma->output_signed) {
+                    ((int16_t *)output)[out_i] = ((int16_t *)output)[out_i] >> shift;
                 } else {
-                    ((uint16_t *)*output)[out_i] = ((uint16_t)((uint8_t *)input)[i]) << shift;
+                    ((uint16_t *)output)[out_i] = ((uint16_t *)output)[out_i] >> shift;
                 }
-                out_i += 1;
             }
-        } else if (dma->sample_resolution <= 8 && dma->output_resolution <= 8) {
-            for (uint32_t i = 0; i < input_length; i += dma->sample_spacing) {
-                if (dma->signed_to_unsigned) {
-                    ((uint8_t *)*output)[out_i] = ((int8_t *)input)[i] + 0x80;
-                } else if (dma->unsigned_to_signed) {
-                    ((int8_t *)*output)[out_i] = ((uint8_t *)input)[i] - 0x80;
-                } else {
-                    ((uint8_t *)*output)[out_i] = ((uint8_t *)input)[i];
-                }
-                out_i += 1;
-            }
-        } else if (dma->sample_resolution > 8 && dma->output_resolution > 8) {
-            size_t shift = 16 - dma->output_resolution;
-            for (uint32_t i = 0; i < input_length / 2; i += dma->sample_spacing) {
-                if (dma->signed_to_unsigned) {
-                    ((uint16_t *)*output)[out_i] = ((int16_t *)input)[i] + 0x8000;
-                } else if (dma->unsigned_to_signed) {
-                    ((int16_t *)*output)[out_i] = ((uint16_t *)input)[i] - 0x8000;
-                } else {
-                    ((uint16_t *)*output)[out_i] = ((uint16_t *)input)[i];
-                }
-                if (dma->output_resolution < 16) {
-                    if (dma->output_signed) {
-                        ((int16_t *)*output)[out_i] = ((int16_t *)*output)[out_i] >> shift;
-                    } else {
-                        ((uint16_t *)*output)[out_i] = ((uint16_t *)*output)[out_i] >> shift;
-                    }
-                }
-                out_i += 1;
-            }
-        } else {
-            // (dma->sample_resolution > 8 && dma->output_resolution <= 8)
-            // Not currently used, but might be in the future.
-            mp_raise_RuntimeError(translate("Audio conversion not implemented"));
+            out_i += 1;
         }
     } else {
-        // No conversion necessary. Designate the input buffer as the output buffer.
-        *output = input;
-        *output_length = input_length;
+        // (dma->sample_resolution > 8 && dma->output_resolution <= 8)
+        // Not currently used, but might be in the future.
+        mp_raise_RuntimeError(translate("Audio conversion not implemented"));
     }
     #pragma GCC diagnostic pop
+    return output_length_used;
 }
 
 // buffer_idx is 0 or 1.
@@ -154,21 +136,14 @@ STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
 
     // Convert the sample format resolution and signedness, as necessary.
     // The input sample buffer is what was read from a file, Mixer, or a raw sample buffer.
-    // The output buffer is one of the DMA buffers (passed in), or if no conversion was done,
-    // the original sample buffer (to save copying).
+    // The output buffer is one of the DMA buffers (passed in).
 
-    // audio_dma_convert_samples() will write the converted samples into the given output
-    // buffer if necessary. If no conversion was needed, it will return the sample buffer
-    // as the output buffer.
-    uint8_t *output_buffer;
-    uint32_t output_buffer_length;
+    size_t output_length_used = audio_dma_convert_samples(
+        dma, sample_buffer, sample_buffer_length,
+        dma->buffer[buffer_idx], dma->buffer_length[buffer_idx]);
 
-    audio_dma_convert_samples(dma, sample_buffer, sample_buffer_length,
-        dma->buffer[buffer_idx], dma->buffer_length[buffer_idx],
-        &output_buffer, &output_buffer_length);
-
-    dma_channel_set_read_addr(dma_channel, output_buffer, false /* trigger */);
-    dma_channel_set_trans_count(dma_channel, output_buffer_length / dma->output_size, false /* trigger */);
+    dma_channel_set_read_addr(dma_channel, dma->buffer[buffer_idx], false /* trigger */);
+    dma_channel_set_trans_count(dma_channel, output_length_used / dma->output_size, false /* trigger */);
 
     if (get_buffer_result == GET_BUFFER_DONE) {
         if (dma->loop) {
@@ -180,7 +155,7 @@ STATIC void audio_dma_load_next_block(audio_dma_t *dma, size_t buffer_idx) {
                 (c->al1_ctrl & ~DMA_CH0_CTRL_TRIG_CHAIN_TO_BITS) |
                 (dma_channel << DMA_CH0_CTRL_TRIG_CHAIN_TO_LSB);
 
-            if (output_buffer_length == 0 &&
+            if (output_length_used == 0 &&
                 !dma_channel_is_busy(dma->channel[0]) &&
                 !dma_channel_is_busy(dma->channel[1])) {
                 // No data has been read, and both DMA channels have now finished, so it's safe to stop.
