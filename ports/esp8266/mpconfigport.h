@@ -79,10 +79,18 @@
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
+#define MICROPY_PY_MACHINE_BITSTREAM (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PWM      (1)
+#define MICROPY_PY_MACHINE_PWM_INIT (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/esp8266/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
+#define MICROPY_PY_MACHINE_SOFTSPI  (1)
 #define MICROPY_PY_UWEBSOCKET       (1)
+#define MICROPY_PY_ONEWIRE          (1)
 #define MICROPY_PY_WEBREPL          (1)
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_WEBREPL_STATIC_FILEBUF (1)
@@ -102,7 +110,6 @@
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_ESP8266_APA102         (1)
-#define MICROPY_ESP8266_NEOPIXEL       (1)
 
 #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 #define MICROPY_VM_HOOK_COUNT (10)
@@ -185,6 +192,9 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     const char *readline_hist[8]; \
     mp_obj_t pin_irq_handler[16]; \
     byte *uart0_rxbuf; \
+
+// We need an implementation of the log2 function which is not a macro
+#define MP_NEED_LOG2 (1)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

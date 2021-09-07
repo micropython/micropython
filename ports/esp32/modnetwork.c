@@ -40,7 +40,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "esp_eth.h"
 #include "esp_wifi.h"
 #include "esp_log.h"
@@ -466,7 +466,7 @@ STATIC mp_obj_t esp_scan(mp_obj_t self_in) {
 
     mp_obj_t list = mp_obj_new_list(0, NULL);
     wifi_scan_config_t config = { 0 };
-    // XXX how do we scan hidden APs (and if we can scan them, are they really hidden?)
+    config.show_hidden = true;
     MP_THREAD_GIL_EXIT();
     esp_err_t status = esp_wifi_scan_start(&config, 1);
     MP_THREAD_GIL_ENTER();

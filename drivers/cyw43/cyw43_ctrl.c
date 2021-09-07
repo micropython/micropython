@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/cyw43/cyw43.h"
 #include "pendsv.h"
@@ -51,6 +52,9 @@
 #define WIFI_JOIN_STATE_LINK    (0x0400)
 #define WIFI_JOIN_STATE_KEYED   (0x0800)
 #define WIFI_JOIN_STATE_ALL     (0x0e01)
+
+#define CYW43_STA_IS_ACTIVE(self) (((self)->itf_state >> CYW43_ITF_STA) & 1)
+#define CYW43_AP_IS_ACTIVE(self) (((self)->itf_state >> CYW43_ITF_AP) & 1)
 
 cyw43_t cyw43_state;
 void (*cyw43_poll)(void);
@@ -102,27 +106,24 @@ void cyw43_init(cyw43_t *self) {
 }
 
 void cyw43_deinit(cyw43_t *self) {
+    if (cyw43_poll == NULL) {
+        return;
+    }
+
     CYW_ENTER
 
-    cyw43_ll_bus_sleep(&self->cyw43_ll, true);
-    cyw43_delay_ms(2);
+    // Stop the TCP/IP network interfaces.
     cyw43_tcpip_deinit(self, 0);
     cyw43_tcpip_deinit(self, 1);
 
-    self->itf_state = 0;
-
-    // Disable async polling
+    // Turn off the SDIO bus.
+    #if USE_SDIOIT
     sdio_enable_irq(false);
-    cyw43_poll = NULL;
-
-    #ifdef pyb_pin_WL_RFSW_VDD
-    // Turn the RF-switch off
-    mp_hal_pin_low(pyb_pin_WL_RFSW_VDD);
     #endif
-
-    // Power down the WL chip and the SDIO bus
-    mp_hal_pin_low(pyb_pin_WL_REG_ON);
     sdio_deinit();
+
+    // Power off the WLAN chip and make sure all state is reset.
+    cyw43_init(self);
 
     CYW_EXIT
 }
@@ -478,7 +479,7 @@ void cyw43_wifi_set_up(cyw43_t *self, int itf, bool up) {
 
 int cyw43_wifi_scan(cyw43_t *self, cyw43_wifi_scan_options_t *opts, void *env, int (*result_cb)(void*, const cyw43_ev_scan_result_t*)) {
     if (self->itf_state == 0) {
-        return -1;
+        return -MP_EPERM;
     }
 
     cyw43_ensure_up(self);
@@ -521,6 +522,10 @@ int cyw43_wifi_link_status(cyw43_t *self, int itf) {
 // WiFi STA
 
 int cyw43_wifi_join(cyw43_t *self, size_t ssid_len, const uint8_t *ssid, size_t key_len, const uint8_t *key, uint32_t auth_type, const uint8_t *bssid, uint32_t channel) {
+    if (!CYW43_STA_IS_ACTIVE(self)) {
+        return -MP_EPERM;
+    }
+
     int ret = cyw43_ensure_up(self);
     if (ret) {
         return ret;

@@ -9,11 +9,13 @@
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1020_flexspi_nor_config.h"
+#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_nor_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (3 * 32)
 
 // Define mapping logical UART # to hardware UART #
-// D3/D5   LPUART1  Not usable, Since D3 is blocked.
+// RX/TX   HW-UART    Logical UART
+// D3/D5   LPUART1    Not usable, Since D3 is blocked.
 // D0/D1   LPUART2 -> 1
 // D6/D9   LPUART3 -> 2
 // D10/D12 LPUART5 -> 3
@@ -48,3 +50,17 @@
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
                             kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+
+// Define mapping hardware I2C # to logical I2C #
+// SDA/SCL  HW-I2C    Logical I2C
+// D14/D15  LPI2C4 ->    0
+// A4/A5    LPI2C1 ->    1
+// D0/D1    LPI2C2 ->    2
+
+#define MICROPY_HW_I2C_INDEX   { 4, 1, 2 }
+
+#define IOMUX_TABLE_I2C \
+    { IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL }, { IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA }, \
+    { IOMUXC_GPIO_AD_B1_08_LPI2C2_SCL }, { IOMUXC_GPIO_AD_B1_09_LPI2C2_SDA }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_SD_B1_02_LPI2C4_SCL }, { IOMUXC_GPIO_SD_B1_03_LPI2C4_SDA },

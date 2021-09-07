@@ -99,6 +99,9 @@ exclude_tests = (
     "misc/sys_settrace_loop.py",
     "misc/sys_settrace_generator.py",
     "misc/sys_settrace_features.py",
+    # don't have f-string
+    "basics/string_fstring.py",
+    "basics/string_fstring_debug.py",
 )
 
 output = []

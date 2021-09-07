@@ -33,7 +33,11 @@ CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
+CFLAGS += $(CFLAGS_MOD)
+
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
+LDFLAGS += $(LDFLAGS_MOD)
+
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
@@ -45,6 +49,14 @@ LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
+CXXFLAGS += $(CXXFLAGS_MOD)
+ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
+LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
+LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
+endif
+
 SRC_C = \
 	main.c \
 	modutime.c \
@@ -53,34 +65,39 @@ SRC_C = \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
-	lib/libc/string0.c \
 	lib/libm/ef_sqrt.c \
 	lib/libm/fmodf.c \
 	lib/libm/math.c \
 	lib/libm/nearbyintf.c \
-	lib/mp-readline/readline.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/device/usbd_control.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/tinyusb/src/tusb.c \
-	lib/utils/gchelper_native.c \
-	lib/utils/printf.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/gchelper_native.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
+
+SRC_C += $(SRC_MOD)
+
+SRC_CXX += $(SRC_MOD_CXX)
 
 ifeq ($(MCU_SERIES),SAMD21)
-SRC_S = lib/utils/gchelper_m0.s
+SRC_S = shared/runtime/gchelper_m0.s
 else
-SRC_S = lib/utils/gchelper_m3.s
+SRC_S = shared/runtime/gchelper_m3.s
 endif
 
 # List of sources for qstr extraction
-SRC_QSTR += modutime.c modmachine.c
+SRC_QSTR += modutime.c modmachine.c $(SRC_MOD) $(SRC_CXX)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 
 # Workaround for bug in older gcc, warning on "static usbd_device_t _usbd_dev = { 0 };"

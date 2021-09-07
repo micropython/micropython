@@ -27,7 +27,7 @@
 #include <string.h>
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "pin_static_af.h"
 #include "modnetwork.h"
 #include "mpu.h"

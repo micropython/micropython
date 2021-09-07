@@ -91,7 +91,7 @@ methods to enable over-the-air (OTA) updates.
 
     These methods implement the simple and :ref:`extended
     <block-device-interface>` block protocol defined by
-    :class:`uos.AbstractBlockDev`.
+    :class:`os.AbstractBlockDev`.
 
 .. method:: Partition.set_boot()
 

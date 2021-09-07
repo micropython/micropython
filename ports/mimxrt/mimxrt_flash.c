@@ -30,9 +30,10 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modmimxrt.h"
-#include "hal/flexspi_nor_flash.h"
+#include BOARD_FLASH_OPS_HEADER_H
 
 // BOARD_FLASH_SIZE is defined in mpconfigport.h
+
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
 #define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
 
@@ -62,7 +63,7 @@ STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
 };
 
 // flash_erase_block(erase_addr_bytes)
-// erases the 4k sector starting at adddr
+// erases the sector starting at addr. Sector size according to the flash properties.
 status_t flash_erase_block(uint32_t erase_addr) __attribute__((section(".ram_functions")));
 status_t flash_erase_block(uint32_t erase_addr) {
     status_t status;
@@ -77,21 +78,31 @@ status_t flash_erase_block(uint32_t erase_addr) {
 
 // flash_write_block(flash_dest_addr_bytes, data_source, length_bytes)
 // writes length_byte data to the destination address
-// length is a multiple of the page size = 256
 // the vfs driver takes care for erasing the sector if required
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_functions")));
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
     status_t status;
+    uint32_t size;
+    uint32_t next_addr;
+
     SCB_CleanInvalidateDCache();
     SCB_DisableDCache();
-    // write sector in page size chunks
-    for (int i = 0; i < length; i += PAGE_SIZE_BYTES) {
+    // write data in chunks not crossing a page boundary
+    while (length > 0) {
+        next_addr = dest_addr - (dest_addr % PAGE_SIZE_BYTES) + PAGE_SIZE_BYTES; // next page boundary
+        size = next_addr - dest_addr;  // maximal chunk length
+        if (size > length) { // compare against remaining data size
+            size = length;
+        }
         __disable_irq();
-        status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr + i, (uint32_t *)(src + i), PAGE_SIZE_BYTES);
+        status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr, (uint32_t *)src, size);
         __enable_irq();
         if (status != kStatus_Success) {
             break;
         }
+        length -= size;
+        src += size;
+        dest_addr += size;
     }
     SCB_EnableDCache();
     return status;
@@ -105,7 +116,7 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
     // This should be performed by the boot ROM but for some reason it is not.
     FLEXSPI_UpdateLUT(FLEXSPI, 0,
         qspiflash_config.memConfig.lookupTable,
-        sizeof(qspiflash_config.memConfig.lookupTable) / sizeof(qspiflash_config.memConfig.lookupTable[0]));
+        ARRAY_SIZE(qspiflash_config.memConfig.lookupTable));
 
     // Configure FLEXSPI IP FIFO access.
     FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);

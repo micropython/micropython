@@ -28,7 +28,7 @@
 #include "irq.h"
 #include "powerctrl.h"
 
-static inline void powerctrl_config_systick(void) {
+void powerctrl_config_systick(void) {
     // Configure SYSTICK to run at 1kHz (1ms interval)
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
     SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);

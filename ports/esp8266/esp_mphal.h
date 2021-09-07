@@ -26,7 +26,7 @@
 
 #include "user_interface.h"
 #include "py/ringbuf.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "xtirq.h"
 
 void mp_sched_keyboard_interrupt(void);

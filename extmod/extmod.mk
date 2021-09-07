@@ -153,7 +153,7 @@ LWIP_DIR = lib/lwip/src
 INC += -I$(TOP)/$(LWIP_DIR)/include
 CFLAGS_MOD += -DMICROPY_PY_LWIP=1
 $(BUILD)/$(LWIP_DIR)/core/ipv4/dhcp.o: CFLAGS_MOD += -Wno-address
-SRC_MOD += extmod/modlwip.c lib/netutils/netutils.c
+SRC_MOD += extmod/modlwip.c shared/netutils/netutils.c
 SRC_MOD += $(addprefix $(LWIP_DIR)/,\
 	apps/mdns/mdns.c \
 	core/def.c \

@@ -32,7 +32,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 void __stack_chk_fail(void);
 void __stack_chk_fail(void) {

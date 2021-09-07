@@ -59,8 +59,8 @@
 
 // USB config
 #define MICROPY_HW_USB_FS           (1)
-#define USBD_CDC_RX_DATA_SIZE       (512)
-#define USBD_CDC_TX_DATA_SIZE       (512)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (512)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (512)
 
 // Bluetooth config
 #define MICROPY_HW_BLE_UART_ID       (0)

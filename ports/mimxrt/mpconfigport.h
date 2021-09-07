@@ -126,8 +126,11 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
+#define MICROPY_PY_ONEWIRE                  (1)
 
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
@@ -145,6 +148,7 @@ __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
 
 __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     uint32_t state = __get_PRIMASK();
+    __disable_irq();
     return state;
 }
 

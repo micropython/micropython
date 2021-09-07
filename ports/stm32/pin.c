@@ -256,6 +256,9 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
         pin_obj_init_helper(pin, n_args - 1, args + 1, &kw_args);
+    } else {
+        // enable the peripheral clock so pin reading at least works
+        mp_hal_gpio_clock_enable(pin->gpio);
     }
 
     return MP_OBJ_FROM_PTR(pin);

@@ -3,8 +3,8 @@ ValueError 0
 SPI 1
 SPI 2
 SPI(1)
-SPI(1, SPI.MASTER, baudrate= , polarity=1, phase=0, bits=8)
-SPI(1, SPI.SLAVE, polarity=1, phase=1, bits=8)
+SPI(1, SPI.CONTROLLER, baudrate= , polarity=1, phase=0, bits=8)
+SPI(1, SPI.PERIPHERAL, polarity=1, phase=1, bits=8)
 OSError
 b'\xff'
 b'\xff'

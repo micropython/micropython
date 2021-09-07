@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "py/objtype.h"
 #include "py/stream.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "modmachine.h"
 
 #include "netif/ppp/ppp.h"

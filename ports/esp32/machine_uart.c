@@ -53,6 +53,7 @@
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uart_port_t uart_num;
+    uart_hw_flowcontrol_t flowcontrol;
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
@@ -107,11 +108,25 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
             mp_printf(print, "INV_CTS");
         }
     }
+    if (self->flowcontrol) {
+        mp_printf(print, ", flow=");
+        uint32_t flow_mask = self->flowcontrol;
+        if (flow_mask & UART_HW_FLOWCTRL_RTS) {
+            mp_printf(print, "RTS");
+            flow_mask &= ~UART_HW_FLOWCTRL_RTS;
+            if (flow_mask) {
+                mp_printf(print, "|");
+            }
+        }
+        if (flow_mask & UART_HW_FLOWCTRL_CTS) {
+            mp_printf(print, "CTS");
+        }
+    }
     mp_printf(print, ")");
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -126,6 +141,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -257,6 +273,13 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
+
+    // set hardware flow control
+    if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
+    }
+    self->flowcontrol = args[ARG_flow].u_int;
+    uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4);
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -400,6 +423,9 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INV_RX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RTS), MP_ROM_INT(UART_INV_RTS) },
     { MP_ROM_QSTR(MP_QSTR_INV_CTS), MP_ROM_INT(UART_INV_CTS) },
+
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HW_FLOWCTRL_RTS) },
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HW_FLOWCTRL_CTS) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
@@ -443,7 +469,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     return bytes_written;
 }
 
-STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {

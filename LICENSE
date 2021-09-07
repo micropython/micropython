@@ -38,10 +38,6 @@ used during the build process and is not part of the compiled source code.
         /cc3000 (BSD-3-clause)
         /cc3100 (BSD-3-clause)
         /wiznet5k (BSD-3-clause)
-    /extmod
-        /crypto-algorithms (NONE)
-        /re15 (BSD-3-clause)
-        /uzlib (Zlib)
     /lib
         /asf4 (Apache-2.0)
         /axtls (BSD-3-clause)
@@ -52,6 +48,7 @@ used during the build process and is not part of the compiled source code.
         /berkeley-db-1xx (BSD-4-clause)
         /btstack (See btstack/LICENSE)
         /cmsis (BSD-3-clause)
+        /crypto-algorithms (NONE)
         /libhydrogen (ISC)
         /littlefs (BSD-3-clause)
         /lwip (BSD-3-clause)
@@ -60,9 +57,11 @@ used during the build process and is not part of the compiled source code.
         /nxp_driver (BSD-3-Clause)
         /oofatfs (BSD-1-clause)
         /pico-sdk (BSD-3-clause)
+        /re15 (BSD-3-clause)
         /stm32lib (BSD-3-clause)
         /tinytest (BSD-3-clause)
         /tinyusb (MIT)
+        /uzlib (Zlib)
     /logo (uses OFL-1.1)
     /ports
         /cc3200

@@ -15,7 +15,6 @@ extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_dac_type;
-extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_hw_i2c_type;
 extern const mp_obj_type_t machine_hw_spi_type;
 extern const mp_obj_type_t machine_i2s_type;

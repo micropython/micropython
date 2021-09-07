@@ -7,7 +7,7 @@ workaround: Don't use spaces in format strings.
 import struct
 
 try:
-    print(struct.pack('b b', 1, 2))
-    print('Should have worked')
+    print(struct.pack("b b", 1, 2))
+    print("Should have worked")
 except:
-    print('struct.error')
+    print("struct.error")

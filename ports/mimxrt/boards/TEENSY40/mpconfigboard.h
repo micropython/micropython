@@ -8,6 +8,7 @@
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
 #define BOARD_FLASH_CONFIG_HEADER_H "teensy40_flexspi_nor_config.h"
+#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_nor_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
 
@@ -42,3 +43,17 @@
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
                             kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+
+// Define mapping hardware I2C # to logical I2C #
+// SDA/SCL  HW-I2C    Logical I2C
+// 17/16    LPI2C3 ->    0
+// 18/19    LPI2C1 ->    1
+// 25/24    LPI2C4 ->    2
+
+#define MICROPY_HW_I2C_INDEX   { 1, 3, 4 }
+
+#define IOMUX_TABLE_I2C \
+    { IOMUXC_GPIO_AD_B1_00_LPI2C1_SCL }, { IOMUXC_GPIO_AD_B1_01_LPI2C1_SDA }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA }, \
+    { IOMUXC_GPIO_AD_B0_12_LPI2C4_SCL }, { IOMUXC_GPIO_AD_B0_13_LPI2C4_SDA },

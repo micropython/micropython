@@ -33,7 +33,7 @@
 #include "py/objlist.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"

@@ -38,7 +38,7 @@
 #include "py/ringbuf.h"
 #include "pin.h"
 #include "genhdr/pins.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "uart.h"
 #include "mpconfigboard.h"

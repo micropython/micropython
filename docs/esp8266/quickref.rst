@@ -78,13 +78,13 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the :mod:`socket <usocket>` module can be used
+Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual.
 
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -171,15 +171,15 @@ attaches the REPL).
 
 To detach the REPL from UART0, use::
 
-    import uos
-    uos.dupterm(None, 1)
+    import os
+    os.dupterm(None, 1)
 
 The REPL is attached by default. If you have detached it, to reattach
 it use::
 
-    import uos, machine
+    import os, machine
     uart = machine.UART(0, 115200)
-    uos.dupterm(uart, 1)
+    os.dupterm(uart, 1)
 
 PWM (pulse width modulation)
 ----------------------------
@@ -270,11 +270,11 @@ alias of :ref:`machine.SoftI2C <machine.SoftI2C>`)::
     # construct an I2C bus
     i2c = I2C(scl=Pin(5), sda=Pin(4), freq=100000)
 
-    i2c.readfrom(0x3a, 4)   # read 4 bytes from slave device with address 0x3a
-    i2c.writeto(0x3a, '12') # write '12' to slave device with address 0x3a
+    i2c.readfrom(0x3a, 4)   # read 4 bytes from peripheral device with address 0x3a
+    i2c.writeto(0x3a, '12') # write '12' to peripheral device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
-    i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+    i2c.writeto(0x3a, buf)  # write the given buffer to the peripheral
 
 Real time clock (RTC)
 ---------------------
