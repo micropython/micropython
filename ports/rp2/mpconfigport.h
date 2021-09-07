@@ -120,6 +120,7 @@
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_URE_SUB                      (1)
+#define MICROPY_PY_UHEAPQ                       (1)
 #define MICROPY_PY_UHASHLIB                     (1)
 #define MICROPY_PY_UBINASCII                    (1)
 #define MICROPY_PY_UBINASCII_CRC32              (1)
@@ -131,6 +132,9 @@
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE                (1)
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_SPI                  (1)

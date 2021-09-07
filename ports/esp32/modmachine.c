@@ -53,6 +53,7 @@
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
+#include "extmod/machine_pwm.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
