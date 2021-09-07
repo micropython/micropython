@@ -1,4 +1,4 @@
-:mode:`urandom` -- generates random numbers
+:mod:`urandom` -- generates random numbers
 ===========================================
 
 .. module:: urandom
