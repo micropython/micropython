@@ -1081,7 +1081,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 field_name = lookup;
                 mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
                 if (key_elem == NULL) {
-                    nlr_raise(mp_obj_new_exception_arg1(&mp_type_KeyError, field_q));
+                    mp_raise_type_arg(&mp_type_KeyError, field_q);
                 }
                 arg = key_elem->value;
             }

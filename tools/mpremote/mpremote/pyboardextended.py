@@ -1,4 +1,4 @@
-import os, re, serial, struct, time
+import io, os, re, serial, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
@@ -24,26 +24,18 @@ fs_hook_cmds = {
 }
 
 fs_hook_code = """\
-import uos, uio, ustruct, micropython, usys
+import uos, uio, ustruct, micropython
 
+SEEK_SET = 0
 
 class RemoteCommand:
-    def __init__(self, use_second_port):
+    def __init__(self):
+        import uselect, usys
         self.buf4 = bytearray(4)
-        try:
-            import pyb
-            self.fout = pyb.USB_VCP()
-            if use_second_port:
-                self.fin = pyb.USB_VCP(1)
-            else:
-                self.fin = pyb.USB_VCP()
-        except:
-            import usys
-            self.fout = usys.stdout.buffer
-            self.fin = usys.stdin.buffer
-        import select
-        self.poller = select.poll()
-        self.poller.register(self.fin, select.POLLIN)
+        self.fout = usys.stdout.buffer
+        self.fin = usys.stdin.buffer
+        self.poller = uselect.poll()
+        self.poller.register(self.fin, uselect.POLLIN)
 
     def poll_in(self):
         for _ in self.poller.ipoll(1000):
@@ -213,13 +205,16 @@ class RemoteFile(uio.IOBase):
         c.end()
         return n
 
-    def seek(self, n):
+    def seek(self, n, whence=SEEK_SET):
         c = self.cmd
         c.begin(CMD_SEEK)
         c.wr_s8(self.fd)
         c.wr_s32(n)
+        c.wr_s8(whence)
         n = c.rd_s32()
         c.end()
+        if n < 0:
+            raise OSError(n)
         return n
 
 
@@ -313,8 +308,8 @@ class RemoteFS:
         return RemoteFile(c, fd, mode.find('b') == -1)
 
 
-def __mount(use_second_port):
-    uos.mount(RemoteFS(RemoteCommand(use_second_port)), '/remote')
+def __mount():
+    uos.mount(RemoteFS(RemoteCommand()), '/remote')
     uos.chdir('/remote')
 """
 
@@ -459,8 +454,12 @@ class PyboardCommand:
     def do_seek(self):
         fd = self.rd_s8()
         n = self.rd_s32()
+        whence = self.rd_s8()
         # self.log_cmd(f"seek {fd} {n}")
-        self.data_files[fd][0].seek(n)
+        try:
+            n = self.data_files[fd][0].seek(n, whence)
+        except io.UnsupportedOperation:
+            n = -1
         self.wr_s32(n)
 
     def do_write(self):
@@ -563,28 +562,14 @@ class PyboardExtended(Pyboard):
         self.device_name = dev
         self.mounted = False
 
-    def mount_local(self, path, dev_out=None):
+    def mount_local(self, path):
         fout = self.serial
-        if dev_out is not None:
-            try:
-                fout = serial.Serial(dev_out)
-            except serial.SerialException:
-                port = list(serial.tools.list_ports.grep(dev_out))
-                if not port:
-                    raise
-                for p in port:
-                    try:
-                        fout = serial.Serial(p.device)
-                        break
-                    except serial.SerialException:
-                        pass
         self.mounted = True
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
-        self.exec_("__mount(%s)" % (dev_out is not None))
+        self.exec_("__mount()")
         self.cmd = PyboardCommand(self.serial, fout, path)
         self.serial = SerialIntercept(self.serial, self.cmd)
-        self.dev_out = dev_out
 
     def soft_reset_with_mount(self, out_callback):
         self.serial.write(b"\x04")
@@ -610,7 +595,7 @@ class PyboardExtended(Pyboard):
             n = self.serial.inWaiting()
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
-        self.exec_("__mount(%s)" % (self.dev_out is not None))
+        self.exec_("__mount()")
         self.exit_raw_repl()
         self.read_until(4, b">>> ")
         self.serial = SerialIntercept(self.serial, self.cmd)

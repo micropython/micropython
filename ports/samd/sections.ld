@@ -11,10 +11,20 @@ SECTIONS
         *(.rodata*)
         . = ALIGN(4);
         _etext = .;
-        _sidata = _etext;
     } >FLASH
 
-    .data : AT ( _sidata )
+    /* For C++ exception handling */
+    .ARM :
+    {
+        __exidx_start = .;
+        *(.ARM.exidx*)
+        __exidx_end = .;
+    } >FLASH
+
+    /* Used by the start-up code to initialise data */
+    _sidata = LOADADDR(.data);
+
+    .data :
     {
         . = ALIGN(4);
         _sdata = .;
@@ -22,7 +32,7 @@ SECTIONS
         *(.data*)
         . = ALIGN(4);
         _edata = .;
-    } >RAM
+    } >RAM AT> FLASH
 
     .bss :
     {

@@ -11,6 +11,7 @@
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
+#define MICROPY_HW_ENABLE_I2S       (1)
 
 // HSE is 12MHz
 #define MICROPY_HW_CLK_PLLM (12)
@@ -63,6 +64,9 @@
 #define MICROPY_HW_SPI2_SCK  (pin_B13) // Y6
 #define MICROPY_HW_SPI2_MISO (pin_B14) // Y7
 #define MICROPY_HW_SPI2_MOSI (pin_B15) // Y8
+
+// I2S buses
+#define MICROPY_HW_I2S2      (1)
 
 // CAN buses
 #define MICROPY_HW_CAN1_NAME "YA"

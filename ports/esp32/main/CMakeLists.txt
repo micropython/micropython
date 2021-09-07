@@ -15,21 +15,28 @@ set(MICROPY_QSTRDEFS_PORT
     ${PROJECT_DIR}/qstrdefsport.h
 )
 
+set(MICROPY_SOURCE_SHARED
+    ${MICROPY_DIR}/shared/readline/readline.c
+    ${MICROPY_DIR}/shared/netutils/netutils.c
+    ${MICROPY_DIR}/shared/timeutils/timeutils.c
+    ${MICROPY_DIR}/shared/runtime/interrupt_char.c
+    ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
+    ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/runtime/pyexec.c
+)
+
 set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/littlefs/lfs1.c
     ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
     ${MICROPY_DIR}/lib/littlefs/lfs2.c
     ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
     ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
-    ${MICROPY_DIR}/lib/mp-readline/readline.c
-    ${MICROPY_DIR}/lib/netutils/netutils.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
-    ${MICROPY_DIR}/lib/timeutils/timeutils.c
-    ${MICROPY_DIR}/lib/utils/interrupt_char.c
-    ${MICROPY_DIR}/lib/utils/sys_stdio_mphal.c
-    ${MICROPY_DIR}/lib/utils/pyexec.c
 )
+if(IDF_TARGET STREQUAL "esp32c3")
+    list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
+endif()
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
@@ -40,18 +47,21 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/main.c
     ${PROJECT_DIR}/uart.c
     ${PROJECT_DIR}/usb.c
+    ${PROJECT_DIR}/usb_serial_jtag.c
     ${PROJECT_DIR}/gccollect.c
     ${PROJECT_DIR}/mphalport.c
     ${PROJECT_DIR}/fatfs_port.c
     ${PROJECT_DIR}/help.c
     ${PROJECT_DIR}/modutime.c
     ${PROJECT_DIR}/moduos.c
+    ${PROJECT_DIR}/machine_bitstream.c
     ${PROJECT_DIR}/machine_timer.c
     ${PROJECT_DIR}/machine_pin.c
     ${PROJECT_DIR}/machine_touchpad.c
     ${PROJECT_DIR}/machine_adc.c
     ${PROJECT_DIR}/machine_dac.c
     ${PROJECT_DIR}/machine_i2c.c
+    ${PROJECT_DIR}/machine_i2s.c
     ${PROJECT_DIR}/machine_pwm.c
     ${PROJECT_DIR}/machine_uart.c
     ${PROJECT_DIR}/modmachine.c
@@ -66,7 +76,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/esp32_rmt.c
     ${PROJECT_DIR}/esp32_ulp.c
     ${PROJECT_DIR}/modesp32.c
-    ${PROJECT_DIR}/espneopixel.c
     ${PROJECT_DIR}/machine_hw_spi.c
     ${PROJECT_DIR}/machine_wdt.c
     ${PROJECT_DIR}/mpthreadport.c
@@ -83,6 +92,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
     ${MICROPY_SOURCE_EXTMOD}
     ${MICROPY_SOURCE_USERMOD}
+    ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
     ${LV_SRC}
@@ -136,6 +146,9 @@ endif()
 
 if(IDF_TARGET STREQUAL "esp32")
     list(APPEND IDF_COMPONENTS esp32)
+elseif(IDF_TARGET STREQUAL "esp32c3")
+    list(APPEND IDF_COMPONENTS esp32c3)
+    list(APPEND IDF_COMPONENTS riscv)
 elseif(IDF_TARGET STREQUAL "esp32s2")
     list(APPEND IDF_COMPONENTS esp32s2)
     list(APPEND IDF_COMPONENTS tinyusb)
@@ -149,6 +162,7 @@ idf_component_register(
     SRCS
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
+        ${MICROPY_SOURCE_SHARED}
         ${MICROPY_SOURCE_LIB}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}

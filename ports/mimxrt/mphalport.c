@@ -28,7 +28,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "ticks.h"
 #include "tusb.h"
 #include "fsl_snvs_lp.h"

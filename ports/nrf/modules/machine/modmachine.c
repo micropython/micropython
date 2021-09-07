@@ -33,7 +33,7 @@
 #include "extmod/machine_mem.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "gccollect.h"

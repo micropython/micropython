@@ -11,7 +11,7 @@ if not hasattr(pyb, "Accel"):
 pyb.Accel()
 
 # get I2C bus
-i2c = I2C(1, I2C.MASTER, dma=True)
+i2c = I2C(1, I2C.CONTROLLER, dma=True)
 
 # test polling mem_read
 pyb.disable_irq()

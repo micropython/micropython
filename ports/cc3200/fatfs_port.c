@@ -27,7 +27,7 @@
 
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "mods/pybrtc.h"
 
 #if FF_FS_REENTRANT

@@ -40,7 +40,7 @@ Block devices
 -------------
 
 A block device is an instance of a class that implements the
-:class:`uos.AbstractBlockDev` protocol.
+:class:`os.AbstractBlockDev` protocol.
 
 Built-in block devices
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -116,8 +116,8 @@ It can be used as follows::
 
 An example of a block device that supports both the simple and extended
 interface (i.e. both signatures and behaviours of the
-:meth:`uos.AbstractBlockDev.readblocks` and
-:meth:`uos.AbstractBlockDev.writeblocks` methods) is::
+:meth:`os.AbstractBlockDev.readblocks` and
+:meth:`os.AbstractBlockDev.writeblocks` methods) is::
 
     class RAMBlockDev:
         def __init__(self, block_size, num_blocks):
@@ -148,7 +148,7 @@ interface (i.e. both signatures and behaviours of the
                 return 0
 
 As it supports the extended interface, it can be used with :class:`littlefs
-<uos.VfsLfs2>`::
+<os.VfsLfs2>`::
 
     import os
 
@@ -166,8 +166,8 @@ normally would be used from Python code, for example::
 Filesystems
 -----------
 
-MicroPython ports can provide implementations of :class:`FAT <uos.VfsFat>`,
-:class:`littlefs v1 <uos.VfsLfs1>` and :class:`littlefs v2 <uos.VfsLfs2>`.
+MicroPython ports can provide implementations of :class:`FAT <os.VfsFat>`,
+:class:`littlefs v1 <os.VfsLfs1>` and :class:`littlefs v2 <os.VfsLfs2>`.
 
 The following table shows which filesystems are included in the firmware by
 default for given port/board combinations, however they can be optionally

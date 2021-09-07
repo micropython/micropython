@@ -28,7 +28,7 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 16
+#define MICROPY_VERSION_MINOR 17
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
@@ -483,7 +483,8 @@
 /* Optimisations                                                             */
 
 // Whether to use computed gotos in the VM, or a switch
-// Computed gotos are roughly 10% faster, and increase VM code size by a little
+// Computed gotos are roughly 10% faster, and increase VM code size by a little,
+// e.g. ~1kiB on Cortex M4.
 // Note: enabling this will use the gcc-specific extensions of ranged designated
 // initialisers and addresses of labels, which are not part of the C99 standard.
 #ifndef MICROPY_OPT_COMPUTED_GOTO
@@ -875,6 +876,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ASYNC_AWAIT (1)
 #endif
 
+// Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
+#ifndef MICROPY_PY_FSTRINGS
+#define MICROPY_PY_FSTRINGS (0)
+#endif
+
 // Support for assignment expressions with := (see PEP 572, Python 3.8+)
 #ifndef MICROPY_PY_ASSIGN_EXPR
 #define MICROPY_PY_ASSIGN_EXPR (1)
@@ -1063,7 +1069,7 @@ typedef double mp_float_t;
 #endif
 
 // Whether to provide the built-in input() function. The implementation of this
-// uses mp-readline, so can only be enabled if the port uses this readline.
+// uses shared/readline, so can only be enabled if the port uses this readline.
 #ifndef MICROPY_PY_BUILTINS_INPUT
 #define MICROPY_PY_BUILTINS_INPUT (0)
 #endif
@@ -1316,6 +1322,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_USELECT (0)
 #endif
 
+// Whether to enable the select() function in the "uselect" module (baremetal
+// implementation). This is present for compatibility but can be disabled to
+// save space.
+#ifndef MICROPY_PY_USELECT_SELECT
+#define MICROPY_PY_USELECT_SELECT (1)
+#endif
+
 // Whether to provide "utime" module functions implementation
 // in terms of mp_hal_* functions.
 #ifndef MICROPY_PY_UTIME_MP_HAL
@@ -1371,6 +1384,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
+#endif
+
+// Whether to support the "separators" argument to dump, dumps
+#ifndef MICROPY_PY_UJSON_SEPARATORS
+#define MICROPY_PY_UJSON_SEPARATORS (1)
 #endif
 
 #ifndef MICROPY_PY_URE
@@ -1451,6 +1469,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE (0)
+#endif
+
+// Whether to include: bitstream
+#ifndef MICROPY_PY_MACHINE_BITSTREAM
+#define MICROPY_PY_MACHINE_BITSTREAM (0)
 #endif
 
 // Whether to include: time_pulse_us

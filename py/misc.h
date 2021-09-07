@@ -55,6 +55,7 @@ typedef unsigned int uint;
 
 // Round-up integer division
 #define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
+#define MP_ROUND_DIVIDE(a, b) (((a) + (b) / 2) / (b))
 
 /** memory allocation ******************************************/
 

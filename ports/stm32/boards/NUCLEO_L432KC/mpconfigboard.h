@@ -67,5 +67,5 @@
 #define MICROPY_HW_USB_FS           (MICROPY_HW_ENABLE_USB)
 #define MICROPY_HW_USB_MSC          (0)
 #define MICROPY_HW_USB_HID          (0)
-#define USBD_CDC_RX_DATA_SIZE       (256)
-#define USBD_CDC_TX_DATA_SIZE       (256)
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (256)
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (256)

@@ -41,22 +41,37 @@ CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
+# Flags for optional C++ source code
+CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
+CXXFLAGS += $(CXXFLAGS_MOD)
+
+# Flags for user C modules
+CFLAGS += $(CFLAGS_MOD)
+LDFLAGS += $(LDFLAGS_MOD)
+
 LIBS =
 
 SRC_C = \
 	main.c \
 	uart_core.c \
-	lib/utils/printf.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/pyexec.c \
-	lib/mp-readline/readline.c \
+	shared/libc/printf.c \
+	shared/readline/readline.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
 
 ifeq ($(CROSS), 1)
-SRC_C += lib/libc/string0.c
+SRC_C += shared/libc/string0.c
 endif
 
-OBJ = $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+SRC_C += $(SRC_MOD)
+
+SRC_CXX += $(SRC_MOD_CXX)
+
+SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
+
+OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
 ifeq ($(CROSS), 1)
 all: $(BUILD)/firmware.dfu

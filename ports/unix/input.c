@@ -35,7 +35,7 @@
 #include "input.h"
 
 #if MICROPY_USE_READLINE == 1
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 #endif
 
 #if MICROPY_USE_READLINE == 0

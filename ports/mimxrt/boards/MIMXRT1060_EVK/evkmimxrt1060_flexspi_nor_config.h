@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "fsl_common.h"
+#include "fsl_flexspi.h"
 
 /*! @name Driver version */
 /*@{*/
@@ -223,6 +223,14 @@ typedef struct _FlexSPIConfig
 #define NOR_CMD_LUT_SEQ_IDX_ENTERQPI 10
 #define NOR_CMD_LUT_SEQ_IDX_CHIPERASE 11
 #define NOR_CMD_LUT_SEQ_IDX_EXITQPI 12
+
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READDATA    0
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEDATA   1
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_READSTATUS  2
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_WRITEENABLE 4
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASESECTOR 6
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_PAGEPROGRAM 10
+#define HYPERFLASH_CMD_LUT_SEQ_IDX_ERASECHIP   12
 
 /*
  *  Serial NOR configuration block

@@ -98,7 +98,7 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the :mod:`socket <usocket>` module can be used
+Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
@@ -113,7 +113,7 @@ to reconnect forever).
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -361,7 +361,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
     i2c.writeto(0x3a, '12') # write '12' to device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
-    i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+    i2c.writeto(0x3a, buf)  # write the given buffer to the peripheral
 
 Hardware I2C bus
 ----------------
@@ -384,6 +384,24 @@ has the same methods as software I2C above::
 
     i2c = I2C(0)
     i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
+
+I2S bus
+-------
+
+See :ref:`machine.I2S <machine.I2S>`. ::
+
+    from machine import I2S, Pin
+    
+    i2s = I2S(0, sck=Pin(13), ws=Pin(14), sd=Pin(34), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
+    i2s.write(buf)             # write buffer of audio samples to I2S device
+    
+    i2s = I2S(1, sck=Pin(33), ws=Pin(25), sd=Pin(32), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
+    i2s.readinto(buf)          # fill buffer with audio samples from I2S device
+    
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
+
+ESP32 has two I2S buses with id=0 and id=1
 
 Real time clock (RTC)
 ---------------------
@@ -441,15 +459,15 @@ SD card
 
 See :ref:`machine.SDCard <machine.SDCard>`. ::
 
-    import machine, uos
+    import machine, os
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    uos.mount(sd, "/sd")  # mount
+    os.mount(sd, "/sd")  # mount
 
-    uos.listdir('/sd')    # list directory contents
+    os.listdir('/sd')    # list directory contents
 
-    uos.umount('/sd')     # eject
+    os.umount('/sd')     # eject
 
 RMT
 ---

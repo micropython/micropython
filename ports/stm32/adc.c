@@ -70,8 +70,6 @@
 
 #if defined(STM32F0)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1ffff7ba)
 #define ADC_CAL1                ((uint16_t *)0x1ffff7b8)
@@ -80,8 +78,6 @@
 
 #elif defined(STM32F4)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1fff7a2a)
 #define ADC_CAL1                ((uint16_t *)(ADC_CAL_ADDRESS + 2))
@@ -90,8 +86,6 @@
 
 #elif defined(STM32F7)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (15)
 #define ADC_SCALE_V             (3.3f)
 #if defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx)
@@ -106,8 +100,6 @@
 
 #elif defined(STM32H7)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (16)
 #define ADC_SCALE_V             (3.3f)
 #define ADC_CAL_ADDRESS         (0x1FF1E860)
 #define ADC_CAL1                ((uint16_t *)(0x1FF1E820))
@@ -116,8 +108,6 @@
 
 #elif defined(STM32L4) || defined(STM32WB)
 
-#define ADC_FIRST_GPIO_CHANNEL  (1)
-#define ADC_LAST_GPIO_CHANNEL   (16)
 #define ADC_SCALE_V             (VREFINT_CAL_VREF / 1000.0f)
 #define ADC_CAL_ADDRESS         (VREFINT_CAL_ADDR)
 #define ADC_CAL1                (TEMPSENSOR_CAL1_ADDR)
@@ -179,7 +169,7 @@
 typedef struct _pyb_obj_adc_t {
     mp_obj_base_t base;
     mp_obj_t pin_name;
-    int channel;
+    uint32_t channel;
     ADC_HandleTypeDef handle;
 } pyb_obj_adc_t;
 
@@ -308,13 +298,6 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
 }
 
 STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
-
-    if (ADC_FIRST_GPIO_CHANNEL <= adc_obj->channel && adc_obj->channel <= ADC_LAST_GPIO_CHANNEL) {
-        // Channels 0-16 correspond to real pins. Configure the GPIO pin in ADC mode.
-        const pin_obj_t *pin = pin_adc_table[adc_obj->channel];
-        mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
-    }
-
     adc_obj->handle.Instance = ADCx;
     adcx_init_periph(&adc_obj->handle, ADC_RESOLUTION_12B);
 
@@ -431,8 +414,8 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     } else {
         const pin_obj_t *pin = pin_find(pin_obj);
         if ((pin->adc_num & PIN_ADC_MASK) == 0) {
-            // No ADC1 function on that pin
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("pin %q does not have ADC capabilities"), pin->name);
+            // No ADC function on the given pin.
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have ADC capabilities"), pin->name);
         }
         channel = pin->adc_channel;
     }
@@ -441,11 +424,11 @@ STATIC mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("not a valid ADC Channel: %d"), channel);
     }
 
-
-    if (ADC_FIRST_GPIO_CHANNEL <= channel && channel <= ADC_LAST_GPIO_CHANNEL) {
-        // these channels correspond to physical GPIO ports so make sure they exist
-        if (pin_adc_table[channel] == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("channel %d not available on this board"), channel);
+    // If this channel corresponds to a pin then configure the pin in ADC mode.
+    if (channel < MP_ARRAY_SIZE(pin_adc_table)) {
+        const pin_obj_t *pin = pin_adc_table[channel];
+        if (pin != NULL) {
+            mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
         }
     }
 
@@ -730,11 +713,10 @@ void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_m
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("resolution %d not supported"), resolution);
     }
 
-    for (uint32_t channel = ADC_FIRST_GPIO_CHANNEL; channel <= ADC_LAST_GPIO_CHANNEL; ++channel) {
+    for (uint32_t channel = 0; channel < MP_ARRAY_SIZE(pin_adcall_table); ++channel) {
         // only initialise those channels that are selected with the en_mask
         if (en_mask & (1 << channel)) {
-            // Channels 0-16 correspond to real pins. Configure the GPIO pin in
-            // ADC mode.
+            // If this channel corresponds to a pin then configure the pin in ADC mode.
             const pin_obj_t *pin = pin_adcall_table[channel];
             if (pin) {
                 mp_hal_pin_config(pin, MP_HAL_PIN_MODE_ADC, MP_HAL_PIN_PULL_NONE, 0);
