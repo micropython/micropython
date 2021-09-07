@@ -19,4 +19,4 @@ to `<https://www.python.org>`__.
    :numbered:
 
    intro.rst
-   peripheral_access.rst
+   
