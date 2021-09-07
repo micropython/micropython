@@ -35,6 +35,8 @@
 #include "py/qstr.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
+#include "nimble/host/include/host/ble_att.h"
+#include "nimble/host/include/host/ble_gatt.h"
 #include <string.h>
 
 #if MICROPY_PY_BLUETOOTH
@@ -213,6 +215,28 @@ STATIC mp_int_t bluetooth_uuid_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bu
     bufinfo->len = self->type;
     bufinfo->typecode = 'B';
     return 0;
+}
+
+// Note: modbluetooth UUIDs store their data in LE.
+STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid, ble_uuid_any_t *storage) {
+    if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
+        ble_uuid16_t *result = storage ? &storage->u16 : m_new(ble_uuid16_t, 1);
+        result->u.type = BLE_UUID_TYPE_16;
+        result->value = (uuid->data[1] << 8) | uuid->data[0];
+        return (ble_uuid_t *)result;
+    } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
+        ble_uuid32_t *result = storage ? &storage->u32 : m_new(ble_uuid32_t, 1);
+        result->u.type = BLE_UUID_TYPE_32;
+        result->value = (uuid->data[1] << 24) | (uuid->data[1] << 16) | (uuid->data[1] << 8) | uuid->data[0];
+        return (ble_uuid_t *)result;
+    } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
+        ble_uuid128_t *result = storage ? &storage->u128 : m_new(ble_uuid128_t, 1);
+        result->u.type = BLE_UUID_TYPE_128;
+        memcpy(result->value, uuid->data, 16);
+        return (ble_uuid_t *)result;
+    } else {
+        return NULL;
+    }
 }
 
 #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS && MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
@@ -628,6 +652,19 @@ STATIC mp_obj_t bluetooth_ble_gatts_register_services(mp_obj_t self_in, mp_obj_t
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gatts_register_services_obj, bluetooth_ble_gatts_register_services);
 
+STATIC mp_obj_t bluetooth_ble_gatts_get_service_handle(mp_obj_t self_in, mp_obj_t service_uuid_in){
+    (void)self_in;
+
+    const mp_obj_bluetooth_uuid_t *service_uuid = MP_OBJ_TO_PTR(service_uuid_in);
+    const ble_uuid_t *service_nimble_uuid = create_nimble_uuid(service_uuid, NULL);
+    uint16_t service_handle = 0;
+
+    ble_gatts_find_svc(service_nimble_uuid, &service_handle);
+    
+    return mp_obj_new_int(service_handle);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gatts_get_service_handle_obj, bluetooth_ble_gatts_get_service_handle);
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
     uint8_t addr_type = mp_obj_get_int(args[1]);
@@ -935,6 +972,7 @@ STATIC const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gatts_notify), MP_ROM_PTR(&bluetooth_ble_gatts_notify_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_indicate), MP_ROM_PTR(&bluetooth_ble_gatts_indicate_obj) },
     { MP_ROM_QSTR(MP_QSTR_gatts_set_buffer), MP_ROM_PTR(&bluetooth_ble_gatts_set_buffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gatts_get_service_handle), MP_ROM_PTR(&bluetooth_ble_gatts_get_service_handle_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
     // GATT Client
     { MP_ROM_QSTR(MP_QSTR_gattc_discover_services), MP_ROM_PTR(&bluetooth_ble_gattc_discover_services_obj) },
