@@ -4,9 +4,9 @@
 #if !BUILDING_MBOOT
  
  // init script created from
-// - /Users/dktobthy/Downloads/cc256xc_bt_spv1.5/CC256XC_BT_SP/v1.5/initscripts-TIInit_6.12.26.bts
+// - CC256XC_BT_SP/v1.5/initscripts-TIInit_6.12.26.bts
 // - AKA TIInit_6.12.26.bts
-// - /Users/dktobthy/Downloads/cc256xc_bt_spv1.5/CC256XC_BT_SP/v1.5/initscripts-TIInit_6.12.26_ble_add-on.bts
+// - CC256XC_BT_SP/v1.5/initscripts-TIInit_6.12.26_ble_add-on.bts
 #include <stdint.h>
 #include "lib/btstack/chipset/cc256x/btstack_chipset_cc256x.h"
 
