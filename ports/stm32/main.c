@@ -562,6 +562,9 @@ soft_reset:
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
     // Run boot.py (or whatever else a board configures at this stage).
+    #ifdef MICROPY_BOARD_RUN_FROZEN_AT_BOOT
+    pyexec_frozen_module(MICROPY_BOARD_RUN_FROZEN_AT_BOOT);
+    #endif
     if (MICROPY_BOARD_RUN_BOOT_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
         goto soft_reset_exit;
     }
