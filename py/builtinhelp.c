@@ -131,7 +131,7 @@ STATIC void mp_help_print_modules(void) {
 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
-    mp_printf(MP_PYTHON_PRINTER, "%S", translate("Plus any modules on the filesystem\n"));
+    serial_write_compressed(translate("Plus any modules on the filesystem\n"));
     #endif
 }
 #endif
