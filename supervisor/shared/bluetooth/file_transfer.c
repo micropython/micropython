@@ -28,6 +28,7 @@
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "lib/timeutils/timeutils.h"
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
@@ -41,6 +42,7 @@
 
 #include "common-hal/_bleio/__init__.h"
 
+#include "supervisor/fatfs_port.h"
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/tick.h"
@@ -98,7 +100,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
         NULL,                                       // no initial value
         NULL); // no description
 
-    uint32_t version = 2;
+    uint32_t version = 3;
     mp_buffer_info_t bufinfo;
     bufinfo.buf = &version;
     bufinfo.len = sizeof(version);
@@ -131,12 +133,23 @@ void supervisor_start_bluetooth_file_transfer(void) {
 #define ANY_COMMAND 0x00
 #define THIS_COMMAND 0x01
 
+uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+    timeutils_struct_time_t tm;
+    uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
+    timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);
+    uint64_t truncated_time = timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970((seconds_since_epoch / 2) * 2 * 1000000000);
+
+    *fattime = ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
+        (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
+    return truncated_time;
+}
+
 // Used by read and write.
 STATIC FIL active_file;
 STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     struct read_command *command = (struct read_command *)raw_buf;
-    size_t header_size = 12;
-    size_t response_size = 16;
+    size_t header_size = sizeof(struct read_command);
+    size_t response_size = sizeof(struct read_data);
     uint8_t data_buffer[response_size];
     struct read_data response;
     response.command = READ_DATA;
@@ -190,38 +203,38 @@ STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     return READ_PACING;
 }
 
-STATIC uint8_t _process_read_pacing(const uint8_t *command, size_t command_len) {
-    size_t response_size = 4 * sizeof(uint32_t);
-    uint32_t response[response_size / sizeof(uint32_t)];
-    uint8_t *response_bytes = (uint8_t *)response;
-    response_bytes[0] = READ_DATA;
-    response_bytes[1] = STATUS_OK;
-    uint32_t offset = ((uint32_t *)command)[1];
-    uint32_t chunk_size = ((uint32_t *)command)[2];
+STATIC uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) {
+    struct read_pacing *command = (struct read_pacing *)raw_buf;
+    struct read_data response;
+    response.command = READ_DATA;
+    response.status = STATUS_OK;
+    size_t response_size = sizeof(struct read_data);
+
     uint32_t total_length = f_size(&active_file);
     // Write out the response header.
-    chunk_size = MIN(chunk_size, total_length - offset);
-    response[1] = offset;
-    response[2] = total_length;
-    response[3] = chunk_size;
+    uint32_t chunk_size = MIN(command->chunk_size, total_length - command->chunk_offset);
+    response.chunk_offset = command->chunk_offset;
+    response.total_length = total_length;
+    response.data_size = chunk_size;
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, response_size, NULL, 0);
-    f_lseek(&active_file, offset);
+    f_lseek(&active_file, command->chunk_offset);
     // Write out the chunk contents. We can do this in small pieces because PacketBuffer
     // will assemble them into larger packets of its own.
     size_t chunk_offset = 0;
+    uint8_t data[20];
     while (chunk_offset < chunk_size) {
         size_t quantity_read;
-        size_t read_size = MIN(chunk_size - chunk_offset, response_size);
-        FRESULT result = f_read(&active_file, response, read_size, &quantity_read);
+        size_t read_size = MIN(chunk_size - chunk_offset, sizeof(data));
+        FRESULT result = f_read(&active_file, &data, read_size, &quantity_read);
         if (quantity_read == 0 || result != FR_OK) {
             // TODO: If we can't read everything, then the file must have been shortened. Maybe we
             // should return 0s to pad it out.
             break;
         }
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, quantity_read, NULL, 0);
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&data, quantity_read, NULL, 0);
         chunk_offset += quantity_read;
     }
-    if ((offset + chunk_size) >= total_length) {
+    if ((chunk_offset + chunk_size) >= total_length) {
         f_close(&active_file);
         return ANY_COMMAND;
     }
@@ -230,10 +243,11 @@ STATIC uint8_t _process_read_pacing(const uint8_t *command, size_t command_len) 
 
 // Used by write and write data to know when the write is complete.
 STATIC size_t total_write_length;
+STATIC uint64_t _truncated_time;
 
 STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     struct write_command *command = (struct write_command *)raw_buf;
-    size_t header_size = 12;
+    size_t header_size = sizeof(struct write_command);
     struct write_pacing response;
     response.command = WRITE_PACING;
     response.status = STATUS_OK;
@@ -262,6 +276,9 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     #endif
 
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    DWORD fattime;
+    _truncated_time = truncate_time(command->modification_time, &fattime);
+    override_fattime(fattime);
     FRESULT result = f_open(fs, &active_file, path, FA_WRITE | FA_OPEN_ALWAYS);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
@@ -269,6 +286,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
+        override_fattime(0);
         return ANY_COMMAND;
     }
     // Write out the pacing response.
@@ -281,12 +299,14 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         f_lseek(&active_file, offset);
         f_truncate(&active_file);
         f_close(&active_file);
+        override_fattime(0);
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
     }
     response.offset = offset;
     response.free_space = chunk_size;
+    response.truncated_time = _truncated_time;
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
     if (chunk_size == 0) {
         // Don't reload until everything is written out of the packet buffer.
@@ -301,7 +321,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
 
 STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     struct write_data *command = (struct write_data *)raw_buf;
-    size_t header_size = 12;
+    size_t header_size = sizeof(struct write_data);
     struct write_pacing response;
     response.command = WRITE_PACING;
     response.status = STATUS_OK;
@@ -312,6 +332,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
+        override_fattime(0);
         return ANY_COMMAND;
     }
     // We need to receive another packet to have the full path.
@@ -329,6 +350,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
+        override_fattime(0);
         return ANY_COMMAND;
     }
     offset += command->data_size;
@@ -336,10 +358,12 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
     size_t chunk_size = MIN(total_write_length - offset, 512);
     response.offset = offset;
     response.free_space = chunk_size;
+    response.truncated_time = _truncated_time;
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
     if (total_write_length == offset) {
         f_truncate(&active_file);
         f_close(&active_file);
+        override_fattime(0);
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
@@ -387,7 +411,7 @@ STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
 
 STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     const struct delete_command *command = (struct delete_command *)raw_buf;
-    size_t header_size = 4;
+    size_t header_size = sizeof(struct delete_command);
     struct delete_status response;
     response.command = DELETE_STATUS;
     response.status = STATUS_OK;
@@ -423,7 +447,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
 
 STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     const struct mkdir_command *command = (struct mkdir_command *)raw_buf;
-    size_t header_size = 4;
+    size_t header_size = sizeof(struct mkdir_command);
     struct mkdir_status response;
     response.command = MKDIR_STATUS;
     response.status = STATUS_OK;
@@ -438,10 +462,14 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
         return THIS_COMMAND;
     }
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-    char *path = (char *)((uint8_t *)command) + header_size;
+    char *path = (char *)command->path;
     // TODO: Check that the final character is a `/`
     path[command->path_length - 1] = '\0';
+    DWORD fattime;
+    response.truncated_time = truncate_time(command->modification_time, &fattime);
+    override_fattime(fattime);
     FRESULT result = f_mkdir(fs, path);
+    override_fattime(0);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
@@ -452,8 +480,8 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
 STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     const struct listdir_command *command = (struct listdir_command *)raw_buf;
     struct listdir_entry *entry = (struct listdir_entry *)raw_buf;
-    size_t header_size = 4;
-    size_t response_size = 5 * sizeof(uint32_t);
+    size_t header_size = sizeof(struct listdir_command);
+    size_t response_size = sizeof(struct listdir_entry);
     // We reuse the command buffer so that we can produce long packets without
     // making the stack large.
     if (command->path_length > (COMMAND_SIZE - header_size - 1)) { // -1 for the null we'll write
@@ -469,7 +497,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     }
 
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-    char *path = (char *)command->path;
+    char *path = (char *)&command->path;
     // -1 because fatfs doesn't want a trailing /
     path[command->path_length - 1] = '\0';
     // mp_printf(&mp_plat_print, "list %s\n", path);
@@ -502,6 +530,13 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     for (size_t i = 0; i < total_entries; i++) {
         res = f_readdir(&dir, &file_info);
         entry->entry_number = i;
+        uint64_t truncated_time = timeutils_mktime(1980 + (file_info.fdate >> 9),
+            (file_info.fdate >> 5) & 0xf,
+            file_info.fdate & 0x1f,
+            file_info.ftime >> 11,
+            (file_info.ftime >> 5) & 0x1f,
+            (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
+        entry->truncated_time = truncated_time;
         if ((file_info.fattrib & AM_DIR) != 0) {
             entry->flags = 1; // Directory
             entry->file_size = 0;
