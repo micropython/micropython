@@ -42,16 +42,6 @@ msgstr ""
 "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: lib/utils/pyexec.c
-msgid ""
-"\n"
-"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-"=== "
-msgstr ""
-"\n"
-"klistra in-läge; Ctrl-C för att avbryta, Ctrl-D för att avsluta\n"
-"=== "
-
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Filen \"%q\""
@@ -411,6 +401,9 @@ msgstr "All SPI-kringutrustning används"
 msgid "All UART peripherals are in use"
 msgstr "Alla UART-kringutrustning används"
 
+#: ports/nrf/common-hal/countio/Counter.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "Alla kanaler används"
@@ -636,10 +629,10 @@ msgstr "Bufferten måste ha minst längd 1"
 msgid "Buffer too short by %d bytes"
 msgstr "Buffert är %d bytes för kort"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Busspinne %d används redan"
@@ -802,7 +795,7 @@ msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Kolumnposten måste vara digitalio. DigitalInOut"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Kommandot måste vara en int mellan 0 och 255"
 
@@ -897,12 +890,12 @@ msgstr "Initieringsfel för DAC-enhet"
 msgid "DAC already in use"
 msgstr "DAC används redan"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Datapinne 0 måste vara bytejusterad"
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr "Datapinne 0 måste vara byte-justerad."
 
@@ -1857,11 +1850,6 @@ msgstr "PWM-segment används redan"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "PWM-segmentkanal A används redan"
-
-#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm/common-hal/displayio/ParallelBus.c
-msgid "ParallelBus not yet supported"
-msgstr "ParallelBus stöds ännu inte"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -3716,7 +3704,7 @@ msgid "no module named '%q'"
 msgstr "ingen modul med namnet '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "no reset pin available"
 msgstr "ingen reset-pinne tillgänglig"
 
@@ -3990,6 +3978,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4010,6 +3999,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -4042,10 +4032,6 @@ msgstr "push_threshold måste vara mellan 1 och 32"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "köstorlek överskreds"
-
-#: lib/utils/pyexec.c
-msgid "raw REPL; CTRL-B to exit\n"
-msgstr "rå REPL. CTRL-B för att avsluta\n"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
@@ -4540,6 +4526,21 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+#~ "=== "
+#~ msgstr ""
+#~ "\n"
+#~ "klistra in-läge; Ctrl-C för att avbryta, Ctrl-D för att avsluta\n"
+#~ "=== "
+
+#~ msgid "ParallelBus not yet supported"
+#~ msgstr "ParallelBus stöds ännu inte"
+
+#~ msgid "raw REPL; CTRL-B to exit\n"
+#~ msgstr "rå REPL. CTRL-B för att avsluta\n"
 
 #~ msgid "%q length must be %q"
 #~ msgstr "längden på %q måste vara %q"

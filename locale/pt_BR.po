@@ -42,16 +42,6 @@ msgstr ""
 "Registre um problema com o conteúdo do seu controlador no CIRCUITPY\n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: lib/utils/pyexec.c
-msgid ""
-"\n"
-"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-"=== "
-msgstr ""
-"\n"
-"modo colar; Ctrl-C para cancelar, Ctrl-D para concluir\n"
-"=== "
-
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  Arquivo \"%q\""
@@ -416,6 +406,9 @@ msgstr "Todos os periféricos SPI estão em uso"
 msgid "All UART peripherals are in use"
 msgstr "Todos os periféricos UART estão em uso"
 
+#: ports/nrf/common-hal/countio/Counter.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "Todos os canais estão em uso"
@@ -644,10 +637,10 @@ msgstr "O comprimento do buffer deve ter pelo menos 1"
 msgid "Buffer too short by %d bytes"
 msgstr "O buffer é muito curto em %d bytes"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "O pino bus %d já está em uso"
@@ -813,7 +806,7 @@ msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "A entrada da coluna deve ser digitalio.DigitalInOut"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "O comando deve ser um int entre 0 e 255"
 
@@ -907,12 +900,12 @@ msgstr "Erro de Inicialização do Dispositivo DAC"
 msgid "DAC already in use"
 msgstr "DAC em uso"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "O pino de dados 0 deve ser alinhado por bytes"
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr "O pino de dados 0 deve ser alinhado por bytes."
 
@@ -1875,11 +1868,6 @@ msgstr "A fatia do PWM já está em uso"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "O canal A da fatia do PWM já está em uso"
-
-#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm/common-hal/displayio/ParallelBus.c
-msgid "ParallelBus not yet supported"
-msgstr "O ParallelBus ainda não é compatível"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -3753,7 +3741,7 @@ msgid "no module named '%q'"
 msgstr "nenhum módulo chamado '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "no reset pin available"
 msgstr "nenhum pino de redefinição está disponível"
 
@@ -4031,6 +4019,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4051,6 +4040,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -4083,10 +4073,6 @@ msgstr "O pull_threshold deve ser entre 1 e 32"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "estouro de fila"
-
-#: lib/utils/pyexec.c
-msgid "raw REPL; CTRL-B to exit\n"
-msgstr "REPL bruto; CTRL-B para encerrar\n"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
@@ -4581,6 +4567,21 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+#~ "=== "
+#~ msgstr ""
+#~ "\n"
+#~ "modo colar; Ctrl-C para cancelar, Ctrl-D para concluir\n"
+#~ "=== "
+
+#~ msgid "ParallelBus not yet supported"
+#~ msgstr "O ParallelBus ainda não é compatível"
+
+#~ msgid "raw REPL; CTRL-B to exit\n"
+#~ msgstr "REPL bruto; CTRL-B para encerrar\n"
 
 #~ msgid "%q length must be %q"
 #~ msgstr "o comprimento %q deve ser %q"

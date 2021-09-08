@@ -43,17 +43,6 @@ msgstr ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 
-#: lib/utils/pyexec.c
-#, fuzzy
-msgid ""
-"\n"
-"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-"=== "
-msgstr ""
-"\n"
-"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-"=== "
-
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
@@ -272,22 +261,22 @@ msgid "'%s' expects {r0, r1, ...}"
 msgstr "'%s' expects {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
 msgstr "'%s' integer %d isn't within range %d..%d"
 
 #: py/emitinlinethumb.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
 msgstr "'%s' integer 0x%x doesn't fit in mask 0x%x"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' object doesn't support item assignment"
 msgstr "'%s' object doesn't support item assignment"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' object doesn't support item deletion"
 
@@ -297,7 +286,7 @@ msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' object has no attribute '%q'"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' object isn't subscriptable"
 msgstr "'%s' object isn't subscriptable"
 
@@ -429,6 +418,9 @@ msgstr "All SPI peripherals are in use"
 msgid "All UART peripherals are in use"
 msgstr "All UART peripherals are in use"
 
+#: ports/nrf/common-hal/countio/Counter.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "All channels in use"
@@ -658,10 +650,10 @@ msgstr "Buffer must be at least length 1"
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer too short by %d bytes"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Bus pin %d is already in use"
@@ -823,7 +815,7 @@ msgid "Column entry must be digitalio.DigitalInOut"
 msgstr "Column entry must be digitalio.DigitalInOut"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
 msgstr "Command must be an int between 0 and 255"
 
@@ -918,12 +910,12 @@ msgstr "DAC device init error"
 msgid "DAC already in use"
 msgstr "DAC already in use"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 pin must be byte aligned"
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr "Data 0 pin must be byte aligned."
 
@@ -988,7 +980,7 @@ msgid "EXTINT channel already in use"
 msgstr "EXTINT channel already in use"
 
 #: shared-module/synthio/MidiTrack.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Error in MIDI stream at position %d"
 msgstr "Error in MIDI stream at position %d"
 
@@ -1381,12 +1373,12 @@ msgid "Invalid channel count"
 msgstr "Invalid channel count"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Invalid data_count %d"
 msgstr "Invalid data_count %d"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Invalid data_pins[%d]"
 
@@ -1575,12 +1567,12 @@ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Missing first_set_pin. Instruction %d sets pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr "Missing jmp_pin. Instruction %d jumps on pin"
 
 #: shared-module/usb_hid/Device.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "More than %d report ids not supported"
 msgstr "More than %d report ids not supported"
 
@@ -1705,7 +1697,7 @@ msgid "No long integer support"
 msgstr "No long integer support"
 
 #: shared-module/usb_hid/__init__.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "No more than %d HID devices allowed"
 msgstr "No more than %d HID devices allowed"
 
@@ -1888,11 +1880,6 @@ msgstr "PWM slice already in use"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "PWM slice channel A already in use"
-
-#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm/common-hal/displayio/ParallelBus.c
-msgid "ParallelBus not yet supported"
-msgstr "ParallelBus not yet supported"
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -2447,7 +2434,7 @@ msgid "Unknown security error: 0x%04x"
 msgstr "Unknown security error: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Unknown system firmware error: %04x"
 
@@ -2813,7 +2800,7 @@ msgid "can't convert %q to int"
 msgstr "can't convert %q to int"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "can't convert %s to complex"
 msgstr "can't convert %s to complex"
 
@@ -3047,7 +3034,7 @@ msgid "data must be of equal length"
 msgstr "cata must be of equal length"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "data pin #%d in use"
 msgstr "data pin #%d in use"
 
@@ -3783,7 +3770,7 @@ msgid "no module named '%q'"
 msgstr "no module named '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "no reset pin available"
 msgstr "no reset pin available"
 
@@ -3849,7 +3836,7 @@ msgid "object "
 msgstr "object "
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "object '%s' isn't a tuple or list"
 msgstr "object '%s' isn't a tuple or list"
 
@@ -3889,7 +3876,7 @@ msgid "object not iterable"
 msgstr "object not iterable"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "object of type '%s' has no len()"
 msgstr "object of type '%s' has no len()"
 
@@ -4065,6 +4052,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -4085,6 +4073,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -4118,11 +4107,6 @@ msgstr "push_threshold must be between 1 and 32"
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "queue overflow"
-
-#: lib/utils/pyexec.c
-#, fuzzy
-msgid "raw REPL; CTRL-B to exit\n"
-msgstr "raw REPL; CTRL-B to exit\n"
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
@@ -4625,6 +4609,23 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#, fuzzy
+#~ msgid ""
+#~ "\n"
+#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+#~ "=== "
+#~ msgstr ""
+#~ "\n"
+#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+#~ "=== "
+
+#~ msgid "ParallelBus not yet supported"
+#~ msgstr "ParallelBus not yet supported"
+
+#, fuzzy
+#~ msgid "raw REPL; CTRL-B to exit\n"
+#~ msgstr "raw REPL; CTRL-B to exit\n"
 
 #~ msgid "no available NIC"
 #~ msgstr "no available NIC"
