@@ -110,6 +110,15 @@ esp_err_t i2s_lcd_write(i2s_lcd_handle_t handle, const uint8_t *data, uint32_t l
 esp_err_t i2s_lcd_acquire(i2s_lcd_handle_t handle);
 
 /**
+ * @brief acquire a lock, but only wait a certain period of time
+ *
+ * @param handle  Handle of i2s lcd driver
+ *
+ * @return true if the lock was acquired, false otherwise
+ */
+bool i2s_lcd_acquire_nonblocking(i2s_lcd_handle_t handle, TickType_t ticks_to_wait);
+
+/**
  * @brief release a lock
  *
  * @param handle  Handle of i2s lcd driver

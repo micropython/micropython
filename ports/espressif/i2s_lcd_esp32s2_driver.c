@@ -456,9 +456,20 @@ esp_err_t i2s_lcd_acquire(i2s_lcd_handle_t handle) {
     return ESP_OK;
 }
 
+bool i2s_lcd_acquire_nonblocking(i2s_lcd_handle_t handle, TickType_t ticks_to_wait) {
+    i2s_lcd_driver_t *i2s_lcd_drv = (i2s_lcd_driver_t *)handle;
+    return xSemaphoreTake(i2s_lcd_drv->mutex, ticks_to_wait);
+}
+
 esp_err_t i2s_lcd_release(i2s_lcd_handle_t handle) {
     i2s_lcd_driver_t *i2s_lcd_drv = (i2s_lcd_driver_t *)handle;
     I2S_CHECK(NULL != i2s_lcd_drv, "handle pointer invalid", ESP_ERR_INVALID_ARG);
+    i2s_dev_t *i2s_dev = &I2S0;
+// at this point, the DMA is done but there could still be data in the FIFO. so we need
+// to wait for I2S_TX_IDLE so that it's safe e.g., for calling code to deassert CS
+    while (!i2s_dev->state.tx_idle) {
+        ;
+    }
     BaseType_t ret = xSemaphoreGive(i2s_lcd_drv->mutex);
     I2S_CHECK(pdTRUE == ret, "Give semaphore failed", ESP_FAIL);
     return ESP_OK;

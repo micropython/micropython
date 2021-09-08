@@ -881,10 +881,6 @@ msgstr ""
 msgid "Data 0 pin must be byte aligned"
 msgstr ""
 
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr ""
-
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
 msgstr ""
@@ -1236,6 +1232,10 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
+msgstr ""
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
 msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
@@ -1716,6 +1716,11 @@ msgstr ""
 msgid "Not settable"
 msgstr ""
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2108,6 +2113,10 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
+msgstr ""
+
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
 msgstr ""
 
 #: extmod/modure.c
