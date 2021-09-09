@@ -38,6 +38,7 @@
 #include "led.h"
 #include "pendsv.h"
 #include "modmachine.h"
+#include "fw_header.h"
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
@@ -47,6 +48,13 @@
 #include "extmod/modnetwork.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
+
+extern void Reset_Handler(void);
+
+__attribute__((section(".fw_header"))) const fw_header_t fw_header = {
+    .magic = FW_HEADER_MAGIC,
+    .entry_addr = (uintptr_t)Reset_Handler,
+};
 
 void board_init(void);
 

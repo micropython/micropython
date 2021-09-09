@@ -7,5 +7,7 @@ MICROPY_HW_FLASH_TYPE = qspi_nor_flash
 MICROPY_HW_FLASH_SIZE = 0x200000  # 2MB
 MICROPY_HW_FLASH_RESERVED ?= 0x1000  # 4KB
 
+MICROPY_BOOT_BUFFER_SIZE = (64 * 1024)
+
 deploy: $(BUILD)/firmware.hex
 	teensy_loader_cli --mcu=imxrt1062 -v -w $<

@@ -1,18 +1,6 @@
-/* ------------------------------------------------------------------------- */
-/*                                                                           */
-/* Copyright 1997-2016 Freescale Semiconductor, Inc.                         */
-/* Copyright 2016-2019 NXP                                                   */
-/* All rights reserved.                                                      */
-/*                                                                           */
-/* SPDX-License-Identifier: BSD-3-Clause                                     */
-/*****************************************************************************/
-/* Version: GCC for ARM Embedded Processors                                  */
-/*****************************************************************************/
+
     .syntax unified
     .arch armv7-m
-
-#include"flexram_config.s"
-
 
 /* Reset Handler */
 
@@ -29,21 +17,6 @@ Reset_Handler:
     ldr     r2, [r1]
     msr     msp, r2
 
-/* Reconfigure the memory map, which must match the setting of the linker script */
-    dsb
-    isb
-    ldr r0, =__iomux_gpr17_adr   /* load IOMUXC_GPR17 register address to R0 */
-    ldr r1, =__iomux_gpr17_value /* move FlexRAM configuration value to R1 */
-    str r1,[r0]                  /* store FLEXRAM configuration value to IOMUXC_GPR17 */
-    dsb
-    isb
-    ldr r0, =__iomux_gpr16_adr  /* load IOMUXC_GPR16 register address to R0 */
-    ldr r1,[r0]                 /* load IOMUXC_GPR16 register value to R1 */
-    orr r1, r1, #4              /* set corresponding FLEXRAM_BANK_CFG_SEL bit */
-    str r1,[r0]                 /* store the value to IOMUXC_GPR16 (FLEXRAM_BANK_CFG_SEL = '1') */
-    dsb
-    isb
-
 #ifndef __NO_SYSTEM_INIT
     ldr   r0,=SystemInit
     blx   r0
@@ -53,8 +26,9 @@ Reset_Handler:
  *      linker script.
  *      __DATA_ROM: End of code section, i.e., begin of data sections to copy from.
  *      __data_start__/__data_end__: RAM address range that data should be
- *      __noncachedata_start__/__noncachedata_end__ : none cachable region
+ *      __ocram_data_start__/__ocram_data_end__ : OCRAM region
  *      __ram_function_start__/__ram_function_end__ : ramfunction region
+ *      __noncachedata_start__/__noncachedata_end__ : none cachable region
  *      copied to. Both must be aligned to 4 bytes boundary.  */
 
     ldr    r1, =__DATA_ROM
@@ -81,6 +55,7 @@ Reset_Handler:
     strlt   r0, [r2], #4
     blt    .LC0
 #endif
+
 #ifdef __STARTUP_INITIALIZE_RAMFUNCTION
     ldr    r2, =__ram_function_start__
     ldr    r3, =__ram_function_end__
@@ -105,6 +80,7 @@ Reset_Handler:
     blt    .LC_ramfunc_copy_start
 #endif
 #endif /* __STARTUP_INITIALIZE_RAMFUNCTION */
+
 #ifdef __STARTUP_INITIALIZE_NONCACHEDATA
     ldr    r2, =__noncachedata_start__
     ldr    r3, =__noncachedata_init_end__

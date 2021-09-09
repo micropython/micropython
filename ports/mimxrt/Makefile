@@ -4,6 +4,7 @@
 
 BOARD ?= TEENSY40
 BOARD_DIR ?= boards/$(BOARD)
+BOOTLOADER_DIR ?= mboot
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
@@ -39,24 +40,28 @@ include $(TOP)/extmod/extmod.mk
 MCU_DIR = lib/nxp_driver/sdk/devices/$(MCU_SERIES)
 
 # Select linker scripts based on MCU_SERIES
-LD_FILES = boards/$(MCU_SERIES).ld boards/common.ld
+LD_FILES = boards/common.ld
 
 # Parameter configurations for generation
 AF_FILE = boards/$(MCU_SERIES)_af.csv
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 PREFIX_FILE = boards/mimxrt_prefix.c
+PATCH_BINARY = mboot/tools/patch-binary.py
 GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
+# Include mboot make definitions
+include mboot.mk
 
 # =============================================================================
 # Includes
 # =============================================================================
 
 INC += -I$(BOARD_DIR)
+INC += -I$(BOOTLOADER_DIR)/shared
 INC += -I$(BUILD)
 INC += -I$(TOP)
 INC += -I$(TOP)/$(MCU_DIR)
@@ -147,6 +152,9 @@ endif
 
 # C source files
 SRC_C += \
+	$(SRC_ETH_C) \
+	$(SRC_HAL_IMX_C) \
+	$(SRC_TINYUSB_C) \
 	board_init.c \
 	boards/$(MCU_SERIES)_clock_config.c \
 	dma_manager.c \
@@ -201,10 +209,12 @@ SRC_C += \
 	shared/timeutils/timeutils.c \
 	systick.c \
 	ticks.c \
-	tusb_port.c \
-	$(SRC_TINYUSB_C) \
-	$(SRC_HAL_IMX_C) \
-	$(SRC_ETH_C)
+	tusb_port.c
+
+# Set default values if optional variables not defined
+ifndef MICROPY_HW_BOARD_FLASH_FILES
+    MICROPY_HW_BOARD_FLASH_FILES = 0
+endif
 
 # Add sources for respective board flash type
 ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
@@ -219,6 +229,15 @@ ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash 
     endif
 else
     $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+endif
+
+
+# Set default values if optional variables not defined
+ifndef SUPPORTS_HARDWARE_FP_DOUBLE
+    SUPPORTS_HARDWARE_FP_DOUBLE = 0
+endif
+ifndef SUPPORTS_HARDWARE_FP_SINGLE
+    SUPPORTS_HARDWARE_FP_SINGLE = 0
 endif
 
 # Math library source files
@@ -245,10 +264,6 @@ else
         LIBM_SRC_C += lib/libm/ef_sqrt.c
     endif
 endif
-
-# Reset variables
-SUPPORTS_HARDWARE_FP_SINGLE = 0
-SUPPORTS_HARDWARE_FP_DOUBLE = 0
 
 # Assembly source files
 SRC_SS = \
@@ -405,7 +420,20 @@ LDFLAGS = \
 
 LDDEFINES = \
 	-DMICROPY_HW_FLASH_TYPE=$(MICROPY_HW_FLASH_TYPE) \
-	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE)
+	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
+	-DBOARD_LINKER_SCRIPT_H=\"$(MCU_SERIES).ld\" \
+	-DBOOTLOADER_ENABLED=1
+
+# Start of firmware is dependent on board flash type. Bootloader requires at least 32kB.
+#	Firmware start has to be aligned to sector size to allow erase of firmware without affecting the bootloader.
+#	Sector size is different between QPSI flash (4kB) and HyperFlash (256kB) devices!
+ifeq ($(MICROPY_HW_FLASH_TYPE),qspi_nor_flash)
+	LDDEFINES += -DMICROPY_HW_FLASH_FIRMWARE_START_ADDR=0x00008000
+else ifeq ($(MICROPY_HW_FLASH_TYPE),qspi_hyper_flash)
+	LDDEFINES += -DMICROPY_HW_FLASH_FIRMWARE_START_ADDR=0x00040000
+else
+	$(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+endif
 
 ifdef MICROPY_HW_FLASH_RESERVED
 LDDEFINES += -DMICROPY_HW_FLASH_RESERVED=$(MICROPY_HW_FLASH_RESERVED)
@@ -454,10 +482,23 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(Q)$(CC) -E -x c $(LDDEFINES) $(LD_FILES) | grep -v '^#' > $(BUILD)/link.ld
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) -T$(BUILD)/link.ld $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(ECHO) ""
+	$(ECHO) "UPDATE SECTION .fw_header"
+	$(Q)$(OBJCOPY) -O binary $@ $(BUILD)/temp_firmware.bin
+	$(Q)$(PYTHON) $(PATCH_BINARY) $(BUILD)/temp_firmware.bin $(BUILD)/fw_header.bin 1024 $$(($(MICROPY_BOOT_BUFFER_SIZE)))
+	$(Q)$(OBJCOPY) $@ --update-section .fw_header=$(BUILD)/fw_header.bin
+	$(ECHO) "$(BUILD)/fw_header.bin ==> .fw_header"
+	$(ECHO) ""
+	$(ECHO) "UPDATE SECTION .mboot"
+	$(Q)$(OBJCOPY) $@ --update-section .mboot=$(BUILD_BL)/mboot.bin
+	$(ECHO) "$(BUILD_BL)/mboot.bin ==> .mboot"
+	$(ECHO) ""
+	$(ECHO) "OUTPUT INFO"
 	$(Q)$(SIZE) $@
+	$(ECHO) ""
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
-	$(Q)$(OBJCOPY) -O binary $^ $@
+	$(Q)$(OBJCOPY) -O binary $< $@
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O ihex -R .eeprom $< $@
@@ -467,7 +508,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
 # which source files might need it.
-$(OBJ): | $(GEN_PINS_HDR) $(GEN_FLEXRAM_CONFIG_SRC)
+$(OBJ): | $(BUILD_BL)/mboot.bin $(BUILD_BL)/mboot.hex $(GEN_PINS_HDR) $(GEN_FLEXRAM_CONFIG_SRC)
 
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
@@ -477,7 +518,6 @@ $(GEN_FLEXRAM_CONFIG_SRC):
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES).h \
 		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
-
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h
