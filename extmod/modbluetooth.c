@@ -35,8 +35,6 @@
 #include "py/qstr.h"
 #include "py/runtime.h"
 #include "extmod/modbluetooth.h"
-#include "nimble/host/include/host/ble_att.h"
-#include "nimble/host/include/host/ble_gatt.h"
 #include <string.h>
 
 #if MICROPY_PY_BLUETOOTH
