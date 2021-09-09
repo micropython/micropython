@@ -1075,6 +1075,15 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
     return 0;
 }
 
+uint16_t mp_bluetooth_ble_gatts_get_service_handle(const mp_obj_bluetooth_uuid_t *service_uuid_in){
+    const ble_uuid_t *service_nimble_uuid = create_nimble_uuid(service_uuid_in, NULL);
+    uint16_t service_handle = 0;
+
+    ble_gatts_find_svc(service_nimble_uuid, &service_handle);
+    
+    return service_handle;
+}
+
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);

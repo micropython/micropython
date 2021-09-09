@@ -217,28 +217,6 @@ STATIC mp_int_t bluetooth_uuid_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bu
     return 0;
 }
 
-// Note: modbluetooth UUIDs store their data in LE.
-STATIC ble_uuid_t *create_nimble_uuid(const mp_obj_bluetooth_uuid_t *uuid, ble_uuid_any_t *storage) {
-    if (uuid->type == MP_BLUETOOTH_UUID_TYPE_16) {
-        ble_uuid16_t *result = storage ? &storage->u16 : m_new(ble_uuid16_t, 1);
-        result->u.type = BLE_UUID_TYPE_16;
-        result->value = (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t *)result;
-    } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_32) {
-        ble_uuid32_t *result = storage ? &storage->u32 : m_new(ble_uuid32_t, 1);
-        result->u.type = BLE_UUID_TYPE_32;
-        result->value = (uuid->data[1] << 24) | (uuid->data[1] << 16) | (uuid->data[1] << 8) | uuid->data[0];
-        return (ble_uuid_t *)result;
-    } else if (uuid->type == MP_BLUETOOTH_UUID_TYPE_128) {
-        ble_uuid128_t *result = storage ? &storage->u128 : m_new(ble_uuid128_t, 1);
-        result->u.type = BLE_UUID_TYPE_128;
-        memcpy(result->value, uuid->data, 16);
-        return (ble_uuid_t *)result;
-    } else {
-        return NULL;
-    }
-}
-
 #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS && MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC void ringbuf_put_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) {
     assert(ringbuf_free(ringbuf) >= (size_t)uuid->type + 1);
@@ -656,10 +634,7 @@ STATIC mp_obj_t bluetooth_ble_gatts_get_service_handle(mp_obj_t self_in, mp_obj_
     (void)self_in;
 
     const mp_obj_bluetooth_uuid_t *service_uuid = MP_OBJ_TO_PTR(service_uuid_in);
-    const ble_uuid_t *service_nimble_uuid = create_nimble_uuid(service_uuid, NULL);
-    uint16_t service_handle = 0;
-
-    ble_gatts_find_svc(service_nimble_uuid, &service_handle);
+    uint16_t service_handle = mp_bluetooth_ble_gatts_get_service_handle(service_uuid);
     
     return mp_obj_new_int(service_handle);
 }
