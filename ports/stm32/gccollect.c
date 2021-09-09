@@ -53,7 +53,9 @@ void gc_collect(void) {
     #endif
 
     // trace soft timer nodes
+    #if MICROPY_ENABLE_SCHEDULER
     soft_timer_gc_mark_all();
+    #endif
 
     // end the GC
     gc_collect_end();

@@ -48,9 +48,11 @@ void SysTick_Handler(void) {
         f(uw_tick);
     }
 
+    #if MICROPY_ENABLE_SCHEDULER
     if (soft_timer_next == uw_tick) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
+    #endif
 }
 
 bool systick_has_passed(uint32_t start_tick, uint32_t delay_ms) {
