@@ -134,7 +134,7 @@ Methods
   Setting a callback changes the ``write`` and ``readinto`` methods to non-blocking operation.
   ``handler`` is called in the context of the MicroPython scheduler.
   
-.. staticmethod::  I2S.shift(buf, bits, shift)
+.. staticmethod::  I2S.shift(*, buf, bits, shift)
 
   bitwise shift of all samples contained in ``buf``. ``bits`` specifies sample size in bits. ``shift`` specifies the number of bits to shift each sample. 
   Positive for left shift, negative for right shift. 
