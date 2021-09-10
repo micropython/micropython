@@ -228,6 +228,7 @@ jobs:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.arm-boards) }}
+    if: ${{ needs.test.outputs.arm-boards != '[]' }}
 
     steps:
     - name: Set up Python 3.8
@@ -278,6 +279,7 @@ jobs:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.riscv-boards) }}
+    if: ${{ needs.test.outputs.riscv-boards != '[]' }}
 
     steps:
     - name: Set up Python 3.8
@@ -327,6 +329,7 @@ jobs:
       fail-fast: false
       matrix:
         board: ${{ fromJSON(needs.test.outputs.xtensa-boards) }}
+    if: ${{ needs.test.outputs.xtensa-boards != '[]' }}
 
     steps:
     - name: Set up Python 3.8
