@@ -166,8 +166,10 @@ void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
     vectorio_ishape_t ishape,
     mp_obj_t pixel_shader, int32_t x, int32_t y) {
     VECTORIO_SHAPE_DEBUG("%p vector_shape_construct x:%3d, y:%3d\n", self, x, y);
-    common_hal_vectorio_vector_shape_set_x(self, x);
-    common_hal_vectorio_vector_shape_set_y(self, y);
+    vectorio_vector_shape_validate_x_bounds(x);
+    self->x = x;
+    vectorio_vector_shape_validate_y_bounds(y);
+    self->y = y;
     self->pixel_shader = pixel_shader;
     self->ishape = ishape;
     self->absolute_transform = &null_transform; // Critical to have a valid transform before getting screen area.
@@ -184,16 +186,14 @@ mp_int_t common_hal_vectorio_vector_shape_get_x(vectorio_vector_shape_t *self) {
 }
 
 
-bool common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_int_t x) {
+void common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_int_t x) {
     VECTORIO_SHAPE_DEBUG("%p set_x %d\n", self, x);
     if (self->x == x) {
-        return false;  // it's not dirty
+        return;
     }
-    if (x < SHRT_MIN || x > SHRT_MAX) {
-        mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-    }
+    vectorio_vector_shape_validate_x_bounds(x);
     self->x = x;
-    return true;  // it's dirty
+    common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
 
@@ -203,16 +203,14 @@ mp_int_t common_hal_vectorio_vector_shape_get_y(vectorio_vector_shape_t *self) {
 }
 
 
-bool common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y) {
+void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y) {
     VECTORIO_SHAPE_DEBUG("%p set_y %d\n", self, y);
     if (self->y == y) {
-        return false;  // it's not dirty
+        return;
     }
-    if (y < SHRT_MIN || y > SHRT_MAX) {
-        mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-    }
+    vectorio_vector_shape_validate_y_bounds(y);
     self->y = y;
-    return true;  // it's dirty
+    common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
 mp_obj_tuple_t *common_hal_vectorio_vector_shape_get_location(vectorio_vector_shape_t *self) {
@@ -239,10 +237,33 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
         || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)) {
         mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
     }
-    bool dirty = common_hal_vectorio_vector_shape_set_x(self, x);
-    dirty |= common_hal_vectorio_vector_shape_set_y(self, y);
+    bool dirty = false;
+    if (self->x != x) {
+        vectorio_vector_shape_validate_x_bounds(x);
+        self->x = x;
+        dirty = true;
+    }
+    if (self->y != y) {
+        vectorio_vector_shape_validate_y_bounds(y);
+        self->y = y;
+        dirty = true;
+    }
     if (dirty) {
         common_hal_vectorio_vector_shape_set_dirty(self);
+    }
+}
+
+
+void vectorio_vector_shape_validate_x_bounds(mp_int_t x) {
+    if (x < SHRT_MIN || x > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_x, SHRT_MIN, SHRT_MAX);
+    }
+}
+
+
+void vectorio_vector_shape_validate_y_bounds(mp_int_t y) {
+    if (y < SHRT_MIN || y > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_y, SHRT_MIN, SHRT_MAX);
     }
 }
 

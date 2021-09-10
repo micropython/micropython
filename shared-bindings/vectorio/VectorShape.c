@@ -99,10 +99,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_x(mp_obj_t wrapper_shape, mp_obj_t
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     mp_int_t x = mp_obj_get_int(x_obj);
-    bool dirty = common_hal_vectorio_vector_shape_set_x(self, x);
-    if (dirty) {
-        common_hal_vectorio_vector_shape_set_dirty(self);
-    }
+    common_hal_vectorio_vector_shape_set_x(self, x);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_x_obj, vectorio_vector_shape_obj_set_x);
@@ -133,10 +130,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_y(mp_obj_t wrapper_shape, mp_obj_t
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     mp_int_t y = mp_obj_get_int(y_obj);
-    bool dirty = common_hal_vectorio_vector_shape_set_y(self, y);
-    if (dirty) {
-        common_hal_vectorio_vector_shape_set_dirty(self);
-    }
+    common_hal_vectorio_vector_shape_set_y(self, y);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_y_obj, vectorio_vector_shape_obj_set_y);

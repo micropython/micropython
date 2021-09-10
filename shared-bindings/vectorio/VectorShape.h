@@ -21,13 +21,13 @@ void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
 void common_hal_vectorio_vector_shape_set_dirty(void *self);
 
 mp_int_t common_hal_vectorio_vector_shape_get_x(vectorio_vector_shape_t *self);
-bool common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_int_t x);
+void common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_int_t x);
 
 mp_obj_tuple_t *common_hal_vectorio_vector_shape_get_location(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self, mp_obj_t xy);
 
 mp_int_t common_hal_vectorio_vector_shape_get_y(vectorio_vector_shape_t *self);
-bool common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y);
+void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_int_t y);
 
 mp_obj_t common_hal_vectorio_vector_shape_get_pixel_shader(vectorio_vector_shape_t *self);
 void common_hal_vectorio_vector_shape_set_pixel_shader(vectorio_vector_shape_t *self, mp_obj_t pixel_shader);
