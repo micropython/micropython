@@ -47,8 +47,8 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
 
     // VectorShape parts
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
-    int16_t x = args[ARG_x].u_int;
-    int16_t y = args[ARG_y].u_int;
+    int32_t x = args[ARG_x].u_int;
+    int32_t y = args[ARG_y].u_int;
     mp_obj_t vector_shape = vectorio_vector_shape_make_new(self, pixel_shader, x, y);
     self->draw_protocol_instance = vector_shape;
 

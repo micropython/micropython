@@ -23,7 +23,7 @@
 // pixel_shader: The pixel shader that produces colors from values. The shader can be a displayio.Palette(1); it will be asked to color pixel value 0.
 // x: Initial x position of the center axis of the shape within the parent.
 // y: Initial y position of the center axis of the shape within the parent."""
-mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int16_t x, int16_t y) {
+mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int32_t x, int32_t y) {
     if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
         !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
@@ -99,7 +99,10 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_x(mp_obj_t wrapper_shape, mp_obj_t
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     mp_int_t x = mp_obj_get_int(x_obj);
-    common_hal_vectorio_vector_shape_set_x(self, x);
+    bool dirty = common_hal_vectorio_vector_shape_set_x(self, x);
+    if (dirty) {
+        common_hal_vectorio_vector_shape_set_dirty(self);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_x_obj, vectorio_vector_shape_obj_set_x);
@@ -130,7 +133,10 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_y(mp_obj_t wrapper_shape, mp_obj_t
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     mp_int_t y = mp_obj_get_int(y_obj);
-    common_hal_vectorio_vector_shape_set_y(self, y);
+    bool dirty = common_hal_vectorio_vector_shape_set_y(self, y);
+    if (dirty) {
+        common_hal_vectorio_vector_shape_set_dirty(self);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_y_obj, vectorio_vector_shape_obj_set_y);
