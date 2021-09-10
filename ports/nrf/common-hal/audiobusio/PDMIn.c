@@ -69,16 +69,16 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
 }
 
 bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t *self) {
-    return !self->clock_pin_number;
+    return self->clock_pin_number == NO_PIN;
 }
 
 void common_hal_audiobusio_pdmin_deinit(audiobusio_pdmin_obj_t *self) {
     nrf_pdm->ENABLE = 0;
 
     reset_pin_number(self->clock_pin_number);
-    self->clock_pin_number = 0;
+    self->clock_pin_number = NO_PIN;
     reset_pin_number(self->data_pin_number);
-    self->data_pin_number = 0;
+    self->data_pin_number = NO_PIN;
 }
 
 uint8_t common_hal_audiobusio_pdmin_get_bit_depth(audiobusio_pdmin_obj_t *self) {
