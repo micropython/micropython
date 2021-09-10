@@ -230,7 +230,7 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     mp_obj_t *tuple_items;
     mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
     if (tuple_len != 2) {
-        mp_raise_TypeError_varg(translate("(x,y) integers required"));
+        mp_raise_TypeError(translate("(x,y) integers required"));
     }
 
     mp_int_t x;
