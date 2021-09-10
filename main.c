@@ -109,6 +109,7 @@
 
 #ifdef CIRCUITPY_BOOT_COUNTER
 #include "shared-bindings/nvm/ByteArray.h"
+uint8_t value_out = 0;
 #endif
 
 #if MICROPY_ENABLE_PYSTACK
@@ -308,15 +309,6 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-#ifdef CIRCUITPY_BOOT_COUNTER
-nvm_bytearray_obj_t bootcnt = {
-    .base = {.type = &nvm_bytearray_type},
-    .len = ( uint32_t) 1,
-    .start_address = (uint8_t*) (0x00080000 - CIRCUITPY_INTERNAL_NVM_SIZE)
-    };
-uint8_t value_out = 0;
-#endif
-
 STATIC bool run_code_py(safe_mode_t safe_mode) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
@@ -330,9 +322,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #endif
 
     #ifdef CIRCUITPY_BOOT_COUNTER
-    common_hal_nvm_bytearray_get_bytes(&bootcnt,0,1,&value_out);
+    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
     ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&bootcnt,0,&value_out,1);
+    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
     #endif
 
     pyexec_result_t result;
