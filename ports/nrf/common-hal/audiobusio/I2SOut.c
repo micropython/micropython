@@ -230,7 +230,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
 }
 
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self) {
-    return self->data_pin_number == 0xff;
+    return self->data_pin_number == NO_PIN;
 }
 
 void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
@@ -240,11 +240,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     NRF_I2S->TASKS_STOP = 1;
     NRF_I2S->ENABLE = I2S_ENABLE_ENABLE_Disabled;
     reset_pin_number(self->bit_clock_pin_number);
-    self->bit_clock_pin_number = 0xff;
+    self->bit_clock_pin_number = NO_PIN;
     reset_pin_number(self->word_select_pin_number);
-    self->word_select_pin_number = 0xff;
+    self->word_select_pin_number = NO_PIN;
     reset_pin_number(self->data_pin_number);
-    self->data_pin_number = 0xff;
+    self->data_pin_number = NO_PIN;
     instance = NULL;
     supervisor_disable_tick();
 }

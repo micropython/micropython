@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H
+#include "supervisor/board.h"
 
-#include "py/obj.h"
-#include "py/enum.h"
+void board_init(void) {
+}
 
-typedef enum {
-    RESET_REASON_POWER_ON,
-    RESET_REASON_BROWNOUT,
-    RESET_REASON_SOFTWARE,
-    RESET_REASON_DEEP_SLEEP_ALARM,
-    RESET_REASON_RESET_PIN,
-    RESET_REASON_WATCHDOG,
-    RESET_REASON_UNKNOWN,
-    RESET_REASON_RESCUE_DEBUG,
-} mcu_reset_reason_t;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern const mp_obj_type_t mcu_reset_reason_type;
+void reset_board(void) {
+}
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_MCU_RESET_REASON__H
+void board_deinit(void) {
+}

@@ -119,7 +119,7 @@ Behavior
    them. CircuitPython's goal is to clarify the role of each file and
    make each file independent from each other.
 
-   -  ``boot.py`` (or ``settings.py``) runs only once on start up before
+   -  ``boot.py`` runs only once on start up before
       USB is initialized. This lays the ground work for configuring USB at
       startup rather than it being fixed. Since serial is not available,
       output is written to ``boot_out.txt``.

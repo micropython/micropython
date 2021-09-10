@@ -36,13 +36,6 @@ msgid ""
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
 
-#: lib/utils/pyexec.c
-msgid ""
-"\n"
-"paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-"=== "
-msgstr ""
-
 #: py/obj.c
 msgid "  File \"%q\""
 msgstr "  File \"%q\""
@@ -405,6 +398,9 @@ msgstr "Lahat ng SPI peripherals ay ginagamit"
 msgid "All UART peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
 
+#: ports/nrf/common-hal/countio/Counter.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr ""
@@ -630,10 +626,10 @@ msgstr "Buffer dapat ay hindi baba sa 1 na haba"
 msgid "Buffer too short by %d bytes"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
-#: ports/raspberrypi/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, fuzzy, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Ginagamit na ang DAC"
@@ -795,7 +791,7 @@ msgid "Column entry must be digitalio.DigitalInOut"
 msgstr ""
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 #, fuzzy
 msgid "Command must be an int between 0 and 255"
 msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
@@ -889,13 +885,13 @@ msgstr ""
 msgid "DAC already in use"
 msgstr "Ginagamit na ang DAC"
 
-#: ports/atmel-samd/common-hal/displayio/ParallelBus.c
-#: ports/nrf/common-hal/displayio/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 #, fuzzy
 msgid "Data 0 pin must be byte aligned"
 msgstr "graphic ay dapat 2048 bytes ang haba"
 
-#: ports/esp32s2/common-hal/displayio/ParallelBus.c
+#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr ""
 
@@ -1847,11 +1843,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
-
-#: ports/mimxrt10xx/common-hal/displayio/ParallelBus.c
-#: ports/stm/common-hal/displayio/ParallelBus.c
-msgid "ParallelBus not yet supported"
 msgstr ""
 
 #: ports/esp32s2/common-hal/audiobusio/__init__.c
@@ -3702,7 +3693,7 @@ msgid "no module named '%q'"
 msgstr "walang module na '%q'"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/displayio/ParallelBus.c
+#: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "no reset pin available"
 msgstr ""
 
@@ -3977,6 +3968,7 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
 #: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
@@ -3997,6 +3989,7 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
 #: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
 #: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
@@ -4029,10 +4022,6 @@ msgstr ""
 #: extmod/modutimeq.c
 msgid "queue overflow"
 msgstr "puno na ang pila (overflow)"
-
-#: lib/utils/pyexec.c
-msgid "raw REPL; CTRL-B to exit\n"
-msgstr ""
 
 #: py/parse.c
 msgid "raw f-strings are not implemented"
