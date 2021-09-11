@@ -51,7 +51,4 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
 bool vectorio_vector_shape_get_previous_area(vectorio_vector_shape_t *self, displayio_area_t *out_area);
 void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self);
 
-void vectorio_vector_shape_validate_x_bounds(mp_int_t x);
-void vectorio_vector_shape_validate_y_bounds(mp_int_t y);
-
 #endif // MICROPY_INCLUDED_SHARED_MODULE_VECTORIO_SHAPE_H
