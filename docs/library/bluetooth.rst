@@ -49,7 +49,7 @@ Configuration
     - ``'mac'``: The current address in use, depending on the current address mode.
       This returns a tuple of ``(addr_type, addr)``.
 
-      See :meth:`gatts_write <BLE.gap_scan>` for details about address type.
+      See :meth:`gatts_write <BLE.gatts_write>` for details about address type.
 
       This may only be queried while the interface is currently active.
 

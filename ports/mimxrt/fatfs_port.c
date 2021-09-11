@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2021 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,22 +24,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
-#define MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
 
-#include "py/obj.h"
+#include "lib/oofatfs/ff.h"
+#include "fsl_snvs_lp.h"
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_rtc_type;
-extern const mp_obj_type_t machine_i2c_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_uart_type;
-extern const mp_obj_type_t machine_sdcard_type;
 
-void machine_adc_init(void);
-void machine_pin_irq_deinit(void);
-void machine_timer_init_PIT(void);
-void machine_sdcard_init0(void);
+MP_WEAK DWORD get_fattime(void) {
+    snvs_lp_srtc_datetime_t srtcDate;
 
-#endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H
+    SNVS_LP_SRTC_GetDatetime(SNVS, &srtcDate);
+
+    return ((srtcDate.year - 1980) << 25) | (srtcDate.month << 21) | (srtcDate.day << 16) |
+           (srtcDate.hour << 11) | ((srtcDate.minute << 5) | (srtcDate.second / 2));
+}

@@ -20,6 +20,7 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 # MicroPython feature configurations
 FROZEN_MANIFEST ?= boards/manifest.py
 MICROPY_VFS_LFS2 ?= 1
+MICROPY_VFS_FAT ?= 1
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
@@ -44,27 +45,32 @@ GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 CFLAGS += -Wno-error=unused-parameter
 
 INC += -I.
-INC += -I$(TOP)
-INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
-INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(BUILD)
+INC += -I$(TOP)
 INC += -I$(TOP)/$(MCU_DIR)
 INC += -I$(TOP)/$(MCU_DIR)/drivers
 INC += -I$(TOP)/$(MCU_DIR)/project_template
-INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/oofatfs
 INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
+INC += -I$(TOP)/lib/tinyusb/src
 
 CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
 CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT)
 CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
+	-DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
 	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX \
 	-D__STARTUP_CLEAR_BSS \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>'
+ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
+CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
+endif
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 
 # Configure floating point support
@@ -98,64 +104,72 @@ endif
 
 # TinyUSB Stack source
 SRC_TINYUSB_C += \
-	lib/tinyusb/src/tusb.c \
-	lib/tinyusb/src/common/tusb_fifo.c \
-	lib/tinyusb/src/device/usbd.c \
-	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
 	lib/tinyusb/src/class/dfu/dfu_rt_device.c \
 	lib/tinyusb/src/class/hid/hid_device.c \
 	lib/tinyusb/src/class/midi/midi_device.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/class/usbtmc/usbtmc_device.c \
 	lib/tinyusb/src/class/vendor/vendor_device.c \
-	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/device/usbd_control.c \
+	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c \
+	lib/tinyusb/src/tusb.c
 
 SRC_HAL_IMX_C += \
-	$(MCU_DIR)/system_$(MCU_SERIES).c \
-	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
-	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/drivers/fsl_adc.c \
 	$(MCU_DIR)/drivers/fsl_cache.c \
 	$(MCU_DIR)/drivers/fsl_clock.c \
+	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_dmamux.c \
 	$(MCU_DIR)/drivers/fsl_edma.c \
+	$(MCU_DIR)/drivers/fsl_flexram.c \
+	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_gpio.c \
 	$(MCU_DIR)/drivers/fsl_gpt.c \
-	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
-	$(MCU_DIR)/drivers/fsl_flexram.c \
-	$(MCU_DIR)/drivers/fsl_flexspi.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
+	$(MCU_DIR)/project_template/clock_config.c \
+	$(MCU_DIR)/system_$(MCU_SERIES).c \
+	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
+
+ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
+SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
+endif
 
 SRC_C += \
-	main.c \
-	led.c \
-	pin.c \
-	ticks.c \
-	tusb_port.c \
+	$(BOARD_DIR)/flash_config.c \
 	board_init.c \
 	dma_channel.c \
-	$(BOARD_DIR)/flash_config.c \
+	drivers/bus/softspi.c \
+	extmod/modonewire.c \
+	fatfs_port.c \
+	led.c \
 	machine_adc.c \
+	machine_bitstream.c \
 	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
+	machine_sdcard.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	main.c \
 	mimxrt_flash.c \
-	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
+	modutime.c \
 	mphalport.c \
+	pin.c \
+	sdcard.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
@@ -165,8 +179,8 @@ SRC_C += \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
-	drivers/bus/softspi.c \
-	extmod/modonewire.c \
+	ticks.c \
+	tusb_port.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_HAL_IMX_C) \
 
@@ -188,9 +202,9 @@ LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
 	atan2.c \
 	atanh.c \
 	ceil.c \
+	copysign.c \
 	cos.c \
 	cosh.c \
-	copysign.c \
 	erf.c \
 	exp.c \
 	expm1.c \
@@ -222,7 +236,6 @@ LIBM_SRC_C += lib/libm_dbl/sqrt.c
 endif
 else
 LIBM_SRC_C += $(addprefix lib/libm/,\
-	math.c \
 	acoshf.c \
 	asinfacosf.c \
 	asinhf.c \
@@ -237,6 +250,7 @@ LIBM_SRC_C += $(addprefix lib/libm/,\
 	kf_sin.c \
 	kf_tan.c \
 	log1pf.c \
+	math.c \
 	nearbyintf.c \
 	roundf.c \
 	sf_cos.c \
@@ -263,28 +277,29 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-SRC_SS = $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
+SRC_SS += $(MCU_DIR)/gcc/startup_$(MCU_SERIES).S
 
-SRC_S = shared/runtime/gchelper_m3.s \
+SRC_S += shared/runtime/gchelper_m3.s \
 
 # List of sources for qstr extraction
 SRC_QSTR += \
+	extmod/modonewire.c \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
+	machine_sdcard.c \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
 	mimxrt_flash.c \
-	modutime.c \
 	modmachine.c \
 	modmimxrt.c \
 	moduos.c \
+	modutime.c \
 	pin.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/sys_stdio_mphal.c \
-	extmod/modonewire.c \
 	$(GEN_PINS_SRC) \
 
 OBJ += $(PY_O)
@@ -327,6 +342,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
+		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
 $(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c

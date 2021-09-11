@@ -47,6 +47,8 @@ if idf.py --version | grep -q v4.2; then
     do_build wesp32 SIL_WESP32
 else
     do_build esp32c3 GENERIC_C3
+    do_build esp32c3usb GENERIC_C3_USB
     do_build tinys2 UM_TINYS2
     do_build featherS2 UM_FEATHERS2
+    do_build featherS2neo UM_FEATHERS2NEO
 fi

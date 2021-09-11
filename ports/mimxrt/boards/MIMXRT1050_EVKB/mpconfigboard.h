@@ -56,7 +56,6 @@
     { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA },
 
 #define USDHC_DUMMY_PIN NULL , 0
-
 #define MICROPY_USDHC1 \
     { \
         .cmd = {GPIO_SD_B0_00_USDHC1_CMD}, \
