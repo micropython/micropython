@@ -23,7 +23,7 @@
 // pixel_shader: The pixel shader that produces colors from values. The shader can be a displayio.Palette(1); it will be asked to color pixel value 0.
 // x: Initial x position of the center axis of the shape within the parent.
 // y: Initial y position of the center axis of the shape within the parent."""
-mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int16_t x, int16_t y) {
+mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int32_t x, int32_t y) {
     if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
         !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);

@@ -22,7 +22,7 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
     VECTORIO_POLYGON_DEBUG(" self.len: %d, len: %d, ", self->len, len);
 
     if (len < 3) {
-        mp_raise_TypeError_varg(translate("Polygon needs at least 3 points"));
+        mp_raise_TypeError(translate("Polygon needs at least 3 points"));
     }
 
     if (self->len < 2 * len) {
