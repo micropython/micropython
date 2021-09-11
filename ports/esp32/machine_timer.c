@@ -137,7 +137,11 @@ STATIC void machine_timer_isr(void *self_in) {
     #if CONFIG_IDF_TARGET_ESP32
     device->hw_timer[self->index].update = 1;
     #else
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    device->hw_timer[self->index].update.tx_update = 1;
+    #else
     device->hw_timer[self->index].update.update = 1;
+    #endif
     #endif
     timer_ll_clear_intr_status(device, self->index);
     timer_ll_set_alarm_enable(device, self->index, self->repeat);
