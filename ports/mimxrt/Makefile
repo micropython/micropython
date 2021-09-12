@@ -167,6 +167,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
+	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
@@ -196,6 +197,7 @@ SRC_C += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_wdt.c \
 	main.c \
 	mimxrt_flash.c \
 	mimxrt_sdram.c \
@@ -342,6 +344,7 @@ SRC_QSTR += \
 	machine_spi.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_wdt.c \
 	mimxrt_flash.c \
 	modmachine.c \
 	modmimxrt.c \
