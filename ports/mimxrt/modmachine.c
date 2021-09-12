@@ -32,10 +32,12 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
+#include "shared/runtime/pyexec.h"
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
 #include "fsl_clock.h"
+#include "fsl_ocotp.h"
 #include "fsl_wdog.h"
 
 #include CPU_HEADER_H
@@ -47,6 +49,21 @@ typedef enum {
     MP_DEEPSLEEP_RESET,
     MP_SOFT_RESET
 } reset_reason_t;
+
+STATIC mp_obj_t machine_unique_id(void) {
+    unsigned char id[8];
+    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
+    *(uint32_t *)&id[0] = OCOTP->CFG0;
+    *(uint32_t *)&id[4] = OCOTP->CFG1;
+    return mp_obj_new_bytes(id, sizeof(id));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    mp_raise_type(&mp_type_SystemExit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 STATIC mp_obj_t machine_reset(void) {
     WDOG_TriggerSystemSoftwareReset(WDOG1);
@@ -94,6 +111,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
