@@ -125,6 +125,24 @@ static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *ou
 }
 
 
+STATIC
+void check_bounds_and_set_x(vectorio_vector_shape_t *self, mp_int_t x) {
+    if (x < SHRT_MIN || x > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_x, SHRT_MIN, SHRT_MAX);
+    }
+    self->x = x;
+}
+
+
+STATIC
+void check_bounds_and_set_y(vectorio_vector_shape_t *self, mp_int_t y) {
+    if (y < SHRT_MIN || y > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_y, SHRT_MIN, SHRT_MAX);
+    }
+    self->y = y;
+}
+
+
 // For use by Group to know where it needs to redraw on layer removal.
 bool vectorio_vector_shape_get_dirty_area(vectorio_vector_shape_t *self, displayio_area_t *out_area) {
     out_area->x1 = out_area->x2;
@@ -164,10 +182,10 @@ void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
 
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
     vectorio_ishape_t ishape,
-    mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
+    mp_obj_t pixel_shader, int32_t x, int32_t y) {
     VECTORIO_SHAPE_DEBUG("%p vector_shape_construct x:%3d, y:%3d\n", self, x, y);
-    self->x = x;
-    self->y = y;
+    check_bounds_and_set_x(self, x);
+    check_bounds_and_set_y(self, y);
     self->pixel_shader = pixel_shader;
     self->ishape = ishape;
     self->absolute_transform = &null_transform; // Critical to have a valid transform before getting screen area.
@@ -189,7 +207,7 @@ void common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_in
     if (self->x == x) {
         return;
     }
-    self->x = x;
+    check_bounds_and_set_x(self, x);
     common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
@@ -205,7 +223,7 @@ void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_in
     if (self->y == y) {
         return;
     }
-    self->y = y;
+    check_bounds_and_set_y(self, y);
     common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
@@ -224,20 +242,27 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     mp_obj_t *tuple_items;
     mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
     if (tuple_len != 2) {
-        mp_raise_TypeError_varg(translate("(x,y) integers required"));
+        mp_raise_TypeError(translate("(x,y) integers required"));
     }
 
     mp_int_t x;
     mp_int_t y;
     if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
-        || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)
-        || x < SHRT_MIN || x > SHRT_MAX || y < SHRT_MIN || y > SHRT_MAX
-        ) {
+        || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)) {
         mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
     }
-    self->x = (int16_t)x;
-    self->y = (int16_t)y;
-    common_hal_vectorio_vector_shape_set_dirty(self);
+    bool dirty = false;
+    if (self->x != x) {
+        check_bounds_and_set_x(self, x);
+        dirty = true;
+    }
+    if (self->y != y) {
+        check_bounds_and_set_y(self, y);
+        dirty = true;
+    }
+    if (dirty) {
+        common_hal_vectorio_vector_shape_set_dirty(self);
+    }
 }
 
 

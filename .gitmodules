@@ -191,3 +191,6 @@
 [submodule "lib/quirc"]
 	path = lib/quirc
 	url = https://github.com/adafruit/quirc.git
+[submodule "frozen/Adafruit_CircuitPython_APDS9960"]
+	path = frozen/Adafruit_CircuitPython_APDS9960
+	url = https://github.com/adafruit/Adafruit_CircuitPython_APDS9960

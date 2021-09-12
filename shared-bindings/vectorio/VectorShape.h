@@ -11,12 +11,12 @@
 extern const mp_obj_type_t vectorio_vector_shape_type;
 
 // Python shared bindings constructor
-mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int16_t x, int16_t y);
+mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pixel_shader, int32_t x, int32_t y);
 
 // C data constructor
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
     vectorio_ishape_t ishape,
-    mp_obj_t pixel_shader, uint16_t x, uint16_t y);
+    mp_obj_t pixel_shader, int32_t x, int32_t y);
 
 void common_hal_vectorio_vector_shape_set_dirty(void *self);
 
