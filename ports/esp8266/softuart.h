@@ -7,13 +7,13 @@
 
 #define SOFTUART_GPIO_COUNT 16
 
-typedef struct softuart_pin_t {
+typedef struct {
     uint8_t gpio_id;
     uint32_t gpio_mux_name;
     uint8_t gpio_func;
 } softuart_pin_t;
 
-typedef struct softuart_buffer_t {
+typedef struct {
     char receive_buffer[SOFTUART_MAX_RX_BUFF];
     uint8_t receive_buffer_tail;
     uint8_t receive_buffer_head;
@@ -37,6 +37,7 @@ BOOL Softuart_Available(Softuart *s);
 uint32_t Softuart_Flush(Softuart *s);
 BOOL Softuart_rxWait(Softuart *s, uint32_t timeout_us);
 void Softuart_Intr_Handler(void *p);  // void* for type compatibility with etshal.h: void ets_isr_attach(int irq_no, void (*handler)(void *), void *arg);
+uint8_t Softuart_IsGpioValid(uint8_t gpio_id);
 void Softuart_SetPinRx(Softuart *s, uint8_t gpio_id);
 void Softuart_SetPinTx(Softuart *s, uint8_t gpio_id);
 void Softuart_EnableRs485(Softuart *s, uint8_t gpio_id);

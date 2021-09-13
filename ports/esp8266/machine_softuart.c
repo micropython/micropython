@@ -32,20 +32,14 @@
 #include "mem.h"
 #include "softuart.h"
 
-
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/misc.h"
 #include "py/mphal.h"
-// #include "py/malloc.h"
 #include "modmachine.h"
 
-// UartDev is defined and initialized in rom code.
-// FXIME //extern UartDevice UartDev;
-
-Softuart softuartDevice;
-
-typedef struct _pyb_softuart_obj_t {
+typedef struct {
     mp_obj_base_t base;
     // uint8_t uart_id;
     Softuart *softuart_ptr; // point to instance of driver object
@@ -59,7 +53,7 @@ typedef struct _pyb_softuart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } pyb_softuart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "1", "0"};
+STATIC const char *_parity_name[] = {"None", "ODD", "EVEN"};
 
 /******************************************************************************/
 // MicroPython bindings for softUART
@@ -73,41 +67,77 @@ STATIC void pyb_softuart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_timeout, ARG_timeout_char};
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        // Only supported via constructor (analogous to UART id)
+        // { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        // { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
-        // { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
-        // { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        // { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // assign the pins
-    self->tx = mp_obj_get_pin_obj(args[ARG_tx].u_obj);
-    Softuart_SetPinTx(&softuartDevice, mp_obj_get_pin(self->tx));
-    self->rx = mp_obj_get_pin_obj(args[ARG_rx].u_obj);
-    Softuart_SetPinRx(&softuartDevice, mp_obj_get_pin(self->rx));
-
-    // set baudrate
-    if (args[ARG_baudrate].u_int > 0) {
+    // set baudrate (0 = default)
+    if (args[ARG_baudrate].u_int < 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("negative baudrate"));
+    } else if (args[ARG_baudrate].u_int > 0) {
         self->baudrate = args[ARG_baudrate].u_int;
-        Softuart_Init(&softuartDevice, self->baudrate);
-        // UartDev.baut_rate = self->baudrate; // Sic!
     }
 
     // set data bits
-    self->bits = 8;   // no other options are supported
+    switch (args[ARG_bits].u_int) {
+        case 0:
+            break; // keep default
+        case 8:
+            // TODO set self->softuart_ptr bits if supported
+            self->bits = 8;
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported or invalid data bits"));
+            break;
+    }
 
     // set parity
-    self->parity = 0; // "NONE" no other options are supported
+    if (args[ARG_parity].u_obj != MP_OBJ_NULL) {
+        if (args[ARG_parity].u_obj == mp_const_none) {
+            // TODO disable self->softuart_ptr parity if supported
+            self->parity = 0;
+        } else {
+            mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
+            // TODO enable self->softuart_ptr parity if supported
+            if (parity & 1) {
+                // TODO enable ODD parity
+                // self->parity = 1;
+                mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
+            } else {
+                // TODO enable EVEN parity
+                // self->parity = 2;
+                mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
+            }
+        }
+    }
 
     // set stop bits
-    self->stop = 1;  // "NONE" no other options are supported
+    switch (args[ARG_stop].u_int) {
+        case 0:
+            break; // keep default
+        case 1:
+            // TODO set self->softuart_ptr stop bits if supported
+            self->stop = 1;
+            break;
+        case 2:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported stop bits"));
+            // self->stop = 2;
+            break;
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid stop bits"));
+            break;
+    }
 
     // set timeout
     self->timeout = args[ARG_timeout].u_int;
@@ -121,45 +151,72 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     }
 
     // setup
-    // FIXME //uart_setup(self->uart_id);
+    Softuart_Init(self->softuart_ptr, self->baudrate);
 }
 
 STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
+    enum { ARG_tx, ARG_rx };
+
+    // check for 2 required arguments (tx, rx pins)
+    // keeping the convention of machine.UART, later occuring
+    // kwargs will be compatible with init()
+    mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create instance
     pyb_softuart_obj_t *self = m_new_obj(pyb_softuart_obj_t);
     self->base.type = &pyb_softuart_type;
-    // FIXME removed //self->uart_id = uart_id;
-    // self->softuart_ptr = os_malloc(sizeof(Softuart));
+
+    // assign pointer to driver structure
+    self->softuart_ptr = m_new_obj(Softuart);
+
+    // assign the pins
+    // TODO make tx-only, rx-only UART possible (by passing None)
+    self->tx = mp_obj_get_pin_obj(args[ARG_tx]);
+    uint tx_pin = mp_obj_get_pin(self->tx);
+    if (Softuart_IsGpioValid(tx_pin)) {
+        Softuart_SetPinTx(self->softuart_ptr, tx_pin);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid tx pin"));
+    }
+
+    self->rx = mp_obj_get_pin_obj(args[ARG_rx]);
+    uint rx_pin = mp_obj_get_pin(self->rx);
+    if (Softuart_IsGpioValid(rx_pin)) {
+        Softuart_SetPinRx(self->softuart_ptr, rx_pin);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid rx pin"));
+    }
+
+    // set defaults
     self->baudrate = 9600;
     self->bits = 8;
     self->parity = 0;
     self->stop = 1;
-    self->timeout = 0;
-    self->timeout_char = 0;
+    self->timeout = 1000;
+    self->timeout_char = 10;
 
     // init the peripheral
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    pyb_softuart_init_helper(self, n_args, args, &kw_args);
+    pyb_softuart_init_helper(self, n_args - 2, args + 2, &kw_args); // skip 2 arguments
 
     return MP_OBJ_FROM_PTR(self);
 }
 
 STATIC mp_obj_t pyb_softuart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    // omit self (args[0]) and call init helper
     pyb_softuart_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(pyb_softuart_init_obj, 1, pyb_softuart_init);
+MP_DEFINE_CONST_FUN_OBJ_KW(pyb_softuart_init_obj, 0, pyb_softuart_init);
 
 STATIC mp_obj_t pyb_softuart_flush(mp_obj_t self_in) {
-    // pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    Softuart_Flush(&softuartDevice); // reset the rx buffer to empty
+    pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    Softuart_Flush(self->softuart_ptr); // reset the rx buffer to empty
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_softuart_flush_obj, pyb_softuart_flush);
-
 
 STATIC const mp_rom_map_elem_t pyb_softuart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_softuart_init_obj) },
@@ -170,7 +227,6 @@ STATIC const mp_rom_map_elem_t pyb_softuart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
 
 };
-
 STATIC MP_DEFINE_CONST_DICT(pyb_softuart_locals_dict, pyb_softuart_locals_dict_table);
 
 STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
@@ -182,7 +238,7 @@ STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, 
     }
 
     // wait for first char to become available
-    if (!Softuart_rxWait(&softuartDevice, self->timeout * 1000)) {
+    if (!Softuart_rxWait(self->softuart_ptr, self->timeout * 1000)) {
         *errcode = MP_EAGAIN;
         return MP_STREAM_ERROR;
     }
@@ -190,8 +246,8 @@ STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, 
     // read the data
     uint8_t *buf = buf_in;
     while (Softuart_Available(&softuartDevice)) {
-        *buf++ = Softuart_Read(&softuartDevice);
-        if (--size == 0 || !Softuart_rxWait(&softuartDevice, self->timeout_char * 1000)) {
+        *buf++ = Softuart_Read(self->softuart_ptr);
+        if (--size == 0 || !Softuart_rxWait(self->softuart_ptr, self->timeout_char * 1000)) {
             // return number of bytes read
             return buf - (uint8_t *)buf_in;
         }
@@ -200,7 +256,7 @@ STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, 
 }
 
 STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    // pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
     /* TODO implement non-blocking
@@ -213,7 +269,7 @@ STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 
     // write the data
     for (size_t i = 0; i < size; ++i) {
-        Softuart_Putchar(&softuartDevice, *buf++);
+        Softuart_Putchar(self->softuart_ptr, *buf++);
         // FIXME //uart_tx_one_char(self->uart_id, *buf++);
     }
 
@@ -222,14 +278,16 @@ STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 }
 
 STATIC mp_uint_t pyb_softuart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+    pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        if ((flags & MP_STREAM_POLL_RD) && Softuart_rx_any(&softuartDevice)) {
+        if ((flags & MP_STREAM_POLL_RD) && Softuart_rx_any(self->softuart_ptr)) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if ((flags & MP_STREAM_POLL_WR) && Softuart_tx_any_room(&softuartDevice)) {
+        if ((flags & MP_STREAM_POLL_WR) && Softuart_tx_any_room(self->softuart_ptr)) {
             ret |= MP_STREAM_POLL_WR;
         }
     } else {
