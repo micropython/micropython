@@ -1560,6 +1560,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             int reg_base = REG_ARG_1;
             int reg_index = REG_ARG_2;
             emit_pre_pop_reg_flexible(emit, &vtype_base, &reg_base, reg_index, reg_index);
+            need_reg_single(emit, REG_RET, 0);
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
@@ -1623,6 +1624,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             int reg_index = REG_ARG_2;
             emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, REG_ARG_1);
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            need_reg_single(emit, REG_RET, 0);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                     MP_ERROR_TEXT("can't load with '%q' index"), vtype_to_qstr(vtype_index));
