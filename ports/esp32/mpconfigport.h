@@ -11,13 +11,18 @@
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
 #define MICROPY_NLR_SETJMP                  (1)
+#if CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_GCREGS_SETJMP               (1)
+#endif
 
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#if !CONFIG_IDF_TARGET_ESP32C3
 #define MICROPY_EMIT_XTENSAWIN              (1)
+#endif
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)
@@ -61,6 +66,7 @@
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
 #define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_DELATTR_SETATTR          (1)
+#define MICROPY_PY_FSTRINGS                 (1)
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
@@ -77,6 +83,8 @@
 #define MICROPY_PY_BUILTINS_RANGE_ATTRS     (1)
 #define MICROPY_PY_BUILTINS_ROUND_INT       (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS      (1)
+#define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS  (1)
 #define MICROPY_PY_BUILTINS_COMPILE         (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE       (1)
 #define MICROPY_PY_BUILTINS_EXECFILE        (1)
@@ -148,11 +156,24 @@
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#define MICROPY_PY_MACHINE_PWM              (1)
+#define MICROPY_PY_MACHINE_PWM_INIT         (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY         (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
+#ifndef MICROPY_PY_MACHINE_DAC
+#define MICROPY_PY_MACHINE_DAC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2S
+#define MICROPY_PY_MACHINE_I2S              (1)
+#endif
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif
@@ -165,6 +186,7 @@
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_BTREE                    (1)
+#define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")

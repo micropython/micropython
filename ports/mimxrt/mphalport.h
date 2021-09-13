@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include "ticks.h"
 #include "pin.h"
+#include "fsl_clock.h"
 
 #define MP_HAL_PIN_FMT                  "%q"
 
@@ -39,8 +40,8 @@
 #define mp_hal_pin_input(p) machine_pin_set_mode(p, PIN_MODE_IN);
 #define mp_hal_pin_output(p) machine_pin_set_mode(p, PIN_MODE_OUT);
 #define mp_hal_pin_open_drain(p) machine_pin_set_mode(p, PIN_MODE_OPEN_DRAIN);
-#define mp_hal_pin_high(p) (GPIO_PinWrite(p->gpio, p->pin, 1U))
-#define mp_hal_pin_low(p) (GPIO_PinWrite(p->gpio, p->pin, 0U))
+#define mp_hal_pin_high(p) (p->gpio->DR_SET = 1 << p->pin)
+#define mp_hal_pin_low(p) (p->gpio->DR_CLEAR = 1 << p->pin)
 #define mp_hal_pin_write(p, value) (GPIO_PinWrite(p->gpio, p->pin, value))
 #define mp_hal_pin_toggle(p) (GPIO_PortToggle(p->gpio, (1 << p->pin)))
 #define mp_hal_pin_read(p) (GPIO_PinReadPadStatus(p->gpio, p->pin))
@@ -72,8 +73,16 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
+static inline void mp_hal_ticks_cpu_init(void) {
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
+    return DWT->CYCCNT;
+}
+
+static inline mp_uint_t mp_hal_get_cpu_freq(void) {
+    return CLOCK_GetCpuClkFreq();
 }
 
 

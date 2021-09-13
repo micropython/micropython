@@ -109,7 +109,7 @@ Methods
 
    Return value: number of bytes sent.
 
-.. method:: USB_VCP.irq(handler=None, trigger=0, hard=False)
+.. method:: USB_VCP.irq(handler=None, trigger=IRQ_RX, hard=False)
 
    Register *handler* to be called whenever an event specified by *trigger*
    occurs.  The *handler* function must take exactly one argument, which will

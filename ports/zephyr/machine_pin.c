@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 
 #if MICROPY_PY_MACHINE

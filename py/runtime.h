@@ -154,6 +154,11 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATIO
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
+static inline mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
+    MP_STATE_THREAD(stop_iteration_arg) = o;
+    return MP_OBJ_STOP_ITERATION;
+}
+
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
 
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
@@ -179,6 +184,8 @@ NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 #endif
 
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
+NORETURN void mp_raise_StopIteration(mp_obj_t arg);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_recursion_depth(void);
 

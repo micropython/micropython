@@ -43,7 +43,7 @@ Methods
 
     These methods implement the simple and :ref:`extended
     <block-device-interface>` block protocol defined by
-    :class:`uos.AbstractBlockDev`.
+    :class:`os.AbstractBlockDev`.
 
 Hardware Note
 -------------

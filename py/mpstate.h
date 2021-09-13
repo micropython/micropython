@@ -266,6 +266,9 @@ typedef struct _mp_state_thread_t {
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
 
+    // If MP_OBJ_STOP_ITERATION is propagated then this holds its argument.
+    mp_obj_t stop_iteration_arg;
+
     #if MICROPY_PY_SYS_SETTRACE
     mp_obj_t prof_trace_callback;
     bool prof_callback_is_executing;

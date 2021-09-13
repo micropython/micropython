@@ -2,6 +2,7 @@ MCU_SERIES = MIMXRT1021
 MCU_VARIANT = MIMXRT1021DAG5A
 
 MICROPY_FLOAT_IMPL = double
+MICROPY_PY_MACHINE_SDCARD = 1
 
 JLINK_PATH ?= /media/RT1020-EVK/
 JLINK_COMMANDER_SCRIPT = $(BUILD)/script.jlink
@@ -13,6 +14,8 @@ else
 JLINK_CONNECTION_SETTINGS =
 endif
 
+SRC_C += \
+	hal/flexspi_nor_flash.c
 
 deploy_jlink: $(BUILD)/firmware.hex
 	$(ECHO) "ExitOnError 1" > $(JLINK_COMMANDER_SCRIPT)

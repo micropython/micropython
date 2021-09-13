@@ -33,7 +33,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 #include "gccollect.h"
 #include "systick.h"

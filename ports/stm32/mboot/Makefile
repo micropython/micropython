@@ -105,19 +105,19 @@ else
 COPT += -Os -DNDEBUG
 endif
 
-$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+$(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 LIB_SRC_C += \
-	lib/libc/string0.c \
+	shared/libc/string0.c \
 	lib/littlefs/lfs1.c \
 	lib/littlefs/lfs1_util.c \
 	lib/littlefs/lfs2.c \
 	lib/littlefs/lfs2_util.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/ffunicode.c \
-	extmod/uzlib/crc32.c \
-	extmod/uzlib/adler32.c \
-	extmod/uzlib/tinflate.c \
-	extmod/uzlib/tinfgzip.c
+	lib/uzlib/adler32.c \
+	lib/uzlib/crc32.c \
+	lib/uzlib/tinfgzip.c \
+	lib/uzlib/tinflate.c
 
 SRC_C += \
 	main.c \

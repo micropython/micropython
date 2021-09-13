@@ -34,7 +34,7 @@ An example is the ``gc`` module discussed in :ref:`memorymanagement`.
    >>> gc.enable()
    >>>
 
-MicroPython has several other builtin standard/core modules like ``io``, ``uarray`` etc.
+MicroPython has several other builtin standard/core modules like ``io``, ``array`` etc.
 Adding a new core module involves several modifications.
 
 First, create the ``C`` file in the ``py/`` directory. In this example we are adding a

@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "boardctrl.h"
 #include "led.h"
 #include "usrsw.h"
@@ -155,6 +155,8 @@ int boardctrl_run_boot_py(boardctrl_state_t *state) {
             return BOARDCTRL_GOTO_SOFT_RESET_EXIT;
         }
         if (!ret) {
+            // There was an error, prevent main.py from running and flash LEDs.
+            state->reset_mode = BOARDCTRL_RESET_MODE_SAFE_MODE;
             flash_error(4);
         }
     }

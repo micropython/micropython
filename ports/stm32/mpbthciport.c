@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2020 Damien P. George
+ * Copyright (c) 2018-2021 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,10 @@
 #include "py/mphal.h"
 #include "extmod/mpbthci.h"
 #include "extmod/modbluetooth.h"
-#include "systick.h"
+#include "mpbthciport.h"
+#include "softtimer.h"
 #include "pendsv.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 
 #if MICROPY_PY_BLUETOOTH
 
@@ -38,21 +39,47 @@
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-// Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
-// Request new data from the uart and pass to the stack, and run pending events/callouts.
-extern void mp_bluetooth_hci_poll(void);
+// Soft timer for scheduling a HCI poll.
+STATIC soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 
-// Hook for pendsv poller to run this periodically every 128ms
-#define BLUETOOTH_HCI_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
+#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+// Prevent double-enqueuing of the scheduled task.
+STATIC volatile bool events_task_is_scheduled;
+#endif
+
+// This is called by soft_timer and executes at IRQ_PRI_PENDSV.
+STATIC void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+    mp_bluetooth_hci_poll_now();
+}
+
+void mp_bluetooth_hci_init(void) {
+    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+    events_task_is_scheduled = false;
+    #endif
+    soft_timer_static_init(
+        &mp_bluetooth_hci_soft_timer,
+        SOFT_TIMER_MODE_ONE_SHOT,
+        0,
+        mp_bluetooth_hci_soft_timer_callback
+        );
+}
+
+STATIC void mp_bluetooth_hci_start_polling(void) {
+    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+    events_task_is_scheduled = false;
+    #endif
+    mp_bluetooth_hci_poll_now();
+}
+
+void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
+    soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
+}
 
 #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
-// This task is scheduled periodically (every 128ms) via SysTick, or
+// This task is scheduled periodically via a soft timer, or
 // immediately on HCI UART RXIDLE.
-
-// Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled = false;
 
 STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
     (void)none_in;
@@ -65,23 +92,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_sched
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
 // request that processing happens ASAP in the scheduler.
-void mp_bluetooth_hci_systick(uint32_t ticks_ms) {
-    if (events_task_is_scheduled) {
-        return;
-    }
-
-    if (ticks_ms == 0 || BLUETOOTH_HCI_TICK(ticks_ms)) {
+void mp_bluetooth_hci_poll_now(void) {
+    if (!events_task_is_scheduled) {
         events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
+        if (!events_task_is_scheduled) {
+            // The schedule queue is full, set callback to try again soon.
+            mp_bluetooth_hci_poll_in_ms(5);
+        }
     }
 }
 
 #else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
-// Called periodically (systick) or directly (e.g. uart irq).
-void mp_bluetooth_hci_systick(uint32_t ticks_ms) {
-    if (ticks_ms == 0 || BLUETOOTH_HCI_TICK(ticks_ms)) {
-        pendsv_schedule_dispatch(PENDSV_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll);
-    }
+void mp_bluetooth_hci_poll_now(void) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll);
 }
 
 #endif
@@ -104,13 +128,12 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
 
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32 rfcore)\n");
 
-    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-    events_task_is_scheduled = false;
-    #endif
-
     rfcore_ble_init();
     hci_uart_rx_buf_cur = 0;
     hci_uart_rx_buf_len = 0;
+
+    // Start the HCI polling to process any initial events/packets.
+    mp_bluetooth_hci_start_polling();
 
     return 0;
 }
@@ -163,7 +186,6 @@ int mp_bluetooth_hci_uart_readchar(void) {
 /******************************************************************************/
 // HCI over UART
 
-#include "pendsv.h"
 #include "uart.h"
 
 pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
@@ -173,7 +195,7 @@ static uint8_t hci_uart_rxbuf[768];
 
 mp_obj_t mp_uart_interrupt(mp_obj_t self_in) {
     // Queue up the scheduler to run the HCI UART and event processing ASAP.
-    mp_bluetooth_hci_systick(0);
+    mp_bluetooth_hci_poll_now();
 
     return mp_const_none;
 }
@@ -181,10 +203,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_uart_interrupt_obj, mp_uart_interrupt);
 
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32)\n");
-
-    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-    events_task_is_scheduled = false;
-    #endif
 
     // bits (8), stop (1), parity (none) and flow (rts/cts) are assumed to match MYNEWT_VAL_BLE_HCI_UART_ constants in syscfg.h.
     mp_bluetooth_hci_uart_obj.base.type = &pyb_uart_type;
@@ -207,6 +225,9 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_bluetooth_hci_uart_irq_obj.handler = MP_OBJ_FROM_PTR(&mp_uart_interrupt_obj);
     mp_bluetooth_hci_uart_irq_obj.ishard = true;
     uart_irq_config(&mp_bluetooth_hci_uart_obj, true);
+
+    // Start the HCI polling to process any initial events/packets.
+    mp_bluetooth_hci_start_polling();
 
     return 0;
 }

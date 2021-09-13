@@ -71,5 +71,8 @@ void mp_bluetooth_nimble_port_start(void);
 // Tell the port to stop its background task.
 void mp_bluetooth_nimble_port_shutdown(void);
 
+// --- Called by the HCI UART layer to let us know when packets have been sent.
+void mp_bluetooth_nimble_sent_hci_packet(void);
+
 
 #endif // MICROPY_INCLUDED_EXTMOD_NIMBLE_MODBLUETOOTH_NIMBLE_H

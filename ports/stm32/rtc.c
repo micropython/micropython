@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "extint.h"
 #include "rtc.h"
 #include "irq.h"

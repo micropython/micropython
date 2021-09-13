@@ -28,7 +28,7 @@
 
 #include "lwip/netif.h"
 #include "lwip/dhcp.h"
-#include "lib/netutils/dhcpserver.h"
+#include "shared/netutils/dhcpserver.h"
 #include "drivers/cyw43/cyw43_ll.h"
 
 // For trace_flags

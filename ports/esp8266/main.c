@@ -39,8 +39,8 @@
 #define USE_US_TIMER 1
 
 #include "extmod/misc.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/pyexec.h"
 #include "gccollect.h"
 #include "user_interface.h"
 

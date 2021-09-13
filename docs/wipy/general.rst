@@ -296,8 +296,8 @@ and put it in '/flash/cert/'. Then do::
   ss = ssl.wrap_socket(s, cert_reqs=ssl.CERT_REQUIRED, ca_certs='/flash/cert/ca.pem')
   ss.connect(socket.getaddrinfo('cloud.blynk.cc', 8441)[0][-1])
 
-Incompatibilities in uhashlib module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Incompatibilities in hashlib module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Due to hardware implementation details of the WiPy, data must be buffered before being
 digested, which would make it impossible to calculate the hash of big blocks of data that
@@ -310,7 +310,7 @@ initial one) is a multiple of 4 bytes.** The last chunk may be of any length.
 
 Example::
 
-   hash = uhashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
+   hash = hashlib.sha1('abcd1234', 1001)    # length of the initial piece is multiple of 4 bytes
    hash.update('1234')                       # also multiple of 4 bytes
    ...
    hash.update('12345')                      # last chunk may be of any length
@@ -366,7 +366,7 @@ Adhoc VFS-like support
 ~~~~~~~~~~~~~~~~~~~~~~
 
 WiPy doesn't implement full MicroPython VFS support, instead following
-functions are defined in ``uos`` module:
+functions are defined in ``os`` module:
 
 .. function:: mount(block_device, mount_point, \*, readonly=False)
 

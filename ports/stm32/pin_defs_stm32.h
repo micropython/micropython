@@ -109,6 +109,7 @@ enum {
 // some #defines to massage things. Also I2S and SPI share the same
 // peripheral.
 
+#define GPIO_AF5_I2S1   GPIO_AF5_SPI1
 #define GPIO_AF5_I2S2   GPIO_AF5_SPI2
 #define GPIO_AF5_I2S3   GPIO_AF5_I2S3ext
 #define GPIO_AF6_I2S2   GPIO_AF6_I2S2ext
@@ -116,6 +117,7 @@ enum {
 #define GPIO_AF7_I2S2   GPIO_AF7_SPI2
 #define GPIO_AF7_I2S3   GPIO_AF7_I2S3ext
 
+#define I2S1  SPI1
 #define I2S2  SPI2
 #define I2S3  SPI3
 
@@ -134,4 +136,3 @@ enum {
 };
 
 typedef GPIO_TypeDef pin_gpio_t;
-

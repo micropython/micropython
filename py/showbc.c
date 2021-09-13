@@ -174,7 +174,7 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
                 num--;
             }
             do {
-                num = (num << 7) | (*ip & 0x7f);
+                num = ((mp_uint_t)num << 7) | (*ip & 0x7f);
             } while ((*ip++ & 0x80) != 0);
             mp_printf(print, "LOAD_CONST_SMALL_INT " INT_FMT, num);
             break;

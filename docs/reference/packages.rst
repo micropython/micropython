@@ -1,3 +1,5 @@
+.. _packages:
+
 Distribution packages, package management, and deploying applications
 =====================================================================
 

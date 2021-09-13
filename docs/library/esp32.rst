@@ -91,7 +91,7 @@ methods to enable over-the-air (OTA) updates.
 
     These methods implement the simple and :ref:`extended
     <block-device-interface>` block protocol defined by
-    :class:`uos.AbstractBlockDev`.
+    :class:`os.AbstractBlockDev`.
 
 .. method:: Partition.set_boot()
 
@@ -150,14 +150,13 @@ used to transmit or receive many other types of digital signals::
     from machine import Pin
 
     r = esp32.RMT(0, pin=Pin(18), clock_div=8)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
+    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, idle_level=0)
 
-    # To use carrier frequency
-    r = esp32.RMT(0, pin=Pin(18), clock_div=8, carrier_freq=38000)
-    r  # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8, carrier_freq=38000, carrier_duty_percent=50)
+    # To apply a carrier frequency to the high output
+    r = esp32.RMT(0, pin=Pin(18), clock_div=8, tx_carrier=(38000, 50, 1))
 
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
-    r.write_pulses((1, 20, 2, 40), start=0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
+    r.write_pulses((1, 20, 2, 40), 0)  # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 The input to the RMT module is an 80MHz clock (in the future it may be able to
 configure the input clock but, for now, it's fixed). ``clock_div`` *divides*
@@ -168,9 +167,6 @@ define the pulses.
 ``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by
 multiplying the resolution by a 15-bit (0-32,768) number. There are eight
 channels (0-7) and each can have a different clock divider.
-
-To enable the carrier frequency feature of the esp32 hardware, specify the
-``carrier_freq`` as something like 38000, a typical IR carrier frequency.
 
 So, in the example above, the 80MHz clock is divided by 8. Thus the
 resolution is (1/(80Mhz/8)) 100ns. Since the ``start`` level is 0 and toggles
@@ -186,16 +182,21 @@ For more details see Espressif's `ESP-IDF RMT documentation.
    *beta feature* and the interface may change in the future.
 
 
-.. class:: RMT(channel, *, pin=None, clock_div=8, carrier_freq=0, carrier_duty_percent=50)
+.. class:: RMT(channel, *, pin=None, clock_div=8, idle_level=False, tx_carrier=None)
 
     This class provides access to one of the eight RMT channels. *channel* is
     required and identifies which RMT channel (0-7) will be configured. *pin*,
     also required, configures which Pin is bound to the RMT channel. *clock_div*
     is an 8-bit clock divider that divides the source clock (80MHz) to the RMT
-    channel allowing the resolution to be specified. *carrier_freq* is used to
-    enable the carrier feature and specify its frequency, default value is ``0``
-    (not enabled).  To enable, specify a positive integer.  *carrier_duty_percent*
-    defaults to 50.
+    channel allowing the resolution to be specified. *idle_level* specifies
+    what level the output will be when no transmission is in progress and can
+    be any value that converts to a boolean, with ``True`` representing high
+    voltage and ``False`` representing low.
+
+    To enable the transmission carrier feature, *tx_carrier* should be a tuple
+    of three positive integers: carrier frequency, duty percent (``0`` to
+    ``100``) and the output level to apply the carrier to (a boolean as per
+    *idle_level*).
 
 .. method:: RMT.source_freq()
 
@@ -207,39 +208,47 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     Return the clock divider. Note that the channel resolution is
     ``1 / (source_freq / clock_div)``.
 
-.. method:: RMT.wait_done(timeout=0)
+.. method:: RMT.wait_done(*, timeout=0)
 
-    Returns ``True`` if the channel is currently transmitting a stream of pulses
-    started with a call to `RMT.write_pulses`.
-
-    If *timeout* (defined in ticks of ``source_freq / clock_div``) is specified
-    the method will wait for *timeout* or until transmission is complete,
-    returning ``False`` if the channel continues to transmit. If looping is
-    enabled with `RMT.loop` and a stream has started, then this method will
-    always (wait and) return ``False``.
+    Returns ``True`` if the channel is idle or ``False`` if a sequence of
+    pulses started with `RMT.write_pulses` is being transmitted. If the
+    *timeout* keyword argument is given then block for up to this many
+    milliseconds for transmission to complete.
 
 .. method:: RMT.loop(enable_loop)
 
     Configure looping on the channel. *enable_loop* is bool, set to ``True`` to
     enable looping on the *next* call to `RMT.write_pulses`. If called with
-    ``False`` while a looping stream is currently being transmitted then the
-    current set of pulses will be completed before transmission stops.
+    ``False`` while a looping sequence is currently being transmitted then the
+    current loop iteration will be completed and then transmission will stop.
 
-.. method:: RMT.write_pulses(pulses, start)
+.. method:: RMT.write_pulses(duration, data=True)
 
-    Begin sending *pulses*, a list or tuple defining the stream of pulses. The
-    length of each pulse is defined by a number to be multiplied by the channel
-    resolution ``(1 / (source_freq / clock_div))``. *start* defines whether the
-    stream starts at 0 or 1.
+    Begin transmitting a sequence. There are three ways to specify this:
 
-    If transmission of a stream is currently in progress then this method will
-    block until transmission of that stream has ended before beginning sending
-    *pulses*.
+    **Mode 1:** *duration* is a list or tuple of durations. The optional *data*
+    argument specifies the initial output level. The output level will toggle
+    after each duration.
 
-    If looping is enabled with `RMT.loop`, the stream of pulses will be repeated
-    indefinitely. Further calls to `RMT.write_pulses` will end the previous
-    stream - blocking until the last set of pulses has been transmitted -
-    before starting the next stream.
+    **Mode 2:** *duration* is a positive integer and *data* is a list or tuple
+    of output levels. *duration* specifies a fixed duration for each.
+
+    **Mode 3:** *duration* and *data* are lists or tuples of equal length,
+    specifying individual durations and the output level for each.
+
+    Durations are in integer units of the channel resolution (as described
+    above), between 1 and 32767 units. Output levels are any value that can
+    be converted to a boolean, with ``True`` representing high voltage and
+    ``False`` representing low.
+
+    If transmission of an earlier sequence is in progress then this method will
+    block until that transmission is complete before beginning the new sequence.
+
+    If looping has been enabled with `RMT.loop`, the sequence will be
+    repeated indefinitely. Further calls to this method will block until the
+    end of the current loop iteration before immediately beginning to loop the
+    new sequence of pulses. Looping sequences longer than 126 pulses is not
+    supported by the hardware.
 
 
 Ultra-Low-Power co-processor

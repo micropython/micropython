@@ -312,7 +312,7 @@ dispatch_loop:
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT): {
-                    mp_int_t num = 0;
+                    mp_uint_t num = 0;
                     if ((ip[0] & 0x40) != 0) {
                         // Number is negative
                         num--;
@@ -1257,16 +1257,9 @@ yield:
                         PUSH(ret_value);
                         goto yield;
                     } else if (ret_kind == MP_VM_RETURN_NORMAL) {
-                        // Pop exhausted gen
-                        sp--;
-                        if (ret_value == MP_OBJ_STOP_ITERATION) {
-                            // Optimize StopIteration
-                            // TODO: get StopIteration's value
-                            PUSH(mp_const_none);
-                        } else {
-                            PUSH(ret_value);
-                        }
-
+                        // The generator has finished, and returned a value via StopIteration
+                        // Replace exhausted generator with the returned value
+                        SET_TOP(ret_value);
                         // If we injected GeneratorExit downstream, then even
                         // if it was swallowed, we re-raise GeneratorExit
                         GENERATOR_EXIT_IF_NEEDED(t_exc);

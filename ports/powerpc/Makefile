@@ -34,11 +34,11 @@ LIBS =
 SRC_C = \
 	main.c \
 	uart_$(UART).c \
-	lib/utils/printf.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/pyexec.c \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
+	shared/libc/printf.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
 
 OBJ = $(PY_CORE_O)

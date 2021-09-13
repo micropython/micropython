@@ -15,6 +15,7 @@ Features supported at this time:
 * `utime` module for time measurements and delays.
 * `machine.Pin` class for GPIO control, with IRQ support.
 * `machine.I2C` class for I2C control.
+* `machine.SPI` class for SPI control.
 * `usocket` module for networking (IPv4/IPv6).
 * "Frozen modules" support to allow to bundle Python modules together
   with firmware. Including complete applications, including with
@@ -134,6 +135,14 @@ Example of using I2C to scan for I2C slaves:
 
     i2c = I2C("I2C_0")
     i2c.scan()
+
+Example of using SPI to write a buffer to the MOSI pin:
+
+    from machine import SPI
+
+    spi = SPI("SPI_0")
+    spi.init(baudrate=500000, polarity=1, phase=1, bits=8, firstbit=SPI.MSB)
+    spi.write(b'abcd')
 
 
 Minimal build
