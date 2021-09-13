@@ -245,7 +245,7 @@ STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, 
 
     // read the data
     uint8_t *buf = buf_in;
-    while (Softuart_Available(&softuartDevice)) {
+    while (Softuart_Available(self->softuart_ptr)) {
         *buf++ = Softuart_Read(self->softuart_ptr);
         if (--size == 0 || !Softuart_rxWait(self->softuart_ptr, self->timeout_char * 1000)) {
             // return number of bytes read
