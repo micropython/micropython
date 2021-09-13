@@ -92,13 +92,13 @@ const mp_obj_property_t vectorio_polygon_points_obj = {
 // Documentation for properties inherited from VectorShape.
 
 //|     x : int
-//|     """Initial screen X position of the 0,0 origin in the points list."""
+//|     """X position of the 0,0 origin in the points list."""
 //|
 //|     y : int
-//|     """Initial screen Y position of the 0,0 origin in the points list."""
+//|     """Y position of the 0,0 origin in the points list."""
 //|
 //|     location : Tuple[int,int]
-//|     """Initial screen (X,Y) position of the 0,0 origin in the points list."""
+//|     """(X,Y) position of the 0,0 origin in the points list."""
 //|
 //|     pixel_shader : Union[displayio.ColorConverter,displayio.Palette]
 //|     """The pixel shader of the polygon."""
