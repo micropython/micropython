@@ -100,7 +100,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
         NULL,                                       // no initial value
         NULL); // no description
 
-    uint32_t version = 3;
+    uint32_t version = 4;
     mp_buffer_info_t bufinfo;
     bufinfo.buf = &version;
     bufinfo.len = sizeof(version);
@@ -269,7 +269,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
     #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
     if (storage_usb_enabled() && !usb_msc_lock()) {
-        response.status = STATUS_ERROR;
+        response.status = STATUS_ERROR_READONLY;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
         return ANY_COMMAND;
     }
@@ -421,6 +421,14 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
         return ANY_COMMAND;
     }
+    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
+    if (storage_usb_enabled() && !usb_msc_lock()) {
+        response.status = STATUS_ERROR_READONLY;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
+        return ANY_COMMAND;
+    }
+    #endif
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
@@ -428,9 +436,9 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
-    FRESULT result = FR_OK;
     FILINFO file;
-    if (f_stat(fs, path, &file) == FR_OK) {
+    FRESULT result = f_stat(fs, path, &file);
+    if (result == FR_OK) {
         if ((file.fattrib & AM_DIR) != 0) {
             result = _delete_directory_contents(fs, path);
         }
@@ -438,10 +446,19 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
             result = f_unlink(fs, path);
         }
     }
+    #if CIRCUITPY_USB_MSC
+    usb_msc_unlock();
+    #endif
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
+    if (result == FR_OK) {
+        // Don't reload until everything is written out of the packet buffer.
+        common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
+        // Trigger an autoreload
+        autoreload_start();
+    }
     return ANY_COMMAND;
 }
 
@@ -457,23 +474,44 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
         return ANY_COMMAND;
     }
+    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
+    if (storage_usb_enabled() && !usb_msc_lock()) {
+        response.status = STATUS_ERROR_READONLY;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
+        return ANY_COMMAND;
+    }
+    #endif
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)command->path;
-    // TODO: Check that the final character is a `/`
-    path[command->path_length - 1] = '\0';
+    // -1 because fatfs doesn't want a trailing /
+    if (path[command->path_length - 1] == '/') {
+        path[command->path_length - 1] = '\0';
+    } else {
+        path[command->path_length] = '\0';
+    }
     DWORD fattime;
     response.truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
     FRESULT result = f_mkdir(fs, path);
     override_fattime(0);
+    #if CIRCUITPY_USB_MSC
+    usb_msc_unlock();
+    #endif
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
+    if (result == FR_OK) {
+        // Don't reload until everything is written out of the packet buffer.
+        common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
+        // Trigger an autoreload
+        autoreload_start();
+    }
     return ANY_COMMAND;
 }
 
@@ -499,7 +537,11 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)&command->path;
     // -1 because fatfs doesn't want a trailing /
-    path[command->path_length - 1] = '\0';
+    if (path[command->path_length - 1] == '/') {
+        path[command->path_length - 1] = '\0';
+    } else {
+        path[command->path_length] = '\0';
+    }
     // mp_printf(&mp_plat_print, "list %s\n", path);
     FF_DIR dir;
     FRESULT res = f_opendir(fs, &dir, path);
@@ -564,6 +606,58 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     return ANY_COMMAND;
 }
 
+STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
+    const struct move_command *command = (struct move_command *)raw_buf;
+    size_t header_size = sizeof(struct move_command);
+    struct move_status response;
+    response.command = MOVE_STATUS;
+    response.status = STATUS_OK;
+    // +2 for null terminators.
+    uint32_t total_path_length = command->old_path_length + command->new_path_length + 1;
+    if (total_path_length > (COMMAND_SIZE - header_size - 1)) {
+        // TODO: throw away any more packets of path.
+        response.status = STATUS_ERROR;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
+        return ANY_COMMAND;
+    }
+    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
+    if (storage_usb_enabled() && !usb_msc_lock()) {
+        response.status = STATUS_ERROR_READONLY;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
+        return ANY_COMMAND;
+    }
+    #endif
+    // We need to receive another packet to have the full path.
+    if (command_len < header_size + total_path_length) {
+        return THIS_COMMAND;
+    }
+    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    char *old_path = (char *)command->paths;
+    old_path[command->old_path_length] = '\0';
+
+    char *new_path = old_path + command->old_path_length + 1;
+    new_path[command->new_path_length] = '\0';
+
+    // mp_printf(&mp_plat_print, "move %s to %s\n", old_path, new_path);
+
+    FRESULT result = f_rename(fs, old_path, new_path);
+    #if CIRCUITPY_USB_MSC
+    usb_msc_unlock();
+    #endif
+    if (result != FR_OK) {
+        response.status = STATUS_ERROR;
+    }
+    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
+    if (result == FR_OK) {
+        // Don't reload until everything is written out of the packet buffer.
+        common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
+        // Trigger an autoreload
+        autoreload_start();
+    }
+    return ANY_COMMAND;
+}
+
 // Background state that must live across background calls. After the _process
 // helpers to force them to not use them.
 STATIC uint8_t current_command[COMMAND_SIZE] __attribute__ ((aligned(4)));
@@ -624,6 +718,9 @@ void supervisor_bluetooth_file_transfer_background(void) {
                 break;
             case LISTDIR:
                 next_command = _process_listdir(current_command, current_offset);
+                break;
+            case MOVE:
+                next_command = _process_move(current_command, current_offset);
                 break;
         }
         // Preserve the offset if we are waiting for more from this command.

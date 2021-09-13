@@ -153,10 +153,28 @@ struct listdir_entry {
     uint8_t path[];
 } __attribute__((packed));
 
+#define MOVE 0x60
+struct move_command {
+    uint8_t command;
+    uint8_t reserved;
+    uint16_t old_path_length;
+    uint16_t new_path_length;
+    // paths is two strings. The first is old_path and then a reserved byte.
+    // The last path is new_path.
+    uint8_t paths[];
+} __attribute__((packed));
+
+#define MOVE_STATUS 0x61
+struct move_status {
+    uint8_t command;
+    uint8_t status;
+} __attribute__((packed));
+
 #define STATUS_OK 0x01
 #define STATUS_ERROR 0x02
 #define STATUS_ERROR_NO_FILE 0x03
 #define STATUS_ERROR_PROTOCOL 0x04
+#define STATUS_ERROR_READONLY 0x05
 
 
 #endif // MICROPY_INCLUDED_SUPERVISOR_SHARED_BLUETOOTH_FILE_TRANSFER_PROTOCOL_H
