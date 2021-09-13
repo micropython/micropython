@@ -103,7 +103,6 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     // set data bits
     self->bits = 8;   // no other options are supported
 
-
     // set parity
     self->parity = 0; // "NONE" no other options are supported
 

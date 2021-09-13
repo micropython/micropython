@@ -220,10 +220,10 @@ void MP_FASTCODE(Softuart_Intr_Handler)(void *p)
         // load instance which has rx pin on interrupt pin attached
         s = _Softuart_GPIO_Instances[gpio_id];
 
-// disable interrupt for GPIO0
+        // disable interrupt for GPIO0
         gpio_pin_intr_state_set(GPIO_ID_PIN(s->pin_rx.gpio_id), GPIO_PIN_INTR_DISABLE);
 
-// Do something, for example, increment whatyouwant indirectly
+        // Do something, for example, increment whatyouwant indirectly
         // check level
         level = GPIO_INPUT_GET(GPIO_ID_PIN(s->pin_rx.gpio_id));
         if (!level) {
@@ -246,8 +246,7 @@ void MP_FASTCODE(Softuart_Intr_Handler)(void *p)
                 start_time += wait_time;
             }
 
-            for (i = 0; i < 8; i++)
-            {
+            for (i = 0; i < 8; i++) {
                 while ((get_ccount() - start_time) < s->bit_time) {
                     ;
                 }
@@ -287,7 +286,7 @@ void MP_FASTCODE(Softuart_Intr_Handler)(void *p)
         // clear interrupt
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status);
 
-// Reactivate interrupts for GPIO0
+        // Reactivate interrupts for GPIO0
         gpio_pin_intr_state_set(GPIO_ID_PIN(s->pin_rx.gpio_id), 3);
     } else {
         // clear interrupt, no matter from which pin
@@ -300,7 +299,7 @@ void MP_FASTCODE(Softuart_Intr_Handler)(void *p)
 
 }
 
-
+// ***********************************
 
 // Read data from buffer
 uint8_t Softuart_Read(Softuart *s) {
@@ -338,7 +337,6 @@ int Softuart_tx_any_room(Softuart *s) {
     return true;
 }
 
-
 // cversek:
 // based on micropython/esp8266/uart.c bool uart_rx_wait(uint32_t timeout_us)
 // Waits at most timeout microseconds for at least 1 char to become ready for reading.
@@ -357,7 +355,6 @@ BOOL Softuart_rxWait(Softuart *s, uint32_t timeout_us) {
         ets_event_poll();
     }
 }
-
 
 static inline u8 chbit(u8 data, u8 bit) {
     if ((data & bit) != 0) {
