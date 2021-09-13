@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include <arch/chip/pin.h>
 #include <cxd56_spi.h>
 #include <cxd56_pinconfig.h>

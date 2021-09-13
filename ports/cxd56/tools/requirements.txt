@@ -1,0 +1,2 @@
+pyserial>=2.7
+xmodem>=0.3.2

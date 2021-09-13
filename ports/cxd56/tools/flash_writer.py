@@ -30,23 +30,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import time
-import sys
-import os
-import struct
-import glob
-import fnmatch
-import errno
-import telnetlib
 import argparse
-import shutil
-import subprocess
+import errno
+import os
 import re
+import subprocess
+import sys
+import telnetlib
+import time
+
 import xmodem
 
 import_serial_module = True
 
-# When SDK release, plase set SDK_RELEASE as True.
+# When SDK release, please set SDK_RELEASE as True.
 SDK_RELEASE = False
 
 if SDK_RELEASE:
@@ -58,7 +55,7 @@ else:
 
 try:
     import serial
-except:
+except ImportError:
     import_serial_module = False
 
 # supported environment various
@@ -70,6 +67,7 @@ PROTOCOL_SERIAL = 0
 PROTOCOL_TELNET = 1
 
 MAX_DOT_COUNT = 70
+
 
 # configure parameters and default value
 class ConfigArgs:
@@ -173,7 +171,10 @@ class ConfigArgsLoader:
         group = self.parser.add_argument_group()
         group.add_argument("-c", "--serial-port", dest="serial_port", help="the serial port")
         group.add_argument(
-            "-b", "--xmodem-baudrate", dest="xmodem_baud", help="Use the faster baudrate in xmodem"
+            "-b",
+            "--xmodem-baudrate",
+            dest="xmodem_baud",
+            help="Use the faster baudrate in xmodem",
         )
 
         mutually_group = self.parser.add_mutually_exclusive_group()
@@ -223,12 +224,12 @@ class ConfigArgsLoader:
         ConfigArgs.PKGUPD_NAME = args.pkgupd_name
 
         # Get serial port or telnet server ip etc
-        if args.serial_protocol == True:
+        if args.serial_protocol is True:
             ConfigArgs.PROTOCOL_TYPE = PROTOCOL_SERIAL
-        elif args.telnet_protocol == True:
+        elif args.telnet_protocol is True:
             ConfigArgs.PROTOCOL_TYPE = PROTOCOL_TELNET
 
-        if ConfigArgs.PROTOCOL_TYPE == None:
+        if ConfigArgs.PROTOCOL_TYPE is None:
             proto = os.environ.get("CXD56_PROTOCOL")
             if proto is not None:
                 if "s" in proto:
@@ -236,7 +237,7 @@ class ConfigArgsLoader:
                 elif "t" in proto:
                     ConfigArgs.PROTOCOL_TYPE = PROTOCOL_TELNET
 
-        if ConfigArgs.PROTOCOL_TYPE == None:
+        if ConfigArgs.PROTOCOL_TYPE is None:
             ConfigArgs.PROTOCOL_TYPE = PROTOCOL_SERIAL
 
         if ConfigArgs.PROTOCOL_TYPE == PROTOCOL_SERIAL:
@@ -358,8 +359,7 @@ class TelnetDev:
                 if MAX_DOT_COUNT < cur_count:
                     cur_count = MAX_DOT_COUNT
                 for idx in range(cur_count - self.count):
-                    print("#", end="")
-                    sys.stdout.flush()
+                    print("#", end="", flush=True)
                 self.count = cur_count
                 if self.count == MAX_DOT_COUNT:
                     print("\n")
@@ -584,7 +584,7 @@ def main():
     try:
         config_loader = ConfigArgsLoader()
         config_loader.update_config()
-    except:
+    except Exception:
         return errno.EINVAL
 
     # Wait to reset the board
@@ -593,7 +593,7 @@ def main():
     do_wait_reset = True
     if ConfigArgs.AUTO_RESET:
         if subprocess.call("cd " + sys.path[0] + "; ./reset_board.sh", shell=True) == 0:
-            print("auto reset board sucess!!")
+            print("auto reset board success!!")
             do_wait_reset = False
             bootrom_msg = writer.cancel_autoboot()
 
@@ -601,7 +601,7 @@ def main():
         do_wait_reset = False
         bootrom_msg = writer.cancel_autoboot()
 
-    if ConfigArgs.WAIT_RESET == False and do_wait_reset == True:
+    if ConfigArgs.WAIT_RESET is False and do_wait_reset is True:
         rx = writer.recv()
         time.sleep(1)
         for i in range(3):
@@ -621,7 +621,7 @@ def main():
 
     # Remove files
     if ConfigArgs.ERASE_NAME:
-        print(">>> Remove exisiting files ...")
+        print(">>> Remove existing files ...")
         writer.delete_files(ConfigArgs.ERASE_NAME)
 
     # Install files
