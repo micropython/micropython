@@ -22,7 +22,7 @@ import build_board_info
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
     "cxd56": "arm",
-    "esp32s2": "xtensa",
+    "espressif": "espressif",
     "litex": "riscv",
     "mimxrt10xx": "arm",
     "nrf": "arm",
