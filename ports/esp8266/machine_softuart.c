@@ -37,18 +37,18 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-//#include "py/malloc.h"
+// #include "py/malloc.h"
 #include "modmachine.h"
 
 // UartDev is defined and initialized in rom code.
-//FXIME //extern UartDevice UartDev;
+// FXIME //extern UartDevice UartDev;
 
 Softuart softuartDevice;
 
 typedef struct _pyb_softuart_obj_t {
     mp_obj_base_t base;
-    //uint8_t uart_id;
-    Softuart *softuart_ptr; //point to instance of driver object
+    // uint8_t uart_id;
+    Softuart *softuart_ptr; // point to instance of driver object
     pyb_pin_obj_t *tx;
     pyb_pin_obj_t *rx;
     uint8_t bits;
@@ -78,16 +78,16 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
         { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
-        //{ MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
-        //{ MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        //{ MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
+        // { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
+        // { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        // { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    
-    //assign the pins
+
+    // assign the pins
     self->tx = mp_obj_get_pin_obj(args[ARG_tx].u_obj);
     Softuart_SetPinTx(&softuartDevice, mp_obj_get_pin(self->tx));
     self->rx = mp_obj_get_pin_obj(args[ARG_rx].u_obj);
@@ -97,19 +97,19 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     if (args[ARG_baudrate].u_int > 0) {
         self->baudrate = args[ARG_baudrate].u_int;
         Softuart_Init(&softuartDevice, self->baudrate);
-        //UartDev.baut_rate = self->baudrate; // Sic!
+        // UartDev.baut_rate = self->baudrate; // Sic!
     }
 
     // set data bits
-    self->bits = 8;   //no other options are supported
- 
+    self->bits = 8;   // no other options are supported
+
 
     // set parity
-    self->parity = 0; //"NONE" no other options are supported
+    self->parity = 0; // "NONE" no other options are supported
 
     // set stop bits
-    self->stop = 1;  //"NONE" no other options are supported
-    
+    self->stop = 1;  // "NONE" no other options are supported
+
     // set timeout
     self->timeout = args[ARG_timeout].u_int;
 
@@ -119,10 +119,10 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     uint32_t min_timeout_char = 13000 / self->baudrate + 1;
     if (self->timeout_char < min_timeout_char) {
         self->timeout_char = min_timeout_char;
-}
+    }
 
     // setup
-    //FIXME //uart_setup(self->uart_id);
+    // FIXME //uart_setup(self->uart_id);
 }
 
 STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -131,8 +131,8 @@ STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // create instance
     pyb_softuart_obj_t *self = m_new_obj(pyb_softuart_obj_t);
     self->base.type = &pyb_softuart_type;
-    //FIXME removed //self->uart_id = uart_id;
-    //self->softuart_ptr = os_malloc(sizeof(Softuart));
+    // FIXME removed //self->uart_id = uart_id;
+    // self->softuart_ptr = os_malloc(sizeof(Softuart));
     self->baudrate = 9600;
     self->bits = 8;
     self->parity = 0;
@@ -155,8 +155,8 @@ STATIC mp_obj_t pyb_softuart_init(size_t n_args, const mp_obj_t *args, mp_map_t 
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_softuart_init_obj, 1, pyb_softuart_init);
 
 STATIC mp_obj_t pyb_softuart_flush(mp_obj_t self_in) {
-    //pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    Softuart_Flush(&softuartDevice); //reset the rx buffer to empty
+    // pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    Softuart_Flush(&softuartDevice); // reset the rx buffer to empty
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_softuart_flush_obj, pyb_softuart_flush);
@@ -169,7 +169,7 @@ STATIC const mp_rom_map_elem_t pyb_softuart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(pyb_softuart_locals_dict, pyb_softuart_locals_dict_table);
@@ -194,14 +194,14 @@ STATIC mp_uint_t MP_FASTCODE(pyb_softuart_read)(mp_obj_t self_in, void *buf_in, 
         *buf++ = Softuart_Read(&softuartDevice);
         if (--size == 0 || !Softuart_rxWait(&softuartDevice, self->timeout_char * 1000)) {
             // return number of bytes read
-            return buf - (uint8_t*)buf_in;
+            return buf - (uint8_t *)buf_in;
         }
     }
-    return 0; //FIXME
+    return 0; // FIXME
 }
 
 STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    //pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    // pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
     /* TODO implement non-blocking
@@ -215,7 +215,7 @@ STATIC mp_uint_t pyb_softuart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     // write the data
     for (size_t i = 0; i < size; ++i) {
         Softuart_Putchar(&softuartDevice, *buf++);
-        //FIXME //uart_tx_one_char(self->uart_id, *buf++);
+        // FIXME //uart_tx_one_char(self->uart_id, *buf++);
     }
 
     // return number of bytes written
@@ -255,5 +255,5 @@ const mp_obj_type_t pyb_softuart_type = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &softuart_stream_p,
-    .locals_dict = (mp_obj_dict_t*)&pyb_softuart_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pyb_softuart_locals_dict,
 };
