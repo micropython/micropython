@@ -5,7 +5,6 @@
 #include "os_type.h"
 #include "esp_mphal.h"
 #include "user_interface.h"
-#include "espmissingincludes.h"
 #include "softuart.h"
 
 // array of pointers to instances
