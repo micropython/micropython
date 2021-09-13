@@ -133,6 +133,9 @@ void supervisor_start_bluetooth_file_transfer(void) {
 #define ANY_COMMAND 0x00
 #define THIS_COMMAND 0x01
 
+// FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
+// This function truncates the time the time to a resolution storable by FATFS and fills in the
+// FATFS encoded version into fattime.
 uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     timeutils_struct_time_t tm;
     uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
@@ -245,6 +248,22 @@ STATIC uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) 
 STATIC size_t total_write_length;
 STATIC uint64_t _truncated_time;
 
+// Returns true if usb is active and replies with an error if so. If not, it grabs
+// the USB mass storage lock and returns false. Make sure to release the lock with
+// usb_msc_unlock() when the transaction is complete.
+STATIC bool _usb_active(void *response, size_t response_size) {
+    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
+    if (storage_usb_enabled() && !usb_msc_lock()) {
+        // Status is always the second byte of the response.
+        ((uint8_t *)response)[1] = STATUS_ERROR_READONLY;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)response, response_size, NULL, 0);
+        return true;
+    }
+    #endif
+    return false;
+}
+
 STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     struct write_command *command = (struct write_command *)raw_buf;
     size_t header_size = sizeof(struct write_command);
@@ -265,15 +284,9 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
 
     char *path = (char *)command->path;
     path[command->path_length] = '\0';
-
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        response.status = STATUS_ERROR_READONLY;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
+    if (_usb_active(&response, sizeof(struct write_pacing))) {
         return ANY_COMMAND;
     }
-    #endif
 
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     DWORD fattime;
@@ -421,14 +434,9 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
         return ANY_COMMAND;
     }
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        response.status = STATUS_ERROR_READONLY;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
+    if (_usb_active(&response, sizeof(struct delete_status))) {
         return ANY_COMMAND;
     }
-    #endif
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
@@ -462,6 +470,17 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     return ANY_COMMAND;
 }
 
+// NULL-terminate the path and remove any trailing /. Older versions of the
+// protocol require it but newer ones do not.
+STATIC void _terminate_path(char *path, size_t path_length) {
+    // -1 because fatfs doesn't want a trailing /
+    if (path[path_length - 1] == '/') {
+        path[path_length - 1] = '\0';
+    } else {
+        path[path_length] = '\0';
+    }
+}
+
 STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     const struct mkdir_command *command = (struct mkdir_command *)raw_buf;
     size_t header_size = sizeof(struct mkdir_command);
@@ -474,26 +493,17 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
         return ANY_COMMAND;
     }
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        response.status = STATUS_ERROR_READONLY;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
+    if (_usb_active(&response, sizeof(struct mkdir_status))) {
         return ANY_COMMAND;
     }
-    #endif
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)command->path;
-    // -1 because fatfs doesn't want a trailing /
-    if (path[command->path_length - 1] == '/') {
-        path[command->path_length - 1] = '\0';
-    } else {
-        path[command->path_length] = '\0';
-    }
+    _terminate_path(path, command->path_length);
+
     DWORD fattime;
     response.truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
@@ -536,12 +546,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
 
     FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
     char *path = (char *)&command->path;
-    // -1 because fatfs doesn't want a trailing /
-    if (path[command->path_length - 1] == '/') {
-        path[command->path_length - 1] = '\0';
-    } else {
-        path[command->path_length] = '\0';
-    }
+    _terminate_path(path, command->path_length);
     // mp_printf(&mp_plat_print, "list %s\n", path);
     FF_DIR dir;
     FRESULT res = f_opendir(fs, &dir, path);
@@ -620,14 +625,9 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
         return ANY_COMMAND;
     }
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        response.status = STATUS_ERROR_READONLY;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
+    if (_usb_active(&response, sizeof(struct move_status))) {
         return ANY_COMMAND;
     }
-    #endif
     // We need to receive another packet to have the full path.
     if (command_len < header_size + total_path_length) {
         return THIS_COMMAND;
