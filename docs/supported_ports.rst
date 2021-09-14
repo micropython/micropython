@@ -13,7 +13,7 @@ is limited.
 
     ../ports/atmel-samd/README
     ../ports/cxd56/README
-    ../ports/esp32s2/README
+    ../ports/espressif/README
     ../ports/litex/README
     ../ports/mimxrt10xx/README
     ../ports/nrf/README
