@@ -46,4 +46,4 @@ const mp_obj_module_t sdioio_module = {
     .globals = (mp_obj_dict_t *)&sdioio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_sdio, sdioio_module, CIRCUITPY_SDIOIO);
+MP_REGISTER_MODULE(MP_QSTR_sdioio, sdioio_module, CIRCUITPY_SDIOIO);
