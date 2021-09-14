@@ -44,6 +44,7 @@ PATHS = [
     "shared/runtime/*.[ch]",
     "mpy-cross/*.[ch]",
     "ports/*/*.[ch]",
+    "ports/mimxrt/**/*.[ch]",
     "ports/windows/msvc/**/*.[ch]",
     "ports/nrf/modules/nrf/*.[ch]",
     "py/*.[ch]",
