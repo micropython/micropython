@@ -55,6 +55,20 @@ typedef struct {
 
 STATIC const char *_parity_name[] = {"None", "ODD", "EVEN"};
 
+STATIC uint8 verify_gpio_pin(mp_obj_t obj_pin) {
+    // currently not possible to be MP_OBJ_NULL (because required)
+    if (obj_pin == MP_OBJ_NULL || obj_pin == mp_const_none) {
+        return 0xFF;
+    } else {
+        uint pin = mp_obj_get_pin(mp_obj_get_pin_obj(obj_pin));
+        if (Softuart_IsGpioValid(pin)) {
+            return pin;
+        } else {
+            return 0xFF;
+        }
+    }
+}
+
 /******************************************************************************/
 // MicroPython bindings for softUART
 
@@ -67,11 +81,11 @@ STATIC void pyb_softuart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char};
+    enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_timeout_char};
     static const mp_arg_t allowed_args[] = {
-        // Only supported via constructor (analogous to UART id)
-        // { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        // { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        // TODO make tx-only/rx-only UART possible (by passing None)
+        { MP_QSTR_tx, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_rx, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -81,6 +95,23 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // assign the pins
+    // TODO make tx-only/rx-only UART possible (by passing None)
+    uint8 tx_pin = verify_gpio_pin(args[ARG_tx].u_obj);
+    if (tx_pin != 0xFF) {
+        // valid tx pin
+        Softuart_SetPinTx(self->softuart_ptr, tx_pin);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid or no tx pin"));
+    }
+
+    uint8 rx_pin = verify_gpio_pin(args[ARG_rx].u_obj);
+    if (rx_pin != 0xFF) {
+        Softuart_SetPinRx(self->softuart_ptr, rx_pin);
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid or no rx pin"));
+    }
 
     // set baudrate (0 = default)
     if (args[ARG_baudrate].u_int < 0) {
@@ -103,22 +134,20 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
     }
 
     // set parity
-    if (args[ARG_parity].u_obj != MP_OBJ_NULL) {
-        if (args[ARG_parity].u_obj == mp_const_none) {
-            // TODO disable self->softuart_ptr parity if supported
-            self->parity = 0;
+    if (args[ARG_parity].u_obj == MP_OBJ_NULL || args[ARG_parity].u_obj == mp_const_none) {
+        // TODO disable self->softuart_ptr parity if supported
+        self->parity = 0;
+    } else {
+        mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
+        // TODO enable self->softuart_ptr parity if supported
+        if (parity & 1) {
+            // TODO enable ODD parity
+            // self->parity = 1;
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
         } else {
-            mp_int_t parity = mp_obj_get_int(args[ARG_parity].u_obj);
-            // TODO enable self->softuart_ptr parity if supported
-            if (parity & 1) {
-                // TODO enable ODD parity
-                // self->parity = 1;
-                mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
-            } else {
-                // TODO enable EVEN parity
-                // self->parity = 2;
-                mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
-            }
+            // TODO enable EVEN parity
+            // self->parity = 2;
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported parity"));
         }
     }
 
@@ -155,12 +184,8 @@ STATIC void pyb_softuart_init_helper(pyb_softuart_obj_t *self, size_t n_args, co
 }
 
 STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    enum { ARG_tx, ARG_rx };
-
-    // check for 2 required arguments (tx, rx pins)
-    // keeping the convention of machine.UART, later occuring
-    // kwargs will be compatible with init()
-    mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, true);
+    // tx, rx pins moved to kwargs
+    // mp_arg_check_num(n_args, n_kw, 2, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create instance
     pyb_softuart_obj_t *self = m_new_obj(pyb_softuart_obj_t);
@@ -168,24 +193,6 @@ STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // assign pointer to driver structure
     self->softuart_ptr = m_new_obj(Softuart);
-
-    // assign the pins
-    // TODO make tx-only, rx-only UART possible (by passing None)
-    self->tx = mp_obj_get_pin_obj(args[ARG_tx]);
-    uint tx_pin = mp_obj_get_pin(self->tx);
-    if (Softuart_IsGpioValid(tx_pin)) {
-        Softuart_SetPinTx(self->softuart_ptr, tx_pin);
-    } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid tx pin"));
-    }
-
-    self->rx = mp_obj_get_pin_obj(args[ARG_rx]);
-    uint rx_pin = mp_obj_get_pin(self->rx);
-    if (Softuart_IsGpioValid(rx_pin)) {
-        Softuart_SetPinRx(self->softuart_ptr, rx_pin);
-    } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid rx pin"));
-    }
 
     // set defaults
     self->baudrate = 9600;
@@ -198,7 +205,7 @@ STATIC mp_obj_t pyb_softuart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // init the peripheral
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    pyb_softuart_init_helper(self, n_args - 2, args + 2, &kw_args); // skip 2 arguments
+    pyb_softuart_init_helper(self, n_args, args, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -210,6 +217,14 @@ STATIC mp_obj_t pyb_softuart_init(size_t n_args, const mp_obj_t *args, mp_map_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pyb_softuart_init_obj, 0, pyb_softuart_init);
 
+STATIC mp_obj_t pyb_softuart_deinit(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    // free memory
+    m_del_obj(Softuart, self->softuart_ptr);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(pyb_softuart_deinit_obj, 0, pyb_softuart_deinit);
+
 STATIC mp_obj_t pyb_softuart_flush(mp_obj_t self_in) {
     pyb_softuart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -220,6 +235,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(pyb_softuart_flush_obj, pyb_softuart_flush);
 
 STATIC const mp_rom_map_elem_t pyb_softuart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_softuart_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pyb_softuart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&pyb_softuart_flush_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
