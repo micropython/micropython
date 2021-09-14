@@ -150,8 +150,10 @@ void gc_init(void *start, void *end) {
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // clear ATBs
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
+    // Clear ATBs plus one more byte. The extra byte might be read when we read the final ATB and
+    // then try to count its tail. Clearing the byte ensures it is 0 and ends the chain. Without an
+    // FTB, it'll just clear the pool byte early.
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len) + 1);
 
     #if MICROPY_ENABLE_FINALISER
     // clear FTBs
