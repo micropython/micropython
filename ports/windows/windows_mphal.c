@@ -264,19 +264,58 @@ uint64_t mp_hal_time_ns(void) {
     return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
 }
 
+HANDLE waitTimer = NULL;
+
+void init_sleep(void) {
+    waitTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+}
+
+void deinit_sleep(void) {
+    if (waitTimer != NULL) {
+        CloseHandle(waitTimer);
+        waitTimer = NULL;
+    }
+}
+
+int usleep_impl(__int64 usec) {
+    if (waitTimer == NULL) {
+        errno = EAGAIN;
+        return -1;
+    }
+    if (usec < 0 || usec > LLONG_MAX / 10) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    LARGE_INTEGER ft;
+    ft.QuadPart = -10 * usec; // 100 nanosecond interval, negative value = relative time
+    if (SetWaitableTimer(waitTimer, &ft, 0, NULL, NULL, 0) == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (WaitForSingleObject(waitTimer, INFINITE) != WAIT_OBJECT_0) {
+        errno = EAGAIN;
+        return -1;
+    }
+    return 0;
+}
+
+// mingw and the likes provide their own usleep() which we need to
+// replace with one that can be interrupted by APC function if needed
+// (used in mp_thread_gc)
+#undef usleep
+
+int usleep(__int64 usec) {
+    return usleep_impl(usec);
+}
+
 void msec_sleep(double msec) {
     if (msec < 0.0) {
         msec = 0.0;
     }
-    SleepEx((DWORD)msec, TRUE);
+    const double usec = msec * 1000.0;
+    usleep_impl(usec > (double)LLONG_MAX ? LLONG_MAX : (__int64)usec);
 }
-
-#ifdef _MSC_VER
-int usleep(__int64 usec) {
-    msec_sleep((double)usec / 1000.0);
-    return 0;
-}
-#endif
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     #if MICROPY_ENABLE_SCHEDULER
