@@ -1,10 +1,8 @@
-name: Build lv_micropython stm32 port
+name: stm32 port
 
 on:
   push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
 
 jobs:
   build:
