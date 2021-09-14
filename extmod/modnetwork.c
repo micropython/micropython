@@ -32,8 +32,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
-#include "systick.h"
-#include "pendsv.h"
 #include "modnetwork.h"
 
 #if MICROPY_PY_NETWORK
