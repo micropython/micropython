@@ -223,6 +223,13 @@ extern const struct _mp_obj_module_t mp_module_network;
 #define MICROPY_PORT_ROOT_POINTER_MBEDTLS
 #endif
 
+#if defined(MICROPY_HW_ETH_MDC)
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+#else
+#define MICROPY_HW_NIC_ETH
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR_mimxrt), (mp_obj_t)&mp_module_mimxrt }, \
@@ -231,6 +238,9 @@ extern const struct _mp_obj_module_t mp_module_network;
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ETH  \
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 

@@ -44,7 +44,7 @@
 #include "lwip/apps/mdns.h"
 #endif
 #include "systick.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;

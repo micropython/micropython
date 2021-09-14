@@ -144,18 +144,19 @@ INC += -Ihal/phy
 SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
 
 SRC_ETH_C += \
-	modusocket.c \
-	modnetwork.c \
-	network_lan.c \
+	extmod/modlwip.c \
+	extmod/modnetwork.c \
+	extmod/modusocket.c \
+	extmod/moduwebsocket.c \
 	eth.c \
+	hal/phy/mdio/enet/fsl_enet_mdio.c \
+	lib/mbedtls_errors/mp_mbedtls_errors.c \
+	mbedtls/mbedtls_port.c \
+	mpnetworkport.c \
+	network_lan.c \
 	shared/netutils/netutils.c \
 	shared/netutils/trace.c \
 	shared/netutils/dhcpserver.c \
-	hal/phy/mdio/enet/fsl_enet_mdio.c \
-	extmod/modlwip.c \
-	mbedtls/mbedtls_port.c \
-	lib/mbedtls_errors/mp_mbedtls_errors.c \
-	extmod/moduwebsocket.c \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
 ifeq ($(ENET_PHY), KSZ8081)
@@ -170,9 +171,9 @@ endif
 
 SRC_QSTR += \
 	extmod/modlwip.c \
+	extmod/modnetwork.c \
 	extmod/moduwebsocket.c \
-	modusocket.c \
-	modnetwork.c \
+	extmod/modusocket.c \
 	network_lan.c \
 
 CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'

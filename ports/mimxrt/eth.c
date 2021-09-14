@@ -36,7 +36,7 @@
 #include "eth.h"
 #include "pin.h"
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #include "fsl_iomuxc.h"
 #include "fsl_enet.h"

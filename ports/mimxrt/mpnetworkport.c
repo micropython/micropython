@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_MIMXRT_MODNETWORK_H
-#define MICROPY_INCLUDED_MIMXRT_MODNETWORK_H
 
-#define MOD_NETWORK_IPADDR_BUF_SIZE (4)
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
-#define MOD_NETWORK_AF_INET (2)
-#define MOD_NETWORK_AF_INET6 (10)
-
-#define MOD_NETWORK_SOCK_STREAM (1)
-#define MOD_NETWORK_SOCK_DGRAM (2)
-#define MOD_NETWORK_SOCK_RAW (3)
+#include "py/objlist.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "shared/netutils/netutils.h"
+#include "systick.h"
+#include "pendsv.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_LWIP
+#include "lwip/netif.h"
+#include "lwip/timeouts.h"
+#include "lwip/dns.h"
+#include "lwip/dhcp.h"
+#include "lwip/apps/mdns.h"
 
-struct netif;
+// Poll lwIP every 128ms
+#define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
-extern const mp_obj_type_t network_lan_type;
+u32_t sys_now(void) {
+    return mp_hal_ticks_ms();
+}
 
-void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
-mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
+STATIC void pyb_lwip_poll(void) {
+    // Run the lwIP internal updates
+    sys_check_timeouts();
+}
 
-#endif
+void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
+    if (LWIP_TICK(ticks_ms)) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
+    }
+}
 
-void mod_network_init(void);
-void mod_network_deinit(void);
-void mod_network_register_nic(mp_obj_t nic);
-mp_obj_t mod_network_find_nic(const uint8_t *ip);
-
-#endif // MICROPY_INCLUDED_MIMXRT_MODNETWORK_H
+#endif // MICROPY_PY_LWIP
