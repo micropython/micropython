@@ -150,11 +150,11 @@
 [submodule "frozen/Adafruit_CircuitPython_RFM69"]
 	path = frozen/Adafruit_CircuitPython_RFM69
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
-[submodule "ports/esp32s2/esp-idf"]
+[submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/espressif/esp-idf.git
 	branch = release/v4.3
-[submodule "ports/esp32s2/certificates/nina-fw"]
+[submodule "ports/espressif/certificates/nina-fw"]
 	path = ports/espressif/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]

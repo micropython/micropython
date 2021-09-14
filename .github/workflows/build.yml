@@ -18,7 +18,7 @@ jobs:
     outputs:
       arm-boards: ${{ steps.set-matrix.outputs.arm-boards }}
       riscv-boards: ${{ steps.set-matrix.outputs.riscv-boards }}
-      xtensa-boards: ${{ steps.set-matrix.outputs.xtensa-boards }}
+      espressif-boards: ${{ steps.set-matrix.outputs.espressif-boards }}
     steps:
     - name: Dump GitHub context
       env:
