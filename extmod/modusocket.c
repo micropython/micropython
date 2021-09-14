@@ -51,16 +51,17 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->base.type = &socket_type;
     s->nic = MP_OBJ_NULL;
     s->nic_type = NULL;
-    s->u_param.domain = MOD_NETWORK_AF_INET;
-    s->u_param.type = MOD_NETWORK_SOCK_STREAM;
-    s->u_param.fileno = -1;
-    s->u_param.bound = false;
+    s->domain = MOD_NETWORK_AF_INET;
+    s->type = MOD_NETWORK_SOCK_STREAM;
+    s->proto = 0;
+    s->bound = false;
+    s->fileno = -1;
     if (n_args >= 1) {
-        s->u_param.domain = mp_obj_get_int(args[0]);
+        s->domain = mp_obj_get_int(args[0]);
         if (n_args >= 2) {
-            s->u_param.type = mp_obj_get_int(args[1]);
+            s->type = mp_obj_get_int(args[1]);
             if (n_args >= 4) {
-                s->u_param.fileno = mp_obj_get_int(args[3]);
+                s->fileno = mp_obj_get_int(args[3]);
             }
         }
     }
