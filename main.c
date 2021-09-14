@@ -236,7 +236,7 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
             size_t traceback_len = 0;
             mp_print_t print_count = {&traceback_len, count_strn};
             mp_obj_print_exception(&print_count, exception);
-            prev_traceback_allocation = allocate_memory(align32_size(traceback_len + 1), false, false);
+            prev_traceback_allocation = allocate_memory(align32_size(traceback_len + 1), false, true);
             // Empirically, this never fails in practice - even when the heap is totally filled up
             // with single-block-sized objects referenced by a root pointer, exiting the VM frees
             // up several hundred bytes, sufficient for the traceback (which tends to be shortened
