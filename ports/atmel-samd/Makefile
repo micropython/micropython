@@ -150,7 +150,8 @@ else
   CFLAGS += -flto -flto-partition=none
 
   ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
+    # This is making the build larger in some cases (gcc 10.2.1), so turn it off for now
+    # CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
   endif
 
   ifdef CFLAGS_BOARD
