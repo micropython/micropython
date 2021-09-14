@@ -72,15 +72,11 @@ typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
     mp_obj_t nic;
     mod_network_nic_type_t *nic_type;
-    union {
-        struct {
-            uint8_t domain;
-            uint8_t type;
-            int8_t fileno;
-            uint8_t bound;
-        } u_param;
-        mp_uint_t u_state;
-    };
+    uint32_t domain : 5;
+    uint32_t type   : 5;
+    uint32_t proto  : 5;
+    uint32_t bound  : 1;
+    int32_t fileno  : 16;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
     int32_t timeout;
