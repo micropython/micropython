@@ -591,7 +591,7 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
                     break;
 
                 case 24:
-                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | (rowdata8[x * 3 + 2] << 8);
+                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | rowdata8[x * 3 + 2];
                     break;
 
                 case 32:

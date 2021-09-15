@@ -18,12 +18,14 @@
 
 //| class Polygon:
 //|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], points: List[Tuple[int, int]], x: int, y: int) -> None:
-//|         """Represents a closed shape by ordered vertices
+//|         """Represents a closed shape by ordered vertices. The path will be treated as
+//|         'closed', the last point will connect to the first point.
 //|
-//|            :param pixel_shader: The pixel shader that produces colors from values
-//|            :param points: Vertices for the polygon
-//|            :param x: Initial screen x position of the 0,0 origin in the points list.
-//|            :param y: Initial screen y position of the 0,0 origin in the points list."""
+//|         :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel
+//|             shader that produces colors from values
+//|         :param List[Tuple[int,int]] points: Vertices for the polygon
+//|         :param int x: Initial screen x position of the 0,0 origin in the points list.
+//|         :param int y: Initial screen y position of the 0,0 origin in the points list."""
 //|
 static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pixel_shader, ARG_points_list, ARG_x, ARG_y };
@@ -63,7 +65,7 @@ STATIC const vectorio_draw_protocol_t polygon_draw_protocol = {
 
 
 //|     points: List[Tuple[int, int]]
-//|     """Set a new look and shape for this polygon"""
+//|     """Vertices for the polygon."""
 //|
 STATIC mp_obj_t vectorio_polygon_obj_get_points(mp_obj_t self_in) {
     vectorio_polygon_t *self = MP_OBJ_TO_PTR(self_in);
@@ -85,6 +87,22 @@ const mp_obj_property_t vectorio_polygon_points_obj = {
               (mp_obj_t)&vectorio_polygon_set_points_obj,
               MP_ROM_NONE},
 };
+
+
+// Documentation for properties inherited from VectorShape.
+
+//|     x : int
+//|     """X position of the 0,0 origin in the points list."""
+//|
+//|     y : int
+//|     """Y position of the 0,0 origin in the points list."""
+//|
+//|     location : Tuple[int,int]
+//|     """(X,Y) position of the 0,0 origin in the points list."""
+//|
+//|     pixel_shader : Union[displayio.ColorConverter,displayio.Palette]
+//|     """The pixel shader of the polygon."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_polygon_locals_dict_table[] = {
     // Properties

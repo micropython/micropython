@@ -13,11 +13,11 @@
 //|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], width: int, height: int, x: int, y: int) -> None:
 //|         """Represents a rectangle by defining its bounds
 //|
-//|            :param pixel_shader: The pixel shader that produces colors from values
-//|            :param width: The number of pixels wide
-//|            :param height: The number of pixels high
-//|            :param x: Initial x position of the top left corner.
-//|            :param y: Initial y position of the top left corner."""
+//|            :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values
+//|            :param int width: The number of pixels wide
+//|            :param int height: The number of pixels high
+//|            :param int x: Initial x position of the top left corner.
+//|            :param int y: Initial y position of the top left corner."""
 //|
 static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pixel_shader, ARG_width, ARG_height, ARG_x, ARG_y };
@@ -59,6 +59,22 @@ STATIC const vectorio_draw_protocol_t rectangle_draw_protocol = {
     .draw_get_protocol_self = (draw_get_protocol_self_fun)common_hal_vectorio_rectangle_get_draw_protocol,
     .draw_protocol_impl = &vectorio_vector_shape_draw_protocol_impl
 };
+
+
+// Documentation for properties inherited from VectorShape.
+
+//|     x : int
+//|     """X position of the top left corner of the rectangle in the parent."""
+//|
+//|     y : int
+//|     """Y position of the top left corner of the rectangle in the parent."""
+//|
+//|     location : Tuple[int,int]
+//|     """(X,Y) position of the top left corner of the rectangle in the parent."""
+//|
+//|     pixel_shader : Union[displayio.ColorConverter,displayio.Palette]
+//|     """The pixel shader of the rectangle."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
     // Properties

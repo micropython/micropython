@@ -188,7 +188,7 @@ always_ours = [
     "shared-module",
     "ports/atmel-samd",
     "ports/cxd56",
-    "ports/esp32s2",
+    "ports/espressif",
     "ports/mimxrt10xx",
     "ports/raspberrypi",
     "ports/stm",

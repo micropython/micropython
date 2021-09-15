@@ -15,10 +15,10 @@
 //|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], radius: int, x: int, y: int) -> None:
 //|         """Circle is positioned on screen by its center point.
 //|
-//|            :param pixel_shader: The pixel shader that produces colors from values
-//|            :param radius: The radius of the circle in pixels
-//|            :param x: Initial x position of the axis.
-//|            :param y: Initial y position of the axis."""
+//|            :param Union[~displayio.ColorConverter,~displayio.Palette] pixel_shader: The pixel shader that produces colors from values
+//|            :param int radius: The radius of the circle in pixels
+//|            :param int x: Initial x position of the axis.
+//|            :param int y: Initial y position of the axis."""
 //|
 static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pixel_shader, ARG_radius, ARG_x, ARG_y };
@@ -80,6 +80,21 @@ const mp_obj_property_t vectorio_circle_radius_obj = {
               MP_ROM_NONE},
 };
 
+
+// Documentation for properties inherited from VectorShape.
+
+//|     x : int
+//|     """X position of the center point of the circle in the parent."""
+//|
+//|     y : int
+//|     """Y position of the center point of the circle in the parent."""
+//|
+//|     location : Tuple[int,int]
+//|     """(X,Y) position of the center point of the circle in the parent."""
+//|
+//|     pixel_shader : Union[displayio.ColorConverter,displayio.Palette]
+//|     """The pixel shader of the circle."""
+//|
 
 STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
     // Properties

@@ -40,7 +40,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(BASEOPTS)
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(BASEOPTS)
 
-TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/esp32s2 ports/mimxrt10xx ports/nrf ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
+TRANSLATE_SOURCES = extmod lib main.c ports/atmel-samd ports/cxd56 ports/espressif ports/mimxrt10xx ports/nrf ports/raspberrypi ports/stm py shared-bindings shared-module supervisor
 # Paths to exclude from TRANSLATE_SOURCES
 # Each must be preceded by "-path"; if any wildcards, enclose in quotes.
 # Separate by "-o" (Find's "or" operand)
@@ -48,7 +48,7 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 	-o -path "ports/*/build" \
 	-o -path ports/atmel-samd/asf4 \
 	-o -path ports/cxd56/spresense-exported-sdk \
-	-o -path ports/esp32s2/esp-idf \
+	-o -path ports/espressif/esp-idf \
 	-o -path ports/mimxrt10xx/sdk \
 	-o -path ports/raspberrypi/sdk \
 	-o -path ports/stm/st_driver \
@@ -283,8 +283,8 @@ samd21:
 samd51:
 	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express
 
-esp32s2:
-	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom
+espressif:
+	$(MAKE) -C ports/espressif BOARD=espressif_saola_1_wroom
 
 litex:
 	$(MAKE) -C ports/litex BOARD=fomu
@@ -298,7 +298,7 @@ nrf:
 stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express
 
-clean-one-of-each: clean-samd21 clean-samd51 clean-esp32s2 clean-litex clean-mimxrt10xx clean-nrf clean-stm
+clean-one-of-each: clean-samd21 clean-samd51 clean-espressif clean-litex clean-mimxrt10xx clean-nrf clean-stm
 
 clean-samd21:
 	$(MAKE) -C ports/atmel-samd BOARD=trinket_m0 clean
@@ -306,8 +306,8 @@ clean-samd21:
 clean-samd51:
 	$(MAKE) -C ports/atmel-samd BOARD=feather_m4_express clean
 
-clean-esp32s2:
-	$(MAKE) -C ports/esp32s2 BOARD=espressif_saola_1_wroom clean
+clean-espressif:
+	$(MAKE) -C ports/espressif BOARD=espressif_saola_1_wroom clean
 
 clean-litex:
 	$(MAKE) -C ports/litex BOARD=fomu clean

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # WebUSB Serial Support
 
-To date, this has only been tested on one port (esp32s2), on one board (espressif_kaluga_1).
+To date, this has only been tested on one port (espressif), on one board (espressif_kaluga_1).
 
 ## What it does
 

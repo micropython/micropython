@@ -22,7 +22,7 @@ import build_board_info
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
     "cxd56": "arm",
-    "esp32s2": "xtensa",
+    "espressif": "espressif",
     "litex": "riscv",
     "mimxrt10xx": "arm",
     "nrf": "arm",
@@ -83,7 +83,7 @@ else:
 
 # Split boards by architecture.
 print("Building boards:")
-arch_to_boards = {"arm": [], "riscv": [], "xtensa": []}
+arch_to_boards = {"arm": [], "riscv": [], "espressif": []}
 for board in boards_to_build:
     print(" ", board)
     arch = PORT_TO_ARCH[board_to_port[board]]

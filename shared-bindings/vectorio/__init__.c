@@ -7,7 +7,29 @@
 #include "shared-bindings/vectorio/Polygon.h"
 #include "shared-bindings/vectorio/Rectangle.h"
 
-//| """Lightweight 2d shapes for displays"""
+//| """Lightweight 2D shapes for displays
+//|
+//| The :py:attr:`vectorio` module provide simple filled drawing primitives for
+//| use with `displayio`.
+//|
+//| .. code-block:: python
+//|
+//|     group = displayio.Group()
+//|
+//|     palette = displayio.Palette(1)
+//|     palette[0] = 0x125690
+//|
+//|     circle = vectorio.Circle(pixel_shader=palette, radius=25, x=70, y=40)
+//|     group.append(circle)
+//|
+//|     rectangle = vectorio.Rectangle(pixel_shader=palette, width=40, height=30, x=55, y=45)
+//|     group.append(rectangle)
+//|
+//|     points=[(5, 5), (100, 20), (20, 20), (20, 100)]
+//|     polygon = vectorio.Polygon(pixel_shader=palette, points=points, x=0, y=0)
+//|     group.append(polygon)
+//|
+//| """
 //|
 
 STATIC const mp_rom_map_elem_t vectorio_module_globals_table[] = {

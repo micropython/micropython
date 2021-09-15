@@ -18,7 +18,7 @@ jobs:
     outputs:
       arm-boards: ${{ steps.set-matrix.outputs.arm-boards }}
       riscv-boards: ${{ steps.set-matrix.outputs.riscv-boards }}
-      xtensa-boards: ${{ steps.set-matrix.outputs.xtensa-boards }}
+      espressif-boards: ${{ steps.set-matrix.outputs.espressif-boards }}
     steps:
     - name: Dump GitHub context
       env:
@@ -322,14 +322,14 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
-  build-xtensa:
+  build-espressif:
     runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.xtensa-boards) }}
-    if: ${{ needs.test.outputs.xtensa-boards != '[]' }}
+        board: ${{ fromJSON(needs.test.outputs.espressif-boards) }}
+    if: ${{ needs.test.outputs.espressif-boards != '[]' }}
 
     steps:
     - name: Set up Python 3.8
@@ -348,12 +348,12 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/esp32s2/esp-idf/HEAD') }}-20210716
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-20210716
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
     - name: Install IDF tools
       run: |
         $IDF_PATH/tools/idf_tools.py --non-interactive install required
@@ -361,7 +361,7 @@ jobs:
         $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
         rm -rf $IDF_TOOLS_PATH/dist
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: Install CircuitPython deps
       run: |
@@ -369,7 +369,7 @@ jobs:
         pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: Versions
       run: |
@@ -381,7 +381,7 @@ jobs:
         cmake --version
       shell: bash
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
     - name: mpy-cross
       run: make -C mpy-cross -j2
@@ -394,7 +394,7 @@ jobs:
       working-directory: tools
       shell: bash
       env:
-        IDF_PATH: ${{ github.workspace }}/ports/esp32s2/esp-idf
+        IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
         BOARDS: ${{ matrix.board }}
     - uses: actions/upload-artifact@v2

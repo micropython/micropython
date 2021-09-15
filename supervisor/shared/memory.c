@@ -34,12 +34,9 @@
 
 enum {
     CIRCUITPY_SUPERVISOR_IMMOVABLE_ALLOC_COUNT =
+        0
         // stack + heap
-        2
-        // next_code_allocation
-        + 1
-        // prev_traceback_allocation
-        + 1
+        + 2
 
         #if INTERNAL_FLASH_FILESYSTEM == 0
         + 1
@@ -59,6 +56,10 @@ enum {
 
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =
         0
+        // next_code_allocation
+        + 1
+        // prev_traceback_allocation
+        + 1
         #if CIRCUITPY_DISPLAYIO
         #if CIRCUITPY_TERMINALIO
         + 1
