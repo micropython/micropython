@@ -297,6 +297,9 @@ STATIC void gc_mark_subtree(size_t block)
             n_blocks += 1;
         } while (ATB_GET_KIND(area, block + n_blocks) == AT_TAIL);
 
+        // check that the consecutive blocks didn't overflow past the end of the area
+        assert(area->gc_pool_start + (block + n_blocks) * BYTES_PER_BLOCK <= area->gc_pool_end);
+
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(area, block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void *); i > 0; i--, ptrs++) {

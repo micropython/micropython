@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/obj.h"
@@ -222,6 +223,42 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // calling gc_nbytes with a non-heap pointer
         mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
+    }
+
+    // GC initialisation and allocation stress test, to check the logic behind ALLOC_TABLE_GAP_BYTE
+    // (the following test should fail when ALLOC_TABLE_GAP_BYTE=0)
+    {
+        mp_printf(&mp_plat_print, "# GC part 2\n");
+
+        // check the GC is unlocked and save its state
+        assert(MP_STATE_THREAD(gc_lock_depth) == 0);
+        mp_state_mem_t mp_state_mem_orig = mp_state_ctx.mem;
+
+        // perform the test
+        unsigned heap_size = 64 * MICROPY_BYTES_PER_GC_BLOCK;
+        for (unsigned j = 0; j < 256 * MP_BYTES_PER_OBJ_WORD; ++j) {
+            char *heap = calloc(heap_size, 1);
+            gc_init(heap, heap + heap_size);
+
+            m_malloc(MICROPY_BYTES_PER_GC_BLOCK);
+            void *o = gc_alloc(MICROPY_BYTES_PER_GC_BLOCK, GC_ALLOC_FLAG_HAS_FINALISER);
+            ((mp_obj_base_t *)o)->type = NULL; // ensure type is cleared so GC doesn't look for finaliser
+            for (unsigned i = 0; i < heap_size / MICROPY_BYTES_PER_GC_BLOCK; ++i) {
+                void *p = m_malloc_maybe(MICROPY_BYTES_PER_GC_BLOCK);
+                if (!p) {
+                    break;
+                }
+                *(void **)p = o;
+                o = p;
+            }
+            gc_collect();
+            free(heap);
+            heap_size += MICROPY_BYTES_PER_GC_BLOCK / 16;
+        }
+        mp_printf(&mp_plat_print, "pass\n");
+
+        // restore the GC state (the original heap)
+        mp_state_ctx.mem = mp_state_mem_orig;
     }
 
     // tracked allocation
