@@ -176,3 +176,4 @@ frzmpy_pkg2.mod
 ZeroDivisionError
 b'# test frozen package'
 NULL
+# end coverage.c gc test

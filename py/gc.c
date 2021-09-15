@@ -204,8 +204,8 @@ bool gc_is_locked(void) {
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
     ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
-    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
+    && (void *)(ptr) >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
+    && (void *)(ptr) < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
     )
 
 #ifndef TRACE_MARK
@@ -232,6 +232,8 @@ STATIC void gc_mark_subtree(size_t block) {
 
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(block);
+        assert(VERIFY_PTR(ptrs + (n_blocks - 1) * BYTES_PER_BLOCK / sizeof(void *)));
+
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void *); i > 0; i--, ptrs++) {
             void *ptr = *ptrs;
             if (VERIFY_PTR(ptr)) {

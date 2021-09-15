@@ -99,3 +99,5 @@ print(buf.read(21))
 from frzqstr import returns_NULL
 
 print(returns_NULL())
+
+extra_coverage_gc()

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/obj.h"
@@ -650,4 +651,29 @@ STATIC mp_obj_t extra_coverage(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_obj, extra_coverage);
 
+// function to run extra tests for things that can't be checked by scripts, and which have to destroy the GC heap
+STATIC mp_obj_t extra_coverage_gc(void) {
+    long heap_size = 1024;
+
+    for (unsigned j = 0; j < 256 * MP_BYTES_PER_OBJ_WORD; j++) {
+        char *heap = calloc(heap_size, 1);
+        gc_init(heap, heap + heap_size);
+
+        m_malloc(16);
+        void *o = gc_alloc(16, GC_ALLOC_FLAG_HAS_FINALISER);
+        for (int i = 0; i < heap_size / 16; i++) {
+            void *p = m_malloc_maybe(16);
+            if (!p) {
+                break;
+            }
+            *(void **)o = p;
+            o = p;
+        }
+        gc_collect();
+        heap_size++;
+    }
+    mp_printf(&mp_plat_print, "# end coverage.c gc test\n");
+    exit(0);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(extra_coverage_gc_obj, extra_coverage_gc);
 #endif
