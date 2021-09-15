@@ -84,6 +84,7 @@ set(MICROPY_SOURCE_DRIVERS
 set(MICROPY_SOURCE_PORT
     fatfs_port.c
     machine_adc.c
+    machine_bitstream.c
     machine_i2c.c
     machine_i2s.c
     machine_pin.c
