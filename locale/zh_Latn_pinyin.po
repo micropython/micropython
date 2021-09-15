@@ -149,7 +149,8 @@ msgstr "%q bì xū shì yí gè zì fú chuàn"
 msgid "%q must be a tuple of length 2"
 msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 
-#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+#: shared-module/vectorio/VectorShape.c
 msgid "%q must be between %d and %d"
 msgstr "%q bì xū zài %d hé %d zhī jiān"
 
@@ -182,7 +183,7 @@ msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, hé %q bì xū cháng dù xiāng tóng"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s cuò wù 0x%x"
@@ -361,7 +362,7 @@ msgstr "64 wèi lèi xíng"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 zhèng yóu WiFi shǐ yòng"
 
@@ -374,31 +375,31 @@ msgstr "Dìzhǐ bìxū shì %d zì jié zhǎng"
 msgid "Address type out of range"
 msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
 
-#: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
-#: ports/esp32s2/common-hal/countio/Counter.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/espressif/common-hal/countio/Counter.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "suǒ yǒu zhèng zài shǐ yòng zhōng de PCNT dān yuán"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Suǒyǒu shǐyòng zhōng de RX FIFO"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
 
-#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Suǒyǒu UART wàiwéi zhèngzài shǐyòng"
@@ -433,10 +434,10 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -457,7 +458,7 @@ msgstr "yǐ jù yǒu quán pǐ pèi zhēn tīng qì"
 msgid "Already running"
 msgstr "yǐ zài yùn xíng"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "yǐ jīng sǎo miáo WIFI wǎng luò"
 
@@ -534,7 +535,7 @@ msgstr ""
 "Zìdòng chóngxīn jiāzài. Zhǐ xū tōngguò USB bǎocún wénjiàn lái yùnxíng tāmen "
 "huò shūrù REPL jìnyòng.\n"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
 msgstr "wài shè bù zhī chí de bō tè lā tè"
 
@@ -632,7 +633,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
@@ -651,7 +652,7 @@ msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC kuài bì xū shì 16 zì jié de bèi shù"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC huò jiào yàn hé wú xiào"
 
@@ -659,17 +660,17 @@ msgstr "CRC huò jiào yàn hé wú xiào"
 msgid "Call super().__init__() before accessing native object."
 msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
 msgstr "zhǐ néng zài RTC Io shàng cóng shēn dù shuì mián zhōng bào jǐng."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
 "Zhǐ néng zài yīgè dī diàn píng yǐn jiǎo shàng fāchū jǐngbào, ér qítā yǐn "
 "jiǎo cóng shēndù shuìmián zhōng fāchū gāo diàn píng jǐngbào."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī yǐn jiǎo."
 
@@ -711,7 +712,7 @@ msgstr "Nín wúfǎ sǎomiáo kuòzhǎn de, kě liánjiē de guǎnggào."
 msgid "Cannot output both channels on the same pin"
 msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr "wú fǎ lā dòng jǐn shū rù yǐn jiǎo."
 
@@ -733,7 +734,7 @@ msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
 msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
 
@@ -741,7 +742,7 @@ msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
 msgid "Cannot set value when direction is input."
 msgstr "Dāng fāngxiàng xiàng nèi shí, bùnéng shèzhì gāi zhí."
 
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr "wú fǎ zài RS485 mó shì xià zhǐ dìng RTS huò CTS"
@@ -758,7 +759,7 @@ msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Wúfǎ gēnggǎi yǐ zài shǐyòng de jìshí qì shàng de pínlǜ"
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "wú fǎ zài yǐn jiǎo biān yuán huàn xǐng. jǐn jí bié."
@@ -823,7 +824,7 @@ msgid "Could not initialize SDCard"
 msgstr "wú fǎ chū shǐ huà SDCard"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Wúfǎ chūshǐhuà UART"
 
@@ -839,7 +840,7 @@ msgstr "Wúfǎ chóngxīn qǐdòng jìshí qì"
 msgid "Could not restart PWM"
 msgstr "Wúfǎ chóngqǐ PWM"
 
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr "Wúfǎ huòqǔ shízhōng"
 
@@ -894,7 +895,7 @@ msgstr "Fā yuán huì yǐjīng shǐyòng"
 msgid "Data 0 pin must be byte aligned"
 msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 
-#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 
@@ -946,7 +947,8 @@ msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "ECB yí cì zhǐ shǐ yòng 16 gè zì jié"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF nèicún fēnpèi shībài"
 
@@ -1025,7 +1027,7 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT jǐn shì yòng yú xiàn xìng zhèn liè"
 
-#: ports/esp32s2/common-hal/ssl/SSLSocket.c
+#: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "SSL wòshǒu shībài"
 
@@ -1046,7 +1048,7 @@ msgstr "Fēnpèi RX huǎnchōng shībài"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
@@ -1054,11 +1056,11 @@ msgstr "Fēnpèi RX huǎnchōng shībài"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
 msgstr "Wúfǎ fēnpèi Wifi nèicún"
 
-#: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
+#: ports/espressif/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
 msgstr "Wúfǎ fēnpèi wifi sǎomiáo nèicún"
 
@@ -1074,7 +1076,7 @@ msgstr "Liánjiē shībài: Nèibù cuòwù"
 msgid "Failed to connect: timeout"
 msgstr "Liánjiē shībài: Chāoshí"
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
 msgstr "Wúfǎ chūshǐhuà wifi"
 
@@ -1100,12 +1102,12 @@ msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "guò lǜ qì tài fù zá"
 
-#: ports/esp32s2/common-hal/dualbank/__init__.c
+#: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "gù jiàn yìng xiàng wú xiào"
 
@@ -1127,7 +1129,7 @@ msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng
 msgid "Function requires lock"
 msgstr "Hánshù xūyào suǒdìng"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
@@ -1204,7 +1206,7 @@ msgstr ""
 "chū shǐ shè zhì yǐn jiǎo zhuàng tài yǔ chū shǐ chū yǐn jiǎo zhuàng tài chōng "
 "tū"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
 msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
 
@@ -1218,7 +1220,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "Shūrù shíjiānguò zhǎng"
 
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
 
@@ -1284,7 +1286,7 @@ msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
 msgid "Invalid ADC Unit value"
 msgstr "Wúxiào de ADC dānwèi zhí"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
 msgstr "wú xiào AuthMode"
 
@@ -1300,7 +1302,7 @@ msgstr "Wúxiào de BMP wénjiàn"
 msgid "Invalid BSSID"
 msgstr "Wúxiào de BSSID"
 
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
+#: ports/espressif/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
@@ -1311,18 +1313,18 @@ msgstr "wú xiào de MIDI wén jiàn"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/espressif/common-hal/pwmio/PWMOut.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Wúxiào de PWM pínlǜ"
 
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
 msgstr "wú xiào yǐn jiǎo"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
@@ -1341,7 +1343,7 @@ msgid "Invalid byteorder string"
 msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
 
@@ -1371,7 +1373,7 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: ports/esp32s2/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 msgid "Invalid frequency"
 msgstr "Wúxiào de pínlǜ"
 
@@ -1390,8 +1392,8 @@ msgstr "Jiēduàn wúxiào"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
+#: ports/espressif/common-hal/touchio/TouchIn.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1411,8 +1413,10 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
-#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/espressif/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1439,15 +1443,15 @@ msgstr "Wúxiào de yùnxíng móshì."
 msgid "Invalid security_mode"
 msgstr "Ānquán móshì wúxiào"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
-#: ports/esp32s2/common-hal/ssl/SSLContext.c
+#: ports/espressif/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "wú xiào zhuàng tài"
 
@@ -1484,7 +1488,7 @@ msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC dì zhǐ wú xiào"
 
@@ -1571,7 +1575,7 @@ msgstr "bì xū shǐ yòng 6 RGB yǐn jiǎo de bèi shù, ér bù shì %d"
 msgid "NLR jump failed. Likely memory corruption."
 msgstr "NLR tiào zhuǎn shī bài. kě néng shì nèi cún sǔn huài."
 
-#: ports/esp32s2/common-hal/nvm/ByteArray.c
+#: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "NVS cuò wù"
 
@@ -1604,25 +1608,25 @@ msgstr "wèi zhǎo dào DMA qǐ bó qì"
 msgid "No I2C device at address: %x"
 msgstr "dì zhǐ wú I2C shè bèi: %x"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr "Méiyǒu MISO yǐn jiǎo"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr "Méiyǒu MOSI yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Wèi zhǎodào RX yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
@@ -1686,7 +1690,8 @@ msgstr "Méiyǒu wǎngluò yǔ gāi ssid"
 msgid "No out in program"
 msgstr "chéng xù zhōng wèi tuì chū"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
@@ -1749,11 +1754,11 @@ msgstr "Bù zhīchí jīshù"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Jǐn zhīchí IPv4 dìzhǐ"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
 msgstr "jǐn zhī chí IPv4 tào jiē zì"
 
@@ -1786,11 +1791,11 @@ msgstr ""
 "Jǐn zhīchí dān sè, suǒyǐn wéi 4bpp huò 8bpp yǐjí 16bpp huò gèng gāo de BMP: "
 "Gěi chū %d bpp"
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
-#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
@@ -1801,19 +1806,19 @@ msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 msgid "Only one color can be transparent at a time"
 msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "bù zhī chí cāo zuò huò gōng néng"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "cāo zuò yǐ fēn shí"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "nèi cún bù zú"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "tào jiē zì wài"
 
@@ -1853,7 +1858,7 @@ msgstr "yǐ jīng zài shǐ yòng de PWM qiē piàn"
 msgid "PWM slice channel A already in use"
 msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 
-#: ports/esp32s2/common-hal/audiobusio/__init__.c
+#: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
 msgstr "shǐ yòng zhōng de wài shè"
 
@@ -1875,7 +1880,7 @@ msgstr "yǐn jiǎo jì shù tài dà"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/raspberrypi/common-hal/analogio/AnalogIn.c
@@ -1983,12 +1988,12 @@ msgstr "RNG chūshǐhuà cuòwù"
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
 
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr "Wèi chǔyú RS485 móshì shí zhǐdìngle RS485 fǎn zhuǎn"
 
-#: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
+#: ports/cxd56/common-hal/rtc/RTC.c ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
@@ -2020,7 +2025,7 @@ msgstr "Zhǐ dú wénjiàn xìtǒng"
 msgid "Read-only object"
 msgstr "Zhǐ dú duìxiàng"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "shōu dào de xiǎng yìng wú xiào"
 
@@ -2036,7 +2041,7 @@ msgstr "RemoteTransmissionRequests xiànzhì wèi 8 gè zì jié"
 msgid "Requested AES mode is unsupported"
 msgstr "Qǐngqiú de AES móshì bù shòu zhīchí"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 
@@ -2074,7 +2079,7 @@ msgstr "SPI chūshǐhuà cuòwù"
 msgid "SPI Re-initialization error"
 msgstr "SPI chóngxīn chūshǐhuà cuòwù"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
 msgstr "SPI pèi zhì shī bài"
 
@@ -2131,7 +2136,7 @@ msgstr "Qiēpiàn hé zhí bùtóng chángdù."
 msgid "Slices not supported"
 msgstr "Qiēpiàn bù shòu zhīchí"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "SocketPool zhǐ néng yǔ wifi.Radio yīqǐ shǐyòng"
 
@@ -2335,7 +2340,7 @@ msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 
-#: ports/esp32s2/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
 
@@ -2369,7 +2374,7 @@ msgstr "wú fǎ xiě rù sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
 
-#: ports/esp32s2/common-hal/ssl/SSLSocket.c
+#: ports/espressif/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
@@ -2412,7 +2417,7 @@ msgstr ""
 "huò hūlüè."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Bù zhīchí de baudrate"
@@ -2433,7 +2438,7 @@ msgstr "Bù zhīchí de cāozuò"
 msgid "Unsupported pull value."
 msgstr "Bù zhīchí de lādòng zhí."
 
-#: ports/esp32s2/common-hal/dualbank/__init__.c
+#: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "gēng xīn shī bài"
 
@@ -2447,7 +2452,7 @@ msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 msgid "Value length > max_length"
 msgstr "Zhí chángdù > zuìdà chángdù"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "bǎn běn wú xiào"
 
@@ -2700,7 +2705,7 @@ msgid "byteorder is not a string"
 msgstr "byteorder bùshì zìfú chuàn"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "zì jié > 8 wèi"
 
@@ -3320,7 +3325,7 @@ msgid "index is out of bounds"
 msgstr "suǒyǐn chāochū fànwéi"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "suǒyǐn chāochū fànwéi"
@@ -3552,7 +3557,7 @@ msgstr "fùzhí qián yǐnyòng de júbù biànliàng"
 msgid "long int not supported in this build"
 msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "Wài shè bù zhī chí huán huí + jìng yīn mó shì"
 
@@ -3943,7 +3948,7 @@ msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter
 msgid "polygon can only be registered in one parent"
 msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
 
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "cóng kōng mài chōng tán chū"
 
@@ -3968,40 +3973,40 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
-#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
-#: ports/esp32s2/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
-#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
-#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
-#: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
-#: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
-#: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
-#: ports/esp32s2/boards/lolin_s2_mini/mpconfigboard.h
-#: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
-#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
+#: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
+#: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
+#: ports/espressif/boards/artisense_rd00/mpconfigboard.h
+#: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
+#: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
+#: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_saola_1_wroom/mpconfigboard.h
+#: ports/espressif/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/espressif/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/espressif/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
+#: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/espressif/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
+#: ports/espressif/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
+#: ports/espressif/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/espressif/boards/targett_module_clip_wrover/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 
@@ -4245,7 +4250,7 @@ msgstr "cí tiē bì xū dà yú líng"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
@@ -4312,18 +4317,18 @@ msgstr "tī xíng dìng yì wéi yì wéi kě dié dài duì xiàng"
 msgid "tuple/list has wrong length"
 msgstr "yuán zǔ/lièbiǎo chángdù cuòwù"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
 msgstr "twai_driver_install fǎn huí esp-idf cuò wù #%d"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
 msgstr "twai_start fǎn huí esp -idf cuò wù #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "tx hé rx bùnéng dōu shì wú"
@@ -4446,7 +4451,7 @@ msgstr "zhí fàn wéi wài de mù biāo"
 msgid "value_count must be > 0"
 msgstr "zhí jìshù bìxū wèi > 0"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "wèi chū shǐ huà jiān shì qì"
 
@@ -4463,7 +4468,7 @@ msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
 msgid "width must be greater than zero"
 msgstr "kuāndù bìxū dàyú líng"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "wèi qǐ yòng WIFI"
 
@@ -4499,7 +4504,7 @@ msgstr "cuòwù de shūchū lèixíng"
 msgid "x value out of bounds"
 msgstr "x zhí chāochū biānjiè"
 
-#: ports/esp32s2/common-hal/audiobusio/__init__.c
+#: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "xTaskCreate shī bài"
 

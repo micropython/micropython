@@ -148,7 +148,8 @@ msgstr "%q deve ser uma string"
 msgid "%q must be a tuple of length 2"
 msgstr "%q deve ser uma tupla de comprimento 2"
 
-#: ports/esp32s2/common-hal/imagecapture/ParallelImageCapture.c
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+#: shared-module/vectorio/VectorShape.c
 msgid "%q must be between %d and %d"
 msgstr "%q deve estar entre %d e %d"
 
@@ -181,7 +182,7 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 msgid "%q, %q, and %q must all be the same length"
 msgstr "todos os %q, %q, e %q devem ter mesmo comprimento"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
 msgstr "%s erro 0x%x"
@@ -364,7 +365,7 @@ msgstr "Tipos 64 bit"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Um canal de interrupção de hardware já está em uso"
 
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "O ADC2 está sendo usado pelo WiFi"
 
@@ -377,31 +378,31 @@ msgstr "O endereço deve ter %d bytes de comprimento"
 msgid "Address type out of range"
 msgstr "O tipo do endereço está fora do alcance"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
 msgstr "Todos os periféricos CAN estão em uso"
 
-#: ports/esp32s2/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
-#: ports/esp32s2/common-hal/countio/Counter.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/espressif/common-hal/countio/Counter.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
 msgstr "Todas as unidades PCNT estão em uso"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
 msgstr "Todos os FIFOs RX estão em uso"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "Todos os periféricos SPI estão em uso"
 
-#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "Todos os periféricos UART estão em uso"
@@ -436,10 +437,10 @@ msgstr "Todos os temporizadores para este pino estão em uso"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
-#: ports/esp32s2/common-hal/pulseio/PulseOut.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -460,7 +461,7 @@ msgstr "Já há um ouvinte com todas as correspondências"
 msgid "Already running"
 msgstr "Já está em execução"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
 msgstr "Já está em busca das redes de wifi"
 
@@ -538,7 +539,7 @@ msgstr ""
 "O recarregamento automático está ativo. Simplesmente salve os arquivos via "
 "USB para executá-los ou digite REPL para desativar.\n"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
 msgstr "O Baudrate não é suportado pelo periférico"
 
@@ -638,7 +639,7 @@ msgid "Buffer too short by %d bytes"
 msgstr "O buffer é muito curto em %d bytes"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
@@ -657,7 +658,7 @@ msgstr "Os bytes devem estar entre 0 e 255."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Os blocos CBC devem ter múltiplos de 16 bytes"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC ou checksum inválido"
 
@@ -665,17 +666,17 @@ msgstr "CRC ou checksum inválido"
 msgid "Call super().__init__() before accessing native object."
 msgstr "Chame super().__init__() antes de acessar o objeto nativo."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
 msgstr "O alarme só pode acontecer no RTC IO a partir do deep sleep."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
 "O alarme só pode acontecer em um pino com nível baixo enquanto os outros "
 "alarmes só com nível alto a partir do deep sleep."
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
 "O alarme só é possível nos dois pinos com sinal baixo a partir do deep sleep."
@@ -720,7 +721,7 @@ msgstr ""
 msgid "Cannot output both channels on the same pin"
 msgstr "Não é possível emitir os dois canais no mesmo pino"
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr "Não é possível obter (pull) nos pinos somente de entrada."
 
@@ -743,7 +744,7 @@ msgid "Cannot reset into bootloader because no bootloader is present."
 msgstr ""
 "Não é possível redefinir para o bootloader porque o mesmo não está presente."
 
-#: ports/esp32s2/common-hal/socketpool/Socket.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
 msgstr "Não foi possível definir as opções do socket"
 
@@ -751,7 +752,7 @@ msgstr "Não foi possível definir as opções do socket"
 msgid "Cannot set value when direction is input."
 msgstr "Não é possível definir o valor quando a direção é inserida."
 
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Cannot specify RTS or CTS in RS485 mode"
 msgstr "Não é possível definir o RTS ou CTS no modo RS485"
@@ -768,7 +769,7 @@ msgstr "Não é possível transferir sem os pinos MOSI e MISO."
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Não é possível variar a frequência em um timer que já esteja em uso"
 
-#: ports/esp32s2/common-hal/alarm/pin/PinAlarm.c
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Não é possível acordar (wake) no pino edge. Nível apenas."
@@ -834,7 +835,7 @@ msgid "Could not initialize SDCard"
 msgstr "Não foi possível inicializar o SDCard"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 msgid "Could not initialize UART"
 msgstr "Não foi possível inicializar o UART"
 
@@ -850,7 +851,7 @@ msgstr "Não foi possível reiniciar o temporizador"
 msgid "Could not restart PWM"
 msgstr "Não foi possível reiniciar o PWM"
 
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr "Não foi possível recuperar o clock"
 
@@ -905,7 +906,7 @@ msgstr "DAC em uso"
 msgid "Data 0 pin must be byte aligned"
 msgstr "O pino de dados 0 deve ser alinhado por bytes"
 
-#: ports/esp32s2/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned."
 msgstr "O pino de dados 0 deve ser alinhado por bytes."
 
@@ -956,7 +957,8 @@ msgstr "O modo do controlador não é usado quando a direção for inserida."
 msgid "ECB only operates on 16 bytes at a time"
 msgstr "O BCE opera apenas com 16 bytes por vez"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "Houve uma falha na alocação da memória ESP-IDF"
 
@@ -1035,7 +1037,7 @@ msgstr "O FFT é definido apenas para ndarrays"
 msgid "FFT is implemented for linear arrays only"
 msgstr "O FFT é implementado apenas para matrizes lineares"
 
-#: ports/esp32s2/common-hal/ssl/SSLSocket.c
+#: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
 msgstr "Houve uma falha no handshake do SSL"
 
@@ -1056,7 +1058,7 @@ msgstr "Falha ao alocar buffer RX"
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
@@ -1064,11 +1066,11 @@ msgstr "Falha ao alocar buffer RX"
 msgid "Failed to allocate RX buffer of %d bytes"
 msgstr "Falha ao alocar buffer RX de %d bytes"
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
 msgstr "Houve uma falha na alocação da memória do Wifi"
 
-#: ports/esp32s2/common-hal/wifi/ScannedNetworks.c
+#: ports/espressif/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
 msgstr "Houve uma falha na alocação da memória para a varredura do Wifi"
 
@@ -1084,7 +1086,7 @@ msgstr "Falha ao conectar: erro interno"
 msgid "Failed to connect: timeout"
 msgstr "Falha ao conectar: tempo limite"
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
 msgstr "Houve uma falha ao iniciar o wifi"
 
@@ -1110,12 +1112,12 @@ msgid "File exists"
 msgstr "Arquivo já existe"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
-#: ports/esp32s2/common-hal/canio/Listener.c
+#: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
 msgstr "Os filtros são muito complexos"
 
-#: ports/esp32s2/common-hal/dualbank/__init__.c
+#: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "A imagem do firmware é invalida"
 
@@ -1138,7 +1140,7 @@ msgstr ""
 msgid "Function requires lock"
 msgstr "A função requer bloqueio"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr "Falha Genérica"
 
@@ -1215,7 +1217,7 @@ msgstr ""
 "A definição do estado inicial do pino está em conflito com estado do inicial "
 "do pino"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
 msgstr "A inicialização falhou devido à falta de memória"
 
@@ -1230,7 +1232,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "A entrada está demorando demais"
 
-#: ports/esp32s2/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erro de entrada/saída"
 
@@ -1296,7 +1298,7 @@ msgstr "Seleção inválida dos pinos %q"
 msgid "Invalid ADC Unit value"
 msgstr "Valor inválido da unidade ADC"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid AuthMode"
 msgstr "AuthMode inválido"
 
@@ -1312,7 +1314,7 @@ msgstr "Arquivo BMP inválido"
 msgid "Invalid BSSID"
 msgstr "BSSID Inválido"
 
-#: ports/esp32s2/common-hal/analogio/AnalogOut.c
+#: ports/espressif/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
 msgstr "O pino DAC informado é inválido"
@@ -1323,18 +1325,18 @@ msgstr "O arquivo MIDI é inválido"
 
 #: ports/atmel-samd/common-hal/pwmio/PWMOut.c
 #: ports/cxd56/common-hal/pwmio/PWMOut.c
-#: ports/esp32s2/common-hal/pwmio/PWMOut.c
+#: ports/espressif/common-hal/pwmio/PWMOut.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
 #: ports/nrf/common-hal/pwmio/PWMOut.c
 #: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid PWM frequency"
 msgstr "Frequência PWM inválida"
 
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
 msgstr "Pino inválido"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
@@ -1353,7 +1355,7 @@ msgid "Invalid byteorder string"
 msgstr "A cadeia de bytes é inválida"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/esp32s2/common-hal/frequencyio/FrequencyIn.c
+#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 msgid "Invalid capture period. Valid range: 1 - 500"
 msgstr "O período de captura é inválido. O intervalo válido é: 1 - 500"
 
@@ -1383,7 +1385,7 @@ msgstr "Arquivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Tamanho do pedaço de formato inválido"
 
-#: ports/esp32s2/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 msgid "Invalid frequency"
 msgstr "Frequência inválida"
 
@@ -1402,8 +1404,8 @@ msgstr "Fase Inválida"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
-#: ports/esp32s2/common-hal/touchio/TouchIn.c
+#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
+#: ports/espressif/common-hal/touchio/TouchIn.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
@@ -1423,8 +1425,10 @@ msgstr "Pino inválido para canal direito"
 #: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
 #: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
-#: ports/esp32s2/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/SPI.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/espressif/common-hal/canio/CAN.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1451,15 +1455,15 @@ msgstr "O modo de execução é inválido."
 msgid "Invalid security_mode"
 msgstr "O Security_mode é inválido"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
 msgstr "Tamanho inválido"
 
-#: ports/esp32s2/common-hal/ssl/SSLContext.c
+#: ports/espressif/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
 msgstr "Soquete inválido para o TLS"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "Estado inválido"
 
@@ -1496,7 +1500,7 @@ msgstr "A camada já existe em um grupo."
 msgid "Layer must be a Group or TileGrid subclass."
 msgstr "A camada deve ser uma subclasse Group ou TileGrid."
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "Endereço MAC inválido"
 
@@ -1582,7 +1586,7 @@ msgstr "Deve utilizar um múltiplo de 6 pinos rgb, não %d"
 msgid "NLR jump failed. Likely memory corruption."
 msgstr "O salto NLR falhou. Possível corrupção da memória."
 
-#: ports/esp32s2/common-hal/nvm/ByteArray.c
+#: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
 msgstr "Erro NVS"
 
@@ -1615,25 +1619,25 @@ msgstr "Nenhum temporizador DMA foi encontrado"
 msgid "No I2C device at address: %x"
 msgstr "Nenhum dispositivo I2C no endereço: %x"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr "Nenhum pino MISO"
 
-#: ports/esp32s2/common-hal/busio/SPI.c ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr "Nenhum pino MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
 msgstr "Nenhum pino RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
@@ -1697,7 +1701,8 @@ msgstr "Não há rede com este ssid"
 msgid "No out in program"
 msgstr "Sem saída no programa"
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/esp32s2/common-hal/busio/I2C.c
+#: ports/atmel-samd/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
@@ -1762,11 +1767,11 @@ msgstr "A paridade ímpar não é compatível"
 msgid "Only 8 or 16 bit mono with "
 msgstr "Apenas mono com 8 ou 16 bits com "
 
-#: ports/esp32s2/common-hal/wifi/__init__.c
+#: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
 msgstr "Somente os endereços IPv4 são suportados"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
 msgstr "Apenas soquetes IPv4 são suportados"
 
@@ -1799,11 +1804,11 @@ msgstr ""
 "São compatíveis apenas os BMPs monocromáticos, indexados em 4bpp ou 8bpp e "
 "16bpp ou superior: determinado %d bpp"
 
-#: ports/esp32s2/common-hal/alarm/touch/TouchAlarm.c
+#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 
-#: ports/esp32s2/common-hal/alarm/time/TimeAlarm.c
+#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
@@ -1814,19 +1819,19 @@ msgstr "Apenas um alarme alarm.time pode ser definido."
 msgid "Only one color can be transparent at a time"
 msgstr "Apenas uma cor pode ser transparente de cada vez"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
 msgstr "A operação ou o recurso não é suportado"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation timed out"
 msgstr "A operação expirou"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Out of memory"
 msgstr "Sem memória"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Out of sockets"
 msgstr "Sem soquetes"
 
@@ -1869,7 +1874,7 @@ msgstr "A fatia do PWM já está em uso"
 msgid "PWM slice channel A already in use"
 msgstr "O canal A da fatia do PWM já está em uso"
 
-#: ports/esp32s2/common-hal/audiobusio/__init__.c
+#: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
 msgstr "O periférico está em uso"
 
@@ -1891,7 +1896,7 @@ msgstr "A contagem dos pinos é muito grande"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
-#: ports/esp32s2/common-hal/analogio/AnalogIn.c
+#: ports/espressif/common-hal/analogio/AnalogIn.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
 #: ports/nrf/common-hal/analogio/AnalogIn.c
 #: ports/raspberrypi/common-hal/analogio/AnalogIn.c
@@ -2002,12 +2007,12 @@ msgstr "Houve um erro na inicialização do RNG"
 msgid "RS485 Not yet supported on this device"
 msgstr "Ainda não há suporte para o RS485 neste dispositivo"
 
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr "A definição da inversão do RS485 quando não está no modo RS485"
 
-#: ports/cxd56/common-hal/rtc/RTC.c ports/esp32s2/common-hal/rtc/RTC.c
+#: ports/cxd56/common-hal/rtc/RTC.c ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "RTC calibration is not supported on this board"
@@ -2039,7 +2044,7 @@ msgstr "Sistema de arquivos somente leitura"
 msgid "Read-only object"
 msgstr "Objeto de leitura apenas"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "A resposta recebida foi inválida"
 
@@ -2055,7 +2060,7 @@ msgstr "As requisições de transmissões remotas é limitada a 8 bytes"
 msgid "Requested AES mode is unsupported"
 msgstr "O modo AES solicitado não é compatível"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Requested resource not found"
 msgstr "O recurso solicitado não foi encontrado"
 
@@ -2093,7 +2098,7 @@ msgstr "Houve um erro na inicialização SPI"
 msgid "SPI Re-initialization error"
 msgstr "Houve um erro na reinicialização SPI"
 
-#: ports/esp32s2/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
 msgstr "A configuração SPI falhou"
 
@@ -2151,7 +2156,7 @@ msgstr "Fatie e avalie os diferentes comprimentos."
 msgid "Slices not supported"
 msgstr "Fatiamento não compatível"
 
-#: ports/esp32s2/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
 msgstr "O SocketPool só pode ser usado com rádio wifi.radio"
 
@@ -2360,7 +2365,7 @@ msgstr "O valor UUID não é um buffer str, int ou byte"
 msgid "Unable to allocate buffers for signed conversion"
 msgstr "Não é possível alocar buffers para conversão assinada"
 
-#: ports/esp32s2/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Não é possível criar um lock"
 
@@ -2394,7 +2399,7 @@ msgstr "Não foi possível escrever no sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Tipo uuid nrfx inesperado"
 
-#: ports/esp32s2/common-hal/ssl/SSLSocket.c
+#: ports/espressif/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Erro não tratado do ESP TLS %d %d %x %d"
@@ -2437,7 +2442,7 @@ msgstr ""
 "dispositivo tenha sido recusado ou ignorado."
 
 #: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
@@ -2458,7 +2463,7 @@ msgstr "Operação não suportada"
 msgid "Unsupported pull value."
 msgstr "O valor pull não é compatível."
 
-#: ports/esp32s2/common-hal/dualbank/__init__.c
+#: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "A atualização falou"
 
@@ -2472,7 +2477,7 @@ msgstr "Comprimento do valor != comprimento fixo necessário"
 msgid "Value length > max_length"
 msgstr "O comprimento do valor é > max_length"
 
-#: ports/esp32s2/bindings/espidf/__init__.c ports/esp32s2/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
 msgstr "A versão era inválida"
 
@@ -2728,7 +2733,7 @@ msgid "byteorder is not a string"
 msgstr "a ordem dos bytes não é uma cadeia de caracteres"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c
 msgid "bytes > 8 bits not supported"
 msgstr "bytes > 8 bits não suportado"
 
@@ -3351,7 +3356,7 @@ msgid "index is out of bounds"
 msgstr "o índice está fora dos limites"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c py/obj.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c py/obj.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "Índice fora do intervalo"
@@ -3586,7 +3591,7 @@ msgstr "a variável local referenciada antes da atribuição"
 msgid "long int not supported in this build"
 msgstr "o long int não é suportado nesta compilação"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "o loopback + o modo silencioso não é suportado pelo periférico"
 
@@ -3984,7 +3989,7 @@ msgstr "o pixel_shader deve ser displayio.Palette ou displayio.ColorConverter"
 msgid "polygon can only be registered in one parent"
 msgstr "o polígono só pode ser registrado em um pai"
 
-#: ports/esp32s2/common-hal/pulseio/PulseIn.c
+#: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr "pop a partir de um PulseIn vazio"
 
@@ -4009,40 +4014,40 @@ msgstr "O terceiro argumento pow() não pode ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
-#: ports/esp32s2/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_funhouse/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
-#: ports/esp32s2/boards/adafruit_metro_esp32s2/mpconfigboard.h
-#: ports/esp32s2/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
-#: ports/esp32s2/boards/artisense_rd00/mpconfigboard.h
-#: ports/esp32s2/boards/atmegazero_esp32s2/mpconfigboard.h
-#: ports/esp32s2/boards/crumpspace_crumps2/mpconfigboard.h
-#: ports/esp32s2/boards/electroniccats_bastwifi/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_hmi_devkit_1/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_kaluga_1.3/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_kaluga_1/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_saola_1_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/espressif_saola_1_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/franzininho_wifi_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/franzininho_wifi_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_m/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_ms/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_r/mpconfigboard.h
-#: ports/esp32s2/boards/gravitech_cucumber_rs/mpconfigboard.h
-#: ports/esp32s2/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
-#: ports/esp32s2/boards/lolin_s2_mini/mpconfigboard.h
-#: ports/esp32s2/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/esp32s2/boards/morpheans_morphesp-240/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
-#: ports/esp32s2/boards/targett_module_clip_wroom/mpconfigboard.h
-#: ports/esp32s2/boards/targett_module_clip_wrover/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
-#: ports/esp32s2/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
+#: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
+#: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
+#: ports/espressif/boards/artisense_rd00/mpconfigboard.h
+#: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
+#: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
+#: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_saola_1_wroom/mpconfigboard.h
+#: ports/espressif/boards/espressif_saola_1_wrover/mpconfigboard.h
+#: ports/espressif/boards/franzininho_wifi_wroom/mpconfigboard.h
+#: ports/espressif/boards/franzininho_wifi_wrover/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_m/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
+#: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
+#: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
+#: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
+#: ports/espressif/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
+#: ports/espressif/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
+#: ports/espressif/boards/targett_module_clip_wroom/mpconfigboard.h
+#: ports/espressif/boards/targett_module_clip_wrover/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "pressionando o botão de boot na inicialização.\n"
 
@@ -4286,7 +4291,7 @@ msgstr "o bloco deve ser maior que zero"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() leva uma sequência com 9"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
@@ -4353,18 +4358,18 @@ msgstr "o trapz é definido para iteráveis 1D"
 msgid "tuple/list has wrong length"
 msgstr "a tupla/lista está com tamanho incorreto"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
 msgstr "o twai_driver_install retornou um erro esp-idf #%d"
 
-#: ports/esp32s2/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
 msgstr "o twai_start retornou um erro esp-idf #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/esp32s2/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: shared-bindings/busio/UART.c shared-bindings/canio/CAN.c
 msgid "tx and rx cannot both be None"
 msgstr "TX e RX não podem ser ambos"
@@ -4487,7 +4492,7 @@ msgstr "valor fora do alcance do alvo"
 msgid "value_count must be > 0"
 msgstr "o value_count deve ser > 0"
 
-#: ports/esp32s2/common-hal/watchdog/WatchDogTimer.c
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
 msgstr "o watchdog não foi inicializado"
 
@@ -4504,7 +4509,7 @@ msgstr "a largura deve ser entre 2 a 8 (inclusive), não %d"
 msgid "width must be greater than zero"
 msgstr "a largura deve ser maior que zero"
 
-#: ports/esp32s2/common-hal/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
 msgstr "o wifi não está ativo"
 
@@ -4540,7 +4545,7 @@ msgstr "tipo da saída incorreta"
 msgid "x value out of bounds"
 msgstr "o valor x está fora dos limites"
 
-#: ports/esp32s2/common-hal/audiobusio/__init__.c
+#: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
 msgstr "o xTaskCreate falhou"
 
