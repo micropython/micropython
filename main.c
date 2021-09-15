@@ -321,12 +321,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     }
     #endif
 
-    #ifdef CIRCUITPY_BOOT_COUNTER
-    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
-    ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
-    #endif
-
     pyexec_result_t result;
 
     result.return_code = 0;
@@ -806,6 +800,13 @@ int __attribute__((used)) main(void) {
 
     // Turn on RX and TX LEDs if we have them.
     init_rxtx_leds();
+
+    #ifdef CIRCUITPY_BOOT_COUNTER
+    // Increment counter before possibly entering safe mode
+    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
+    ++value_out;
+    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
+    #endif
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (safe_mode == NO_SAFE_MODE) {
