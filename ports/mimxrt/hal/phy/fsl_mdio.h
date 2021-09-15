@@ -45,21 +45,21 @@ struct _mdio_operations
 {
     void (*mdioInit)(mdio_handle_t *handle); /*!< MDIO interface init. */
     status_t (*mdioWrite)(mdio_handle_t *handle,
-                          uint32_t phyAddr,
-                          uint32_t devAddr,
-                          uint32_t data); /*!< MDIO write data. */
+        uint32_t phyAddr,
+        uint32_t devAddr,
+        uint32_t data);                   /*!< MDIO write data. */
     status_t (*mdioRead)(mdio_handle_t *handle,
-                         uint32_t phyAddr,
-                         uint32_t devAddr,
-                         uint32_t *dataPtr); /*!< MDIO read data. */
+        uint32_t phyAddr,
+        uint32_t devAddr,
+        uint32_t *dataPtr);                  /*!< MDIO read data. */
     status_t (*mdioWriteExt)(mdio_handle_t *handle,
-                             uint32_t phyAddr,
-                             uint32_t devAddr,
-                             uint32_t data); /*!< MDIO write data. */
+        uint32_t phyAddr,
+        uint32_t devAddr,
+        uint32_t data);                      /*!< MDIO write data. */
     status_t (*mdioReadExt)(mdio_handle_t *handle,
-                            uint32_t phyAddr,
-                            uint32_t devAddr,
-                            uint32_t *dataPtr); /*!< MDIO read data. */
+        uint32_t phyAddr,
+        uint32_t devAddr,
+        uint32_t *dataPtr);                     /*!< MDIO read data. */
 };
 
 /*******************************************************************************
@@ -82,8 +82,7 @@ extern "C" {
  * @retval kStatus_Success     MDIO write success
  * @retval kStatus_MDIO_SMIVisitTimeout  MDIO SMI visit time out
  */
-static inline void MDIO_Init(mdio_handle_t *handle)
-{
+static inline void MDIO_Init(mdio_handle_t *handle) {
     handle->ops->mdioInit(handle);
 }
 
@@ -98,8 +97,7 @@ static inline void MDIO_Init(mdio_handle_t *handle)
  * @retval kStatus_Success     MDIO write success
  * @retval kStatus_MDIO_SMIVisitTimeout  MDIO SMI visit time out
  */
-static inline status_t MDIO_Write(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAddr, uint32_t data)
-{
+static inline status_t MDIO_Write(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAddr, uint32_t data) {
     return handle->ops->mdioWrite(handle, phyAddr, devAddr, data);
 }
 
@@ -114,8 +112,7 @@ static inline status_t MDIO_Write(mdio_handle_t *handle, uint32_t phyAddr, uint3
  * @retval kStatus_Success  MDIO read success
  * @retval kStatus_MDIO_SMIVisitTimeout  MDIO SMI visit time out
  */
-static inline status_t MDIO_Read(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAddr, uint32_t *dataPtr)
-{
+static inline status_t MDIO_Read(mdio_handle_t *handle, uint32_t phyAddr, uint32_t devAddr, uint32_t *dataPtr) {
     return handle->ops->mdioRead(handle, phyAddr, devAddr, dataPtr);
 }
 

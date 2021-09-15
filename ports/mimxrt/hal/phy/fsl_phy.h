@@ -144,8 +144,7 @@ extern "C" {
  * @retval kStatus_Fail  PHY initialization fails
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_Init(phy_handle_t *handle, const phy_config_t *config)
-{
+static inline status_t PHY_Init(phy_handle_t *handle, const phy_config_t *config) {
     return handle->ops->phyInit(handle, config);
 }
 /*!
@@ -158,8 +157,7 @@ static inline status_t PHY_Init(phy_handle_t *handle, const phy_config_t *config
  * @retval kStatus_Success     PHY write success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t data)
-{
+static inline status_t PHY_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t data) {
     return handle->ops->phyWrite(handle, phyReg, data);
 }
 
@@ -173,8 +171,7 @@ static inline status_t PHY_Write(phy_handle_t *handle, uint32_t phyReg, uint32_t
  * @retval kStatus_Success  PHY read success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t *dataPtr)
-{
+static inline status_t PHY_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t *dataPtr) {
     return handle->ops->phyRead(handle, phyReg, dataPtr);
 }
 
@@ -188,8 +185,7 @@ static inline status_t PHY_Read(phy_handle_t *handle, uint32_t phyReg, uint32_t 
  * @retval kStatus_Success   PHY gets status success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_GetAutoNegotiationStatus(phy_handle_t *handle, bool *status)
-{
+static inline status_t PHY_GetAutoNegotiationStatus(phy_handle_t *handle, bool *status) {
     return handle->ops->getAutoNegoStatus(handle, status);
 }
 
@@ -203,8 +199,7 @@ static inline status_t PHY_GetAutoNegotiationStatus(phy_handle_t *handle, bool *
  * @retval kStatus_Success   PHY get link status success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_GetLinkStatus(phy_handle_t *handle, bool *status)
-{
+static inline status_t PHY_GetLinkStatus(phy_handle_t *handle, bool *status) {
     return handle->ops->getLinkStatus(handle, status);
 }
 
@@ -220,8 +215,7 @@ static inline status_t PHY_GetLinkStatus(phy_handle_t *handle, bool *status)
  * @retval kStatus_Success   PHY get link speed and duplex success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_GetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t *speed, phy_duplex_t *duplex)
-{
+static inline status_t PHY_GetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t *speed, phy_duplex_t *duplex) {
     return handle->ops->getLinkSpeedDuplex(handle, speed, duplex);
 }
 
@@ -234,8 +228,7 @@ static inline status_t PHY_GetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t 
  * @retval kStatus_Success   PHY gets status success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_SetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t speed, phy_duplex_t duplex)
-{
+static inline status_t PHY_SetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t speed, phy_duplex_t duplex) {
     return handle->ops->setLinkSpeedDuplex(handle, speed, duplex);
 }
 
@@ -251,8 +244,7 @@ static inline status_t PHY_SetLinkSpeedDuplex(phy_handle_t *handle, phy_speed_t 
  * @retval kStatus_Success   PHY get link speed and duplex success
  * @retval kStatus_PHY_SMIVisitTimeout  PHY SMI visit time out
  */
-static inline status_t PHY_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_speed_t speed, bool enable)
-{
+static inline status_t PHY_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_speed_t speed, bool enable) {
     return handle->ops->enableLoopback(handle, mode, speed, enable);
 }
 

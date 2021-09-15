@@ -65,7 +65,7 @@
         .data2 = { GPIO_SD_B0_04_USDHC1_DATA2 }, \
         .data3 = { GPIO_SD_B0_05_USDHC1_DATA3 }, \
     }
-    
+
 // Network definitions
 // Transceiver Phy Address & Type
 #define ENET_PHY_ADDRESS    (0)

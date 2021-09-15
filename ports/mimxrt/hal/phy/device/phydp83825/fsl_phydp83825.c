@@ -40,23 +40,22 @@
 /*******************************************************************************
  * Variables
  ******************************************************************************/
-const phy_operations_t phydp83825_ops = {.phyInit            = PHY_DP83825_Init,
-                                         .phyWrite           = PHY_DP83825_Write,
-                                         .phyRead            = PHY_DP83825_Read,
-                                         .getAutoNegoStatus  = PHY_DP83825_GetAutoNegotiationStatus,
-                                         .getLinkStatus      = PHY_DP83825_GetLinkStatus,
+const phy_operations_t phydp83825_ops = {.phyInit = PHY_DP83825_Init,
+                                         .phyWrite = PHY_DP83825_Write,
+                                         .phyRead = PHY_DP83825_Read,
+                                         .getAutoNegoStatus = PHY_DP83825_GetAutoNegotiationStatus,
+                                         .getLinkStatus = PHY_DP83825_GetLinkStatus,
                                          .getLinkSpeedDuplex = PHY_DP83825_GetLinkSpeedDuplex,
                                          .setLinkSpeedDuplex = PHY_DP83825_SetLinkSpeedDuplex,
-                                         .enableLoopback     = PHY_DP83825_EnableLoopback};
+                                         .enableLoopback = PHY_DP83825_EnableLoopback};
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
 
-status_t PHY_DP83825_Init(phy_handle_t *handle, const phy_config_t *config)
-{
-    uint32_t counter  = PHY_READID_TIMEOUT_COUNT;
-    status_t result   = kStatus_Success;
+status_t PHY_DP83825_Init(phy_handle_t *handle, const phy_config_t *config) {
+    uint32_t counter = PHY_READID_TIMEOUT_COUNT;
+    status_t result = kStatus_Success;
     uint32_t regValue = 0;
 
     /* Init MDIO interface. */
@@ -69,15 +68,13 @@ status_t PHY_DP83825_Init(phy_handle_t *handle, const phy_config_t *config)
     do
     {
         result = MDIO_Read(handle->mdioHandle, handle->phyAddr, PHY_ID1_REG, &regValue);
-        if (result != kStatus_Success)
-        {
+        if (result != kStatus_Success) {
             return result;
         }
         counter--;
     } while ((regValue != PHY_CONTROL_ID1) && (counter != 0U));
 
-    if (counter == 0U)
-    {
+    if (counter == 0U) {
         return kStatus_Fail;
     }
 
@@ -98,11 +95,11 @@ status_t PHY_DP83825_Init(phy_handle_t *handle, const phy_config_t *config)
             /* Set the auto-negotiation then start it. */
             result =
                 MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_AUTONEG_ADVERTISE_REG,
-                           (PHY_100BASETX_FULLDUPLEX_MASK | PHY_100BASETX_HALFDUPLEX_MASK |
-                            PHY_10BASETX_FULLDUPLEX_MASK | PHY_10BASETX_HALFDUPLEX_MASK | PHY_IEEE802_3_SELECTOR_MASK));
+                    (PHY_100BASETX_FULLDUPLEX_MASK | PHY_100BASETX_HALFDUPLEX_MASK |
+                        PHY_10BASETX_FULLDUPLEX_MASK | PHY_10BASETX_HALFDUPLEX_MASK | PHY_IEEE802_3_SELECTOR_MASK));
             if (result == kStatus_Success) {
                 result = MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BASICCONTROL_REG,
-                                    (PHY_BCTL_AUTONEG_MASK | PHY_BCTL_RESTART_AUTONEG_MASK));
+                    (PHY_BCTL_AUTONEG_MASK | PHY_BCTL_RESTART_AUTONEG_MASK));
             }
         } else {
             /* This PHY only supports 10/100M speed. */
@@ -250,7 +247,7 @@ status_t PHY_DP83825_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_s
             assert(speed == kPHY_Speed100M);
 
             regValue = PHY_BCTL_SPEED0_MASK | PHY_BCTL_DUPLEX_MASK | PHY_BCTL_LOOP_MASK;
-            result   = MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BASICCONTROL_REG, regValue);
+            result = MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BASICCONTROL_REG, regValue);
             if (result != kStatus_Success) {
                 return result;
             }
@@ -258,7 +255,7 @@ status_t PHY_DP83825_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_s
             result = MDIO_Read(handle->mdioHandle, handle->phyAddr, PHY_BISCR_REG, &regValue);
             if (result == kStatus_Success) {
                 return MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BISCR_REG,
-                                  (regValue & ~PHY_BISCR_REMOTELOOP_MASK) | PHY_BISCR_REMOTELOOP_MODE);
+                    (regValue & ~PHY_BISCR_REMOTELOOP_MASK) | PHY_BISCR_REMOTELOOP_MODE);
             }
         }
     } else {
@@ -268,7 +265,7 @@ status_t PHY_DP83825_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_s
             result = MDIO_Read(handle->mdioHandle, handle->phyAddr, PHY_BISCR_REG, &regValue);
             if (result == kStatus_Success) {
                 return MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BISCR_REG,
-                                  (regValue & ~PHY_BISCR_REMOTELOOP_MASK));
+                    (regValue & ~PHY_BISCR_REMOTELOOP_MASK));
             }
         }
         /* First read the current status in control register. */
@@ -276,7 +273,7 @@ status_t PHY_DP83825_EnableLoopback(phy_handle_t *handle, phy_loop_t mode, phy_s
         if (result == kStatus_Success) {
             regValue &= ~PHY_BCTL_LOOP_MASK;
             return MDIO_Write(handle->mdioHandle, handle->phyAddr, PHY_BASICCONTROL_REG,
-                                (regValue | PHY_BCTL_RESTART_AUTONEG_MASK));
+                (regValue | PHY_BCTL_RESTART_AUTONEG_MASK));
         }
     }
 

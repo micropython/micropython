@@ -60,4 +60,3 @@ void systick_wait_at_least(uint32_t start_tick, uint32_t delay_ms) {
         __WFI(); // enter sleep mode, waiting for interrupt
     }
 }
-
