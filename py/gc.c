@@ -90,6 +90,12 @@
 #define PTR_FROM_BLOCK(block) (((block) * BYTES_PER_BLOCK + (uintptr_t)MP_STATE_MEM(gc_pool_start)))
 #define ATB_FROM_BLOCK(bl) ((bl) / BLOCKS_PER_ATB)
 
+// After the ATB, there must be a byte filled with AT_FREE so that gc_mark_tree
+// cannot erroneously conclude that a block extends past the end of the GC heap
+// due to bit patterns in the FTB (or first block, if finalizers are disabled)
+// being interpreted as AT_TAIL.
+#define ALLOC_TABLE_GAP_BYTE (1)
+
 #if MICROPY_ENABLE_FINALISER
 // FTB = finaliser table byte
 // if set, then the corresponding block may have a finaliser
@@ -122,7 +128,8 @@ void gc_init(void *start, void *end) {
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
     #if MICROPY_ENABLE_FINALISER
-    MP_STATE_MEM(gc_alloc_table_byte_len) = (total_byte_len - 1) * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+    size_t gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+    MP_STATE_MEM(gc_alloc_table_byte_len) = gc_alloc_table_byte_len;
     #else
     MP_STATE_MEM(gc_alloc_table_byte_len) = total_byte_len / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     #endif
@@ -131,7 +138,7 @@ void gc_init(void *start, void *end) {
 
     #if MICROPY_ENABLE_FINALISER
     size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
-    MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len) + 1;
+    MP_STATE_MEM(gc_finaliser_table_start) = MP_STATE_MEM(gc_alloc_table_start) + MP_STATE_MEM(gc_alloc_table_byte_len) + ALLOC_TABLE_GAP_BYTE;
     #endif
 
     size_t gc_pool_block_len = MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB;
@@ -142,12 +149,12 @@ void gc_init(void *start, void *end) {
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // clear ATBs
-    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
-
     #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
-    memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
+    // clear ATBs and FTBs
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, gc_finaliser_table_byte_len + gc_alloc_table_byte_len + ALLOC_TABLE_GAP_BYTE);
+    #else
+    // clear ATBs
+    memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len) + ALLOC_TABLE_GAP_BYTE);
     #endif
 
     // set last free ATB index to start of heap
