@@ -1233,3 +1233,13 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
 }
 
 #endif
+
+#define DMA_ID_FROM_CONTROLLER_STREAM(c, s) ((s) + (c) * NSTREAMS_PER_CONTROLLER)
+
+void dma_external_acquire(uint32_t controller, uint32_t stream) {
+    dma_enable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
+}
+
+void dma_external_release(uint32_t controller, uint32_t stream) {
+    dma_disable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
+}
