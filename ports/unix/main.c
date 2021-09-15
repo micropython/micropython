@@ -542,8 +542,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if defined(MICROPY_UNIX_COVERAGE)
     {
         MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_obj);
+        MP_DECLARE_CONST_FUN_OBJ_0(extra_coverage_gc_obj);
         MP_DECLARE_CONST_FUN_OBJ_0(extra_cpp_coverage_obj);
         mp_store_global(MP_QSTR_extra_coverage, MP_OBJ_FROM_PTR(&extra_coverage_obj));
+        mp_store_global(MP_QSTR_extra_coverage_gc, MP_OBJ_FROM_PTR(&extra_coverage_gc_obj));
         mp_store_global(MP_QSTR_extra_cpp_coverage, MP_OBJ_FROM_PTR(&extra_cpp_coverage_obj));
     }
     #endif
