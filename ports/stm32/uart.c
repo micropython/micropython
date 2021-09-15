@@ -717,6 +717,33 @@ uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
             uart_clk = LSE_VALUE;
             break;
     }
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    uint32_t csel;
+    if (self->uart_id == 1 || self->uart_id == 6 || self->uart_id == 9 || self->uart_id == 10) {
+        csel = RCC->CDCCIP2R >> 3;
+    } else {
+        csel = RCC->CDCCIP2R;
+    }
+    switch (csel & 3) {
+        case 0:
+            if (self->uart_id == 1 || self->uart_id == 6 || self->uart_id == 9 || self->uart_id == 10) {
+                uart_clk = HAL_RCC_GetPCLK2Freq();
+            } else {
+                uart_clk = HAL_RCC_GetPCLK1Freq();
+            }
+            break;
+        case 3:
+            uart_clk = HSI_VALUE;
+            break;
+        case 4:
+            uart_clk = CSI_VALUE;
+            break;
+        case 5:
+            uart_clk = LSE_VALUE;
+            break;
+        default:
+            break;
+    }
     #elif defined(STM32H7)
     uint32_t csel;
     if (self->uart_id == 1 || self->uart_id == 6) {

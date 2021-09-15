@@ -378,6 +378,9 @@ void stm32_main(uint32_t reset_mode) {
     // enable the CCM RAM
     __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
     #endif
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    // Enable SRAM clock.
+    __HAL_RCC_SRDSRAM_CLK_ENABLE();
     #elif defined(STM32H7)
     // Enable D2 SRAM1/2/3 clocks.
     __HAL_RCC_D2SRAM1_CLK_ENABLE();
