@@ -253,7 +253,11 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     #endif
 
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
+    #if defined(FLASH_CR_PSIZE)
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
+    #else
+    EraseInitStruct.VoltageRange = 0; // unused parameter on STM32H7A3/B3
+    #endif
     #if defined(STM32H7)
     EraseInitStruct.Banks = get_bank(flash_dest);
     #endif

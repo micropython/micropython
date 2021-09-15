@@ -314,6 +314,17 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+// Configuration for STM32H7A3/B3 series
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x08fff800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
 
