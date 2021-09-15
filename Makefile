@@ -260,6 +260,7 @@ stubs:
 	@$(PYTHON) tools/extract_pyi.py shared-bindings/ $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py extmod/ulab/code/ $(STUBDIR)/ulab
 	@$(PYTHON) tools/extract_pyi.py ports/atmel-samd/bindings $(STUBDIR)
+	@$(PYTHON) tools/extract_pyi.py ports/espressif/bindings $(STUBDIR)
 	@$(PYTHON) tools/extract_pyi.py ports/raspberrypi/bindings $(STUBDIR)
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst

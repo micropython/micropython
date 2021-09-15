@@ -1,0 +1,16 @@
+# For docs
+mypy
+black
+isort
+twine
+wheel
+astroid
+setuptools
+
+# For sphinx
+Sphinx<4
+sphinx-autoapi
+sphinx-rtd-theme
+sphinxcontrib-svg2pdfconverter
+readthedocs-sphinx-search
+myst-parser
