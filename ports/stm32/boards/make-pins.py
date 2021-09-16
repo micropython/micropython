@@ -4,7 +4,8 @@
 Generates pin source files based on an MCU alternate-function definition (eg
 stm32f405_af.csv) and a board-specific pin definition file, pins.csv.
 
-The pins.csv file must contain lines of the form:
+The pins.csv file can contain empty lines, comments (a line beginning with "#")
+or pin definition lines.  Pin definition lines must be of the form:
 
     board,cpu
 
@@ -362,6 +363,12 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
+                if len(row) == 0 or row[0].startswith("#"):
+                    # Skip empty lines, and lines starting with "#"
+                    continue
+                if len(row) != 2:
+                    raise ValueError("Expecting two entries in a row")
+
                 cpu_pin_name = row[1]
                 cpu_pin_hidden = False
                 if cpu_pin_name.startswith("-"):
