@@ -16,10 +16,10 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     outputs:
-      docs-build: ${{ steps.set-matrix.outputs.docs-build }}
-      arm-boards: ${{ steps.set-matrix.outputs.arm-boards }}
-      riscv-boards: ${{ steps.set-matrix.outputs.riscv-boards }}
-      espressif-boards: ${{ steps.set-matrix.outputs.espressif-boards }}
+      build-doc: ${{ steps.set-matrix.outputs.build-doc }}
+      boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
+      boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
+      boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
     steps:
     - name: Dump GitHub context
       env:
@@ -27,9 +27,12 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
+        submodules: false
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ lib/ tools/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -38,7 +41,7 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Install deps
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y eatmydata
@@ -109,11 +112,11 @@ jobs:
         zip -9r circuitpython-stubs.zip circuitpython-stubs
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs/dist/*.tar.gz s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
     - name: "Get changes"
+      if: github.event_name == 'pull_request'
       uses: dorny/paths-filter@v2
       id: filter
       with:
         list-files: json
-        base: ${{ github.ref }}
         filters: |
           changed:
             - '**'
@@ -134,9 +137,12 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
+        submodules: false
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ lib/ tools/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -185,15 +191,16 @@ jobs:
   build-doc:
     runs-on: ubuntu-20.04
     needs: test
-    if: ${{ needs.test.outputs.docs-build == 'True' }}
+    if: ${{ needs.test.outputs.build-doc == 'True' }}
     steps:
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
         fetch-depth: 0
     - name: Populate selected submodules
-      run: git submodule update --init extmod/ulab
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+      run: git submodule update --init extmod/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -202,7 +209,7 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Install deps
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y eatmydata
@@ -244,8 +251,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.arm-boards) }}
-    if: ${{ needs.test.outputs.arm-boards != '[]' }}
+        board: ${{ fromJSON(needs.test.outputs.boards-arm) }}
+    if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -255,8 +262,9 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: Install deps
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
         pip install -r requirements-ci.txt -r requirements-dev.txt
@@ -295,8 +303,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.riscv-boards) }}
-    if: ${{ needs.test.outputs.riscv-boards != '[]' }}
+        board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
+    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -306,8 +314,9 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: Install deps
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
         pip install -r requirements-ci.txt -r requirements-dev.txt
@@ -346,8 +355,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.espressif-boards) }}
-    if: ${{ needs.test.outputs.espressif-boards != '[]' }}
+        board: ${{ fromJSON(needs.test.outputs.boards-espressif) }}
+    if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -357,7 +366,8 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
     - uses: actions/cache@v2
@@ -380,7 +390,7 @@ jobs:
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
-    - name: Install deps
+    - name: Install dependencies
       run: |
         source $IDF_PATH/export.sh
         sudo apt-get install -y gettext ninja-build

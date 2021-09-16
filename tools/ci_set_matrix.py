@@ -33,9 +33,12 @@ PORT_TO_ARCH = {
     "stm": "arm",
 }
 
-changed_files = json.loads(os.environ["CHANGED_FILES"])
-print("changed_files")
-print(changed_files)
+changed_files = {}
+try:
+    changed_files = json.loads(os.environ["CHANGED_FILES"])
+except json.decoder.JSONDecodeError as exc:
+    if exc.msg != "Expecting value":
+        raise
 
 
 def set_boards_to_build(build_all):
@@ -59,8 +62,8 @@ def set_boards_to_build(build_all):
 
     if not build_all:
         boards_to_build = set()
-        board_pattern = re.compile(r"ports\/\w+\/boards\/(\w+)\/")
-        port_pattern = re.compile(r"ports\/(\w+)\/")
+        board_pattern = re.compile(r"^ports\/\w+\/boards\/(\w+)\/")
+        port_pattern = re.compile(r"^ports\/(\w+)\/")
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
@@ -90,14 +93,14 @@ def set_boards_to_build(build_all):
 
     # Set the step outputs for each architecture
     for arch in arch_to_boards:
-        print("::set-output name=" + arch + "-boards::" + json.dumps(sorted(arch_to_boards[arch])))
+        print("::set-output name=boards-" + arch + "::" + json.dumps(sorted(arch_to_boards[arch])))
 
 
 def set_docs_to_build(build_all):
     doc_match = build_all
     if not build_all:
         doc_pattern = re.compile(
-            r"extmod\/ulab\/code|ports\/\w+\/bindings|shared-bindings|\.(?:md|MD|rst|RST)$"
+            r"^(?:docs|(?:(?:extmod\/ulab|ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
         )
         for p in changed_files:
             if doc_pattern.search(p):
@@ -106,15 +109,12 @@ def set_docs_to_build(build_all):
 
     # Set the step outputs
     print("Building docs:", doc_match)
-    print("::set-output name=docs-build::" + str(doc_match))
+    print("::set-output name=build-doc::" + str(doc_match))
 
 
 def check_changed_files():
-    if not changed_files or (
-        os.environ.get("GITHUB_EVENT_NAME", "") == "push"
-        and os.environ.get("GITHUB_REPOSITORY", "") == "adafruit/circuitpython"
-    ):
-        print("Building all docs/boards because of adafruit/circuitpython branch")
+    if not changed_files:
+        print("Building all docs/boards")
         return True
     else:
         print("Adding docs/boards to build based on changed files")
