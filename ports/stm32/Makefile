@@ -617,7 +617,9 @@ endef
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(ECHO) $(LDFLAGS_MOD) > $(BUILD)/ldflags_mod.objs
+	$(Q)$(ECHO) $(LIBS) > $(BUILD)/libs.objs
+	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) @$(BUILD)/ldflags_mod.objs @$(BUILD)/libs.objs
 	$(Q)$(SIZE) $(1)
 	$(if $(filter-out $(TEXT0_ADDR),0x08000000), \
 		$(ECHO) "INFO: this build requires mboot to be installed first")
