@@ -106,22 +106,23 @@ function ci_esp32_idf402_setup {
     ci_esp32_setup_helper v4.0.2
 }
 
-function ci_esp32_idf43_setup {
-    ci_esp32_setup_helper v4.3
+function ci_esp32_idf44_setup {
+    ci_esp32_setup_helper master
 }
 
 function ci_esp32_build {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
-    make ${MAKEOPTS} -C ports/esp32
-    make ${MAKEOPTS} -C ports/esp32 clean
     make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest.py
     if [ -d $IDF_PATH/components/esp32c3 ]; then
         make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
     fi
     if [ -d $IDF_PATH/components/esp32s2 ]; then
         make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
+    fi
+    if [ -d $IDF_PATH/components/esp32s3 ]; then
+        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S3
     fi
 }
 
