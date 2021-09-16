@@ -238,8 +238,9 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
     if (!background_callback_pending()) {
-        asm volatile ("dsb 0xF" ::: "memory");
-        __wfi();
+        // TODO: Does not work when board is power-cycled.
+        // asm volatile ("dsb 0xF" ::: "memory");
+        // __wfi();
     }
     common_hal_mcu_enable_interrupts();
 }
