@@ -138,7 +138,11 @@ STATIC void machine_timer_isr(void *self_in) {
     device->hw_timer[self->index].update = 1;
     #else
     #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
+    #if CONFIG_IDF_TARGET_ESP32S3
+    device->hw_timer[self->index].update.tn_update = 1;
+    #else
     device->hw_timer[self->index].update.tx_update = 1;
+    #endif
     #else
     device->hw_timer[self->index].update.update = 1;
     #endif

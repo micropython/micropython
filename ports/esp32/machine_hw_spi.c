@@ -55,6 +55,8 @@
 
 #if CONFIG_IDF_TARGET_ESP32C3
 #define HSPI_HOST SPI2_HOST
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define HSPI_HOST SPI3_HOST
 #endif
 
 typedef struct _machine_hw_spi_default_pins_t {

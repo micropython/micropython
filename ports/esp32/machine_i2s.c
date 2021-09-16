@@ -455,8 +455,13 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // apply low-level workaround for bug in some ESP-IDF versions that swap
     // the left and right channels
     // https://github.com/espressif/esp-idf/issues/6625
+    #if CONFIG_IDF_TARGET_ESP32S3
+    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_TX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_RX_MSB_SHIFT);
+    #else
     REG_SET_BIT(I2S_CONF_REG(self->port), I2S_TX_MSB_RIGHT);
     REG_SET_BIT(I2S_CONF_REG(self->port), I2S_RX_MSB_RIGHT);
+    #endif
 
     i2s_pin_config_t pin_config;
     pin_config.bck_io_num = self->sck;
