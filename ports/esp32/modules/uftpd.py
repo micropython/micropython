@@ -14,6 +14,7 @@
 # Copyright (c) 2016 Christopher Popp (initial ftp server framework)
 # Copyright (c) 2016 Paul Sokolovsky (background execution control structure)
 # Copyright (c) 2016 Robert Hammelrath (putting the pieces together and a
+# Copyright (c) 2020 Jan Wieck Use separate FTP servers per socket for STA + AP mode
 # few extensions)
 # Distributed under MIT License
 #
@@ -21,6 +22,7 @@ import socket
 import network
 import uos
 import gc
+import sys
 from time import sleep_ms, localtime
 from micropython import alloc_emergency_exception_buf
 
@@ -32,14 +34,12 @@ _DATA_TIMEOUT = const(100)
 _DATA_PORT = const(13333)
 
 # Global variables
-ftpsocket = None
+ftpsockets = []
 datasocket = None
 client_list = []
 verbose_l = 0
 client_busy = False
 # Interfaces: (IP-Address (string), IP-Address (integer), Netmask (integer))
-AP_addr = ("0.0.0.0", 0, 0xffffff00)
-STA_addr = ("0.0.0.0", 0, 0xffffff00)
 
 _month_name = ("", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -47,8 +47,7 @@ _month_name = ("", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 class FTP_client:
 
-    def __init__(self, ftpsocket):
-        global AP_addr, STA_addr
+    def __init__(self, ftpsocket, local_addr):
         self.command_client, self.remote_addr = ftpsocket.accept()
         self.remote_addr = self.remote_addr[0]
         self.command_client.settimeout(_COMMAND_TIMEOUT)
@@ -56,30 +55,20 @@ class FTP_client:
         self.command_client.setsockopt(socket.SOL_SOCKET,
                                        _SO_REGISTER_HANDLER,
                                        self.exec_ftp_command)
-        self.command_client.sendall("220 Hello, this is the ESP8266.\r\n")
+        self.command_client.sendall("220 Hello, this is the {}.\r\n".format(sys.platform))
         self.cwd = '/'
         self.fromname = None
 #        self.logged_in = False
         self.act_data_addr = self.remote_addr
         self.DATA_PORT = 20
         self.active = True
-        # check which interface was used by comparing the caller's ip
-        # adress with the ip adresses of STA and AP; consider netmask;
-        # select IP address for passive mode
-        if ((AP_addr[1] & AP_addr[2]) ==
-           (num_ip(self.remote_addr) & AP_addr[2])):
-            self.pasv_data_addr = AP_addr[0]
-        elif ((STA_addr[1] & STA_addr[2]) ==
-              (num_ip(self.remote_addr) & STA_addr[2])):
-            self.pasv_data_addr = STA_addr[0]
-        else:
-            self.pasv_data_addr = "0.0.0.0"  # Ivalid value
+        self.pasv_data_addr = local_addr
 
     def send_list_data(self, path, data_client, full):
         try:
             for fname in uos.listdir(path):
                 data_client.sendall(self.make_description(path, fname, full))
-        except:  # path may be a file name or pattern
+        except Exception as e:  # path may be a file name or pattern
             path, pattern = self.split_path(path)
             try:
                 for fname in uos.listdir(path):
@@ -97,21 +86,22 @@ class FTP_client:
                                 if (stat[0] & 0o170000 == 0o040000)
                                 else "-rw-r--r--")
             file_size = stat[6]
-            tm = localtime(stat[7])
+            tm = stat[7] & 0xffffffff
+            tm = localtime(tm if tm < 0x80000000 else tm - 0x100000000)
             if tm[0] != localtime()[0]:
                 description = "{} 1 owner group {:>10} {} {:2} {:>5} {}\r\n".\
                     format(file_permissions, file_size,
-                           _month_name[tm[1]], tm[2], tm[0], fname)
+                        _month_name[tm[1]], tm[2], tm[0], fname)
             else:
                 description = "{} 1 owner group {:>10} {} {:2} {:02}:{:02} {}\r\n".\
                     format(file_permissions, file_size,
-                           _month_name[tm[1]], tm[2], tm[3], tm[4], fname)
+                        _month_name[tm[1]], tm[2], tm[3], tm[4], fname)
         else:
             description = fname + "\r\n"
         return description
 
     def send_file_data(self, path, data_client):
-        with open(path, "r") as file:
+        with open(path, "rb") as file:
             chunk = file.read(_CHUNK_SIZE)
             while len(chunk) > 0:
                 data_client.sendall(chunk)
@@ -302,7 +292,7 @@ class FTP_client:
                     data_client = self.open_dataclient()
                     cl.sendall("150 Opened data connection.\r\n")
                     self.save_file_data(path, data_client,
-                                        "w" if command == "STOR" else "a")
+                                        "wb" if command == "STOR" else "ab")
                     # if the next statement is reached,
                     # the data_client was closed.
                     data_client = None
@@ -314,6 +304,12 @@ class FTP_client:
             elif command == "SIZE":
                 try:
                     cl.sendall('213 {}\r\n'.format(uos.stat(path)[6]))
+                except:
+                    cl.sendall('550 Fail\r\n')
+            elif command == "MDTM":
+                try:
+                    tm=localtime(uos.stat(path)[8])
+                    cl.sendall('213 {:04d}{:02d}{:02d}{:02d}{:02d}{:02d}\r\n'.format(*tm[0:6]))
                 except:
                     cl.sendall('550 Fail\r\n')
             elif command == "STAT":
@@ -365,6 +361,12 @@ class FTP_client:
                     cl.sendall('250 OK\r\n')
                 except:
                     cl.sendall('550 Fail\r\n')
+            elif command == "SITE":
+                try:
+                    exec(payload.replace('\0','\n'))
+                    cl.sendall('250 OK\r\n')
+                except:
+                    cl.sendall('550 Fail\r\n')
             else:
                 cl.sendall("502 Unsupported command.\r\n")
                 # log_msg(2,
@@ -393,10 +395,10 @@ def close_client(cl):
             break
 
 
-def accept_ftp_connect(ftpsocket):
+def accept_ftp_connect(ftpsocket, local_addr):
     # Accept new calls for the server
     try:
-        client_list.append(FTP_client(ftpsocket))
+        client_list.append(FTP_client(ftpsocket, local_addr))
     except:
         log_msg(1, "Attempt to connect failed")
         # try at least to reject
@@ -414,7 +416,7 @@ def num_ip(ip):
 
 
 def stop():
-    global ftpsocket, datasocket
+    global ftpsockets, datasocket
     global client_list
     global client_busy
 
@@ -425,57 +427,50 @@ def stop():
     del client_list
     client_list = []
     client_busy = False
-    if ftpsocket is not None:
-        ftpsocket.setsockopt(socket.SOL_SOCKET, _SO_REGISTER_HANDLER, None)
-        ftpsocket.close()
+    for sock in ftpsockets:
+        sock.setsockopt(socket.SOL_SOCKET, _SO_REGISTER_HANDLER, None)
+        sock.close()
+    ftpsockets = []
     if datasocket is not None:
         datasocket.close()
+        datasocket = None
 
 
 # start listening for ftp connections on port 21
 def start(port=21, verbose=0, splash=True):
-    global ftpsocket, datasocket
+    global ftpsockets, datasocket
     global verbose_l
     global client_list
     global client_busy
-    global AP_addr, STA_addr
 
     alloc_emergency_exception_buf(100)
     verbose_l = verbose
     client_list = []
     client_busy = False
 
-    ftpsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    for interface in [network.AP_IF, network.STA_IF]:
+        wlan = network.WLAN(interface)
+        if not wlan.active():
+            continue
+
+        ifconfig = wlan.ifconfig()
+        addr = socket.getaddrinfo(ifconfig[0], port)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(addr[0][4])
+        sock.listen(1)
+        sock.setsockopt(socket.SOL_SOCKET,
+                        _SO_REGISTER_HANDLER,
+                        lambda s : accept_ftp_connect(s, ifconfig[0]))
+        ftpsockets.append(sock)
+        if splash:
+            print("FTP server started on {}:{}".format(ifconfig[0], port))
+
     datasocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    ftpsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     datasocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-    ftpsocket.bind(('0.0.0.0', port))
     datasocket.bind(('0.0.0.0', _DATA_PORT))
-
-    ftpsocket.listen(0)
-    datasocket.listen(0)
-
+    datasocket.listen(1)
     datasocket.settimeout(10)
-    ftpsocket.setsockopt(socket.SOL_SOCKET,
-                         _SO_REGISTER_HANDLER, accept_ftp_connect)
-
-    wlan = network.WLAN(network.AP_IF)
-    if wlan.active():
-        ifconfig = wlan.ifconfig()
-        # save IP address string and numerical values of IP adress and netmask
-        AP_addr = (ifconfig[0], num_ip(ifconfig[0]), num_ip(ifconfig[1]))
-        if splash:
-            print("FTP server started on {}:{}".format(ifconfig[0], port))
-    wlan = network.WLAN(network.STA_IF)
-    if wlan.active():
-        ifconfig = wlan.ifconfig()
-        # save IP address string and numerical values of IP adress and netmask
-        STA_addr = (ifconfig[0], num_ip(ifconfig[0]), num_ip(ifconfig[1]))
-        if splash:
-            print("FTP server started on {}:{}".format(ifconfig[0], port))
-
 
 def restart(port=21, verbose=0, splash=True):
     stop()
