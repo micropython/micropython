@@ -110,10 +110,11 @@ const mp_obj_type_t mp_type_espidf_IDFError = {
 };
 
 
-// class MemoryError(MemoryError):
-//     """Raised when an ESP IDF memory allocation fails."""
-//     ...
-//
+//| import builtins
+//| class MemoryError(builtins.MemoryError):
+//|     """Raised when an ESP IDF memory allocation fails."""
+//|     ...
+//|
 NORETURN void mp_raise_espidf_MemoryError(void) {
     nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
 }

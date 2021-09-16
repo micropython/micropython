@@ -269,7 +269,7 @@ stubs:
 
 .PHONY: check-stubs
 check-stubs: stubs
-	@(cd $(STUBDIR) && set -- */__init__.pyi && mypy --strict "$${@%/*}")
+	@(cd $(STUBDIR) && set -- */__init__.pyi && mypy "$${@%/*}")
 	@tools/test-stubs.sh
 
 update-frozen-libraries:
