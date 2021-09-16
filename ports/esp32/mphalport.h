@@ -49,6 +49,7 @@ extern ringbuf_t stdin_ringbuf;
 void check_esp_err(esp_err_t code);
 
 uint32_t mp_hal_ticks_us(void);
+
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
     #if CONFIG_IDF_TARGET_ESP32C3
@@ -59,10 +60,17 @@ __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     return ccount;
 }
 
+#define mp_hal_ticks_cpu_init(void)
+#define mp_hal_ticks_cpu_reset mp_hal_ticks_cpu
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (6)
+
+static inline mp_uint_t mp_hal_get_cpu_freq(void) {
+    return ets_get_cpu_frequency() * 1000000;
+}
+
 void mp_hal_delay_us(uint32_t);
 #define mp_hal_delay_us_fast(us) ets_delay_us(us)
 void mp_hal_set_interrupt_char(int c);
-uint32_t mp_hal_get_cpu_freq(void);
 
 #define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
@@ -102,6 +110,28 @@ static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
 }
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_level(pin, v);
+}
+
+static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
+    #if !CONFIG_IDF_TARGET_ESP32C3
+    if (pin >= 32) {
+        GPIO_REG_WRITE(GPIO_OUT1_W1TC_REG, 1 << (pin - 32));
+    } else
+    #endif
+    {
+        GPIO_REG_WRITE(GPIO_OUT_W1TC_REG, 1 << pin);
+    }
+}
+
+static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
+    #if !CONFIG_IDF_TARGET_ESP32C3
+    if (pin >= 32) {
+        GPIO_REG_WRITE(GPIO_OUT1_W1TS_REG, 1 << (pin - 32));
+    } else
+    #endif
+    {
+        GPIO_REG_WRITE(GPIO_OUT_W1TS_REG, 1 << pin);
+    }
 }
 
 #endif // INCLUDED_MPHALPORT_H

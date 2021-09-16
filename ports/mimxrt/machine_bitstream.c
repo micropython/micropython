@@ -31,16 +31,14 @@
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
-#define NS_TICKS_OVERHEAD (6)
 
-void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) __attribute__((section(".ram_functions")));
 void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t fcpu_mhz = mp_hal_get_cpu_freq() / 1000000;
-    // Convert ns to us ticks [high_time_0, period_0, high_time_1, period_1].
+    // Convert ns to clock ticks [high_time_0, period_0, high_time_1, period_1].
     for (size_t i = 0; i < 4; ++i) {
         timing_ns[i] = fcpu_mhz * timing_ns[i] / 1000;
-        if (timing_ns[i] > NS_TICKS_OVERHEAD) {
-            timing_ns[i] -= NS_TICKS_OVERHEAD;
+        if (timing_ns[i] > MP_HAL_BITSTREAM_NS_OVERHEAD) {
+            timing_ns[i] -= MP_HAL_BITSTREAM_NS_OVERHEAD;
         }
         if (i % 2 == 1) {
             // Convert low_time to period (i.e. add high_time).
@@ -55,13 +53,13 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
     for (size_t i = 0; i < len; ++i) {
         uint8_t b = buf[i];
         for (size_t j = 0; j < 8; ++j) {
-            uint32_t start_ticks = mp_hal_ticks_cpu();
-            mp_hal_pin_high(pin);
+            uint32_t start_ticks = mp_hal_ticks_cpu_reset();
             uint32_t *t = &timing_ns[b >> 6 & 2];
+            mp_hal_pin_high(pin);
             while ((mp_hal_ticks_cpu() - start_ticks) < t[0]) {
             }
-            mp_hal_pin_low(pin);
             b <<= 1;
+            mp_hal_pin_low(pin);
             while ((mp_hal_ticks_cpu() - start_ticks) < t[1]) {
             }
         }

@@ -164,6 +164,7 @@ idf_component_register(
         ${CMAKE_BINARY_DIR}
     REQUIRES
         ${IDF_COMPONENTS}
+    LDFRAGMENTS "linker.lf"
 )
 
 # Set the MicroPython target as the current (main) IDF component target.

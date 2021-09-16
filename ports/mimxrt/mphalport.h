@@ -81,6 +81,9 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return DWT->CYCCNT;
 }
 
+#define mp_hal_ticks_cpu_reset mp_hal_ticks_cpu
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (6)
+
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return CLOCK_GetCpuClkFreq();
 }

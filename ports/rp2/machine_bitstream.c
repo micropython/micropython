@@ -31,9 +31,9 @@
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
-void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t fcpu_mhz = mp_hal_get_cpu_freq() / 1000000;
-    // Convert ns to clock ticks [high_time_0, period_0, high_time_1, period_1].
+    // Convert ns to cpu ticks [high_time_0, period_0, high_time_1, period_1].
     for (size_t i = 0; i < 4; ++i) {
         timing_ns[i] = fcpu_mhz * timing_ns[i] / 1000;
         if (timing_ns[i] > MP_HAL_BITSTREAM_NS_OVERHEAD) {
@@ -44,7 +44,6 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
             timing_ns[i] += timing_ns[i - 1];
         }
     }
-    mp_hal_pin_output(pin);
     // Enable the systick counter, source CPU clock.
     mp_hal_ticks_cpu_init();
 
