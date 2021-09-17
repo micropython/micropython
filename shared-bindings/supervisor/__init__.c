@@ -251,7 +251,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(supervisor_set_next_code_file_obj, 0, supervisor_set_
 //|
 //|     """
 //|     ...
-STATIC mp_obj_t supervisor_ticks_ms(void) {
+mp_obj_t supervisor_ticks_ms(void) {
     uint64_t ticks_ms = common_hal_time_monotonic_ms();
     return mp_obj_new_int((ticks_ms + 0x1fff0000) % (1 << 29));
 }

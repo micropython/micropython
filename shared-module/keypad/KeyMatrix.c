@@ -32,6 +32,7 @@
 #include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/keypad/KeyMatrix.h"
 #include "shared-bindings/keypad/__init__.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/util.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
@@ -146,6 +147,8 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
     self->last_scan_ticks = now;
 
+    mp_obj_t timestamp = supervisor_ticks_ms();
+
     // On entry, all pins are set to inputs with a pull-up or pull-down,
     // depending on the diode orientation.
     for (size_t row = 0; row < common_hal_keypad_keymatrix_get_row_count(self); row++) {
@@ -170,7 +173,7 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
 
             // Record any transitions.
             if (previous != current) {
-                keypad_eventqueue_record(self->events, key_number, current);
+                keypad_eventqueue_record(self->events, key_number, current, timestamp);
             }
         }
 

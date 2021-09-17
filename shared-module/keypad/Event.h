@@ -33,6 +33,7 @@ typedef struct {
     mp_obj_base_t base;
     uint16_t key_number;
     bool pressed;
+    mp_obj_t timestamp;
 } keypad_event_obj_t;
 
 

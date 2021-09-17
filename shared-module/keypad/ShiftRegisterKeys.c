@@ -32,6 +32,7 @@
 #include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/keypad/ShiftRegisterKeys.h"
 #include "shared-bindings/keypad/__init__.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
@@ -122,6 +123,8 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
 
     self->last_scan_ticks = now;
 
+    mp_obj_t timestamp = supervisor_ticks_ms();
+
     // Latch (freeze) the current state of the input pins.
     common_hal_digitalio_digitalinout_set_value(self->latch, self->value_to_latch);
 
@@ -145,7 +148,7 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
 
         // Record any transitions.
         if (previous != current) {
-            keypad_eventqueue_record(self->events, key_number, current);
+            keypad_eventqueue_record(self->events, key_number, current, timestamp);
         }
     }
 
