@@ -54,6 +54,22 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     #endif
 }
 
+static inline mp_uint_t mp_hal_ticks_bitstream(void) {
+    #if __CORTEX_M == 0
+    return 0;
+    #else
+    return DWT->CYCCNT;
+    #endif
+}
+
+static inline mp_uint_t mp_hal_get_cpu_freq(void) {
+    return HAL_RCC_GetSysClockFreq();
+}
+
+#define mp_hal_ticks_bitstream_start mp_hal_ticks_bitstream
+
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (6)
+
 // C-level pin HAL
 
 #include "pin.h"

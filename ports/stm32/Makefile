@@ -84,6 +84,7 @@ SUPPORTS_HARDWARE_FP_DOUBLE = 1
 else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
 CFLAGS_CORTEX_M += -msoft-float
+CFLAGS += -DSTM32_CORTEXM0
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
@@ -272,6 +273,7 @@ EXTMOD_SRC_C += $(addprefix extmod/,\
 	)
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
+	bitstream/machine_bitstream.c \
 	bus/softspi.c \
 	bus/softqspi.c \
 	memory/spiflash.c \
@@ -321,7 +323,6 @@ SRC_C += \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
-	machine_bitstream.c \
 	machine_i2c.c \
 	machine_i2s.c \
 	machine_spi.c \

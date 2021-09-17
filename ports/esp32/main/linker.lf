@@ -1,4 +1,4 @@
-[mapping:msin]
+[mapping:main]
 archive: libmain.a
 entries:
     machine_bitstream (noflash)
