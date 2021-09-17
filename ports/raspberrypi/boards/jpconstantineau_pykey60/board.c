@@ -25,6 +25,9 @@
  */
 
 #include "supervisor/board.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+#include "supervisor/shared/board.h"
 
 void board_init(void) {
 }
