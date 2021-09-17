@@ -47,6 +47,10 @@ extern int uart_attached_to_dupterm;
 void mp_hal_init(void);
 void mp_hal_rtc_init(void);
 
+static inline uint32_t mp_hal_get_cpu_freq(void) {
+    return system_get_cpu_freq() * 1000000;
+}
+
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_us(void) {
     return system_get_time();
 }
@@ -57,9 +61,12 @@ __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     return ccount;
 }
 
+#define mp_hal_ticks_cpu_enable(void)
+#define mp_hal_ticks_cpu_start mp_hal_ticks_cpu
+#define MP_HAL_BITSTREAM_NS_OVERHEAD  (5)
+
 void mp_hal_delay_us(uint32_t);
 void mp_hal_set_interrupt_char(int c);
-uint32_t mp_hal_get_cpu_freq(void);
 
 #define UART_TASK_ID 0
 #define DUPTERM_TASK_ID 1
@@ -103,5 +110,12 @@ void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin);
 #define mp_hal_pin_read(p) pin_get(p)
 #define mp_hal_pin_write(p, v) pin_set((p), (v))
 
+static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
+        GPIO_REG_WRITE(GPIO_OUT_W1TC_ADDRESS, 1 << pin);
+}
+
+static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
+        GPIO_REG_WRITE(GPIO_OUT_W1TS_ADDRESS, 1 << pin);
+}
 void *ets_get_esf_buf_ctlblk(void);
 int ets_esf_free_bufs(int idx);

@@ -94,7 +94,6 @@ SRC_C = \
 	espapa102.c \
 	modpyb.c \
 	modmachine.c \
-	machine_bitstream.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_adc.c \
@@ -160,6 +159,7 @@ SHARED_SRC_C = $(addprefix shared/,\
 	)
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
+	bitstream/machine_bitstream.c \
 	bus/softspi.c \
 	dht/dht.c \
         )
