@@ -93,13 +93,15 @@ def main():
     parser.add_argument(
         "--vpath", default=".", help="comma separated list of folders to search for c files in"
     )
-    parser.add_argument("files", nargs="*", help="list of c files to search")
+    parser.add_argument("cfiles", default="", help="filepath of file containing list of c files to search")
+
     args = parser.parse_args()
 
     vpath = [p.strip() for p in args.vpath.split(",")]
+    cfiles = io.open(args.cfiles).read().split(' ')
 
     modules = set()
-    for obj_file in args.files:
+    for obj_file in cfiles:
         c_file = find_c_file(obj_file, vpath)
         modules |= find_module_registrations(c_file)
 
