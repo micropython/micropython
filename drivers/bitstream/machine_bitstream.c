@@ -46,14 +46,14 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
         }
     }
     // Enable the CPU cycle counter, which is not always enabled.
-    mp_hal_ticks_cpu_init();
+    mp_hal_ticks_cpu_enable();
 
     uint32_t irq_state = mp_hal_quiet_timing_enter();
 
     for (size_t i = 0; i < len; ++i) {
         uint8_t b = buf[i];
         for (size_t j = 0; j < 8; ++j) {
-            uint32_t start_ticks = mp_hal_ticks_cpu_reset();
+            uint32_t start_ticks = mp_hal_ticks_cpu_start();
             uint32_t *t = &timing_ns[b >> 6 & 2];
             mp_hal_pin_high(pin);
             while ((mp_hal_ticks_cpu() - start_ticks) < t[0]) {

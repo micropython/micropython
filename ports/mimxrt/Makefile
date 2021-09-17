@@ -171,11 +171,11 @@ SRC_C += \
 	board_init.c \
 	dma_channel.c \
 	drivers/bus/softspi.c \
+	drivers/bitstream/machine_bitstream.c \
 	extmod/modonewire.c \
 	fatfs_port.c \
 	led.c \
 	machine_adc.c \
-	machine_bitstream.c \
 	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \

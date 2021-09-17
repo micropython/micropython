@@ -60,8 +60,8 @@ __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     return ccount;
 }
 
-#define mp_hal_ticks_cpu_init(void)
-#define mp_hal_ticks_cpu_reset mp_hal_ticks_cpu
+#define mp_hal_ticks_cpu_enable(void)
+#define mp_hal_ticks_cpu_start mp_hal_ticks_cpu
 #define MP_HAL_BITSTREAM_NS_OVERHEAD  (6)
 
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {

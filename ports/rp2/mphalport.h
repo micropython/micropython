@@ -63,11 +63,11 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return SYSTICK_MAX - systick_hw->cvr;
 }
 
-static inline void mp_hal_ticks_cpu_init(void) {
+static inline void mp_hal_ticks_cpu_enable(void) {
     systick_hw->csr = 5;
 }
 
-static inline mp_uint_t mp_hal_ticks_cpu_reset(void) {
+static inline mp_uint_t mp_hal_ticks_cpu_start(void) {
     // Resets the cpu_ticks counter and returns the start value
     systick_hw->cvr = 0;
     return 0;
