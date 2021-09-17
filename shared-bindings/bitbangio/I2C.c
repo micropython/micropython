@@ -217,7 +217,7 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 3, bitbangio_i2c_readfrom_into);
 
-//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None, stop: bool = True) -> None:
+//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the bytes from ``buffer`` to the device selected by ``address`` and then transmits a
 //|         stop bit. Use `writeto_then_readfrom` when needing a write, no stop and repeated start
 //|         before a read.
