@@ -107,7 +107,7 @@
 #include "shared-bindings/wifi/__init__.h"
 #endif
 
-#ifdef CIRCUITPY_BOOT_COUNTER
+#if CIRCUITPY_BOOT_COUNTER
 #include "shared-bindings/nvm/ByteArray.h"
 uint8_t value_out = 0;
 #endif
@@ -801,7 +801,7 @@ int __attribute__((used)) main(void) {
     // Turn on RX and TX LEDs if we have them.
     init_rxtx_leds();
 
-    #ifdef CIRCUITPY_BOOT_COUNTER
+    #if CIRCUITPY_BOOT_COUNTER
     // Increment counter before possibly entering safe mode
     common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
     ++value_out;

@@ -554,7 +554,11 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
-#if !defined(CIRCUITPY_INTERNAL_NVM_SIZE) && defined(CIRCUITPY_BOOT_COUNTER)
+#ifndef CIRCUITPY_BOOT_COUNTER
+#define CIRCUITPY_BOOT_COUNTER 0
+#endif
+
+#if !defined(CIRCUITPY_INTERNAL_NVM_SIZE) && CIRCUITPY_BOOT_COUNTER != 0
 #error "boot counter requires CIRCUITPY_NVM enabled"
 #endif
 
