@@ -96,7 +96,7 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    *(EXCLUDE_FILE(*fsl_flexspi.o) .text*) /* .text* sections (code) */
+    *(EXCLUDE_FILE(*fsl_flexspi.o *gc*.o *vm.o *parse.o *runtime*.o *mpirq.o *map.o) .text*) /* .text* sections (code) */
     *(.rodata)               /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)              /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)               /* glue arm to thumb code */
@@ -200,8 +200,9 @@ SECTIONS
   {
     . = ALIGN(4);
     __ram_function_start__ = .;
-    *fsl_flexspi.o(.text*)
     *(.ram_functions*)
+    /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
+    *(.text*)
     . = ALIGN(4);
     __ram_function_end__ = .;
   } > m_itcm  

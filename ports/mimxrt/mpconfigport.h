@@ -43,7 +43,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_EMIT_THUMB                  (1)
 #define MICROPY_EMIT_INLINE_THUMB           (1)
 
-// Compiler configuration
+// Optimisations
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
