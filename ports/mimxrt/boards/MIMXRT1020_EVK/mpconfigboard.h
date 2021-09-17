@@ -1,15 +1,11 @@
 #define MICROPY_HW_BOARD_NAME "i.MX RT1020 EVK"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1021DAG5A"
 
-#define BOARD_FLASH_SIZE (8 * 1024 * 1024)
-
 // i.MX RT1020 EVK has 1 board LED
 // Todo: think about replacing the define with searching in the generated pins?
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_B0_05)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
-#define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1020_flexspi_nor_config.h"
-#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_nor_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (3 * 32)
 
@@ -43,13 +39,13 @@
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_B1_12_LPSPI3_SCK }, { IOMUXC_GPIO_AD_B1_13_LPSPI3_PCS0 }, \
-    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI }, 
+    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI },
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
-                            kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
+                         kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
-                            kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+                         kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx }
 
 // Define mapping hardware I2C # to logical I2C #
 // SDA/SCL  HW-I2C    Logical I2C
@@ -65,14 +61,14 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPI2C4_SCL }, { IOMUXC_GPIO_SD_B1_03_LPI2C4_SDA },
 
-#define USDHC_DUMMY_PIN NULL , 0
+#define USDHC_DUMMY_PIN NULL, 0
 #define MICROPY_USDHC1 \
     { \
         .cmd = {GPIO_SD_B0_02_USDHC1_CMD}, \
         .clk = { GPIO_SD_B0_03_USDHC1_CLK }, \
-        .cd_b = { GPIO_SD_B0_06_USDHC1_CD_B },\
-        .data0 = { GPIO_SD_B0_04_USDHC1_DATA0 },\
-        .data1 = { GPIO_SD_B0_05_USDHC1_DATA1 },\
-        .data2 = { GPIO_SD_B0_00_USDHC1_DATA2 },\
-        .data3 = { GPIO_SD_B0_01_USDHC1_DATA3 },\
+        .cd_b = { GPIO_SD_B0_06_USDHC1_CD_B }, \
+        .data0 = { GPIO_SD_B0_04_USDHC1_DATA0 }, \
+        .data1 = { GPIO_SD_B0_05_USDHC1_DATA1 }, \
+        .data2 = { GPIO_SD_B0_00_USDHC1_DATA2 }, \
+        .data3 = { GPIO_SD_B0_01_USDHC1_DATA3 }, \
     }

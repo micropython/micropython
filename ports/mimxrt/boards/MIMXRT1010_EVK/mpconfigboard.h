@@ -1,14 +1,10 @@
 #define MICROPY_HW_BOARD_NAME "i.MX RT1010 EVK"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1011DAE5A"
 
-#define BOARD_FLASH_SIZE (16 * 1024 * 1024)
-
 // i.MX RT1010 EVK has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_11)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
-#define BOARD_FLASH_CONFIG_HEADER_H "evkmimxrt1010_flexspi_nor_config.h"
-#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_nor_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (2 * 32)
 
@@ -33,7 +29,7 @@
     { IOMUXC_GPIO_AD_04_LPSPI1_SDO }, { IOMUXC_GPIO_AD_03_LPSPI1_SDI },
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx }
-#define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx } 
+#define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx }
 
 // Define mapping hardware I2C # to logical I2C #
 // SDA/SCL  HW-I2C    Logical I2C

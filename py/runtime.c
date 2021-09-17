@@ -1081,6 +1081,10 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
 
+    // Note: the specific case of obj being an instance type is fast-path'ed in the VM
+    // for the MP_BC_LOAD_ATTR opcode. Instance types handle type->attr and look up directly
+    // in their member's map.
+
     // get the type
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 

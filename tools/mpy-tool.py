@@ -132,14 +132,6 @@ def mp_opcode_format(bytecode, ip, count_var_uint):
     ip_start = ip
     f = (0x000003A4 >> (2 * ((opcode) >> 4))) & 3
     if f == MP_BC_FORMAT_QSTR:
-        if config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
-            if (
-                opcode == MP_BC_LOAD_NAME
-                or opcode == MP_BC_LOAD_GLOBAL
-                or opcode == MP_BC_LOAD_ATTR
-                or opcode == MP_BC_STORE_ATTR
-            ):
-                ip += 1
         ip += 3
     else:
         extra_byte = (opcode & MP_BC_MASK_EXTRA_BYTE) == 0
@@ -440,10 +432,7 @@ class RawCodeBytecode(RawCode):
             "// frozen bytecode for file %s, scope %s%s"
             % (self.source_file.str, parent_name, self.simple_name.str)
         )
-        print("STATIC ", end="")
-        if not config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE:
-            print("const ", end="")
-        print("byte fun_data_%s[%u] = {" % (self.escaped_name, len(self.bytecode)))
+        print("STATIC const byte fun_data_%s[%u] = {" % (self.escaped_name, len(self.bytecode)))
         print("   ", end="")
         for i in range(self.ip2):
             print(" 0x%02x," % self.bytecode[i], end="")
@@ -798,7 +787,6 @@ def read_mpy(filename):
             raise Exception("incompatible .mpy version")
         feature_byte = header[2]
         qw_size = read_uint(f)
-        config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE = (feature_byte & 1) != 0
         config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_byte & 2) != 0
         mpy_native_arch = feature_byte >> 2
         if mpy_native_arch != MP_NATIVE_ARCH_NONE:
@@ -834,14 +822,6 @@ def freeze_mpy(base_qstrs, raw_codes):
     print('#include "py/objstr.h"')
     print('#include "py/emitglue.h"')
     print('#include "py/nativeglue.h"')
-    print()
-
-    print(
-        "#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE != %u"
-        % config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-    )
-    print('#error "incompatible MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE"')
-    print("#endif")
     print()
 
     print("#if MICROPY_LONGINT_IMPL != %u" % config.MICROPY_LONGINT_IMPL)
@@ -940,11 +920,7 @@ def merge_mpy(raw_codes, output_file):
         header = bytearray(5)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = (
-            config.native_arch << 2
-            | config.MICROPY_PY_BUILTINS_STR_UNICODE << 1
-            | config.MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-        )
+        header[2] = config.native_arch << 2 | config.MICROPY_PY_BUILTINS_STR_UNICODE << 1
         header[3] = config.mp_small_int_bits
         header[4] = 32  # qstr_win_size
         merged_mpy.extend(header)

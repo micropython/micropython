@@ -55,7 +55,11 @@
 #define PIN_ADC_MASK            PIN_ADC1
 #define pin_adc_table           pin_adc1
 
-#if defined(STM32H7)
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+#define ADCALLx                 (ADC2)
+#define pin_adcall_table        pin_adc2
+#elif defined(STM32H7)
 // On the H7 ADC3 is used for ADCAll to be able to read internal
 // channels. For all other GPIO channels, ADC12 is used instead.
 #define ADCALLx                 (ADC3)
@@ -136,7 +140,10 @@
     defined(STM32F746xx) || defined(STM32F765xx) || \
     defined(STM32F767xx) || defined(STM32F769xx)
 #define VBAT_DIV (4)
-#elif defined(STM32H743xx) || defined(STM32H747xx)
+#elif defined(STM32H743xx) || defined(STM32H747xx) || \
+    defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || \
+    defined(STM32H750xx)
 #define VBAT_DIV (4)
 #elif defined(STM32L432xx) || \
     defined(STM32L451xx) || defined(STM32L452xx) || \
@@ -226,6 +233,9 @@ STATIC void adc_wait_for_eoc_or_timeout(ADC_HandleTypeDef *adcHandle, int32_t ti
 STATIC void adcx_clock_enable(ADC_HandleTypeDef *adch) {
     #if defined(STM32F0) || defined(STM32F4) || defined(STM32F7)
     ADCx_CLK_ENABLE();
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    __HAL_RCC_ADC12_CLK_ENABLE();
+    __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
     #elif defined(STM32H7)
     if (adch->Instance == ADC3) {
         __HAL_RCC_ADC3_CLK_ENABLE();

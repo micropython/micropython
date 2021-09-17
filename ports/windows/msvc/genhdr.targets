@@ -123,7 +123,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
         <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       </ClCompile>
     </ItemGroup>
-    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -f&quot;-mcache-lookup-bc&quot; -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
+    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
     <WriteLinesToFile File="$(TLogLocation)frozen.read.1.tlog" Lines="$(FrozenManifest)" Overwrite="True"/>
   </Target>
 

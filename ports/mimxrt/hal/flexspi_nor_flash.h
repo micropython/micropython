@@ -34,7 +34,6 @@
 extern flexspi_nor_config_t qspiflash_config;
 
 status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId);
-status_t flexspi_nor_init(void);
 void flexspi_nor_update_lut(void);
 status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t address, const uint32_t *src, uint32_t size);

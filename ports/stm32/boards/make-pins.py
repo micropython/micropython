@@ -1,5 +1,50 @@
 #!/usr/bin/env python
-"""Creates the pin file for the STM32F4xx."""
+
+"""
+Generates pin source files based on an MCU alternate-function definition (eg
+stm32f405_af.csv) and a board-specific pin definition file, pins.csv.
+
+The pins.csv file can contain empty lines, comments (a line beginning with "#")
+or pin definition lines.  Pin definition lines must be of the form:
+
+    board,cpu
+
+Where "board" is the user-facing name of the pin as specified by the particular
+board layout and markings, and "cpu" is the corresponding name of the CPU/MCU
+pin.
+
+The "board" entry may be absent if the CPU pin has no additional name, and both
+entries may start with "-" to hide them from the corresponding Python dict of
+pins, and hence hide them from the user (but they are still accessible in C).
+
+For example, take the following pins.csv file:
+
+    X1,PA0
+    -X2,PA1
+    X3,-PA2
+    -X4,-PA3
+    ,PA4
+    ,-PA5
+
+The first row here configures:
+- The CPU pin PA0 is labelled X1.
+- The Python user can access both by the names Pin("X1") and Pin("A0").
+- The Python user can access both by the members Pin.board.X1 and Pin.cpu.A0.
+- In C code they are available as pyb_pin_X1 and pin_A0.
+
+Prefixing the names with "-" hides them from the user.  The following table
+summarises the various possibilities:
+
+    pins.csv entry | board name | cpu name | C board name | C cpu name
+    ---------------+------------+----------+--------------+-----------
+    X1,PA0           "X1"         "A0"       pyb_pin_X1     pin_A0
+    -X2,PA1          -            "A1"       pyb_pin_X2     pin_A1
+    X3,-PA2          "X3"         -          pyb_pin_X3     pin_A2
+    -X4,-PA3         -            -          pyb_pin_X4     pin_A3
+    ,PA4             -            "A4"       -              pin_A4
+    ,-PA5            -            -          -              pin_A5
+
+"""
 
 from __future__ import print_function
 
@@ -273,6 +318,9 @@ class NamedPin(object):
             self._name = name
         self._pin = pin
 
+    def set_hidden(self, value):
+        self._is_hidden = value
+
     def is_hidden(self):
         return self._is_hidden
 
@@ -293,7 +341,7 @@ class Pins(object):
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.port == port_num and pin.pin == pin_num:
-                return pin
+                return named_pin
 
     def parse_af_file(self, filename, pinname_col, af_col):
         with open(filename, "r") as csvfile:
@@ -315,12 +363,25 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
+                if len(row) == 0 or row[0].startswith("#"):
+                    # Skip empty lines, and lines starting with "#"
+                    continue
+                if len(row) != 2:
+                    raise ValueError("Expecting two entries in a row")
+
+                cpu_pin_name = row[1]
+                cpu_pin_hidden = False
+                if cpu_pin_name.startswith("-"):
+                    cpu_pin_name = cpu_pin_name[1:]
+                    cpu_pin_hidden = True
                 try:
-                    (port_num, pin_num) = parse_port_pin(row[1])
+                    (port_num, pin_num) = parse_port_pin(cpu_pin_name)
                 except:
                     continue
-                pin = self.find_pin(port_num, pin_num)
-                if pin:
+                named_pin = self.find_pin(port_num, pin_num)
+                if named_pin:
+                    named_pin.set_hidden(cpu_pin_hidden)
+                    pin = named_pin.pin()
                     pin.set_is_board_pin()
                     if row[0]:  # Only add board pins that have a name
                         self.board_pins.append(NamedPin(row[0], pin))
