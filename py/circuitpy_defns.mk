@@ -471,6 +471,8 @@ $(filter $(SRC_PATTERNS), \
 	microcontroller/RunMode.c \
 	msgpack/__init__.c \
 	msgpack/ExtType.c \
+	paralleldisplay/__init__.c \
+	paralleldisplay/ParallelBus.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
 )
