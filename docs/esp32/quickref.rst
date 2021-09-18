@@ -225,13 +225,68 @@ Use the ``machine.PWM`` class::
     from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0))      # create PWM object from a pin
-    pwm0.freq()             # get current frequency
+    pwm0.freq()             # get current frequency 5000 Hz
     pwm0.freq(1000)         # set frequency
-    pwm0.duty()             # get current duty cycle
+    pwm0.duty()             # get current duty cycle 512 (50%)
     pwm0.duty(200)          # set duty cycle
     pwm0.deinit()           # turn off PWM on the pin
 
-    pwm2 = PWM(Pin(2), freq=20000, duty=512) # create and configure in one go
+    pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
+
+ESP chips have different hardware peripherals:
+
+=====================================================  ========  ========  ========
+Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
+-----------------------------------------------------  --------  --------  --------
+Number of groups (speed modes)                                2         1         1
+Number of timers per group                                    4         4         4
+Number of channels per group                                  8         8         6
+-----------------------------------------------------  --------  --------  --------
+Different of PWM frequencies (groups * timers)                8         4         4
+Total PWM channels (Pins, duties) (groups * channels)        16         8         6
+=====================================================  ========  ========  ========
+
+The maximum number of PWM channels (Pins) are available on ESP32 chip - 16 channels,
+but only 8 different PWM frequencies are available, the remaining 8 channels must have the same frequency.
+On the other hand, 16 independent PWM duty cycles are possible at the same frequency.
+
+More comprehensive example::
+
+    from machine import Pin, PWM
+    try:
+        f = 100  # Hz
+        d = 1024 // 16  # 6.25%
+        pins = (15, 2, 4, 16, 18, 19, 22, 23, 25, 26, 27, 14 , 12, 13, 32, 33)
+        pwms = []
+        for i, pin in enumerate(pins):
+            pwms.append(PWM(Pin(pin), freq=f * (i // 2 + 1), duty= 1023 if i==15 else d * (i + 1)))
+            print(pwms[i])
+    finally:
+        for pwm in pwms:
+            try:
+                pwm.deinit()
+            except:
+                pass
+
+Output is::
+
+    PWM(pin=15, freq=100, duty=64(6.3%), resolution=10 bits(0.10%), mode=0, channel=0, timer=0)
+    PWM(pin=2, freq=100, duty=128(12.5%), resolution=10 bits(0.10%), mode=0, channel=1, timer=0)
+    PWM(pin=4, freq=200, duty=192(18.8%), resolution=10 bits(0.10%), mode=0, channel=2, timer=1)
+    PWM(pin=16, freq=200, duty=256(25.0%), resolution=10 bits(0.10%), mode=0, channel=3, timer=1)
+    PWM(pin=18, freq=300, duty=320(31.3%), resolution=10 bits(0.10%), mode=0, channel=4, timer=2)
+    PWM(pin=19, freq=300, duty=384(37.5%), resolution=10 bits(0.10%), mode=0, channel=5, timer=2)
+    PWM(pin=22, freq=400, duty=448(43.8%), resolution=10 bits(0.10%), mode=0, channel=6, timer=3)
+    PWM(pin=23, freq=400, duty=512(50.0%), resolution=10 bits(0.10%), mode=0, channel=7, timer=3)
+    PWM(pin=25, freq=500, duty=576(56.3%), resolution=10 bits(0.10%), mode=1, channel=0, timer=0)
+    PWM(pin=26, freq=500, duty=640(62.5%), resolution=10 bits(0.10%), mode=1, channel=1, timer=0)
+    PWM(pin=27, freq=600, duty=704(68.8%), resolution=10 bits(0.10%), mode=1, channel=2, timer=1)
+    PWM(pin=14, freq=600, duty=768(75.0%), resolution=10 bits(0.10%), mode=1, channel=3, timer=1)
+    PWM(pin=12, freq=700, duty=832(81.3%), resolution=10 bits(0.10%), mode=1, channel=4, timer=2)
+    PWM(pin=13, freq=700, duty=896(87.5%), resolution=10 bits(0.10%), mode=1, channel=5, timer=2)
+    PWM(pin=32, freq=800, duty=960(93.8%), resolution=10 bits(0.10%), mode=1, channel=6, timer=3)
+    PWM(pin=33, freq=800, duty=1023(99.9%), resolution=10 bits(0.10%), mode=1, channel=7, timer=3)
+
 
 ADC (analog to digital conversion)
 ----------------------------------
@@ -391,14 +446,14 @@ I2S bus
 See :ref:`machine.I2S <machine.I2S>`. ::
 
     from machine import I2S, Pin
-    
+
     i2s = I2S(0, sck=Pin(13), ws=Pin(14), sd=Pin(34), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
     i2s.write(buf)             # write buffer of audio samples to I2S device
-    
+
     i2s = I2S(1, sck=Pin(33), ws=Pin(25), sd=Pin(32), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
-    
-The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
 
 ESP32 has two I2S buses with id=0 and id=1
