@@ -16,7 +16,7 @@ working with this board it may be useful to get an overview of the microcontroll
    :maxdepth: 1
 
    general.rst
-   tutorial/intro.rst
+   tutorial/index.rst
 
 Installing MicroPython
 ----------------------
@@ -225,13 +225,31 @@ Use the ``machine.PWM`` class::
     from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0))      # create PWM object from a pin
-    pwm0.freq()             # get current frequency
+    pwm0.freq()             # get current frequency (default 5kHz)
     pwm0.freq(1000)         # set frequency
-    pwm0.duty()             # get current duty cycle
+    pwm0.duty()             # get current duty cycle (default 512, 50%)
     pwm0.duty(200)          # set duty cycle
     pwm0.deinit()           # turn off PWM on the pin
 
-    pwm2 = PWM(Pin(2), freq=20000, duty=512) # create and configure in one go
+    pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
+
+ESP chips have different hardware peripherals:
+
+=====================================================  ========  ========  ========
+Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
+-----------------------------------------------------  --------  --------  --------
+Number of groups (speed modes)                                2         1         1
+Number of timers per group                                    4         4         4
+Number of channels per group                                  8         8         6
+-----------------------------------------------------  --------  --------  --------
+Different of PWM frequencies (groups * timers)                8         4         4
+Total PWM channels (Pins, duties) (groups * channels)        16         8         6
+=====================================================  ========  ========  ========
+
+A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
+but only 8 different PWM frequencies are available, the remaining 8 channels must
+have the same frequency.  On the other hand, 16 independent PWM duty cycles are
+possible at the same frequency.
 
 ADC (analog to digital conversion)
 ----------------------------------
