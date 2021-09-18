@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEOUT_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "components/driver/include/driver/rmt.h"
@@ -38,4 +38,4 @@ typedef struct {
     rmt_channel_t channel;
 } pulseio_pulseout_obj_t;
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PULSEIO_PULSEOUT_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H

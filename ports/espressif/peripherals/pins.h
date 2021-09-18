@@ -27,8 +27,8 @@
 // DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
 // that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PINS_H
-#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PINS_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
+#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
 
 #include <stdint.h>
 
@@ -93,4 +93,4 @@ extern const mcu_pin_obj_t pin_GPIO46;
 
 #define NO_PIN (GPIO_NUM_NC)
 
-#endif // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_PINS_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H

@@ -31,7 +31,7 @@
 STATIC uint8_t refcount = 0;
 STATIC pulseio_pulsein_obj_t *handles[RMT_CHANNEL_MAX];
 
-// Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
+// Requires rmt.c void peripherals_reset_all(void) to reset
 
 STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
     uint32_t length = 0;
@@ -106,7 +106,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     }
 
     // Find a free RMT Channel and configure it
-    rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    rmt_channel_t channel = peripherals_find_and_reserve_rmt();
     if (channel == RMT_CHANNEL_MAX) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
@@ -136,7 +136,7 @@ bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
 
 void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     handles[self->channel] = NULL;
-    esp32s2_peripherals_free_rmt(self->channel);
+    peripherals_free_rmt(self->channel);
     reset_pin_number(self->pin->number);
     refcount--;
     if (refcount == 0) {

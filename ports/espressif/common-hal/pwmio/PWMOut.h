@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 #include "components/driver/include/driver/ledc.h"
@@ -42,4 +42,4 @@ typedef struct {
 
 void pwmout_reset(void);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_PWMIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H

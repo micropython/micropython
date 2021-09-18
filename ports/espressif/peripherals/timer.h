@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
-#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TIMER_HANDLER_H
+#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TIMER_HANDLER_H
 
 #include "driver/timer.h"
 
@@ -40,4 +40,4 @@ extern void peripherals_timer_deinit(timer_index_t *timer);
 extern void peripherals_timer_reset(void);
 extern void peripherals_timer_never_reset(timer_index_t *timer);
 
-#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TIMER_HANDLER_H
+#endif  // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TIMER_HANDLER_H

@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
-#define MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TOUCH_HANDLER_H
+#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TOUCH_HANDLER_H
 
 #include "driver/touch_pad.h"
 
@@ -33,4 +33,4 @@ extern void peripherals_touch_reset(void);
 extern void peripherals_touch_never_reset(const bool enable);
 extern void peripherals_touch_init(const touch_pad_t touchpad);
 
-#endif  // MICROPY_INCLUDED_ESP32S2_PERIPHERALS_TOUCH_HANDLER_H
+#endif  // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TOUCH_HANDLER_H

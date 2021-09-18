@@ -25,8 +25,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
 
 #include <stdint.h>
 
@@ -59,4 +59,4 @@ typedef struct {
 void wifi_scannednetworks_scan_next_channel(wifi_scannednetworks_obj_t *self);
 void wifi_scannednetworks_deinit(wifi_scannednetworks_obj_t *self);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_WIFI_SCANNEDNETWORKS_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_SCANNEDNETWORKS_H

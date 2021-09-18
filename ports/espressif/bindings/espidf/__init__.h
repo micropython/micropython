@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
-#define MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H
+#define MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H
 
 #include "esp_err.h"
 #include "py/mpconfig.h"
@@ -39,4 +39,4 @@ NORETURN void mp_raise_espidf_MemoryError(void);
 void raise_esp_error(esp_err_t err) NORETURN;
 #define CHECK_ESP_RESULT(x) do { int res = (x); if (res != ESP_OK) raise_esp_error(res); } while (0)
 
-#endif  // MICROPY_INCLUDED_ESP32S2_BINDINGS_ESPIDF___INIT___H
+#endif  // MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H

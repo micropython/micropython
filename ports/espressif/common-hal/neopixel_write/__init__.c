@@ -91,7 +91,7 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // Reserve channel
     uint8_t number = digitalinout->pin->number;
-    rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    rmt_channel_t channel = peripherals_find_and_reserve_rmt();
     if (channel == RMT_CHANNEL_MAX) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
@@ -123,7 +123,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));
 
     // Free channel again
-    esp32s2_peripherals_free_rmt(config.channel);
+    peripherals_free_rmt(config.channel);
     // Swap pin back to GPIO mode
     gpio_set_direction(digitalinout->pin->number, GPIO_MODE_OUTPUT);
 }
