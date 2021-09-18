@@ -24,73 +24,49 @@
  * THE SOFTWARE.
  */
 
-// DO NOT include this file directly. Use shared-bindings/microcontroller/Pin.h instead to ensure
-// that all necessary includes are already included.
+// DO NOT include this file directly.
+// Use shared-bindings/microcontroller/Pin.h instead.
+// This ensures that all necessary includes are already included.
 
 #ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
 #define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
 
-#include <stdint.h>
-
-#include "esp32s2_peripherals_config.h"
-#include "esp-idf/config/sdkconfig.h"
+#include "py/obj.h"
 
 #include "components/hal/include/hal/gpio_types.h"
 #include "components/hal/include/hal/adc_types.h"
 #include "components/hal/include/hal/touch_sensor_types.h"
 
 typedef struct {
-    PIN_PREFIX_FIELDS
+    mp_obj_base_t base;
     gpio_num_t number;
     uint8_t adc_index : 2;
     uint8_t adc_channel : 6;
     touch_pad_t touch_channel;
 } mcu_pin_obj_t;
 
-extern const mcu_pin_obj_t pin_GPIO0;
-extern const mcu_pin_obj_t pin_GPIO1;
-extern const mcu_pin_obj_t pin_GPIO2;
-extern const mcu_pin_obj_t pin_GPIO3;
-extern const mcu_pin_obj_t pin_GPIO4;
-extern const mcu_pin_obj_t pin_GPIO5;
-extern const mcu_pin_obj_t pin_GPIO6;
-extern const mcu_pin_obj_t pin_GPIO7;
-extern const mcu_pin_obj_t pin_GPIO8;
-extern const mcu_pin_obj_t pin_GPIO9;
-extern const mcu_pin_obj_t pin_GPIO10;
-extern const mcu_pin_obj_t pin_GPIO11;
-extern const mcu_pin_obj_t pin_GPIO12;
-extern const mcu_pin_obj_t pin_GPIO13;
-extern const mcu_pin_obj_t pin_GPIO14;
-extern const mcu_pin_obj_t pin_GPIO15;
-extern const mcu_pin_obj_t pin_GPIO16;
-extern const mcu_pin_obj_t pin_GPIO17;
-extern const mcu_pin_obj_t pin_GPIO18;
-extern const mcu_pin_obj_t pin_GPIO19;
-extern const mcu_pin_obj_t pin_GPIO20;
-extern const mcu_pin_obj_t pin_GPIO21;
-extern const mcu_pin_obj_t pin_GPIO26;
-extern const mcu_pin_obj_t pin_GPIO27;
-extern const mcu_pin_obj_t pin_GPIO28;
-extern const mcu_pin_obj_t pin_GPIO29;
-extern const mcu_pin_obj_t pin_GPIO30;
-extern const mcu_pin_obj_t pin_GPIO31;
-extern const mcu_pin_obj_t pin_GPIO32;
-extern const mcu_pin_obj_t pin_GPIO33;
-extern const mcu_pin_obj_t pin_GPIO34;
-extern const mcu_pin_obj_t pin_GPIO35;
-extern const mcu_pin_obj_t pin_GPIO36;
-extern const mcu_pin_obj_t pin_GPIO37;
-extern const mcu_pin_obj_t pin_GPIO38;
-extern const mcu_pin_obj_t pin_GPIO39;
-extern const mcu_pin_obj_t pin_GPIO40;
-extern const mcu_pin_obj_t pin_GPIO41;
-extern const mcu_pin_obj_t pin_GPIO42;
-extern const mcu_pin_obj_t pin_GPIO43;
-extern const mcu_pin_obj_t pin_GPIO44;
-extern const mcu_pin_obj_t pin_GPIO45;
-extern const mcu_pin_obj_t pin_GPIO46;
+extern const mp_obj_type_t mcu_pin_type;
 
 #define NO_PIN (GPIO_NUM_NC)
+
+#define NO_ADC 0
+#define NO_ADC_CHANNEL ADC_CHANNEL_MAX
+
+#define NO_TOUCH_CHANNEL TOUCH_PAD_MAX
+
+// This macro is used to simplify pin definition in boards/<board>/pins.c
+#define PIN(p_number, p_adc_index, p_adc_channel, p_touch_channel) \
+    { \
+        { &mcu_pin_type }, \
+        .number = p_number, \
+        .adc_index = p_adc_index, \
+        .adc_channel = p_adc_channel, \
+        .touch_channel = p_touch_channel, \
+    }
+
+// Choose based on chip
+#if CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/pins.h"
+#endif
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_PINS_H
