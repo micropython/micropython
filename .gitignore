@@ -23,7 +23,6 @@
 # Build directories
 ######################
 build/
-_build/
 build-*/
 
 # Test failure outputs
