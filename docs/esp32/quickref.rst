@@ -150,7 +150,7 @@ These are working configurations for LAN interfaces of popular boards::
 
     # or with dynamic ref_clk pin configuration
 
-    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5), 
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
                       phy_type=network.PHY_LAN8720, phy_addr=0,
                       ref_clk=machine.Pin(17), ref_clk_mode=machine.Pin.OUT)
 
