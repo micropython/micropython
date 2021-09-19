@@ -2,8 +2,7 @@
 
 
 from micropython import const
-from machine import Pin, SPI, ADC
-import machine, time
+from machine import Pin
 
 # Pin Assignments
 
