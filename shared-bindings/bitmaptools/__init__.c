@@ -563,7 +563,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
         case 32:
             break;
         default:
-            mp_raise_ValueError_varg(translate("invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"), bits_per_pixel);
+            mp_raise_ValueError_varg(translate("invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"), bits_per_pixel);
     }
 
     bool reverse_pixels_in_element = args[ARG_reverse_pixels_in_element].u_bool;
