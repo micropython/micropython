@@ -115,7 +115,7 @@ STATIC void configure_channel(machine_pwm_obj_t *self) {
         .timer_sel = self->timer,
     };
     if (ledc_channel_config(&cfg) != ESP_OK) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM not supported on pin %d"), self->pin);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM not supported on Pin(%d)"), self->pin);
     }
 }
 
@@ -245,12 +245,8 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_printf(print, "PWM(pin=%u", self->pin);
     if (self->active) {
         int duty = get_duty(self);
-        mp_printf(print, ", freq=%u, duty=%u(%.1f%%)", ledc_get_freq(self->mode, self->timer),
-            duty,
-            100.0 * duty / (1 << PWRES));
-        mp_printf(print, ", resolution=%u bits(%.2f%%)",
-            timers[TIMER_IDX(self->mode, self->timer)].duty_resolution,
-            100.0 * 1 / (1 << timers[TIMER_IDX(self->mode, self->timer)].duty_resolution));
+        mp_printf(print, ", freq=%u, duty=%u", ledc_get_freq(self->mode, self->timer), duty);
+        mp_printf(print, ", resolution=%u", timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
         mp_printf(print, ", mode=%d, channel=%d, timer=%d", self->mode, self->channel, self->timer);
     }
     mp_printf(print, ")");
@@ -274,7 +270,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 
     int freq = args[ARG_freq].u_int;
     if ((freq < -1) || (freq > 40000000)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("freqency must be between 1 and 40000000 Hz"));
+        mp_raise_ValueError(MP_ERROR_TEXT("freqency must be between 1Hz and 40MHz"));
     }
     // Check if freq wasn't passed as an argument
     if (freq == -1) {
@@ -295,7 +291,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         timer_idx = find_timer(freq, SAME_FREQ_OR_FREE, ANY_MODE);
     }
     if (timer_idx == -1) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("1 out of PWM timers:%d"), PWM_TIMER_MAX); // in all modes
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("out of PWM timers:%d"), PWM_TIMER_MAX); // in all modes
     }
 
     int mode = TIMER_IDX_TO_MODE(timer_idx);
@@ -387,7 +383,7 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
                 #if CONFIG_IDF_TARGET_ESP32
                     gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
                 #else
-                    #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
+                #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
                 #endif
             #endif
         }
