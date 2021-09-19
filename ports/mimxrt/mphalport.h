@@ -33,6 +33,8 @@
 #include "pin.h"
 #include "fsl_clock.h"
 
+#define MICROPY_HAL_VERSION             "2.8.0"
+
 #define MP_HAL_PIN_FMT                  "%q"
 extern ringbuf_t stdin_ringbuf;
 
