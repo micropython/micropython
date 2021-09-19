@@ -383,7 +383,13 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
         if (self->mode == LEDC_LOW_SPEED_MODE) {
             gpio_matrix_out(self->pin, LEDC_LS_SIG_OUT0_IDX + self->channel, false, true);
         } else {
-            gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
+            #if LEDC_SPEED_MODE_MAX > 1
+                #if CONFIG_IDF_TARGET_ESP32
+                    gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
+                #else
+                    #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
+                #endif
+            #endif
         }
         chans[chan].pin = -1;
         chans[chan].timer_idx = -1;
