@@ -165,7 +165,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_erase_filesystem_obj, storage_erase_filesystem
 //|     ...
 //|
 STATIC mp_obj_t storage_disable_usb_drive(void) {
+    #if CIRCUITPY_USB_MSC
     if (!common_hal_storage_disable_usb_drive()) {
+    #else
+    if (true) {
+        #endif
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
     return mp_const_none;
@@ -186,7 +190,11 @@ MP_DEFINE_CONST_FUN_OBJ_0(storage_disable_usb_drive_obj, storage_disable_usb_dri
 //|     ...
 //|
 STATIC mp_obj_t storage_enable_usb_drive(void) {
+    #if CIRCUITPY_USB_MSC
     if (!common_hal_storage_enable_usb_drive()) {
+    #else
+    if (true) {
+        #endif
         mp_raise_RuntimeError(translate("Cannot change USB devices now"));
     }
     return mp_const_none;
@@ -262,3 +270,5 @@ const mp_obj_module_t storage_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&storage_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_storage, storage_module, CIRCUITPY_STORAGE);

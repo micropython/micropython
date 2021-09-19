@@ -51,7 +51,6 @@ SECTIONS
         KEEP(* (.boot_hdr.dcd_data))
         . = ALIGN(4);
     } > FLASH_IVT
-    image_vector_table = LOADADDR(.ivt);
 
     .text :
     {

@@ -131,10 +131,7 @@ STATIC void mp_help_print_modules(void) {
 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
-    const compressed_string_t *compressed = translate("Plus any modules on the filesystem\n");
-    char decompressed[decompress_length(compressed)];
-    decompress(compressed, decompressed);
-    mp_print_str(MP_PYTHON_PRINTER, decompressed);
+    serial_write_compressed(translate("Plus any modules on the filesystem\n"));
     #endif
 }
 #endif
@@ -150,18 +147,10 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
-    const compressed_string_t *compressed = translate("object ");
-    char decompressed_object[decompress_length(compressed)];
-    decompress(compressed, decompressed_object);
-
-    mp_print_str(MP_PYTHON_PRINTER, decompressed_object);
+    mp_cprintf(MP_PYTHON_PRINTER, translate("object "));
     mp_obj_print(obj, PRINT_STR);
 
-    compressed = translate(" is of type %q\n");
-    char decompressed_typestring[decompress_length(compressed)];
-    decompress(compressed, decompressed_typestring);
-
-    mp_printf(MP_PYTHON_PRINTER, decompressed_typestring, type->name);
+    mp_cprintf(MP_PYTHON_PRINTER, translate(" is of type %q\n"), type->name);
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
@@ -186,11 +175,9 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
 STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message. Translate only works on single strings on one line.
-        const compressed_string_t *compressed =
-            translate("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n");
-        char decompressed[decompress_length(compressed)];
-        decompress(compressed, decompressed);
-        mp_printf(MP_PYTHON_PRINTER, decompressed, MICROPY_GIT_TAG);
+        mp_cprintf(MP_PYTHON_PRINTER,
+            translate("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n"),
+            MICROPY_GIT_TAG);
     } else {
         // try to print something sensible about the given object
         mp_help_print_obj(args[0]);

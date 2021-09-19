@@ -34,22 +34,23 @@
 
 typedef struct {
     mp_obj_t sample;
+    uint8_t *buffer[2];
+    size_t buffer_length[2];
+    uint32_t channels_to_load_mask;
+    uint32_t output_register_address;
+    background_callback_t callback;
     uint8_t channel[2];
     uint8_t audio_channel;
     uint8_t output_size;
     uint8_t sample_spacing;
+    uint8_t output_resolution; // in bits
+    uint8_t sample_resolution; // in bits
     bool loop;
     bool single_channel_output;
     bool signed_to_unsigned;
     bool unsigned_to_signed;
     bool output_signed;
-    bool first_channel_free;
-    bool first_buffer_free;
-    uint8_t output_resolution; // in bits
-    uint8_t sample_resolution; // in bits
-    uint8_t *first_buffer;
-    uint8_t *second_buffer;
-    background_callback_t callback;
+    bool playing_in_progress;
 } audio_dma_t;
 
 typedef enum {

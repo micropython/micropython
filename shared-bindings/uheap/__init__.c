@@ -57,3 +57,5 @@ const mp_obj_module_t uheap_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&uheap_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uheap, uheap_module, CIRCUITPY_UHEAP);

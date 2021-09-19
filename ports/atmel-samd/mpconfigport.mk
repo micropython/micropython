@@ -35,6 +35,7 @@ ifeq ($(CHIP_FAMILY),samd21)
 # Some of these are on by default with CIRCUITPY_FULL_BUILD, but don't
 # fit in 256kB of flash
 
+CIRCUITPY_AESIO ?= 0
 CIRCUITPY_AUDIOMIXER ?= 0
 CIRCUITPY_BINASCII ?= 0
 CIRCUITPY_BITBANGIO ?= 0

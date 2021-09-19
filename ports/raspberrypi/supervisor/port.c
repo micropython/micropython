@@ -27,6 +27,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 
@@ -35,6 +36,7 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
@@ -53,8 +55,6 @@
 #include "src/rp2_common/hardware_timer/include/hardware/timer.h"
 #include "src/common/pico_time/include/pico/time.h"
 #include "src/common/pico_binary_info/include/pico/binary_info.h"
-
-#include "tusb.h"
 
 #include "pico/bootrom.h"
 #include "hardware/watchdog.h"
@@ -134,6 +134,10 @@ void reset_port(void) {
     reset_i2c();
     reset_spi();
     reset_uart();
+    #endif
+
+    #if CIRCUITPY_COUNTIO
+    reset_countio();
     #endif
 
     #if CIRCUITPY_PWMIO
@@ -233,9 +237,10 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready()) {
-//	asm volatile ("dsb 0xF":::"memory");
-//        __wfi();
+    if (!background_callback_pending()) {
+        // TODO: Does not work when board is power-cycled.
+        // asm volatile ("dsb 0xF" ::: "memory");
+        // __wfi();
     }
     common_hal_mcu_enable_interrupts();
 }

@@ -52,15 +52,15 @@ STATIC pulseio_pulseout_obj_t *curr_pulseout = NULL;
 
 STATIC void turn_on(pulseio_pulseout_obj_t *pulseout) {
     // Turn on PWM
-    HAL_TIM_PWM_Start(&(pulseout->pwmout->handle), pulseout->pwmout->channel);
+    HAL_TIM_PWM_Start(&(pulseout->pwmout.handle), pulseout->pwmout.channel);
 }
 
 STATIC void turn_off(pulseio_pulseout_obj_t *pulseout) {
     // Turn off PWM
-    HAL_TIM_PWM_Stop(&(pulseout->pwmout->handle), pulseout->pwmout->channel);
+    HAL_TIM_PWM_Stop(&(pulseout->pwmout.handle), pulseout->pwmout.channel);
     // Make sure pin is low.
-    HAL_GPIO_WritePin(pin_port(pulseout->pwmout->tim->pin->port),
-        pin_mask(pulseout->pwmout->tim->pin->number), 0);
+    HAL_GPIO_WritePin(pin_port(pulseout->pwmout.tim->pin->port),
+        pin_mask(pulseout->pwmout.tim->pin->number), 0);
 }
 
 STATIC void start_timer(void) {
@@ -80,7 +80,7 @@ STATIC void pulseout_event_handler(void) {
     if (__HAL_TIM_GET_FLAG(&tim_handle, TIM_FLAG_UPDATE) != RESET) {
         if (__HAL_TIM_GET_IT_SOURCE(&tim_handle, TIM_IT_UPDATE) != RESET) {
             __HAL_TIM_CLEAR_IT(&tim_handle, TIM_IT_UPDATE);
-            if (curr_pulseout->pwmout == NULL) {
+            if (common_hal_pulseio_pulseout_deinited(curr_pulseout)) {
                 return; // invalid interrupt
             }
 
@@ -111,13 +111,12 @@ void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
-    const pwmio_pwmout_obj_t *carrier,
-    const mcu_pin_obj_t *pin,
-    uint32_t frequency,
-    uint16_t duty_cycle) {
-    if (!carrier || pin || frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
-    }
+    const mcu_pin_obj_t *pin, uint32_t frequency, uint16_t duty_cycle) {
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
+        &self->pwmout, pin, duty_cycle, frequency, false);
+
+    // This will raise an exception and not return if needed.
+    common_hal_pwmio_pwmout_raise_error(result);
 
     // Add to active PulseOuts
     refcount++;
@@ -139,13 +138,12 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     HAL_TIM_Base_Init(&tim_handle);
     tim_handle.Instance->SR = 0;
 
-    // The HAL can't work with const, recast required.
-    self->pwmout = (pwmio_pwmout_obj_t *)carrier;
+
     turn_off(self);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
-    return self->pwmout == NULL;
+    return common_hal_pwmio_pwmout_deinited(&self->pwmout);
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
@@ -153,7 +151,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
         return;
     }
     turn_on(self);
-    self->pwmout = NULL;
+    common_hal_pwmio_pwmout_deinit(&self->pwmout);
 
     refcount--;
     if (refcount == 0) {

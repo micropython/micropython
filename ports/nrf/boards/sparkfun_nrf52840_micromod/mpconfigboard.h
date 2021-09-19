@@ -27,8 +27,11 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "SparkFun MicroMod nRF52840"
+#define MICROPY_HW_BOARD_NAME       "SparkFun MicroMod nRF52840 Processor"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
+
+// Status LED
+#define MICROPY_HW_LED_STATUS       (&pin_P0_13)
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P0_11)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P0_08)

@@ -52,7 +52,7 @@ extern void common_hal_busio_spi_unlock(busio_spi_obj_t *self);
 // Writes out the given data.
 extern bool common_hal_busio_spi_write(busio_spi_obj_t *self, const uint8_t *data, size_t len);
 
-// Reads in len bytes while outputting zeroes.
+// Reads in len bytes while outputting the byte write_value.
 extern bool common_hal_busio_spi_read(busio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_value);
 
 // Reads and write len bytes simultaneously.

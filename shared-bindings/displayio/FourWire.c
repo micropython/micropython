@@ -111,7 +111,7 @@ STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_fourwire_reset_obj, displayio_fourwire_obj_reset);
 
-//|     def send(self, command: int, data: FourWire, *, toggle_every_byte: bool = False) -> None:
+//|     def send(self, command: int, data: ReadableBuffer, *, toggle_every_byte: bool = False) -> None:
 //|         """Sends the given command value followed by the full set of data. Display state, such as
 //|         vertical scroll, set via ``send`` may or may not be reset once the code is done."""
 //|         ...

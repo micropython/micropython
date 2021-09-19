@@ -163,7 +163,9 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
-    bool claim_pins) {
+    bool claim_pins,
+    bool user_interruptible
+    ) {
     // Create a program id that isn't the pointer so we can store it without storing the original object.
     uint32_t program_id = ~((uint32_t)program);
 
@@ -303,6 +305,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     self->out_shift_right = out_shift_right;
     self->in_shift_right = in_shift_right;
     self->wait_for_txstall = wait_for_txstall;
+    self->user_interruptible = user_interruptible;
 
     self->init = init;
     self->init_len = init_len;
@@ -338,7 +341,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
-    bool auto_push, uint8_t push_threshold, bool in_shift_right) {
+    bool auto_push, uint8_t push_threshold, bool in_shift_right,
+    bool user_interruptible) {
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
     uint32_t pins_we_use = wait_gpio_mask;
@@ -482,7 +486,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     if (initial_pin_direction & (pull_up | pull_down)) {
         mp_raise_ValueError(translate("pull masks conflict with direction masks"));
     }
-    bool ok = rp2pio_statemachine_construct(self,
+    bool ok = rp2pio_statemachine_construct(
+        self,
         program, program_len,
         frequency,
         init, init_len,
@@ -497,7 +502,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         auto_pull, pull_threshold, out_shift_right,
         wait_for_txstall,
         auto_push, push_threshold, in_shift_right,
-        true /* claim pins */);
+        true /* claim pins */,
+        user_interruptible);
     if (!ok) {
         mp_raise_RuntimeError(translate("All state machines in use"));
     }
@@ -553,6 +559,8 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t *sel
 }
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
+    common_hal_rp2pio_statemachine_stop(self);
+
     uint8_t sm = self->state_machine;
     uint8_t pio_index = pio_get_index(self->pio);
     common_hal_mcu_disable_interrupts();
@@ -664,6 +672,16 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
                (tx && dma_channel_is_busy(chan_tx))) {
             // TODO: We should idle here until we get a DMA interrupt or something else.
             RUN_BACKGROUND_TASKS;
+            if (self->user_interruptible && mp_hal_is_interrupted()) {
+                if (rx && dma_channel_is_busy(chan_rx)) {
+                    dma_channel_abort(chan_rx);
+                }
+                if (tx && dma_channel_is_busy(chan_tx)) {
+                    dma_channel_abort(chan_tx);
+                }
+                break;
+            }
+
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
         self->pio->fdebug = stall_mask;
@@ -678,7 +696,7 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         dma_channel_unclaim(chan_tx);
     }
 
-    if (!use_dma) {
+    if (!use_dma && !(self->user_interruptible && mp_hal_is_interrupted())) {
         // Use software for small transfers, or if couldn't claim two DMA channels
         size_t rx_remaining = in_len / in_stride_in_bytes;
         size_t tx_remaining = out_len / out_stride_in_bytes;
@@ -707,6 +725,9 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
                 --rx_remaining;
             }
             RUN_BACKGROUND_TASKS;
+            if (self->user_interruptible && mp_hal_is_interrupted()) {
+                break;
+            }
         }
         // Clear the stall bit so we can detect when the state machine is done transmitting.
         self->pio->fdebug = stall_mask;
@@ -717,6 +738,9 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         while (!pio_sm_is_tx_fifo_empty(self->pio, self->state_machine) ||
                (self->wait_for_txstall && (self->pio->fdebug & stall_mask) == 0)) {
             RUN_BACKGROUND_TASKS;
+            if (self->user_interruptible && mp_hal_is_interrupted()) {
+                break;
+            }
         }
     }
     return true;

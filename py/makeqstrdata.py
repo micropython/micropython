@@ -333,12 +333,9 @@ def compute_huffman_coding(translations, compression_filename):
 
     bits_per_codepoint = 16 if max_ord > 255 else 8
     values_type = "uint16_t" if max_ord > 255 else "uint8_t"
-    max_words_len = 160 if max_ord > 255 else 255
-
-    sum_len = 0
-    while True:
+    while len(words) < max_words:
         # Until the dictionary is filled to capacity, use a heuristic to find
-        # the best "word" (3- to 9-gram) to add to it.
+        # the best "word" (2- to 11-gram) to add to it.
         #
         # The TextSplitter allows us to avoid considering parts of the text
         # that are already covered by a previously chosen word, for example
@@ -369,7 +366,8 @@ def compute_huffman_coding(translations, compression_filename):
         # the Huffman tree bumps up the encoding lengths of all words in the
         # same subtree.  In the extreme case when the new word is so frequent
         # that it gets a one-bit encoding, all other words will cost an extra
-        # bit each.
+        # bit each. This is empirically modeled by the constant factor added to
+        # cost, but the specific value used isn't "proven" to be correct.
         #
         # Another source of inaccuracy is that compressed strings end up
         # on byte boundaries, not bit boundaries, so saving 1 bit somewhere
@@ -383,14 +381,14 @@ def compute_huffman_coding(translations, compression_filename):
         # The difference between the two is the estimated net savings, in bits.
         def est_net_savings(s, occ):
             savings = occ * (bit_length(s) - est_len(occ))
-            cost = len(s) * bits_per_codepoint
+            cost = len(s) * bits_per_codepoint + 24
             return savings - cost
 
         counter = collections.Counter()
         for t in texts:
             for (found, word) in extractor.iter_words(t):
                 if not found:
-                    for substr in iter_substrings(word, minlen=3, maxlen=9):
+                    for substr in iter_substrings(word, minlen=2, maxlen=11):
                         counter[substr] += 1
 
         # Score the candidates we found.  This is a semi-empirical formula that
@@ -410,16 +408,9 @@ def compute_huffman_coding(translations, compression_filename):
             break
 
         word = scores[0][0]
-
-        # If we can successfully add it to the dictionary, do so.  Otherwise,
-        # we've filled the dictionary to capacity and are done.
-        if sum_len + len(word) - 2 > max_words_len:
-            break
-        if len(words) == max_words:
-            break
         words.append(word)
-        sum_len += len(word) - 2
 
+    words.sort(key=len)
     extractor = TextSplitter(words)
     counter = collections.Counter()
     for t in texts:
@@ -469,16 +460,15 @@ def compute_huffman_coding(translations, compression_filename):
         len(translation.encode("utf-8")) for (original, translation) in translations
     )
 
-    wends = list(len(w) - 2 for w in words)
-    for i in range(1, len(wends)):
-        wends[i] += wends[i - 1]
+    maxlen = len(words[-1])
+    minlen = len(words[0])
+    wlencount = [len([None for w in words if len(w) == l]) for l in range(minlen, maxlen + 1)]
 
     with open(compression_filename, "w") as f:
+        f.write("typedef {} mchar_t;".format(values_type))
         f.write("const uint8_t lengths[] = {{ {} }};\n".format(", ".join(map(str, lengths))))
         f.write(
-            "const {} values[] = {{ {} }};\n".format(
-                values_type, ", ".join(str(ord(u)) for u in values)
-            )
+            "const mchar_t values[] = {{ {} }};\n".format(", ".join(str(ord(u)) for u in values))
         )
         f.write(
             "#define compress_max_length_bits ({})\n".format(
@@ -486,13 +476,17 @@ def compute_huffman_coding(translations, compression_filename):
             )
         )
         f.write(
-            "const {} words[] = {{ {} }};\n".format(
-                values_type, ", ".join(str(ord(c)) for w in words for c in w)
+            "const mchar_t words[] = {{ {} }};\n".format(
+                ", ".join(str(ord(c)) for w in words for c in w)
             )
         )
-        f.write("const uint8_t wends[] = {{ {} }};\n".format(", ".join(str(p) for p in wends)))
+        f.write(
+            "const uint8_t wlencount[] = {{ {} }};\n".format(", ".join(str(p) for p in wlencount))
+        )
         f.write("#define word_start {}\n".format(word_start))
         f.write("#define word_end {}\n".format(word_end))
+        f.write("#define minlen {}\n".format(minlen))
+        f.write("#define maxlen {}\n".format(maxlen))
 
     return (values, lengths, words, canonical, extractor)
 

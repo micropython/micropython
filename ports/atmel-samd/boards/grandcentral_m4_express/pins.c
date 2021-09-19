@@ -16,7 +16,9 @@ STATIC const mp_rom_obj_tuple_t sdio_data_tuple = {
 // This mapping only includes functional names because pins broken
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_AREF),  MP_ROM_PTR(&pin_PA03) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0),  MP_ROM_PTR(&pin_PA02) },
@@ -52,6 +54,8 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D10),  MP_ROM_PTR(&pin_PB22) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D11),  MP_ROM_PTR(&pin_PB23) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D12),  MP_ROM_PTR(&pin_PB00) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_PB01) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PB01) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_TX3), MP_ROM_PTR(&pin_PB16) },
@@ -147,4 +151,4 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDIO_COMMAND), MP_ROM_PTR(&pin_PA20) },
     { MP_ROM_QSTR(MP_QSTR_SDIO_DATA), MP_ROM_PTR(&sdio_data_tuple) },
 };
-MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

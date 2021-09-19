@@ -40,6 +40,11 @@ enum {
     SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET = 0x20,
 };
 
+enum {
+    AUTORELOAD_LOCK_REPL = 0x1,
+    AUTORELOAD_LOCK_BLE = 0x2
+};
+
 typedef struct {
     uint8_t options;
     char filename[];
@@ -58,8 +63,8 @@ void autoreload_disable(void);
 bool autoreload_is_enabled(void);
 
 // Temporarily turn it off. Used during the REPL.
-void autoreload_suspend(void);
-void autoreload_resume(void);
+void autoreload_suspend(size_t lock_mask);
+void autoreload_resume(size_t lock_mask);
 
 void autoreload_now(void);
 

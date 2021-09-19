@@ -21,7 +21,7 @@ besides a text editor (we recommend `Mu <https://codewith.mu/>`_ for beginners.)
 Starting with CircuitPython 7.0.0, some boards may only be connectable over Bluetooth Low Energy
 (BLE). Those boards provide serial and file access over BLE instead of USB using open protocols.
 (Some boards may use both USB and BLE.) BLE access can be done from a variety of apps including
-`code.circuitpythonn.org <https://code.circuitpython.org>`_.
+`code.circuitpython.org <https://code.circuitpython.org>`_.
 
 CircuitPython features unified Python core APIs and a growing list of 300+ device libraries and
 drivers that work with it. These libraries also work on single board computers with regular
@@ -108,7 +108,7 @@ CircuitPython:
 -  Supports native USB on most boards and BLE otherwise, allowing file editing without special tools.
 -  Floats (aka decimals) are enabled for all builds.
 -  Error messages are translated into 10+ languages.
--  Concurrenncy within Python is not well supported. Interrupts and threading are disabled.
+-  Concurrency within Python is not well supported. Interrupts and threading are disabled.
    async/await keywords are available on some boards for cooperative multitasking. Some concurrency
    is achieved with native modules for tasks that require it such as audio file playback.
 
@@ -119,7 +119,7 @@ Behavior
    them. CircuitPython's goal is to clarify the role of each file and
    make each file independent from each other.
 
-   -  ``boot.py`` (or ``settings.py``) runs only once on start up before
+   -  ``boot.py`` runs only once on start up before
       USB is initialized. This lays the ground work for configuring USB at
       startup rather than it being fixed. Since serial is not available,
       output is written to ``boot_out.txt``.
@@ -140,8 +140,7 @@ Behavior
 -  Autoreload is disabled while the REPL is active.
 -  Main is one of these: ``code.txt``, ``code.py``, ``main.py``,
    ``main.txt``
--  Boot is one of these: ``settings.txt``, ``settings.py``, ``boot.py``,
-   ``boot.txt``
+-  Boot is one of these: ``boot.py``, ``boot.txt``
 
 API
 ~~~
@@ -214,7 +213,7 @@ Supported         Support status
 ================  ============================================================
 atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
 cxd56             stable
-esp32s2           stable
+espressif         stable
 litex             alpha
 mimxrt10xx        alpha
 nrf               stable

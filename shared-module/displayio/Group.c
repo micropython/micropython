@@ -144,10 +144,10 @@ static void _update_child_transforms(displayio_group_t *self) {
     for (size_t i = 0; i < self->members->len; i++) {
         mp_obj_t layer;
         #if CIRCUITPY_VECTORIO
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_vector_shape_type);
-        if (layer != MP_OBJ_NULL) {
-            vectorio_vector_shape_update_transform(layer, &self->absolute_transform);
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            draw_protocol->draw_protocol_impl->draw_update_transform(layer, &self->absolute_transform);
             continue;
         }
         #endif
@@ -241,15 +241,14 @@ void common_hal_displayio_group_set_y(displayio_group_t *self, mp_int_t y) {
 }
 
 static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
-    mp_obj_t native_layer;
     #if CIRCUITPY_VECTORIO
-    native_layer = mp_obj_cast_to_native_base(layer, &vectorio_vector_shape_type);
-    if (native_layer != MP_OBJ_NULL) {
-        vectorio_vector_shape_update_transform(native_layer, &self->absolute_transform);
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, layer);
+    if (draw_protocol != NULL) {
+        draw_protocol->draw_protocol_impl->draw_update_transform(draw_protocol->draw_get_protocol_self(layer), &self->absolute_transform);
         return;
     }
     #endif
-    native_layer = mp_obj_cast_to_native_base(layer, &displayio_tilegrid_type);
+    mp_obj_t native_layer = mp_obj_cast_to_native_base(layer, &displayio_tilegrid_type);
     if (native_layer != MP_OBJ_NULL) {
         displayio_tilegrid_t *tilegrid = native_layer;
         if (tilegrid->in_group) {
@@ -283,12 +282,12 @@ static void _remove_layer(displayio_group_t *self, size_t index) {
     displayio_area_t layer_area;
     bool rendered_last_frame = false;
     #if CIRCUITPY_VECTORIO
-    layer = mp_obj_cast_to_native_base(
-        self->members->items[index], &vectorio_vector_shape_type);
-    if (layer != MP_OBJ_NULL) {
-        bool has_dirty_area = vectorio_vector_shape_get_dirty_area(layer, &layer_area);
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[index]);
+    if (draw_protocol != NULL) {
+        layer = draw_protocol->draw_get_protocol_self(self->members->items[index]);
+        bool has_dirty_area = draw_protocol->draw_protocol_impl->draw_get_dirty_area(layer, &layer_area);
         rendered_last_frame = has_dirty_area;
-        vectorio_vector_shape_update_transform(layer, NULL);
+        draw_protocol->draw_protocol_impl->draw_update_transform(layer, NULL);
     }
     #endif
     layer = mp_obj_cast_to_native_base(
@@ -362,10 +361,10 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
     for (int32_t i = self->members->len - 1; i >= 0; i--) {
         mp_obj_t layer;
         #if CIRCUITPY_VECTORIO
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_vector_shape_type);
-        if (layer != MP_OBJ_NULL) {
-            if (vectorio_vector_shape_fill_area(layer, colorspace, area, mask, buffer)) {
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            if (draw_protocol->draw_protocol_impl->draw_fill_area(layer, colorspace, area, mask, buffer)) {
                 return true;
             }
             continue;
@@ -396,10 +395,10 @@ void displayio_group_finish_refresh(displayio_group_t *self) {
     for (int32_t i = self->members->len - 1; i >= 0; i--) {
         mp_obj_t layer;
         #if CIRCUITPY_VECTORIO
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_vector_shape_type);
-        if (layer != MP_OBJ_NULL) {
-            vectorio_vector_shape_finish_refresh(layer);
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            draw_protocol->draw_protocol_impl->draw_finish_refresh(layer);
             continue;
         }
         #endif
@@ -427,10 +426,10 @@ displayio_area_t *displayio_group_get_refresh_areas(displayio_group_t *self, dis
     for (int32_t i = self->members->len - 1; i >= 0; i--) {
         mp_obj_t layer;
         #if CIRCUITPY_VECTORIO
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_vector_shape_type);
-        if (layer != MP_OBJ_NULL) {
-            tail = vectorio_vector_shape_get_refresh_areas(layer, tail);
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            tail = draw_protocol->draw_protocol_impl->draw_get_refresh_areas(layer, tail);
             continue;
         }
         #endif

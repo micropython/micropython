@@ -37,19 +37,15 @@
 #include "fsl_device_registers.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pulseio/PulseOut.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/SPI.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 #include "reset.h"
 
-#include "tusb.h"
+#include "supervisor/background_callback.h"
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
@@ -289,9 +285,6 @@ void reset_port(void) {
 
 //    eic_reset();
 
-    #if CIRCUITPY_PULSEIO
-    pulseout_reset();
-    #endif
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
@@ -300,9 +293,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_GAMEPAD
-    gamepad_reset();
-    #endif
     #if CIRCUITPY_GAMEPADSHIFT
     gamepadshift_reset();
     #endif
@@ -411,10 +401,15 @@ void port_idle_until_interrupt(void) {
         __set_FPSCR(__get_FPSCR() & ~(0x9f));
         (void)__get_FPSCR();
     }
-    NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
-    CLOCK_SetMode(kCLOCK_ModeWait);
-    __WFI();
-    CLOCK_SetMode(kCLOCK_ModeRun);
+
+    common_hal_mcu_disable_interrupts();
+    if (!background_callback_pending()) {
+        NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
+        CLOCK_SetMode(kCLOCK_ModeWait);
+        __WFI();
+        CLOCK_SetMode(kCLOCK_ModeRun);
+    }
+    common_hal_mcu_enable_interrupts();
 }
 
 /**

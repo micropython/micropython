@@ -70,6 +70,10 @@
 #include "shared-bindings/alarm/__init__.h"
 #endif
 
+#if CIRCUITPY_ATEXIT
+#include "shared-module/atexit/__init__.h"
+#endif
+
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
@@ -208,11 +212,11 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
         return false;
     }
     mp_hal_stdout_tx_str(filename);
-    const compressed_string_t* compressed = translate(" output:\n");
-    char decompressed[decompress_length(compressed)];
-    decompress(compressed, decompressed);
-    mp_hal_stdout_tx_str(decompressed);
+    serial_write_compressed(translate(" output:\n"));
     pyexec_file(filename, exec_result);
+    #if CIRCUITPY_ATEXIT
+    shared_module_atexit_execute(exec_result);
+    #endif
     return true;
 }
 
@@ -253,6 +257,11 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
 
     // Reset port-independent devices, like CIRCUITPY_BLEIO_HCI.
     reset_devices();
+
+    #if CIRCUITPY_ATEXIT
+    atexit_reset();
+    #endif
+
     // Turn off the display and flush the filesystem before the heap disappears.
     #if CIRCUITPY_DISPLAYIO
     reset_displays();
@@ -631,13 +640,15 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char * const boot_py_filenames[] = STRING_LIST("settings.txt", "settings.py", "boot.py", "boot.txt");
+    static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
     bool skip_boot_output = false;
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    FIL file_pointer;
+    #endif
 
     if (ok_to_run) {
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        FIL file_pointer;
         boot_output_file = &file_pointer;
 
         // Get the base filesystem.
@@ -680,6 +691,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
             // Write version info to boot_out.txt.
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
+            // Write the board ID (board directory and ID on circuitpython.org)
+            mp_hal_stdout_tx_str("\r\n" "Board ID:");
+            mp_hal_stdout_tx_str(CIRCUITPY_BOARD_ID);
             mp_hal_stdout_tx_str("\r\n");
         }
         #endif
@@ -741,7 +755,7 @@ STATIC int run_repl(void) {
     usb_setup_with_vm();
     #endif
 
-    autoreload_suspend();
+    autoreload_suspend(AUTORELOAD_LOCK_REPL);
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -757,6 +771,13 @@ STATIC int run_repl(void) {
     } else {
         exit_code = pyexec_friendly_repl();
     }
+    #if CIRCUITPY_ATEXIT
+    pyexec_result_t result;
+    shared_module_atexit_execute(&result);
+    if (result.return_code == PYEXEC_DEEP_SLEEP) {
+        exit_code = PYEXEC_DEEP_SLEEP;
+    }
+    #endif
     cleanup_after_vm(heap, MP_OBJ_SENTINEL);
     #if CIRCUITPY_STATUS_LED
     status_led_init();
@@ -764,7 +785,7 @@ STATIC int run_repl(void) {
     status_led_deinit();
     #endif
 
-    autoreload_resume();
+    autoreload_resume(AUTORELOAD_LOCK_REPL);
     return exit_code;
 }
 
@@ -830,6 +851,7 @@ int __attribute__((used)) main(void) {
     serial_init();
 
     #if CIRCUITPY_BLEIO
+    supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif
 
@@ -870,6 +892,10 @@ void gc_collect(void) {
 
     #if CIRCUITPY_ALARM
     common_hal_alarm_gc_collect();
+    #endif
+
+    #if CIRCUITPY_ATEXIT
+    atexit_gc_collect();
     #endif
 
     #if CIRCUITPY_DISPLAYIO

@@ -38,7 +38,7 @@ static uint16_t pulse_index = 0;
 static uint16_t pulse_length;
 static int pulse_fd = -1;
 
-static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
+static bool pulseout_timer_handler(uint32_t *next_interval_us, void *arg) {
     uint8_t pwm_num = (uint8_t)(int)arg;
     pulse_index++;
 
@@ -46,7 +46,7 @@ static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
         return false;
     }
 
-    *next_interval_us = pulse_buffer[pulse_index] * 1000;
+    *next_interval_us = pulse_buffer[pulse_index];
 
     if (pulse_index % 2 == 0) {
         pwmout_start(pwm_num);
@@ -58,13 +58,15 @@ static bool pulseout_timer_handler(unsigned int *next_interval_us, void *arg) {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
-    const pwmio_pwmout_obj_t *carrier,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
-    if (!carrier || pin || frequency) {
-        mp_raise_NotImplementedError(translate("Port does not accept pins or frequency. Construct and pass a PWMOut Carrier instead"));
-    }
+
+    pwmout_result_t result = common_hal_pwmio_pwmout_construct(
+        &self->pwmout, pin, duty_cycle, frequency, false);
+
+    // This will raise an exception and not return if needed.
+    common_hal_pwmio_pwmout_raise_error(result);
 
     if (pulse_fd < 0) {
         pulse_fd = open("/dev/timer0", O_RDONLY);
@@ -74,7 +76,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
         mp_raise_RuntimeError(translate("All timers in use"));
     }
 
-    self->pwm_num = carrier->number;
+    self->pwm_num = self->pwmout.number;
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
@@ -85,6 +87,8 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     ioctl(pulse_fd, TCIOC_STOP, 0);
     close(pulse_fd);
     pulse_fd = -1;
+
+    common_hal_pwmio_pwmout_deinit(&self->pwmout);
 
     pulse_buffer = NULL;
 }
@@ -104,7 +108,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
     pulse_index = 0;
     pulse_length = len;
 
-    unsigned long timeout = pulse_buffer[0] * 1000;
+    unsigned long timeout = pulse_buffer[0];
 
     ioctl(pulse_fd, TCIOC_SETTIMEOUT, timeout);
 

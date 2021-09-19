@@ -1,6 +1,8 @@
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_P0_29) },
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_P1_15) },
     { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_P1_13) },
@@ -27,6 +29,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADDON_SDA), MP_ROM_PTR(&pin_P0_06) },
 
     { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P0_27) },
+    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_P0_27) },
     { MP_ROM_QSTR(MP_QSTR_YELLOW_LED), MP_ROM_PTR(&pin_P0_27) },
 
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },

@@ -106,6 +106,7 @@ CFLAGS += \
 	-DCONFIG_HAVE_DOUBLE \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
+	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
 	-c \
 	-pipe \
 	-std=gnu11 \
@@ -127,7 +128,6 @@ OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
-
 LIBM = "${shell "$(CC)" $(CFLAGS) -print-file-name=libm.a}"
 
 LIBGCC = "${shell "$(CC)" $(CFLAGS) -print-libgcc-file-name}"
@@ -145,7 +145,15 @@ LDFLAGS = \
 	-u board_timerhook \
 	$(BUILD)/libmpy.a \
 	$(SPRESENSE_SDK)/nuttx/libs/libapps.a \
-	$(SPRESENSE_SDK)/nuttx/libs/libnuttx.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libarch.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libbinfmt.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libboard.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libboards.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libc.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libdrivers.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libfs.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libmm.a \
+	$(SPRESENSE_SDK)/nuttx/libs/libsched.a \
 	$(LIBM) \
 	$(LIBGCC) \
 	--end-group \

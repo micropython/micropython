@@ -1,6 +1,8 @@
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_ROM_QSTR(MP_QSTR_LEFT_BUTTON), MP_ROM_PTR(&pin_P0_02) },
     { MP_ROM_QSTR(MP_QSTR_MIDDLE_BUTTON), MP_ROM_PTR(&pin_P0_29) },
     { MP_ROM_QSTR(MP_QSTR_RIGHT_BUTTON), MP_ROM_PTR(&pin_P0_31) },

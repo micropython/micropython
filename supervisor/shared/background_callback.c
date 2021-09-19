@@ -67,9 +67,13 @@ void background_callback_add(background_callback_t *cb, background_callback_fun 
     background_callback_add_core(cb);
 }
 
+bool PLACE_IN_ITCM(background_callback_pending)(void) {
+    return callback_head != NULL;
+}
+
 static bool in_background_callback;
 void PLACE_IN_ITCM(background_callback_run_all)() {
-    if (!callback_head) {
+    if (!background_callback_pending()) {
         return;
     }
     CALLBACK_CRITICAL_BEGIN;

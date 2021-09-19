@@ -32,9 +32,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/__init__.h"
 #include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/busio/OneWire.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
+#include "shared-bindings/onewireio/OneWire.h"
 
 #include "py/runtime.h"
 
@@ -73,7 +73,9 @@ STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busio) },
     { MP_ROM_QSTR(MP_QSTR_I2C),   MP_ROM_PTR(&busio_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),   MP_ROM_PTR(&busio_spi_type) },
-    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&busio_onewire_type) },
+    #if CIRCUITPY_ONEWIREIO
+    { MP_ROM_QSTR(MP_QSTR_OneWire),   MP_ROM_PTR(&onewireio_onewire_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_UART),   MP_ROM_PTR(&busio_uart_type) },
 };
 
@@ -83,3 +85,5 @@ const mp_obj_module_t busio_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&busio_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_busio, busio_module, CIRCUITPY_BUSIO);

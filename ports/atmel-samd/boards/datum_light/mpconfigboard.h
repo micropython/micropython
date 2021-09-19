@@ -19,3 +19,24 @@
 // USB is always used internally so skip the pin objects for it.
 #define IGNORE_PIN_PA24     1
 #define IGNORE_PIN_PA25     1
+
+// Connected to a crystal
+#define IGNORE_PIN_PA00     1
+#define IGNORE_PIN_PA01     1
+
+// Unconnected
+// Schematic at: https://jandjstudios.io/assets/pdfs/datum-Light.pdf
+#define IGNORE_PIN_PA03     1
+#define IGNORE_PIN_PA02     1
+#define IGNORE_PIN_PB08     1
+#define IGNORE_PIN_PB09     1
+#define IGNORE_PIN_PA04     1
+#define IGNORE_PIN_PA05     1
+#define IGNORE_PIN_PB02     1
+#define IGNORE_PIN_PA14     1
+#define IGNORE_PIN_PA15     1
+#define IGNORE_PIN_PB03     1
+#define IGNORE_PIN_PA28     1
+#define IGNORE_PIN_PB22     1
+#define IGNORE_PIN_PB23     1
+#define IGNORE_PIN_PA13     1

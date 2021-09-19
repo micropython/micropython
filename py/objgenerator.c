@@ -38,7 +38,7 @@
 #include "supervisor/shared/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
-const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, 0, 0, NULL, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj};
+const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 
 /******************************************************************************/
 /* generator wrapper                                                          */
@@ -185,11 +185,13 @@ STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_PY_ASYNC_AWAIT
     if (self->coroutine_generator) {
-        mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-        return;
+        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_coroutine, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+    } else {
+        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_generator, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
     }
-    #endif
+    #else
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+    #endif
 }
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {

@@ -77,43 +77,35 @@
 #include "samd/dma.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "shared_timers.h"
 #include "reset.h"
 
+#include "supervisor/background_callback.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/tick.h"
 
 #include "tusb.h"
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
 #if CIRCUITPY_PEW
 #include "common-hal/_pew/PewPew.h"
 #endif
-volatile bool hold_interrupt = false;
+static volatile bool sleep_ok = true;
 #ifdef SAMD21
-static void rtc_set_continuous(bool continuous) {
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
-        ;
-    }
-    RTC->MODE0.READREQ.reg = (continuous ? RTC_READREQ_RCONT : 0) | 0x0010;
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
-        ;
-    }
-}
+static uint8_t _tick_event_channel = 0;
 
+// Sleeping requires a register write that can stall interrupt handling. Turning
+// off sleeps allows for more accurate interrupt timing. (Python still thinks
+// it is sleeping though.)
 void rtc_start_pulse(void) {
-    rtc_set_continuous(true);
-    hold_interrupt = true;
+    sleep_ok = false;
 }
 
 void rtc_end_pulse(void) {
-    hold_interrupt = false;
-    rtc_set_continuous(false);
+    sleep_ok = true;
 }
 #endif
 
@@ -164,6 +156,20 @@ static void save_usb_clock_calibration(void) {
 }
 #endif
 
+static void rtc_continuous_mode(void) {
+    #ifdef SAMD21
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
+    }
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RCONT | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
+    }
+    // Do the first request and wait for it.
+    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | RTC_READREQ_RCONT | 0x0010;
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY) {
+    }
+    #endif
+}
+
 static void rtc_init(void) {
     #ifdef SAMD21
     _gclk_enable_channel(RTC_GCLK_ID, GCLK_CLKCTRL_GEN_GCLK2_Val);
@@ -171,9 +177,17 @@ static void rtc_init(void) {
     while (RTC->MODE0.CTRL.bit.SWRST != 0) {
     }
 
+    // Turn on periodic events to use as tick. We control whether it interrupts
+    // us with the EVSYS INTEN register.
+    RTC->MODE0.EVCTRL.reg = RTC_MODE0_EVCTRL_PEREO2;
+
     RTC->MODE0.CTRL.reg = RTC_MODE0_CTRL_ENABLE |
         RTC_MODE0_CTRL_MODE_COUNT32 |
         RTC_MODE0_CTRL_PRESCALER_DIV2;
+
+    // Turn on continuous sync of the count register. This will speed up all
+    // tick reads.
+    rtc_continuous_mode();
     #endif
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
@@ -350,6 +364,9 @@ void reset_port(void) {
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
+    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO
+    reset_timers();
+    #endif
 
     #if CIRCUITPY_ANALOGIO
     analogin_reset();
@@ -358,9 +375,6 @@ void reset_port(void) {
 
     reset_gclks();
 
-    #if CIRCUITPY_GAMEPAD
-    gamepad_reset();
-    #endif
     #if CIRCUITPY_GAMEPADSHIFT
     gamepadshift_reset();
     #endif
@@ -369,6 +383,9 @@ void reset_port(void) {
     #endif
 
     reset_event_system();
+    #ifdef SAMD21
+    _tick_event_channel = EVSYS_SYNCH_NUM;
+    #endif
 
     reset_all_pins();
 
@@ -436,21 +453,14 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
-#ifdef SAMD21
-static volatile bool _ticks_enabled = false;
-#endif
 
 static uint32_t _get_count(uint64_t *overflow_count) {
     #ifdef SAM_D5X_E5X
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
     }
     #endif
-    #ifdef SAMD21
-    // Request a read so we don't stall the bus later. See section 14.3.1.5 Read Request
-    RTC->MODE0.READREQ.reg = RTC_READREQ_RREQ | 0x0010;
-    while (RTC->MODE0.STATUS.bit.SYNCBUSY != 0) {
-    }
-    #endif
+    // SAMD21 does continuous sync so we don't need to wait here.
+
     // Disable interrupts so we can grab the count and the overflow.
     common_hal_mcu_disable_interrupts();
     uint32_t count = RTC->MODE0.COUNT.reg;
@@ -463,29 +473,6 @@ static uint32_t _get_count(uint64_t *overflow_count) {
 }
 
 volatile bool _woken_up;
-
-static void _port_interrupt_after_ticks(uint32_t ticks) {
-    uint32_t current_ticks = _get_count(NULL);
-    if (ticks > 1 << 28) {
-        // We'll interrupt sooner with an overflow.
-        return;
-    }
-    #ifdef SAMD21
-    if (hold_interrupt) {
-        return;
-    }
-    #endif
-    uint32_t target = current_ticks + (ticks << 4);
-    RTC->MODE0.COMP[0].reg = target;
-    #ifdef SAM_D5X_E5X
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP0)) != 0) {
-    }
-    #endif
-    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
-    current_ticks = _get_count(NULL);
-    _woken_up = current_ticks >= target;
-}
 
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
@@ -503,19 +490,10 @@ void RTC_Handler(void) {
     }
     #endif
     if (intflag & RTC_MODE0_INTFLAG_CMP0) {
-        // Clear the interrupt because we may have hit a sleep and _ticks_enabled
+        // Clear the interrupt because we may have hit a sleep
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
         _woken_up = true;
-        #ifdef SAMD21
-        if (_ticks_enabled) {
-            // Do things common to all ports when the tick occurs.
-            supervisor_tick();
-            // Check _ticks_enabled again because a tick handler may have turned it off.
-            if (_ticks_enabled) {
-                _port_interrupt_after_ticks(1);
-            }
-        }
-        #endif
+        // SAMD21 ticks are handled by EVSYS
         #ifdef SAM_D5X_E5X
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
         #endif
@@ -532,6 +510,39 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return overflow_count + current_ticks / 16;
 }
 
+void evsyshandler_common(void) {
+    #ifdef SAMD21
+    if (_tick_event_channel < EVSYS_SYNCH_NUM && event_interrupt_active(_tick_event_channel)) {
+        supervisor_tick();
+    }
+    #endif
+    #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
+    audio_evsys_handler();
+    #endif
+}
+
+#ifdef SAM_D5X_E5X
+void EVSYS_0_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_1_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_2_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_3_Handler(void) {
+    evsyshandler_common();
+}
+void EVSYS_4_Handler(void) {
+    evsyshandler_common();
+}
+#else
+void EVSYS_Handler(void) {
+    evsyshandler_common();
+}
+#endif
+
 // Enable 1/1024 second tick.
 void port_enable_tick(void) {
     #ifdef SAM_D5X_E5X
@@ -539,9 +550,23 @@ void port_enable_tick(void) {
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
-    // TODO: Switch to using the PER *event* from the RTC to generate an interrupt via EVSYS.
-    _ticks_enabled = true;
-    _port_interrupt_after_ticks(1);
+    // SAMD21 ticks won't survive port_reset(). This *should* be ok since it'll
+    // be triggered by ticks and no Python will be running.
+    if (_tick_event_channel >= EVSYS_SYNCH_NUM) {
+        turn_on_event_system();
+        _tick_event_channel = find_sync_event_channel();
+    }
+    // This turns on both the event detected interrupt (EVD) and overflow (OVR).
+    init_event_channel_interrupt(_tick_event_channel, CORE_GCLK, EVSYS_ID_GEN_RTC_PER_2);
+    // Disable overflow interrupt because we ignore it.
+    if (_tick_event_channel >= 8) {
+        uint8_t value = 1 << (_tick_event_channel - 8);
+        EVSYS->INTENCLR.reg = EVSYS_INTENSET_OVRp8(value);
+    } else {
+        uint8_t value = 1 << _tick_event_channel;
+        EVSYS->INTENCLR.reg = EVSYS_INTENSET_OVR(value);
+    }
+    NVIC_EnableIRQ(EVSYS_IRQn);
     #endif
 }
 
@@ -551,21 +576,48 @@ void port_disable_tick(void) {
     RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_PER2;
     #endif
     #ifdef SAMD21
-    _ticks_enabled = false;
-    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
+    if (_tick_event_channel >= 8) {
+        uint8_t value = 1 << (_tick_event_channel - 8);
+        EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVDp8(value);
+    } else {
+        uint8_t value = 1 << _tick_event_channel;
+        EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVD(value);
+    }
     #endif
 }
 
-// This is called by sleep, we ignore it when our ticks are enabled because
-// they'll wake us up earlier. If we don't, we'll mess up ticks by overwriting
-// the next RTC wake up time.
 void port_interrupt_after_ticks(uint32_t ticks) {
+    uint32_t current_ticks = _get_count(NULL);
+    if (ticks > 1 << 28) {
+        // We'll interrupt sooner with an overflow.
+        return;
+    }
     #ifdef SAMD21
-    if (_ticks_enabled) {
+    if (!sleep_ok) {
         return;
     }
     #endif
-    _port_interrupt_after_ticks(ticks);
+
+    uint32_t target = current_ticks + (ticks << 4);
+    #ifdef SAMD21
+    // Try and avoid a bus stall when writing COMP by checking for an obvious
+    // existing sync.
+    while (RTC->MODE0.STATUS.bit.SYNCBUSY == 1) {
+    }
+    #endif
+    // Writing the COMP register can take up to 180us to synchronize. During
+    // this time, the bus will stall and no interrupts will be serviced.
+    RTC->MODE0.COMP[0].reg = target;
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP0)) != 0) {
+    }
+    #endif
+    RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP0;
+    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP0;
+    // Set continuous mode again because setting COMP may disable it.
+    rtc_continuous_mode();
+    current_ticks = _get_count(NULL);
+    _woken_up = current_ticks >= target;
 }
 
 void port_idle_until_interrupt(void) {
@@ -577,7 +629,7 @@ void port_idle_until_interrupt(void) {
     }
     #endif
     common_hal_mcu_disable_interrupts();
-    if (!tud_task_event_ready() && !hold_interrupt && !_woken_up) {
+    if (!background_callback_pending() && sleep_ok && !_woken_up) {
         __DSB();
         __WFI();
     }

@@ -2,7 +2,9 @@
 
 #include "supervisor/board.h"
 
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO_AD_B1_07) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO_AD_B1_07) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO_AD_B1_06) },
@@ -34,6 +36,7 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_GPIO_AD_B1_00) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_USER_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_09) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_AD_B0_09) },
 
     // Camera Sensor Interface
     { MP_OBJ_NEW_QSTR(MP_QSTR_CSI_VSYNC), MP_ROM_PTR(&pin_GPIO_AD_B1_06) },
@@ -125,4 +128,4 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 };
-MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

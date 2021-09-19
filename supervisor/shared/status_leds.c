@@ -26,6 +26,8 @@
 
 #include "supervisor/shared/status_leds.h"
 
+#include <string.h>
+
 #include "mphalport.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/tick.h"
@@ -39,16 +41,25 @@ static digitalio_digitalinout_obj_t _status_power;
 
 #ifdef MICROPY_HW_NEOPIXEL
 uint8_t rgb_status_brightness = 63;
-    #include "shared-bindings/digitalio/DigitalInOut.h"
-    #include "shared-bindings/neopixel_write/__init__.h"
-static uint8_t status_neopixel_color[3];
+#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/neopixel_write/__init__.h"
+
+#ifndef MICROPY_HW_NEOPIXEL_COUNT
+#define MICROPY_HW_NEOPIXEL_COUNT (1)
+#endif
+
+static uint8_t status_neopixel_color[3 * MICROPY_HW_NEOPIXEL_COUNT];
 static digitalio_digitalinout_obj_t status_neopixel;
 
 #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
 uint8_t rgb_status_brightness = 50;
 
-    #define APA102_BUFFER_LENGTH 12
-static uint8_t status_apa102_color[APA102_BUFFER_LENGTH] = {0, 0, 0, 0, 0xff, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
+#ifndef MICROPY_HW_APA102_COUNT
+#define MICROPY_HW_APA102_COUNT (1)
+#endif
+
+    #define APA102_BUFFER_LENGTH (4 + 4 * MICROPY_HW_APA102_COUNT + 4)
+static uint8_t status_apa102_color[APA102_BUFFER_LENGTH];
 
     #if CIRCUITPY_BITBANG_APA102
     #include "shared-bindings/bitbangio/SPI.h"
@@ -96,6 +107,11 @@ uint16_t status_rgb_color[3] = {
 digitalio_digitalinout_obj_t single_color_led;
 
 uint8_t rgb_status_brightness = 0xff;
+
+#ifndef MICROPY_HW_LED_STATUS_INVERTED
+#define MICROPY_HW_LED_STATUS_INVERTED (0)
+#endif
+
 #endif
 
 #if CIRCUITPY_DIGITALIO && (defined(MICROPY_HW_LED_RX) || defined(MICROPY_HW_LED_TX))
@@ -132,6 +148,8 @@ void status_led_init() {
     common_hal_digitalio_digitalinout_construct(&status_neopixel, MICROPY_HW_NEOPIXEL);
     common_hal_digitalio_digitalinout_switch_to_output(&status_neopixel, false, DRIVE_MODE_PUSH_PULL);
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
+    // Set every byte to 0xff except the start 4 bytes that make up the header.
+    memset(status_apa102_color + 4, 0xff, APA102_BUFFER_LENGTH - 4);
     #if CIRCUITPY_BITBANG_APA102
     shared_module_bitbangio_spi_construct(&status_apa102,
         MICROPY_HW_APA102_SCK,
@@ -184,7 +202,8 @@ void status_led_init() {
 
     #elif defined(MICROPY_HW_LED_STATUS)
     common_hal_digitalio_digitalinout_construct(&single_color_led, MICROPY_HW_LED_STATUS);
-    common_hal_digitalio_digitalinout_switch_to_output(&single_color_led, true, DRIVE_MODE_PUSH_PULL);
+    common_hal_digitalio_digitalinout_switch_to_output(
+        &single_color_led, MICROPY_HW_LED_STATUS_INVERTED == 0, DRIVE_MODE_PUSH_PULL);
     #endif
 
     #if CIRCUITPY_DIGITALIO && CIRCUITPY_STATUS_LED
@@ -240,15 +259,20 @@ void new_status_color(uint32_t rgb) {
     #endif
 
     #ifdef MICROPY_HW_NEOPIXEL
-    status_neopixel_color[0] = (rgb_adjusted >> 8) & 0xff;
-    status_neopixel_color[1] = (rgb_adjusted >> 16) & 0xff;
-    status_neopixel_color[2] = rgb_adjusted & 0xff;
-    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3);
+    for (size_t i = 0; i < MICROPY_HW_NEOPIXEL_COUNT; i++) {
+        status_neopixel_color[3 * i + 0] = (rgb_adjusted >> 8) & 0xff;
+        status_neopixel_color[3 * i + 1] = (rgb_adjusted >> 16) & 0xff;
+        status_neopixel_color[3 * i + 2] = rgb_adjusted & 0xff;
+    }
+    common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3 * MICROPY_HW_NEOPIXEL_COUNT);
 
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
-    status_apa102_color[5] = rgb_adjusted & 0xff;
-    status_apa102_color[6] = (rgb_adjusted >> 8) & 0xff;
-    status_apa102_color[7] = (rgb_adjusted >> 16) & 0xff;
+    for (size_t i = 0; i < MICROPY_HW_APA102_COUNT; i++) {
+        // Skip 4 + offset to skip the header bytes too.
+        status_apa102_color[4 * i + 4 + 1] = rgb_adjusted & 0xff;
+        status_apa102_color[4 * i + 4 + 2] = (rgb_adjusted >> 8) & 0xff;
+        status_apa102_color[4 * i + 4 + 3] = (rgb_adjusted >> 16) & 0xff;
+    }
 
     #if CIRCUITPY_BITBANG_APA102
     shared_module_bitbangio_spi_write(&status_apa102, status_apa102_color, APA102_BUFFER_LENGTH);
@@ -275,7 +299,8 @@ void new_status_color(uint32_t rgb) {
     common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_g, status_rgb_color[1]);
     common_hal_pwmio_pwmout_set_duty_cycle(&rgb_status_b, status_rgb_color[2]);
     #elif CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_STATUS)
-    common_hal_digitalio_digitalinout_set_value(&single_color_led, rgb_adjusted > 0);
+    common_hal_digitalio_digitalinout_set_value(
+        &single_color_led, (rgb_adjusted > 0) ^ MICROPY_HW_LED_STATUS_INVERTED);
     #endif
 }
 

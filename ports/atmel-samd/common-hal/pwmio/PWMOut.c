@@ -31,14 +31,14 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared_timers.h"
 #include "timer_handler.h"
 
 #include "atmel_start_pins.h"
 #include "hal/utils/include/utils_repeat_macro.h"
+#include "samd/pins.h"
 #include "samd/timers.h"
 #include "supervisor/shared/translate.h"
-
-#include "samd/pins.h"
 
 #undef ENABLE
 
@@ -60,24 +60,6 @@ uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initia
 uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
 #endif
 
-static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
-
-STATIC void timer_refcount(int index, bool is_tc, int increment) {
-    if (is_tc) {
-        never_reset_tc_or_tcc[index] += increment;
-    } else {
-        never_reset_tc_or_tcc[TC_INST_NUM + index] += increment;
-    }
-}
-
-void timer_never_reset(int index, bool is_tc) {
-    timer_refcount(index, is_tc, 1);
-}
-
-void timer_reset_ok(int index, bool is_tc) {
-    timer_refcount(index, is_tc, -1);
-}
-
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     timer_never_reset(self->timer->index, self->timer->is_tc);
@@ -95,34 +77,11 @@ void pwmout_reset(void) {
         target_tcc_frequencies[i] = 0;
         tcc_refcount[i] = 0;
     }
-    Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
     for (int i = 0; i < TCC_INST_NUM; i++) {
-        if (never_reset_tc_or_tcc[TC_INST_NUM + i] > 0) {
+        if (!timer_ok_to_reset(i, false)) {
             continue;
         }
-        // Disable the module before resetting it.
-        if (tccs[i]->CTRLA.bit.ENABLE == 1) {
-            tccs[i]->CTRLA.bit.ENABLE = 0;
-            while (tccs[i]->SYNCBUSY.bit.ENABLE == 1) {
-            }
-        }
-        uint8_t mask = 0xff;
-        for (uint8_t j = 0; j < tcc_cc_num[i]; j++) {
-            mask <<= 1;
-        }
-        tcc_channels[i] = mask;
-        tccs[i]->CTRLA.bit.SWRST = 1;
-        while (tccs[i]->CTRLA.bit.SWRST == 1) {
-        }
-    }
-    Tc *tcs[TC_INST_NUM] = TC_INSTS;
-    for (int i = 0; i < TC_INST_NUM; i++) {
-        if (never_reset_tc_or_tcc[i] > 0) {
-            continue;
-        }
-        tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
-        while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
-        }
+        tcc_channels[i] = 0xff << tcc_cc_num[i];
     }
 }
 
@@ -492,4 +451,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

@@ -28,6 +28,12 @@ This project has a bunch of git submodules.  You will need to update them regula
     git submodule sync
     git submodule update --init
 
+### Required Python Packages
+
+Failing to install these will prevent from properly building.
+
+    pip3 install -r requirements-dev.txt
+
 ### mpy-cross
 
 As part of the build process, mpy-cross is needed to compile .py files into .mpy files.

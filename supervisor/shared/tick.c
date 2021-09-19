@@ -40,10 +40,6 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-#if CIRCUITPY_GAMEPAD
-#include "shared-module/gamepad/__init__.h"
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
 #include "shared-module/gamepadshift/__init__.h"
 #endif
@@ -102,9 +98,6 @@ void supervisor_tick(void) {
 
     #ifdef CIRCUITPY_GAMEPAD_TICKS
     if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
-        #if CIRCUITPY_GAMEPAD
-        gamepad_tick();
-        #endif
         #if CIRCUITPY_GAMEPADSHIFT
         gamepadshift_tick();
         #endif
@@ -134,12 +127,12 @@ void PLACE_IN_ITCM(supervisor_run_background_tasks_if_tick)() {
     background_callback_run_all();
 }
 
-void mp_hal_delay_ms(mp_uint_t delay) {
+void mp_hal_delay_ms(mp_uint_t delay_ms) {
     uint64_t start_tick = port_get_raw_ticks(NULL);
     // Adjust the delay to ticks vs ms.
-    delay = delay * 1024 / 1000;
-    uint64_t end_tick = start_tick + delay;
-    int64_t remaining = delay;
+    uint64_t delay_ticks = (delay_ms * (uint64_t)1024) / 1000;
+    uint64_t end_tick = start_tick + delay_ticks;
+    int64_t remaining = delay_ticks;
 
     // Loop until we've waited long enough or we've been CTRL-Ced by autoreload
     // or the user.

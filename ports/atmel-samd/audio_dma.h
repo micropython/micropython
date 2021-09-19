@@ -35,22 +35,24 @@
 
 typedef struct {
     mp_obj_t sample;
+    uint8_t *buffer[2];
+    size_t buffer_length[2];
+    DmacDescriptor *descriptor[2];
+    DmacDescriptor second_descriptor;
+    background_callback_t callback;
     uint8_t dma_channel;
     uint8_t event_channel;
     uint8_t audio_channel;
     uint8_t bytes_per_sample;
     uint8_t beat_size;
     uint8_t spacing;
+    uint8_t buffer_to_load; // Index
     bool loop;
+    bool single_buffer;
     bool single_channel_output;
     bool signed_to_unsigned;
     bool unsigned_to_signed;
-    bool first_buffer_free;
-    uint8_t *first_buffer;
-    uint8_t *second_buffer;
-    bool first_descriptor_free;
-    DmacDescriptor *second_descriptor;
-    background_callback_t callback;
+    bool playing_in_progress;
 } audio_dma_t;
 
 typedef enum {
@@ -98,5 +100,7 @@ bool audio_dma_get_paused(audio_dma_t *dma);
 void audio_dma_background(void);
 
 uint8_t find_sync_event_channel_raise(void);
+
+void audio_evsys_handler(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_AUDIO_DMA_H

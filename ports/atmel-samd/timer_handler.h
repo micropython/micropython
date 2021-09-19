@@ -36,8 +36,4 @@
 void set_timer_handler(bool is_tc, uint8_t index, uint8_t timer_handler);
 void shared_timer_handler(bool is_tc, uint8_t index);
 
-// implementation of these functions is in PWMOut.c
-void timer_never_reset(int index, bool is_tc);
-void timer_reset_ok(int index, bool is_tc);
-
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_TIMER_HANDLER_H

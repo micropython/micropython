@@ -21,5 +21,11 @@ MICROPY_VFS_LFS2 = 1
 FROZEN_DIR=variants/coverage/frzstr
 FROZEN_MPY_DIR=variants/coverage/frzmpy
 
+SRC_QRIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/qrio/*.c ../../shared-module/qrio/*.c ../../lib/quirc/lib/*.c))
+SRC_C += $(SRC_QRIO)
+
+CFLAGS += -DCIRCUITPY_QRIO=1
+$(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
+
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp

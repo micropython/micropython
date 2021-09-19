@@ -3,6 +3,9 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PA17)
 
+#define MICROPY_HW_NEOPIXEL         (&pin_PB23)
+#define MICROPY_HW_NEOPIXEL_COUNT   (10)
+
 // Don't allow touch on A0 (PA02), because it's connected to the speaker.
 #define PA02_NO_TOUCH       (true)
 

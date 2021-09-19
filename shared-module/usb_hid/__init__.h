@@ -44,7 +44,7 @@ size_t usb_hid_report_descriptor_length(void);
 void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
 void usb_hid_save_report_descriptor(uint8_t *report_descriptor_space, size_t report_descriptor_length);
 
-usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id);
+bool usb_hid_get_device_with_report_id(uint8_t report_id, usb_hid_device_obj_t **device_out, size_t *id_idx_out);
 
 void usb_hid_gc_collect(void);
 

@@ -44,6 +44,10 @@
 #include "lib/utils/pyexec.h"
 #include "genhdr/mpversion.h"
 
+#if CIRCUITPY_ATEXIT
+#include "shared-module/atexit/__init__.h"
+#endif
+
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
 int pyexec_system_exit = 0;
 
@@ -58,6 +62,7 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_VSTR (16)
 #define EXEC_FLAG_SOURCE_IS_FILENAME (32)
 #define EXEC_FLAG_SOURCE_IS_READER (64)
+#define EXEC_FLAG_SOURCE_IS_ATEXIT (128)
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -81,44 +86,49 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
-        #if MICROPY_MODULE_FROZEN_MPY
-        if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
-            // source is a raw_code object, create the function
-            module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
-        } else
+        #if CIRCUITPY_ATEXIT
+        if (!(exec_flags & EXEC_FLAG_SOURCE_IS_ATEXIT))
         #endif
         {
-            #if MICROPY_ENABLE_COMPILER
-            mp_lexer_t *lex;
-            if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
-                const vstr_t *vstr = source;
-                lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
-            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
-                lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
-            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
-                lex = mp_lexer_new_from_file(source);
-            } else {
-                lex = (mp_lexer_t *)source;
-            }
-            // source is a lexer, parse and compile the script
-            qstr source_name = lex->source_name;
-            if (input_kind == MP_PARSE_FILE_INPUT) {
-                mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-            }
-            mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-            module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
-            // Clear the parse tree because it has a heap pointer we don't need anymore.
-            *((uint32_t volatile *)&parse_tree.chunk) = 0;
-            #else
-            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
+            #if MICROPY_MODULE_FROZEN_MPY
+            if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
+                // source is a raw_code object, create the function
+                module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
+            } else
             #endif
-        }
+            {
+                #if MICROPY_ENABLE_COMPILER
+                mp_lexer_t *lex;
+                if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
+                    const vstr_t *vstr = source;
+                    lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
+                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+                    lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
+                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
+                    lex = mp_lexer_new_from_file(source);
+                } else {
+                    lex = (mp_lexer_t *)source;
+                }
+                // source is a lexer, parse and compile the script
+                qstr source_name = lex->source_name;
+                if (input_kind == MP_PARSE_FILE_INPUT) {
+                    mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+                }
+                mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+                module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
+                // Clear the parse tree because it has a heap pointer we don't need anymore.
+                *((uint32_t volatile *)&parse_tree.chunk) = 0;
+                #else
+                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
+                #endif
+            }
 
-        // If the code was loaded from a file it's likely to be running for a while so we'll long
-        // live it and collect any garbage before running.
-        if (input_kind == MP_PARSE_FILE_INPUT) {
-            module_fun = make_obj_long_lived(module_fun, 6);
-            gc_collect();
+            // If the code was loaded from a file it's likely to be running for a while so we'll long
+            // live it and collect any garbage before running.
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                module_fun = make_obj_long_lived(module_fun, 6);
+                gc_collect();
+            }
         }
 
         // execute code
@@ -126,7 +136,15 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_REPL_INFO
         start = mp_hal_ticks_ms();
         #endif
-        mp_call_function_0(module_fun);
+        #if CIRCUITPY_ATEXIT
+        if (exec_flags & EXEC_FLAG_SOURCE_IS_ATEXIT) {
+            atexit_callback_t *callback = (atexit_callback_t *)source;
+            mp_call_function_n_kw(callback->func, callback->n_pos, callback->n_kw, callback->args);
+        } else
+        #endif
+        {
+            mp_call_function_0(module_fun);
+        }
         mp_hal_set_interrupt_char(-1); // disable interrupt
         mp_handle_pending(true); // handle any pending exceptions (and any callbacks)
         nlr_pop();
@@ -149,7 +167,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_hal_stdout_tx_strn("\x04", 1);
         }
         // check for SystemExit
-        if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
             // at the moment, the value of SystemExit is unused
             ret = pyexec_system_exit;
         #if CIRCUITPY_ALARM
@@ -165,7 +183,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     }
     if (result != NULL) {
         result->return_code = ret;
+        #if CIRCUITPY_ALARM
+        // Don't set the exception object if we exited for deep sleep.
+        if (ret != 0 && ret != PYEXEC_DEEP_SLEEP) {
+        #else
         if (ret != 0) {
+            #endif
             mp_obj_t return_value = (mp_obj_t)nlr.ret_val;
             result->exception = return_value;
             result->exception_line = -1;
@@ -242,7 +265,7 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
         mp_hal_stdout_tx_strn("\x04", 1); // indicate end to host
         if (c == CHAR_CTRL_C) {
             #if MICROPY_KBD_EXCEPTION
-            MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
+            MP_STATE_VM(mp_kbd_exception).traceback->data = NULL;
             nlr_raise(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
             #else
             mp_raise_type(&mp_type_KeyboardInterrupt);
@@ -627,7 +650,21 @@ friendly_repl_reset:
         }
 
         vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
+
+        nlr_buf_t nlr;
+        nlr.ret_val = NULL;
+        int ret = 0;
+        if (nlr_push(&nlr) == 0) {
+            ret = readline(&line, ">>> ");
+        } else {
+            // Uncaught exception
+            mp_handle_pending(false); // clear any pending exceptions (and run any callbacks)
+
+            // Print exceptions but stay in the REPL. There are very few delayed
+            // exceptions. The WatchDogTimer can raise one though.
+            mp_hal_stdout_tx_str("\r\n");
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_A) {
@@ -738,6 +775,12 @@ int pyexec_frozen_module(const char *name, pyexec_result_t *result) {
             printf("could not find module '%s'\n", name);
             return false;
     }
+}
+#endif
+
+#if CIRCUITPY_ATEXIT
+int pyexec_exit_handler(const void *source, pyexec_result_t *result) {
+    return parse_compile_execute(source, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_ATEXIT, result);
 }
 #endif
 

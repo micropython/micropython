@@ -61,10 +61,8 @@ const mp_obj_type_t mp_type_WatchDogTimeout = {
 
 mp_obj_exception_t mp_watchdog_timeout_exception = {
     .base.type = &mp_type_WatchDogTimeout,
-    .traceback_alloc = 0,
-    .traceback_len = 0,
-    .traceback_data = NULL,
     .args = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj,
+    .traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj,
 };
 
 STATIC const mp_rom_map_elem_t watchdog_module_globals_table[] = {
@@ -79,3 +77,5 @@ const mp_obj_module_t watchdog_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&watchdog_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_watchdog, watchdog_module, CIRCUITPY_WATCHDOG);

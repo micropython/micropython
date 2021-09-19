@@ -78,9 +78,9 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_parallelbus_obj_t *bus = &displays[0].parallel_bus;
-    bus->base.type = &displayio_parallelbus_type;
-    common_hal_displayio_parallelbus_construct(bus,
+    paralleldisplay_parallelbus_obj_t *bus = &displays[0].parallel_bus;
+    bus->base.type = &paralleldisplay_parallelbus_type;
+    common_hal_paralleldisplay_parallelbus_construct(bus,
         &pin_PA16, // Data0
         &pin_PB05, // Command or data
         &pin_PB06, // Chip select
@@ -107,7 +107,6 @@ void board_init(void) {
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // Set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS, // Set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
-        0x37, // Set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
         &pin_PB31, // Backlight pin

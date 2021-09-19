@@ -123,6 +123,7 @@ void supervisor_stop_terminal(void) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
         supervisor_terminal_text_grid.tiles = NULL;
+        supervisor_terminal.tilegrid = NULL;
     }
     #endif
 }

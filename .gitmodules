@@ -150,12 +150,12 @@
 [submodule "frozen/Adafruit_CircuitPython_RFM69"]
 	path = frozen/Adafruit_CircuitPython_RFM69
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
-[submodule "ports/esp32s2/esp-idf"]
-	path = ports/esp32s2/esp-idf
-	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v4.3
-[submodule "ports/esp32s2/certificates/nina-fw"]
-	path = ports/esp32s2/certificates/nina-fw
+[submodule "ports/espressif/esp-idf"]
+	path = ports/espressif/esp-idf
+	url = https://github.com/espressif/esp-idf.git
+	branch = release/v4.3
+[submodule "ports/espressif/certificates/nina-fw"]
+	path = ports/espressif/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
@@ -188,3 +188,9 @@
 [submodule "frozen/Adafruit_CircuitPython_SimpleIO"]
 	path = frozen/Adafruit_CircuitPython_SimpleIO
 	url = https://github.com/adafruit/adafruit_circuitpython_simpleio
+[submodule "lib/quirc"]
+	path = lib/quirc
+	url = https://github.com/adafruit/quirc.git
+[submodule "frozen/Adafruit_CircuitPython_APDS9960"]
+	path = frozen/Adafruit_CircuitPython_APDS9960
+	url = https://github.com/adafruit/Adafruit_CircuitPython_APDS9960

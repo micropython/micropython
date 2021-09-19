@@ -193,3 +193,5 @@ const mp_obj_module_t microcontroller_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mcu_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_microcontroller, microcontroller_module, CIRCUITPY_MICROCONTROLLER);

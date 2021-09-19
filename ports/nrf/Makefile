@@ -103,6 +103,18 @@ CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
+# Nordic Softdevice SDK header files contains inline assembler that has
+# broken constraints. As a result the IPA-modref pass, introduced in gcc-11,
+# is able to "prove" that arguments to wrapper functions generated with
+# the SVCALL() macro are unused and, as a result, the optimizer will remove
+# code within the callers that sets up these arguments (which results in
+# a broken bootloader). The broken headers come from Nordic-supplied zip
+# files and are not trivial to patch so, for now, we'll simply disable the
+# new gcc-11 inter-procedural optimizations.
+ifeq (,$(findstring unrecognized,$(shell $(CC) $(CFLAGS) -fno-ipa-modref 2>&1)))
+CFLAGS += -fno-ipa-modref
+endif
+
 # Undo some warnings.
 # nrfx does casts that increase alignment requirements.
 CFLAGS += -Wno-cast-align
@@ -120,7 +132,7 @@ CFLAGS += \
 # TODO: check this
 CFLAGS += -D__START=main
 
-LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-z,max-page-size=0x1000 -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LIBS := -lgcc -lc
 
 LDFLAGS += -mthumb -mcpu=cortex-m4
@@ -191,7 +203,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 # There may be duplicates between SRC_COMMON_HAL_EXPANDED and SRC_SHARED_MODULE_EXPANDED,
-# because a few modules have files both in common-hal/ and shared-modules/.
+# because a few modules have files both in common-hal/ and shared-module/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
 

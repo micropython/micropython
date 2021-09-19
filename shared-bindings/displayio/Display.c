@@ -39,8 +39,8 @@
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/translate.h"
 
-//| _DisplayBus = Union['FourWire', 'ParallelBus', 'I2CDisplay']
-//| """:py:class:`FourWire`, :py:class:`ParallelBus` or :py:class:`I2CDisplay`"""
+//| _DisplayBus = Union['FourWire', 'paralleldisplay.ParallelBus', 'I2CDisplay']
+//| """:py:class:`FourWire`, :py:class:`paralleldisplay.ParallelBus` or :py:class:`I2CDisplay`"""
 //|
 
 //|
@@ -54,7 +54,7 @@
 //|     Most people should not use this class directly. Use a specific display driver instead that will
 //|     contain the initialization sequence at minimum."""
 //|
-//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, set_vertical_scroll: int = 0, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
+//|     def __init__(self, display_bus: _DisplayBus, init_sequence: ReadableBuffer, *, width: int, height: int, colstart: int = 0, rowstart: int = 0, rotation: int = 0, color_depth: int = 16, grayscale: bool = False, pixels_in_byte_share_row: bool = True, bytes_per_cell: int = 1, reverse_pixels_in_byte: bool = False, set_column_command: int = 0x2a, set_row_command: int = 0x2b, write_ram_command: int = 0x2c, backlight_pin: Optional[microcontroller.Pin] = None, brightness_command: Optional[int] = None, brightness: float = 1.0, auto_brightness: bool = False, single_byte_bounds: bool = False, data_as_commands: bool = False,  auto_refresh: bool = True, native_frames_per_second: int = 60, backlight_on_high: bool = True, SH1107_addressing: bool = False) -> None:
 //|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplay`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
@@ -100,7 +100,6 @@
 //|         :param int set_column_command: Command used to set the start and end columns to update
 //|         :param int set_row_command: Command used so set the start and end rows to update
 //|         :param int write_ram_command: Command used to write pixels values into the update region. Ignored if data_as_commands is set.
-//|         :param int set_vertical_scroll: Command used to set the first row to show
 //|         :param microcontroller.Pin backlight_pin: Pin connected to the display's backlight
 //|         :param int brightness_command: Command to set display brightness. Usually available in OLED controllers.
 //|         :param float brightness: Initial display brightness. This value is ignored if auto_brightness is True.
@@ -111,6 +110,7 @@
 //|         :param int native_frames_per_second: Number of display refreshes per second that occur with the given init_sequence.
 //|         :param bool backlight_on_high: If True, pulling the backlight pin high turns the backlight on.
 //|         :param bool SH1107_addressing: Special quirk for SH1107, use upper/lower column set and page set
+//|         :param int set_vertical_scroll: This parameter is accepted but ignored for backwards compatibility. It will be removed in a future release.
 //|         """
 //|         ...
 //|
@@ -184,7 +184,6 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_reverse_bytes_in_word].u_bool,
         args[ARG_set_column_command].u_int, args[ARG_set_row_command].u_int,
         args[ARG_write_ram_command].u_int,
-        args[ARG_set_vertical_scroll].u_int,
         bufinfo.buf, bufinfo.len,
         MP_OBJ_TO_PTR(backlight_pin),
         args[ARG_brightness_command].u_int,
@@ -230,23 +229,24 @@ STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
 
-//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 1) -> bool:
-//|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
-//|         returning True. If the call has taken too long since the last refresh call for the given
-//|         target frame rate, then the refresh returns False immediately without updating the screen to
+//|     def refresh(self, *, target_frames_per_second: Optional[int] = None, minimum_frames_per_second: int = 0) -> bool:
+//|         """When auto_refresh is off, and :py:attr:`target_frames_per_second` is not `None` this waits
+//|         for the target frame rate and then refreshes the display,
+//|         returning `True`. If the call has taken too long since the last refresh call for the given
+//|         target frame rate, then the refresh returns `False` immediately without updating the screen to
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set ``minimum_frames_per_second`` to 0 to disable.
+//|         exception will be raised. The default :py:attr:`minimum_frames_per_second` of 0 disables this behavior.
 //|
-//|         When auto refresh is off, ``display.refresh()`` or ``display.refresh(target_frames_per_second=None)``
+//|         When auto_refresh is off, and :py:attr:`target_frames_per_second` is `None` this
 //|         will update the display immediately.
 //|
-//|         When auto refresh is on, updates the display immediately. (The display will also update
+//|         When auto_refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
-//|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
-//|             Set to `None` for immediate refresh.
+//|         :param Optional[int] target_frames_per_second: The target frame rate that :py:func:`refresh` should try to
+//|             achieve. Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second."""
 //|         ...
 //|
@@ -254,7 +254,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_target_frames_per_second, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
-        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

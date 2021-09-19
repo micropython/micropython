@@ -51,3 +51,5 @@ const mp_obj_module_t socketpool_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&socketpool_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_socketpool, socketpool_module, CIRCUITPY_SOCKETPOOL);

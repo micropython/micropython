@@ -36,15 +36,15 @@ typedef struct  {
     mp_obj_base_t base;
     // Python buffer object whose contents are the descriptor.
     const uint8_t *report_descriptor;
-    uint8_t *in_report_buffer;
-    uint8_t *out_report_buffer;
-    uint16_t report_id_index;
+    uint8_t *in_report_buffers[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t *out_report_buffers[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint16_t report_descriptor_length;
+    uint8_t report_ids[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t in_report_lengths[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
+    uint8_t out_report_lengths[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t usage_page;
     uint8_t usage;
-    uint8_t report_id;
-    uint8_t in_report_length;
-    uint8_t out_report_length;
+    uint8_t num_report_ids;
 } usb_hid_device_obj_t;
 
 extern const usb_hid_device_obj_t usb_hid_device_keyboard_obj;

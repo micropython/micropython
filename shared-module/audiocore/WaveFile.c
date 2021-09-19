@@ -206,7 +206,7 @@ audioio_get_buffer_result_t audioio_wavefile_get_buffer(audioio_wavefile_obj_t *
     }
 
     if (need_more_data) {
-        uint16_t num_bytes_to_load = self->len;
+        uint32_t num_bytes_to_load = self->len;
         if (num_bytes_to_load > self->bytes_remaining) {
             num_bytes_to_load = self->bytes_remaining;
         }

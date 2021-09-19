@@ -114,6 +114,9 @@ endif
 ifeq ($(CIRCUITPY_ANALOGIO),1)
 SRC_PATTERNS += analogio/%
 endif
+ifeq ($(CIRCUITPY_ATEXIT),1)
+SRC_PATTERNS += atexit/%
+endif
 ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
 SRC_PATTERNS += audiobusio/%
 endif
@@ -155,7 +158,7 @@ ifeq ($(CIRCUITPY_BUSDEVICE),1)
 SRC_PATTERNS += adafruit_bus_device/%
 endif
 ifeq ($(CIRCUITPY_BUSIO),1)
-SRC_PATTERNS += busio/% bitbangio/OneWire.%
+SRC_PATTERNS += busio/%
 endif
 ifeq ($(CIRCUITPY_CAMERA),1)
 SRC_PATTERNS += camera/%
@@ -172,6 +175,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
+ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
+SRC_PATTERNS += paralleldisplay/%
+endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
 endif
@@ -184,11 +190,12 @@ endif
 ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
-ifeq ($(CIRCUITPY_GAMEPAD),1)
-SRC_PATTERNS += gamepad/%
-endif
+
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
+endif
+ifeq ($(CIRCUITPY_GETPASS),1)
+SRC_PATTERNS += getpass/%
 endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
@@ -217,6 +224,9 @@ endif
 ifeq ($(CIRCUITPY_NVM),1)
 SRC_PATTERNS += nvm/%
 endif
+ifeq ($(CIRCUITPY_ONEWIREIO),1)
+SRC_PATTERNS += onewireio/%
+endif
 ifeq ($(CIRCUITPY_OS),1)
 SRC_PATTERNS += os/%
 endif
@@ -225,6 +235,9 @@ SRC_PATTERNS += dualbank/%
 endif
 ifeq ($(CIRCUITPY_PIXELBUF),1)
 SRC_PATTERNS += adafruit_pixelbuf/%
+endif
+ifeq ($(CIRCUITPY_QRIO),1)
+SRC_PATTERNS += qrio/%
 endif
 ifeq ($(CIRCUITPY_RAINBOWIO),1)
 SRC_PATTERNS += rainbowio/%
@@ -294,6 +307,9 @@ SRC_PATTERNS += time/%
 endif
 ifeq ($(CIRCUITPY_TOUCHIO),1)
 SRC_PATTERNS += touchio/%
+endif
+ifeq ($(CIRCUITPY_TRACEBACK),1)
+SRC_PATTERNS += traceback/%
 endif
 ifeq ($(CIRCUITPY_UHEAP),1)
 SRC_PATTERNS += uheap/%
@@ -372,7 +388,6 @@ SRC_COMMON_HAL_ALL = \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
-	displayio/ParallelBus.c \
 	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
@@ -391,6 +406,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
+	paralleldisplay/ParallelBus.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -444,6 +460,8 @@ $(filter $(SRC_PATTERNS), \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
+	qrio/PixelPolicy.c \
+	qrio/QRInfo.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -453,6 +471,8 @@ $(filter $(SRC_PATTERNS), \
 	microcontroller/RunMode.c \
 	msgpack/__init__.c \
 	msgpack/ExtType.c \
+	paralleldisplay/__init__.c \
+	paralleldisplay/ParallelBus.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
 )
@@ -473,6 +493,7 @@ SRC_SHARED_MODULE_ALL = \
 	_stage/__init__.c \
 	aesio/__init__.c \
 	aesio/aes.c \
+	atexit/__init__.c \
 	audiocore/RawSample.c \
 	audiocore/WaveFile.c \
 	audiocore/__init__.c \
@@ -484,7 +505,6 @@ SRC_SHARED_MODULE_ALL = \
 	audiomp3/__init__.c \
 	audiopwmio/__init__.c \
 	bitbangio/I2C.c \
-	bitbangio/OneWire.c \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	bitmaptools/__init__.c \
@@ -493,7 +513,6 @@ SRC_SHARED_MODULE_ALL = \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/I2CDevice.c \
 	adafruit_bus_device/SPIDevice.c \
-	busio/OneWire.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
@@ -513,6 +532,9 @@ SRC_SHARED_MODULE_ALL = \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
+	gamepadshift/GamePadShift.c \
+	gamepadshift/__init__.c \
+	getpass/__init__.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	keypad/__init__.c \
@@ -521,23 +543,23 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/KeyMatrix.c \
 	keypad/ShiftRegisterKeys.c \
 	keypad/Keys.c \
-	sdcardio/SDCard.c \
-	sdcardio/__init__.c \
-	gamepad/GamePad.c \
-	gamepad/__init__.c \
-	gamepadshift/GamePadShift.c \
-	gamepadshift/__init__.c \
 	memorymonitor/__init__.c \
 	memorymonitor/AllocationAlarm.c \
 	memorymonitor/AllocationSize.c \
 	network/__init__.c \
 	msgpack/__init__.c \
+	onewireio/__init__.c \
+	onewireio/OneWire.c \
 	os/__init__.c \
+	qrio/__init__.c \
+	qrio/QRDecoder.c \
 	rainbowio/__init__.c \
 	random/__init__.c \
 	rgbmatrix/RGBMatrix.c \
 	rgbmatrix/__init__.c \
 	rotaryio/IncrementalEncoder.c \
+	sdcardio/SDCard.c \
+	sdcardio/__init__.c \
 	sharpdisplay/SharpMemoryFramebuffer.c \
 	sharpdisplay/__init__.c \
 	socket/__init__.c \
@@ -548,6 +570,7 @@ SRC_SHARED_MODULE_ALL = \
 	terminalio/Terminal.c \
 	terminalio/__init__.c \
 	time/__init__.c \
+	traceback/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	vectorio/Circle.c \
@@ -667,6 +690,11 @@ SRC_CIRCUITPY_COMMON = \
 	lib/utils/pyexec.c \
 	lib/utils/stdout_helpers.c \
 	lib/utils/sys_stdio_mphal.c
+
+ifeq ($(CIRCUITPY_QRIO),1)
+SRC_CIRCUITPY_COMMON += lib/quirc/lib/decode.c lib/quirc/lib/identify.c lib/quirc/lib/quirc.c lib/quirc/lib/version_db.c
+$(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
+endif
 
 ifdef LD_TEMPLATE_FILE
 # Generate a linker script (.ld file) from a template, for those builds that use it.

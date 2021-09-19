@@ -54,7 +54,9 @@
 //|                  width: int, height: int, ram_width: int, ram_height: int,
 //|                  colstart: int = 0, rowstart: int = 0, rotation: int = 0,
 //|                  set_column_window_command: Optional[int] = None,
-//|                  set_row_window_command: Optional[int] = None, single_byte_bounds: bool = False,
+//|                  set_row_window_command: Optional[int] = None,
+//|                  set_current_column_command: Optional[int] = None,
+//|                  set_current_row_command: Optional[int] = None,
 //|                  write_black_ram_command: int, black_bits_inverted: bool = False,
 //|                  write_color_ram_command: Optional[int] = None,
 //|                  color_bits_inverted: bool = False, highlight_color: int = 0x000000,
@@ -62,7 +64,7 @@
 //|                  busy_pin: Optional[microcontroller.Pin] = None, busy_state: bool = True,
 //|                  seconds_per_frame: float = 180, always_toggle_chip_select: bool = False,
 //|                  grayscale: bool = False) -> None:
-//|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `displayio.ParallelBus`).
+//|         """Create a EPaperDisplay object on the given display bus (`displayio.FourWire` or `paralleldisplay.ParallelBus`).
 //|
 //|         The ``start_sequence`` and ``stop_sequence`` are bitpacked to minimize the ram impact. Every
 //|         command begins with a command byte followed by a byte to determine the parameter count and
@@ -73,7 +75,7 @@
 //|         extra long 500 ms delay instead of 255 ms. The next byte will begin a new command definition.
 //|
 //|         :param display_bus: The bus that the display is connected to
-//|         :type _DisplayBus: displayio.FourWire or displayio.ParallelBus
+//|         :type _DisplayBus: displayio.FourWire or paralleldisplay.ParallelBus
 //|         :param ~_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
 //|         :param ~_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
@@ -215,6 +217,31 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t grou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
 
+//|     def update_refresh_mode(self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180) -> None:
+//|         """Updates the ``start_sequence`` and ``seconds_per_frame`` parameters to enable
+//|         varying the refresh mode of the display."""
+//|
+STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_start_sequence, ARG_seconds_per_frame };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_start_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_seconds_per_frame, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(180)} },
+    };
+    displayio_epaperdisplay_obj_t *self = native_display(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get parameters
+    mp_buffer_info_t start_sequence;
+    mp_get_buffer_raise(args[ARG_start_sequence].u_obj, &start_sequence, MP_BUFFER_READ);
+    float seconds_per_frame = mp_obj_get_float(args[ARG_seconds_per_frame].u_obj);
+
+    // Update parameters
+    displayio_epaperdisplay_change_refresh_mode_parameters(self, &start_sequence, seconds_per_frame);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_epaperdisplay_update_refresh_mode_obj, 3, displayio_epaperdisplay_update_refresh_mode);
+
 //|     def refresh(self) -> None:
 //|         """Refreshes the display immediately or raises an exception if too soon. Use
 //|         ``time.sleep(display.time_to_refresh)`` to sleep until a refresh can occur."""
@@ -337,6 +364,7 @@ const mp_obj_property_t displayio_epaperdisplay_bus_obj = {
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
+    { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&displayio_epaperdisplay_update_refresh_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_epaperdisplay_refresh_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&displayio_epaperdisplay_width_obj) },

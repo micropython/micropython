@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pico-sdk-configboard.h"
+
 // alphabetized
 #define LIB_PICO_BINARY_INFO (0)
 #define LIB_PICO_PRINTF_NONE (0)

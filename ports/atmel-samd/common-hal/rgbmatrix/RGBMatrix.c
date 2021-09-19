@@ -29,6 +29,7 @@
 #include "common-hal/rgbmatrix/RGBMatrix.h"
 
 #include "samd/timers.h"
+#include "shared_timers.h"
 #include "timer_handler.h"
 
 void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {

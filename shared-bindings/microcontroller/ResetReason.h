@@ -38,6 +38,7 @@ typedef enum {
     RESET_REASON_RESET_PIN,
     RESET_REASON_WATCHDOG,
     RESET_REASON_UNKNOWN,
+    RESET_REASON_RESCUE_DEBUG,
 } mcu_reset_reason_t;
 
 extern const mp_obj_type_t mcu_reset_reason_type;

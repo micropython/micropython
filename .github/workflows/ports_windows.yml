@@ -99,8 +99,8 @@ jobs:
 # https://github.com/espressif/esp-idf/issues/7062
 #
 #    - name: prepare esp
-#      run: ports/esp32s2/esp-idf/install.bat
+#      run: ports/espressif/esp-idf/install.bat
 #      shell: cmd
 #
 #    - name: build esp
-#      run: . ports/esp32s2/esp-idf/export.sh && make -j2 -C ports/esp32s2 BOARD=adafruit_metro_esp32s2
+#      run: . ports/espressif/esp-idf/export.sh && make -j2 -C ports/espressif BOARD=adafruit_metro_esp32s2

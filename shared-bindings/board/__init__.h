@@ -28,10 +28,12 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H
 
 #include "py/obj.h"
+#include "py/objstr.h"
 
 #include "shared-bindings/microcontroller/Pin.h"  // for the pin definitions
 
 extern const mp_obj_dict_t board_module_globals;
+STATIC const MP_DEFINE_STR_OBJ(board_module_id_obj, CIRCUITPY_BOARD_ID);
 
 mp_obj_t common_hal_board_get_i2c(void);
 mp_obj_t common_hal_board_create_i2c(void);
@@ -44,5 +46,9 @@ MP_DECLARE_CONST_FUN_OBJ_0(board_spi_obj);
 mp_obj_t common_hal_board_get_uart(void);
 mp_obj_t common_hal_board_create_uart(void);
 MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
+
+#define CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS \
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_board) }, \
+    { MP_ROM_QSTR(MP_QSTR_board_id), MP_ROM_PTR(&board_module_id_obj) },
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_BOARD___INIT___H

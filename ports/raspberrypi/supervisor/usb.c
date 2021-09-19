@@ -44,4 +44,10 @@ void post_usb_init(void) {
     irq_set_exclusive_handler(USBCTRL_IRQ, usb_irq_handler);
 
     irq_set_enabled(USBCTRL_IRQ, true);
+
+    // There is a small window where the USB interrupt may be handled by the
+    // pico-sdk instead of CircuitPython. If that is the case, then we'll have
+    // USB events to process that we didn't queue up a background task for. So,
+    // queue one up here even if we might not have anything to do.
+    usb_background_schedule();
 }

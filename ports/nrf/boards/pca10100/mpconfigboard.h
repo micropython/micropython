@@ -39,6 +39,9 @@
 
 #define CIRCUITPY_BLE_CONFIG_SIZE       (12 * 1024)
 
+// Take 1k RAM to save 1k flash.
+#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (0)
+
 // Reduce nRF SoftRadio memory usage
 #define BLEIO_VS_UUID_COUNT 10
 #define BLEIO_HVN_TX_QUEUE_SIZE 2
@@ -48,3 +51,5 @@
 #define BLEIO_ATTR_TAB_SIZE (BLE_GATTS_ATTR_TAB_SIZE_DEFAULT * 2)
 
 #define SOFTDEVICE_RAM_SIZE (32 * 1024)
+
+#define MICROPY_FATFS_EXFAT 0

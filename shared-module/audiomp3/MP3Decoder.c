@@ -319,6 +319,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     uint8_t **bufptr,
     uint32_t *buffer_length) {
     if (!self->inbuf) {
+        *buffer_length = 0;
         return GET_BUFFER_ERROR;
     }
     if (!single_channel_output) {
@@ -342,6 +343,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
 
     mp3file_skip_id3v2(self);
     if (!mp3file_find_sync_word(self)) {
+        *buffer_length = 0;
         return self->eof ? GET_BUFFER_DONE : GET_BUFFER_ERROR;
     }
     int bytes_left = BYTES_LEFT(self);
@@ -349,15 +351,16 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     int err = MP3Decode(self->decoder, &inbuf, &bytes_left, buffer, 0);
     CONSUME(self, BYTES_LEFT(self) - bytes_left);
 
+    if (err) {
+        *buffer_length = 0;
+        return GET_BUFFER_DONE;
+    }
+
     if (self->inbuf_offset >= 512) {
         background_callback_add(
             &self->inbuf_fill_cb,
             mp3file_update_inbuf_cb,
             self);
-    }
-
-    if (err) {
-        return GET_BUFFER_DONE;
     }
 
     return GET_BUFFER_MORE_DATA;

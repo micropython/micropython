@@ -40,7 +40,7 @@ extension_by_port = {
     "cxd56": SPK,
     "mimxrt10xx": HEX_UF2,
     "litex": DFU,
-    "esp32s2": BIN_UF2,
+    "espressif": BIN_UF2,
     "raspberrypi": UF2,
 }
 
@@ -109,11 +109,20 @@ def get_board_mapping():
                 extensions = extension_by_port[port]
                 extensions = extension_by_board.get(board_path.name, extensions)
                 aliases = aliases_by_board.get(board_path.name, [])
+                frozen_libraries = []
+                with open(os.path.join(board_path, "mpconfigboard.mk")) as mpconfig:
+                    frozen_lines = [
+                        line for line in mpconfig if line.startswith("FROZEN_MPY_DIRS")
+                    ]
+                    frozen_libraries.extend(
+                        [line[line.rfind("/") + 1 :].strip() for line in frozen_lines]
+                    )
                 boards[board_id] = {
                     "port": port,
                     "extensions": extensions,
                     "download_count": 0,
                     "aliases": aliases,
+                    "frozen_libraries": frozen_libraries,
                 }
                 for alias in aliases:
                     boards[alias] = {
@@ -300,6 +309,7 @@ def generate_download_info():
                         "modules": support_matrix[alias],
                         "languages": languages,
                         "extensions": board_info["extensions"],
+                        "frozen_libraries": board_info["frozen_libraries"],
                     }
                     current_info[alias]["downloads"] = alias_info["download_count"]
                     current_info[alias]["versions"].append(new_version)

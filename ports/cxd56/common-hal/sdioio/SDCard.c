@@ -130,7 +130,6 @@ int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t sta
     check_whole_block(bufinfo);
 
     return self->inode->u.i_bops->write(self->inode, bufinfo->buf, start_block, bufinfo->len / 512);
-    ;
 }
 
 void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {

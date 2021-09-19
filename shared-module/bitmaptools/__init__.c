@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-module/displayio/Bitmap.h"
@@ -252,6 +251,145 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
     }
 }
 
+void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
+    int16_t x, int16_t y,
+    uint32_t fill_color_value, uint32_t replaced_color_value) {
+
+    if (fill_color_value == replaced_color_value) {
+        // There is nothing to do
+        return;
+    }
+
+    uint32_t current_point_color_value;
+
+    // the list of points that we'll check
+    mp_obj_t fill_area = mp_obj_new_list(0, NULL);
+
+    // first point is the one user passed in
+    mp_obj_t point[] = { mp_obj_new_int(x), mp_obj_new_int(y) };
+    mp_obj_list_append(
+        fill_area,
+        mp_obj_new_tuple(2, point)
+        );
+
+    int16_t minx = x;
+    int16_t miny = y;
+    int16_t maxx = x;
+    int16_t maxy = y;
+
+    if (replaced_color_value == INT_MAX) {
+        current_point_color_value = common_hal_displayio_bitmap_get_pixel(
+            destination,
+            mp_obj_get_int(point[0]),
+            mp_obj_get_int(point[1]));
+        replaced_color_value = (uint32_t)current_point_color_value;
+    }
+
+    mp_obj_t *fill_points;
+    size_t list_length = 0;
+    mp_obj_list_get(fill_area, &list_length, &fill_points);
+
+    mp_obj_t current_point;
+
+    size_t tuple_len = 0;
+    mp_obj_t *tuple_items;
+
+    int cur_x, cur_y;
+
+    // while there are still points to check
+    while (list_length > 0) {
+        mp_obj_list_get(fill_area, &list_length, &fill_points);
+        current_point = mp_obj_list_pop(fill_area, 0);
+        mp_obj_tuple_get(current_point, &tuple_len, &tuple_items);
+        current_point_color_value = common_hal_displayio_bitmap_get_pixel(
+            destination,
+            mp_obj_get_int(tuple_items[0]),
+            mp_obj_get_int(tuple_items[1]));
+
+        // if the current point is not background color ignore it
+        if (current_point_color_value != replaced_color_value) {
+            mp_obj_list_get(fill_area, &list_length, &fill_points);
+            continue;
+        }
+
+        cur_x = mp_obj_int_get_checked(tuple_items[0]);
+        cur_y = mp_obj_int_get_checked(tuple_items[1]);
+
+        if (cur_x < minx) {
+            minx = (int16_t)cur_x;
+        }
+        if (cur_x > maxx) {
+            maxx = (int16_t)cur_x;
+        }
+        if (cur_y < miny) {
+            miny = (int16_t)cur_y;
+        }
+        if (cur_y > maxy) {
+            maxy = (int16_t)cur_y;
+        }
+
+        // fill the current point with fill color
+        displayio_bitmap_write_pixel(
+            destination,
+            mp_obj_get_int(tuple_items[0]),
+            mp_obj_get_int(tuple_items[1]),
+            fill_color_value);
+
+        // add all 4 surrounding points to the list to check
+
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[1]) - 1 >= 0) {
+            mp_obj_t above_point[] = {
+                tuple_items[0],
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) - 1)
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, above_point));
+        }
+
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[0]) - 1 >= 0) {
+            mp_obj_t left_point[] = {
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) - 1),
+                tuple_items[1]
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, left_point));
+        }
+
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[0]) + 1 < destination->width) {
+            mp_obj_t right_point[] = {
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[0]) + 1),
+                tuple_items[1]
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, right_point));
+        }
+
+        // ignore points outside of the bitmap
+        if (mp_obj_int_get_checked(tuple_items[1]) + 1 < destination->height) {
+            mp_obj_t below_point[] = {
+                tuple_items[0],
+                MP_OBJ_NEW_SMALL_INT(mp_obj_int_get_checked(tuple_items[1]) + 1)
+            };
+            mp_obj_list_append(
+                fill_area,
+                mp_obj_new_tuple(2, below_point));
+        }
+
+        mp_obj_list_get(fill_area, &list_length, &fill_points);
+    }
+
+    // set dirty the area so displayio will draw
+    displayio_area_t area = { minx, miny, maxx + 1, maxy + 1};
+    displayio_bitmap_set_dirty_area(destination, &area);
+
+}
+
 void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     int16_t x0, int16_t y0,
     int16_t x1, int16_t y1,
@@ -453,7 +591,7 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
                     break;
 
                 case 24:
-                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | (rowdata8[x * 3 + 2] << 8);
+                    value = (rowdata8[x * 3] << 16) | (rowdata8[x * 3 + 1] << 8) | rowdata8[x * 3 + 2];
                     break;
 
                 case 32:

@@ -109,8 +109,10 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_fourwire_deinit(&displays[i].fourwire_bus);
         } else if (bus_type == &displayio_i2cdisplay_type) {
             common_hal_displayio_i2cdisplay_deinit(&displays[i].i2cdisplay_bus);
-        } else if (bus_type == &displayio_parallelbus_type) {
-            common_hal_displayio_parallelbus_deinit(&displays[i].parallel_bus);
+        #if CIRCUITPY_PARALLELDISPLAY
+        } else if (bus_type == &paralleldisplay_parallelbus_type) {
+            common_hal_paralleldisplay_parallelbus_deinit(&displays[i].parallel_bus);
+        #endif
         #if CIRCUITPY_RGBMATRIX
         } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
@@ -296,13 +298,6 @@ bool displayio_area_compute_overlap(const displayio_area_t *a,
     return true;
 }
 
-void displayio_copy_coords(const displayio_area_t *src, displayio_area_t *dest) {
-    dest->x1 = src->x1;
-    dest->y1 = src->y1;
-    dest->x2 = src->x2;
-    dest->y2 = src->y2;
-}
-
 bool displayio_area_empty(const displayio_area_t *a) {
     return (a->x1 == a->x2) || (a->y1 == a->y2);
 }
@@ -325,11 +320,11 @@ void displayio_area_union(const displayio_area_t *a,
     displayio_area_t *u) {
 
     if (displayio_area_empty(a)) {
-        displayio_copy_coords(b, u);
+        displayio_area_copy(b, u);
         return;
     }
     if (displayio_area_empty(b)) {
-        displayio_copy_coords(a, u);
+        displayio_area_copy(a, u);
         return;
     }
     u->x1 = MIN(a->x1, b->x1);

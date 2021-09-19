@@ -132,12 +132,14 @@
 //
 // 1 = SFN/ANSI 437=LFN/U.S.(OEM)
 #define MICROPY_FATFS_ENABLE_LFN      (1)
+// Code page is ignored because unicode is enabled.
 // Don't use parens on the value below because it gets combined with a prefix in
 // the preprocessor.
 #define MICROPY_FATFS_LFN_CODE_PAGE   437
 #define MICROPY_FATFS_USE_LABEL       (1)
 #define MICROPY_FATFS_RPATH           (2)
 #define MICROPY_FATFS_MULTI_PARTITION (1)
+#define MICROPY_FATFS_LFN_UNICODE      2  // UTF-8
 
 // Only enable this if you really need it. It allocates a byte cache of this size.
 // #define MICROPY_FATFS_MAX_SS           (4096)
@@ -188,7 +190,9 @@ typedef long mp_off_t;
 
 // Turning off FULL_BUILD removes some functionality to reduce flash size on tiny SAMD21s
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_CPYTHON_COMPAT
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
+#endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
 #define MICROPY_COMP_FSTRING_LITERAL          (MICROPY_CPYTHON_COMPAT)
 #define MICROPY_MODULE_WEAK_LINKS             (0)
@@ -206,6 +210,12 @@ typedef long mp_off_t;
 #define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
 #define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+
+#define CIRCUITPY_MICROPYTHON_ADVANCED        (CIRCUITPY_FULL_BUILD)
+
+#ifndef MICROPY_FATFS_EXFAT
+#define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
+#endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
 //
@@ -234,69 +244,6 @@ typedef long mp_off_t;
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
 
-#if CIRCUITPY_AESIO
-extern const struct _mp_obj_module_t aesio_module;
-#define AESIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_aesio), (mp_obj_t)&aesio_module },
-#else
-#define AESIO_MODULE
-#endif
-
-#if CIRCUITPY_ALARM
-extern const struct _mp_obj_module_t alarm_module;
-#define ALARM_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_alarm), (mp_obj_t)&alarm_module },
-#else
-#define ALARM_MODULE
-#endif
-
-#if CIRCUITPY_ANALOGIO
-#define ANALOGIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module },
-extern const struct _mp_obj_module_t analogio_module;
-#else
-#define ANALOGIO_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOBUSIO
-#define AUDIOBUSIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_audiobusio), (mp_obj_t)&audiobusio_module },
-extern const struct _mp_obj_module_t audiobusio_module;
-#else
-#define AUDIOBUSIO_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOCORE
-#define AUDIOCORE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiocore), (mp_obj_t)&audiocore_module },
-extern const struct _mp_obj_module_t audiocore_module;
-#else
-#define AUDIOCORE_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOIO
-#define AUDIOIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audioio), (mp_obj_t)&audioio_module },
-extern const struct _mp_obj_module_t audioio_module;
-#else
-#define AUDIOIO_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOMIXER
-#define AUDIOMIXER_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomixer), (mp_obj_t)&audiomixer_module },
-extern const struct _mp_obj_module_t audiomixer_module;
-#else
-#define AUDIOMIXER_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOMP3
-#define AUDIOMP3_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiomp3), (mp_obj_t)&audiomp3_module },
-extern const struct _mp_obj_module_t audiomp3_module;
-#else
-#define AUDIOMP3_MODULE
-#endif
-
-#if CIRCUITPY_AUDIOPWMIO
-#define AUDIOPWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_audiopwmio), (mp_obj_t)&audiopwmio_module },
-extern const struct _mp_obj_module_t audiopwmio_module;
-#else
-#define AUDIOPWMIO_MODULE
-#endif
-
 #if CIRCUITPY_BINASCII
 #define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
 #define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
@@ -304,38 +251,7 @@ extern const struct _mp_obj_module_t audiopwmio_module;
 #define BINASCII_MODULE
 #endif
 
-#if CIRCUITPY_BITBANGIO
-#define BITBANGIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_bitbangio), (mp_obj_t)&bitbangio_module },
-extern const struct _mp_obj_module_t bitbangio_module;
-#else
-#define BITBANGIO_MODULE
-#endif
-
-#if CIRCUITPY_BITMAPTOOLS
-#define BITMAPTOOLS_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_bitmaptools), (mp_obj_t)&bitmaptools_module },
-extern const struct _mp_obj_module_t bitmaptools_module;
-#else
-#define BITMAPTOOLS_MODULE
-#endif
-
-#if CIRCUITPY_BITOPS
-extern const struct _mp_obj_module_t bitops_module;
-#define BITOPS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_bitops),(mp_obj_t)&bitops_module },
-#else
-#define BITOPS_MODULE
-#endif
-
-#if CIRCUITPY_BLEIO
-#define BLEIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__bleio), (mp_obj_t)&bleio_module },
-extern const struct _mp_obj_module_t bleio_module;
-#else
-#define BLEIO_MODULE
-#endif
-
 #if CIRCUITPY_BOARD
-#define BOARD_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module },
-extern const struct _mp_obj_module_t board_module;
-
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
@@ -349,78 +265,15 @@ extern const struct _mp_obj_module_t board_module;
 #endif
 
 #else
-#define BOARD_MODULE
 #define BOARD_UART_ROOT_POINTER
 #endif
 
-#if CIRCUITPY_BUSDEVICE
-extern const struct _mp_obj_module_t adafruit_bus_device_module;
-#define BUSDEVICE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_bus_device), (mp_obj_t)&adafruit_bus_device_module },
-#else
-#define BUSDEVICE_MODULE
-#endif
-
-#if CIRCUITPY_BUSIO
-extern const struct _mp_obj_module_t busio_module;
-#define BUSIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module },
-#else
-#define BUSIO_MODULE
-#endif
-
-#if CIRCUITPY_CAMERA
-extern const struct _mp_obj_module_t camera_module;
-#define CAMERA_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_camera), (mp_obj_t)&camera_module },
-#else
-#define CAMERA_MODULE
-#endif
-
-#if CIRCUITPY_CANIO
-extern const struct _mp_obj_module_t canio_module;
-#define CANIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_canio), (mp_obj_t)&canio_module },
-#else
-#define CANIO_MODULE
-#endif
-
-#if CIRCUITPY_COUNTIO
-extern const struct _mp_obj_module_t countio_module;
-#define COUNTIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_countio), (mp_obj_t)&countio_module },
-#else
-#define COUNTIO_MODULE
-#endif
-
-#if CIRCUITPY_DIGITALIO
-extern const struct _mp_obj_module_t digitalio_module;
-#define DIGITALIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module },
-#else
-#define DIGITALIO_MODULE
-#endif
-
 #if CIRCUITPY_DISPLAYIO
-extern const struct _mp_obj_module_t displayio_module;
-extern const struct _mp_obj_module_t fontio_module;
-extern const struct _mp_obj_module_t terminalio_module;
-#define DISPLAYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_displayio), (mp_obj_t)&displayio_module },
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
 #else
-#define DISPLAYIO_MODULE
 #define CIRCUITPY_DISPLAY_LIMIT (0)
-#endif
-
-#if CIRCUITPY_DISPLAYIO && CIRCUITPY_TERMINALIO
-#define FONTIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_fontio), (mp_obj_t)&fontio_module },
-#define TERMINALIO_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_terminalio), (mp_obj_t)&terminalio_module },
-#else
-#define FONTIO_MODULE
-#define TERMINALIO_MODULE
-#endif
-
-#if CIRCUITPY_DUALBANK
-extern const struct _mp_obj_module_t dualbank_module;
-#define DUALBANK_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_dualbank), (mp_obj_t)&dualbank_module },
-#else
-#define DUALBANK_MODULE
 #endif
 
 #if CIRCUITPY_ERRNO
@@ -440,82 +293,12 @@ extern const struct _mp_obj_module_t espidf_module;
 #define ESPIDF_MODULE
 #endif
 
-#if CIRCUITPY__EVE
-extern const struct _mp_obj_module_t _eve_module;
-#define _EVE_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR__eve), (mp_obj_t)&_eve_module },
-#else
-#define _EVE_MODULE
-#endif
-
-#if CIRCUITPY_FRAMEBUFFERIO
-extern const struct _mp_obj_module_t framebufferio_module;
-#define FRAMEBUFFERIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_framebufferio), (mp_obj_t)&framebufferio_module },
-#else
-#define FRAMEBUFFERIO_MODULE
-#endif
-
-#if CIRCUITPY_VECTORIO
-extern const struct _mp_obj_module_t vectorio_module;
-#define VECTORIO_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_vectorio), (mp_obj_t)&vectorio_module },
-#else
-#define VECTORIO_MODULE
-#endif
-
-#if CIRCUITPY_FREQUENCYIO
-extern const struct _mp_obj_module_t frequencyio_module;
-#define FREQUENCYIO_MODULE       { MP_OBJ_NEW_QSTR(MP_QSTR_frequencyio), (mp_obj_t)&frequencyio_module },
-#else
-#define FREQUENCYIO_MODULE
-#endif
-
-#if CIRCUITPY_GAMEPAD
-extern const struct _mp_obj_module_t gamepad_module;
-#define GAMEPAD_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepad),(mp_obj_t)&gamepad_module },
-#else
-#define GAMEPAD_MODULE
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
-extern const struct _mp_obj_module_t gamepadshift_module;
-#define GAMEPADSHIFT_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_gamepadshift),(mp_obj_t)&gamepadshift_module },
-#else
-#define GAMEPADSHIFT_MODULE
-#endif
-
-#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
 #else
 #define GAMEPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_GNSS
-extern const struct _mp_obj_module_t gnss_module;
-#define GNSS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_gnss), (mp_obj_t)&gnss_module },
-#else
-#define GNSS_MODULE
-#endif
-
-#if CIRCUITPY_I2CPERIPHERAL
-extern const struct _mp_obj_module_t i2cperipheral_module;
-#define I2CPERIPHERAL_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_i2cperipheral), (mp_obj_t)&i2cperipheral_module },
-#else
-#define I2CPERIPHERAL_MODULE
-#endif
-
-#if CIRCUITPY_IMAGECAPTURE
-extern const struct _mp_obj_module_t imagecapture_module;
-#define IMAGECAPTURE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_imagecapture), (mp_obj_t)&imagecapture_module },
-#else
-#define IMAGECAPTURE_MODULE
-#endif
-
-#if CIRCUITPY_IPADDRESS
-extern const struct _mp_obj_module_t ipaddress_module;
-#define IPADDRESS_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_ipaddress), (mp_obj_t)&ipaddress_module },
-#else
-#define IPADDRESS_MODULE
 #endif
 
 #if CIRCUITPY_JSON
@@ -531,51 +314,16 @@ extern const struct _mp_obj_module_t ipaddress_module;
 #endif
 
 #if CIRCUITPY_KEYPAD
-extern const struct _mp_obj_module_t keypad_module;
-#define KEYPAD_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_keypad), (mp_obj_t)&keypad_module },
 #define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
 #else
-#define KEYPAD_MODULE
 #define KEYPAD_ROOT_POINTERS
 #endif
 
-#if CIRCUITPY_GAMEPAD || CIRCUITPY_GAMEPADSHIFT
-// Scan gamepad every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
-#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
-#else
-#define GAMEPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_MATH
-extern const struct _mp_obj_module_t math_module;
-#define MATH_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_math), (mp_obj_t)&math_module },
-#else
-#define MATH_MODULE
-#endif
-
 #if CIRCUITPY_MEMORYMONITOR
-extern const struct _mp_obj_module_t memorymonitor_module;
-#define MEMORYMONITOR_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_memorymonitor), (mp_obj_t)&memorymonitor_module },
 #define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
     mp_obj_t active_allocationalarms;
 #else
-#define MEMORYMONITOR_MODULE
 #define MEMORYMONITOR_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_MICROCONTROLLER
-extern const struct _mp_obj_module_t microcontroller_module;
-#define MICROCONTROLLER_MODULE { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module },
-#else
-#define MICROCONTROLLER_MODULE
-#endif
-
-#if CIRCUITPY_NEOPIXEL_WRITE
-extern const struct _mp_obj_module_t neopixel_write_module;
-#define NEOPIXEL_WRITE_MODULE  { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module },
-#else
-#define NEOPIXEL_WRITE_MODULE
 #endif
 
 // This is not a top-level module; it's microcontroller.nvm.
@@ -592,75 +340,11 @@ extern const struct _mp_obj_module_t os_module;
 #define OS_MODULE_ALT_NAME
 #endif
 
-#if CIRCUITPY_PEW
-extern const struct _mp_obj_module_t pew_module;
-#define PEW_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR__pew),(mp_obj_t)&pew_module },
-#else
-#define PEW_MODULE
-#endif
-
-#if CIRCUITPY_PIXELBUF
-extern const struct _mp_obj_module_t pixelbuf_module;
-#define PIXELBUF_MODULE   { MP_OBJ_NEW_QSTR(MP_QSTR_adafruit_pixelbuf),(mp_obj_t)&pixelbuf_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__pixelbuf),(mp_obj_t)&pixelbuf_module },
-#else
-#define PIXELBUF_MODULE
-#endif
-
-#if CIRCUITPY_PS2IO
-extern const struct _mp_obj_module_t ps2io_module;
-#define PS2IO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_ps2io), (mp_obj_t)&ps2io_module },
-#else
-#define PS2IO_MODULE
-#endif
-
-#if CIRCUITPY_PULSEIO
-extern const struct _mp_obj_module_t pulseio_module;
-#define PULSEIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module },
-#else
-#define PULSEIO_MODULE
-#endif
-
-#if CIRCUITPY_PWMIO
-extern const struct _mp_obj_module_t pwmio_module;
-#define PWMIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_pwmio), (mp_obj_t)&pwmio_module },
-#else
-#define PWMIO_MODULE
-#endif
-
-#if CIRCUITPY_RAINBOWIO
-extern const struct _mp_obj_module_t rainbowio_module;
-#define RAINBOWIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rainbowio), (mp_obj_t)&rainbowio_module },
-#else
-#define RAINBOWIO_MODULE
-#endif
-
-#if CIRCUITPY_RANDOM
-extern const struct _mp_obj_module_t random_module;
-#define RANDOM_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_random), (mp_obj_t)&random_module },
-#else
-#define RANDOM_MODULE
-#endif
-
 #if CIRCUITPY_RE
 #define MICROPY_PY_URE (1)
 #define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
 #else
 #define RE_MODULE
-#endif
-
-#if CIRCUITPY_RGBMATRIX
-extern const struct _mp_obj_module_t rgbmatrix_module;
-#define RGBMATRIX_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rgbmatrix),(mp_obj_t)&rgbmatrix_module },
-#else
-#define RGBMATRIX_MODULE
-#endif
-
-#if CIRCUITPY_ROTARYIO
-extern const struct _mp_obj_module_t rotaryio_module;
-#define ROTARYIO_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_rotaryio), (mp_obj_t)&rotaryio_module },
-#else
-#define ROTARYIO_MODULE
 #endif
 
 #if CIRCUITPY_RP2PIO
@@ -670,88 +354,11 @@ extern const struct _mp_obj_module_t rp2pio_module;
 #define RP2PIO_MODULE
 #endif
 
-#if CIRCUITPY_RTC
-extern const struct _mp_obj_module_t rtc_module;
-#define RTC_MODULE             { MP_OBJ_NEW_QSTR(MP_QSTR_rtc), (mp_obj_t)&rtc_module },
-#else
-#define RTC_MODULE
-#endif
-
 #if CIRCUITPY_SAMD
 extern const struct _mp_obj_module_t samd_module;
 #define SAMD_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module },
 #else
 #define SAMD_MODULE
-#endif
-
-#if CIRCUITPY_SDCARDIO
-extern const struct _mp_obj_module_t sdcardio_module;
-#define SDCARDIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdcardio), (mp_obj_t)&sdcardio_module },
-#else
-#define SDCARDIO_MODULE
-#endif
-
-#if CIRCUITPY_SDIOIO
-extern const struct _mp_obj_module_t sdioio_module;
-#define SDIOIO_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_sdioio), (mp_obj_t)&sdioio_module },
-#else
-#define SDIOIO_MODULE
-#endif
-
-#if CIRCUITPY_SHARPDISPLAY
-extern const struct _mp_obj_module_t sharpdisplay_module;
-#define SHARPDISPLAY_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_sharpdisplay),(mp_obj_t)&sharpdisplay_module },
-#else
-#define SHARPDISPLAY_MODULE
-#endif
-
-#if CIRCUITPY_SOCKETPOOL
-extern const struct _mp_obj_module_t socketpool_module;
-#define SOCKETPOOL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_socketpool), (mp_obj_t)&socketpool_module },
-#else
-#define SOCKETPOOL_MODULE
-#endif
-
-#if CIRCUITPY_SSL
-extern const struct _mp_obj_module_t ssl_module;
-#define SSL_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_ssl), (mp_obj_t)&ssl_module },
-#else
-#define SSL_MODULE
-#endif
-
-#if CIRCUITPY_STAGE
-extern const struct _mp_obj_module_t stage_module;
-#define STAGE_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR__stage), (mp_obj_t)&stage_module },
-#else
-#define STAGE_MODULE
-#endif
-
-#if CIRCUITPY_STORAGE
-extern const struct _mp_obj_module_t storage_module;
-#define STORAGE_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_storage), (mp_obj_t)&storage_module },
-#else
-#define STORAGE_MODULE
-#endif
-
-#if CIRCUITPY_STRUCT
-extern const struct _mp_obj_module_t struct_module;
-#define STRUCT_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_struct), (mp_obj_t)&struct_module },
-#else
-#define STRUCT_MODULE
-#endif
-
-#if CIRCUITPY_SUPERVISOR
-extern const struct _mp_obj_module_t supervisor_module;
-#define SUPERVISOR_MODULE      { MP_OBJ_NEW_QSTR(MP_QSTR_supervisor), (mp_obj_t)&supervisor_module },
-#else
-#define SUPERVISOR_MODULE
-#endif
-
-#if CIRCUITPY_SYNTHIO
-#define SYNTHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_synthio), (mp_obj_t)&synthio_module },
-extern const struct _mp_obj_module_t synthio_module;
-#else
-#define SYNTHIO_MODULE
 #endif
 
 #if CIRCUITPY_TIME
@@ -763,48 +370,6 @@ extern const struct _mp_obj_module_t time_module;
 #define TIME_MODULE_ALT_NAME
 #endif
 
-#if CIRCUITPY_TOUCHIO
-extern const struct _mp_obj_module_t touchio_module;
-#define TOUCHIO_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_touchio), (mp_obj_t)&touchio_module },
-#else
-#define TOUCHIO_MODULE
-#endif
-
-#if CIRCUITPY_UHEAP
-extern const struct _mp_obj_module_t uheap_module;
-#define UHEAP_MODULE           { MP_OBJ_NEW_QSTR(MP_QSTR_uheap),(mp_obj_t)&uheap_module },
-#else
-#define UHEAP_MODULE
-#endif
-
-#if CIRCUITPY_USB_CDC
-extern const struct _mp_obj_module_t usb_cdc_module;
-#define USB_CDC_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_cdc),(mp_obj_t)&usb_cdc_module },
-#else
-#define USB_CDC_MODULE
-#endif
-
-#if CIRCUITPY_USB_HID
-extern const struct _mp_obj_module_t usb_hid_module;
-#define USB_HID_MODULE         { MP_OBJ_NEW_QSTR(MP_QSTR_usb_hid),(mp_obj_t)&usb_hid_module },
-#else
-#define USB_HID_MODULE
-#endif
-
-#if CIRCUITPY_USB_MIDI
-extern const struct _mp_obj_module_t usb_midi_module;
-#define USB_MIDI_MODULE        { MP_OBJ_NEW_QSTR(MP_QSTR_usb_midi),(mp_obj_t)&usb_midi_module },
-#else
-#define USB_MIDI_MODULE
-#endif
-
-#if CIRCUITPY_USTACK
-extern const struct _mp_obj_module_t ustack_module;
-#define USTACK_MODULE          { MP_OBJ_NEW_QSTR(MP_QSTR_ustack),(mp_obj_t)&ustack_module },
-#else
-#define USTACK_MODULE
-#endif
-
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
@@ -814,28 +379,6 @@ extern const struct _mp_obj_module_t ustack_module;
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
 #else
 #define ULAB_MODULE
-#endif
-
-// This is not a top-level module; it's microcontroller.watchdog.
-#if CIRCUITPY_WATCHDOG
-extern const struct _mp_obj_module_t watchdog_module;
-#define WATCHDOG_MODULE { MP_ROM_QSTR(MP_QSTR_watchdog), MP_ROM_PTR(&watchdog_module) },
-#else
-#define WATCHDOG_MODULE
-#endif
-
-#if CIRCUITPY_WIFI
-extern const struct _mp_obj_module_t wifi_module;
-#define WIFI_MODULE { MP_ROM_QSTR(MP_QSTR_wifi), MP_ROM_PTR(&wifi_module) },
-#else
-#define WIFI_MODULE
-#endif
-
-#if CIRCUITPY_MSGPACK
-extern const struct _mp_obj_module_t msgpack_module;
-#define MSGPACK_MODULE { MP_ROM_QSTR(MP_QSTR_msgpack), MP_ROM_PTR(&msgpack_module) },
-#else
-#define MSGPACK_MODULE
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -853,85 +396,94 @@ extern const struct _mp_obj_module_t msgpack_module;
     TIME_MODULE_ALT_NAME \
 
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
-// including dependencies such as TERMINALIO depending on DISPLAYIO (shown by indentation).
+// including dependencies.
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
+
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
-    AESIO_MODULE \
-    ALARM_MODULE \
-    ANALOGIO_MODULE \
-    AUDIOBUSIO_MODULE \
-    AUDIOCORE_MODULE \
-    AUDIOIO_MODULE \
-    AUDIOMIXER_MODULE \
-    AUDIOMP3_MODULE \
-    AUDIOPWMIO_MODULE \
     BINASCII_MODULE \
-    BITBANGIO_MODULE \
-    BITMAPTOOLS_MODULE \
-    BITOPS_MODULE \
-    BLEIO_MODULE \
-    BOARD_MODULE \
-    BUSDEVICE_MODULE \
-    BUSIO_MODULE \
-    CAMERA_MODULE \
-    CANIO_MODULE \
-    COUNTIO_MODULE \
-    DIGITALIO_MODULE \
-    DISPLAYIO_MODULE \
-    DUALBANK_MODULE \
-    FONTIO_MODULE \
-    TERMINALIO_MODULE \
-    VECTORIO_MODULE \
     ERRNO_MODULE \
     ESPIDF_MODULE \
-    _EVE_MODULE \
-    FRAMEBUFFERIO_MODULE \
-    FREQUENCYIO_MODULE \
-    GAMEPAD_MODULE \
-    GAMEPADSHIFT_MODULE \
-    GNSS_MODULE \
-    I2CPERIPHERAL_MODULE \
-    IPADDRESS_MODULE \
-    IMAGECAPTURE_MODULE \
     JSON_MODULE \
-    KEYPAD_MODULE \
-    MATH_MODULE \
-    MEMORYMONITOR_MODULE \
-    MICROCONTROLLER_MODULE \
-    MSGPACK_MODULE \
-    NEOPIXEL_WRITE_MODULE \
-    PEW_MODULE \
-    PIXELBUF_MODULE \
-    PS2IO_MODULE \
-    PULSEIO_MODULE \
-    PWMIO_MODULE \
-    RAINBOWIO_MODULE \
-    RANDOM_MODULE \
     RE_MODULE \
-    RGBMATRIX_MODULE \
-    ROTARYIO_MODULE \
     RP2PIO_MODULE \
-    RTC_MODULE \
     SAMD_MODULE \
-    SDCARDIO_MODULE \
-    SDIOIO_MODULE \
-    SHARPDISPLAY_MODULE \
-    SOCKETPOOL_MODULE \
-    SSL_MODULE \
-    STAGE_MODULE \
-    STORAGE_MODULE \
-    STRUCT_MODULE \
-    SUPERVISOR_MODULE \
-    SYNTHIO_MODULE \
-    TOUCHIO_MODULE \
-    UHEAP_MODULE \
-    USB_CDC_MODULE \
-    USB_HID_MODULE \
-    USB_MIDI_MODULE \
-    USTACK_MODULE \
-    WATCHDOG_MODULE \
-    WIFI_MODULE \
+
+// The following modules are defined in their respective __init__.c file in the
+// shared-bindings directory using MP_REGISTER_MODULE.
+//
+// CIRCUITPY_AESIO
+// CIRCUITPY_ANALOGIO
+// CIRCUITPY_ATEXIT
+// CIRCUITPY_AUDIOBUSIO
+// CIRCUITPY_AUDIOCORE
+// CIRCUITPY_AUDIOIO
+// CIRCUITPY_AUDIOMIXER
+// CIRCUITPY_AUDIOMP3
+// CIRCUITPY_AUDIOPWMIO
+// CIRCUITPY_BITBANGIO
+// CIRCUITPY_BITMAPTOOLS
+// CIRCUITPY_BITOPS
+// CIRCUITPY_BLEIO
+// CIRCUITPY_BOARD
+// CIRCUITPY_BUSDEVICE
+// CIRCUITPY_BUSIO
+// CIRCUITPY_CAMERA
+// CIRCUITPY_CANIO
+// CIRCUITPY_COUNTIO
+// CIRCUITPY_DIGITALIO
+// CIRCUITPY_DISPLAYIO
+// CIRCUITPY_DUALBANK
+// CIRCUITPY__EVE
+// CIRCUITPY_FONTIO
+// CIRCUITPY_FRAMEBUFFERIO
+// CIRCUITPY_FREQUENCYIO
+// CIRCUITPY_GAMEPADSHIFT
+// CIRCUITPY_GETPASS
+// CIRCUITPY_GNSS
+// CIRCUITPY_I2CPERIPHERAL
+// CIRCUITPY_IMAGECAPTURE
+// CIRCUITPY_IPADDRESS
+// CIRCUITPY_KEYPAD
+// CIRCUITPY_MATH
+// CIRCUITPY_MEMORYMONITOR
+// CIRCUITPY_MICROCONTROLLER
+// CIRCUITPY_MSGPACK
+// CIRCUITPY_NEOPIXEL_WRITE
+// CIRCUITPY_ONEWIREIO_WRITE
+// CIRCUITPY_PARALLELDISPLAY
+// CIRCUITPY_PEW
+// CIRCUITPY_PIXELBUF
+// CIRCUITPY_PS2IO
+// CIRCUITPY_PULSEIO
+// CIRCUITPY_PWMIO
+// CIRCUITPY_QRIO
+// CIRCUITPY_RAINBOWIO
+// CIRCUITPY_RANDOM
+// CIRCUITPY_RGBMATRIX
+// CIRCUITPY_ROTARYIO
+// CIRCUITPY_RTC
+// CIRCUITPY_SDCARDIO
+// CIRCUITPY_SDIOIO
+// CIRCUITPY_SHARPDISPLAY
+// CIRCUITPY_SOCKETPOOL
+// CIRCUITPY_SSL
+// CIRCUITPY_STAGE
+// CIRCUITPY_STORAGE
+// CIRCUITPY_STRUCT
+// CIRCUITPY_SUPERVISOR
+// CIRCUITPY_SYNTHIO
+// CIRCUITPY_TERMINALIO
+// CIRCUITPY_TOUCHIO
+// CIRCUITPY_TRACEBACK
+// CIRCUITPY_UHEAP
+// CIRCUITPY_USB_CDC
+// CIRCUITPY_USB_HID
+// CIRCUITPY_USB_MIDI
+// CIRCUITPY_USTACK
+// CIRCUITPY_VECTORIO
+// CIRCUITPY_WATCHDOG
+// CIRCUITPY_WIFI
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.
@@ -1004,6 +556,13 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #define CIRCUITPY_VERBOSE_BLE 0
 
+// This trades ~1k flash space (1) for that much in RAM plus the cost to compute
+// the values once on init (0). Only turn it off, when you really need the flash
+// space and are willing to trade the RAM.
+#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
+#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
+#endif
+
 // USB settings
 
 // If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
@@ -1046,6 +605,16 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #ifndef USB_HID_EP_NUM_IN
 #define USB_HID_EP_NUM_IN (0)
+#endif
+
+// The most complicated device currently known of is the head and eye tracker, which requires 5
+// report ids.
+// https://usb.org/sites/default/files/hutrr74_-_usage_page_for_head_and_eye_trackers_0.pdf
+// The default descriptors only use 1, so that is the minimum.
+#ifndef CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR
+#define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (6)
+#elif CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR < 1
+#error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
 #ifndef USB_MIDI_EP_NUM_OUT

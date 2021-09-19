@@ -3,7 +3,9 @@
 // This mapping only includes functional names because pins broken
 // out on connectors are labeled with their MCU name available from
 // microcontroller.pin.
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA02) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PB04) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_PB05) },
@@ -20,8 +22,10 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_PA23) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_PA23) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_PA22) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PA22) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D2), MP_ROM_PTR(&pin_PA21) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D3), MP_ROM_PTR(&pin_PA20) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D4), MP_ROM_PTR(&pin_PB17) },
@@ -33,8 +37,11 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D10), MP_ROM_PTR(&pin_PA15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D11), MP_ROM_PTR(&pin_PB15) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_PB14) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PB13) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_STATUS_LED),MP_ROM_PTR(&pin_PB13) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED),MP_ROM_PTR(&pin_PB13) },
+
     { MP_OBJ_NEW_QSTR(MP_QSTR_D14), MP_ROM_PTR(&pin_PB12) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D15), MP_ROM_PTR(&pin_PB31) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D16), MP_ROM_PTR(&pin_PA27) },
@@ -52,4 +59,4 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 };
-MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

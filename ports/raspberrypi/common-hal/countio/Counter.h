@@ -16,4 +16,6 @@ typedef struct {
 
 void counter_interrupt_handler();
 
+void reset_countio(void);
+
 #endif // MICROPY_INCLUDED_RASPBERRRYPI_COMMON_HAL_COUNTIO_COUNTER_H

@@ -15,16 +15,51 @@
 
 // Lifecycle actions.
 #define VECTORIO_SHAPE_DEBUG(...) (void)0
-// #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+// #define VECTORIO_SHAPE_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Used in both logging and ifdefs, for extra variables
-// #define VECTORIO_PERF(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+// #define VECTORIO_PERF(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 
 // Really verbose.
 #define VECTORIO_SHAPE_PIXEL_DEBUG(...) (void)0
-// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
+// #define VECTORIO_SHAPE_PIXEL_DEBUG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+
+#define U32_TO_BINARY_FMT "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+#define U32_TO_BINARY(u32)  \
+    (u32 & 0x80000000 ? '1' : '0'), \
+    (u32 & 0x40000000 ? '1' : '0'), \
+    (u32 & 0x20000000 ? '1' : '0'), \
+    (u32 & 0x10000000 ? '1' : '0'), \
+    (u32 & 0x8000000  ? '1' : '0'), \
+    (u32 & 0x4000000  ? '1' : '0'), \
+    (u32 & 0x2000000  ? '1' : '0'), \
+    (u32 & 0x1000000  ? '1' : '0'), \
+    (u32 & 0x800000   ? '1' : '0'), \
+    (u32 & 0x400000   ? '1' : '0'), \
+    (u32 & 0x200000   ? '1' : '0'), \
+    (u32 & 0x100000   ? '1' : '0'), \
+    (u32 & 0x80000    ? '1' : '0'), \
+    (u32 & 0x40000    ? '1' : '0'), \
+    (u32 & 0x20000    ? '1' : '0'), \
+    (u32 & 0x10000    ? '1' : '0'), \
+    (u32 & 0x8000     ? '1' : '0'), \
+    (u32 & 0x4000     ? '1' : '0'), \
+    (u32 & 0x2000     ? '1' : '0'), \
+    (u32 & 0x1000     ? '1' : '0'), \
+    (u32 & 0x800      ? '1' : '0'), \
+    (u32 & 0x400      ? '1' : '0'), \
+    (u32 & 0x200      ? '1' : '0'), \
+    (u32 & 0x100      ? '1' : '0'), \
+    (u32 & 0x80       ? '1' : '0'), \
+    (u32 & 0x40       ? '1' : '0'), \
+    (u32 & 0x20       ? '1' : '0'), \
+    (u32 & 0x10       ? '1' : '0'), \
+    (u32 & 0x8        ? '1' : '0'), \
+    (u32 & 0x4        ? '1' : '0'), \
+    (u32 & 0x2        ? '1' : '0'), \
+    (u32 & 0x1        ? '1' : '0')
 
 
 inline __attribute__((always_inline))
@@ -32,70 +67,132 @@ static int32_t max(int32_t a, int32_t b) {
     return a > b ? a : b;
 }
 
+inline __attribute__((always_inline))
+static uint32_t min(uint32_t a, uint32_t b) {
+    return a < b ? a : b;
+}
+
+inline __attribute__((always_inline))
+static void area_transpose(displayio_area_t *to_transpose) {
+    int16_t swap = to_transpose->y1;
+    to_transpose->y1 = to_transpose->x1;
+    to_transpose->x1 = swap;
+    swap = to_transpose->y2;
+    to_transpose->y2 = to_transpose->x2;
+    to_transpose->x2 = swap;
+}
 
 inline __attribute__((always_inline))
 static void _get_screen_area(vectorio_vector_shape_t *self, displayio_area_t *out_area) {
-    VECTORIO_SHAPE_DEBUG("%p get_screen_area tform:{x:%d y:%d dx:%d dy:%d scl:%d w:%d h:%d mx:%d my:%d tr:%d}", self,
+    VECTORIO_SHAPE_DEBUG("%p get_screen_area (%3d,%3d) tform:{x:%d y:%d dx:%d dy:%d scl:%d w:%d h:%d mx:%d my:%d tr:%d}", self, self->x, self->y,
         self->absolute_transform->x, self->absolute_transform->y, self->absolute_transform->dx, self->absolute_transform->dy, self->absolute_transform->scale,
         self->absolute_transform->width, self->absolute_transform->height, self->absolute_transform->mirror_x, self->absolute_transform->mirror_y, self->absolute_transform->transpose_xy
         );
     self->ishape.get_area(self->ishape.shape, out_area);
     VECTORIO_SHAPE_DEBUG(" in:{(%5d,%5d), (%5d,%5d)}", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
+
+    int16_t x;
+    int16_t y;
     if (self->absolute_transform->transpose_xy) {
-        int16_t swap = out_area->x1;
-        out_area->x1 = (out_area->y1 + self->y) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y1 = (swap + self->x) * self->absolute_transform->dy + self->absolute_transform->y;
-        swap = out_area->x2;
-        out_area->x2 = (out_area->y2 + self->y) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y2 = (swap + self->x) * self->absolute_transform->dy + self->absolute_transform->y;
+        x = self->absolute_transform->x + self->absolute_transform->dx * self->y;
+        y = self->absolute_transform->y + self->absolute_transform->dy * self->x;
+        if (self->absolute_transform->dx < 1) {
+            out_area->y1 = out_area->y1 * -1 + 1;
+            out_area->y2 = out_area->y2 * -1 + 1;
+        }
+        if (self->absolute_transform->dy < 1) {
+            out_area->x1 = out_area->x1 * -1 + 1;
+            out_area->x2 = out_area->x2 * -1 + 1;
+        }
+        area_transpose(out_area);
     } else {
-        out_area->x1 = (out_area->x1 + self->x) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y1 = (out_area->y1 + self->y) * self->absolute_transform->dy + self->absolute_transform->y;
-        out_area->x2 = (out_area->x2 + self->x) * self->absolute_transform->dx + self->absolute_transform->x;
-        out_area->y2 = (out_area->y2 + self->y) * self->absolute_transform->dy + self->absolute_transform->y;
+        x = self->absolute_transform->x + self->absolute_transform->dx * self->x;
+        y = self->absolute_transform->y + self->absolute_transform->dy * self->y;
+
+        if (self->absolute_transform->dx < 1) {
+            out_area->x1 = out_area->x1 * -1 + 1;
+            out_area->x2 = out_area->x2 * -1 + 1;
+        }
+        if (self->absolute_transform->dy < 1) {
+            out_area->y1 = out_area->y1 * -1 + 1;
+            out_area->y2 = out_area->y2 * -1 + 1;
+        }
     }
-    // We might have mirrored due to dx
     displayio_area_canon(out_area);
+    displayio_area_shift(out_area, x, y);
+
     VECTORIO_SHAPE_DEBUG(" out:{(%5d,%5d), (%5d,%5d)}\n", out_area->x1, out_area->y1, out_area->x2, out_area->y2);
+}
+
+
+STATIC
+void check_bounds_and_set_x(vectorio_vector_shape_t *self, mp_int_t x) {
+    if (x < SHRT_MIN || x > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_x, SHRT_MIN, SHRT_MAX);
+    }
+    self->x = x;
+}
+
+
+STATIC
+void check_bounds_and_set_y(vectorio_vector_shape_t *self, mp_int_t y) {
+    if (y < SHRT_MIN || y > SHRT_MAX) {
+        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), MP_QSTR_y, SHRT_MIN, SHRT_MAX);
+    }
+    self->y = y;
 }
 
 
 // For use by Group to know where it needs to redraw on layer removal.
 bool vectorio_vector_shape_get_dirty_area(vectorio_vector_shape_t *self, displayio_area_t *out_area) {
-    displayio_area_copy(&self->ephemeral_dirty_area, out_area);
+    out_area->x1 = out_area->x2;
+    displayio_area_union(
+        &self->ephemeral_dirty_area,
+        &self->current_area,
+        out_area
+        );
     return true; // For now just always redraw.
 }
 
 
-// This must be invoked each time a shape changes its position or its shape in any way.
+// This must be invoked after each time a shape changes its position, shape or appearance in any way.
 void common_hal_vectorio_vector_shape_set_dirty(void *vector_shape) {
     vectorio_vector_shape_t *self = vector_shape;
     // In screen space.  Need to offset the shape space.
     displayio_area_t current_area;
     _get_screen_area(self, &current_area);
-    VECTORIO_SHAPE_DEBUG("%p shape_dirty current:{(%3d,%3d), (%3d,%3d)} dirty:{(%3d,%3d), (%3d,%3d)}",
+    VECTORIO_SHAPE_DEBUG("%p shape_dirty new:{(%3d,%3d), (%3d,%3d)} dirty:{(%3d,%3d), (%3d,%3d)}",
         self,
         current_area.x1, current_area.y1, current_area.x2, current_area.y2,
         self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
-    self->dirty = true;
-    // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish,
-    displayio_area_union(&self->ephemeral_dirty_area, &current_area, &self->ephemeral_dirty_area);
-    VECTORIO_SHAPE_DEBUG(" -> expanded:{(%3d,%3d), (%3d,%3d)}\n", self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
+
+    bool moved = !displayio_area_equal(&current_area, &self->current_area);
+    if (moved) {
+        displayio_area_union(&self->current_area, &self->ephemeral_dirty_area, &self->ephemeral_dirty_area);
+        VECTORIO_SHAPE_DEBUG(" stale:{(%3d,%3d), (%3d,%3d)} -> expanded:{(%3d,%3d), (%3d,%3d)}\n",
+            self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2,
+            self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
+
+        // Dirty area tracks the shape's footprint between draws.  It's reset on refresh finish.
+        displayio_area_copy(&current_area, &self->current_area);
+    }
+    self->current_area_dirty = true;
 }
 
 
 void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
     vectorio_ishape_t ishape,
-    mp_obj_t pixel_shader, uint16_t x, uint16_t y) {
+    mp_obj_t pixel_shader, int32_t x, int32_t y) {
     VECTORIO_SHAPE_DEBUG("%p vector_shape_construct x:%3d, y:%3d\n", self, x, y);
-    self->x = x;
-    self->y = y;
+    check_bounds_and_set_x(self, x);
+    check_bounds_and_set_y(self, y);
     self->pixel_shader = pixel_shader;
     self->ishape = ishape;
-    self->dirty = true;
     self->absolute_transform = &null_transform; // Critical to have a valid transform before getting screen area.
-    _get_screen_area(self, &self->ephemeral_dirty_area);
+    self->ephemeral_dirty_area.x1 = self->ephemeral_dirty_area.x2; // Cheat to set area to 0
     self->ephemeral_dirty_area.next = NULL;
+    self->current_area_dirty = true;
+    _get_screen_area(self, &self->current_area);
 }
 
 
@@ -110,7 +207,7 @@ void common_hal_vectorio_vector_shape_set_x(vectorio_vector_shape_t *self, mp_in
     if (self->x == x) {
         return;
     }
-    self->x = x;
+    check_bounds_and_set_x(self, x);
     common_hal_vectorio_vector_shape_set_dirty(self);
 }
 
@@ -126,8 +223,46 @@ void common_hal_vectorio_vector_shape_set_y(vectorio_vector_shape_t *self, mp_in
     if (self->y == y) {
         return;
     }
-    self->y = y;
+    check_bounds_and_set_y(self, y);
     common_hal_vectorio_vector_shape_set_dirty(self);
+}
+
+mp_obj_tuple_t *common_hal_vectorio_vector_shape_get_location(vectorio_vector_shape_t *self) {
+    VECTORIO_SHAPE_DEBUG("%p get_location\n", self);
+    mp_obj_tuple_t *pair = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
+    pair->items[0] = mp_obj_new_int((mp_int_t)self->x);
+    pair->items[1] = mp_obj_new_int((mp_int_t)self->y);
+    return pair;
+}
+
+
+void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self, mp_obj_t xy) {
+    VECTORIO_SHAPE_DEBUG("%p set_location\n", self);
+    size_t tuple_len = 0;
+    mp_obj_t *tuple_items;
+    mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
+    if (tuple_len != 2) {
+        mp_raise_TypeError(translate("(x,y) integers required"));
+    }
+
+    mp_int_t x;
+    mp_int_t y;
+    if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
+        || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)) {
+        mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
+    }
+    bool dirty = false;
+    if (self->x != x) {
+        check_bounds_and_set_x(self, x);
+        dirty = true;
+    }
+    if (self->y != y) {
+        check_bounds_and_set_y(self, y);
+        dirty = true;
+    }
+    if (dirty) {
+        common_hal_vectorio_vector_shape_set_dirty(self);
+    }
 }
 
 
@@ -153,13 +288,12 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     uint64_t start = common_hal_time_monotonic_ns();
     uint64_t pixel_time = 0;
     #endif
-    displayio_area_t overlap;
-    VECTORIO_SHAPE_DEBUG("%p fill_area dirty:%d fill: {(%5d,%5d), (%5d,%5d)} dirty: {(%5d,%5d), (%5d,%5d)}",
-        self, self->dirty,
-        area->x1, area->y1, area->x2, area->y2,
-        self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2
+    VECTORIO_SHAPE_DEBUG("%p fill_area: fill: {(%5d,%5d), (%5d,%5d)}",
+        self,
+        area->x1, area->y1, area->x2, area->y2
         );
-    if (!displayio_area_compute_overlap(area, &self->ephemeral_dirty_area, &overlap)) {
+    displayio_area_t overlap;
+    if (!displayio_area_compute_overlap(area, &self->current_area, &overlap)) {
         VECTORIO_SHAPE_DEBUG(" no overlap\n");
         return false;
     }
@@ -168,27 +302,35 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
     bool full_coverage = displayio_area_equal(area, &overlap);
 
     uint8_t pixels_per_byte = 8 / colorspace->depth;
+    VECTORIO_SHAPE_DEBUG(" xy:(%3d %3d) tform:{x:%d y:%d dx:%d dy:%d scl:%d w:%d h:%d mx:%d my:%d tr:%d}",
+        self->x, self->y,
+        self->absolute_transform->x, self->absolute_transform->y, self->absolute_transform->dx, self->absolute_transform->dy, self->absolute_transform->scale,
+        self->absolute_transform->width, self->absolute_transform->height, self->absolute_transform->mirror_x, self->absolute_transform->mirror_y, self->absolute_transform->transpose_xy
+        );
 
-    uint32_t linestride_px = displayio_area_width(area);
-    uint32_t line_dirty_offset_px = (overlap.y1 - area->y1) * linestride_px;
-    uint32_t column_dirty_offset_px = overlap.x1 - area->x1;
+    uint16_t linestride_px = displayio_area_width(area);
+    uint16_t line_dirty_offset_px = (overlap.y1 - area->y1) * linestride_px;
+    uint16_t column_dirty_offset_px = overlap.x1 - area->x1;
     VECTORIO_SHAPE_DEBUG(", linestride:%3d line_offset:%3d col_offset:%3d depth:%2d ppb:%2d shape:%s",
         linestride_px, line_dirty_offset_px, column_dirty_offset_px, colorspace->depth, pixels_per_byte, mp_obj_get_type_str(self->ishape.shape));
 
     displayio_input_pixel_t input_pixel;
     displayio_output_pixel_t output_pixel;
 
-    uint32_t mask_start_px = line_dirty_offset_px;
+    displayio_area_t shape_area;
+    self->ishape.get_area(self->ishape.shape, &shape_area);
+
+    uint16_t mask_start_px = line_dirty_offset_px;
     for (input_pixel.y = overlap.y1; input_pixel.y < overlap.y2; ++input_pixel.y) {
         mask_start_px += column_dirty_offset_px;
         for (input_pixel.x = overlap.x1; input_pixel.x < overlap.x2; ++input_pixel.x) {
             // Check the mask first to see if the pixel has already been set.
-            uint32_t pixel_index = mask_start_px + (input_pixel.x - overlap.x1);
+            uint16_t pixel_index = mask_start_px + (input_pixel.x - overlap.x1);
             uint32_t *mask_doubleword = &(mask[pixel_index / 32]);
             uint8_t mask_bit = pixel_index % 32;
-            VECTORIO_SHAPE_PIXEL_DEBUG("%p pixel_index: %5u mask_bit: %2u", self, pixel_index, mask_bit);
+            VECTORIO_SHAPE_PIXEL_DEBUG("\n%p pixel_index: %5u mask_bit: %2u mask: "U32_TO_BINARY_FMT, self, pixel_index, mask_bit, U32_TO_BINARY(*mask_doubleword));
             if ((*mask_doubleword & (1u << mask_bit)) != 0) {
-                VECTORIO_SHAPE_PIXEL_DEBUG(" masked\n");
+                VECTORIO_SHAPE_PIXEL_DEBUG(" masked");
                 continue;
             }
             output_pixel.pixel = 0;
@@ -197,12 +339,39 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             int16_t pixel_to_get_x;
             int16_t pixel_to_get_y;
             if (self->absolute_transform->transpose_xy) {
-                pixel_to_get_x = (input_pixel.y - self->absolute_transform->dy * self->x - self->absolute_transform->y) / self->absolute_transform->dy;
-                pixel_to_get_y = (input_pixel.x - self->absolute_transform->dx * self->y - self->absolute_transform->x) / self->absolute_transform->dx;
+                pixel_to_get_x = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->x;
+                pixel_to_get_y = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->y;
+
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+                if (self->absolute_transform->dx < 1) {
+                    pixel_to_get_y *= -1;
+                }
+                if (self->absolute_transform->dy < 1) {
+                    pixel_to_get_x *= -1;
+                }
+                VECTORIO_SHAPE_PIXEL_DEBUG(" b(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
             } else {
-                pixel_to_get_x = (input_pixel.x - self->absolute_transform->dx * self->x - self->absolute_transform->x) / self->absolute_transform->dx;
-                pixel_to_get_y = (input_pixel.y - self->absolute_transform->dy * self->y - self->absolute_transform->y) / self->absolute_transform->dy;
+                pixel_to_get_x = input_pixel.x - self->absolute_transform->x - self->absolute_transform->dx * self->x;
+                pixel_to_get_y = input_pixel.y - self->absolute_transform->y - self->absolute_transform->dy * self->y;
+
+                VECTORIO_SHAPE_PIXEL_DEBUG(" a(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+                if (self->absolute_transform->dx < 1) {
+                    pixel_to_get_x *= -1;
+                }
+                if (self->absolute_transform->dy < 1) {
+                    pixel_to_get_y *= -1;
+                }
+                VECTORIO_SHAPE_PIXEL_DEBUG(" b(%3d, %3d)", pixel_to_get_x, pixel_to_get_y);
+
+                // It's mirrored via dx. Maybe we need to add support for also separately mirroring?
+                // if (self->absolute_transform->mirror_x) {
+                //     pixel_to_get_x = (shape_area.x2 - shape_area.x1) - (pixel_to_get_x - shape_area.x1) + shape_area.x1 - 1;
+                // }
+                // if (self->absolute_transform->mirror_y) {
+                //     pixel_to_get_y = (shape_area.y2 - shape_area.y1) - (pixel_to_get_y - shape_area.y1) + +shape_area.y1 - 1;
+                // }
             }
+
             VECTORIO_SHAPE_PIXEL_DEBUG(" get_pixel %p (%3d, %3d) -> ( %3d, %3d )", self->ishape.shape, input_pixel.x, input_pixel.y, pixel_to_get_x, pixel_to_get_y);
             #ifdef VECTORIO_PERF
             uint64_t pre_pixel = common_hal_time_monotonic_ns();
@@ -214,39 +383,50 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
             #endif
             VECTORIO_SHAPE_PIXEL_DEBUG(" -> %d", input_pixel.pixel);
 
-            output_pixel.opaque = true;
-            if (self->pixel_shader == mp_const_none) {
-                output_pixel.pixel = input_pixel.pixel;
-            } else if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
-                output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
-            } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
-                displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
-            }
-            if (!output_pixel.opaque) {
-                VECTORIO_SHAPE_PIXEL_DEBUG(" (encountered transparent pixel; input area is not fully covered)\n");
+            // vectorio shapes use 0 to mean "area is not covered."
+            // We can skip all the rest of the work for this pixel if it's not currently covered by the shape.
+            if (input_pixel.pixel == 0) {
+                VECTORIO_SHAPE_PIXEL_DEBUG(" (encountered transparent pixel; input area is not fully covered)");
                 full_coverage = false;
             } else {
+                // Pixel is not transparent. Let's pull the pixel value index down to 0-base for more error-resistant palettes.
+                input_pixel.pixel -= 1;
+                output_pixel.opaque = true;
+
+                if (self->pixel_shader == mp_const_none) {
+                    output_pixel.pixel = input_pixel.pixel;
+                } else if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
+                    output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
+                } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
+                    displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
+                }
+
+                // We double-check this to fast-path the case when a pixel is not covered by the shape & not call the color converter unnecessarily.
+                if (!output_pixel.opaque) {
+                    VECTORIO_SHAPE_PIXEL_DEBUG(" (encountered transparent pixel from colorconverter; input area is not fully covered)");
+                    full_coverage = false;
+                }
+
                 *mask_doubleword |= 1u << mask_bit;
                 if (colorspace->depth == 16) {
-                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %04x 16\n", output_pixel.pixel);
+                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %04x 16", output_pixel.pixel);
                     *(((uint16_t *)buffer) + pixel_index) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
-                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %02x 8\n", output_pixel.pixel);
+                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %02x 8", output_pixel.pixel);
                     *(((uint8_t *)buffer) + pixel_index) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {
                     // Reorder the offsets to pack multiple rows into a byte (meaning they share a column).
                     if (!colorspace->pixels_in_byte_share_row) {
-                        uint16_t width = linestride_px;
-                        uint16_t row = pixel_index / width;
-                        uint16_t col = pixel_index % width;
-                        pixel_index = col * pixels_per_byte + (row / pixels_per_byte) * pixels_per_byte * width + row % pixels_per_byte;
+                        uint16_t row = pixel_index / linestride_px;
+                        uint16_t col = pixel_index % linestride_px;
+                        pixel_index = col * pixels_per_byte + (row / pixels_per_byte) * pixels_per_byte * linestride_px + row % pixels_per_byte;
                     }
                     uint8_t shift = (pixel_index % pixels_per_byte) * colorspace->depth;
                     if (colorspace->reverse_pixels_in_byte) {
                         // Reverse the shift by subtracting it from the leftmost shift.
                         shift = (pixels_per_byte - 1) * colorspace->depth - shift;
                     }
-                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %2d %d\n", output_pixel.pixel, colorspace->depth);
+                    VECTORIO_SHAPE_PIXEL_DEBUG(" buffer = %2d %d", output_pixel.pixel, colorspace->depth);
                     ((uint8_t *)buffer)[pixel_index / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
@@ -265,20 +445,23 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
         (double)(pixel_time / 1000.0 / pixels)
         );
     #endif
-    VECTORIO_SHAPE_DEBUG(" -> pixels:%4d\n");
+    VECTORIO_SHAPE_DEBUG(" -> pixels:%4d\n", (overlap.x2 - overlap.x1) * (overlap.y2 - overlap.y1));
     return full_coverage;
 }
 
 
 void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
-    if (!self->dirty) {
+    if (displayio_area_empty(&self->ephemeral_dirty_area) && !self->current_area_dirty) {
         return;
     }
     VECTORIO_SHAPE_DEBUG("%p finish_refresh was:{(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
-    self->dirty = false;
-    // Reset dirty area tracking to current footprint
-    _get_screen_area(self, &self->ephemeral_dirty_area);
+    // Reset dirty area to nothing
+    self->ephemeral_dirty_area.x1 = self->ephemeral_dirty_area.x2; // Cheat to set area to empty
     self->ephemeral_dirty_area.next = NULL;
+
+    self->current_area_dirty = false; // We don't clear current area so we can remember what to clean up if we move
+    self->current_area.next = NULL;
+
     VECTORIO_SHAPE_DEBUG("%p finish_refresh now:{(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
 
     if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
@@ -291,16 +474,55 @@ void vectorio_vector_shape_finish_refresh(vectorio_vector_shape_t *self) {
 
 // Assembles a singly linked list of dirty areas from all components on the display.
 displayio_area_t *vectorio_vector_shape_get_refresh_areas(vectorio_vector_shape_t *self, displayio_area_t *tail) {
-    if (self->dirty
+    if (self->current_area_dirty
         || (mp_obj_is_type(self->pixel_shader, &displayio_palette_type) && displayio_palette_needs_refresh(self->pixel_shader))
         || (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type) && displayio_colorconverter_needs_refresh(self->pixel_shader))
         ) {
-        VECTORIO_SHAPE_DEBUG("%p get_refresh_area dirty:%d {(%3d,%3d), (%3d,%3d)}", self, self->dirty, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
-        common_hal_vectorio_vector_shape_set_dirty(self);
-        // vector.add_to_head
+        if (!displayio_area_empty(&self->ephemeral_dirty_area)) {
+            // Both are dirty, check if we should combine the areas or draw separately
+            // Draws as few pixels as possible both when animations move short distances and large distances.
+            // The display core implementation currently doesn't combine areas to reduce redrawing of masked areas. If it does,
+            // this could be simplified to just return the 2 possibly overlapping areas.
+            displayio_area_t area_swap;
+            displayio_area_compute_overlap(&self->ephemeral_dirty_area, &self->current_area, &area_swap);
+            uint32_t overlap_size = displayio_area_size(&area_swap);
+            displayio_area_union(&self->ephemeral_dirty_area, &self->current_area, &area_swap); // Leave area_swap as the union area for later.
+            uint32_t union_size = displayio_area_size(&area_swap);
+            uint32_t current_size = displayio_area_size(&self->current_area);
+            uint32_t dirty_size = displayio_area_size(&self->ephemeral_dirty_area);
+
+            VECTORIO_SHAPE_DEBUG("%p get_refresh_area: dirty{(%3d,%3d), (%3d,%3d)} + current{(%3d,%3d), (%3d,%3d)} = union{(%3d,%3d), (%3d,%3d)}: union%d - dirty%d - curr%d + overlap%d = excluded%d : ", self,
+                self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2,
+                self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2,
+                area_swap.x1, area_swap.y1, area_swap.x2, area_swap.y2,
+                union_size, dirty_size, current_size, overlap_size, (int32_t)union_size - dirty_size - current_size + overlap_size
+                );
+
+            if ((int32_t)union_size - dirty_size - current_size + overlap_size <= min(dirty_size, current_size)) {
+                // The excluded / non-overlapping area from the disjoint dirty and current areas is smaller
+                // than the smallest area we need to draw. Redrawing the overlapping area would cost more
+                // than just drawing the union disjoint area once.
+                VECTORIO_SHAPE_DEBUG("combining to take disjoint area\n");
+                displayio_area_copy(&area_swap, &self->ephemeral_dirty_area);
+            } else {
+                // The excluded area between the 2 dirty areas is larger than the smallest dirty area. It would be
+                // more costly to combine these areas than possibly redraw some overlap.
+                VECTORIO_SHAPE_DEBUG("excluded area too large, drawing separate area\n");
+                self->current_area.next = tail;
+                tail = &self->current_area;
+            }
+
+            self->ephemeral_dirty_area.next = tail;
+            tail = &self->ephemeral_dirty_area;
+        } else {
+            self->current_area.next = tail;
+            tail = &self->current_area;
+            VECTORIO_SHAPE_DEBUG("%p get_refresh_area: redrawing current: {(%3d,%3d), (%3d,%3d)}\n", self, self->current_area.x1, self->current_area.y1, self->current_area.x2, self->current_area.y2);
+        }
+    } else if (!displayio_area_empty(&self->ephemeral_dirty_area)) {
         self->ephemeral_dirty_area.next = tail;
-        VECTORIO_SHAPE_DEBUG(" this_area: %p next: %p after: %p\n", &self->ephemeral_dirty_area, tail, tail == NULL ? NULL : tail->next);
-        return &self->ephemeral_dirty_area;
+        tail = &self->ephemeral_dirty_area;
+        VECTORIO_SHAPE_DEBUG("%p get_refresh_area redrawing dirty: {(%3d,%3d), (%3d,%3d)}\n", self, self->ephemeral_dirty_area.x1, self->ephemeral_dirty_area.y1, self->ephemeral_dirty_area.x2, self->ephemeral_dirty_area.y2);
     }
     return tail;
 }

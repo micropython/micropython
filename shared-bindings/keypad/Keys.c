@@ -78,6 +78,7 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, c
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t pins = args[ARG_pins].u_obj;
+    validate_no_duplicate_pins(pins, MP_QSTR_row_pins);
     // mp_obj_len() will be >= 0.
     const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(pins));
 

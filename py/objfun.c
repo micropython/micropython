@@ -182,7 +182,7 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
 STATIC void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_printf(print, "<function %q at 0x%p>", mp_obj_fun_get_name(o_in), o);
+    mp_printf(print, "<function %q at %p>", mp_obj_fun_get_name(o_in), o);
 }
 #endif
 

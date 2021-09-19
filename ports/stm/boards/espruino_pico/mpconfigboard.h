@@ -41,3 +41,5 @@
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 // #define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
 // #define LSE_VALUE ((uint32_t)32768)
+
+#define MICROPY_FATFS_EXFAT 0

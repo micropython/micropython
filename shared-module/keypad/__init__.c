@@ -57,12 +57,9 @@ void keypad_tick(void) {
 }
 
 void keypad_reset(void) {
-    if (MP_STATE_VM(keypad_scanners_linked_list)) {
-        supervisor_disable_tick();
+    while (MP_STATE_VM(keypad_scanners_linked_list)) {
+        keypad_deregister_scanner(MP_STATE_VM(keypad_scanners_linked_list));
     }
-
-    MP_STATE_VM(keypad_scanners_linked_list) = NULL;
-    keypad_scanners_linked_list_lock = false;
 }
 
 // Register a Keys, KeyMatrix, etc. that will be scanned in the background
@@ -71,10 +68,16 @@ void keypad_register_scanner(keypad_scanner_obj_t *scanner) {
     scanner->next = MP_STATE_VM(keypad_scanners_linked_list);
     MP_STATE_VM(keypad_scanners_linked_list) = scanner;
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
+
+    // One more request for ticks.
+    supervisor_enable_tick();
 }
 
 // Remove scanner from the list of active scanners.
 void keypad_deregister_scanner(keypad_scanner_obj_t *scanner) {
+    // One less request for ticks.
+    supervisor_disable_tick();
+
     supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
     if (MP_STATE_VM(keypad_scanners_linked_list) == scanner) {
         // Scanner is at the front; splice it out.

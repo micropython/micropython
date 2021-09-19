@@ -197,10 +197,6 @@ size_t usb_hid_report_descriptor_length(void) {
         total_hid_report_descriptor_length += hid_devices[i].report_descriptor_length;
     }
 
-    // Don't need space for a report id if there's only one device.
-    if (num_hid_devices == 1) {
-        total_hid_report_descriptor_length -= 2;
-    }
     return total_hid_report_descriptor_length;
 }
 
@@ -215,24 +211,11 @@ void usb_hid_build_report_descriptor(uint8_t *report_descriptor_space, size_t re
     for (mp_int_t i = 0; i < num_hid_devices; i++) {
         usb_hid_device_obj_t *device = &hid_devices[i];
         // Copy the report descriptor for this device.
-        if (num_hid_devices == 1) {
-            // There's only one device, so it shouldn't have a report ID.
-            // Copy the descriptor, but splice out the report id indicator and value (2 bytes).
-            memcpy(report_descriptor_start, device->report_descriptor, device->report_id_index - 1);
-            report_descriptor_start += device->report_id_index - 1;
-            memcpy(report_descriptor_start, device->report_descriptor + device->report_id_index + 1,
-                device->report_descriptor_length - device->report_id_index - 1);
-        } else {
-            // Copy the whole descriptor and fill in the report id.
-            memcpy(report_descriptor_start, device->report_descriptor, device->report_descriptor_length);
-            report_descriptor_start[device->report_id_index] = i + 1;
+        memcpy(report_descriptor_start, device->report_descriptor, device->report_descriptor_length);
 
-            // Remember the report id that was assigned.
-            device->report_id = i + 1;
+        // Advance to the next free chunk for the next report descriptor.x
+        report_descriptor_start += device->report_descriptor_length;
 
-            // Advance to the next free chunk for the next report descriptor.x
-            report_descriptor_start += device->report_descriptor_length;
-        }
         // Clear the heap pointer to the bytes of the descriptor.
         // We don't need it any more and it will get lost when the heap goes away.
         device->report_descriptor = NULL;
@@ -260,24 +243,33 @@ void usb_hid_gc_collect(void) {
     gc_collect_ptr(hid_devices_tuple);
 
     // Mark possible heap pointers in the static device list as in use.
-    for (mp_int_t i = 0; i < num_hid_devices; i++) {
+    for (mp_int_t device_idx = 0; device_idx < num_hid_devices; device_idx++) {
+
         // Cast away the const for .report_descriptor. It could be in flash or on the heap.
         // Constant report descriptors must be const so that they are used directly from flash
         // and not copied into RAM.
-        gc_collect_ptr((void *)hid_devices[i].report_descriptor);
-        gc_collect_ptr(hid_devices[i].in_report_buffer);
-        gc_collect_ptr(hid_devices[i].out_report_buffer);
+        gc_collect_ptr((void *)hid_devices[device_idx].report_descriptor);
+
+        // Collect all the report buffers for this device.
+        for (size_t id_idx = 0; id_idx < hid_devices[device_idx].num_report_ids; id_idx++) {
+            gc_collect_ptr(hid_devices[device_idx].in_report_buffers[id_idx]);
+            gc_collect_ptr(hid_devices[device_idx].out_report_buffers[id_idx]);
+        }
     }
 }
 
-usb_hid_device_obj_t *usb_hid_get_device_with_report_id(uint8_t report_id) {
-    for (uint8_t i = 0; i < num_hid_devices; i++) {
-        usb_hid_device_obj_t *device = &hid_devices[i];
-        if (device->report_id == report_id) {
-            return &hid_devices[i];
+bool usb_hid_get_device_with_report_id(uint8_t report_id, usb_hid_device_obj_t **device_out, size_t *id_idx_out) {
+    for (uint8_t device_idx = 0; device_idx < num_hid_devices; device_idx++) {
+        usb_hid_device_obj_t *device = &hid_devices[device_idx];
+        for (size_t id_idx = 0; id_idx < device->num_report_ids; id_idx++) {
+            if (device->report_ids[id_idx] == report_id) {
+                *device_out = device;
+                *id_idx_out = id_idx;
+                return true;
+            }
         }
     }
-    return NULL;
+    return false;
 }
 
 // Invoked when GET HID REPORT DESCRIPTOR is received.

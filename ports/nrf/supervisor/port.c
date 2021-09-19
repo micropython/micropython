@@ -25,12 +25,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include "supervisor/port.h"
+
+#include <stdint.h>
+#include "supervisor/background_callback.h"
 #include "supervisor/board.h"
 
 #include "nrfx/hal/nrf_clock.h"
 #include "nrfx/hal/nrf_power.h"
+#include "nrfx/drivers/include/nrfx_gpiote.h"
 #include "nrfx/drivers/include/nrfx_power.h"
 #include "nrfx/drivers/include/nrfx_rtc.h"
 
@@ -39,7 +42,8 @@
 #include "nrf/power.h"
 #include "nrf/timers.h"
 
-#include "shared-module/gamepad/__init__.h"
+#include "nrf_nvic.h"
+
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
 #include "common-hal/analogio/AnalogIn.h"
@@ -207,10 +211,6 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    gamepad_reset();
-    #endif
-
     #if CIRCUITPY_BUSIO
     i2c_reset();
     spi_reset();
@@ -252,6 +252,12 @@ void reset_port(void) {
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif
+
+    // Always reset GPIOTE because it is shared.
+    if (nrfx_gpiote_is_init()) {
+        nrfx_gpiote_uninit();
+    }
+    nrfx_gpiote_init(NRFX_GPIOTE_CONFIG_IRQ_PRIORITY);
 
     reset_all_pins();
 }
@@ -365,7 +371,9 @@ void port_idle_until_interrupt(void) {
 
     sd_softdevice_is_enabled(&sd_enabled);
     if (sd_enabled) {
-        sd_app_evt_wait();
+        if (!background_callback_pending()) {
+            sd_app_evt_wait();
+        }
     } else {
         // Call wait for interrupt ourselves if the SD isn't enabled.
         // Note that `wfi` should be called with interrupts disabled,
@@ -381,11 +389,7 @@ void port_idle_until_interrupt(void) {
         // function (whether or not SD is enabled)
         int nested = __get_PRIMASK();
         __disable_irq();
-        bool ok = true;
-        #if CIRCUITPY_USB
-        ok = !tud_task_event_ready();
-        #endif
-        if (ok) {
+        if (!background_callback_pending()) {
             __DSB();
             __WFI();
         }

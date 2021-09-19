@@ -4,6 +4,8 @@
 #include "shared-module/displayio/__init__.h"
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_ROM_QSTR(MP_QSTR_P0), MP_ROM_PTR(&pin_P0_04) },
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_P0_04) },
     { MP_ROM_QSTR(MP_QSTR_A2), MP_ROM_PTR(&pin_P0_04) },
@@ -73,6 +75,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P17), MP_ROM_PTR(&pin_P1_01) },
     { MP_ROM_QSTR(MP_QSTR_D17), MP_ROM_PTR(&pin_P1_01) },
     { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P1_01) },
+    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_P1_01) },
 
     { MP_ROM_QSTR(MP_QSTR_P18), MP_ROM_PTR(&pin_P0_16) },
     { MP_ROM_QSTR(MP_QSTR_D18), MP_ROM_PTR(&pin_P0_16) },

@@ -29,9 +29,12 @@
 
 #include "py/obj.h"
 
+#include "shared-bindings/pwmio/PWMOut.h"
+
 typedef struct {
     mp_obj_base_t base;
     uint8_t pwm_num;
+    pwmio_pwmout_obj_t pwmout;
 } pulseio_pulseout_obj_t;
 
 void pulseout_reset(void);

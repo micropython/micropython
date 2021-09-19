@@ -507,6 +507,16 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
         }
         self->scan_results = NULL;
     }
+    // Check to see if advertising is going already.
+    if (self->current_advertising_data != NULL && self->current_advertising_data == self->advertising_data) {
+        check_nrf_error(NRF_ERROR_BUSY);
+    }
+
+    // If the current advertising data isn't owned by the adapter then it must be an internal
+    // advertisement that we should stop.
+    if (self->current_advertising_data != NULL) {
+        common_hal_bleio_adapter_stop_advertising(self);
+    }
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
     size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
     uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
@@ -952,8 +962,11 @@ bool common_hal_bleio_adapter_is_bonded_to_central(bleio_adapter_obj_t *self) {
 }
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
-    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
+    // We divide by size_t so that we can scan each 32-bit aligned value to see
+    // if it is a pointer. This allows us to change the structs without worrying
+    // about collecting new pointers.
+    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / (sizeof(size_t)));
+    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / (sizeof(size_t)));
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {

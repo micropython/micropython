@@ -41,10 +41,15 @@
 //|        pulsed signal consists of timed on and off periods. Unlike PWM, there is no set duration
 //|        for on and off pairs."""
 //|
-//|     def __init__(self, carrier: pwmio.PWMOut) -> None:
-//|         """Create a PulseOut object associated with the given PWMout object.
+//|     def __init__(self, pin: microcontroller.Pin, *, frequency: int = 38000, duty_cycle: int = 1 << 15) -> None:
+//|         """Create a PulseOut object associated with the given pin.
 //|
-//|         :param ~pwmio.PWMOut carrier: PWMOut that is set to output on the desired pin.
+//|         :param ~microcontroller.Pin pin: Signal output pin
+//|         :param int frequency: Carrier signal frequency in Hertz
+//|         :param int duty_cycle: 16-bit duty cycle of carrier frequency (0 - 65536)
+//|
+//|         For backwards compatibility, ``pin`` may be a PWMOut object used as the carrier. This
+//|         compatibility will be removed in CircuitPython 8.0.0.
 //|
 //|         Send a short series of pulses::
 //|
@@ -54,8 +59,7 @@
 //|           import board
 //|
 //|           # 50% duty cycle at 38kHz.
-//|           pwm = pwmio.PWMOut(board.D13, frequency=38000, duty_cycle=32768)
-//|           pulse = pulseio.PulseOut(pwm)
+//|           pwm = pulseio.PulseOut(board.D13, frequency=38000, duty_cycle=32768)
 //|           #                             on   off     on    off    on
 //|           pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
 //|           pulse.send(pulses)
@@ -66,27 +70,30 @@
 //|         ...
 //|
 STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_pin, ARG_frequency, ARG_duty_cycle};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
+        { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 << 15} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const mcu_pin_obj_t *pin = args[ARG_pin].u_obj;
+    mp_int_t frequency = args[ARG_frequency].u_int;
+    mp_int_t duty_cycle = args[ARG_duty_cycle].u_int;
+    if (mp_obj_is_type(args[ARG_pin].u_obj, &pwmio_pwmout_type)) {
+        pwmio_pwmout_obj_t *pwmout = args[ARG_pin].u_obj;
+        duty_cycle = common_hal_pwmio_pwmout_get_duty_cycle(pwmout);
+        frequency = common_hal_pwmio_pwmout_get_frequency(pwmout);
+        pin = common_hal_pwmio_pwmout_get_pin(pwmout);
+        // Deinit the pin so we can use it.
+        common_hal_pwmio_pwmout_deinit(pwmout);
+    }
+    validate_obj_is_free_pin(MP_OBJ_FROM_PTR(pin));
     pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
     self->base.type = &pulseio_pulseout_type;
-
-    mp_obj_t carrier_obj = pos_args[0];
-    if (mp_obj_is_type(carrier_obj, &pwmio_pwmout_type)) {
-        // Use a PWMOut Carrier
-        mp_arg_check_num(n_args, kw_args, 1, 1, false);
-        common_hal_pulseio_pulseout_construct(self, (pwmio_pwmout_obj_t *)MP_OBJ_TO_PTR(carrier_obj), NULL, 0, 0);
-    } else {
-        // Use a Pin, frequency, and duty cycle
-        enum { ARG_pin, ARG_frequency};
-        static const mp_arg_t allowed_args[] = {
-            { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
-            { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 38000} },
-            { MP_QSTR_duty_cycle, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1 << 15} },
-        };
-        mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-        mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-        const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
-        common_hal_pulseio_pulseout_construct(self, NULL, pin, args[ARG_frequency].u_int, args[ARG_frequency].u_int);
-    }
+    common_hal_pulseio_pulseout_construct(self, pin, frequency, duty_cycle);
     return MP_OBJ_FROM_PTR(self);
 }
 

@@ -1,5 +1,8 @@
 
 #include "common-hal/countio/Counter.h"
+
+#include "py/runtime.h"
+
 #include "nrfx_gpiote.h"
 
 // obj array to map pin number -> self since nrfx hide the mapping
@@ -29,11 +32,14 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         .skip_gpio_setup = false
     };
 
-    nrfx_gpiote_in_init(self->pin_a, &cfg, _intr_handler);
+
+    nrfx_err_t err = nrfx_gpiote_in_init(self->pin_a, &cfg, _intr_handler);
+    if (err != NRFX_SUCCESS) {
+        mp_raise_RuntimeError(translate("All channels in use"));
+    }
     nrfx_gpiote_in_event_enable(self->pin_a, true);
 
     claim_pin(pin_a);
-
 }
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {

@@ -46,6 +46,10 @@ void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, d
 }
 
 size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, const byte *data, size_t len, int *errcode) {
+    // Make sure the terminal is initialized before we do anything with it.
+    if (self->tilegrid == NULL) {
+        return len;
+    }
     const byte *i = data;
     uint16_t start_y = self->cursor_y;
     while (i < data + len) {
@@ -169,5 +173,5 @@ size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self, con
 }
 
 bool common_hal_terminalio_terminal_ready_to_tx(terminalio_terminal_obj_t *self) {
-    return true;
+    return self->tilegrid != NULL;
 }

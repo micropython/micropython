@@ -34,6 +34,11 @@
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 
+#include "src/rp2040/hardware_regs/include/hardware/regs/vreg_and_chip_reset.h"
+#include "src/rp2040/hardware_regs/include/hardware/regs/watchdog.h"
+#include "src/rp2040/hardware_structs/include/hardware/structs/vreg_and_chip_reset.h"
+#include "src/rp2040/hardware_structs/include/hardware/structs/watchdog.h"
+
 float common_hal_mcu_processor_get_temperature(void) {
     adc_init();
     adc_set_temp_sensor_enabled(true);
@@ -60,5 +65,34 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 }
 
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
-    return RESET_REASON_UNKNOWN;
+    mcu_reset_reason_t reason = RESET_REASON_UNKNOWN;
+
+    uint32_t watchdog_reset_reg = watchdog_hw->reason;
+    uint32_t chip_reset_reg = vreg_and_chip_reset_hw->chip_reset;
+
+    if (chip_reset_reg & VREG_AND_CHIP_RESET_CHIP_RESET_HAD_PSM_RESTART_BITS) {
+        reason = RESET_REASON_RESCUE_DEBUG;
+    }
+
+    if (chip_reset_reg & VREG_AND_CHIP_RESET_CHIP_RESET_HAD_RUN_BITS) {
+        reason = RESET_REASON_RESET_PIN;
+    }
+
+    if (chip_reset_reg & VREG_AND_CHIP_RESET_CHIP_RESET_HAD_POR_BITS) {
+        // NOTE: This register is also used for brownout, but there is no way to differentiate between power on and brown out
+        reason = RESET_REASON_POWER_ON;
+    }
+
+    // Check watchdog after chip reset since watchdog doesn't clear chip_reset, while chip_reset clears the watchdog
+
+    if (watchdog_reset_reg & WATCHDOG_REASON_TIMER_BITS) {
+        // This bit can also be set during a software reset because the pico-sdk performs a software reset by setting an extremely low timeout on the watchdog, rather than triggering a watchdog reset manually
+        reason = RESET_REASON_WATCHDOG;
+    }
+
+    if (watchdog_reset_reg & WATCHDOG_REASON_FORCE_BITS) {
+        reason = RESET_REASON_SOFTWARE;
+    }
+
+    return reason;
 }

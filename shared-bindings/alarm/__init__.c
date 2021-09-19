@@ -248,3 +248,5 @@ extern void port_idle_until_interrupt(void);
 MP_WEAK void common_hal_alarm_pretending_deep_sleep(void) {
     port_idle_until_interrupt();
 }
+
+MP_REGISTER_MODULE(MP_QSTR_alarm, alarm_module, CIRCUITPY_ALARM);

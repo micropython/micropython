@@ -56,96 +56,15 @@ static void config_periph_pin(const mcu_pwm_obj_t *periph) {
         | IOMUXC_SW_PAD_CTL_PAD_DSE(6)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
-// TODO
-// #include "samd/pins.h"
-
-// #undef ENABLE
-//
-// #  define _TCC_SIZE(unused, n) TCC ## n ## _SIZE,
-// #  define TCC_SIZES         { REPEAT_MACRO(_TCC_SIZE, 0, TCC_INST_NUM) }
-//
-// static uint32_t tcc_periods[TCC_INST_NUM];
-// static uint32_t tc_periods[TC_INST_NUM];
-//
-// uint32_t target_tcc_frequencies[TCC_INST_NUM];
-// uint8_t tcc_refcount[TCC_INST_NUM];
-//
-//// This bitmask keeps track of which channels of a TCC are currently claimed.
-// #ifdef SAMD21
-// uint8_t tcc_channels[3];   // Set by pwmout_reset() to {0xf0, 0xfc, 0xfc} initially.
-// #endif
-// #ifdef SAMD51
-// uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 0xfc} initially.
-// #endif
-//
-// static uint8_t never_reset_tc_or_tcc[TC_INST_NUM + TCC_INST_NUM];
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-//    if (self->timer->is_tc) {
-//        never_reset_tc_or_tcc[self->timer->index] += 1;
-//    } else {
-//        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] += 1;
-//    }
-//
-//    never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-//    if (self->timer->is_tc) {
-//        never_reset_tc_or_tcc[self->timer->index] -= 1;
-//    } else {
-//        never_reset_tc_or_tcc[TC_INST_NUM + self->timer->index] -= 1;
-//    }
 }
 
 void pwmout_reset(void) {
-//    // Reset all timers
-//    for (int i = 0; i < TCC_INST_NUM; i++) {
-//        target_tcc_frequencies[i] = 0;
-//        tcc_refcount[i] = 0;
-//    }
-//    Tcc *tccs[TCC_INST_NUM] = TCC_INSTS;
-//    for (int i = 0; i < TCC_INST_NUM; i++) {
-//        if (never_reset_tc_or_tcc[TC_INST_NUM + i] > 0) {
-//            continue;
-//        }
-//        // Disable the module before resetting it.
-//        if (tccs[i]->CTRLA.bit.ENABLE == 1) {
-//            tccs[i]->CTRLA.bit.ENABLE = 0;
-//            while (tccs[i]->SYNCBUSY.bit.ENABLE == 1) {
-//            }
-//        }
-//        uint8_t mask = 0xff;
-//        for (uint8_t j = 0; j < tcc_cc_num[i]; j++) {
-//            mask <<= 1;
-//        }
-//        tcc_channels[i] = mask;
-//        tccs[i]->CTRLA.bit.SWRST = 1;
-//        while (tccs[i]->CTRLA.bit.SWRST == 1) {
-//        }
-//    }
-//    Tc *tcs[TC_INST_NUM] = TC_INSTS;
-//    for (int i = 0; i < TC_INST_NUM; i++) {
-//        if (never_reset_tc_or_tcc[i] > 0) {
-//            continue;
-//        }
-//        tcs[i]->COUNT16.CTRLA.bit.SWRST = 1;
-//        while (tcs[i]->COUNT16.CTRLA.bit.SWRST == 1) {
-//        }
-//    }
 }
-
-// static uint8_t tcc_channel(const pin_timer_t* t) {
-//    // For the SAMD51 this hardcodes the use of OTMX == 0x0, the output matrix mapping, which uses
-//    // SAMD21-style modulo mapping.
-//    return t->wave_output % tcc_cc_num[t->index];
-// }
-
-// bool channel_ok(const pin_timer_t* t) {
-//    uint8_t channel_bit = 1 << tcc_channel(t);
-//    return (!t->is_tc && ((tcc_channels[t->index] & channel_bit) == 0)) ||
-//            t->is_tc;
-// }
 
 #define PWM_SRC_CLK_FREQ CLOCK_GetFreq(kCLOCK_IpgClk)
 
@@ -324,4 +243,8 @@ uint32_t common_hal_pwmio_pwmout_get_frequency(pwmio_pwmout_obj_t *self) {
 
 bool common_hal_pwmio_pwmout_get_variable_frequency(pwmio_pwmout_obj_t *self) {
     return self->variable_frequency;
+}
+
+const mcu_pin_obj_t *common_hal_pwmio_pwmout_get_pin(pwmio_pwmout_obj_t *self) {
+    return self->pin;
 }

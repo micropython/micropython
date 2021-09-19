@@ -1,6 +1,8 @@
 #include "shared-bindings/board/__init__.h"
 
-STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
+STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_ROM_QSTR(MP_QSTR_IO39), MP_ROM_PTR(&pin_PB08)  },
     { MP_ROM_QSTR(MP_QSTR_IO36), MP_ROM_PTR(&pin_PB09)  },
     { MP_ROM_QSTR(MP_QSTR_A6),   MP_ROM_PTR(&pin_PB04)  },
@@ -63,4 +65,4 @@ STATIC const mp_rom_map_elem_t board_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_BATTERY),   MP_ROM_PTR(&pin_PA06) },
 
 };
-MP_DEFINE_CONST_DICT(board_module_globals, board_global_dict_table);
+MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

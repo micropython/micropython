@@ -376,6 +376,13 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
 }
 #endif
 
+static int print_str_common(const mp_print_t *print, const char *str, int prec, size_t len, int flags, int fill, int width) {
+    if (prec >= 0 && (size_t)prec < len) {
+        len = prec;
+    }
+    return mp_print_strn(print, str, len, flags, fill, width);
+}
+
 int mp_printf(const mp_print_t *print, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -484,19 +491,24 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 qstr qst = va_arg(args, qstr);
                 size_t len;
                 const char *str = (const char *)qstr_data(qst, &len);
-                if (prec >= 0 && (size_t)prec < len) {
-                    len = prec;
-                }
-                chrs += mp_print_strn(print, str, len, flags, fill, width);
+                chrs += print_str_common(print, str, prec, len, flags, fill, width);
+                break;
+            }
+            case 'S': {
+                compressed_string_t *arg = va_arg(args, compressed_string_t *);
+                size_t len_with_nul = decompress_length(arg);
+                size_t len = len_with_nul - 1;
+                char str[len_with_nul];
+                decompress(arg, str);
+                chrs += print_str_common(print, str, prec, len, flags, fill, width);
                 break;
             }
             case 's': {
                 const char *str = va_arg(args, const char *);
                 #ifndef NDEBUG
                 // With debugging enabled, catch printing of null string pointers
-                if (prec != 0 && str == NULL) {
-                    chrs += mp_print_strn(print, "(null)", 6, flags, fill, width);
-                    break;
+                if (str == NULL) {
+                    str = "(null)";
                 }
                 #endif
                 size_t len = strlen(str);
@@ -533,7 +545,12 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
             case 'p':
             case 'P': // don't bother to handle upcase for 'P'
                 // Use unsigned long int to work on both ILP32 and LP64 systems
-                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width);
+                #if SUPPORT_INT_BASE_PREFIX
+                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags | PF_FLAG_SHOW_PREFIX, fill, width);
+                #else
+                print->print_strn(print->data, "0x", 2);
+                chrs += mp_print_int(print, va_arg(args, unsigned long int), 0, 16, 'a', flags, fill, width) + 2;
+                #endif
                 break;
             #if MICROPY_PY_BUILTINS_FLOAT
             case 'e':
@@ -573,4 +590,20 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
         ++fmt;
     }
     return chrs;
+}
+
+int mp_cprintf(const mp_print_t *print, const compressed_string_t *compressed_fmt, ...) {
+    va_list ap;
+    va_start(ap, compressed_fmt);
+    int ret = mp_vcprintf(print, compressed_fmt, ap);
+    va_end(ap);
+    return ret;
+}
+
+int mp_vcprintf(const mp_print_t *print, const compressed_string_t *compressed_fmt, va_list args) {
+    char fmt[decompress_length(compressed_fmt)];
+    // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
+    decompress(compressed_fmt, fmt);
+
+    return mp_vprintf(print, fmt, args);
 }

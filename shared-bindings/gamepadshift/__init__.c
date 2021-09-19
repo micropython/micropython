@@ -30,15 +30,22 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 
-//| """Tracks button presses read through a shift register"""
+//| """Tracks button presses read through a shift register.
+//|
+//| .. note:: `gamepadshift` is deprecated in CircuitPython 7.0.0 and will be removed in 8.0.0.
+//|    Use `keypad` instead.
+//| """
 //|
 STATIC const mp_rom_map_elem_t gamepadshift_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepadshift) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_GamePadShift),  MP_ROM_PTR(&gamepadshift_type)},
 };
+
 STATIC MP_DEFINE_CONST_DICT(gamepadshift_module_globals, gamepadshift_module_globals_table);
 
 const mp_obj_module_t gamepadshift_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&gamepadshift_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_gamepadshift, gamepadshift_module, CIRCUITPY_GAMEPADSHIFT);

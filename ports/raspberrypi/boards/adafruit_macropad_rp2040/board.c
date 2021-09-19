@@ -69,7 +69,7 @@ void board_init(void) {
         &pin_GPIO24, // Command or data
         &pin_GPIO22, // Chip select
         &pin_GPIO23, // Reset
-        1000000, // Baudrate
+        10000000, // Baudrate
         0, // Polarity
         0); // Phase
 
@@ -91,7 +91,6 @@ void board_init(void) {
         0, // Set column command
         0, // Set row command
         0, // Write memory command
-        0xd3, // set vertical scroll command
         display_init_sequence,
         sizeof(display_init_sequence),
         NULL,
