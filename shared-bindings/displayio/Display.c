@@ -467,9 +467,6 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
-    if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError(translate("Buffer is not a bytearray."));
-    }
     if (self->core.colorspace.depth != 16) {
         mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
     }
