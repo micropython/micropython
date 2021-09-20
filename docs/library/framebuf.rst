@@ -98,6 +98,14 @@ Drawing text
 Other methods
 -------------
 
+.. method:: FrameBuffer.width()
+
+    Retrieve the width provided at construction
+
+.. method:: FrameBuffer.height()
+
+    Retrieve the height provided at construction
+
 .. method:: FrameBuffer.scroll(xstep, ystep)
 
     Shift the contents of the FrameBuffer by the given vector. This may
