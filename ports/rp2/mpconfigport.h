@@ -55,16 +55,11 @@
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
 #define MICROPY_EMIT_INLINE_THUMB_ARMV7M        (0)
 
+// Optimisations
+#define MICROPY_OPT_COMPUTED_GOTO               (1)
+
 // Features currently overriden for rp2, planned to be brought in line with
 // other ports
-#define MICROPY_COMP_MODULE_CONST               (0)
-#define MICROPY_COMP_RETURN_IF_EXPR             (0)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN        (0)
-#define MICROPY_OPT_COMPUTED_GOTO               (0)
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH         (0)
-#define MICROPY_OPT_MAP_LOOKUP_CACHE            (0)
-#define MICROPY_OPT_MATH_FACTORIAL              (0)
-#define MICROPY_OPT_MPZ_BITWISE                 (0)
 #define MICROPY_PY_BUILTINS_EXECFILE            (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (0)
 #define MICROPY_REPL_EMACS_KEYS                 (0)
