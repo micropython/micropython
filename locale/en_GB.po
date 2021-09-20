@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-09-02 10:32+0000\n"
+"PO-Revision-Date: 2021-09-19 20:17+0000\n"
 "Last-Translator: James Carr <lesamouraipourpre@gmail.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.8.1-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: main.c
 msgid ""
@@ -56,7 +56,6 @@ msgid " is of type %q\n"
 msgstr " is of type %q\n"
 
 #: main.c
-#, fuzzy
 msgid " not found.\n"
 msgstr " not found.\n"
 
@@ -77,12 +76,10 @@ msgstr ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 
 #: shared-bindings/microcontroller/Pin.c
-#, fuzzy
 msgid "%q and %q contain duplicate pins"
 msgstr "%q and %q contain duplicate pins"
 
 #: shared-bindings/microcontroller/Pin.c
-#, fuzzy
 msgid "%q contains duplicate pins"
 msgstr "%q contains duplicate pins"
 
@@ -104,17 +101,14 @@ msgid "%q index out of range"
 msgstr "%q index out of range"
 
 #: py/obj.c
-#, fuzzy
 msgid "%q indices must be integers, not %s"
 msgstr "%q indices must be integers, not %s"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q length must be %d-%d"
 msgstr "%q length must be %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
-#, fuzzy
 msgid "%q length must be >= 1"
 msgstr "%q length must be >= 1"
 
@@ -123,17 +117,14 @@ msgid "%q list must be a list"
 msgstr "%q list must be a list"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q must <= %d"
 msgstr "%q must <= %d"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q must be %d-%d"
 msgstr "%q must be %d-%d"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q must be >= %d"
 msgstr "%q must be >= %d"
 
@@ -150,7 +141,6 @@ msgid "%q must be >= 1"
 msgstr "%q must be >= 1"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q must be a string"
 msgstr "%q must be a string"
 
@@ -160,17 +150,14 @@ msgstr "%q must be a tuple of length 2"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 #: shared-module/vectorio/VectorShape.c
-#, fuzzy
 msgid "%q must be between %d and %d"
 msgstr "%q must be between %d and %d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
-#, fuzzy
 msgid "%q must be power of 2"
 msgstr "%q must be power of 2"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "%q must of type %q"
 msgstr "%q must of type %q"
 
@@ -192,7 +179,6 @@ msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() takes %d positional arguments but %d were given"
 
 #: shared-bindings/usb_hid/Device.c
-#, fuzzy
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, and %q must all be the same length"
 
@@ -262,32 +248,31 @@ msgid "'%s' expects {r0, r1, ...}"
 msgstr "'%s' expects {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
 msgstr "'%s' integer %d isn't within range %d..%d"
 
 #: py/emitinlinethumb.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
 msgstr "'%s' integer 0x%x doesn't fit in mask 0x%x"
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' object doesn't support item assignment"
 msgstr "'%s' object doesn't support item assignment"
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' object doesn't support item deletion"
 
 #: py/runtime.c
-#, fuzzy
 msgid "'%s' object has no attribute '%q'"
 msgstr "'%s' object has no attribute '%q'"
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' object isn't subscriptable"
 msgstr "'%s' object isn't subscriptable"
 
@@ -348,7 +333,6 @@ msgid "'yield' outside function"
 msgstr "'yield' outside function"
 
 #: shared-module/vectorio/VectorShape.c
-#, fuzzy
 msgid "(x,y) integers required"
 msgstr "(x,y) integers required"
 
@@ -497,7 +481,6 @@ msgid "AnalogOut not supported on given pin"
 msgstr "AnalogOut not supported on given pin"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
-#, fuzzy
 msgid "Another PWMAudioOut is already active"
 msgstr "Another PWMAudioOut is already active"
 
@@ -524,17 +507,14 @@ msgid "Attempt to allocate %d blocks"
 msgstr "Attempt to allocate %d blocks"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "Attempted heap allocation when VM not running."
 msgstr "Attempted heap allocation when VM not running."
 
 #: ports/raspberrypi/audio_dma.c
-#, fuzzy
 msgid "Audio conversion not implemented"
 msgstr "Audio conversion not implemented"
 
 #: shared-bindings/wifi/Radio.c
-#, fuzzy
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN is not used with password"
 
@@ -697,7 +677,6 @@ msgstr "Can't set CCCD on local Characteristic"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#, fuzzy
 msgid "Cannot change USB devices now"
 msgstr "Cannot change USB devices now"
 
@@ -743,7 +722,6 @@ msgid "Cannot record to a file"
 msgstr "Cannot record to a file"
 
 #: shared-module/storage/__init__.c
-#, fuzzy
 msgid "Cannot remount '/' when visible via USB."
 msgstr "Cannot remount '/' when visible via USB."
 
@@ -925,7 +903,6 @@ msgid "Data chunk must follow fmt chunk"
 msgstr "Data chunk must follow fmt chunk"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
-#, fuzzy
 msgid "Data not supported with directed advertising"
 msgstr "Data not supported with directed advertising"
 
@@ -934,7 +911,6 @@ msgid "Data too large for advertisement packet"
 msgstr "Data too large for advertisement packet"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr "Deep sleep pins must use a rising edge with pulldown"
 
@@ -982,7 +958,7 @@ msgid "EXTINT channel already in use"
 msgstr "EXTINT channel already in use"
 
 #: shared-module/synthio/MidiTrack.c
-#, fuzzy, c-format
+#, c-format
 msgid "Error in MIDI stream at position %d"
 msgstr "Error in MIDI stream at position %d"
 
@@ -1087,7 +1063,6 @@ msgid "Failed to allocate wifi scan memory"
 msgstr "Failed to allocate WiFi scan memory"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
-#, fuzzy
 msgid "Failed to buffer the sample"
 msgstr "Failed to buffer the sample"
 
@@ -1117,7 +1092,6 @@ msgid "Failed to write internal flash."
 msgstr "Failed to write internal flash."
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "Fatal error."
 msgstr "Fatal error."
 
@@ -1272,7 +1246,6 @@ msgid "Insufficient encryption"
 msgstr "Insufficient encryption"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
-#, fuzzy
 msgid "Internal audio buffer too small"
 msgstr "Internal audio buffer too small"
 
@@ -1307,12 +1280,10 @@ msgid "Invalid ADC Unit value"
 msgstr "Invalid ADC unit value"
 
 #: ports/espressif/common-hal/wifi/Radio.c
-#, fuzzy
 msgid "Invalid AuthMode"
 msgstr "Invalid AuthMode"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy
 msgid "Invalid BLE parameter"
 msgstr "Invalid BLE parameter"
 
@@ -1330,7 +1301,6 @@ msgid "Invalid DAC pin supplied"
 msgstr "Invalid DAC pin supplied"
 
 #: shared-bindings/synthio/__init__.c
-#, fuzzy
 msgid "Invalid MIDI file"
 msgstr "Invalid MIDI file"
 
@@ -1375,12 +1345,12 @@ msgid "Invalid channel count"
 msgstr "Invalid channel count"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid data_count %d"
 msgstr "Invalid data_count %d"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, fuzzy, c-format
+#, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Invalid data_pins[%d]"
 
@@ -1571,12 +1541,12 @@ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
 msgstr "Missing first_set_pin. Instruction %d sets pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, fuzzy, c-format
+#, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr "Missing jmp_pin. Instruction %d jumps on pin"
 
 #: shared-module/usb_hid/Device.c
-#, fuzzy, c-format
+#, c-format
 msgid "More than %d report ids not supported"
 msgstr "More than %d report ids not supported"
 
@@ -1594,7 +1564,6 @@ msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Must use a multiple of 6 rgb pins, not %d"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "NLR jump failed. Likely memory corruption."
 msgstr "NLR jump failed. Likely memory corruption."
 
@@ -1701,7 +1670,7 @@ msgid "No long integer support"
 msgstr "No long integer support"
 
 #: shared-module/usb_hid/__init__.c
-#, fuzzy, c-format
+#, c-format
 msgid "No more than %d HID devices allowed"
 msgstr "No more than %d HID devices allowed"
 
@@ -1737,12 +1706,10 @@ msgid "No timer available"
 msgstr "No timer available"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "Nordic system firmware failure assertion."
 msgstr "Nordic system firmware failure assertion."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy
 msgid "Nordic system firmware out of memory"
 msgstr "Nordic system firmware out of memory"
 
@@ -1795,17 +1762,14 @@ msgstr ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 
 #: shared-bindings/_bleio/Adapter.c
-#, fuzzy
 msgid "Only connectable advertisements can be directed"
 msgstr "Only connectable advertisements can be directed"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Only edge detection is available on this hardware"
 msgstr "Only edge detection is available on this hardware"
 
 #: shared-bindings/ipaddress/__init__.c
-#, fuzzy
 msgid "Only int or string supported for ip"
 msgstr "Only int or string supported for ip"
 
@@ -1895,7 +1859,6 @@ msgid "Permission denied"
 msgstr "Permission denied"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
-#, fuzzy
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "Pin cannot wake from Deep Sleep"
 
@@ -1919,7 +1882,6 @@ msgstr "Pin does not have ADC capabilities"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
-#, fuzzy
 msgid "Pin interrupt already in use"
 msgstr "Pin interrupt already in use"
 
@@ -2082,7 +2044,6 @@ msgid "Row entry must be digitalio.DigitalInOut"
 msgstr "Row entry must be digitalio. DigitalInOut"
 
 #: main.c
-#, fuzzy
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Running in safe mode! Not running saved code.\n"
 
@@ -2109,7 +2070,6 @@ msgid "SPI Re-initialization error"
 msgstr "SPI reinitialisation error"
 
 #: ports/espressif/common-hal/busio/SPI.c
-#, fuzzy
 msgid "SPI configuration failed"
 msgstr "SPI configuration failed"
 
@@ -2152,7 +2112,6 @@ msgid "Size not supported"
 msgstr "Size not supported"
 
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-#, fuzzy
 msgid "Sleep Memory not available"
 msgstr "Sleep Memory not available"
 
@@ -2212,7 +2171,6 @@ msgid "Temperature read timed out"
 msgstr "Temperature read timed out"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
@@ -2221,7 +2179,6 @@ msgstr ""
 "Increase the stack size if you know how. If not:"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
 "The `microcontroller` module was used to boot into safe mode. Press reset to "
 "exit safe mode."
@@ -2234,7 +2191,6 @@ msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
 "The microcontroller's power dipped. Make sure your power supply provides\n"
 "enough power for the whole circuit and press reset (after ejecting "
@@ -2303,13 +2259,11 @@ msgid "Too many displays"
 msgstr "Too many displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
-#, fuzzy
 msgid "Total data to write is larger than %q"
 msgstr "Total data to write is larger than %q"
 
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
-#, fuzzy
 msgid "Touch alarms not available"
 msgstr "Touch alarms not available"
 
@@ -2342,22 +2296,18 @@ msgid "UART write error"
 msgstr "UART write error"
 
 #: shared-module/usb_hid/Device.c
-#, fuzzy
 msgid "USB busy"
 msgstr "USB busy"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "USB devices need more endpoints than are available."
 msgstr "USB devices need more endpoints than are available."
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "USB devices specify too many interface names."
 msgstr "USB devices specify too many interface names."
 
 #: shared-module/usb_hid/Device.c
-#, fuzzy
 msgid "USB error"
 msgstr "USB error"
 
@@ -2439,7 +2389,7 @@ msgid "Unknown security error: 0x%04x"
 msgstr "Unknown security error: 0x%04x"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
-#, fuzzy, c-format
+#, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Unknown system firmware error: %04x"
 
@@ -2553,12 +2503,10 @@ msgid "Writes not supported on Characteristic"
 msgstr "Writes not supported on Characteristic"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "You are in safe mode because:\n"
 msgstr "You are in safe mode because:\n"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
@@ -2597,7 +2545,6 @@ msgid "addresses is empty"
 msgstr "addresses is empty"
 
 #: py/compile.c
-#, fuzzy
 msgid "annotation must be an identifier"
 msgstr "annotation must be an identifier"
 
@@ -2606,7 +2553,6 @@ msgid "arg is an empty sequence"
 msgstr "arg is an empty sequence"
 
 #: py/objobject.c
-#, fuzzy
 msgid "arg must be user-type"
 msgstr "arg must be user-type"
 
@@ -2623,7 +2569,6 @@ msgid "argument has wrong type"
 msgstr "argument has wrong type"
 
 #: py/compile.c
-#, fuzzy
 msgid "argument name reused"
 msgstr "argument name reused"
 
@@ -2674,7 +2619,6 @@ msgid "axis too long"
 msgstr "axis too long"
 
 #: shared-bindings/bitmaptools/__init__.c
-#, fuzzy
 msgid "background value out of range of target"
 msgstr "background value out of range of target"
 
@@ -2699,7 +2643,6 @@ msgid "binary op %q not implemented"
 msgstr "binary op %q not implemented"
 
 #: extmod/modurandom.c
-#, fuzzy
 msgid "bits must be 32 or less"
 msgstr "bits must be 32 or less"
 
@@ -2790,7 +2733,6 @@ msgid "can't assign to expression"
 msgstr "Can't assign to expression"
 
 #: extmod/moduasyncio.c
-#, fuzzy
 msgid "can't cancel self"
 msgstr "can't cancel self"
 
@@ -2800,12 +2742,11 @@ msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
 
 #: py/runtime.c
-#, fuzzy
 msgid "can't convert %q to int"
 msgstr "can't convert %q to int"
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "can't convert %s to complex"
 msgstr "can't convert %s to complex"
 
@@ -2818,12 +2759,10 @@ msgid "can't convert to %q"
 msgstr "Can't convert to %q"
 
 #: py/obj.c
-#, fuzzy
 msgid "can't convert to complex"
 msgstr "can't convert to complex"
 
 #: py/runtime.c
-#, fuzzy
 msgid "can't convert to int"
 msgstr "can't convert to int"
 
@@ -2904,7 +2843,6 @@ msgstr ""
 "can't switch from manual field specification to automatic field numbering"
 
 #: extmod/ulab/code/ndarray.c
-#, fuzzy
 msgid "cannot assign new shape"
 msgstr "cannot assign new shape"
 
@@ -2929,7 +2867,6 @@ msgid "cannot perform relative import"
 msgstr "can't perform relative import"
 
 #: extmod/moductypes.c
-#, fuzzy
 msgid "cannot unambiguously get sizeof scalar"
 msgstr "cannot unambiguously get sizeof scalar"
 
@@ -2982,7 +2919,6 @@ msgid "color should be an int"
 msgstr "colour should be an int"
 
 #: py/emitnative.c
-#, fuzzy
 msgid "comparison of int and uint"
 msgstr "comparison of int and uint"
 
@@ -3039,7 +2975,7 @@ msgid "data must be of equal length"
 msgstr "cata must be of equal length"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, fuzzy, c-format
+#, c-format
 msgid "data pin #%d in use"
 msgstr "data pin #%d in use"
 
@@ -3090,12 +3026,10 @@ msgid "dimensions do not match"
 msgstr "dimensions do not match"
 
 #: py/emitnative.c
-#, fuzzy
 msgid "div/mod not implemented for uint"
 msgstr "div/mod not implemented for uint"
 
 #: py/objfloat.c py/objint_mpz.c
-#, fuzzy
 msgid "divide by zero"
 msgstr "divide by zero"
 
@@ -3211,7 +3145,6 @@ msgid "file must be a file opened in byte mode"
 msgstr "file must be a file opened in byte mode"
 
 #: shared-bindings/traceback/__init__.c
-#, fuzzy
 msgid "file write is not available"
 msgstr "file write is not available"
 
@@ -3240,7 +3173,6 @@ msgid "first argument to super() must be type"
 msgstr "first argument to super() must be type"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
-#, fuzzy
 msgid "first two arguments must be ndarrays"
 msgstr "first two arguments must be ndarrays"
 
@@ -3257,7 +3189,6 @@ msgid "float too big"
 msgstr "float too big"
 
 #: py/nativeglue.c
-#, fuzzy
 msgid "float unsupported"
 msgstr "float unsupported"
 
@@ -3274,7 +3205,6 @@ msgid "full"
 msgstr "full"
 
 #: py/argcheck.c
-#, fuzzy
 msgid "function doesn't take keyword arguments"
 msgstr "function doesn't take keyword arguments"
 
@@ -3331,7 +3261,6 @@ msgid "generator ignored GeneratorExit"
 msgstr "generator ignored GeneratorExit"
 
 #: py/objgenerator.c py/runtime.c
-#, fuzzy
 msgid "generator raised StopIteration"
 msgstr "generator raised StopIteration"
 
@@ -3340,7 +3269,6 @@ msgid "graphic must be 2048 bytes long"
 msgstr "graphic must be 2048 bytes long"
 
 #: extmod/moduhashlib.c
-#, fuzzy
 msgid "hash is final"
 msgstr "hash is final"
 
@@ -3357,12 +3285,10 @@ msgid "identifier redefined as nonlocal"
 msgstr "identifier redefined as nonlocal"
 
 #: py/compile.c
-#, fuzzy
 msgid "import * not at module level"
 msgstr "import * not at module level"
 
 #: py/persistentcode.c
-#, fuzzy
 msgid "incompatible native .mpy architecture"
 msgstr "incompatible native .mpy architecture"
 
@@ -3478,7 +3404,6 @@ msgid "integer required"
 msgstr "integer required"
 
 #: extmod/ulab/code/numpy/approx.c
-#, fuzzy
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp is defined for 1D iterables of equal length"
 
@@ -3488,7 +3413,6 @@ msgid "interval must be in range %s-%s"
 msgstr "interval must be in range %s-%s"
 
 #: py/compile.c
-#, fuzzy
 msgid "invalid architecture"
 msgstr "invalid architecture"
 
@@ -3498,8 +3422,8 @@ msgstr "invalid arguments"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
-msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-msgstr "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
+msgstr "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3512,7 +3436,6 @@ msgid "invalid element_size %d, must be, 1, 2, or 4"
 msgstr "invalid element_size %d, must be, 1, 2, or 4"
 
 #: shared-bindings/traceback/__init__.c
-#, fuzzy
 msgid "invalid exception"
 msgstr "invalid exception"
 
@@ -3555,7 +3478,6 @@ msgid "invalid syntax for number"
 msgstr "invalid syntax for number"
 
 #: py/objexcept.c shared-bindings/traceback/__init__.c
-#, fuzzy
 msgid "invalid traceback"
 msgstr "invalid traceback"
 
@@ -3683,7 +3605,6 @@ msgid "memoryview: length is not a multiple of itemsize"
 msgstr "memoryview: length is not a multiple of itemsize"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-#, fuzzy
 msgid "mode must be complete, or reduced"
 msgstr "mode must be complete, or reduced"
 
@@ -3724,7 +3645,6 @@ msgid "name not defined"
 msgstr "name not defined"
 
 #: py/asmthumb.c
-#, fuzzy
 msgid "native method too big"
 msgstr "native method too big"
 
@@ -3738,7 +3658,6 @@ msgid "need more than %d values to unpack"
 msgstr "need more than %d values to unpack"
 
 #: py/modmath.c
-#, fuzzy
 msgid "negative factorial"
 msgstr "negative factorial"
 
@@ -3768,7 +3687,7 @@ msgstr "no default packer"
 
 #: extmod/modurandom.c
 msgid "no default seed"
-msgstr ""
+msgstr "no default seed"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3788,7 +3707,6 @@ msgid "no such attribute"
 msgstr "no such attribute"
 
 #: shared-bindings/usb_hid/__init__.c
-#, fuzzy
 msgid "non-Device in %q"
 msgstr "non-Device in %q"
 
@@ -3841,17 +3759,15 @@ msgid "object "
 msgstr "object "
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "object '%s' isn't a tuple or list"
 msgstr "object '%s' isn't a tuple or list"
 
 #: py/obj.c
-#, fuzzy
 msgid "object doesn't support item assignment"
 msgstr "object doesn't support item assignment"
 
 #: py/obj.c
-#, fuzzy
 msgid "object doesn't support item deletion"
 msgstr "object doesn't support item deletion"
 
@@ -3860,7 +3776,6 @@ msgid "object has no len"
 msgstr "object has no len"
 
 #: py/obj.c
-#, fuzzy
 msgid "object isn't subscriptable"
 msgstr "object isn't subscriptable"
 
@@ -3881,7 +3796,7 @@ msgid "object not iterable"
 msgstr "object not iterable"
 
 #: py/obj.c
-#, fuzzy, c-format
+#, c-format
 msgid "object of type '%s' has no len()"
 msgstr "object of type '%s' has no len()"
 
@@ -3923,7 +3838,6 @@ msgid "only slices with step=1 (aka None) are supported"
 msgstr "only slices with step=1 (aka None) are supported"
 
 #: py/vm.c
-#, fuzzy
 msgid "opcode"
 msgstr "opcode"
 
@@ -3933,12 +3847,10 @@ msgid "operands could not be broadcast together"
 msgstr "operands could not be broadcast together"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-#, fuzzy
 msgid "operation is defined for 2D arrays only"
 msgstr "operation is defined for 2D arrays only"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
-#, fuzzy
 msgid "operation is defined for ndarrays only"
 msgstr "operation is defined for ndarrays only"
 
@@ -3964,12 +3876,10 @@ msgid "ord() expected a character, but string of length %d found"
 msgstr "ord() expected a character, but string of length %d found"
 
 #: extmod/ulab/code/utils/utils.c
-#, fuzzy
 msgid "out array is too small"
 msgstr "out array is too small"
 
 #: extmod/ulab/code/utils/utils.c
-#, fuzzy
 msgid "out must be a float dense array"
 msgstr "out must be a float dense array"
 
@@ -4093,7 +4003,6 @@ msgid "pressing both buttons at start up.\n"
 msgstr "pressing both buttons at start up.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
-#, fuzzy
 msgid "pressing the left button at start up\n"
 msgstr "pressing the left button at start up\n"
 
@@ -4174,7 +4083,6 @@ msgid "sampling rate out of range"
 msgstr "sampling rate out of range"
 
 #: py/modmicropython.c
-#, fuzzy
 msgid "schedule queue full"
 msgstr "schedule queue full"
 
@@ -4183,7 +4091,6 @@ msgid "script compilation not supported"
 msgstr "script compilation not supported"
 
 #: py/nativeglue.c
-#, fuzzy
 msgid "set unsupported"
 msgstr "set unsupported"
 
@@ -4224,7 +4131,6 @@ msgid "slice step cannot be zero"
 msgstr "slice step cannot be zero"
 
 #: py/nativeglue.c
-#, fuzzy
 msgid "slice unsupported"
 msgstr "slice unsupported"
 
@@ -4289,12 +4195,10 @@ msgid "string not supported; use bytes or bytearray"
 msgstr "string not supported; use bytes or bytearray"
 
 #: extmod/moductypes.c
-#, fuzzy
 msgid "struct: can't index"
 msgstr "struct: can't index"
 
 #: extmod/moductypes.c
-#, fuzzy
 msgid "struct: index out of range"
 msgstr "struct: index out of range"
 
@@ -4377,7 +4281,6 @@ msgid "too many indices"
 msgstr "too many indices"
 
 #: py/asmthumb.c
-#, fuzzy
 msgid "too many locals for native method"
 msgstr "too many locals for native method"
 
@@ -4391,7 +4294,6 @@ msgid "trapz is defined for 1D arrays of equal length"
 msgstr "trapz is defined for 1D arrays of equal length"
 
 #: extmod/ulab/code/numpy/approx.c
-#, fuzzy
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz is defined for 1D iterables"
 
@@ -4526,7 +4428,6 @@ msgid "value must fit in %d byte(s)"
 msgstr "value must fit in %d byte(s)"
 
 #: shared-bindings/bitmaptools/__init__.c
-#, fuzzy
 msgid "value out of range of target"
 msgstr "value out of range of target"
 
@@ -4614,6 +4515,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+#~ msgstr "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 
 #, fuzzy
 #~ msgid ""
