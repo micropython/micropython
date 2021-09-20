@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H
 
 #include "driver/spi_master.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -49,4 +49,4 @@ typedef struct {
 
 void spi_reset(void);
 
-#endif // MICROPY_INCLUDED_ESP32S2_COMMON_HAL_BUSIO_SPI_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_SPI_H

@@ -29,14 +29,14 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
 
-// Requires rmt.c void esp32s2_peripherals_reset_all(void) to reset
+// Requires rmt.c void peripherals_reset_all(void) to reset
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
 
-    rmt_channel_t channel = esp32s2_peripherals_find_and_reserve_rmt();
+    rmt_channel_t channel = peripherals_find_and_reserve_rmt();
     if (channel == RMT_CHANNEL_MAX) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
@@ -59,7 +59,7 @@ bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
-    esp32s2_peripherals_free_rmt(self->channel);
+    peripherals_free_rmt(self->channel);
     self->channel = RMT_CHANNEL_MAX;
 
 }

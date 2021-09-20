@@ -29,15 +29,15 @@
 
 bool rmt_reserved_channels[RMT_CHANNEL_MAX];
 
-void esp32s2_peripherals_rmt_reset(void) {
+void peripherals_rmt_reset(void) {
     for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
         if (rmt_reserved_channels[i]) {
-            esp32s2_peripherals_free_rmt(i);
+            peripherals_free_rmt(i);
         }
     }
 }
 
-rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
+rmt_channel_t peripherals_find_and_reserve_rmt(void) {
     for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
         if (!rmt_reserved_channels[i]) {
             rmt_reserved_channels[i] = true;
@@ -48,7 +48,7 @@ rmt_channel_t esp32s2_peripherals_find_and_reserve_rmt(void) {
     return RMT_CHANNEL_MAX;
 }
 
-void esp32s2_peripherals_free_rmt(rmt_channel_t chan) {
+void peripherals_free_rmt(rmt_channel_t chan) {
     rmt_reserved_channels[chan] = false;
     rmt_driver_uninstall(chan);
 }

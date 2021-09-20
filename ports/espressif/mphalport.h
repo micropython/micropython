@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef __ESP32S2_HAL
-#define __ESP32S2_HAL
+#ifndef MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
+#define MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -38,4 +38,4 @@
 
 bool mp_hal_stdin_any(void);
 
-#endif
+#endif // MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
