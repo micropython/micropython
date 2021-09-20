@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,20 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "hal/include/hal_gpio.h"
+#include "shared-bindings/pwmio/PWMOut.h"
 
-#include "common-hal/nvm/ByteArray.h"
+void board_init(void) {
+    pwmio_pwmout_obj_t pwm;
+    common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
+    common_hal_pwmio_pwmout_never_reset(&pwm);
+}
 
-extern const mp_obj_type_t nvm_bytearray_type;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self);
-
-bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint8_t *values, uint32_t len);
-// len and values are intentionally swapped to signify values is an output and
-// also leverage the compiler to validate uses are expected.
-void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t *values);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NVM_BYTEARRAY_H
+void reset_board(void) {
+}

@@ -554,6 +554,14 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #define CIRCUITPY_BOOT_OUTPUT_FILE "/boot_out.txt"
 
+#ifndef CIRCUITPY_BOOT_COUNTER
+#define CIRCUITPY_BOOT_COUNTER 0
+#endif
+
+#if !defined(CIRCUITPY_INTERNAL_NVM_SIZE) && CIRCUITPY_BOOT_COUNTER != 0
+#error "boot counter requires CIRCUITPY_NVM enabled"
+#endif
+
 #define CIRCUITPY_VERBOSE_BLE 0
 
 // This trades ~1k flash space (1) for that much in RAM plus the cost to compute

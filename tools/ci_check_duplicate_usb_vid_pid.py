@@ -35,6 +35,8 @@ DEFAULT_IGNORELIST = [
     "circuitplayground_express_displayio",
     "pycubed",
     "pycubed_mram",
+    "pycubed_v05",
+    "pycubed_mram_v05",
     "pygamer",
     "pygamer_advance",
     "trinket_m0",
