@@ -110,7 +110,8 @@ const mp_obj_type_t mp_type_espidf_IDFError = {
 };
 
 
-//| class MemoryError(MemoryError):
+//| import builtins
+//| class MemoryError(builtins.MemoryError):
 //|     """Raised when an ESP IDF memory allocation fails."""
 //|     ...
 //|

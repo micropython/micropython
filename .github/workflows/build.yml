@@ -16,9 +16,10 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     outputs:
-      arm-boards: ${{ steps.set-matrix.outputs.arm-boards }}
-      riscv-boards: ${{ steps.set-matrix.outputs.riscv-boards }}
-      espressif-boards: ${{ steps.set-matrix.outputs.espressif-boards }}
+      build-doc: ${{ steps.set-matrix.outputs.build-doc }}
+      boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
+      boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
+      boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
     steps:
     - name: Dump GitHub context
       env:
@@ -26,9 +27,12 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
+        submodules: false
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ lib/ tools/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -37,41 +41,18 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
-    - name: Install deps
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y eatmydata
-        sudo eatmydata apt-get install -y gettext librsvg2-bin mingw-w64 latexmk texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra gcc-aarch64-linux-gnu
-        pip install -r requirements-dev.txt
+        sudo eatmydata apt-get install -y gettext gcc-aarch64-linux-gnu mingw-w64
+        pip install -r requirements-ci.txt -r requirements-dev.txt
     - name: Versions
       run: |
         gcc --version
         python3 --version
     - name: Duplicate USB VID/PID Check
       run: python3 -u -m tools.ci_check_duplicate_usb_vid_pid
-    - name: Build and Validate Stubs
-      run: make check-stubs -j2
-    - uses: actions/upload-artifact@v2
-      with:
-        name: stubs
-        path: circuitpython-stubs/dist/*
-    - name: Install pypi dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Test Documentation Build (HTML)
-      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v2
-      with:
-        name: docs
-        path: _build/html
-    - name: Test Documentation Build (LaTeX/PDF)
-      run: |
-        make latexpdf
-    - uses: actions/upload-artifact@v2
-      with:
-        name: docs
-        path: _build/latex
     - name: Build mpy-cross
       run: make -C mpy-cross -j2
     - name: Build unix port
@@ -130,39 +111,22 @@ jobs:
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross.static.exe s3://adafruit-circuit-python/bin/mpy-cross/mpy-cross.static-x64-windows-${{ env.CP_VERSION }}.exe --no-progress --region us-east-1
         zip -9r circuitpython-stubs.zip circuitpython-stubs
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs/dist/*.tar.gz s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
-
-    - name: Upload stubs to PyPi
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit'
-      env:
-        TWINE_USERNAME: ${{ secrets.pypi_username }}
-        TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: |
-        # setup.py sdist was run by 'make stubs'
-        [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
-        [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
-    - uses: dorny/paths-filter@v2
+    - name: "Get changes"
+      if: github.event_name == 'pull_request'
+      uses: dorny/paths-filter@v2
       id: filter
       with:
-        # Enable listing of files matching each filter.
-        # Paths to files will be available in `${FILTER_NAME}_files` output variable.
-        # Paths will be formatted as JSON array
         list-files: json
-
-        # Compare against this branch. (Ignored for PRs.)
-        base: ${{ github.ref }}
-
-        # In this example all changed files are passed to the following action to do
-        # some custom processing.
         filters: |
           changed:
             - '**'
-    - name: "Set boards to build"
+    - name: "Set matrix"
       id: set-matrix
       working-directory: tools
       env:
         CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
-      run: |
-        python3 -u ci_changed_board_list.py
+      run: python3 -u ci_set_matrix.py
+
 
   mpy-cross-mac:
     runs-on: macos-10.15
@@ -173,9 +137,12 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
+        submodules: false
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/ lib/ tools/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -221,15 +188,71 @@ jobs:
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
 
+  build-doc:
+    runs-on: ubuntu-20.04
+    needs: test
+    if: ${{ needs.test.outputs.build-doc == 'True' }}
+    steps:
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: false
+        fetch-depth: 0
+    - name: Populate selected submodules
+      run: git submodule update --init extmod/
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: CircuitPython version
+      run: |
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y eatmydata
+        sudo eatmydata apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
+        pip install -r requirements-ci.txt -r requirements-doc.txt
+    - name: Build and Validate Stubs
+      run: make check-stubs -j2
+    - uses: actions/upload-artifact@v2
+      with:
+        name: stubs
+        path: circuitpython-stubs/dist/*
+    - name: Test Documentation Build (HTML)
+      run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/html
+    - name: Test Documentation Build (LaTeX/PDF)
+      run: |
+        make latexpdf
+    - uses: actions/upload-artifact@v2
+      with:
+        name: docs
+        path: _build/latex
+    - name: Upload stubs to PyPi
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit'
+      env:
+        TWINE_USERNAME: ${{ secrets.pypi_username }}
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: |
+        # setup.py sdist was run by 'make stubs'
+        [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
+        [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
+
+
   build-arm:
     runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.arm-boards) }}
-    if: ${{ needs.test.outputs.arm-boards != '[]' }}
-
+        board: ${{ fromJSON(needs.test.outputs.boards-arm) }}
+    if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -239,11 +262,12 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: Install deps
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
-        pip install -r requirements-dev.txt
+        pip install -r requirements-ci.txt -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
@@ -272,15 +296,15 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
 
+
   build-riscv:
     runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.riscv-boards) }}
-    if: ${{ needs.test.outputs.riscv-boards != '[]' }}
-
+        board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
+    if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -290,11 +314,12 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: Install deps
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
-        pip install -r requirements-dev.txt
+        pip install -r requirements-ci.txt -r requirements-dev.txt
         wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
         sudo tar -C /usr --strip-components=1 -xaf riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-centos6.tar.gz
     - name: Versions
@@ -322,15 +347,16 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+
   build-espressif:
     runs-on: ubuntu-20.04
     needs: test
     strategy:
       fail-fast: false
       matrix:
-        board: ${{ fromJSON(needs.test.outputs.espressif-boards) }}
-    if: ${{ needs.test.outputs.espressif-boards != '[]' }}
-
+        board: ${{ fromJSON(needs.test.outputs.boards-espressif) }}
+    if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
@@ -340,7 +366,8 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+    - name: Fetch tags
+      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
     - uses: actions/cache@v2
@@ -363,11 +390,11 @@ jobs:
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
-    - name: Install CircuitPython deps
+    - name: Install dependencies
       run: |
         source $IDF_PATH/export.sh
-        pip install -r requirements-dev.txt
         sudo apt-get install -y gettext ninja-build
+        pip install -r requirements-ci.txt -r requirements-dev.txt
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
