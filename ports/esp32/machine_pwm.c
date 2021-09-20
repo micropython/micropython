@@ -34,7 +34,7 @@
 #include "esp_err.h"
 
 #define PWM_DBG(...)
-//#define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+// #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 // Total number of channels
 #define PWM_CHANNEL_MAX (LEDC_SPEED_MODE_MAX * LEDC_CHANNEL_MAX)
@@ -170,7 +170,7 @@ STATIC void set_duty(machine_pwm_obj_t *self, int duty) {
     duty >>= PWRES - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
     check_esp_err(ledc_set_duty(self->mode, self->channel, duty));
     check_esp_err(ledc_update_duty(self->mode, self->channel));
-    //check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, duty, (1 << PWRES) - 1)); // thread safe function ???
+    // check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, duty, (1 << PWRES) - 1)); // thread safe function ???
 
     // Bug: Sometimes duty is not set right now.
     // See https://github.com/espressif/esp-idf/issues/7288
@@ -186,7 +186,7 @@ STATIC void set_duty(machine_pwm_obj_t *self, int duty) {
 #define SAME_FREQ_OR_FREE (false)
 #define ANY_MODE (-1)
 // Return timer_idx. Use TIMER_IDX_TO_MODE(timer_idx) and TIMER_IDX_TO_TIMER(timer_idx) to get mode and timer
-STATIC int find_timer(int freq, bool same_freq_only, int mode/*=ANY_MODE*/) {
+STATIC int find_timer(int freq, bool same_freq_only, int mode) {
     int free_timer_idx_found = -1;
     // Find a free PWM Timer using the same freq
     for (int timer_idx = 0; timer_idx < PWM_TIMER_MAX; ++timer_idx) {
@@ -279,7 +279,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         // pwm = PWM(pin, freq=1000, duty=256)
         // pwm = PWM(pin, duty=128)
         if (chans[channel_idx].timer_idx != -1) {
-            freq =  timers[chans[channel_idx].timer_idx].freq_hz;
+            freq = timers[chans[channel_idx].timer_idx].freq_hz;
         }
         if (freq < 0) {
             freq = PWFREQ;
@@ -344,7 +344,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     self->active = false;
     self->mode = -1;
     self->channel = -1;
-    self->timer= -1;
+    self->timer = -1;
 
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
@@ -375,16 +375,16 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
         // Mark it unused, and tell the hardware to stop routing
         check_esp_err(ledc_stop(self->mode, chan, 0));
         // Disable ledc signal for the pin
-        //gpio_matrix_out(self->pin, SIG_GPIO_OUT_IDX, false, false);
+        // gpio_matrix_out(self->pin, SIG_GPIO_OUT_IDX, false, false);
         if (self->mode == LEDC_LOW_SPEED_MODE) {
             gpio_matrix_out(self->pin, LEDC_LS_SIG_OUT0_IDX + self->channel, false, true);
         } else {
             #if LEDC_SPEED_MODE_MAX > 1
-                #if CONFIG_IDF_TARGET_ESP32
-                    gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
-                #else
-                #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
-                #endif
+            #if CONFIG_IDF_TARGET_ESP32
+            gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
+            #else
+            #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
+            #endif
             #endif
         }
         chans[chan].pin = -1;
