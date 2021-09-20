@@ -279,7 +279,32 @@ dispatch_loop:
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
                 TRACE_TICK(ip, sp, false);
-                switch (*ip++) {
+                byte ipx = *ip++;
+
+                // Handle the "multi" ops explicitly, so the compiler can do a
+                // better job of turning the switch into a jump table.
+                if (ipx >= MP_BC_BINARY_OP_MULTI) {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_obj_t rhs = POP();
+                    mp_obj_t lhs = TOP();
+                    SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
+                    DISPATCH();
+                } else if (ipx >= MP_BC_UNARY_OP_MULTI) {
+                    MARK_EXC_IP_SELECTIVE();
+                    SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
+                    DISPATCH();
+                } else if (ipx >= MP_BC_STORE_FAST_MULTI) {
+                    fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
+                    DISPATCH();
+                } else if (ipx >= MP_BC_LOAD_FAST_MULTI) {
+                    obj_shared = fastn[MP_BC_LOAD_FAST_MULTI - (mp_int_t)ip[-1]];
+                    goto load_check;
+                } else if (ipx >= MP_BC_LOAD_CONST_SMALL_INT_MULTI) {
+                    PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
+                    DISPATCH();
+                }
+
+                switch (ipx) {
 #endif
 
                 ENTRY(MP_BC_LOAD_CONST_FALSE):
@@ -1214,7 +1239,7 @@ yield:
                     mp_import_all(POP());
                     DISPATCH();
 
-#if MICROPY_OPT_COMPUTED_GOTO
+                #if MICROPY_OPT_COMPUTED_GOTO
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT_MULTI):
                     PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
                     DISPATCH();
@@ -1239,32 +1264,10 @@ yield:
                     SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
                     DISPATCH();
                 }
+                #endif
 
-                ENTRY_DEFAULT:
+                ENTRY_DEFAULT: {
                     MARK_EXC_IP_SELECTIVE();
-#else
-                ENTRY_DEFAULT:
-                    if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM) {
-                        PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
-                        DISPATCH();
-                    } else if (ip[-1] < MP_BC_LOAD_FAST_MULTI + MP_BC_LOAD_FAST_MULTI_NUM) {
-                        obj_shared = fastn[MP_BC_LOAD_FAST_MULTI - (mp_int_t)ip[-1]];
-                        goto load_check;
-                    } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + MP_BC_STORE_FAST_MULTI_NUM) {
-                        fastn[MP_BC_STORE_FAST_MULTI - (mp_int_t)ip[-1]] = POP();
-                        DISPATCH();
-                    } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_BC_UNARY_OP_MULTI_NUM) {
-                        SET_TOP(mp_unary_op(ip[-1] - MP_BC_UNARY_OP_MULTI, TOP()));
-                        DISPATCH();
-                    } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BC_BINARY_OP_MULTI_NUM) {
-                        mp_obj_t rhs = POP();
-                        mp_obj_t lhs = TOP();
-                        SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
-                        DISPATCH();
-                    } else
-#endif
-                {
-
                     mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
