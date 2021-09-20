@@ -315,6 +315,18 @@ STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     return 0;
 }
 
+STATIC mp_obj_t framebuf_width(mp_obj_t self_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->width);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(framebuf_width_obj, framebuf_width);
+
+STATIC mp_obj_t framebuf_height(mp_obj_t self_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->height);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(framebuf_height_obj, framebuf_height);
+
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
@@ -604,6 +616,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_tex
 
 #if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&framebuf_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&framebuf_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&framebuf_fill_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf_pixel_obj) },
