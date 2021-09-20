@@ -225,9 +225,9 @@ Use the ``machine.PWM`` class::
     from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0))      # create PWM object from a pin
-    pwm0.freq()             # get current frequency 5000 Hz
+    pwm0.freq()             # get current frequency (default 5kHz)
     pwm0.freq(1000)         # set frequency
-    pwm0.duty()             # get current duty cycle 512 (50%)
+    pwm0.duty()             # get current duty cycle (default 512 (50%))
     pwm0.duty(200)          # set duty cycle
     pwm0.deinit()           # turn off PWM on the pin
 
