@@ -551,6 +551,7 @@ SRC_SHARED_MODULE_ALL = \
 	onewireio/__init__.c \
 	onewireio/OneWire.c \
 	os/__init__.c \
+	paralleldisplay/ParallelBus.c \
 	qrio/__init__.c \
 	qrio/QRDecoder.c \
 	rainbowio/__init__.c \
