@@ -1,4 +1,6 @@
-// Board and hardware specific configuration
+// Board and hardware specific configuration for Melopero Shake RP2040
+// https://www.melopero.com/melopero-shake-rp2040
+
 #define MICROPY_HW_BOARD_NAME                   "Melopero Shake RP2040"
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (15 * 1024 * 1024)
 
