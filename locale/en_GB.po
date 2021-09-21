@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-09-19 20:17+0000\n"
+"PO-Revision-Date: 2021-09-21 03:37+0000\n"
 "Last-Translator: James Carr <lesamouraipourpre@gmail.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -3452,9 +3452,8 @@ msgid "invalid hostname"
 msgstr "invalid hostname"
 
 #: py/compile.c
-#, fuzzy
 msgid "invalid micropython decorator"
-msgstr "invalid CircuitPython decorator"
+msgstr "invalid micropython decorator"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
