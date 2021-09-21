@@ -33,7 +33,7 @@
 
 //| class Event:
 //|     """A key transition event."""
-//|     def __init__(self, key_number: int=0, pressed: bool=True, timestamp:int=-1) -> None:
+//|     def __init__(self, key_number: int=0, pressed: bool=True, timestamp:Optional[int]=None) -> None:
 //|         """Create a key transition event, which reports a key-pressed or key-released transition.
 //|
 //|         :param int key_number: the key number
