@@ -71,6 +71,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/mpthreadport.c
     ${PROJECT_DIR}/machine_rtc.c
     ${PROJECT_DIR}/machine_sdcard.c
+)
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
