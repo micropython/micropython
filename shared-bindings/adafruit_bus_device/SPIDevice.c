@@ -48,6 +48,7 @@
 //|
 //|         :param ~busio.SPI spi: The SPI bus the device is on
 //|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the DigitalInOut API.
+//|         :param bool cs_active_value: Set to true if your device requires CS to be active high. Defaults to false.
 //|         :param int extra_clocks: The minimum number of clock cycles to cycle the bus after CS is high. (Used for SD cards.)
 //|
 //|         Example::
@@ -73,10 +74,11 @@
 STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
     self->base.type = &adafruit_bus_device_spidevice_type;
-    enum { ARG_spi, ARG_chip_select, ARG_baudrate, ARG_polarity, ARG_phase, ARG_extra_clocks };
+    enum { ARG_spi, ARG_chip_select, ARG_cs_active_value, ARG_baudrate, ARG_polarity, ARG_phase, ARG_extra_clocks };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_chip_select, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cs_active_value, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phase, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -87,7 +89,7 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 
     busio_spi_obj_t *spi = args[ARG_spi].u_obj;
 
-    common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
+    common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_cs_active_value].u_bool, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
         args[ARG_phase].u_int, args[ARG_extra_clocks].u_int);
 
     if (args[ARG_chip_select].u_obj != MP_OBJ_NULL) {
