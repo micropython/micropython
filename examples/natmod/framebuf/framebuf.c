@@ -12,7 +12,7 @@ mp_obj_type_t mp_type_framebuf;
 
 #include "extmod/modframebuf.c"
 
-mp_map_elem_t framebuf_locals_dict_table[12];
+mp_map_elem_t framebuf_locals_dict_table[14];
 STATIC MP_DEFINE_CONST_DICT(framebuf_locals_dict, framebuf_locals_dict_table);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
@@ -24,6 +24,8 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     mp_type_framebuf.buffer_p.get_buffer = framebuf_get_buffer;
     framebuf_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_width), MP_OBJ_FROM_PTR(&framebuf_width_obj) };
     framebuf_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_height), MP_OBJ_FROM_PTR(&framebuf_height_obj) };
+    framebuf_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_format), MP_OBJ_FROM_PTR(&framebuf_format_obj) };
+    framebuf_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_stride), MP_OBJ_FROM_PTR(&framebuf_stride_obj) };
     framebuf_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill), MP_OBJ_FROM_PTR(&framebuf_fill_obj) };
     framebuf_locals_dict_table[3] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_fill_rect), MP_OBJ_FROM_PTR(&framebuf_fill_rect_obj) };
     framebuf_locals_dict_table[4] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_pixel), MP_OBJ_FROM_PTR(&framebuf_pixel_obj) };

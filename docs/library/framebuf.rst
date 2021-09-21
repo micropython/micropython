@@ -106,6 +106,14 @@ Other methods
 
     Retrieve the height provided at construction
 
+.. method:: FrameBuffer.format()
+
+    Retrieve the format provided at construction
+
+.. method:: FrameBuffer.stride()
+
+    Retrieve the stride provided at construction
+
 .. method:: FrameBuffer.scroll(xstep, ystep)
 
     Shift the contents of the FrameBuffer by the given vector. This may

@@ -327,6 +327,18 @@ STATIC mp_obj_t framebuf_height(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(framebuf_height_obj, framebuf_height);
 
+STATIC mp_obj_t framebuf_format(mp_obj_t self_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->format);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(framebuf_format_obj, framebuf_format);
+
+STATIC mp_obj_t framebuf_stride(mp_obj_t self_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(self->stride);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(framebuf_stride_obj, framebuf_stride);
+
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t col = mp_obj_get_int(col_in);
@@ -618,6 +630,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_text_obj, 4, 5, framebuf_tex
 STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&framebuf_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&framebuf_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&framebuf_format_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stride), MP_ROM_PTR(&framebuf_stride_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&framebuf_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&framebuf_fill_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&framebuf_pixel_obj) },
