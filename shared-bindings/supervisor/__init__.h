@@ -33,7 +33,7 @@
 #include "common-hal/supervisor/Runtime.h"
 
 extern const super_runtime_obj_t common_hal_supervisor_runtime_obj;
-
+extern mp_obj_t supervisor_ticks_ms(void);
 
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SUPERVISOR___INIT___H

@@ -36,6 +36,6 @@ typedef struct {
     bool overflowed;
 } keypad_eventqueue_obj_t;
 
-bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed);
+bool keypad_eventqueue_record(keypad_eventqueue_obj_t *self, mp_uint_t key_number, bool pressed, mp_obj_t timestamp);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_EVENTQUEUE_H

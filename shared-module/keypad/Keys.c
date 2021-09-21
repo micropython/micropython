@@ -32,6 +32,7 @@
 #include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/keypad/__init__.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
@@ -112,6 +113,8 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
 
     const size_t key_count = common_hal_keypad_keys_get_key_count(self);
 
+    mp_obj_t timestamp = supervisor_ticks_ms();
+
     for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
         // Remember the previous up/down state.
         const bool previous = self->currently_pressed[key_number];
@@ -125,7 +128,7 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
 
         // Record any transitions.
         if (previous != current) {
-            keypad_eventqueue_record(self->events, key_number, current);
+            keypad_eventqueue_record(self->events, key_number, current, timestamp);
         }
     }
 }
