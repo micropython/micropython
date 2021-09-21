@@ -248,7 +248,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     DEBUG_printf("__import__:\n");
     for (size_t i = 0; i < n_args; i++) {
         DEBUG_printf("  ");
-        mp_obj_print(args[i], PRINT_REPR);
+        mp_obj_print_helper(MICROPY_DEBUG_PRINTER, args[i], PRINT_REPR);
         DEBUG_printf("\n");
     }
     #endif
@@ -292,7 +292,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         #if DEBUG_PRINT
         DEBUG_printf("Current module/package: ");
-        mp_obj_print(this_name_q, PRINT_REPR);
+        mp_obj_print_helper(MICROPY_DEBUG_PRINTER, this_name_q, PRINT_REPR);
         DEBUG_printf(", is_package: %d", is_pkg);
         DEBUG_printf("\n");
         #endif
