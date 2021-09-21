@@ -737,8 +737,7 @@ STATIC mp_obj_t pcnt_PCNT_set_filter_value(mp_obj_t self_obj, mp_obj_t filter_va
     mp_int_t value = mp_obj_get_int(filter_val_obj);
 
     if ((value < 0) || (value > 1023)) {
-        // mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
-        mp_raise_msg(&mp_type_EspError, MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
     }
 
     ESP_EXCEPTIONS(pcnt_set_filter_value(self->unit, value));
