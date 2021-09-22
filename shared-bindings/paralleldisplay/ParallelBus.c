@@ -51,7 +51,7 @@
 //|         code is done.) So, the first time you initialize a display bus in code.py you should call
 //|         :py:func:`displayio.release_displays` first, otherwise it will error after the first code.py run.
 //|
-//|         :param microcontroller.Pin data_pins: A list of data pins.  Specify exactly one of `data_pins` or `data0`.
+//|         :param microcontroller.Pin data_pins: A list of data pins.  Specify exactly one of ``data_pins`` or ``data0``.
 //|         :param microcontroller.Pin data0: The first data pin. The rest are implied
 //|         :param microcontroller.Pin command: Data or command pin
 //|         :param microcontroller.Pin chip_select: Chip select pin
