@@ -39,16 +39,29 @@
 //|           not verified for correctness; it is up to you to make sure it is not malformed.
 //|         :param int usage_page: The Usage Page value from the descriptor. Must match what is in the descriptor.
 //|         :param int usage: The Usage value from the descriptor. Must match what is in the descriptor.
-//|         :param int report_ids: Sequence of report ids used by the descriptor.
-//|           If the ``report_descriptor`` does not have a report ID, use 0.
-//|         :param int in_report_lengths: Sequence of sizes in bytes of the HIDs report sent to the host.
+//|         :param Sequence[int] report_ids: Sequence of report ids used by the descriptor.
+//|           If the ``report_descriptor`` does not specify any report IDs, use ``(0,)``.
+//|         :param Sequence[int] in_report_lengths: Sequence of sizes in bytes of the HID reports sent to the host.
 //|           The sizes are in order of the ``report_ids``.
+//|           Use a size of ``0`` for a report that is not an IN report.
 //|           "IN" is with respect to the host.
-//|         :param int out_report_lengths: Size in bytes of the HID report received from the host.
+//|         :param int out_report_lengths: Sequence of sizes in bytes of the HID reports received from the host.
 //|           The sizes are in order of the ``report_ids``.
+//|           Use a size of ``0`` for a report that is not an OUT report.
 //|           "OUT" is with respect to the host.
 //|
 //|         ``report_ids``, ``in_report_lengths``, and ``out_report_lengths`` must all be the same length.
+//|
+//|         Here is an example of a `Device` with a descriptor that specifies two report IDs, 3 and 4.
+//|         Report ID 3 sends an IN report of length 5, and receives an OUT report of length 6.
+//|         Report ID 4 sends an IN report of length 2, and does not receive an OUT report::
+//|
+//|             device = usb_hid.Device(
+//|                 descriptor=b"...",         # Omitted for brevity.
+//|                 report_ids=(3, 4),
+//|                 in_report_lengths=(5, 2),
+//|                 out_report_lengths=(6, 0),
+//|             )
 //|         """
 //|         ...
 //|
