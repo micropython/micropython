@@ -303,6 +303,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
     }
 
     if (SCB->CCR & (uint32_t)SCB_CCR_DC_Msk) {
+        SCB_CleanDCache();
         SCB_DisableDCache();
         d_cache_disabled = true;
     }
