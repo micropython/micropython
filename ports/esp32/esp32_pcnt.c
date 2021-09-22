@@ -58,6 +58,10 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #include "esp32_pcnt.h"
 
+#define DBG_LEVEL 0
+#define DBG(...) _DBG(1, ...)
+// DBG(MP_ERROR_TEXT("QUAD not supported on pin %d"), self->pin);
+
 // ---------------------------------------
 static int machine_pin_get_gpio(mp_obj_t pin_in) {
     if (MP_OBJ_IS_INT(pin_in)) {
@@ -70,9 +74,6 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
     return machine_pin_get_id(pin_in);
 }
 // ---------------------------------------
-
-//  mp_printf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("_pin_pull_type=%u "), self->useInternalWeakPullResistors);
-//  mp_printf(MP_PYTHON_PRINTER, "_pin_pull_type=%u \n", self->useInternalWeakPullResistors);
 
 
 // Defining classes
@@ -180,13 +181,6 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
-    if (self->useInternalWeakPullResistors == DOWN) {
-        gpio_pulldown_en(self->aPinNumber);
-        gpio_pulldown_en(self->bPinNumber);
-    } else if (self->useInternalWeakPullResistors == UP) {
-        gpio_pullup_en(self->aPinNumber);
-        gpio_pullup_en(self->bPinNumber);
-    }
 
     // Prepare configuration for the PCNT unit
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
@@ -268,10 +262,6 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->aPinNumber = PCNT_PIN_NOT_USED;
     self->bPinNumber = PCNT_PIN_NOT_USED;
 
-    self->useInternalWeakPullResistors = DOWN;
-    if (n_args + n_kw >= 4) {
-        self->useInternalWeakPullResistors = mp_obj_get_int(args[3]);
-    }
     self->unit = (pcnt_unit_t)-1;
 
     attach_pcnt(self, pin_a, pin_b, edge);
@@ -289,11 +279,6 @@ STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj) {
     check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
     check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
-    gpio_pullup_dis(self->aPinNumber);
-    gpio_pullup_dis(self->bPinNumber);
-    gpio_pulldown_dis(self->aPinNumber);
-    gpio_pulldown_dis(self->bPinNumber);
-
     pcnts[self->unit] = NULL;
 
     ////m_del_obj(pcnt_PCNT_obj_t, self); // ???
@@ -309,7 +294,7 @@ STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
-    mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
+    //mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
 }
 
 // def PCNT.event_disable(self, evt_type: int)
@@ -961,13 +946,6 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
-    if (self->useInternalWeakPullResistors == DOWN) {
-        gpio_pulldown_en(self->aPinNumber);
-        gpio_pulldown_en(self->bPinNumber);
-    } else if (self->useInternalWeakPullResistors == UP) {
-        gpio_pullup_en(self->aPinNumber);
-        gpio_pullup_en(self->bPinNumber);
-    }
     // Set up encoder PCNT configuration
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
@@ -1111,10 +1089,6 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
     self->aPinNumber = PCNT_PIN_NOT_USED;
     self->bPinNumber = PCNT_PIN_NOT_USED;
 
-    self->useInternalWeakPullResistors = DOWN;
-    if (n_args + n_kw >= 4) {
-        self->useInternalWeakPullResistors = mp_obj_get_int(args[3]);
-    }
     self->unit = (pcnt_unit_t)-1;
 
     attach_quad(self, pin_a, pin_b, clock_multiplier);
