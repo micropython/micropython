@@ -98,28 +98,6 @@ STATIC const mp_obj_type_t pcnt_Edge_type = {
 };
 
 // ====================================================================================
-// class PinPull(object):
-// enumaration
-typedef struct _mp_obj_PinPull_t {
-    mp_obj_base_t base;
-} mp_obj_PinPull_t;
-
-// PinPull constants
-// PinPull stuff
-STATIC const mp_rom_map_elem_t pcnt_PinPull_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_NONE), MP_ROM_INT(NONE) },
-    { MP_ROM_QSTR(MP_QSTR_DOWN), MP_ROM_INT(DOWN) },
-    { MP_ROM_QSTR(MP_QSTR_UP), MP_ROM_INT(UP) },
-};
-STATIC MP_DEFINE_CONST_DICT(pcnt_PinPull_locals_dict, pcnt_PinPull_locals_dict_table);
-
-STATIC const mp_obj_type_t pcnt_PinPull_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinPull,
-    .locals_dict = (void *)&pcnt_PinPull_locals_dict,
-};
-
-// ====================================================================================
 // class ClockMultiplier(object):
 // enumaration
 typedef struct _mp_obj_ClockMultiplier_t {
@@ -268,7 +246,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 STATIC const mp_obj_type_t esp32_pcnt_type;
 
 // Defining PCNT methods
-// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED)
 STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
@@ -1111,7 +1089,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // -------------------------------------------------------------------------------------------------------------
 // Defining QUAD methods
-// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED)
 STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
@@ -1156,7 +1134,6 @@ STATIC void quad_QUAD_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
-    mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
 }
 
 // Create the class-object itself
@@ -1214,7 +1191,6 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_7), MP_ROM_INT(PCNT_UNIT_7) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_MAX), MP_ROM_INT(PCNT_UNIT_MAX) },
     */
-    { MP_ROM_QSTR(MP_QSTR_PinPull), MP_ROM_PTR(&pcnt_PinPull_type) },
     { MP_ROM_QSTR(MP_QSTR_Edge), MP_ROM_PTR(&pcnt_Edge_type) },
     { MP_ROM_QSTR(MP_QSTR_ClockMultiplier), MP_ROM_PTR(&quad_ClockMultiplier_type) },
 };
