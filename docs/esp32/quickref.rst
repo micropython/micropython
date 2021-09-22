@@ -460,8 +460,8 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
 PCNT
 ----
 
-The PCNT (Pulse Counter) counts the number of rising and/or falling edges of an input signal.  
-It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral, 
+The PCNT (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
+It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral,
 the total available number of PCNT and QUAD counters is up to 8.
 
 See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
@@ -469,12 +469,12 @@ See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
     import pcnt
 
     cnt = pcnt.PCNT(pcnt.Edge.RAISE, 17)
-    #              (kind of counted edges - count rase edges, 
+    #              (kind of counted edges - count rase edges,
     #               pulse signal input pin number is GPIO17)
 
     _c = None
     while True:
-        c = cnt.count()  # get the counter value
+        c = cnt.count()  # get 64-bit signed counter value
         if _c != c:
             _c = c
             print('Counter =', c)
@@ -483,7 +483,7 @@ QUAD
 ----
 
 The QUAD (Quadrature Counter) counts quadrature-encoded pulses
-(two square wave signals with ~50% duty cycle and ~90-degree phase difference between them).  
+(two square wave signals with ~50% duty cycle and ~90-degree phase difference between them).
 It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral,
 the total available number of PCNT and QUAD counters is up to 8.
 
@@ -498,7 +498,7 @@ See :ref:`pcnt.QUAD <pcnt.QUAD>` for details.  Simplest usage is::
 
     _c = None
     while True:
-        c = cnt.count()  # get the counter value
+        c = cnt.count()  # get 64-bit signed counter value
         if _c != c:
             _c = c
             print('Counter =', c)

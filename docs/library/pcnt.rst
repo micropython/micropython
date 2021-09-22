@@ -1,4 +1,4 @@
-The PCNT and QUAD counters uses the ESP32 pulse counter hardware peripheral, 
+The PCNT and QUAD counters uses the ESP32 pulse counter hardware peripheral,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
 
@@ -7,11 +7,11 @@ The pulses are sampled on the edges of the APB_CLK clock and may be missed, if f
 With ideal input signal maximum frequency of measured pulses is APB_CLK / 2 = 80 MHz / 2 = 40 MHz.
 
 The inputs have optional filters that can be used to discard unwanted glitches in the signal.
-The length of ignored pulses is provided in APB_CLK clock cycles. 
+The length of ignored pulses is provided in APB_CLK clock cycles.
 * Note: Filter value is a 10-bit value, so the maximum filter value should be limited to 1023.
 Maximum filtered glitches delay is 1023 * 12.5 ns = 12.7875 us.
 Big filter make cutbacks the input frequency: 1 / (12.7875 us * 2) = 39.1 kHz.
-* Note: Do not neglect circuitry methods to reduce noise (right powering and grounding, filtering, shielding, 
+* Note: Do not neglect circuitry methods to reduce noise (right powering and grounding, filtering, shielding,
 short conductors, twisted pair cable, differential signals, etc.).
 
 There is only one interrupt for the peripheral, and that is managed by the pcnt module.
@@ -36,24 +36,28 @@ The PCNT .
 
 .. method:: PCNT.count()
 
-    Return current counter value.
+    Return current 64-bit signed counter value.
 
 .. method:: PCNT.clear()
 
+    Set counter value to 0.
+
 .. method:: PCNT.count_and_clear()
+
+    Return current 64-bit signed counter value and set it to 0.
 
 .. method:: PCNT.pause()
 
 .. method:: PCNT.resume()
 
 .. method:: PCNT.set_count(new_value)
-    
+
     Set the counter value, new_value is 64-bit signed integer.
 
 .. method:: PCNT.set_filter_value(filter_val)
 
     Set filter value.
-    
+
 .. method:: PCNT.get_filter_value()
 
     Return current filter value.
@@ -74,7 +78,7 @@ See `Quadrature encoder outputs.
 
 .. class:: QUAD(clock_multiplier:ClockMultiplier, aPinNumber, bPinNumber, pin_pull:PinPull=DOWN)
 
-The QUAD counter has the same methods as the PCNT counter and 
+The QUAD counter has the same methods as the PCNT counter and
 differs only in the constructor and internal counter initialization.
 
 Enumarations
@@ -90,7 +94,7 @@ Enumarations
 
 .. class:: pcnt.PinPull()
 
-   The counter input pins have an internal weak pull-up/pull-down resistors. 
+   The counter input pins have an internal weak pull-up/pull-down resistors.
 
 .. data:: PinPull.NONE
           PinPull.DOWN
@@ -100,9 +104,9 @@ Enumarations
 
 .. class:: ClockMultiplier()
 
-   When more QUAD resolution is needed, it is possible for the counter to count the leading 
-   and trailing edges of the quadrature encoder’s pulse train from one channel, 
-   which doubles (x2) the number of pulses. Counting both leading and trailing edges 
+   When more QUAD resolution is needed, it is possible for the counter to count the leading
+   and trailing edges of the quadrature encoder’s pulse train from one channel,
+   which doubles (x2) the number of pulses. Counting both leading and trailing edges
    of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses.
 
 .. image:: img/quad.png
@@ -124,7 +128,7 @@ Enumarations
         cnt = pcnt.QUAD(pcnt.ClockMultiplier.X4, 17, 16, PinPull.UP)
 
         flt = cnt.get_filter_value()  # return current filter value.
-        cnt.set_filter_value(100)     # filter delay is 
+        cnt.set_filter_value(100)     # filter delay is
         cnt.filter_disable()          #
         cnt.filter_enable()           #
         c = cnt.count_and_clear()     # get counter and clear it
