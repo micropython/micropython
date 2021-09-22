@@ -63,6 +63,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 // DBG(MP_ERROR_TEXT("QUAD not supported on pin %d"), self->pin);
 
 // ---------------------------------------
+/*
 static int machine_pin_get_gpio(mp_obj_t pin_in) {
     if (MP_OBJ_IS_INT(pin_in)) {
         int wanted_pin = mp_obj_get_int(pin_in);
@@ -73,6 +74,7 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
     }
     return machine_pin_get_id(pin_in);
 }
+*/
 // ---------------------------------------
 
 
@@ -175,13 +177,13 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->unit = (pcnt_unit_t)index;
     self->aPinNumber = a; // (gpio_num_t) a;
     self->bPinNumber = b; // (gpio_num_t) b;
-
+/*
     // Set up the IO state of hte pin
     gpio_pad_select_gpio(self->aPinNumber);
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
-
+*/
     // Prepare configuration for the PCNT unit
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Direction
@@ -245,10 +247,10 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
     enum edgeKind edge = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_gpio(args[1]);
+    gpio_num_t pin_a = machine_pin_get_id(args[1]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
     if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_gpio(args[2]);
+        pin_b = machine_pin_get_id(args[2]);
     }
 /*
     if (unit < 0 || unit > PCNT_UNIT_MAX)
@@ -940,12 +942,13 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->unit = (pcnt_unit_t)index;
     self->aPinNumber = a; // (gpio_num_t) a;
     self->bPinNumber = b; // (gpio_num_t) b;
-
+/*
     // Set up the IO state of hte pin
     gpio_pad_select_gpio(self->aPinNumber);
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
+*/
     // Set up encoder PCNT configuration
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
@@ -1072,10 +1075,10 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
     int clock_multiplier = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_gpio(args[1]);
+    gpio_num_t pin_a = machine_pin_get_id(args[1]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
     if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_gpio(args[2]);
+        pin_b = machine_pin_get_id(args[2]);
     }
 /*
     if (unit < 0 || unit > PCNT_UNIT_MAX)
