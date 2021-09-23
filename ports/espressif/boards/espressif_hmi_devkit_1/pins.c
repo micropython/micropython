@@ -3,7 +3,7 @@
 
 STATIC const mp_rom_obj_tuple_t lcd_data_tuple = {
     {&mp_type_tuple},
-    8,
+    16,
     {
         MP_ROM_PTR(&pin_GPIO1),
         MP_ROM_PTR(&pin_GPIO10),
