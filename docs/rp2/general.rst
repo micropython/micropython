@@ -22,9 +22,9 @@ QFN-56 SMD package. The key features include:
   firmware from either the external flash memory or USB bus into internal SRAM)
 * QSPI bus controller, which
   supports up to 16 MB of external Flash memory
-* On-chip programmable LDO togenerate core voltage
+* On-chip programmable LDO to generate core voltage
 * 2 on-chip PLLs to generate USB and core clocks
-* 30 GPIOpins, of which 4 can optionally be used as analog inputs
+* 30 GPIO pins, of which 4 can optionally be used as analog inputs
 
 The peripherals include:
 
