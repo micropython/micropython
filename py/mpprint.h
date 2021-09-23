@@ -72,10 +72,20 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
 #define _DBG(level, ...) \
-    #ifdef LOG_LEVEL \
-    #if level <= LOG_LEVEL \
-    mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__) \
-    #endif
-    #endif
+    if level <= LOG_LEVEL \
+        mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__) \
+    endif
 
+/*
+#define _DBG(level, ...) \
+    do { \
+        #ifdef LOG_LEVEL \
+            do { \
+                #if level <= LOG_LEVEL \
+                    mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__) \
+                #endif \
+            } while (true); \
+        #endif \
+    } while (true);
+*/
 #endif // MICROPY_INCLUDED_PY_MPPRINT_H
