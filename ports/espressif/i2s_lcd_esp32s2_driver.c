@@ -190,7 +190,7 @@ static esp_err_t i2s_lcd_reg_config(i2s_dev_t *i2s_dev, uint16_t data_width, uin
     i2s_dev->clkm_conf.clkm_div_num = 2; // 160MHz / 2 = 80MHz
     i2s_dev->clkm_conf.clkm_div_b = 0;
     i2s_dev->clkm_conf.clkm_div_a = 0;
-    i2s_dev->clkm_conf.clk_sel = 2;
+    i2s_dev->clkm_conf.clk_sel = 2;      // PLL_160M_CLK
     i2s_dev->clkm_conf.clk_en = 1;
 
     i2s_dev->conf.val = 0;
@@ -211,7 +211,18 @@ static esp_err_t i2s_lcd_reg_config(i2s_dev_t *i2s_dev, uint16_t data_width, uin
     i2s_dev->conf2.lcd_en = 1;
 
     // Configure sampling rate
-    i2s_dev->sample_rate_conf.tx_bck_div_num = 40000000 / clk_freq; // Fws = Fbck / 2
+    // The datasheet states that Fws = Fbck / (W*2), but empirically storing
+    // 1 in the register gives the highest value of 20MHz, storing 2 gives
+    // 10MHz, (and storing 0 causes a freeze instead of acting as though 64 was
+    // specified).
+    int div_num = (20000000 + clk_freq - 1) / clk_freq;
+    if (div_num == 0) {
+        div_num = 1;
+    }
+    if (div_num > 63) {
+        div_num = 63;
+    }
+    i2s_dev->sample_rate_conf.tx_bck_div_num = div_num;
     i2s_dev->sample_rate_conf.tx_bits_mod = data_width;
     // Configuration data format
 
