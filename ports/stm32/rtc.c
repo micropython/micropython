@@ -704,11 +704,9 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     // wait until WUTWF is set
     #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ) || defined(STM32G4)
     while (!(RTC->ICSR & RTC_ICSR_WUTWF)) {
-    }
     #else
     while (!(RTC->ISR & RTC_ISR_WUTWF)) {
     }
-    #endif
 
     if (enable) {
         // program WUT
@@ -735,8 +733,9 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         #endif
 
         // clear interrupt flags
-<<<<<<< HEAD
-        #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        #if defined(STM32G4)
+        RTC->ICSR &= ~RTC_ICSR_WUTWF;
+        #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         RTC->SR &= ~RTC_SR_WUTF;
         #else
         RTC->ISR &= ~RTC_ISR_WUTF;
