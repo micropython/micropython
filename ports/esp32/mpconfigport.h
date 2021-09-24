@@ -30,6 +30,8 @@
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 #define MICROPY_OPT_MPZ_BITWISE             (1)
 
 // Python internal features
@@ -289,6 +291,12 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 
 // Functions that should go in IRAM
+#define MICROPY_WRAP_MP_BINARY_OP(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_LOAD_GLOBAL(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_LOAD_NAME(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_MAP_LOOKUP(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
