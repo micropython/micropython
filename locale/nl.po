@@ -591,7 +591,6 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Buffer heeft incorrect grootte. Moet %d bytes zijn."
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Buffer is geen bytearray."
@@ -889,10 +888,6 @@ msgstr "DAC al in gebruik"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 pin moet byte uitgelijnd zijn"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1249,6 +1244,10 @@ msgstr ""
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "Interne define fout"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1728,6 +1727,11 @@ msgstr "Wordt niet afgespeeld"
 msgid "Not settable"
 msgstr "Niet instelbaar"
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2136,6 +2140,10 @@ msgstr "SocketPool kan alleen met wifi.radio gebruikt worden"
 msgid "Source and destination buffers must be the same length"
 msgstr "Bron en bestemming buffers moeten dezelfde lengte hebben"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Splitting met sub-captures"
@@ -2210,6 +2218,12 @@ msgstr "De sample's sample rate komt niet overeen met die van de mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "De sample's signature komt niet overeen met die van de mixer"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"

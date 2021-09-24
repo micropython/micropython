@@ -598,7 +598,6 @@ msgstr "huǎn chōng yuán jiàn bì xū wéi 4 zì jié cháng huò gèng shǎo
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Huǎnchōng qū bùshì bytearray."
@@ -894,10 +893,6 @@ msgstr "Fā yuán huì yǐjīng shǐyòng"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1259,6 +1254,10 @@ msgstr "nèi bù yīn pín huǎn chōng qì tài xiǎo"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1739,6 +1738,11 @@ msgstr "Wèi bòfàng"
 msgid "Not settable"
 msgstr "bù kě shè zhì"
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2144,6 +2148,10 @@ msgstr "SocketPool zhǐ néng yǔ wifi.Radio yīqǐ shǐyòng"
 msgid "Source and destination buffers must be the same length"
 msgstr "Yuán huǎnchōng qū hé mùbiāo huǎnchōng qū de chángdù bìxū xiāngtóng"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Yǔ zi bǔhuò fēnliè"
@@ -2225,6 +2233,12 @@ msgstr "Yàngběn de yàngběn sùdù yǔ hǔn yīn qì de xiāngchà bù pǐpè
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -4531,6 +4545,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Data 0 pin must be byte aligned."
+#~ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 
 #~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 #~ msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 4, 8, 16, 24, huò 32"

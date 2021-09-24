@@ -596,7 +596,6 @@ msgstr "Buffertelement måste vara fyra byte långa eller mindre"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Buffert har felaktig storlek. Ska vara %d byte."
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Buffert är inte en bytearray."
@@ -895,10 +894,6 @@ msgstr "DAC används redan"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Datapinne 0 måste vara bytejusterad"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr "Datapinne 0 måste vara byte-justerad."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1256,6 +1251,10 @@ msgstr "Intern ljudbuffert för liten"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "Internt define-fel"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1736,6 +1735,11 @@ msgstr "Ingen uppspelning"
 msgid "Not settable"
 msgstr "Går inte sätta"
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2142,6 +2146,10 @@ msgstr "SocketPool kan endast användas med wifi.radio"
 msgid "Source and destination buffers must be the same length"
 msgstr "Käll- och målbuffertar måste ha samma längd"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Splitting med sub-captures"
@@ -2224,6 +2232,12 @@ msgstr "Samplingens frekvens matchar inte mixerns"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Samplingens signerad/osignerad stämmer inte med mixern"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -4531,6 +4545,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Data 0 pin must be byte aligned."
+#~ msgstr "Datapinne 0 måste vara byte-justerad."
 
 #~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 #~ msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
