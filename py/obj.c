@@ -37,14 +37,14 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
-const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in) {
+const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
 
     if (mp_obj_is_obj(o_in)) {
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;
     } else {
-        static const mp_obj_type_t *const types[] = {
+        static const mp_obj_type_t *types[] = {
             NULL, &mp_type_int, &mp_type_str, &mp_type_int,
             NULL, &mp_type_int, &mp_type_NoneType, &mp_type_int,
             NULL, &mp_type_int, &mp_type_str, &mp_type_int,
