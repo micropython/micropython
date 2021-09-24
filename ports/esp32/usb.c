@@ -93,15 +93,28 @@ void usb_tx_strn(const char *str, size_t len) {
     }
 
     while (len) {
-        size_t l = len;
-        if (l > CONFIG_USB_CDC_TX_BUFSIZE) {
-            l = CONFIG_USB_CDC_TX_BUFSIZE;
+        // Get amount of CDC output buffer space available, making sure
+        // there is at least one byte available.
+        size_t avail = tud_cdc_n_write_available(CDC_ITF);
+        if (avail == 0) {
+            if (tinyusb_cdcacm_write_flush(CDC_ITF, pdMS_TO_TICKS(1000)) != ESP_OK) {
+                return;
+            }
+            avail = tud_cdc_n_write_available(CDC_ITF);
         }
-        tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, l);
-        tinyusb_cdcacm_write_flush(CDC_ITF, pdMS_TO_TICKS(1000));
+
+        // Write as much data as possible.
+        size_t l = len;
+        if (l > avail) {
+            l = avail;
+        }
+        tud_cdc_n_write(CDC_ITF, (uint8_t *)str, l);
         str += l;
         len -= l;
     }
+
+    // Queue a flush to write out the data in the CDC buffer (if any).
+    tud_cdc_n_write_flush(CDC_ITF);
 }
 
 #endif // CONFIG_USB_ENABLED
