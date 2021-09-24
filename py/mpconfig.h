@@ -1594,6 +1594,30 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to wrap functions with attributes                        */
 
+#ifndef MICROPY_WRAP_MP_BINARY_OP
+#define MICROPY_WRAP_MP_BINARY_OP(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_LOAD_GLOBAL
+#define MICROPY_WRAP_MP_LOAD_GLOBAL(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_LOAD_NAME
+#define MICROPY_WRAP_MP_LOAD_NAME(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
+#define MICROPY_WRAP_MP_MAP_LOOKUP(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_OBJ_GET_TYPE
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE(f) f
+#endif
+
 #ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) f
 #endif

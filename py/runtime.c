@@ -157,7 +157,7 @@ void mp_deinit(void) {
     #endif
 }
 
-mp_obj_t mp_load_name(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
@@ -170,7 +170,7 @@ mp_obj_t mp_load_name(qstr qst) {
     return mp_load_global(qst);
 }
 
-mp_obj_t mp_load_global(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qst));
     mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
@@ -311,7 +311,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects
