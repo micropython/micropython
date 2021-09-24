@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
+#include "py/runtime.h"
 
-#include "common-hal/digitalio/DigitalInOut.h"
-#include "i2s_lcd_driver.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    uint8_t read_pin_number;
-    uint8_t reset_pin_number;
-    i2s_lcd_config_t config;
-    i2s_lcd_handle_t handle;
-} paralleldisplay_parallelbus_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PARALLELDISPLAY_PARALLELBUS_H
+// If non-sequential pins aren't supported, then this default (weak)
+// implementation will raise an exception for you.
+__attribute__((weak))
+void common_hal_paralleldisplay_parallelbus_construct_nonsequential(paralleldisplay_parallelbus_obj_t *self,
+    uint8_t n_pins, mcu_pin_obj_t **data_pins, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
+    const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
+    mp_raise_NotImplementedError(translate("This microcontroller only supports data0=, not data_pins=, because it requires contiguous pins."));
+}

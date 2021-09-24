@@ -24,138 +24,139 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/paralleldisplay/ParallelBus.h"
-
 #include <stdint.h>
+#include <string.h>
 
-#include "common-hal/microcontroller/Pin.h"
-#include "py/runtime.h"
+#include "shared-bindings/paralleldisplay/ParallelBus.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "common-hal/audiobusio/__init__.h"
+#include "common-hal/microcontroller/Pin.h"
+#include "py/runtime.h"
+
+#include "i2s_lcd_driver.h"
+#include "driver/gpio.h"
 /*
  *  Current pin limitations for ESP32-S2 ParallelBus:
  *   - data0 pin must be byte aligned
  */
 
-void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbus_obj_t *self,
-    const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
+void common_hal_paralleldisplay_parallelbus_construct_nonsequential(paralleldisplay_parallelbus_obj_t *self,
+    uint8_t n_pins, mcu_pin_obj_t **data_pins,
+    const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
     const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
 
-    uint8_t data_pin = data0->number;
-    if (data_pin % 8 != 0) {
-        mp_raise_ValueError(translate("Data 0 pin must be byte aligned."));
+    if (n_pins != 8 && n_pins != 16) {
+        mp_raise_ValueError_varg(translate("Number of data_pins must be 8 or 16, not %d"), n_pins);
     }
 
-    for (uint8_t i = 0; i < 8; i++) {
-        if (!pin_number_is_free(data_pin + i)) {
+    for (uint8_t i = 0; i < n_pins; i++) {
+        if (!common_hal_mcu_pin_is_free(data_pins[i])) {
             mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
         }
     }
 
-    gpio_dev_t *g = &GPIO; // this is the GPIO registers, see "extern gpio_dev_t GPIO" from file:gpio_struct.h
+    // This will throw if unsuccessful.  Everything following is guaranteed to succeed.
+    port_i2s_allocate_i2s0();
 
-    // Setup the pins as "Simple GPIO outputs" see section 19.3.3 of the ESP32-S2 Reference Manual
-    // Enable pins with "enable_w1ts"
+    i2s_lcd_config_t config = {
+        .data_width = n_pins,
+        .pin_num_cs = common_hal_mcu_pin_number(chip_select),
+        .pin_num_wr = common_hal_mcu_pin_number(write),   // write strobe
+        .pin_num_rs = common_hal_mcu_pin_number(command), // The "register select" pin is called "command" by CircuitPython
+        .clk_freq = frequency,
+        .i2s_port = 0,
+        .swap_data = false,
+        .buffer_size = 512,
+    };
 
-    for (uint8_t i = 0; i < 8; i++) {
-        g->enable_w1ts = (0x1 << (data_pin + i));
-        g->func_out_sel_cfg[data_pin + i].val = 256; /* setup output pin for simple GPIO Output, (0x100 = 256) */
-
-    }
-
-    /* From my understanding, there is a limitation of the ESP32-S2 that does not allow single-byte writes
-     *  into the GPIO registers.  See section 10.3.3 regarding "non-aligned writes" into the registers.
-     */
-
-
-    if (data_pin < 31) {
-        self->bus = (uint32_t *)&g->out;         // pointer to GPIO output register (for pins 0-31)
-    } else {
-        self->bus = (uint32_t *)&g->out1.val;         // pointer to GPIO output register (for pins >= 32)
-    }
-
-    /* SNIP - common setup of command, chip select, write and read pins, same as from SAMD and NRF ports */
-    self->command.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->command, command);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
-
-    self->chip_select.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
-
-    self->write.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->write, write);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->write, true, DRIVE_MODE_PUSH_PULL);
-
-    self->read.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->read, read);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
-
-    self->data0_pin = data_pin;
-
-    if (write->number < 32) {
-        self->write_clear_register = (uint32_t *)&g->out_w1tc;
-        self->write_set_register = (uint32_t *)&g->out_w1ts;
-    } else {
-        self->write_clear_register = (uint32_t *)&g->out1_w1tc.val;
-        self->write_set_register = (uint32_t *)&g->out1_w1ts.val;
-    }
-
-    // Check to see if the data and write pins are on the same register:
-    if ((((self->data0_pin < 32) && (write->number < 32))) ||
-        (((self->data0_pin > 31) && (write->number > 31)))) {
-        self->data_write_same_register = true;         // data pins and write pin are on the same register
-    } else {
-        self->data_write_same_register = false; // data pins and write pins are on different registers
-    }
-
-
-    self->write_mask = 1 << (write->number % 32); /* the write pin triggers the LCD to latch the data */
-
-    /* SNIP - common setup of the reset pin, same as from SAMD and NRF ports */
-    self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
-        self->reset.base.type = &digitalio_digitalinout_type;
-        common_hal_digitalio_digitalinout_construct(&self->reset, reset);
-        common_hal_digitalio_digitalinout_switch_to_output(&self->reset, true, DRIVE_MODE_PUSH_PULL);
-        never_reset_pin_number(reset->number);
-        common_hal_paralleldisplay_parallelbus_reset(self);
+        common_hal_never_reset_pin(reset);
+        self->reset_pin_number = reset->number;
+    } else {
+        self->reset_pin_number = NO_PIN;
     }
 
-    never_reset_pin_number(command->number);
-    never_reset_pin_number(chip_select->number);
-    never_reset_pin_number(write->number);
-    never_reset_pin_number(read->number);
-    for (uint8_t i = 0; i < 8; i++) {
-        never_reset_pin_number(data_pin + i);
+    for (uint8_t i = 0; i < n_pins; i++) {
+        common_hal_never_reset_pin(data_pins[i]);
+        config.pin_data_num[i] = common_hal_mcu_pin_number(data_pins[i]);
     }
 
+    if (read != NULL) {
+        common_hal_never_reset_pin(read);
+        gpio_config_t read_config = {
+            .pin_bit_mask = 1ull << read->number,
+                .mode = GPIO_MODE_OUTPUT,
+                .pull_up_en = GPIO_PULLUP_DISABLE,
+                .pull_down_en = GPIO_PULLDOWN_DISABLE,
+                .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&read_config);
+        self->read_pin_number = read->number;
+        gpio_set_level(read->number, true);
+    }
+
+    common_hal_never_reset_pin(chip_select);
+    common_hal_never_reset_pin(command);
+    common_hal_never_reset_pin(read);
+    common_hal_never_reset_pin(reset);
+    common_hal_never_reset_pin(write);
+
+    self->config = config;
+    self->handle = i2s_lcd_driver_init(&config);
+
+    if (!self->handle) {
+        port_i2s_reset_instance(0);
+        mp_raise_RuntimeError(translate("Internal error"));
+    }
 }
 
+
+void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbus_obj_t *self,
+    const mcu_pin_obj_t *data0, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
+    const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
+    char buf[7];
+    mcu_pin_obj_t *data_pins[8];
+    for (int i = 0; i < 8; i++) {
+        snprintf(buf, sizeof(buf), "GPIO%d", data0->number + i);
+        data_pins[i] = validate_obj_is_free_pin(mp_obj_dict_get(MP_OBJ_FROM_PTR(&mcu_pin_globals), mp_obj_new_str(buf, strlen(buf))));
+    }
+    common_hal_paralleldisplay_parallelbus_construct_nonsequential(self, 8, data_pins, command, chip_select, write, read, reset, frequency);
+}
+
+
 void common_hal_paralleldisplay_parallelbus_deinit(paralleldisplay_parallelbus_obj_t *self) {
+    if (!self->handle) {
+        return;
+    }
+    i2s_lcd_driver_deinit(self->handle);
+    self->handle = NULL;
     /* SNIP - same as from SAMD and NRF ports */
-    for (uint8_t i = 0; i < 8; i++) {
-        reset_pin_number(self->data0_pin + i);
+    for (uint8_t i = 0; i < self->config.data_width; i++) {
+        reset_pin_number(self->config.pin_data_num[i]);
     }
 
-    reset_pin_number(self->command.pin->number);
-    reset_pin_number(self->chip_select.pin->number);
-    reset_pin_number(self->write.pin->number);
-    reset_pin_number(self->read.pin->number);
-    reset_pin_number(self->reset.pin->number);
+    reset_pin_number(self->config.pin_num_cs);
+    reset_pin_number(self->config.pin_num_wr);
+    reset_pin_number(self->read_pin_number);
+    reset_pin_number(self->config.pin_num_rs);
+    reset_pin_number(self->reset_pin_number);
+
+    port_i2s_reset_instance(0);
 }
 
 bool common_hal_paralleldisplay_parallelbus_reset(mp_obj_t obj) {
     /* SNIP - same as from SAMD and NRF ports */
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
-    if (self->reset.base.type == &mp_type_NoneType) {
+    if (self->reset_pin_number == NO_PIN) {
         return false;
     }
 
-    common_hal_digitalio_digitalinout_set_value(&self->reset, false);
+    gpio_set_level(self->reset_pin_number, false);
     common_hal_mcu_delay_us(4);
-    common_hal_digitalio_digitalinout_set_value(&self->reset, true);
+    gpio_set_level(self->reset_pin_number, true);
     return true;
 
 }
@@ -166,62 +167,25 @@ bool common_hal_paralleldisplay_parallelbus_bus_free(mp_obj_t obj) {
 }
 
 bool common_hal_paralleldisplay_parallelbus_begin_transaction(mp_obj_t obj) {
-    /* SNIP - same as from SAMD and NRF ports */
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
-    return true;
+    bool r = i2s_lcd_acquire_nonblocking(self->handle, 1);
+    if (r) {
+        gpio_set_level(self->config.pin_num_cs, false);
+    }
+    return r;
 }
 
 void common_hal_paralleldisplay_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-
-    uint32_t *clear_write = self->write_clear_register;
-    uint32_t *set_write = self->write_set_register;
-
-    const uint32_t mask = self->write_mask;
-
-    /* Setup structures for data writing.  The ESP32-S2 port differs from the SAMD and NRF ports
-     * because I have not found a way to write a single byte into the ESP32-S2 registers.
-     * For the ESP32-S2, I create a 32-bit data_buffer that is used to transfer the data bytes.
-     */
-
-    *clear_write = mask; // Clear the write pin to prepare the registers before storing the
-    // register value into data_buffer
-
-    const uint32_t data_buffer = *self->bus; // store the initial output register values into the data output buffer
-    uint8_t *data_address = ((uint8_t *)&data_buffer) + (self->data0_pin / 8); /* address inside data_buffer where
-                                                        * each data byte will be written to the data pin registers
-                                                        */
-
-
-    if (self->data_write_same_register) {   // data and write pins are on the same register
-        for (uint32_t i = 0; i < data_length; i++) {
-
-            /* Note: If the write pin and data pins are controlled by the same GPIO register, we can eliminate
-                 * the "clear_write" step below, since the write pin is cleared when the data_buffer is written
-                 * to the bus.
-                 */
-
-            *(data_address) = data[i];     // stuff the data byte into the data_buffer at the correct offset byte location
-            *self->bus = data_buffer;     // write the data to the output register
-            *set_write = mask;     // set the write pin
-        }
-    } else {   // data and write pins are on different registers
-        for (uint32_t i = 0; i < data_length; i++) {
-            *clear_write = mask;             // clear the write pin (See comment above, this may not be necessary).
-            *(data_address) = data[i];     // stuff the data byte into the data_buffer at the correct offset byte location
-            *self->bus = data_buffer;     // write the data to the output register
-            *set_write = mask;     // set the write pin
-
-        }
+    if (data_length) {
+        gpio_set_level(self->config.pin_num_rs, byte_type == DISPLAY_DATA);
+        i2s_lcd_write(self->handle, data, data_length);
     }
-
 }
 
 void common_hal_paralleldisplay_parallelbus_end_transaction(mp_obj_t obj) {
-    /* SNIP - same as from SAMD and NRF ports */
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
+    i2s_lcd_release(self->handle);
+    gpio_set_level(self->config.pin_num_cs, true);
 }

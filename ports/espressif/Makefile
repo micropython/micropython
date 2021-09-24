@@ -183,6 +183,7 @@ CFLAGS += -DCFG_TUD_VENDOR_RX_BUFSIZE=128 -DCFG_TUD_VENDOR_TX_BUFSIZE=128
 SRC_C += \
 	background.c \
 	cam.c \
+	i2s_lcd_esp32s2_driver.c \
 	fatfs_port.c \
 	mphalport.c \
 	bindings/espidf/__init__.c \
@@ -195,6 +196,8 @@ SRC_C += \
 	peripherals/timer.c \
 	peripherals/touch.c \
 	peripherals/$(IDF_TARGET)/pins.c
+
+$(BUILD)/i2s_lcd_esp32s2_driver.o: CFLAGS += -Wno-sign-compare
 
 ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
