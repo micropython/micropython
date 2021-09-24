@@ -8,7 +8,7 @@ import sys
 import csv
 import re
 
-SUPPORTED_AFS = {"GPIO", "USDHC", "FLEXPWM", "TMR"}
+SUPPORTED_AFS = {"GPIO", "USDHC", "FLEXPWM", "TMR", "XBAR"}
 MAX_AF = 10  # AF0 .. AF9
 ADC_COL = 11
 
@@ -302,6 +302,8 @@ class Pins(object):
             module_instance_factory(self.cpu_pins, hdr_file, "USDHC")
             module_instance_factory(self.cpu_pins, hdr_file, "FLEXPWM")
             module_instance_factory(self.cpu_pins, hdr_file, "TMR")
+            # module_instance_factory(self.cpu_pins, hdr_file, "SEMC")
+            module_instance_factory(self.cpu_pins, hdr_file, "XBAR")
 
 
 def module_instance_factory(pins, output_file, name):
@@ -326,6 +328,8 @@ def module_instance_factory(pins, output_file, name):
         output_file.write(f"#define {k}_AVAIL (1)\n")
         if name == "FLEXPWM":
             output_file.write(f"#define {k} {k[-4:]}\n")
+        if name == "XBAR":
+            output_file.write(f"#define {k} {k}A1\n")
         for i in v:
             output_file.write(i + "\n")
 
