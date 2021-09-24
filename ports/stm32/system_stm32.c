@@ -180,9 +180,7 @@ void SystemClock_Config(void) {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
     /* Enable Power Control clock */
-    #if defined(STM32H7A3xxQ) || defined(STM32H7B3xxQ)
-    MODIFY_REG(PWR->CR3, PWR_SUPPLY_CONFIG_MASK, PWR_CR3_SMPSEN);
-    #elif defined(STM32H7)
+    #if defined(STM32H7)
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
     #else
     __PWR_CLK_ENABLE();
@@ -203,7 +201,7 @@ void SystemClock_Config(void) {
 
     #if defined(STM32H7)
     // Wait for PWR_FLAG_VOSRDY
-    while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {
     }
     #endif
 
@@ -244,6 +242,27 @@ void SystemClock_Config(void) {
     #endif
 
     #endif
+
+    #if defined(STM32G4)
+    RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    #if MICROPY_HW_CLK_USE_HSI && MICROPY_HW_CLK_USE_HSI48
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    #else
+    RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
+    RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
+    RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    #endif
+    RCC_OscInitStruct.PLL.PLLM = MICROPY_HW_CLK_PLLM;
+    RCC_OscInitStruct.PLL.PLLN = MICROPY_HW_CLK_PLLN;
+    RCC_OscInitStruct.PLL.PLLP = MICROPY_HW_CLK_PLLP;
+    RCC_OscInitStruct.PLL.PLLQ = MICROPY_HW_CLK_PLLQ;
+    RCC_OscInitStruct.PLL.PLLR = MICROPY_HW_CLK_PLLR;
+    #endif
+
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
      clocks dividers */
