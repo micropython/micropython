@@ -466,6 +466,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_pin_config_t pin_config;
     pin_config.bck_io_num = self->sck;
     pin_config.ws_io_num = self->ws;
+    pin_config.mck_io_num = -1;
 
     if (mode == (I2S_MODE_MASTER | I2S_MODE_RX)) {
         pin_config.data_in_num = self->sd;
