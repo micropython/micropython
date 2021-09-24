@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-09-21 03:37+0000\n"
+"PO-Revision-Date: 2021-09-24 01:40+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1269,7 +1269,7 @@ msgstr "Erro interno de definição"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 msgid "Internal error"
-msgstr ""
+msgstr "Erro interno"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1754,7 +1754,7 @@ msgstr "Não configurável"
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
-msgstr ""
+msgstr "A quantidade dos data_pins deve ser 8 ou 16, não %d"
 
 #: shared-bindings/util.c
 msgid ""
@@ -2170,7 +2170,7 @@ msgstr "Os buffers da origem e do destino devem ter o mesmo comprimento"
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr ""
+msgstr "Especifique exatamente um do data0 ou do data_pins"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2261,6 +2261,8 @@ msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
 msgstr ""
+"Este microcontrolador só suporta data0=, não data_pins=, porque requer pinos "
+"contíguos."
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
