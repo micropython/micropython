@@ -30,6 +30,8 @@
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 #define MICROPY_OPT_MPZ_BITWISE             (1)
 
 // Python internal features
