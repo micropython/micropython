@@ -16,6 +16,13 @@ physical pin that the identifier maps to are port-specific.  Possibilities
 for the identifier are an integer, a string or a tuple with port and pin
 number.
 
+Caution: mechanical pushbuttons have "bounce" and pushing or
+releasing a switch will often generate multiple edges.
+See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
+explanation, along with various techniques for debouncing.
+See also: `Ultimate Guide to Switch Debounce <https://www.eejournal.com/article/ultimate-guide-to-switch-debounce-part-1>`_
+by Max Maxfield.
+
 Usage Model::
 
     from machine import Pin
