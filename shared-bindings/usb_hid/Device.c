@@ -136,7 +136,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
             // It's not the actual argument that's out of range, but its elements.
             // But the error message is close enough.
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(report_ids, i_obj, MP_OBJ_SENTINEL)),
-            1, 255, MP_QSTR_report_ids);
+            0, 255, MP_QSTR_report_ids);
 
         in_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(in_report_lengths, i_obj, MP_OBJ_SENTINEL)),
@@ -145,6 +145,10 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         out_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(out_report_lengths, i_obj, MP_OBJ_SENTINEL)),
             0, 255, MP_QSTR_out_report_lengths);
+    }
+
+    if (report_ids_array[0] == 0 && report_ids_count > 1) {
+        mp_raise_ValueError_varg(translate("%q with a 0 must of length 1"), MP_QSTR_report_ids);
     }
 
     common_hal_usb_hid_device_construct(
