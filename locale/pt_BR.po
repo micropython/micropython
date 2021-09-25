@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-09-21 03:37+0000\n"
+"PO-Revision-Date: 2021-09-24 01:40+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -604,7 +604,6 @@ msgstr "Os elementos do buffer devem ter 4 bytes de comprimento ou menos"
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Buffer de tamanho incorreto. Deve ser %d bytes."
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "O buffer não é um bytearray."
@@ -905,10 +904,6 @@ msgstr "DAC em uso"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "O pino de dados 0 deve ser alinhado por bytes"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr "O pino de dados 0 deve ser alinhado por bytes."
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1271,6 +1266,10 @@ msgstr "O buffer interno de áudio é muito pequeno"
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "Erro interno de definição"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr "Erro interno"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1752,6 +1751,11 @@ msgstr "Não está jogando"
 msgid "Not settable"
 msgstr "Não configurável"
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr "A quantidade dos data_pins deve ser 8 ou 16, não %d"
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2164,6 +2168,10 @@ msgstr "O SocketPool só pode ser usado com rádio wifi.radio"
 msgid "Source and destination buffers must be the same length"
 msgstr "Os buffers da origem e do destino devem ter o mesmo comprimento"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr "Especifique exatamente um do data0 ou do data_pins"
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Divisão com sub-capturas"
@@ -2247,6 +2255,14 @@ msgstr "A taxa de amostragem da amostra não coincide com a do mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "A amostragem \"signedness\" não coincide com a do mixer"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
+"Este microcontrolador só suporta data0=, não data_pins=, porque requer pinos "
+"contíguos."
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -4572,6 +4588,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Data 0 pin must be byte aligned."
+#~ msgstr "O pino de dados 0 deve ser alinhado por bytes."
 
 #~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 #~ msgstr "bits_per_pixel %d é inválido, deve ser, 1, 4, 8, 16, 24, ou 32"

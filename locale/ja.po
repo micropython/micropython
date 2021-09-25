@@ -593,7 +593,6 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "バッファサイズが不正です。%dバイトでなければなりません"
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "バッファがbytearrayではありません"
@@ -889,10 +888,6 @@ msgstr "DACはすでに使用中"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 ピンは、バイト整列されていなければなりません"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1248,6 +1243,10 @@ msgstr ""
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "内部定義エラー"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1727,6 +1726,11 @@ msgstr "再生していません"
 msgid "Not settable"
 msgstr ""
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2124,6 +2128,10 @@ msgstr ""
 msgid "Source and destination buffers must be the same length"
 msgstr "バッファ (元/先) は同じ長さでなければなりません"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr ""
@@ -2198,6 +2206,12 @@ msgstr "サンプルレートがサンプルとミキサーで一致しません
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "符号の有無がサンプルとミキサーで一致しません"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"

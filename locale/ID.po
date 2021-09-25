@@ -595,7 +595,6 @@ msgstr ""
 msgid "Buffer incorrect size. Should be %d bytes."
 msgstr "Ukuran buffer salah. Seharusnya %d byte."
 
-#: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Buffer bukan bytearray."
@@ -898,10 +897,6 @@ msgstr "DAC sudah digunakan"
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 pin harus byte disejajarkan"
-
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-msgid "Data 0 pin must be byte aligned."
-msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -1257,6 +1252,10 @@ msgstr ""
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
 msgstr "Kesalahan definisi internal"
+
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+msgid "Internal error"
+msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1736,6 +1735,11 @@ msgstr "Tidak berfungsi"
 msgid "Not settable"
 msgstr ""
 
+#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#, c-format
+msgid "Number of data_pins must be 8 or 16, not %d"
+msgstr ""
+
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
@@ -2144,6 +2148,10 @@ msgstr ""
 msgid "Source and destination buffers must be the same length"
 msgstr "Buffer sumber dan tujuan harus memiliki panjang yang sama"
 
+#: shared-bindings/paralleldisplay/ParallelBus.c
+msgid "Specify exactly one of data0 or data_pins"
+msgstr ""
+
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
 msgstr "Memisahkan dengan menggunakan sub-captures"
@@ -2218,6 +2226,12 @@ msgstr "Tingkat sampel dari sampel tidak cocok dengan mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "signedness dari sampel tidak cocok dengan mixer"
+
+#: shared-module/paralleldisplay/ParallelBus.c
+msgid ""
+"This microcontroller only supports data0=, not data_pins=, because it "
+"requires contiguous pins."
+msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
