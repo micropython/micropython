@@ -448,6 +448,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_config.dma_buf_count = get_dma_buf_count(mode, bits, format, self->ibuf);
     i2s_config.dma_buf_len = DMA_BUF_LEN_IN_I2S_FRAMES;
     i2s_config.use_apll = false;
+    i2s_config.tx_desc_auto_clear = true;
 
     // I2S queue size equals the number of DMA buffers
     check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));

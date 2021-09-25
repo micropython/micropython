@@ -509,6 +509,9 @@ STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
         if (self->bits == 32) {
             reformat_32_bit_samples((int32_t *)dma_buffer_p, SIZEOF_HALF_DMA_BUFFER_IN_BYTES / (sizeof(uint32_t)));
         }
+    } else {
+        // underflow.  clear buffer to transmit "silence" on the I2S bus
+        memset(dma_buffer_p, 0, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
     }
 
     // flush cache to RAM so DMA can read the sample data
