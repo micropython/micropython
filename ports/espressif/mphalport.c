@@ -31,16 +31,22 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 
-#include "components/xtensa/include/esp_debug_helpers.h"
+#include "esp_debug_helpers.h"
+
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
+#endif
 
 void mp_hal_delay_us(mp_uint_t delay) {
     ets_delay_us(delay);
 }
 
-// This is provided by the esp-idf/components/xtensa/esp32s2/libhal.a binary
-// blob.
+// This is provided by the esp-idf/components/xtensa/esp32s2/libhal.a binary blob.
+#ifndef CONFIG_IDF_TARGET_ESP32C3
 extern void xthal_window_spill(void);
+#endif
 
 mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs, uint8_t reg_count) {
     // xtensa has more registers than an instruction can address. The 16 that
@@ -56,6 +62,8 @@ mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs, uint8_t reg_count) {
     // there is a HAL call to do it. There is a bit of a race condition here
     // because the register value could change after it's been restored but that
     // is unlikely to happen with a heap pointer while we do a GC.
+    #ifndef CONFIG_IDF_TARGET_ESP32C3
     xthal_window_spill();
+    #endif
     return (mp_uint_t)__builtin_frame_address(0);
 }

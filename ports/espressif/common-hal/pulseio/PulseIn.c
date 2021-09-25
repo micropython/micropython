@@ -34,7 +34,7 @@ STATIC pulseio_pulsein_obj_t *handles[RMT_CHANNEL_MAX];
 // Requires rmt.c void peripherals_reset_all(void) to reset
 
 STATIC void update_internal_buffer(pulseio_pulsein_obj_t *self) {
-    uint32_t length = 0;
+    size_t length = 0;
     rmt_item32_t *items = (rmt_item32_t *)xRingbufferReceive(self->buf_handle, &length, 0);
     if (items) {
         length /= 4;
