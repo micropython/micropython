@@ -57,6 +57,7 @@ library.
    builtins.rst
    cmath.rst
    collections.rst
+   datetime.rst
    errno.rst
    gc.rst
    hashlib.rst
