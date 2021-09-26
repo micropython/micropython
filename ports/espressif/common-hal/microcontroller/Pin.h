@@ -36,6 +36,7 @@ void reset_all_pins(void);
 // need to store a full pointer.
 void reset_pin_number(gpio_num_t pin_number);
 void common_hal_reset_pin(const mcu_pin_obj_t *pin);
+void common_hal_never_reset_pin(const mcu_pin_obj_t *pin);
 void claim_pin(const mcu_pin_obj_t *pin);
 void claim_pin_number(gpio_num_t pin_number);
 bool pin_number_is_free(gpio_num_t pin_number);
