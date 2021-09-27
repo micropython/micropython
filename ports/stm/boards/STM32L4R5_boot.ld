@@ -5,9 +5,10 @@
 /* Specify the memory areas */
 MEMORY
 {
-    FLASH (rx)          : ORIGIN = 0x08010000, LENGTH = 2048K - 64K         /* entire flash, sans bootloader region */
-    FLASH_ISR (rx)      : ORIGIN = 0x08010000, LENGTH = 64K                 /* sector 0 */
-    FLASH_FIRMWARE (rx) : ORIGIN = 0x08020000, LENGTH = 2048K - 64K - 64K   /* sectors 5+ */
+    FLASH (rx)          : ORIGIN = 0x08000000, LENGTH = 2048K /* entire flash */
+    FLASH_ISR (rx)      : ORIGIN = 0x08010000, LENGTH = 4K /* ISR vector. Kind of wasteful. */
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x08011000, LENGTH = 1024K-128K-64K-4K  /* For now, limit to 1MB so that bank switching is still possible. */
+    FLASH_FS (rw)       : ORIGIN = 0x080e0000, LENGTH = 128K
     RAM (xrw)           : ORIGIN = 0x20000000, LENGTH = 640K
 }
 
