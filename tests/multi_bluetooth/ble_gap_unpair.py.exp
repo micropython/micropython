@@ -1,0 +1,41 @@
+--- instance0 ---
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+_IRQ_GET_SECRET key: 0
+_IRQ_GET_SECRET key: 0
+_IRQ_GET_SECRET key: 0
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+_IRQ_GATTS_READ_REQUEST
+_IRQ_CENTRAL_DISCONNECT
+gap_unpair_test
+bond_keys_captured: 3
+gap_unpair_key_0_result: None
+gap_unpair_key_1_result: None
+gap_unpair_key_2_result: None
+gap_unpair_fake_key_error: ValueError
+gap_unpair_wrong_key_error: ValueError
+--- instance1 ---
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+gap_pair
+_IRQ_GET_SECRET key: 0
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+gattc_read
+_IRQ_GATTC_READ_RESULT b'encrypted'
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT
+central_gap_unpair_test
+central_bond_keys_captured: 3
+central_gap_unpair_key_0_result: None
+central_gap_unpair_key_1_result: None
+central_gap_unpair_key_2_result: None
