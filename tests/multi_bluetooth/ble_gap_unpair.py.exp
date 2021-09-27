@@ -1,0 +1,57 @@
+--- instance0 ---
+gap_advertise
+_IRQ_CENTRAL_CONNECT
+_IRQ_GET_SECRET key: 0
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_GATTS_READ_REQUEST
+NEXT
+_IRQ_CENTRAL_DISCONNECT
+gap_unpair_test
+bond_keys_captured: 2
+attempting_gap_unpair
+unpair_iteration: 0
+calling_gap_unpair_with_key_type: bytes
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_SET_SECRET key: <memoryview>
+gap_unpair_key_ 0 _result: None
+unpair_iteration: 1
+calling_gap_unpair_with_key_type: bytes
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_SET_SECRET key: <memoryview>
+gap_unpair_key_ 1 _result: None
+gap_unpair_test_complete
+--- instance1 ---
+gap_connect
+_IRQ_PERIPHERAL_CONNECT
+_IRQ_GATTC_CHARACTERISTIC_RESULT UUID('00000000-1111-2222-3333-444444444444')
+_IRQ_GATTC_CHARACTERISTIC_DONE
+gap_pair
+_IRQ_GET_SECRET key: 0
+_IRQ_ENCRYPTION_UPDATE 1 0 1
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_GET_SECRET key: 0
+gattc_read
+_IRQ_GATTC_READ_RESULT b'encrypted'
+NEXT
+gap_disconnect: True
+_IRQ_PERIPHERAL_DISCONNECT
+central_gap_unpair_test
+central_bond_keys_captured: 2
+central_attempting_gap_unpair
+central_unpair_iteration: 0
+central_calling_gap_unpair_with_key_type: bytes
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_SET_SECRET key: <memoryview>
+central_gap_unpair_key_ 0 _result: None
+central_unpair_iteration: 1
+central_calling_gap_unpair_with_key_type: bytes
+_IRQ_SET_SECRET key: <memoryview>
+_IRQ_SET_SECRET key: <memoryview>
+central_gap_unpair_key_ 1 _result: None
+central_gap_unpair_test_complete

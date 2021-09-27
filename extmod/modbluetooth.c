@@ -717,7 +717,22 @@ static mp_obj_t bluetooth_ble_gap_pair(mp_obj_t self_in, mp_obj_t conn_handle_in
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_pair_obj, bluetooth_ble_gap_pair);
 
-static mp_obj_t bluetooth_ble_gap_passkey(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t bluetooth_ble_gap_unpair(mp_obj_t self_in, mp_obj_t key_buff) {
+    (void)self_in;
+
+    uint8_t *key = NULL;
+    size_t key_len = 0;
+
+    mp_buffer_info_t key_bufinfo = {0};
+    mp_get_buffer_raise(key_buff, &key_bufinfo, MP_BUFFER_READ);
+    key = key_bufinfo.buf;
+    key_len = key_bufinfo.len;
+
+    return bluetooth_handle_errno(mp_bluetooth_gap_unpair(key, key_len));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gap_unpair_obj, bluetooth_ble_gap_unpair);
+
+STATIC mp_obj_t bluetooth_ble_gap_passkey(size_t n_args, const mp_obj_t *args) {
     uint16_t conn_handle = mp_obj_get_int(args[1]);
     uint8_t action = mp_obj_get_int(args[2]);
     mp_int_t passkey = mp_obj_get_int(args[3]);
@@ -945,6 +960,7 @@ static const mp_rom_map_elem_t bluetooth_ble_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gap_disconnect), MP_ROM_PTR(&bluetooth_ble_gap_disconnect_obj) },
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
     { MP_ROM_QSTR(MP_QSTR_gap_pair), MP_ROM_PTR(&bluetooth_ble_gap_pair_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gap_unpair), MP_ROM_PTR(&bluetooth_ble_gap_unpair_obj) },
     { MP_ROM_QSTR(MP_QSTR_gap_passkey), MP_ROM_PTR(&bluetooth_ble_gap_passkey_obj) },
     #endif
     // GATT Server
