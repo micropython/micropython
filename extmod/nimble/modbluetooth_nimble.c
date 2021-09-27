@@ -1202,7 +1202,7 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
     return commmon_gap_event_cb(event, arg);
 }
 
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms) {
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us) {
     DEBUG_printf("mp_bluetooth_gap_peripheral_connect\n");
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
@@ -1211,12 +1211,14 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
         mp_bluetooth_gap_scan_stop();
     }
 
-    // TODO: This is the same as ble_gap_conn_params_dflt (i.e. passing NULL).
-    STATIC const struct ble_gap_conn_params params = {
+    uint16_t conn_interval_min = min_conn_interval_us ? min_conn_interval_us / BLE_HCI_CONN_ITVL : BLE_GAP_INITIAL_CONN_ITVL_MIN;
+    uint16_t conn_interval_max = max_conn_interval_us ? max_conn_interval_us / BLE_HCI_CONN_ITVL : BLE_GAP_INITIAL_CONN_ITVL_MAX;
+
+    const struct ble_gap_conn_params params = {
         .scan_itvl = 0x0010,
         .scan_window = 0x0010,
-        .itvl_min = BLE_GAP_INITIAL_CONN_ITVL_MIN,
-        .itvl_max = BLE_GAP_INITIAL_CONN_ITVL_MAX,
+        .itvl_min = conn_interval_min,
+        .itvl_max = conn_interval_max,
         .latency = BLE_GAP_INITIAL_CONN_LATENCY,
         .supervision_timeout = BLE_GAP_INITIAL_SUPERVISION_TIMEOUT,
         .min_ce_len = BLE_GAP_INITIAL_CONN_MIN_CE_LEN,
