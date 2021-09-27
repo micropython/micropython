@@ -359,13 +359,22 @@ Central Role
 
 A central device can connect to peripherals that it has discovered using the observer role (see :meth:`gap_scan<BLE.gap_scan>`) or with a known address.
 
-.. method:: BLE.gap_connect(addr_type, addr, scan_duration_ms=2000, /)
+.. method:: BLE.gap_connect(addr_type, addr, scan_duration_ms=2000, min_conn_interval_us=None, max_conn_interval_us=None, /)
 
     Connect to a peripheral.
 
     See :meth:`gap_scan <BLE.gap_scan>` for details about address types.
 
     On success, the ``_IRQ_PERIPHERAL_CONNECT`` event will be raised.
+
+    The device will wait up to *scan_duration_ms* to receive an advertising
+    payload from the device.
+
+    The connection interval can be configured in **micro**\ seconds using either
+    or both of *min_conn_interval_us* and *max_conn_interval_us*. Otherwise a
+    default interval will be chosen, typically between 30000 and 50000
+    microseconds. A shorter interval will increase throughput, at the expense
+    of power usage.
 
 
 Peripheral Role

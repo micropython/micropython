@@ -400,7 +400,7 @@ int mp_bluetooth_gap_scan_stop(void) {
     return bt_err_to_errno(err);
 }
 
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms) {
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us) {
     DEBUG_printf("mp_bluetooth_gap_peripheral_connect\n");
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;

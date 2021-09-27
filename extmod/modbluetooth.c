@@ -637,14 +637,22 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid addr"));
     }
     mp_int_t scan_duration_ms = MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS;
-    if (n_args == 4) {
+    mp_int_t min_conn_interval_us = 0;
+    mp_int_t max_conn_interval_us = 0;
+    if (n_args >= 4 && args[3] != mp_const_none) {
         scan_duration_ms = mp_obj_get_int(args[3]);
     }
+    if (n_args >= 5 && args[4] != mp_const_none) {
+        min_conn_interval_us = mp_obj_get_int(args[4]);
+    }
+    if (n_args >= 6 && args[5] != mp_const_none) {
+        max_conn_interval_us = mp_obj_get_int(args[5]);
+    }
 
-    int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms);
+    int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms, min_conn_interval_us, max_conn_interval_us);
     return bluetooth_handle_errno(err);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 3, 4, bluetooth_ble_gap_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 3, 6, bluetooth_ble_gap_connect);
 
 STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
     // Default is indefinite scan, with the NimBLE "background scan" interval and window.
