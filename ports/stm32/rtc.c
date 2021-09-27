@@ -708,7 +708,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     #else
     while (!(RTC->ISR & RTC_ISR_WUTWF)) {
     }
-        #endif
+    #endif
 
     if (enable) {
         // program WUT
