@@ -99,14 +99,6 @@
 #define PLATFORM_SYSTEM     "MicroPython"
 #endif
 
-#ifndef MICROPY_HW_BOARD_NAME
-#define MICROPY_HW_BOARD_NAME PLATFORM_ARCH
-#endif
-
-#ifndef MICROPY_HW_MCU_NAME
-#define MICROPY_HW_MCU_NAME     ""
-#endif
-
 #ifndef MICROPY_HAL_VERSION
 #define MICROPY_HAL_VERSION     ""
 #endif
