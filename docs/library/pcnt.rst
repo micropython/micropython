@@ -26,7 +26,7 @@ PCNT
 
 The PCNT .
 
-.. class:: PCNT(edge: Edge, pulse_pin_number, dir_pin_number=None, pin_pull: PinPull=DOWN)
+.. class:: PCNT(edge: Edge, pulse_pin, dir_pin=None)
 
     Counter start to count immediately. Filter value initialized by 1023. Filtering is enabled.
 
@@ -76,7 +76,7 @@ QUAD
 See `Quadrature encoder outputs.
 <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_outputs>`_
 
-.. class:: QUAD(clock_multiplier:ClockMultiplier, aPinNumber, bPinNumber, pin_pull:PinPull=DOWN)
+.. class:: QUAD(clock_multiplier:ClockMultiplier, aPin, bPin)
 
 The QUAD counter has the same methods as the PCNT counter and
 differs only in the constructor and internal counter initialization.
@@ -91,16 +91,6 @@ Enumarations
 .. data:: Edge.RAISE
           Edge.FALL
           Edge.BOTH
-
-.. class:: pcnt.PinPull()
-
-   The counter input pins have an internal weak pull-up/pull-down resistors.
-
-.. data:: PinPull.NONE
-          PinPull.DOWN
-          PinPull.UP
-
-   Note: Default value is PinPull.DOWN to prevent erroneous ticking when disconnected.
 
 .. class:: ClockMultiplier()
 
@@ -125,7 +115,7 @@ Enumarations
     import pcnt
 
     try:
-        cnt = pcnt.QUAD(pcnt.ClockMultiplier.X4, 17, 16, PinPull.UP)
+        cnt = pcnt.QUAD(pcnt.ClockMultiplier.X4, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
 
         flt = cnt.get_filter_value()  # return current filter value.
         cnt.set_filter_value(100)     # filter delay is

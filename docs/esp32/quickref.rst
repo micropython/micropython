@@ -468,9 +468,9 @@ See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
 
     import pcnt
 
-    cnt = pcnt.PCNT(pcnt.Edge.RAISE, 17)
+    cnt = pcnt.PCNT(pcnt.Edge.RAISE, Pin(17, mode=Pin.IN))
     #              (kind of counted edges - count rase edges,
-    #               pulse signal input pin number is GPIO17)
+    #               pulse signal input pin)
 
     _c = None
     while True:
@@ -491,10 +491,10 @@ See :ref:`pcnt.QUAD <pcnt.QUAD>` for details.  Simplest usage is::
 
     import pcnt
 
-    cnt = pcnt.QUAD(pcnt.ClockMultiplier.X2, 17, 16)
+    cnt = pcnt.QUAD(pcnt.ClockMultiplier.X2, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
     #              (clock multiplier is two (X2),
-    #               pulse signal input A pin number is GPIO17,
-    #               pulse signal input B pin number is GPIO16)
+    #               pulse signal input A pin,
+    #               pulse signal input B pin)
 
     _c = None
     while True:
