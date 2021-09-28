@@ -332,7 +332,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
             return false;
         }
 
-        // unlock flash - // mdm why? the flash is only locked again
+        // unlock flash
         HAL_FLASH_Unlock();
 
         uint32_t sector_size;
