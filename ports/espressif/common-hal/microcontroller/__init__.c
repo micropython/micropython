@@ -45,9 +45,14 @@
 #include "soc/rtc_cntl_reg.h"
 #include "esp_private/system_internal.h"
 
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#include "esp32c3/rom/rtc.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
 #include "esp32s2/rom/usb/usb_persist.h"
 #include "esp32s2/rom/usb/chip_usb_dw_wrapper.h"
+#endif
+
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -77,8 +82,10 @@ void common_hal_mcu_enable_interrupts(void) {
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     switch (runmode) {
         case RUNMODE_UF2:
+            #ifndef CONFIG_IDF_TARGET_ESP32C3
             // 0x11F2 is APP_REQUEST_UF2_RESET_HINT & is defined by TinyUF2
             esp_reset_reason_set_hint(0x11F2);
+            #endif
             break;
         case RUNMODE_NORMAL:
             // revert back to normal boot
@@ -92,7 +99,9 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             break;
         case RUNMODE_BOOTLOADER:
             // DFU download
+            #ifndef CONFIG_IDF_TARGET_ESP32C3
             chip_usb_set_persist_flags(USBDC_BOOT_DFU);
+            #endif
             REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
             break;
         default:
@@ -159,7 +168,7 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO19), MP_ROM_PTR(&pin_GPIO19) },
     { MP_ROM_QSTR(MP_QSTR_GPIO20), MP_ROM_PTR(&pin_GPIO20) },
     { MP_ROM_QSTR(MP_QSTR_GPIO21), MP_ROM_PTR(&pin_GPIO21) },
-
+    #ifndef CONFIG_IDF_TARGET_ESP32C3
     { MP_ROM_QSTR(MP_QSTR_GPIO26), MP_ROM_PTR(&pin_GPIO26) },
     { MP_ROM_QSTR(MP_QSTR_GPIO27), MP_ROM_PTR(&pin_GPIO27) },
     { MP_ROM_QSTR(MP_QSTR_GPIO28), MP_ROM_PTR(&pin_GPIO28) },
@@ -181,5 +190,6 @@ STATIC const mp_rom_map_elem_t mcu_pin_global_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_GPIO44), MP_ROM_PTR(&pin_GPIO44) },
     { MP_ROM_QSTR(MP_QSTR_GPIO45), MP_ROM_PTR(&pin_GPIO45) },
     { MP_ROM_QSTR(MP_QSTR_GPIO46), MP_ROM_PTR(&pin_GPIO46) },
+    #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

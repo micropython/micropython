@@ -44,7 +44,7 @@
 
 #include "esp_sleep.h"
 
-#include "components/soc/esp32s2/include/soc/rtc_cntl_reg.h"
+#include "soc/rtc_cntl_reg.h"
 #include "components/driver/include/driver/uart.h"
 
 // Singleton instance of SleepMemory.

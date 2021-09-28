@@ -54,14 +54,12 @@
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
-#include "peripherals/pcnt.h"
 #include "peripherals/timer.h"
+
+#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
+#include "peripherals/pcnt.h"
 #include "peripherals/touch.h"
-#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
-#include "components/heap/include/esp_heap_caps.h"
-#include "components/xtensa/include/esp_debug_helpers.h"
-#include "components/soc/esp32s2/include/soc/cache_memory.h"
-#include "components/soc/esp32s2/include/soc/rtc_cntl_reg.h"
+#endif
 
 #if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/__init__.h"
@@ -69,6 +67,18 @@
 
 #if CIRCUITPY_IMAGECAPTURE
 #include "cam.h"
+#endif
+
+#include "esp_heap_caps.h"
+#include "esp_debug_helpers.h"
+
+#include "soc/cache_memory.h"
+#include "soc/rtc_cntl_reg.h"
+
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #endif
 
 #define HEAP_SIZE (48 * 1024)
@@ -119,16 +129,28 @@ safe_mode_t port_init(void) {
 
     #if defined(DEBUG)
     // debug UART
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+    common_hal_never_reset_pin(&pin_GPIO20);
+    common_hal_never_reset_pin(&pin_GPIO21);
+    #elif CONFIG_IDF_TARGET_ESP32S2
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
     #endif
 
     #if defined(DEBUG) || defined(ENABLE_JTAG)
     // JTAG
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+    common_hal_never_reset_pin(&pin_GPIO4);
+    common_hal_never_reset_pin(&pin_GPIO5);
+    common_hal_never_reset_pin(&pin_GPIO6);
+    common_hal_never_reset_pin(&pin_GPIO7);
+    #elif CONFIG_IDF_TARGET_ESP32S2
     common_hal_never_reset_pin(&pin_GPIO39);
     common_hal_never_reset_pin(&pin_GPIO40);
     common_hal_never_reset_pin(&pin_GPIO41);
     common_hal_never_reset_pin(&pin_GPIO42);
+    #endif
     #endif
 
     #ifdef CONFIG_SPIRAM
@@ -183,7 +205,7 @@ void reset_port(void) {
     uart_reset();
     #endif
 
-    #if defined(CIRCUITPY_COUNTIO) || defined(CIRCUITPY_ROTARYIO)
+    #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
     peripherals_pcnt_reset();
     #endif
 
@@ -234,7 +256,9 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
+    #ifndef CONFIG_IDF_TARGET_ESP32C3
     esp_backtrace_print(100);
+    #endif
     esp_restart();
 }
 

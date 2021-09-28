@@ -203,7 +203,7 @@ bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int back
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
-    uint8_t *buf, uint32_t len, uint8_t *ip, uint *port) {
+    uint8_t *buf, uint32_t len, uint8_t *ip, uint32_t *port) {
 
     struct sockaddr_in source_addr;
     socklen_t socklen = sizeof(source_addr);
