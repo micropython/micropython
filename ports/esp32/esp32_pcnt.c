@@ -58,7 +58,12 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #include "esp32_pcnt.h"
 
+#define DBG_LEVEL 0
+#define DBG(...) _DBG(1, ...)
+// DBG(MP_ERROR_TEXT("QUAD not supported on pin %d"), self->pin);
+
 // ---------------------------------------
+/*
 static int machine_pin_get_gpio(mp_obj_t pin_in) {
     if (MP_OBJ_IS_INT(pin_in)) {
         int wanted_pin = mp_obj_get_int(pin_in);
@@ -69,10 +74,8 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
     }
     return machine_pin_get_id(pin_in);
 }
+*/
 // ---------------------------------------
-
-//  mp_printf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("_pin_pull_type=%u "), self->useInternalWeakPullResistors);
-//  mp_printf(MP_PYTHON_PRINTER, "_pin_pull_type=%u \n", self->useInternalWeakPullResistors);
 
 
 // Defining classes
@@ -95,28 +98,6 @@ STATIC const mp_obj_type_t pcnt_Edge_type = {
     { &mp_type_type },
     .name = MP_QSTR_Edge,
     .locals_dict = (void *)&pcnt_Edge_locals_dict,
-};
-
-// ====================================================================================
-// class PinPull(object):
-// enumaration
-typedef struct _mp_obj_PinPull_t {
-    mp_obj_base_t base;
-} mp_obj_PinPull_t;
-
-// PinPull constants
-// PinPull stuff
-STATIC const mp_rom_map_elem_t pcnt_PinPull_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_NONE), MP_ROM_INT(NONE) },
-    { MP_ROM_QSTR(MP_QSTR_DOWN), MP_ROM_INT(DOWN) },
-    { MP_ROM_QSTR(MP_QSTR_UP), MP_ROM_INT(UP) },
-};
-STATIC MP_DEFINE_CONST_DICT(pcnt_PinPull_locals_dict, pcnt_PinPull_locals_dict_table);
-
-STATIC const mp_obj_type_t pcnt_PinPull_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinPull,
-    .locals_dict = (void *)&pcnt_PinPull_locals_dict,
 };
 
 // ====================================================================================
@@ -196,20 +177,13 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->unit = (pcnt_unit_t)index;
     self->aPinNumber = a; // (gpio_num_t) a;
     self->bPinNumber = b; // (gpio_num_t) b;
-
+/*
     // Set up the IO state of hte pin
     gpio_pad_select_gpio(self->aPinNumber);
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
-    if (self->useInternalWeakPullResistors == DOWN) {
-        gpio_pulldown_en(self->aPinNumber);
-        gpio_pulldown_en(self->bPinNumber);
-    } else if (self->useInternalWeakPullResistors == UP) {
-        gpio_pullup_en(self->aPinNumber);
-        gpio_pullup_en(self->bPinNumber);
-    }
-
+*/
     // Prepare configuration for the PCNT unit
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Direction
@@ -268,15 +242,15 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 STATIC const mp_obj_type_t esp32_pcnt_type;
 
 // Defining PCNT methods
-// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED)
 STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
     enum edgeKind edge = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_gpio(args[1]);
+    gpio_num_t pin_a = machine_pin_get_id(args[1]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
     if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_gpio(args[2]);
+        pin_b = machine_pin_get_id(args[2]);
     }
 /*
     if (unit < 0 || unit > PCNT_UNIT_MAX)
@@ -290,10 +264,6 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->aPinNumber = PCNT_PIN_NOT_USED;
     self->bPinNumber = PCNT_PIN_NOT_USED;
 
-    self->useInternalWeakPullResistors = DOWN;
-    if (n_args + n_kw >= 4) {
-        self->useInternalWeakPullResistors = mp_obj_get_int(args[3]);
-    }
     self->unit = (pcnt_unit_t)-1;
 
     attach_pcnt(self, pin_a, pin_b, edge);
@@ -311,11 +281,6 @@ STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj) {
     check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
     check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
-    gpio_pullup_dis(self->aPinNumber);
-    gpio_pullup_dis(self->bPinNumber);
-    gpio_pulldown_dis(self->aPinNumber);
-    gpio_pulldown_dis(self->bPinNumber);
-
     pcnts[self->unit] = NULL;
 
     ////m_del_obj(pcnt_PCNT_obj_t, self); // ???
@@ -331,7 +296,7 @@ STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
-    mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
+    //mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
 }
 
 // def PCNT.event_disable(self, evt_type: int)
@@ -977,19 +942,13 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->unit = (pcnt_unit_t)index;
     self->aPinNumber = a; // (gpio_num_t) a;
     self->bPinNumber = b; // (gpio_num_t) b;
-
+/*
     // Set up the IO state of hte pin
     gpio_pad_select_gpio(self->aPinNumber);
     gpio_pad_select_gpio(self->bPinNumber);
     gpio_set_direction(self->aPinNumber, GPIO_MODE_INPUT);
     gpio_set_direction(self->bPinNumber, GPIO_MODE_INPUT);
-    if (self->useInternalWeakPullResistors == DOWN) {
-        gpio_pulldown_en(self->aPinNumber);
-        gpio_pulldown_en(self->bPinNumber);
-    } else if (self->useInternalWeakPullResistors == UP) {
-        gpio_pullup_en(self->aPinNumber);
-        gpio_pullup_en(self->bPinNumber);
-    }
+*/
     // Set up encoder PCNT configuration
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
@@ -1111,15 +1070,15 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // -------------------------------------------------------------------------------------------------------------
 // Defining QUAD methods
-// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED, pin_pull_type: PinPull=DOWN)
+// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED)
 STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
     int clock_multiplier = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_gpio(args[1]);
+    gpio_num_t pin_a = machine_pin_get_id(args[1]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
     if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_gpio(args[2]);
+        pin_b = machine_pin_get_id(args[2]);
     }
 /*
     if (unit < 0 || unit > PCNT_UNIT_MAX)
@@ -1133,10 +1092,6 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
     self->aPinNumber = PCNT_PIN_NOT_USED;
     self->bPinNumber = PCNT_PIN_NOT_USED;
 
-    self->useInternalWeakPullResistors = DOWN;
-    if (n_args + n_kw >= 4) {
-        self->useInternalWeakPullResistors = mp_obj_get_int(args[3]);
-    }
     self->unit = (pcnt_unit_t)-1;
 
     attach_quad(self, pin_a, pin_b, clock_multiplier);
@@ -1156,7 +1111,6 @@ STATIC void quad_QUAD_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
-    mp_printf(print, ", pin_pull_type=%u)", self->useInternalWeakPullResistors);
 }
 
 // Create the class-object itself
@@ -1214,7 +1168,6 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_7), MP_ROM_INT(PCNT_UNIT_7) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_MAX), MP_ROM_INT(PCNT_UNIT_MAX) },
     */
-    { MP_ROM_QSTR(MP_QSTR_PinPull), MP_ROM_PTR(&pcnt_PinPull_type) },
     { MP_ROM_QSTR(MP_QSTR_Edge), MP_ROM_PTR(&pcnt_Edge_type) },
     { MP_ROM_QSTR(MP_QSTR_ClockMultiplier), MP_ROM_PTR(&quad_ClockMultiplier_type) },
 };
