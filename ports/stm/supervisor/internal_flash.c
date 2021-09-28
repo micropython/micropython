@@ -96,8 +96,8 @@ STATIC uint8_t _flash_cache[0x20000] __attribute__((aligned(4)));
 
 #elif defined(STM32L4)
 // todo - the L4 devices can have different flash sizes and different page sizes
-// depending upon the configuration
-// This is hardcoded for the Blues Swan. When support for other devices is needed more conditionals will be required
+// depending upon the dual bank configuration
+// This is hardcoded for the Swan R5. When support for other devices is needed more conditionals will be required
 // to differentiate.
 STATIC const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x1000, 256 },
@@ -170,7 +170,7 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
             }
         }
     }
-    return 0;   // todo dangerous - shouldn't this raise an exception
+    return 0;   // todo dangerous - shouldn't this raise an exception?
 }
 
 void supervisor_flash_init(void) {

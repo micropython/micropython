@@ -36,7 +36,7 @@
 
 // I2C timing specs for the H7 and F7
 // Configured for maximum possible clock settings for the family
-#if (CPY_STM32F7)        // todo - get the correct values for the L4
+#if (CPY_STM32F7)
 #ifndef CPY_I2CFAST_TIMINGR
 #define CPY_I2CFAST_TIMINGR     0x6000030D
 #endif

@@ -165,7 +165,6 @@ const mcu_periph_obj_t mcu_uart_rx_list[UART_RX_ARRAY_LEN] = {
     PERIPH(1, 7, &pin_PG10),
 };
 
-// todo
 // Timers
 // TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
 TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, TIM15, TIM16};
