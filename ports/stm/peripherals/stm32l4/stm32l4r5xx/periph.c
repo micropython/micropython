@@ -167,7 +167,7 @@ const mcu_periph_obj_t mcu_uart_rx_list[UART_RX_ARRAY_LEN] = {
 
 // Timers
 // TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
-TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, TIM15, TIM16};
+TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, /*TIM9*/NULL, NULL, NULL, NULL, NULL, NULL, TIM15, TIM16, TIM17};
 
 const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(2, 1, 1, &pin_PA00),
