@@ -55,8 +55,11 @@ class Stream:
             if not l2 or l[-1] == 10:  # \n (check l in case l2 is str)
                 return l
 
-    def write(self, buf):
-        self.out_buf += buf
+    def write(self, buf, copy=True):
+        if copy:
+            self.out_buf += buf
+        else:
+            self.out_buf = buf
 
     async def drain(self):
         mv = memoryview(self.out_buf)
