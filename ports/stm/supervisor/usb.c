@@ -69,10 +69,10 @@ STATIC void init_usb_vbus_sense(void) {
 
 void init_usb_hardware(void) {
 
-  /* Enable USB power on Pwrctrl CR2 register */
-#ifdef PWR_CR2_USV
+    /* Enable USB power on Pwrctrl CR2 register */
+    #ifdef PWR_CR2_USV
     HAL_PWREx_EnableVddUSB();
-#endif
+    #endif
 
     // TODO: if future chips overload this with options, move to peripherals management.
 
@@ -145,7 +145,7 @@ void init_usb_hardware(void) {
     #endif
 
 
-  init_usb_vbus_sense();
+    init_usb_vbus_sense();
 }
 
 void OTG_FS_IRQHandler(void) {
