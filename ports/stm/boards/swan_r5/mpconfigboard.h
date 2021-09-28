@@ -34,7 +34,7 @@
 
 
 #define STM32L4R5XX
-#define BOARD_SWAN_R5         
+#define BOARD_SWAN_R5
 
 
 // The flash size is defined in the STM32L4xx HAL (but not for the F4)

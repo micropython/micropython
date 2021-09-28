@@ -78,20 +78,22 @@ def _toggle_wait(pin_gpios):
                 if time.monotonic() > timestamp + LED_OFF_DELAY_TIME:
                     led_state = True
                     timestamp = time.monotonic()
-            
+
             gpio.value = led_state
             if supervisor.runtime.serial_bytes_available:
                 answer = input()
                 if bool(answer == "y"):
                     done = True
-                elif (bool(answer == "n")):
+                elif bool(answer == "n"):
                     failed += pin
                     done = True
     return failed
 
+
 def buildPin(pin):
     gpio = digitalio.DigitalInOut(pin)
     return gpio
+
 
 def run_test(pins):
 
@@ -103,7 +105,7 @@ def run_test(pins):
     """
 
     # Create a list of analog GPIO pins
-    analog_pins =  [p for p in pins if p[0] == "A" and _is_number(p[1])]
+    analog_pins = [p for p in pins if p[0] == "A" and _is_number(p[1])]
 
     # Create a list of digital GPIO
     digital_pins = [p for p in pins if p[0] == "D" and _is_number(p[1])]
@@ -141,5 +143,6 @@ def run_test(pins):
     # Else (no pins found)
     print("No GPIO pins found")
     return NA, []
+
 
 run_test([p for p in dir(board)])

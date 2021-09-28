@@ -167,7 +167,7 @@ const mcu_periph_obj_t mcu_uart_rx_list[UART_RX_ARRAY_LEN] = {
 
 // Timers
 // TIM6 and TIM7 are basic timers that are only used by DAC, and don't have pins
-TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, /*TIM9*/NULL, NULL, NULL, NULL, NULL, NULL, TIM15, TIM16, TIM17};
+TIM_TypeDef *mcu_tim_banks[TIM_BANK_ARRAY_LEN] = {TIM1, TIM2, TIM3, TIM4, TIM5, NULL, NULL, TIM8, /*TIM9*/ NULL, NULL, NULL, NULL, NULL, NULL, TIM15, TIM16, TIM17};
 
 const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(2, 1, 1, &pin_PA00),
@@ -184,7 +184,7 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(3, 2, 1, &pin_PA06),
     TIM(16, 15, 1, &pin_PA06),
     TIM(3, 2, 2, &pin_PA07),
-    //TIM(17, 15, 1, &pin_PA07), // peripheral indices are 1 based, stored 0-based with 4 bits available.
+    // TIM(17, 15, 1, &pin_PA07), // peripheral indices are 1 based, stored 0-based with 4 bits available.
     TIM(1, 1, 1, &pin_PA08),
     TIM(1, 1, 2, &pin_PA09),
     TIM(1, 1, 3, &pin_PA10),
@@ -200,7 +200,7 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(4, 2, 3, &pin_PB08),
     TIM(16, 15, 1, &pin_PB08),
     TIM(4, 2, 4, &pin_PB09),
-    //TIM(17, 15, 1, &pin_PB09), // peripheral indices are 1 based, stored 0-based with 4 bits available.
+    // TIM(17, 15, 1, &pin_PB09), // peripheral indices are 1 based, stored 0-based with 4 bits available.
     TIM(2, 1, 3, &pin_PB10),
     TIM(2, 1, 4, &pin_PB11),
     TIM(15, 15, 1, &pin_PB14),
@@ -218,7 +218,7 @@ const mcu_tim_pin_obj_t mcu_tim_pin_list[TIM_PIN_ARRAY_LEN] = {
     TIM(4, 2, 3, &pin_PD14),
     TIM(4, 2, 4, &pin_PD15),
     TIM(16, 15, 1, &pin_PE00),
-    //TIM(17, 15, 1, &pin_PE01),    // peripheral indices are 1 based, stored 0-based with 4 bits available.
+    // TIM(17, 15, 1, &pin_PE01),    // peripheral indices are 1 based, stored 0-based with 4 bits available.
     TIM(3, 2, 1, &pin_PE03),
     TIM(3, 2, 2, &pin_PE04),
     TIM(3, 2, 3, &pin_PE05),

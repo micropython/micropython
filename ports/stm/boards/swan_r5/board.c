@@ -33,7 +33,7 @@
 void initialize_discharge_pin(void) {
     /* Initialize the 3V3 discharge to be OFF and the output power to be ON */
     __HAL_RCC_GPIOE_CLK_ENABLE();
-    GPIO_InitTypeDef  GPIO_InitStruct;
+    GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
@@ -48,7 +48,7 @@ void initialize_discharge_pin(void) {
 
 void board_init(void) {
     // enable the debugger while sleeping. Todo move somewhere more central (kind of generally useful in a debug build)
-    SET_BIT (DBGMCU-> CR, DBGMCU_CR_DBG_SLEEP);    
+    SET_BIT(DBGMCU->CR, DBGMCU_CR_DBG_SLEEP);
 
     //  Set tick interrupt priority, default HAL value is intentionally invalid
     //  Without this, USB does not function.

@@ -65,10 +65,10 @@ static bool web_serial_connected = false;
 
 const tusb_desc_webusb_url_t desc_webusb_url =
 {
-  .bLength         = 3 + sizeof(URL) - 1,
-  .bDescriptorType = 3, // WEBUSB URL type
-  .bScheme         = 1, // 0: http, 1: https
-  .url             = URL
+    .bLength = 3 + sizeof(URL) - 1,
+    .bDescriptorType = 3, // WEBUSB URL type
+    .bScheme = 1,       // 0: http, 1: https
+    .url = URL
 };
 
 #endif

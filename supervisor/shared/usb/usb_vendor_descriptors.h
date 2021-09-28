@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Ha Thach (tinyusb.org)
@@ -29,11 +29,11 @@
 
 enum
 {
-  VENDOR_REQUEST_WEBUSB = 1,
-  VENDOR_REQUEST_MICROSOFT = 2
+    VENDOR_REQUEST_WEBUSB = 1,
+    VENDOR_REQUEST_MICROSOFT = 2
 };
 
 size_t vendor_ms_os_20_descriptor_length(void);
-uint8_t const* vendor_ms_os_20_descriptor(void);
+uint8_t const *vendor_ms_os_20_descriptor(void);
 
 #endif /* USB_DESCRIPTORS_H_ */

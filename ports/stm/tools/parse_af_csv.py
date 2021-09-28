@@ -88,7 +88,7 @@ with open(sys.argv[1]) as csv_file:
         for row in csv_reader:
             altfn = 0
             pin = row[0]
-            if len(pin) < 4:        # add additional leading 0 to pin number after port
+            if len(pin) < 4:  # add additional leading 0 to pin number after port
                 pin = pin[:2] + "0" + pin[2:]
             for col in row:
                 array_index = 0

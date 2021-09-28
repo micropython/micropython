@@ -84,32 +84,52 @@ void common_hal_analogio_analogin_deinit(analogio_analogin_obj_t *self) {
 }
 
 uint32_t adc_channel(uint32_t channel) {
-#if CPY_STM32L4
+    #if CPY_STM32L4
     switch (channel) {
-        case 0: return ADC_CHANNEL_0;
-        case 1: return ADC_CHANNEL_1;
-        case 2: return ADC_CHANNEL_2;
-        case 3: return ADC_CHANNEL_3;
-        case 4: return ADC_CHANNEL_4;
-        case 5: return ADC_CHANNEL_5;
-        case 6: return ADC_CHANNEL_6;
-        case 7: return ADC_CHANNEL_7;
-        case 8: return ADC_CHANNEL_8;
-        case 9: return ADC_CHANNEL_9;
-        case 10: return ADC_CHANNEL_10;
-        case 11: return ADC_CHANNEL_11;
-        case 12: return ADC_CHANNEL_12;
-        case 13: return ADC_CHANNEL_13;
-        case 14: return ADC_CHANNEL_14;
-        case 15: return ADC_CHANNEL_15;
-        case 16: return ADC_CHANNEL_16;
-        case 17: return ADC_CHANNEL_17;
-        case 18: return ADC_CHANNEL_18;
-        default: return 0;
+        case 0:
+            return ADC_CHANNEL_0;
+        case 1:
+            return ADC_CHANNEL_1;
+        case 2:
+            return ADC_CHANNEL_2;
+        case 3:
+            return ADC_CHANNEL_3;
+        case 4:
+            return ADC_CHANNEL_4;
+        case 5:
+            return ADC_CHANNEL_5;
+        case 6:
+            return ADC_CHANNEL_6;
+        case 7:
+            return ADC_CHANNEL_7;
+        case 8:
+            return ADC_CHANNEL_8;
+        case 9:
+            return ADC_CHANNEL_9;
+        case 10:
+            return ADC_CHANNEL_10;
+        case 11:
+            return ADC_CHANNEL_11;
+        case 12:
+            return ADC_CHANNEL_12;
+        case 13:
+            return ADC_CHANNEL_13;
+        case 14:
+            return ADC_CHANNEL_14;
+        case 15:
+            return ADC_CHANNEL_15;
+        case 16:
+            return ADC_CHANNEL_16;
+        case 17:
+            return ADC_CHANNEL_17;
+        case 18:
+            return ADC_CHANNEL_18;
+        default:
+            return 0;
     }
-#else
+    #else
     return channel;
-#endif
+    #endif
 }
 
 uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
@@ -151,31 +171,33 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     AdcHandle.Init.NbrOfConversion = 1;
     AdcHandle.Init.DMAContinuousRequests = DISABLE;
     AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-#ifdef ADC_OVR_DATA_OVERWRITTEN
-    AdcHandle.Init.Overrun               = ADC_OVR_DATA_OVERWRITTEN;      /* DR register is overwritten with the last conversion result in case of overrun */
-#endif
+    #ifdef ADC_OVR_DATA_OVERWRITTEN
+    AdcHandle.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;                    /* DR register is overwritten with the last conversion result in case of overrun */
+    #endif
 
-    if (HAL_ADC_Init(&AdcHandle)!=HAL_OK) return 0;
-    
+    if (HAL_ADC_Init(&AdcHandle) != HAL_OK) {
+        return 0;
+    }
+
     sConfig.Channel = adc_channel(self->pin->adc_channel); // ADC_CHANNEL_0 <-normal iteration, not mask
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME;
-#if CPY_STM32L4
-    sConfig.SingleDiff   = ADC_SINGLE_ENDED;                 /* Single-ended input channel */
-    sConfig.OffsetNumber = ADC_OFFSET_NONE;                  /* No offset subtraction */
-     if (!IS_ADC_CHANNEL(&AdcHandle, sConfig.Channel)) {
-         return 0;
-     }
-#endif
-    if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig)!=HAL_OK) {
-        return 0;
-    }
     #if CPY_STM32L4
-    if (HAL_ADCEx_Calibration_Start(&AdcHandle, ADC_SINGLE_ENDED) !=  HAL_OK) {
+    sConfig.SingleDiff = ADC_SINGLE_ENDED;                   /* Single-ended input channel */
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;                  /* No offset subtraction */
+    if (!IS_ADC_CHANNEL(&AdcHandle, sConfig.Channel)) {
         return 0;
     }
     #endif
-    if (HAL_ADC_Start(&AdcHandle)!=HAL_OK) {
+    if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK) {
+        return 0;
+    }
+    #if CPY_STM32L4
+    if (HAL_ADCEx_Calibration_Start(&AdcHandle, ADC_SINGLE_ENDED) != HAL_OK) {
+        return 0;
+    }
+    #endif
+    if (HAL_ADC_Start(&AdcHandle) != HAL_OK) {
         return 0;
     }
     HAL_ADC_PollForConversion(&AdcHandle,1);

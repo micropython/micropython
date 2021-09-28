@@ -25,13 +25,13 @@ while True:
         led.value = True
 
         # convert bytearray to string
-        data_string = '*'.join([chr(b) for b in data])
+        data_string = "*".join([chr(b) for b in data])
         print(data_string, end="")
 
         led.value = False
 
     if usb_cdc.console.in_waiting:
         data = usb_cdc.console.read()
-        data_string = '*'.join([chr(b) for b in data])
-        print("writing "+data_string)
+        data_string = "*".join([chr(b) for b in data])
+        print("writing " + data_string)
         uart.write(data)

@@ -15,6 +15,7 @@ def test_dac_analog(p_in, p_out):
     pin_in.deinit()
     pin_out.deinit()
 
+
 def test_dac_digital(p_in, p_out):
     print(f"Running dac digital test with pin {p_in} as input and {p_out} as output")
     pin_in = digitalio.DigitalInOut(p_in)
@@ -27,6 +28,7 @@ def test_dac_digital(p_in, p_out):
     pin_in.deinit()
     pin_out.deinit()
 
+
 def test_dual(pair1, pair2):
     # verifies that the DACs can be set independently
     print(f"Running pair test\n")
@@ -36,7 +38,7 @@ def test_dual(pair1, pair2):
     pin2_out = analogio.AnalogOut(pair2[1])
 
     for v in range(0, 65536, 4096):
-        v2 = 65535-v
+        v2 = 65535 - v
         pin1_out.value = v
         pin2_out.value = v2
         print(f"Pair1: Value {v} read as {pin1_in.value}")
@@ -46,6 +48,7 @@ def test_dual(pair1, pair2):
     pin1_out.deinit()
     pin2_in.deinit()
     pin2_out.deinit()
+
 
 def test_analog_hilo(p_in, p_out):
     print(f"Running analog hilo test with pin {p_in} as input and {p_out} as output")
@@ -60,12 +63,14 @@ def test_analog_hilo(p_in, p_out):
     pin_in.deinit()
     pin_out.deinit()
 
+
 def test_pair(pair):
     # FIXME: test_analog_hilo works fine alone, but fails when the other dac functions are executed
     test_analog_hilo(*pair)
     test_dac_analog(*pair)
     test_dac_digital(*pair)
-    
+
+
 def main():
     pair1 = (board.A3, board.DAC1)
     pair2 = (board.A2, board.DAC2)
@@ -75,7 +80,6 @@ def main():
     test_pair(pair2)
     print("running dual DAC tests")
     test_dual(pair1, pair2)
-    
+
 
 main()
-

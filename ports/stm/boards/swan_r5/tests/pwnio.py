@@ -15,4 +15,3 @@ def fade(pin):
             else:
                 led.duty_cycle = 65535 - int((i - 50) * 2 * 65535 / 100)  # Down
             time.sleep(0.01)
-

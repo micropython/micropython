@@ -138,9 +138,9 @@ STATIC uint32_t get_bank(uint32_t addr) {
 uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
-        if (MP_ARRAY_SIZE(flash_layout)==1) {
-            sector_index = (addr-flash_layout[0].base_address)/flash_layout[0].sector_size;
-            if (sector_index>=flash_layout[0].sector_count) {
+        if (MP_ARRAY_SIZE(flash_layout) == 1) {
+            sector_index = (addr - flash_layout[0].base_address) / flash_layout[0].sector_size;
+            if (sector_index >= flash_layout[0].sector_count) {
                 return 0;
             }
             if (start_addr) {
@@ -193,7 +193,7 @@ void port_internal_flash_flush(void) {
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
     #else
     #ifndef FLASH_FLAG_ALL_ERRORS
-    #define FLASH_FLAG_ALL_ERRORS FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGPERR |FLASH_FLAG_PGSERR
+    #define FLASH_FLAG_ALL_ERRORS FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGPERR | FLASH_FLAG_PGSERR
     #endif
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     #endif
@@ -256,7 +256,7 @@ void port_internal_flash_flush(void) {
         // program the flash word by word
         for (uint32_t i = 0; i < sector_size / 8; i++) {
             if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, sector_start_addr,
-                *(uint64_t*)cache_addr) != HAL_OK) {
+                *(uint64_t *)cache_addr) != HAL_OK) {
                 // error occurred during flash write
                 HAL_FLASH_Lock(); // lock the flash
                 reset_into_safe_mode(FLASH_WRITE_FAIL);

@@ -125,7 +125,7 @@ void init_usb_hardware(void) {
     never_reset_pin_number(0, 10);
     claim_pin(0, 10);
     #endif
-    
+
     #ifdef STM32F412Zx
     /* Configure POWER_SWITCH IO pin (F412 ONLY)*/
     GPIO_InitStruct.Pin = GPIO_PIN_8;

@@ -36,7 +36,7 @@
     #define STM_BKPSRAM_SIZE  0
     #define STM_BKPSRAM_START 0
     #define HAL_PWREx_EnableBkUpReg()
-    // backup RAM disabled for now. Will have the backup region at the top of SRAM3 which is retained. 
+// backup RAM disabled for now. Will have the backup region at the top of SRAM3 which is retained.
 #else
     #define STM_BKPSRAM_SIZE    0x1000
     #define STM_BKPSRAM_START   BKPSRAM_BASE
