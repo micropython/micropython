@@ -221,10 +221,6 @@ const uint32_t MSIRangeTable[12] = {100000U,   200000U,   400000U,   800000U,  1
   */
 
 void SystemInit(void) {
-    #if defined(USER_VECT_TAB_ADDRESS)
-    /* Configure the Vector Table location -------------------------------------*/
-    SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
-    #endif
 
     /* FPU settings ------------------------------------------------------------*/
     #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
@@ -249,6 +245,13 @@ void SystemInit(void) {
 
     /* Disable all interrupts */
     RCC->CIER = 0x00000000U;
+
+    #if !(BOARD_VTOR_DEFER) // only set VTOR if the bootloader hasn't already
+    #if defined(USER_VECT_TAB_ADDRESS)
+    /* Configure the Vector Table location -------------------------------------*/
+    SCB->VTOR = VECT_TAB_BASE_ADDRESS | VECT_TAB_OFFSET;
+    #endif
+    #endif
 }
 
 /**
