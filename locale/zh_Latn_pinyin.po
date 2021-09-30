@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-09-04 23:34+0000\n"
+"PO-Revision-Date: 2021-10-01 02:38+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.8.1-dev\n"
+"X-Generator: Weblate 4.9-dev\n"
 
 #: main.c
 msgid ""
@@ -1257,7 +1257,7 @@ msgstr "Nèibù dìngyì cuòwù"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 msgid "Internal error"
-msgstr ""
+msgstr "nèi bù cuò wù"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1741,7 +1741,7 @@ msgstr "bù kě shè zhì"
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
-msgstr ""
+msgstr "data_pins shù bì xū wéi 8 huò 16, ér bù shì %d"
 
 #: shared-bindings/util.c
 msgid ""
@@ -2150,7 +2150,7 @@ msgstr "Yuán huǎnchōng qū hé mùbiāo huǎnchōng qū de chángdù bìxū x
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr ""
+msgstr "zhǐ dìng data0 huò data_pins zhōng de yí gè"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2239,6 +2239,8 @@ msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
 msgstr ""
+"cǐ wēi kòng zhì qì jǐn zhī chí data0=, ér bú shì data_pins=, yīn wéi tā xū "
+"yào lián xù yǐn jiǎo."
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -3453,7 +3455,7 @@ msgstr "wúxiào de cānshù"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 2, 4, 8, 16, 24, huò 32"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
