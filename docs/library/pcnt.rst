@@ -14,9 +14,9 @@ Big filter make cutbacks the input frequency: 1 / (12.7875 us * 2) = 39.1 kHz.
 * Note: Do not neglect circuitry methods to reduce noise (right powering and grounding, filtering, shielding,
 short conductors, twisted pair cable, differential signals, etc.).
 
-There is only one interrupt for the peripheral, and that is managed by the pcnt module.
+There is only one interrupt for the peripheral, and that is managed inside the module.
 The user has no interrupt interface, and no interrupts are generated on each pulse.
-Interrupts arrive when the 16 bit hardware counter buffer overflows, so this library has a tiny interrupt footprint
+Interrupts arrive when the 16 bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
 while providing support for up to 8 simultaneous counters.
 
 .. _pcnt.Counter:
