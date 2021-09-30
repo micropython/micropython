@@ -60,7 +60,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #define DBG_LEVEL 0
 #define DBG(...) _DBG(1, ...)
-// DBG(MP_ERROR_TEXT("QUAD not supported on pin %d"), self->pin);
+// DBG(MP_ERROR_TEXT("ESP32 PCNT not supported on Pin(%d)"), self->pin);
 
 // ---------------------------------------
 /*
@@ -68,7 +68,7 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
     if (MP_OBJ_IS_INT(pin_in)) {
         int wanted_pin = mp_obj_get_int(pin_in);
         if (!GPIO_IS_VALID_GPIO(wanted_pin)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("ESP PCNT invalid pin number"));
+            mp_raise_ValueError(MP_ERROR_TEXT("ESP32 PCNT invalid pin number"));
         }
         return wanted_pin;
     }
@@ -292,7 +292,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_deinit_obj, pcnt_PCNT_deinit);
 STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "PCNT(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
+    mp_printf(print, "Counter(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
@@ -909,7 +909,7 @@ STATIC MP_DEFINE_CONST_DICT(pcnt_PCNT_locals_dict, pcnt_PCNT_locals_dict_table);
 // Create the class-object itself
 STATIC const mp_obj_type_t esp32_pcnt_type = {
     { &mp_type_type },
-    .name = MP_QSTR_PCNT,
+    .name = MP_QSTR_Counter,
     .make_new = pcnt_PCNT_make_new,
     .print = pcnt_PCNT_print,
     .locals_dict = (mp_obj_dict_t *)&pcnt_PCNT_locals_dict,
@@ -917,7 +917,7 @@ STATIC const mp_obj_type_t esp32_pcnt_type = {
 
 // ====================================================================================
 // Defining classes
-// class QUAD(object):
+// class Encoder(object):
 STATIC const mp_obj_type_t esp32_quad_type;
 
 // -------------------------------------------------------------------------------------------------------------
@@ -1069,9 +1069,9 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 }
 
 // -------------------------------------------------------------------------------------------------------------
-// Defining QUAD methods
-// def QUAD.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED)
-STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+// Defining Encoder methods
+// def Encoder.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED)
+STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
     int clock_multiplier = mp_obj_get_int(args[0]);
@@ -1084,7 +1084,7 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
     if (unit < 0 || unit > PCNT_UNIT_MAX)
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ESP PCNT bad timer number %d", unit));
 */
-    // create QUAD object for the given unit
+    // create Encoder object for the given unit
     pcnt_PCNT_obj_t *self = m_new_obj(pcnt_PCNT_obj_t);
     self->base.type = &esp32_quad_type;
 
@@ -1104,10 +1104,10 @@ STATIC mp_obj_t quad_QUAD_make_new(const mp_obj_type_t *t_ype, size_t n_args, si
 }
 
 // ------------------------------------------------------------------------------------------
-STATIC void quad_QUAD_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
+STATIC void quad_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "QUAD(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
+    mp_printf(print, "Encoder(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
@@ -1116,9 +1116,9 @@ STATIC void quad_QUAD_print(const mp_print_t *print, mp_obj_t self_obj, mp_print
 // Create the class-object itself
 STATIC const mp_obj_type_t esp32_quad_type = {
     { &mp_type_type },
-    .name = MP_QSTR_QUAD,
-    .print = quad_QUAD_print,
-    .make_new = quad_QUAD_make_new,
+    .name = MP_QSTR_Encoder,
+    .print = quad_Encoder_print,
+    .make_new = quad_Encoder_make_new,
     .locals_dict = (mp_obj_dict_t *)&pcnt_PCNT_locals_dict,
     // .parent = &esp32_pcnt_type,
 };
