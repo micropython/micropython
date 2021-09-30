@@ -43,6 +43,12 @@
 //| .. warning:: The board module varies by board. The APIs documented here may or may not be
 //|              available on a specific board."""
 
+//| board_id: str
+//| """Board ID string. The unique identifier for the board model in
+//| circuitpython, as well as on circuitpython.org.
+//| Example: "hallowing_m0_express"."""
+//|
+
 //| def I2C() -> busio.I2C:
 //|     """Returns the `busio.I2C` object for the board designated SDA and SCL pins. It is a singleton."""
 //|     ...
