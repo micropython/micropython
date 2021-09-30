@@ -1,4 +1,4 @@
-The PCNT and QUAD counters uses the ESP32 pulse counter hardware peripheral,
+The Counter and Encoder counters uses the ESP32 pulse counter hardware peripheral PCNT,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
 
@@ -19,74 +19,74 @@ The user has no interrupt interface, and no interrupts are generated on each pul
 Interrupts arrive when the 16 bit hardware counter buffer overflows, so this library has a tiny interrupt footprint
 while providing support for up to 8 simultaneous counters.
 
-.. _pcnt.PCNT:
+.. _pcnt.Counter:
 
-PCNT
-----
+Counter
+-------
 
-The PCNT .
+The Counter.
 
-.. class:: PCNT(edge: Edge, pulse_pin, dir_pin=None)
+.. class:: Counter(edge: Edge, pulse_pin, dir_pin=None)
 
     Counter start to count immediately. Filter value initialized by 1023. Filtering is enabled.
 
-.. method:: PCNT.__del__()
+.. method:: Counter.deinit()
 
     Free the input pins and counter.
 
-.. method:: PCNT.count()
+.. method:: Counter.count()
 
     Return current 64-bit signed counter value.
 
-.. method:: PCNT.clear()
+.. method:: Counter.clear()
 
     Set counter value to 0.
 
-.. method:: PCNT.count_and_clear()
+.. method:: Counter.count_and_clear()
 
     Return current 64-bit signed counter value and set it to 0.
 
-.. method:: PCNT.pause()
+.. method:: Counter.pause()
 
-.. method:: PCNT.resume()
+.. method:: Counter.resume()
 
-.. method:: PCNT.set_count(new_value)
+.. method:: Counter.set_count(new_value)
 
     Set the counter value, new_value is 64-bit signed integer.
 
-.. method:: PCNT.set_filter_value(filter_val)
+.. method:: Counter.set_filter_value(filter_val)
 
     Set filter value.
 
-.. method:: PCNT.get_filter_value()
+.. method:: Counter.get_filter_value()
 
     Return current filter value.
 
-The filter is put into operation / suspended by calling pcnt_filter_enable() / pcnt_filter_disable().
+The filter is put into operation / suspended by calling filter_enable() / filter_disable().
 
-.. method:: PCNT.filter_enable()
+.. method:: Counter.filter_enable()
 
-.. method:: PCNT.filter_disable()
+.. method:: Counter.filter_disable()
 
-.. _pcnt.QUAD:
+.. _pcnt.Encoder:
 
-QUAD
-----
+Encoder
+-------
 
 See `Quadrature encoder outputs.
 <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_outputs>`_
 
-.. class:: QUAD(clock_multiplier:ClockMultiplier, aPin, bPin)
+.. class:: Encoder(clock_multiplier:ClockMultiplier, aPin, bPin)
 
-The QUAD counter has the same methods as the PCNT counter and
-differs only in the constructor and internal counter initialization.
+The Encoder  has the same methods as the Counter and
+differs only in the constructor and internal hardware PCNT counter initialization.
 
 Enumarations
 ------------
 
 .. class:: pcnt.Edge()
 
-   Which edges of the input signal will be counted by PCNT.
+   Which edges of the input signal will be counted by Counter.
 
 .. data:: Edge.RAISE
           Edge.FALL
@@ -94,7 +94,7 @@ Enumarations
 
 .. class:: ClockMultiplier()
 
-   When more QUAD resolution is needed, it is possible for the counter to count the leading
+   When more Encoder resolution is needed, it is possible for the counter to count the leading
    and trailing edges of the quadrature encoder’s pulse train from one channel,
    which doubles (x2) the number of pulses. Counting both leading and trailing edges
    of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses.
@@ -112,10 +112,10 @@ Enumarations
 
 ::
 
-    import pcnt
+    import machine
 
     try:
-        cnt = pcnt.QUAD(pcnt.ClockMultiplier.X4, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
+        cnt = machine.Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN), pcnt.ClockMultiplier.X4)
 
         flt = cnt.get_filter_value()  # return current filter value.
         cnt.set_filter_value(100)     # filter delay is
@@ -134,4 +134,4 @@ Enumarations
                 _c = c
                 print('Counter =', c)
     finally:
-        cnt.__del__()  # free the input pins and counter.
+        cnt.deinit()  # free the input pins and counter.

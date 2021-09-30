@@ -457,18 +457,18 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
-PCNT
-----
+Counter
+-------
 
-The PCNT (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
-It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral,
-the total available number of PCNT and QUAD counters is up to 8.
+The Counter (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
+It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same hardware peripheral,
+the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
+See :ref:`pcnt.Counter <pcnt.Counter>` for details.  Simplest usage is::
 
-    import pcnt
+    import machine
 
-    cnt = pcnt.PCNT(pcnt.Edge.RAISE, Pin(17, mode=Pin.IN))
+    cnt = machine.Counter(Pin(17, mode=Pin.IN), pcnt.Edge.RAISE)
     #              (kind of counted edges - count rase edges,
     #               pulse signal input pin)
 
@@ -479,22 +479,22 @@ See :ref:`pcnt.PCNT <pcnt.PCNT>` for details.  Simplest usage is::
             _c = c
             print('Counter =', c)
 
-QUAD
-----
+Encoder
+-------
 
-The QUAD (Quadrature Counter) counts quadrature-encoded pulses
+The Encoder (Quadrature Incremental Encoder) counts quadrature-encoded pulses
 (two square wave signals with ~50% duty cycle and ~90-degree phase difference between them).
-It is a 64-bit signed hardware-based counter.  PCNT and QUAD share the same hardware peripheral,
-the total available number of PCNT and QUAD counters is up to 8.
+It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same hardware peripheral,
+the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`pcnt.QUAD <pcnt.QUAD>` for details.  Simplest usage is::
+See :ref:`pcnt.Encoder <pcnt.Encoder>` for details.  Simplest usage is::
 
-    import pcnt
+    import machine
 
-    cnt = pcnt.QUAD(pcnt.ClockMultiplier.X2, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
-    #              (clock multiplier is two (X2),
-    #               pulse signal input A pin,
-    #               pulse signal input B pin)
+    cnt = machine.Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN), pcnt.ClockMultiplier.X2)
+    #              (pulse signal input A pin,
+    #               pulse signal input B pin,
+    #               clock multiplier is two (X2)),
 
     _c = None
     while True:

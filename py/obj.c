@@ -335,7 +335,7 @@ int64_t mp_obj_get_ll_int(mp_const_obj_t arg_in) {
     if (mp_obj_is_small_int(arg_in)) {
         return MP_OBJ_SMALL_INT_VALUE(arg_in);
     } else if (mp_obj_is_type(arg_in, &mp_type_int)) {
-        mp_obj_int_t *arg = arg_in;
+        mp_const_obj_int_t *arg = arg_in;
         int len = arg->mpz.len;
         uint64_t res = 0;
         for (int i = len - 1; i >= 0; --i) {

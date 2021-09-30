@@ -275,7 +275,7 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj) {
+STATIC mp_obj_t pcnt_PCNT_deinit(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
@@ -287,7 +287,7 @@ STATIC mp_obj_t pcnt_PCNT_del(mp_obj_t self_obj) {
 
     return MP_ROM_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_del_obj, pcnt_PCNT_del);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_deinit_obj, pcnt_PCNT_deinit);
 
 STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
@@ -870,7 +870,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 // Register class methods
 STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pcnt_PCNT_del_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) },
     /*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
@@ -1118,9 +1118,7 @@ STATIC const mp_obj_type_t esp32_quad_type = {
     { &mp_type_type },
     .name = MP_QSTR_QUAD,
     .print = quad_QUAD_print,
-    // .print = pcnt_PCNT_print,
     .make_new = quad_QUAD_make_new,
-    // .locals_dict = (mp_obj_dict_t*)&quad_QUAD_locals_dict,
     .locals_dict = (mp_obj_dict_t *)&pcnt_PCNT_locals_dict,
     // .parent = &esp32_pcnt_type,
 };
@@ -1130,8 +1128,8 @@ STATIC const mp_obj_type_t esp32_quad_type = {
 // Set up the module properties
 STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pcnt) },
-    { MP_ROM_QSTR(MP_QSTR_PCNT), MP_ROM_PTR(&esp32_pcnt_type) },
-    { MP_ROM_QSTR(MP_QSTR_QUAD), MP_ROM_PTR(&esp32_quad_type) },
+    { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&esp32_pcnt_type) },
+    { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&esp32_quad_type) },
     /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_0), MP_ROM_INT(PCNT_CHANNEL_0) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_1), MP_ROM_INT(PCNT_CHANNEL_1) },
