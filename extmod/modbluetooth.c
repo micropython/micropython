@@ -1147,8 +1147,8 @@ STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
     }
 
     mp_obj_array_t mv_addr;
-    mp_obj_array_t mv_data[2];
-    assert(n_data <= 2);
+    mp_obj_array_t mv_data[3];
+    assert(n_data <= 3);
 
     mp_obj_tuple_t *data_tuple = mp_local_alloc(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) * MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
     data_tuple->base.type = &mp_type_tuple;
@@ -1278,9 +1278,11 @@ void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypte
     invoke_irq_handler(MP_BLUETOOTH_IRQ_ENCRYPTION_UPDATE, args, 5, 0, NULL_ADDR, NULL_UUID, NULL_DATA, NULL_DATA_LEN, 0);
 }
 
-bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t **value, size_t *value_len) {
+bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t *key2, size_t key2_len, const uint8_t **value, size_t *value_len) {
     mp_int_t args[] = {type, index};
-    mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_GET_SECRET, args, 2, 0, NULL_ADDR, NULL_UUID, &key, &key_len, 1);
+    const uint8_t *data[] = {key, key2};
+    size_t data_len[] = {key_len, key2_len};
+    mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_GET_SECRET, args, 2, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
     if (result == mp_const_none) {
         return false;
     }
@@ -1291,11 +1293,11 @@ bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *
     return true;
 }
 
-bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *value, size_t value_len) {
+bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *key2, size_t key2_len, const uint8_t *value, size_t value_len) {
     mp_int_t args[] = { type };
-    const uint8_t *data[] = {key, value};
-    size_t data_len[] = {key_len, value_len};
-    mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 2);
+    const uint8_t *data[] = {key, key2, value};
+    size_t data_len[] = {key_len, key2_len, value_len};
+    mp_obj_t result = invoke_irq_handler(MP_BLUETOOTH_IRQ_SET_SECRET, args, 1, 0, NULL_ADDR, NULL_UUID, data, data_len, 3);
     return mp_obj_is_true(result);
 }
 

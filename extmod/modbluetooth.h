@@ -426,8 +426,8 @@ void mp_bluetooth_gatts_on_encryption_update(uint16_t conn_handle, bool encrypte
 // For get, if key is NULL, then the implementation must return the index'th matching key. Otherwise it should return a specific key.
 // For set, if value is NULL, then delete.
 // The "type" is stack-specific, but could also be used to implement versioning.
-bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t **value, size_t *value_len);
-bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *value, size_t value_len);
+bool mp_bluetooth_gap_on_get_secret(uint8_t type, uint8_t index, const uint8_t *key, size_t key_len, const uint8_t *key2, size_t key2_len, const uint8_t **value, size_t *value_len);
+bool mp_bluetooth_gap_on_set_secret(uint8_t type, const uint8_t *key, size_t key_len, const uint8_t *key2, size_t key2_len, const uint8_t *value, size_t value_len);
 
 // Call this when a passkey verification needs to be processed.
 void mp_bluetooth_gap_on_passkey_action(uint16_t conn_handle, uint8_t action, mp_int_t passkey);
