@@ -159,6 +159,9 @@ void alarm_pin_pinalarm_reset(void) {
     //       sure to clear any reserved tables, deinit both PORT and TAMPER
     //       settings, etc. If flags are set to indicate this module is in
     //       use, reset them.
+
+    // Disable TAMPER interrupt
+    RTC->MODE0.INTENCLR.bit.TAMPER = 1;
 }
 
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
@@ -175,6 +178,8 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                     mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
                 }
                 deep_wkup_enabled = true;
+                // Set tamper interrupt so deep sleep knows that's the intent
+                RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
                 // TODO: Set up deep sleep alarms.
                 //       For deep sleep alarms, first check if the
                 //       alarm pin value is valid for RTC->TAMPER. Ensure

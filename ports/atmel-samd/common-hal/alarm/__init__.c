@@ -29,7 +29,7 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
-#include <stdio.h>
+// #include <stdio.h>
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/SleepMemory.h"
@@ -47,8 +47,10 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
         .type = &alarm_sleep_memory_type,
     },
 };
-uint32_t target2 = 0;
 // TODO: make a custom enum to avoid weird values like PM_SLEEPCFG_SLEEPMODE_BACKUP_Val?
+STATIC volatile uint32_t _target;
+STATIC bool fake_sleep;
+STATIC bool pin_alarm = false;
 
 void alarm_reset(void) {
     // Reset the alarm flag
@@ -58,15 +60,6 @@ void alarm_reset(void) {
 }
 
 samd_sleep_source_t alarm_get_wakeup_cause(void) {
-    // uint8_t reset_cause = RSTC->RCAUSE.reg;
-    // printf("reset cause: %u\n",reset_cause);
-    // printf("POR %u, BKUP %u, EXT %u, SYST %u\n",
-    //     reset_cause & RSTC_RCAUSE_POR,
-    //     reset_cause & RSTC_RCAUSE_BACKUP,
-    //     reset_cause & RSTC_RCAUSE_EXT,
-    //     reset_cause & RSTC_RCAUSE_SYST);
-    // printf("RTC INTFLAG: %u\n",RTC->MODE0.INTFLAG.reg);
-
     // If in light/fake sleep, check modules
     if (alarm_pin_pinalarm_woke_this_cycle()) {
         return SAMD_WAKEUP_GPIO;
@@ -74,8 +67,12 @@ samd_sleep_source_t alarm_get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_this_cycle()) {
         return SAMD_WAKEUP_RTC;
     }
-    // TODO: for deep sleep, manually determine how the chip woke up
-    // TODO: try checking the interrupt flag tables for RTC TAMPER vs COMPARE
+    if (RSTC->RCAUSE.bit.BACKUP) {
+        if (RTC->MODE0.INTFLAG.bit.TAMPER) {
+            return SAMD_WAKEUP_GPIO;
+        }
+        return SAMD_WAKEUP_RTC;
+    }
     return SAMD_WAKEUP_UNDEF;
 }
 
@@ -105,7 +102,8 @@ mp_obj_t common_hal_alarm_create_wake_alarm(void) {
 // Set up light sleep or deep sleep alarms.
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
-    target2 = alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
+    alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
+    fake_sleep = false;
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
@@ -178,7 +176,8 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
-    target2 = alarm_time_timealarm_prepare_for_deep_sleep();
+    alarm_time_timealarm_prepare_for_deep_sleep();
+    _target = RTC->MODE0.COMP[1].reg;
     port_disable_tick(); // TODO: Required for SAMD?
 
     // Set a flag in the backup registers to indicate sleep wakeup
@@ -192,7 +191,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // hacky way of checking if time alarm or pin alarm
     // TODO: find better way of determining pin vs time
-    if (target2 == 0) {
+    if (RTC->MODE0.INTENSET.bit.TAMPER) {
         // Disable interrupts
         NVIC_DisableIRQ(RTC_IRQn);
 
@@ -206,6 +205,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
                               RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
 
+        // TODO: map requested pin to limited selection of TAMPER pins
         //PA02 = IN2
         RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
         RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = 1; // rising edge
@@ -216,8 +216,8 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         NVIC_EnableIRQ(RTC_IRQn);
         // Set interrupts for TAMPER or overflow
         RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
-    }
-    else {
+    } else {
+        // Retrieve COMP1 value before resetting RTC
         // Disable interrupts
         NVIC_DisableIRQ(RTC_IRQn);
 
@@ -231,7 +231,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
                               RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
 
-        RTC->MODE0.COMP[1].reg = (target2/1024) * 32;
+        RTC->MODE0.COMP[1].reg = (_target/1024) * 32;
         while(RTC->MODE0.SYNCBUSY.reg);
 
         // Enable interrupts
@@ -239,8 +239,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         NVIC_EnableIRQ(RTC_IRQn);
         // Set interrupts for COMPARE1 or overflow
         RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP1 | RTC_MODE1_INTENSET_OVF;
-    }
-
+        }
     // Set-up Deep Sleep Mode
     // RAM retention
     PM->BKUPCFG.reg = PM_BKUPCFG_BRAMCFG(0x2);       // No RAM retention 0x2 partial:0x1
@@ -260,36 +259,21 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     }
 }
 
-void common_hal_alarm_pretending_deep_sleep(void) {
+MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
     // TODO:
     //      If tamper detect interrupts cannot be used to wake from the Idle tier of sleep,
     //      This section will need to re-initialize the pins to allow the PORT peripheral
     //      to generate external interrupts again. See STM32 for reference.
 
-    // COMP never fires... I don't know why
-    if (RTC->MODE0.INTFLAG.bit.CMP1 || RTC->MODE0.INTFLAG.bit.CMP0){
-        printf("fake sleep finished (proper way)\n");
-        timer_callback();
-        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1; // clear flag
-    }
-    else {
-        // this works, but is a terrible way of checking
-        if (port_get_raw_ticks(NULL) > (RTC->MODE0.COMP[1].reg)) {
-            timer_callback();
-            // printf("COUNT %lu\n",(uint32_t)port_get_raw_ticks(NULL));
-            // printf("CTRLA %u\n",RTC->MODE0.CTRLA.reg);
-            // printf("CTRLB %u\n",RTC->MODE0.CTRLB.reg);
-            // printf("EVCTRL %lu\n",RTC->MODE0.EVCTRL.reg);
-            // printf("INTENCLR %u\n",RTC->MODE0.INTENCLR.reg);
-            // printf("INTENSET %u\n",RTC->MODE0.INTENSET.reg);
-            // printf("INTFLAG %u\n",RTC->MODE0.INTFLAG.reg);
-            // printf("SYNCBUSY %lu\n",RTC->MODE0.SYNCBUSY.reg);
-            // printf("COMP0 %lu\n",RTC->MODE0.COMP[0].reg);
-            // printf("COMP1 %lu\n",RTC->MODE0.COMP[1].reg);
-
-            RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1; // clear flag
-            printf("fake sleep finished (manual way)\n");
-        }
+    if (!fake_sleep) {
+        SAMD_ALARM_FLAG = 1;
+        while(RTC->MODE0.SYNCBUSY.reg);
+        fake_sleep = true;
+        // if () {
+        //     pin_alarm=true;
+        // }
+    } else {
+        port_idle_until_interrupt();
     }
 }
 
