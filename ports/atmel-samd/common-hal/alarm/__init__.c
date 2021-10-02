@@ -50,7 +50,6 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
 // TODO: make a custom enum to avoid weird values like PM_SLEEPCFG_SLEEPMODE_BACKUP_Val?
 STATIC volatile uint32_t _target;
 STATIC bool fake_sleep;
-STATIC bool pin_alarm = false;
 
 void alarm_reset(void) {
     // Reset the alarm flag
@@ -68,7 +67,9 @@ samd_sleep_source_t alarm_get_wakeup_cause(void) {
         return SAMD_WAKEUP_RTC;
     }
     if (RSTC->RCAUSE.bit.BACKUP) {
-        if (RTC->MODE0.INTFLAG.bit.TAMPER) {
+        // not able to detect PinAlarm wake since registers are getting reset
+        // TODO: come up with a way to detect a TAMPER
+        if (RTC->MODE0.TAMPID.reg || RTC->MODE0.INTFLAG.bit.TAMPER) {
             return SAMD_WAKEUP_GPIO;
         }
         return SAMD_WAKEUP_RTC;
@@ -189,33 +190,30 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     (void)__get_FPSCR();
     }
 
-    // hacky way of checking if time alarm or pin alarm
-    // TODO: find better way of determining pin vs time
+    // PinAlarm (hacky way of checking if time alarm or pin alarm)
     if (RTC->MODE0.INTENSET.bit.TAMPER) {
         // Disable interrupts
         NVIC_DisableIRQ(RTC_IRQn);
-
         // Must disable the RTC before writing to EVCTRL and TMPCTRL
         RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
         while (RTC->MODE0.SYNCBUSY.bit.ENABLE);              // Wait for synchronization
-
         RTC->MODE0.CTRLA.bit.SWRST = 1;                      // Software reset the RTC
         while (RTC->MODE0.SYNCBUSY.bit.SWRST);               // Wait for synchronization
-
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
                               RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
 
         // TODO: map requested pin to limited selection of TAMPER pins
-        //PA02 = IN2
         RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
         RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = 1; // rising edge
-        RTC->MODE0.TAMPCTRL.bit.IN2ACT = 1;  // WAKE (doesn't save timestamp)
+        //PA02 = IN2
+        RTC->MODE0.TAMPCTRL.bit.IN2ACT = 1;  // WAKE on IN2 (doesn't save timestamp)
 
         // Enable interrupts
         NVIC_SetPriority(RTC_IRQn, 0);
         NVIC_EnableIRQ(RTC_IRQn);
         // Set interrupts for TAMPER or overflow
         RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
+    // TimeAlarm
     } else {
         // Retrieve COMP1 value before resetting RTC
         // Disable interrupts
@@ -269,9 +267,6 @@ MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
         SAMD_ALARM_FLAG = 1;
         while(RTC->MODE0.SYNCBUSY.reg);
         fake_sleep = true;
-        // if () {
-        //     pin_alarm=true;
-        // }
     } else {
         port_idle_until_interrupt();
     }
