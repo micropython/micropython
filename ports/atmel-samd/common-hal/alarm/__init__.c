@@ -275,4 +275,3 @@ MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
 void common_hal_alarm_gc_collect(void) {
     gc_collect_ptr(shared_alarm_get_wake_alarm());
 }
-

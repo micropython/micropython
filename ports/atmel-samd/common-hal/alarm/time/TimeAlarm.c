@@ -29,7 +29,6 @@
 // #include <stdio.h>
 // #include "shared-bindings/microcontroller/__init__.h"
 
-
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/port.h"
@@ -44,6 +43,7 @@ void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self,
     //
     //       UPDATE: for deep sleep at least, it's far more than 3 days since
     //               prescalar is set to 1024. (2^32)/32 seconds so >1500 days?
+
     self->monotonic_time = monotonic_time;
 }
 
