@@ -36,8 +36,8 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/netutils/netutils.h"
-#include "modnetwork.h"
+#include "shared/netutils/netutils.h"
+#include "extmod/modnetwork.h"
 #include "pin.h"
 #include "spi.h"
 
@@ -52,8 +52,8 @@
 #include "patch_prog.h"
 
 #define MAX_ADDRSTRLEN      (128)
-#define MAX_RX_PACKET       (CC3000_RX_BUFFER_SIZE-CC3000_MINIMAL_RX_SIZE-1)
-#define MAX_TX_PACKET       (CC3000_TX_BUFFER_SIZE-CC3000_MINIMAL_TX_SIZE-1)
+#define MAX_RX_PACKET       (CC3000_RX_BUFFER_SIZE - CC3000_MINIMAL_RX_SIZE - 1)
+#define MAX_TX_PACKET       (CC3000_TX_BUFFER_SIZE - CC3000_MINIMAL_TX_SIZE - 1)
 
 #define MAKE_SOCKADDR(addr, ip, port) \
     sockaddr addr; \
@@ -115,7 +115,7 @@ STATIC void cc3k_callback(long event_type, char *data, unsigned char length) {
 STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     uint32_t ip;
     // CC3000 gethostbyname is unreliable and usually returns -95 on first call
-    for (int retry = 5; CC3000_EXPORT(gethostbyname)((char*)name, len, &ip) < 0; retry--) {
+    for (int retry = 5; CC3000_EXPORT(gethostbyname)((char *)name, len, &ip) < 0; retry--) {
         if (retry == 0 || CC3000_EXPORT(errno) != -95) {
             return CC3000_EXPORT(errno);
         }
@@ -136,17 +136,25 @@ STATIC int cc3k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uin
 }
 
 STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
-    if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
+    if (socket->domain != MOD_NETWORK_AF_INET) {
         *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
     mp_uint_t type;
-    switch (socket->u_param.type) {
-        case MOD_NETWORK_SOCK_STREAM: type = SOCK_STREAM; break;
-        case MOD_NETWORK_SOCK_DGRAM: type = SOCK_DGRAM; break;
-        case MOD_NETWORK_SOCK_RAW: type = SOCK_RAW; break;
-        default: *_errno = MP_EINVAL; return -1;
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM:
+            type = SOCK_STREAM;
+            break;
+        case MOD_NETWORK_SOCK_DGRAM:
+            type = SOCK_DGRAM;
+            break;
+        case MOD_NETWORK_SOCK_RAW:
+            type = SOCK_RAW;
+            break;
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
     }
 
     // open socket
@@ -160,23 +168,23 @@ STATIC int cc3k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
     cc3k_reset_fd_closed_state(fd);
 
     // store state of this socket
-    socket->u_state = fd;
+    socket->fileno = fd;
 
     // make accept blocking by default
     int optval = SOCK_OFF;
     socklen_t optlen = sizeof(optval);
-    CC3000_EXPORT(setsockopt)(socket->u_state, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen);
+    CC3000_EXPORT(setsockopt)(socket->fileno, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen);
 
     return 0;
 }
 
 STATIC void cc3k_socket_close(mod_network_socket_obj_t *socket) {
-    CC3000_EXPORT(closesocket)(socket->u_state);
+    CC3000_EXPORT(closesocket)(socket->fileno);
 }
 
 STATIC int cc3k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = CC3000_EXPORT(bind)(socket->u_state, &addr, sizeof(addr));
+    int ret = CC3000_EXPORT(bind)(socket->fileno, &addr, sizeof(addr));
     if (ret != 0) {
         *_errno = ret;
         return -1;
@@ -185,7 +193,7 @@ STATIC int cc3k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_
 }
 
 STATIC int cc3k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
-    int ret = CC3000_EXPORT(listen)(socket->u_state, backlog);
+    int ret = CC3000_EXPORT(listen)(socket->fileno, backlog);
     if (ret != 0) {
         *_errno = ret;
         return -1;
@@ -198,7 +206,7 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
     int fd;
     sockaddr addr;
     socklen_t addr_len = sizeof(addr);
-    if ((fd = CC3000_EXPORT(accept)(socket->u_state, &addr, &addr_len)) < 0) {
+    if ((fd = CC3000_EXPORT(accept)(socket->fileno, &addr, &addr_len)) < 0) {
         if (fd == SOC_IN_PROGRESS) {
             *_errno = MP_EAGAIN;
         } else {
@@ -211,11 +219,11 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
     cc3k_reset_fd_closed_state(fd);
 
     // store state in new socket object
-    socket2->u_state = fd;
+    socket2->fileno = fd;
 
     // return ip and port
     // it seems CC3000 returns little endian for accept??
-    //UNPACK_SOCKADDR(addr, ip, *port);
+    // UNPACK_SOCKADDR(addr, ip, *port);
     *port = (addr.sa_data[1] << 8) | addr.sa_data[0];
     ip[3] = addr.sa_data[2];
     ip[2] = addr.sa_data[3];
@@ -227,7 +235,7 @@ STATIC int cc3k_socket_accept(mod_network_socket_obj_t *socket, mod_network_sock
 
 STATIC int cc3k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = CC3000_EXPORT(connect)(socket->u_state, &addr, sizeof(addr));
+    int ret = CC3000_EXPORT(connect)(socket->fileno, &addr, sizeof(addr));
     if (ret != 0) {
         *_errno = CC3000_EXPORT(errno);
         return -1;
@@ -236,8 +244,8 @@ STATIC int cc3k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_ui
 }
 
 STATIC mp_uint_t cc3k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
-    if (cc3k_get_fd_closed_state(socket->u_state)) {
-        CC3000_EXPORT(closesocket)(socket->u_state);
+    if (cc3k_get_fd_closed_state(socket->fileno)) {
+        CC3000_EXPORT(closesocket)(socket->fileno);
         *_errno = MP_EPIPE;
         return -1;
     }
@@ -247,7 +255,7 @@ STATIC mp_uint_t cc3k_socket_send(mod_network_socket_obj_t *socket, const byte *
     mp_int_t bytes = 0;
     while (bytes < len) {
         int n = MIN((len - bytes), MAX_TX_PACKET);
-        n = CC3000_EXPORT(send)(socket->u_state, (uint8_t*)buf + bytes, n, 0);
+        n = CC3000_EXPORT(send)(socket->fileno, (uint8_t *)buf + bytes, n, 0);
         if (n <= 0) {
             *_errno = CC3000_EXPORT(errno);
             return -1;
@@ -260,18 +268,18 @@ STATIC mp_uint_t cc3k_socket_send(mod_network_socket_obj_t *socket, const byte *
 
 STATIC mp_uint_t cc3k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     // check the socket is open
-    if (cc3k_get_fd_closed_state(socket->u_state)) {
+    if (cc3k_get_fd_closed_state(socket->fileno)) {
         // socket is closed, but CC3000 may have some data remaining in buffer, so check
         fd_set rfds;
         FD_ZERO(&rfds);
-        FD_SET(socket->u_state, &rfds);
+        FD_SET(socket->fileno, &rfds);
         cc3000_timeval tv;
         tv.tv_sec = 0;
         tv.tv_usec = 1;
-        int nfds = CC3000_EXPORT(select)(socket->u_state + 1, &rfds, NULL, NULL, &tv);
-        if (nfds == -1 || !FD_ISSET(socket->u_state, &rfds)) {
+        int nfds = CC3000_EXPORT(select)(socket->fileno + 1, &rfds, NULL, NULL, &tv);
+        if (nfds == -1 || !FD_ISSET(socket->fileno, &rfds)) {
             // no data waiting, so close socket and return 0 data
-            CC3000_EXPORT(closesocket)(socket->u_state);
+            CC3000_EXPORT(closesocket)(socket->fileno);
             return 0;
         }
     }
@@ -280,7 +288,7 @@ STATIC mp_uint_t cc3k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, m
     len = MIN(len, MAX_RX_PACKET);
 
     // do the recv
-    int ret = CC3000_EXPORT(recv)(socket->u_state, buf, len, 0);
+    int ret = CC3000_EXPORT(recv)(socket->fileno, buf, len, 0);
     if (ret < 0) {
         *_errno = CC3000_EXPORT(errno);
         return -1;
@@ -291,7 +299,7 @@ STATIC mp_uint_t cc3k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, m
 
 STATIC mp_uint_t cc3k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
     MAKE_SOCKADDR(addr, ip, port)
-    int ret = CC3000_EXPORT(sendto)(socket->u_state, (byte*)buf, len, 0, (sockaddr*)&addr, sizeof(addr));
+    int ret = CC3000_EXPORT(sendto)(socket->fileno, (byte *)buf, len, 0, (sockaddr *)&addr, sizeof(addr));
     if (ret < 0) {
         *_errno = CC3000_EXPORT(errno);
         return -1;
@@ -302,7 +310,7 @@ STATIC mp_uint_t cc3k_socket_sendto(mod_network_socket_obj_t *socket, const byte
 STATIC mp_uint_t cc3k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     sockaddr addr;
     socklen_t addr_len = sizeof(addr);
-    mp_int_t ret = CC3000_EXPORT(recvfrom)(socket->u_state, buf, len, 0, &addr, &addr_len);
+    mp_int_t ret = CC3000_EXPORT(recvfrom)(socket->fileno, buf, len, 0, &addr, &addr_len);
     if (ret < 0) {
         *_errno = CC3000_EXPORT(errno);
         return -1;
@@ -312,7 +320,7 @@ STATIC mp_uint_t cc3k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *bu
 }
 
 STATIC int cc3k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
-    int ret = CC3000_EXPORT(setsockopt)(socket->u_state, level, opt, optval, optlen);
+    int ret = CC3000_EXPORT(setsockopt)(socket->fileno, level, opt, optval, optlen);
     if (ret < 0) {
         *_errno = CC3000_EXPORT(errno);
         return -1;
@@ -332,14 +340,14 @@ STATIC int cc3k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t ti
             // set blocking mode
             optval = SOCK_OFF;
         }
-        ret = CC3000_EXPORT(setsockopt)(socket->u_state, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen);
+        ret = CC3000_EXPORT(setsockopt)(socket->fileno, SOL_SOCKET, SOCKOPT_RECV_NONBLOCK, &optval, optlen);
         if (ret == 0) {
-            ret = CC3000_EXPORT(setsockopt)(socket->u_state, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen);
+            ret = CC3000_EXPORT(setsockopt)(socket->fileno, SOL_SOCKET, SOCKOPT_ACCEPT_NONBLOCK, &optval, optlen);
         }
     } else {
         // set timeout
         socklen_t optlen = sizeof(timeout_ms);
-        ret = CC3000_EXPORT(setsockopt)(socket->u_state, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &timeout_ms, optlen);
+        ret = CC3000_EXPORT(setsockopt)(socket->fileno, SOL_SOCKET, SOCKOPT_RECV_TIMEOUT, &timeout_ms, optlen);
     }
 
     if (ret != 0) {
@@ -355,7 +363,7 @@ STATIC int cc3k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request
     if (request == MP_STREAM_POLL) {
         mp_uint_t flags = arg;
         ret = 0;
-        int fd = socket->u_state;
+        int fd = socket->fileno;
 
         // init fds
         fd_set rfds, wfds, xfds;
@@ -416,7 +424,7 @@ typedef struct _cc3k_obj_t {
     mp_obj_base_t base;
 } cc3k_obj_t;
 
-STATIC const cc3k_obj_t cc3k_obj = {{(mp_obj_type_t*)&mod_network_nic_type_cc3k}};
+STATIC const cc3k_obj_t cc3k_obj = {{(mp_obj_type_t *)&mod_network_nic_type_cc3k}};
 
 // \classmethod \constructor(spi, pin_cs, pin_en, pin_irq)
 // Initialise the CC3000 using the given SPI bus and pins and return a CC3K object.
@@ -436,24 +444,24 @@ STATIC mp_obj_t cc3k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         pin_find(args[1]),
         pin_find(args[2]),
         pin_find(args[3])
-    );
+        );
 
     // initialize and start the module
     wlan_init(cc3k_callback, NULL, NULL, NULL,
-            ReadWlanInterruptPin, SpiResumeSpi, SpiPauseSpi, WriteWlanPin);
+        ReadWlanInterruptPin, SpiResumeSpi, SpiPauseSpi, WriteWlanPin);
 
     if (wlan_start(0) != 0) {
-        mp_raise_msg(&mp_type_OSError, "failed to init CC3000 module");
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed to init CC3000 module"));
     }
 
     // set connection policy. this should be called explicitly by the user
     // wlan_ioctl_set_connection_policy(0, 0, 0);
 
     // Mask out all non-required events from the CC3000
-    wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE|
-                        HCI_EVNT_WLAN_UNSOL_INIT|
-                        HCI_EVNT_WLAN_ASYNC_PING_REPORT|
-                        HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
+    wlan_set_event_mask(HCI_EVNT_WLAN_KEEPALIVE |
+        HCI_EVNT_WLAN_UNSOL_INIT |
+        HCI_EVNT_WLAN_ASYNC_PING_REPORT |
+        HCI_EVNT_WLAN_ASYNC_SIMPLE_CONFIG_DONE);
 
     // register with network module
     mod_network_register_nic((mp_obj_t)&cc3k_obj);
@@ -494,8 +502,8 @@ STATIC mp_obj_t cc3k_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
 
     // connect to AP
-    if (wlan_connect(sec, (char*)ssid, ssid_len, (uint8_t*)bssid, (uint8_t*)key, key_len) != 0) {
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_OSError, "could not connect to ssid=%s, sec=%d, key=%s\n", ssid, sec, key));
+    if (wlan_connect(sec, (char *)ssid, ssid_len, (uint8_t *)bssid, (uint8_t *)key, key_len) != 0) {
+        mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, sec, key);
     }
 
     return mp_const_none;
@@ -531,7 +539,7 @@ STATIC mp_obj_t cc3k_ifconfig(mp_obj_t self_in) {
         netutils_format_ipv4_addr(ipconfig.aucDNSServer, NETUTILS_LITTLE),
         netutils_format_ipv4_addr(ipconfig.aucDHCPServer, NETUTILS_LITTLE),
         mp_obj_new_str(mac_vstr.buf, mac_vstr.len),
-        mp_obj_new_str((const char*)ipconfig.uaSSID, strlen((const char*)ipconfig.uaSSID)),
+        mp_obj_new_str((const char *)ipconfig.uaSSID, strlen((const char *)ipconfig.uaSSID)),
     };
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }
@@ -581,7 +589,7 @@ const mod_network_nic_type_t mod_network_nic_type_cc3k = {
         { &mp_type_type },
         .name = MP_QSTR_CC3K,
         .make_new = cc3k_make_new,
-        .locals_dict = (mp_obj_dict_t*)&cc3k_locals_dict,
+        .locals_dict = (mp_obj_dict_t *)&cc3k_locals_dict,
     },
     .gethostbyname = cc3k_gethostbyname,
     .socket = cc3k_socket_socket,

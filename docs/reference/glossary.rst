@@ -177,14 +177,14 @@ Glossary
         typically accessible on a host PC via USB.
 
     stream
-        Also known as a "file-like object". An Python object which provides
+        Also known as a "file-like object". A Python object which provides
         sequential read-write access to the underlying data. A stream object
         implements a corresponding interface, which consists of methods like
         ``read()``, ``write()``, ``readinto()``, ``seek()``, ``flush()``,
         ``close()``, etc. A stream is an important concept in MicroPython;
         many I/O objects implement the stream interface, and thus can be used
         consistently and interchangeably in different contexts. For more
-        information on streams in MicroPython, see the `uio` module.
+        information on streams in MicroPython, see the `io` module.
 
     UART
         Acronym for "Universal Asynchronous Receiver/Transmitter". This is a

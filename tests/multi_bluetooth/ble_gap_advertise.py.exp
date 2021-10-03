@@ -1,0 +1,7 @@
+--- instance0 ---
+gap_advertise(100_000, connectable=False)
+gap_advertise(20_000, connectable=True)
+gap_advertise(None)
+--- instance1 ---
+adv_types: [0, 2]
+adv_data: b'\x02\x01\x06\x04\xffMPY'

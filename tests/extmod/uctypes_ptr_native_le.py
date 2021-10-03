@@ -1,11 +1,12 @@
-import sys
+import usys
+
 try:
     import uctypes
 except ImportError:
     print("SKIP")
     raise SystemExit
 
-if sys.byteorder != "little":
+if usys.byteorder != "little":
     print("SKIP")
     raise SystemExit
 
@@ -30,6 +31,6 @@ assert S.ptr[1] == ord("1")
 print(hex(S.ptr16[0]))
 assert hex(S.ptr16[0]) == "0x3130"
 print(S.ptr2[0].b, S.ptr2[1].b)
-print (S.ptr2[0].b, S.ptr2[1].b)
+print(S.ptr2[0].b, S.ptr2[1].b)
 print(hex(S.ptr16[0]))
 assert (S.ptr2[0].b, S.ptr2[1].b) == (48, 49)

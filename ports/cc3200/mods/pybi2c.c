@@ -41,7 +41,6 @@
 #include "prcm.h"
 #include "i2c.h"
 #include "pybi2c.h"
-#include "mpexception.h"
 #include "pybsleep.h"
 #include "utils.h"
 #include "pybpin.h"

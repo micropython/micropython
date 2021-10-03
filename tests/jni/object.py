@@ -1,4 +1,5 @@
 import jni
+
 try:
     Integer = jni.cls("java/lang/Integer")
 except:

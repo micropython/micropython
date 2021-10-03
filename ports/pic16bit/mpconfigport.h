@@ -73,9 +73,9 @@
 // The xc16 compiler doesn't seem to respect alignment (!!) so we
 // need to use instead an object representation that allows for
 // 2-byte aligned pointers (see config setting above).
-//#define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
+// #define MICROPY_OBJ_BASE_ALIGNMENT  __attribute__((aligned(4)))
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p)))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))
 
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
@@ -83,8 +83,6 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned int mp_uint_t; // must be pointer size
 
 typedef int mp_off_t;
-
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // extra builtin names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

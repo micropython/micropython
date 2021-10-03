@@ -3,7 +3,7 @@
 
 typedef struct {
     const char *name;
-    mp_uint_t   offset;
+    mp_uint_t offset;
 } reg_t;
 
 #define REG_ENTRY(st, name) { #name, offsetof(st, name) }

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,109 +27,86 @@
 #include <string.h>
 
 #include "py/mphal.h"
-#include "lib/oofatfs/ff.h"
-#include "extmod/uzlib/uzlib.h"
 #include "mboot.h"
+#include "pack.h"
+#include "vfs.h"
+
+// Default block size used for mount operations if none given.
+#ifndef MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE
+#define MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE (4096)
+#endif
 
 #if MBOOT_FSLOAD
 
-#define DICT_SIZE (1 << 15)
+#if !(MBOOT_VFS_FAT || MBOOT_VFS_LFS1 || MBOOT_VFS_LFS2)
+#error Must enable at least one VFS component
+#endif
 
-typedef struct _gz_stream_t {
-    FIL fp;
-    TINF_DATA tinf;
-    uint8_t buf[512];
-    uint8_t dict[DICT_SIZE];
-} gz_stream_t;
+#if MBOOT_ENABLE_PACKING
+// Packed DFU files are gzip'd internally, not on the outside, so reads of the file
+// just read the file directly.
 
-static gz_stream_t gz_stream SECTION_NOZERO_BSS;
+static void *input_stream_data;
+static stream_read_t input_stream_read_meth;
 
-static int gz_stream_read_src(TINF_DATA *tinf) {
-    UINT n;
-    FRESULT res = f_read(&gz_stream.fp, gz_stream.buf, sizeof(gz_stream.buf), &n);
-    if (res != FR_OK) {
-        return -1;
-    }
-    if (n == 0) {
-        return -1;
-    }
-    tinf->source = gz_stream.buf + 1;
-    tinf->source_limit = gz_stream.buf + n;
-    return gz_stream.buf[0];
-}
-
-static int gz_stream_open(FATFS *fatfs, const char *filename) {
-    FRESULT res = f_open(fatfs, &gz_stream.fp, filename, FA_READ);
-    if (res != FR_OK) {
-        return -1;
-    }
-    memset(&gz_stream.tinf, 0, sizeof(gz_stream.tinf));
-    gz_stream.tinf.readSource = gz_stream_read_src;
-
-    int st = uzlib_gzip_parse_header(&gz_stream.tinf);
-    if (st != TINF_OK) {
-        f_close(&gz_stream.fp);
-        return -1;
-    }
-
-    uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);
-
+static inline int input_stream_init(void *stream_data, stream_read_t stream_read) {
+    input_stream_data = stream_data;
+    input_stream_read_meth = stream_read;
     return 0;
 }
 
-static int gz_stream_read(size_t len, uint8_t *buf) {
-    gz_stream.tinf.dest = buf;
-    gz_stream.tinf.dest_limit = buf + len;
-    int st = uzlib_uncompress_chksum(&gz_stream.tinf);
-    if (st == TINF_DONE) {
-        return 0;
-    }
-    if (st < 0) {
-        return st;
-    }
-    return gz_stream.tinf.dest - buf;
+static inline int input_stream_read(size_t len, uint8_t *buf) {
+    return input_stream_read_meth(input_stream_data, buf, len);
 }
 
-static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to_flash) {
-    int res = gz_stream_open(fatfs, filename);
-    if (res != 0) {
-        return res;
-    }
+#else
+// Standard (non-packed) DFU files must be gzip'd externally / on the outside, so
+// reads of the file go through gz_stream.
 
+static inline int input_stream_init(void *stream_data, stream_read_t stream_read) {
+    return gz_stream_init_from_stream(stream_data, stream_read);
+}
+
+static inline int input_stream_read(size_t len, uint8_t *buf) {
+    return gz_stream_read(len, buf);
+}
+#endif
+
+static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
     uint8_t buf[512];
     size_t file_offset;
 
     // Read file header, <5sBIB
-    res = gz_stream_read(11, buf);
+    int res = input_stream_read(11, buf);
     if (res != 11) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset = 11;
 
     // Validate header, version 1
     if (memcmp(buf, "DfuSe\x01", 6) != 0) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_HEADER;
     }
 
     // Must have only 1 target
     if (buf[10] != 1) {
-        return -2;
+        return -MBOOT_ERRNO_DFU_TOO_MANY_TARGETS;
     }
 
     // Get total size
     uint32_t total_size = get_le32(buf + 6);
 
     // Read target header, <6sBi255sII
-    res = gz_stream_read(274, buf);
+    res = input_stream_read(274, buf);
     if (res != 274) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset += 274;
 
     // Validate target header, with alt being 0
     if (memcmp(buf, "Target\x00", 7) != 0) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_TARGET;
     }
 
     // Get target size and number of elements
@@ -141,9 +118,9 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
     // Parse each element
     for (size_t elem = 0; elem < num_elems; ++elem) {
         // Read element header, <II
-        res = gz_stream_read(8, buf);
+        res = input_stream_read(8, buf);
         if (res != 8) {
-            return -1;
+            return -MBOOT_ERRNO_DFU_READ_ERROR;
         }
         file_offset += 8;
 
@@ -151,6 +128,7 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
         uint32_t elem_addr = get_le32(buf);
         uint32_t elem_size = get_le32(buf + 4);
 
+        #if !MBOOT_ENABLE_PACKING
         // Erase flash before writing
         if (write_to_flash) {
             uint32_t addr = elem_addr;
@@ -161,6 +139,7 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
                 }
             }
         }
+        #endif
 
         // Read element data and possibly write to flash
         for (uint32_t s = elem_size; s;) {
@@ -168,14 +147,14 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
             if (l > sizeof(buf)) {
                 l = sizeof(buf);
             }
-            res = gz_stream_read(l, buf);
+            res = input_stream_read(l, buf);
             if (res != l) {
-                return -1;
+                return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
             if (write_to_flash) {
                 res = do_write(elem_addr, buf, l);
                 if (res != 0) {
-                    return -1;
+                    return res;
                 }
                 elem_addr += l;
             }
@@ -186,17 +165,17 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
     }
 
     if (target_size != file_offset - file_offset_target) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_SIZE;
     }
 
     if (total_size != file_offset) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_INVALID_SIZE;
     }
 
     // Read trailing info
-    res = gz_stream_read(16, buf);
+    res = input_stream_read(16, buf);
     if (res != 16) {
-        return -1;
+        return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
 
     // TODO validate CRC32
@@ -204,85 +183,112 @@ static int fsload_program_file(FATFS *fatfs, const char *filename, bool write_to
     return 0;
 }
 
-static int fsload_process_fatfs(uint32_t base_addr, uint32_t byte_len, size_t fname_len, const char *fname) {
-    fsload_bdev_t bdev = {base_addr, byte_len};
-    FATFS fatfs;
-    fatfs.drv = &bdev;
-    FRESULT res = f_mount(&fatfs);
-    if (res != FR_OK) {
-        return -1;
-    }
-
-    FF_DIR dp;
-    res = f_opendir(&fatfs, &dp, "/");
-    if (res != FR_OK) {
-        return -1;
-    }
-
-    // Search for firmware file with correct name
-    int r;
-    for (;;) {
-        FILINFO fno;
-        res = f_readdir(&dp, &fno);
-        char *fn = fno.fname;
-        if (res != FR_OK || fn[0] == 0) {
-            // Finished listing dir, no firmware found
-            r = -1;
-            break;
-        }
-        if (memcmp(fn, fname, fname_len) == 0 && fn[fname_len] == '\0') {
-            // Found firmware
-            led_state_all(2);
-            r = fsload_program_file(&fatfs, fn, false);
-            if (r == 0) {
-                // Firmware is valid, program it
-                led_state_all(4);
-                r = fsload_program_file(&fatfs, fn, true);
+static int fsload_validate_and_program_file(void *stream, const stream_methods_t *meth, const char *fname) {
+    // First pass verifies the file, second pass programs it
+    for (unsigned int pass = 0; pass <= 1; ++pass) {
+        led_state_all(pass == 0 ? 2 : 4);
+        int res = meth->open(stream, fname);
+        if (res == 0) {
+            res = input_stream_init(stream, meth->read);
+            if (res == 0) {
+                res = fsload_program_file(pass == 0 ? false : true);
             }
-            break;
+        }
+        meth->close(stream);
+        if (res != 0) {
+            return res;
         }
     }
-
-    return r;
+    return 0;
 }
 
 int fsload_process(void) {
     const uint8_t *elem = elem_search(ELEM_DATA_START, ELEM_TYPE_FSLOAD);
     if (elem == NULL || elem[-1] < 2) {
-        return -1;
+        return -MBOOT_ERRNO_FSLOAD_NO_FSLOAD;
     }
 
+    // Get mount point id and create null-terminated filename
     uint8_t mount_point = elem[0];
     uint8_t fname_len = elem[-1] - 1;
-    const char *fname = (const char*)&elem[1];
+    char fname[256];
+    memcpy(fname, &elem[1], fname_len);
+    fname[fname_len] = '\0';
 
     elem = ELEM_DATA_START;
     for (;;) {
         elem = elem_search(elem, ELEM_TYPE_MOUNT);
-        if (elem == NULL || elem[-1] != 10) {
-            // End of elements, or invalid MOUNT element
-            return -1;
+        if (elem == NULL) {
+            // End of elements.
+            return -MBOOT_ERRNO_FSLOAD_NO_MOUNT;
+        }
+        uint32_t block_size;
+        if (elem[-1] == 10) {
+            // No block size given, use default.
+            block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+        } else if (elem[-1] == 14) {
+            // Block size given, extract it.
+            block_size = get_le32(&elem[10]);
+        } else {
+            // Invalid MOUNT element.
+            return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
         }
         if (elem[0] == mount_point) {
             uint32_t base_addr = get_le32(&elem[2]);
             uint32_t byte_len = get_le32(&elem[6]);
+            int ret;
+            union {
+                #if MBOOT_VFS_FAT
+                vfs_fat_context_t fat;
+                #endif
+                #if MBOOT_VFS_LFS1
+                vfs_lfs1_context_t lfs1;
+                #endif
+                #if MBOOT_VFS_LFS2
+                vfs_lfs2_context_t lfs2;
+                #endif
+            } ctx;
+            const stream_methods_t *methods;
+            #if MBOOT_VFS_FAT
             if (elem[1] == ELEM_MOUNT_FAT) {
-                int ret = fsload_process_fatfs(base_addr, byte_len, fname_len, fname);
-                // Flash LEDs based on success/failure of update
-                for (int i = 0; i < 4; ++i) {
-                    if (ret == 0) {
-                        led_state_all(7);
-                    } else {
-                        led_state_all(1);
-                    }
-                    mp_hal_delay_ms(100);
-                    led_state_all(0);
-                    mp_hal_delay_ms(100);
-                }
-                return ret;
+                (void)block_size;
+                ret = vfs_fat_mount(&ctx.fat, base_addr, byte_len);
+                methods = &vfs_fat_stream_methods;
+            } else
+            #endif
+            #if MBOOT_VFS_LFS1
+            if (elem[1] == ELEM_MOUNT_LFS1) {
+                ret = vfs_lfs1_mount(&ctx.lfs1, base_addr, byte_len, block_size);
+                methods = &vfs_lfs1_stream_methods;
+            } else
+            #endif
+            #if MBOOT_VFS_LFS2
+            if (elem[1] == ELEM_MOUNT_LFS2) {
+                ret = vfs_lfs2_mount(&ctx.lfs2, base_addr, byte_len, block_size);
+                methods = &vfs_lfs2_stream_methods;
+            } else
+            #endif
+            {
+                // Unknown filesystem type
+                return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
             }
-            // Unknown filesystem type
-            return -1;
+
+            if (ret == 0) {
+                ret = fsload_validate_and_program_file(&ctx, methods, fname);
+            }
+
+            // Flash LEDs based on success/failure of update
+            for (int i = 0; i < 4; ++i) {
+                if (ret == 0) {
+                    led_state_all(7);
+                } else {
+                    led_state_all(1);
+                }
+                mp_hal_delay_ms(100);
+                led_state_all(0);
+                mp_hal_delay_ms(100);
+            }
+            return ret;
         }
         elem += elem[-1];
     }

@@ -1,4 +1,3 @@
-#define MICROPY_ENABLE_DYNRUNTIME (1)
 #define MICROPY_PY_BTREE (1)
 
 #include "py/dynruntime.h"
@@ -116,7 +115,7 @@ STATIC mp_obj_t btree_open(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(native_errno);
     }
 
-    return MP_OBJ_FROM_PTR(btree_new(db));
+    return MP_OBJ_FROM_PTR(btree_new(db, args[0]));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_open_obj, 5, 5, btree_open);
 

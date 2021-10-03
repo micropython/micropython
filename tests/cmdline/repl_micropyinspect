@@ -1,0 +1,3 @@
+import uos
+
+uos.putenv('MICROPYINSPECT', '1')

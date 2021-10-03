@@ -24,10 +24,16 @@
  * THE SOFTWARE.
  */
 
+// *FORMAT-OFF*
+
 #if __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverride-init"
+#endif // __GNUC__ >= 5
 
 static const void *const entry_table[256] = {
     [0 ... 255] = &&entry_default,
@@ -117,3 +123,6 @@ static const void *const entry_table[256] = {
 #if __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+#if __GNUC__ >= 5
+#pragma GCC diagnostic pop
+#endif // __GNUC__ >= 5

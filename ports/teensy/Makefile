@@ -3,6 +3,9 @@ include ../../py/mkenv.mk
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -35,7 +38,7 @@ INC += -I$(TOP)/ports/stm32
 INC += -I$(BUILD)
 INC += -Icore
 
-CFLAGS = $(INC) -Wall -Wpointer-arith -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4)
+CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4)
 LDFLAGS = -nostdlib -T mk20dx256.ld -msoft-float -mfloat-abi=soft
 
 ifeq ($(USE_ARDUINO_TOOLCHAIN),1)
@@ -92,17 +95,17 @@ SRC_C = \
 	usb.c \
 
 STM_SRC_C = $(addprefix ports/stm32/,\
-	gccollect.c \
 	irq.c \
 	pin.c \
 	pin_named_pins.c \
 	)
 
-LIB_SRC_C = $(addprefix lib/,\
+SHARED_SRC_C = $(addprefix shared/,\
 	libc/string0.c \
-	mp-readline/readline.c \
-	utils/pyexec.c \
-	utils/sys_stdio_mphal.c \
+	readline/readline.c \
+	runtime/gchelper_native.c \
+	runtime/pyexec.c \
+	runtime/sys_stdio_mphal.c \
 	)
 
 SRC_TEENSY = $(addprefix core/,\
@@ -117,8 +120,8 @@ SRC_TEENSY = $(addprefix core/,\
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o) $(STM_SRC_C:.c=.o) $(SRC_TEENSY:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(BUILD)/lib/utils/gchelper_m3.o
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
 OBJ += $(BUILD)/pins_gen.o
 
 all: hex
@@ -126,13 +129,13 @@ hex: $(BUILD)/micropython.hex
 
 ifeq ($(USE_MEMZIP),1)
 SRC_C += \
-	lib/memzip/import.c \
-	lib/memzip/lexermemzip.c \
-	lib/memzip/memzip.c \
+	shared/memzip/import.c \
+	shared/memzip/lexermemzip.c \
+	shared/memzip/memzip.c \
 
 OBJ += $(BUILD)/memzip-files.o
 
-MAKE_MEMZIP = $(TOP)/lib/memzip/make-memzip.py
+MAKE_MEMZIP = $(TOP)/shared/memzip/make-memzip.py
 ifeq ($(MEMZIP_DIR),)
 MEMZIP_DIR = memzip_files
 endif
@@ -204,7 +207,7 @@ GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(STM_SRC_C) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=

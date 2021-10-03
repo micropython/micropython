@@ -2,9 +2,11 @@
 import utime
 import _thread
 
+
 def thread_entry():
     raise ValueError
 
+
 _thread.start_new_thread(thread_entry, ())
 utime.sleep(1)
-print('done')
+print("done")

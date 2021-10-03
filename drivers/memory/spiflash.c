@@ -287,6 +287,8 @@ int mp_spiflash_write(mp_spiflash_t *self, uint32_t addr, size_t len, const uint
 /******************************************************************************/
 // Interface functions that use the cache
 
+#if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+
 void mp_spiflash_cached_read(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     if (len == 0) {
         return;
@@ -509,3 +511,5 @@ int mp_spiflash_cached_write(mp_spiflash_t *self, uint32_t addr, size_t len, con
     mp_spiflash_release_bus(self);
     return 0;
 }
+
+#endif // MICROPY_HW_SPIFLASH_ENABLE_CACHE

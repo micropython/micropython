@@ -28,12 +28,22 @@
 
 #include "genhdr/pins.h"
 
+// For simplicity just convert all HAL errors to one errno.
+static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
+    return status == HAL_OK ? 0 : -1;
+}
+
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
 #define MP_HAL_PIN_MODE_INPUT           (0)
 #define MP_HAL_PIN_MODE_OUTPUT          (1)
 #define MP_HAL_PIN_MODE_ALT             (2)
 #define MP_HAL_PIN_MODE_ANALOG          (3)
+#if defined(GPIO_ASCR_ASC0)
+#define MP_HAL_PIN_MODE_ADC             (11)
+#else
+#define MP_HAL_PIN_MODE_ADC             (3)
+#endif
 #define MP_HAL_PIN_MODE_OPEN_DRAIN      (5)
 #define MP_HAL_PIN_MODE_ALT_OPEN_DRAIN  (6)
 #define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)

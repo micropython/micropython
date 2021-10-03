@@ -29,6 +29,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef _MSC_VER
+#include "py/mpconfig.h" // For inline.
+#endif
+
 typedef struct _ringbuf_t {
     uint8_t *buf;
     uint16_t size;
@@ -42,11 +46,11 @@ typedef struct _ringbuf_t {
 
 // Dynamic initialization. This needs to become findable as a root pointer!
 #define ringbuf_alloc(r, sz) \
-{ \
-    (r)->buf = m_new(uint8_t, sz); \
-    (r)->size = sz; \
-    (r)->iget = (r)->iput = 0; \
-}
+    { \
+        (r)->buf = m_new(uint8_t, sz); \
+        (r)->size = sz; \
+        (r)->iget = (r)->iput = 0; \
+    }
 
 static inline int ringbuf_get(ringbuf_t *r) {
     if (r->iget == r->iput) {
@@ -57,6 +61,13 @@ static inline int ringbuf_get(ringbuf_t *r) {
         r->iget = 0;
     }
     return v;
+}
+
+static inline int ringbuf_peek(ringbuf_t *r) {
+    if (r->iget == r->iput) {
+        return -1;
+    }
+    return r->buf[r->iget];
 }
 
 static inline int ringbuf_put(ringbuf_t *r, uint8_t v) {

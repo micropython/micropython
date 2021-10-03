@@ -34,6 +34,11 @@ a.write("foo")
 print(a.read())
 
 a = io.StringIO()
+print(a.tell())
+a.write("foo")
+print(a.tell())
+
+a = io.StringIO()
 a.close()
 for f in [a.read, a.getvalue, lambda:a.write("")]:
     # CPython throws for operations on closed I/O, MicroPython makes

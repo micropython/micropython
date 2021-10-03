@@ -10,19 +10,17 @@ desc = {
     # arr2 is array at offset 0, size 2, of structures defined recursively
     "arr2": (uctypes.ARRAY | 0, 2, {"b": uctypes.UINT8 | 0}),
     "arr3": (uctypes.ARRAY | 2, uctypes.UINT16 | 2),
-
     # aligned
     "arr5": (uctypes.ARRAY | 0, uctypes.UINT32 | 1),
     # unaligned
     "arr6": (uctypes.ARRAY | 1, uctypes.UINT32 | 1),
-
     "arr7": (uctypes.ARRAY | 0, 1, {"l": uctypes.UINT32 | 0}),
-    "arr8": (uctypes.ARRAY | 1, 1, {"l": uctypes.UINT32 | 0})
+    "arr8": (uctypes.ARRAY | 1, 1, {"l": uctypes.UINT32 | 0}),
 }
 
 data = bytearray(5)
 
-S = uctypes.struct(uctypes.addressof(data), desc,  uctypes.LITTLE_ENDIAN)
+S = uctypes.struct(uctypes.addressof(data), desc, uctypes.LITTLE_ENDIAN)
 
 # assign byte
 S.arr[0] = 0x11
@@ -55,4 +53,3 @@ assert hex(S.arr6[0]) == "0xaabbccdd"
 
 print(S.arr6[0] == S.arr8[0].l)
 assert S.arr6[0] == S.arr8[0].l
-

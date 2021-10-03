@@ -33,6 +33,10 @@ FLASH_SIZE_LAUNCHXL = 1M
 ifeq ($(BTARGET), application)
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
+
 # include MicroPython make definitions
 include $(TOP)/py/py.mk
 include application.mk

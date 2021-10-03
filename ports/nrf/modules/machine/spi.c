@@ -46,18 +46,18 @@
 #endif
 
 /// \moduleref machine
-/// \class SPI - a master-driven serial protocol
+/// \class SPI - a controller-driven serial protocol
 ///
-/// SPI is a serial protocol that is driven by a master.  At the physical level
+/// SPI is a serial protocol that is driven by a controller.  At the physical level
 /// there are 3 lines: SCK, MOSI, MISO.
 ///
 /// See usage model of I2C; SPI is very similar.  Main difference is
 /// parameters to init the SPI bus:
 ///
 ///     from machine import SPI
-///     spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+///     spi = SPI(1, baudrate=600000, polarity=1, phase=0, crc=0x7)
 ///
-/// Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+/// Polarity can be
 /// 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 /// to sample data on the first or second clock edge respectively.  Crc can be
 /// None for no CRC, or a polynomial specifier.
@@ -140,14 +140,14 @@ STATIC int spi_find(mp_obj_t id) {
             return 1;
         #endif
         }
-        mp_raise_ValueError("SPI doesn't exist");
+        mp_raise_ValueError(MP_ERROR_TEXT("SPI doesn't exist"));
     } else {
         // given an integer id
         int spi_id = mp_obj_get_int(id);
         if (spi_id >= 0 && spi_id < MP_ARRAY_SIZE(machine_hard_spi_obj)) {
             return spi_id;
         }
-        mp_raise_ValueError("SPI doesn't exist");
+        mp_raise_ValueError(MP_ERROR_TEXT("SPI doesn't exist"));
     }
 }
 
@@ -415,7 +415,7 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp
     mp_buffer_info_t dest;
     mp_get_buffer_raise(rd_buf, &dest, MP_BUFFER_WRITE);
     if (src.len != dest.len) {
-        mp_raise_ValueError("buffers must be the same length");
+        mp_raise_ValueError(MP_ERROR_TEXT("buffers must be the same length"));
     }
     spi_transfer(self, src.len, src.buf, dest.buf);
     return mp_const_none;

@@ -37,9 +37,19 @@
 #define MICROPY_PY_STM (1)
 #endif
 
+// Whether to include the pyb module
+#ifndef MICROPY_PY_PYB
+#define MICROPY_PY_PYB (1)
+#endif
+
 // Whether to include legacy functions and classes in the pyb module
 #ifndef MICROPY_PY_PYB_LEGACY
 #define MICROPY_PY_PYB_LEGACY (1)
+#endif
+
+// Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
+#ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)
 #endif
 
 // Whether to enable storage on the internal flash of the MCU
@@ -102,14 +112,24 @@
 #define MICROPY_HW_ENABLE_MMCARD (0)
 #endif
 
-// SD/MMC interface bus width (defaults to 4 bits)
-#ifndef MICROPY_HW_SDMMC_BUS_WIDTH
-#define MICROPY_HW_SDMMC_BUS_WIDTH (4)
+// Which SDMMC peripheral to use for the SD/MMC card driver (1 or 2)
+#ifndef MICROPY_HW_SDCARD_SDMMC
+#define MICROPY_HW_SDCARD_SDMMC (1)
+#endif
+
+// SD/MMC card driver interface bus width (defaults to 4 bits)
+#ifndef MICROPY_HW_SDCARD_BUS_WIDTH
+#define MICROPY_HW_SDCARD_BUS_WIDTH (4)
 #endif
 
 // Whether to automatically mount (and boot from) the SD card if it's present
 #ifndef MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_SDCARD)
+#endif
+
+// Which SDMMC peripheral to use for the SDIO driver (1 or 2)
+#ifndef MICROPY_HW_SDIO_SDMMC
+#define MICROPY_HW_SDIO_SDMMC (1)
 #endif
 
 // Whether to enable the MMA7660 driver, exposed as pyb.Accel
@@ -122,9 +142,120 @@
 #define MICROPY_HW_HAS_LCD (0)
 #endif
 
+// Whether to automatically mount (and boot from) the flash filesystem
+#ifndef MICROPY_HW_FLASH_MOUNT_AT_BOOT
+#define MICROPY_HW_FLASH_MOUNT_AT_BOOT (MICROPY_HW_ENABLE_STORAGE)
+#endif
+
 // The volume label used when creating the flash filesystem
 #ifndef MICROPY_HW_FLASH_FS_LABEL
 #define MICROPY_HW_FLASH_FS_LABEL "pybflash"
+#endif
+
+// Function to determine if the given can_id is reserved for system use or not.
+#ifndef MICROPY_HW_CAN_IS_RESERVED
+#define MICROPY_HW_CAN_IS_RESERVED(can_id) (false)
+#endif
+
+// Function to determine if the given i2c_id is reserved for system use or not.
+#ifndef MICROPY_HW_I2C_IS_RESERVED
+#define MICROPY_HW_I2C_IS_RESERVED(i2c_id) (false)
+#endif
+
+// Function to determine if the given spi_id is reserved for system use or not.
+#ifndef MICROPY_HW_SPI_IS_RESERVED
+#define MICROPY_HW_SPI_IS_RESERVED(spi_id) (false)
+#endif
+
+// Function to determine if the given tim_id is reserved for system use or not.
+#ifndef MICROPY_HW_TIM_IS_RESERVED
+#define MICROPY_HW_TIM_IS_RESERVED(tim_id) (false)
+#endif
+
+// Function to determine if the given uart_id is reserved for system use or not.
+#ifndef MICROPY_HW_UART_IS_RESERVED
+#define MICROPY_HW_UART_IS_RESERVED(uart_id) (false)
+#endif
+
+/*****************************************************************************/
+// USB configuration
+
+// The USBD_xxx macros have been renamed to MICROPY_HW_USB_xxx.
+#if defined(USBD_VID) \
+    || defined(USBD_LANGID_STRING) \
+    || defined(USBD_MANUFACTURER_STRING) \
+    || defined(USBD_PRODUCT_HS_STRING) \
+    || defined(USBD_PRODUCT_FS_STRING) \
+    || defined(USBD_CONFIGURATION_HS_STRING) \
+    || defined(USBD_INTERFACE_HS_STRING) \
+    || defined(USBD_CONFIGURATION_FS_STRING) \
+    || defined(USBD_INTERFACE_FS_STRING) \
+    || defined(USBD_CDC_RX_DATA_SIZE) \
+    || defined(USBD_CDC_TX_DATA_SIZE)
+#error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
+#endif
+
+// Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
+// is defined by a board then all needed PID options must also be defined.  The
+// VID and PID can also be set dynamically in pyb.usb_mode().
+// Windows needs a different PID to distinguish different device configurations.
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID              (0xf055)
+#define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
+#define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
+#define MICROPY_HW_USB_PID_CDC          (0x9802)
+#define MICROPY_HW_USB_PID_MSC          (0x9803)
+#define MICROPY_HW_USB_PID_CDC2_MSC     (0x9804)
+#define MICROPY_HW_USB_PID_CDC2         (0x9805)
+#define MICROPY_HW_USB_PID_CDC3         (0x9806)
+#define MICROPY_HW_USB_PID_CDC3_MSC     (0x9807)
+#define MICROPY_HW_USB_PID_CDC_MSC_HID  (0x9808)
+#define MICROPY_HW_USB_PID_CDC2_MSC_HID (0x9809)
+#define MICROPY_HW_USB_PID_CDC3_MSC_HID (0x980a)
+#endif
+
+#ifndef MICROPY_HW_USB_LANGID_STRING
+#define MICROPY_HW_USB_LANGID_STRING            0x409
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING      "MicroPython"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_HS_STRING
+#define MICROPY_HW_USB_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_HS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_HS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_HS_STRING
+#define MICROPY_HW_USB_INTERFACE_HS_STRING      "Pyboard Interface"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_FS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_FS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_FS_STRING
+#define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
+#endif
+
+// Amount of incoming buffer space for each CDC instance.
+// This must be 2 or greater, and a power of 2.
+#ifndef MICROPY_HW_USB_CDC_RX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (1024)
+#endif
+
+// Amount of outgoing buffer space for each CDC instance.
+// This must be a power of 2 and no greater than 16384.
+#ifndef MICROPY_HW_USB_CDC_TX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (1024)
 #endif
 
 /*****************************************************************************/
@@ -146,6 +277,7 @@
 #define MICROPY_HW_MAX_I2C (2)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+#define MICROPY_HW_MAX_LPUART (0)
 
 // Configuration for STM32F4 series
 #elif defined(STM32F4)
@@ -165,6 +297,7 @@
 #else
 #define MICROPY_HW_MAX_UART (6)
 #endif
+#define MICROPY_HW_MAX_LPUART (0)
 
 // Configuration for STM32F7 series
 #elif defined(STM32F7)
@@ -179,6 +312,18 @@
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+#define MICROPY_HW_MAX_LPUART (0)
+
+// Configuration for STM32H7A3/B3 series
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x08fff800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
@@ -188,6 +333,7 @@
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32L0 series
 #elif defined(STM32L0)
@@ -197,6 +343,7 @@
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (22)
 #define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32L4 series
 #elif defined(STM32L4)
@@ -205,7 +352,8 @@
 #define PYB_EXTI_NUM_VECTORS (23)
 #define MICROPY_HW_MAX_I2C (4)
 #define MICROPY_HW_MAX_TIMER (17)
-#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_UART (5)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32WB series
 #elif defined(STM32WB)
@@ -215,6 +363,31 @@
 #define MICROPY_HW_MAX_I2C (3)
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (1)
+#define MICROPY_HW_MAX_LPUART (1)
+
+#ifndef MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
+#define MICROPY_HW_STM32WB_FLASH_SYNCRONISATION (1)
+#endif
+
+// RF core BLE configuration (a board should define
+// MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES to override all values)
+#ifndef MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_ATTRIBUTES       (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_GATT_SERVICES         (0)
+#define MICROPY_HW_RFCORE_BLE_ATT_VALUE_ARRAY_SIZE      (0)
+#define MICROPY_HW_RFCORE_BLE_NUM_LINK                  (1)
+#define MICROPY_HW_RFCORE_BLE_DATA_LENGTH_EXTENSION     (1)
+#define MICROPY_HW_RFCORE_BLE_PREPARE_WRITE_LIST_SIZE   (0)
+#define MICROPY_HW_RFCORE_BLE_MBLOCK_COUNT              (0x79)
+#define MICROPY_HW_RFCORE_BLE_MAX_ATT_MTU               (0)
+#define MICROPY_HW_RFCORE_BLE_SLAVE_SCA                 (0)
+#define MICROPY_HW_RFCORE_BLE_MASTER_SCA                (0)
+#define MICROPY_HW_RFCORE_BLE_LSE_SOURCE                (0) // use LSE to clock the rfcore (see errata 2.2.1)
+#define MICROPY_HW_RFCORE_BLE_MAX_CONN_EVENT_LENGTH     (0xffffffff)
+#define MICROPY_HW_RFCORE_BLE_HSE_STARTUP_TIME          (0x148)
+#define MICROPY_HW_RFCORE_BLE_VITERBI_MODE              (1)
+#define MICROPY_HW_RFCORE_BLE_LL_ONLY                   (1) // use LL only, we provide the rest of the BLE stack
+#endif
 
 #else
 #error Unsupported MCU series
@@ -244,6 +417,25 @@
 #endif
 #endif
 
+// Configure the default bus clock divider values
+#ifndef MICROPY_HW_CLK_AHB_DIV
+#if defined(STM32H7)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_HCLK_DIV2)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_APB1_DIV2)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_APB2_DIV2)
+#define MICROPY_HW_CLK_APB3_DIV (RCC_APB3_DIV2)
+#define MICROPY_HW_CLK_APB4_DIV (RCC_APB4_DIV2)
+#elif defined(STM32L4)
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV1)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV1)
+#else
+#define MICROPY_HW_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+#define MICROPY_HW_CLK_APB1_DIV (RCC_HCLK_DIV4)
+#define MICROPY_HW_CLK_APB2_DIV (RCC_HCLK_DIV2)
+#endif
+#endif
+
 // If disabled then try normal (non-bypass) LSE first, with fallback to LSI.
 // If enabled first try LSE in bypass mode.  If that fails to start, try non-bypass mode, with fallback to LSI.
 #ifndef MICROPY_HW_RTC_USE_BYPASS
@@ -255,6 +447,14 @@
 #define MICROPY_HW_BDEV_IOCTL flash_bdev_ioctl
 #define MICROPY_HW_BDEV_READBLOCK flash_bdev_readblock
 #define MICROPY_HW_BDEV_WRITEBLOCK flash_bdev_writeblock
+#endif
+
+// Whether to enable caching for external SPI flash, to allow block writes that are
+// smaller than the native page-erase size of the SPI flash, eg when FAT FS is used.
+// Enabling this enables spi_bdev_readblocks() and spi_bdev_writeblocks() functions,
+// and requires a valid mp_spiflash_config_t.cache pointer.
+#ifndef MICROPY_HW_SPIFLASH_ENABLE_CACHE
+#define MICROPY_HW_SPIFLASH_ENABLE_CACHE (0)
 #endif
 
 // Enable the storage sub-system if a block device is defined
@@ -290,6 +490,15 @@
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
+// Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
+// generates the relevant AF constants.
+#if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1
+#define MICROPY_HW_SDMMC1_CK (1)
+#endif
+#if MICROPY_HW_SDCARD_SDMMC == 2 || MICROPY_HW_SDIO_SDMMC == 2
+#define MICROPY_HW_SDMMC2_CK (1)
+#endif
+
 // Whether the USB peripheral is device-only, or multiple OTG
 #if defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
 #define MICROPY_HW_USB_IS_MULTI_OTG (0)
@@ -314,11 +523,11 @@
 // D-cache clean/invalidate helpers
 #if __DCACHE_PRESENT == 1
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
-    (SCB_CleanInvalidateDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #define MP_HAL_CLEAN_DCACHE(addr, size) \
-    (SCB_CleanDCache_by_Addr((uint32_t*)((uint32_t)addr & ~0x1f), \
-        ((uint32_t)((uint8_t*)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
+    (SCB_CleanDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 #else
 #define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size)
 #define MP_HAL_CLEAN_DCACHE(addr, size)

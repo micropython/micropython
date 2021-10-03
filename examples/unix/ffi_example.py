@@ -24,11 +24,13 @@ print("errno value:", errno.get())
 perror("perror after error")
 print()
 
+
 def cmp(pa, pb):
     a = uctypes.bytearray_at(pa, 1)
     b = uctypes.bytearray_at(pb, 1)
     print("cmp:", a, b)
     return a[0] - b[0]
+
 
 cmp_cb = ffi.callback("i", cmp, "PP")
 print("callback:", cmp_cb)

@@ -25,6 +25,7 @@
  */
 
 // qstrs specific to this port
+// *FORMAT-OFF*
 
 // Entries for sys.path
 Q(/flash)

@@ -64,13 +64,15 @@ extern const byte mp_binary_op_method_name[];
 void mp_init(void);
 void mp_deinit(void);
 
-void mp_handle_pending(void);
+void mp_sched_exception(mp_obj_t exc);
+void mp_sched_keyboard_interrupt(void);
+void mp_handle_pending(bool raise_exc);
 void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
-static inline unsigned int mp_sched_num_pending(void) { return MP_STATE_VM(sched_len); }
+#define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 #endif
 
@@ -86,10 +88,18 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-static inline mp_obj_dict_t *mp_locals_get(void) { return MP_STATE_THREAD(dict_locals); }
-static inline void mp_locals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_locals) = d; }
-static inline mp_obj_dict_t *mp_globals_get(void) { return MP_STATE_THREAD(dict_globals); }
-static inline void mp_globals_set(mp_obj_dict_t *d) { MP_STATE_THREAD(dict_globals) = d; }
+static inline mp_obj_dict_t *mp_locals_get(void) {
+    return MP_STATE_THREAD(dict_locals);
+}
+static inline void mp_locals_set(mp_obj_dict_t *d) {
+    MP_STATE_THREAD(dict_locals) = d;
+}
+static inline mp_obj_dict_t *mp_globals_get(void) {
+    return MP_STATE_THREAD(dict_globals);
+}
+static inline void mp_globals_set(mp_obj_dict_t *d) {
+    MP_STATE_THREAD(dict_globals) = d;
+}
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -144,16 +154,38 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATIO
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
+static inline mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
+    MP_STATE_THREAD(stop_iteration_arg) = o;
+    return MP_OBJ_STOP_ITERATION;
+}
+
 mp_obj_t mp_make_raise_obj(mp_obj_t o);
 
 mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level);
 mp_obj_t mp_import_from(mp_obj_t module, qstr name);
 void mp_import_all(mp_obj_t module);
 
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const char *msg);
-NORETURN void mp_raise_ValueError(const char *msg);
-NORETURN void mp_raise_TypeError(const char *msg);
-NORETURN void mp_raise_NotImplementedError(const char *msg);
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
+NORETURN void mp_raise_type(const mp_obj_type_t *exc_type);
+NORETURN void mp_raise_ValueError_no_msg(void);
+NORETURN void mp_raise_TypeError_no_msg(void);
+NORETURN void mp_raise_NotImplementedError_no_msg(void);
+#define mp_raise_msg(exc_type, msg) mp_raise_type(exc_type)
+#define mp_raise_msg_varg(exc_type, ...) mp_raise_type(exc_type)
+#define mp_raise_ValueError(msg) mp_raise_ValueError_no_msg()
+#define mp_raise_TypeError(msg) mp_raise_TypeError_no_msg()
+#define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
+#else
+#define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
+#endif
+
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
+NORETURN void mp_raise_StopIteration(mp_obj_t arg);
 NORETURN void mp_raise_OSError(int errno_);
 NORETURN void mp_raise_recursion_depth(void);
 

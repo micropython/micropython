@@ -1,14 +1,17 @@
 # test standard Python subscr using viper types
 
+
 @micropython.viper
-def get(dest, i:int):
+def get(dest, i: int):
     i += 1
     return dest[i]
 
+
 @micropython.viper
-def set(dest, i:int, val:int):
+def set(dest, i: int, val: int):
     i += 1
     dest[i] = val + 1
+
 
 ar = [i for i in range(3)]
 

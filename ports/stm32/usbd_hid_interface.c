@@ -34,14 +34,14 @@
 #if MICROPY_HW_USB_HID
 
 uint8_t *usbd_hid_init(usbd_hid_state_t *hid_in) {
-    usbd_hid_itf_t *hid = (usbd_hid_itf_t*)hid_in;
+    usbd_hid_itf_t *hid = (usbd_hid_itf_t *)hid_in;
     hid->report_in_len = USBD_HID_REPORT_INVALID;
     return &hid->report_in_buf[0]; // location to place first incoming report
 }
 
 int8_t usbd_hid_receive(usbd_hid_state_t *hid_in, size_t len) {
     // Incoming report: save the length but don't schedule next report until user reads this one
-    usbd_hid_itf_t *hid = (usbd_hid_itf_t*)hid_in;
+    usbd_hid_itf_t *hid = (usbd_hid_itf_t *)hid_in;
     hid->report_in_len = len;
     return USBD_OK;
 }

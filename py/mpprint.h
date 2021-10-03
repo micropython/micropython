@@ -40,9 +40,9 @@
 #define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
-#    define MP_PYTHON_PRINTER &mp_sys_stdout_print
+#define MP_PYTHON_PRINTER &mp_sys_stdout_print
 #else
-#    define MP_PYTHON_PRINTER &mp_plat_print
+#define MP_PYTHON_PRINTER &mp_plat_print
 #endif
 
 typedef void (*mp_print_strn_t)(void *data, const char *str, size_t len);
@@ -51,6 +51,14 @@ typedef struct _mp_print_t {
     void *data;
     mp_print_strn_t print_strn;
 } mp_print_t;
+
+typedef struct _mp_print_ext_t {
+    mp_print_t base;
+    const char *item_separator;
+    const char *key_separator;
+}mp_print_ext_t;
+
+#define MP_PRINT_GET_EXT(print) ((mp_print_ext_t *)print)
 
 // All (non-debug) prints go through one of the two interfaces below.
 // 1) Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.

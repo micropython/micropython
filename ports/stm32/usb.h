@@ -30,20 +30,6 @@
 
 #define PYB_USB_FLAG_USB_MODE_CALLED    (0x0002)
 
-// Windows needs a different PID to distinguish different device configurations
-#define USBD_VID         (0xf055)
-#define USBD_PID_CDC_MSC (0x9800)
-#define USBD_PID_CDC_HID (0x9801)
-#define USBD_PID_CDC     (0x9802)
-#define USBD_PID_MSC     (0x9803)
-#define USBD_PID_CDC2_MSC (0x9804)
-#define USBD_PID_CDC2    (0x9805)
-#define USBD_PID_CDC3    (0x9806)
-#define USBD_PID_CDC3_MSC (0x9807)
-#define USBD_PID_CDC_MSC_HID (0x9808)
-#define USBD_PID_CDC2_MSC_HID (0x9809)
-#define USBD_PID_CDC3_MSC_HID (0x980a)
-
 typedef enum {
     PYB_USB_STORAGE_MEDIUM_NONE = 0,
     PYB_USB_STORAGE_MEDIUM_FLASH,
@@ -74,7 +60,7 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
 void pyb_usb_dev_deinit(void);
 bool usb_vcp_is_enabled(void);
 int usb_vcp_recv_byte(uint8_t *c); // if a byte is available, return 1 and put the byte in *c, else return 0
-void usb_vcp_send_strn(const char* str, int len);
+void usb_vcp_send_strn(const char *str, int len);
 void usb_vcp_attach_to_repl(const pyb_usb_vcp_obj_t *self, bool attached);
 
 void pyb_usb_host_init(void);

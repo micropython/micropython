@@ -32,7 +32,7 @@
 #include "py/smallint.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "extmod/utime_mphal.h"
 
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {
@@ -52,5 +52,5 @@ STATIC MP_DEFINE_CONST_DICT(time_module_globals, time_module_globals_table);
 
 const mp_obj_module_t mp_module_utime = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&time_module_globals,
+    .globals = (mp_obj_dict_t *)&time_module_globals,
 };

@@ -2,9 +2,12 @@
 
 import micropython
 
+
 class GetSlice:
     def __getitem__(self, idx):
         return idx
+
+
 sl = GetSlice()[:]
 
 # create slice in VM
@@ -13,7 +16,7 @@ micropython.heap_lock()
 try:
     print(l[0:1])
 except MemoryError:
-    print('MemoryError: list index')
+    print("MemoryError: list index")
 micropython.heap_unlock()
 
 # get from list using slice
@@ -21,7 +24,7 @@ micropython.heap_lock()
 try:
     l[sl]
 except MemoryError:
-    print('MemoryError: list get slice')
+    print("MemoryError: list get slice")
 micropython.heap_unlock()
 
 # extend list using slice subscr
@@ -31,6 +34,6 @@ micropython.heap_lock()
 try:
     l[sl] = l2
 except MemoryError:
-    print('MemoryError: list extend slice')
+    print("MemoryError: list extend slice")
 micropython.heap_unlock()
 print(l)

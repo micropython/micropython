@@ -6,6 +6,8 @@ def gen1(x):
     yield x
     yield x + 1
     return x + 2
+
+
 g = gen1(3)
 print(next(g))
 print(next(g))
@@ -18,4 +20,6 @@ except StopIteration as e:
 @micropython.native
 def gen2(x):
     yield from range(x)
+
+
 print(list(gen2(3)))

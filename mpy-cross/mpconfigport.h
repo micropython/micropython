@@ -30,6 +30,14 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
 
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
+#if defined(__i386__) || defined(__x86_64__) || defined(_WIN32) || defined(__unix__) || defined(__APPLE__)
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (1)
+#else
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+#endif
+
 #define MICROPY_EMIT_X64            (1)
 #define MICROPY_EMIT_X86            (1)
 #define MICROPY_EMIT_THUMB          (1)
@@ -49,12 +57,12 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_RETURN_IF_EXPR (1)
 
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_ENABLE_RUNTIME      (0)
 #define MICROPY_ENABLE_GC           (1)
+#ifndef __EMSCRIPTEN__
 #define MICROPY_STACK_CHECK         (1)
+#endif
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -66,16 +74,12 @@
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
 
+#define MICROPY_PY_FSTRINGS         (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
-// Define to 1 to use undertested inefficient GC helper implementation
-// (if more efficient arch-specific one is not available).
-#ifndef MICROPY_GCREGS_SETJMP
-    #ifdef __mips__
-        #define MICROPY_GCREGS_SETJMP (1)
-    #else
-        #define MICROPY_GCREGS_SETJMP (0)
-    #endif
+#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
+// Fall back to setjmp() implementation for discovery of GC pointers in registers.
+#define MICROPY_GCREGS_SETJMP (1)
 #endif
 
 #define MICROPY_PY___FILE__         (0)
@@ -93,11 +97,11 @@
 #ifdef __LP64__
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
-#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#elif defined(__MINGW32__) && defined(_WIN64)
 #include <stdint.h>
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
-#elif defined ( _MSC_VER ) && defined( _WIN64 )
+#elif defined(_MSC_VER) && defined(_WIN64)
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
 #else
@@ -119,7 +123,7 @@ typedef long mp_off_t;
 // We need to provide a declaration/definition of alloca()
 #ifdef __FreeBSD__
 #include <stdlib.h>
-#elif defined( _WIN32 )
+#elif defined(_WIN32)
 #include <malloc.h>
 #else
 #include <alloca.h>
@@ -141,7 +145,7 @@ typedef long mp_off_t;
 #else
 #define MP_SSIZE_MAX                _I32_MAX
 #endif
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)(p)) //Avoid compiler warning about different const qualifiers
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)(p)) // Avoid compiler warning about different const qualifiers
 #define restrict
 #define inline                      __inline
 #define alignof(t)                  __alignof(t)
@@ -152,11 +156,11 @@ typedef long mp_off_t;
 #define S_ISDIR(m)                  (((m) & S_IFMT) == S_IFDIR)
 #ifdef _WIN64
 #define SSIZE_MAX                   _I64_MAX
-typedef __int64                     ssize_t;
+typedef __int64 ssize_t;
 #else
 #define SSIZE_MAX                   _I32_MAX
-typedef int                         ssize_t;
+typedef int ssize_t;
 #endif
-typedef mp_off_t                    off_t;
+typedef mp_off_t off_t;
 
 #endif

@@ -3,13 +3,14 @@ try:
 except:
     pass
 
+
 def mandelbrot():
     # returns True if c, complex, is in the Mandelbrot set
-    #@micropython.native
+    # @micropython.native
     def in_set(c):
         z = 0
         for i in range(40):
-            z = z*z + c
+            z = z * z + c
             if abs(z) > 60:
                 return False
         return True
@@ -21,7 +22,9 @@ def mandelbrot():
                 lcd.set(u, v)
     lcd.show()
 
+
 # PC testing
 import lcd
+
 lcd = lcd.LCD(128, 32)
 mandelbrot()

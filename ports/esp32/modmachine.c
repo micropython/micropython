@@ -32,24 +32,28 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#if MICROPY_ESP_IDF_4
+#include "esp_sleep.h"
+#include "esp_pm.h"
+
+#if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
 #include "esp32/clk.h"
-#include "esp_sleep.h"
-#else
-#include "rom/ets_sys.h"
-#include "rom/rtc.h"
-#include "esp_clk.h"
+#elif CONFIG_IDF_TARGET_ESP32S2
+#include "esp32s2/rom/rtc.h"
+#include "esp32s2/clk.h"
+#elif CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/rtc.h"
+#include "esp32s3/clk.h"
 #endif
-#include "esp_pm.h"
-#include "driver/touch_pad.h"
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
+#include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
+#include "extmod/machine_pwm.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
@@ -65,6 +69,12 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
+STATIC bool is_soft_reset = 0;
+
+#if CONFIG_IDF_TARGET_ESP32C3
+int esp_clk_cpu_freq(void);
+#endif
+
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
@@ -73,9 +83,17 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
         if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
-            mp_raise_ValueError("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz");
+            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
         }
+        #if CONFIG_IDF_TARGET_ESP32
         esp_pm_config_esp32_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32C3
+        esp_pm_config_esp32c3_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32S2
+        esp_pm_config_esp32s2_t pm;
+        #elif CONFIG_IDF_TARGET_ESP32S3
+        esp_pm_config_esp32s3_t pm;
+        #endif
         pm.max_freq_mhz = freq;
         pm.min_freq_mhz = freq;
         pm.light_sleep_enable = false;
@@ -108,6 +126,8 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
+    #if !CONFIG_IDF_TARGET_ESP32C3
+
     if (machine_rtc_config.ext0_pin != -1 && (machine_rtc_config.ext0_wake_types & wake_type)) {
         esp_sleep_enable_ext0_wakeup(machine_rtc_config.ext0_pin, machine_rtc_config.ext0_level ? 1 : 0);
     }
@@ -120,11 +140,13 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
-            mp_raise_msg(&mp_type_RuntimeError, "esp_sleep_enable_touchpad_wakeup() failed");
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
         }
     }
 
-    switch(wake_type) {
+    #endif
+
+    switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
             break;
@@ -146,42 +168,48 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_ma
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
 
 STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    switch(rtc_get_reset_reason(0)) {
-        case POWERON_RESET:
+    if (is_soft_reset) {
+        return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
+    }
+    switch (esp_reset_reason()) {
+        case ESP_RST_POWERON:
+        case ESP_RST_BROWNOUT:
             return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
             break;
-        case SW_RESET:
-        case SW_CPU_RESET:
-            return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
-            break;
-        case OWDT_RESET:
-        case TG0WDT_SYS_RESET:
-        case TG1WDT_SYS_RESET:
-        case RTCWDT_SYS_RESET:
-        case RTCWDT_BROWN_OUT_RESET:
-        case RTCWDT_CPU_RESET:
-        case RTCWDT_RTC_RESET:
-        case TGWDT_CPU_RESET:
+
+        case ESP_RST_INT_WDT:
+        case ESP_RST_TASK_WDT:
+        case ESP_RST_WDT:
             return MP_OBJ_NEW_SMALL_INT(MP_WDT_RESET);
             break;
 
-        case DEEPSLEEP_RESET:
+        case ESP_RST_DEEPSLEEP:
             return MP_OBJ_NEW_SMALL_INT(MP_DEEPSLEEP_RESET);
             break;
 
-        case EXT_CPU_RESET:
+        case ESP_RST_SW:
+        case ESP_RST_PANIC:
+        case ESP_RST_EXT: // Comment in ESP-IDF: "For ESP32, ESP_RST_EXT is never returned"
             return MP_OBJ_NEW_SMALL_INT(MP_HARD_RESET);
             break;
 
-        case NO_MEAN:
-        case SDIO_RESET:
-        case INTRUSION_RESET:
+        case ESP_RST_SDIO:
+        case ESP_RST_UNKNOWN:
         default:
             return MP_OBJ_NEW_SMALL_INT(0);
             break;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
+
+void machine_init(void) {
+    is_soft_reset = 0;
+}
+
+void machine_deinit(void) {
+    // we are doing a soft-reset so change the reset_cause
+    is_soft_reset = 1;
+}
 
 STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     return MP_OBJ_NEW_SMALL_INT(esp_sleep_get_wakeup_cause());
@@ -196,7 +224,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 STATIC mp_obj_t machine_soft_reset(void) {
     pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    nlr_raise(mp_obj_new_exception(&mp_type_SystemExit));
+    mp_raise_type(&mp_type_SystemExit);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
@@ -208,7 +236,9 @@ STATIC mp_obj_t machine_unique_id(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_idle(void) {
+    MP_THREAD_GIL_EXIT();
     taskYIELD();
+    MP_THREAD_GIL_ENTER();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
@@ -245,7 +275,12 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },
 
+    #if MICROPY_PY_MACHINE_BITSTREAM
+    { MP_ROM_QSTR(MP_QSTR_bitstream), MP_ROM_PTR(&machine_bitstream_obj) },
+    #endif
+    #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
@@ -258,13 +293,22 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) },
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
+    #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
+    #if MICROPY_PY_MACHINE_DAC
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
-    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_i2c_type) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&machine_hw_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftI2C), MP_ROM_PTR(&mp_machine_soft_i2c_type) },
+    #if MICROPY_PY_MACHINE_I2S
+    { MP_ROM_QSTR(MP_QSTR_I2S), MP_ROM_PTR(&machine_i2s_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PWM), MP_ROM_PTR(&machine_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },
-    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_hw_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&mp_machine_soft_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
 
     // Reset reasons
@@ -289,7 +333,7 @@ STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table
 
 const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&machine_module_globals,
+    .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
 #endif // MICROPY_PY_MACHINE

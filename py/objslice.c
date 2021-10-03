@@ -96,11 +96,11 @@ const mp_obj_type_t mp_type_slice = {
     { &mp_type_type },
     .name = MP_QSTR_slice,
     .print = slice_print,
-#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
     .attr = slice_attr,
-#elif MICROPY_PY_BUILTINS_SLICE_INDICES
-    .locals_dict = (mp_obj_dict_t*)&slice_locals_dict,
-#endif
+    #elif MICROPY_PY_BUILTINS_SLICE_INDICES
+    .locals_dict = (mp_obj_dict_t *)&slice_locals_dict,
+    #endif
 };
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
@@ -124,7 +124,7 @@ void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *r
     } else {
         step = mp_obj_get_int(self->step);
         if (step == 0) {
-            mp_raise_ValueError("slice step cannot be zero");
+            mp_raise_ValueError(MP_ERROR_TEXT("slice step can't be zero"));
         }
     }
 

@@ -2,11 +2,11 @@ Mboot - MicroPython boot loader
 ===============================
 
 Mboot is a custom bootloader for STM32 MCUs, and currently supports the
-STM32F4xx and STM32F7xx families.  It can provide a standard USB DFU interface
-on either the FS or HS peripherals, as well as a sophisticated, custom I2C
+STM32F4xx, STM32F7xx and STM32WBxx families.  It can provide a standard USB DFU
+interface on either the FS or HS peripherals, as well as a sophisticated, custom I2C
 interface.  It can also load and program firmware in .dfu.gz format from a
-filesystem.  It can fit in 16k of flash space, but all features enabled requires
-32k.
+filesystem, either FAT, littlefs 1 or littlfs 2.
+It can fit in 16k of flash space, but all features enabled requires 32k.
 
 How to use
 ----------
@@ -62,6 +62,15 @@ How to use
    To enable loading firmware from a filesystem use:
 
     #define MBOOT_FSLOAD (1)
+
+   and then enable one or more of the following depending on what filesystem
+   support is required in Mboot (note that the FAT driver is read-only and
+   quite compact, but littlefs supports both read and write so is rather
+   large):
+
+    #define MBOOT_VFS_FAT (1)
+    #define MBOOT_VFS_LFS1 (1)
+    #define MBOOT_VFS_LFS2 (1)
 
 2. Build the board's main application firmware as usual.
 
@@ -132,10 +141,47 @@ are located and what filename to program.  The elements to use are:
 
 `u32` means unsigned 32-bit little-endian integer.
 
-The firmware to load must be a gzip'd DfuSe file (.dfu.gz).
+The firmware to load must be a gzip'd DfuSe file (.dfu.gz) and stored within a
+FAT or littlefs formatted partition.
 
 The provided fwupdate.py script contains helper functions to call into Mboot
-with the correct data, and also to update Mboot itself.
+with the correct data, and also to update Mboot itself.  For example on PYBD
+the following will update the main MicroPython firmware from the file
+firmware.dfu.gz stored on the default FAT filesystem:
+
+    import fwupdate
+    fwupdate.update_mpy('firmware.dfu.gz', 0x80000000, 2 * 1024 * 1024)
+
+The 0x80000000 value is the address understood by Mboot as the location of
+the external SPI flash, configured via `MBOOT_SPIFLASH_ADDR`.
+
+Signed and encrypted DFU support
+--------------------------------
+
+Mboot optionally supports signing and encrypting the binary firmware in the DFU file.
+In general this is referred to as a packed DFU file.  This requires additional settings
+in the board config and requires the `pyhy` Python module to be installed for `python3`
+to be used when building packed firmware, eg:
+
+    $ pip3 install pyhy
+
+In addition to the changes made to mpconfigboard.mk earlier, for encrypted
+support you also need to add:
+
+    MBOOT_ENABLE_PACKING = 1
+
+You will also need to generate signing and encryption keys which will be built into
+mboot and used for all subsequent installations of firmware.  This can be done via:
+
+    $ python3 ports/stm32/mboot/mboot_pack_dfu.py generate-keys
+
+This command generates a `mboot_keys.h` file which should be stored in the board
+definition folder (next to mpconfigboard.mk).
+
+Once you build the firmware, the `firmware.pack.dfu` file will contain the encrypted
+and signed firmware, and can be deployed via USB DFU, or by copying it to the device's
+internal filesystem (if `MBOOT_FSLOAD` is enabled). `firmware.dfu` is still unencrypted
+and can be directly flashed with jtag etc.
 
 Example: Mboot on PYBv1.x
 -------------------------

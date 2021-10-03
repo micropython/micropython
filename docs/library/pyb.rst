@@ -126,7 +126,7 @@ Power related functions
     - pclk2: frequency of the APB2 bus
 
    If given any arguments then the function sets the frequency of the CPU,
-   and the busses if additional arguments are given.  Frequencies are given in
+   and the buses if additional arguments are given.  Frequencies are given in
    Hz.  Eg freq(120000000) sets sysclk (the CPU frequency) to 120MHz.  Note that
    not all values are supported and the largest supported frequency not greater
    than the given value will be selected.
@@ -210,14 +210,14 @@ Miscellaneous functions
 
    It only makes sense to call this function from within boot.py.
 
-.. function:: mount(device, mountpoint, \*, readonly=False, mkfs=False)
+.. function:: mount(device, mountpoint, *, readonly=False, mkfs=False)
 
    .. note:: This function is deprecated. Mounting and unmounting devices should
-      be performed by :meth:`uos.mount` and :meth:`uos.umount` instead.
+      be performed by :meth:`os.mount` and :meth:`os.umount` instead.
 
    Mount a block device and make it available as part of the filesystem.
    ``device`` must be an object that provides the block protocol. (The
-   following is also deprecated. See :class:`uos.AbstractBlockDev` for the
+   following is also deprecated. See :class:`os.AbstractBlockDev` for the
    correct way to create a block device.)
 
     - ``readblocks(self, blocknum, buf)``

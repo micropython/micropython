@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2020 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE *self) {
+STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE * self) {
     if (self->vfs == NULL) {
         mp_raise_ValueError(NULL);
     }
 }
 
-STATIC void MP_VFS_LFSx(file_print)(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void MP_VFS_LFSx(file_print)(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)self_in;
     (void)kind;
     mp_printf(print, "<io.%s>", mp_obj_get_type_str(self_in));
@@ -101,6 +101,17 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
     #endif
     o->cfg.buffer = &o->file_buffer[0];
 
+    #if LFS_BUILD_VERSION == 2
+    if (self->enable_mtime) {
+        lfs_get_mtime(&o->mtime[0]);
+        o->attrs[0].type = LFS_ATTR_MTIME;
+        o->attrs[0].buffer = &o->mtime[0];
+        o->attrs[0].size = sizeof(o->mtime);
+        o->cfg.attrs = &o->attrs[0];
+        o->cfg.attr_count = MP_ARRAY_SIZE(o->attrs);
+    }
+    #endif
+
     const char *path = MP_VFS_LFSx(make_path)(self, path_in);
     int ret = LFSx_API(file_opencfg)(&self->lfs, &o->file, path, flags, &o->cfg);
     if (ret < 0) {
@@ -131,6 +142,11 @@ STATIC mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t s
 STATIC mp_uint_t MP_VFS_LFSx(file_write)(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
     MP_VFS_LFSx(check_open)(self);
+    #if LFS_BUILD_VERSION == 2
+    if (self->vfs->enable_mtime) {
+        lfs_get_mtime(&self->mtime[0]);
+    }
+    #endif
     LFSx_API(ssize_t) sz = LFSx_API(file_write)(&self->vfs->lfs, &self->file, buf, size);
     if (sz < 0) {
         *errcode = -sz;
@@ -147,7 +163,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
     }
 
     if (request == MP_STREAM_SEEK) {
-        struct mp_stream_seek_t *s = (struct mp_stream_seek_t*)(uintptr_t)arg;
+        struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)(uintptr_t)arg;
         int res = LFSx_API(file_seek)(&self->vfs->lfs, &self->file, s->offset, s->whence);
         if (res < 0) {
             *errcode = -res;
@@ -214,7 +230,7 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(fileio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };
 #endif
 
@@ -232,5 +248,5 @@ const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &MP_VFS_LFSx(textio_stream_p),
-    .locals_dict = (mp_obj_dict_t*)&MP_VFS_LFSx(file_locals_dict),
+    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
 };

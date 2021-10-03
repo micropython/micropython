@@ -32,18 +32,18 @@
 
 #if 0 // Enable to test if AF's are statically compiled
 #define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \
-        mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)); \
-        _Static_assert(fn_type(pin_obj) != -1, ""); \
-        _Static_assert(__builtin_constant_p(fn_type(pin_obj)) == 1, "")
+    mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)); \
+    _Static_assert(fn_type(pin_obj) != -1, ""); \
+    _Static_assert(__builtin_constant_p(fn_type(pin_obj)) == 1, "")
 
 #else
 
 #define mp_hal_pin_config_alt_static(pin_obj, mode, pull, fn_type) \
-        mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)) /* Overflow Error => alt func not found */
+    mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj))     /* Overflow Error => alt func not found */
 
 #define mp_hal_pin_config_alt_static_speed(pin_obj, mode, pull, speed, fn_type) \
-        mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj)); /* Overflow Error => alt func not found */ \
-        mp_hal_pin_config_speed(pin_obj, speed)
+    mp_hal_pin_config(pin_obj, mode, pull, fn_type(pin_obj));     /* Overflow Error => alt func not found */ \
+    mp_hal_pin_config_speed(pin_obj, speed)
 
 #endif
 

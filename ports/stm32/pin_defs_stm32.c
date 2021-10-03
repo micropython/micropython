@@ -8,9 +8,9 @@
 uint32_t pin_get_mode(const pin_obj_t *pin) {
     GPIO_TypeDef *gpio = pin->gpio;
     uint32_t mode = (gpio->MODER >> (pin->pin * 2)) & 3;
-    if (mode != GPIO_MODE_ANALOG) {
+    if (mode == GPIO_MODE_OUTPUT_PP || mode == GPIO_MODE_AF_PP) {
         if (gpio->OTYPER & pin->pin_mask) {
-            mode |= 1 << 4;
+            mode |= 1 << 4;     // Converts from xxx_PP to xxx_OD
         }
     }
     return mode;
@@ -28,4 +28,3 @@ uint32_t pin_get_pull(const pin_obj_t *pin) {
 uint32_t pin_get_af(const pin_obj_t *pin) {
     return (pin->gpio->AFR[pin->pin >> 3] >> ((pin->pin & 7) * 4)) & 0xf;
 }
-

@@ -43,7 +43,7 @@ uint32_t pin_get_pull(const pin_obj_t *pin) {
         // Analog only pin
         return GPIO_NOPULL;
     }
-    volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin); 
+    volatile uint32_t *port_pcr = GPIO_PIN_TO_PORT_PCR(pin->gpio, pin->pin);
 
     uint32_t pcr = *port_pcr;
     uint32_t af = (pcr & PORT_PCR_MUX_MASK) >> 8;

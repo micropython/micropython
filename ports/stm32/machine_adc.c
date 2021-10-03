@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "adc.h"
 
 #if defined(STM32F0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
 #define ADC_V2 (1)
@@ -95,7 +96,7 @@ STATIC const uint8_t adc_cr_to_bits_table[] = {16, 14, 12, 10, 8, 8, 8, 8};
 STATIC const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
 
-STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
+void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     // Configure ADC clock source and enable ADC clock
     #if defined(STM32L4) || defined(STM32WB)
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
@@ -129,11 +130,15 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     ADC3_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
-    #elif defined(STM32L0) || defined(STM32WB)
+    #elif defined(STM32L0)
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
+    #elif defined(STM32WB)
+    ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
     #endif
 
     #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
@@ -154,10 +159,16 @@ STATIC void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #endif
 
     #if ADC_V2
-    if (adc->CR == 0) {
-        // ADC hasn't been enabled so calibrate it
-        adc->CR |= ADC_CR_ADCAL;
-        while (adc->CR & ADC_CR_ADCAL) {
+    if (!(adc->CR & ADC_CR_ADEN)) {
+        // ADC isn't enabled so calibrate it now
+        #if defined(STM32F0) || defined(STM32L0)
+        LL_ADC_StartCalibration(adc);
+        #elif defined(STM32L4) || defined(STM32WB)
+        LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
+        #else
+        LL_ADC_StartCalibration(adc, LL_ADC_CALIB_OFFSET_LINEARITY, LL_ADC_SINGLE_ENDED);
+        #endif
+        while (LL_ADC_IsCalibrationOnGoing(adc)) {
         }
     }
 
@@ -281,8 +292,9 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
     *smpr = (*smpr & ~(7 << (channel * 3))) | sample_time << (channel * 3); // select sample time
 
     #elif defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
-
-    #if defined(STM32H7)
+    #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    ADC_Common_TypeDef *adc_common = ADC12_COMMON;
+    #elif defined(STM32H7)
     adc->PCSEL |= 1 << channel;
     ADC_Common_TypeDef *adc_common = adc == ADC3 ? ADC3_COMMON : ADC12_COMMON;
     #elif defined(STM32L4)
@@ -322,15 +334,20 @@ STATIC uint32_t adc_read_channel(ADC_TypeDef *adc) {
     return value;
 }
 
-STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
     if (channel == ADC_CHANNEL_VREF) {
         return 0xffff;
     }
 
+    // Select, configure and read the channel.
     adc_config_channel(adc, channel, sample_time);
     uint32_t raw = adc_read_channel(adc);
+
+    // If VBAT was sampled then deselect it to prevent battery drain.
+    adc_deselect_vbat(adc, channel);
+
+    // Scale raw reading to 16 bit value using a Taylor expansion (for bits <= 16).
     uint32_t bits = adc_get_bits(adc);
-    // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
     #if defined(STM32H7)
     if (bits < 8) {
         // For 6 and 7 bits
@@ -342,6 +359,8 @@ STATIC uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint
 
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
+
+#if !BUILDING_MBOOT
 
 const mp_obj_type_t machine_adc_type;
 
@@ -397,13 +416,13 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
         } else if (pin->adc_num & PIN_ADC2) {
             adc = ADC2;
         #endif
-        #if defined(ADC2)
+        #if defined(ADC3)
         } else if (pin->adc_num & PIN_ADC3) {
             adc = ADC3;
         #endif
         } else {
             // No ADC function on given pin
-            nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "Pin(%q) does not have ADC capabilities", pin->name));
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) does not have ADC capabilities"), pin->name);
         }
         channel = pin->adc_channel;
 
@@ -446,5 +465,7 @@ const mp_obj_type_t machine_adc_type = {
     .name = MP_QSTR_ADC,
     .print = machine_adc_print,
     .make_new = machine_adc_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_adc_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&machine_adc_locals_dict,
 };
+
+#endif

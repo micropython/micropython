@@ -7,7 +7,10 @@ print(callable([]))
 print(callable("dfsd"))
 
 # modules should not be callabe
-import sys
+try:
+    import usys as sys
+except ImportError:
+    import sys
 print(callable(sys))
 
 # builtins should be callable

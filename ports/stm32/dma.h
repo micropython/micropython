@@ -57,6 +57,10 @@ extern const dma_descr_t dma_SDMMC_2;
 extern const dma_descr_t dma_SPI_6_RX;
 extern const dma_descr_t dma_SDIO_0;
 extern const dma_descr_t dma_DCMI_0;
+extern const dma_descr_t dma_I2S_1_RX;
+extern const dma_descr_t dma_I2S_1_TX;
+extern const dma_descr_t dma_I2S_2_RX;
+extern const dma_descr_t dma_I2S_2_TX;
 
 #elif defined(STM32L0)
 
@@ -98,13 +102,21 @@ extern const dma_descr_t dma_I2C_4_RX;
 
 #endif
 
+// API that configures the DMA via the HAL.
 void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
 
+// API that configures the DMA directly and does not use the HAL.
 void dma_nohal_init(const dma_descr_t *descr, uint32_t config);
 void dma_nohal_deinit(const dma_descr_t *descr);
 void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len);
+
+// API to be used if DMA is controlled externally, to ensure the clock remains enabled.
+// - controller: should be 0 or 1, corresponding to DMA1 or DMA2
+// - stream: should be 0 to N, corresponding to Stream0..StreamN, or Channel1..ChannelN
+void dma_external_acquire(uint32_t controller, uint32_t stream);
+void dma_external_release(uint32_t controller, uint32_t stream);
 
 #endif // MICROPY_INCLUDED_STM32_DMA_H

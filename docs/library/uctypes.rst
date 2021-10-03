@@ -19,7 +19,7 @@ sub-fields.
 
 .. seealso::
 
-    Module :mod:`ustruct`
+    Module :mod:`struct`
         Standard Python way to access binary data structures (doesn't scale
         well to large and complex structures).
 
@@ -245,7 +245,7 @@ Module contents
 
 .. data:: VOID
 
-   ``VOID`` is an alias for ``UINT8``, and is provided to conviniently define
+   ``VOID`` is an alias for ``UINT8``, and is provided to conveniently define
    C's void pointers: ``(uctypes.PTR, uctypes.VOID)``.
 
 .. data:: PTR

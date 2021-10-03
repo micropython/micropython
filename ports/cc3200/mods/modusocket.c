@@ -35,10 +35,9 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "modnetwork.h"
 #include "modusocket.h"
-#include "mpexception.h"
 
 /******************************************************************************/
 // The following set of macros and functions provide a glue between the CC3100

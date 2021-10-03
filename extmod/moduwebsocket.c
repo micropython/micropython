@@ -71,11 +71,11 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
     if (n_args > 1 && args[1] == mp_const_true) {
         o->opts |= BLOCKING_WRITE;
     }
-    return  MP_OBJ_FROM_PTR(o);
+    return MP_OBJ_FROM_PTR(o);
 }
 
 STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     while (1) {
         if (self->to_recv != 0) {
@@ -183,7 +183,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
                 self->msg_sz -= out_sz;
                 if (self->msg_sz == 0) {
                     byte last_state;
-no_payload:
+                no_payload:
                     last_state = self->state;
                     self->state = FRAME_HEADER;
                     self->to_recv = 2;
@@ -200,7 +200,7 @@ no_payload:
                             return 0;
                         }
 
-                        //DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
+                        // DEBUG_printf("Finished receiving ctrl message %x, ignoring\n", self->last_flags);
                         continue;
                     }
                 }
@@ -217,7 +217,7 @@ no_payload:
 }
 
 STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_websocket_t *self =  MP_OBJ_TO_PTR(self_in);
+    mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
     assert(size < 0x10000);
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
     int hdr_sz;
@@ -296,7 +296,7 @@ STATIC const mp_obj_type_t websocket_type = {
     .name = MP_QSTR_websocket,
     .make_new = websocket_make_new,
     .protocol = &websocket_stream_p,
-    .locals_dict = (void*)&websocket_locals_dict,
+    .locals_dict = (void *)&websocket_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {
@@ -308,7 +308,7 @@ STATIC MP_DEFINE_CONST_DICT(uwebsocket_module_globals, uwebsocket_module_globals
 
 const mp_obj_module_t mp_module_uwebsocket = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t*)&uwebsocket_module_globals,
+    .globals = (mp_obj_dict_t *)&uwebsocket_module_globals,
 };
 
 #endif // MICROPY_PY_UWEBSOCKET

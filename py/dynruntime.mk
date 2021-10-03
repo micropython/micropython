@@ -27,6 +27,7 @@ CFLAGS += -std=c99
 CFLAGS += -Os
 CFLAGS += -Wall -Werror -DNDEBUG
 CFLAGS += -DNO_QSTR
+CFLAGS += -DMICROPY_ENABLE_DYNRUNTIME
 CFLAGS += -DMP_CONFIGFILE='<$(CONFIG_H)>'
 CFLAGS += -fpic -fno-common
 CFLAGS += -U _FORTIFY_SOURCE # prevent use of __*_chk libc functions
@@ -45,7 +46,6 @@ ifeq ($(ARCH),x86)
 # x86
 CROSS =
 CFLAGS += -m32 -fno-stack-protector
-MPY_CROSS_FLAGS += -mcache-lookup-bc
 MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),x64)
@@ -53,7 +53,6 @@ else ifeq ($(ARCH),x64)
 # x64
 CROSS =
 CFLAGS += -fno-stack-protector
-MPY_CROSS_FLAGS += -mcache-lookup-bc
 MICROPY_FLOAT_IMPL ?= double
 
 else ifeq ($(ARCH),armv7m)

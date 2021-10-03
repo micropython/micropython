@@ -3,6 +3,7 @@ def bm_run(N, M):
         from utime import ticks_us, ticks_diff
     except ImportError:
         import time
+
         ticks_us = lambda: int(time.perf_counter() * 1000000)
         ticks_diff = lambda a, b: a - b
 
@@ -14,7 +15,7 @@ def bm_run(N, M):
             cur_nm = nm
             param = p
     if param is None:
-        print(-1, -1, 'no matching params')
+        print(-1, -1, "no matching params")
         return
 
     # Run and time benchmark

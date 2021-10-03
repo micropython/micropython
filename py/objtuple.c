@@ -39,15 +39,19 @@
 
 void mp_obj_tuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_tuple_t *o = MP_OBJ_TO_PTR(o_in);
+    const char *item_separator = ", ";
     if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
         mp_print_str(print, "[");
+        #if MICROPY_PY_UJSON_SEPARATORS
+        item_separator = MP_PRINT_GET_EXT(print)->item_separator;
+        #endif
     } else {
         mp_print_str(print, "(");
         kind = PRINT_REPR;
     }
     for (size_t i = 0; i < o->len; i++) {
         if (i > 0) {
-            mp_print_str(print, ", ");
+            mp_print_str(print, item_separator);
         }
         mp_obj_print_helper(print, o->items[i], kind);
     }
@@ -109,11 +113,8 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     if (another_type->getiter != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
-        another_in = mp_instance_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
+        another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
-            if (op == MP_BINARY_OP_EQUAL) {
-                return mp_const_false;
-            }
             return MP_OBJ_NULL;
         }
     }
@@ -125,7 +126,8 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
 mp_obj_t mp_obj_tuple_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_BOOL: return mp_obj_new_bool(self->len != 0);
+        case MP_UNARY_OP_BOOL:
+            return mp_obj_new_bool(self->len != 0);
         case MP_UNARY_OP_HASH: {
             // start hash with pointer to empty tuple, to make it fairly unique
             mp_int_t hash = (mp_int_t)mp_const_empty_tuple;
@@ -134,8 +136,10 @@ mp_obj_t mp_obj_tuple_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
             }
             return MP_OBJ_NEW_SMALL_INT(hash);
         }
-        case MP_UNARY_OP_LEN: return MP_OBJ_NEW_SMALL_INT(self->len);
-        default: return MP_OBJ_NULL; // op not supported
+        case MP_UNARY_OP_LEN:
+            return MP_OBJ_NEW_SMALL_INT(self->len);
+        default:
+            return MP_OBJ_NULL;      // op not supported
     }
 }
 
@@ -181,17 +185,17 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_SENTINEL) {
         // load
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-#if MICROPY_PY_BUILTINS_SLICE
+        #if MICROPY_PY_BUILTINS_SLICE
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(self->len, index, &slice)) {
-                mp_raise_NotImplementedError("only slices with step=1 (aka None) are supported");
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             mp_obj_tuple_t *res = MP_OBJ_TO_PTR(mp_obj_new_tuple(slice.stop - slice.start, NULL));
             mp_seq_copy(res->items, self->items + slice.start, res->len, mp_obj_t);
             return MP_OBJ_FROM_PTR(res);
         }
-#endif
+        #endif
         size_t index_value = mp_get_index(self->base.type, self->len, index, false);
         return self->items[index_value];
     } else {
@@ -229,7 +233,7 @@ const mp_obj_type_t mp_type_tuple = {
     .binary_op = mp_obj_tuple_binary_op,
     .subscr = mp_obj_tuple_subscr,
     .getiter = mp_obj_tuple_getiter,
-    .locals_dict = (mp_obj_dict_t*)&tuple_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
 };
 
 // the zero-length tuple
@@ -286,7 +290,7 @@ STATIC mp_obj_t tuple_it_iternext(mp_obj_t self_in) {
 
 mp_obj_t mp_obj_tuple_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_tuple_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_tuple_it_t *o = (mp_obj_tuple_it_t*)iter_buf;
+    mp_obj_tuple_it_t *o = (mp_obj_tuple_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
     o->iternext = tuple_it_iternext;
     o->tuple = MP_OBJ_TO_PTR(o_in);

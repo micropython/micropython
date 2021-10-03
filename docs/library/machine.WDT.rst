@@ -15,16 +15,18 @@ Example usage::
     wdt = WDT(timeout=2000)  # enable it with a timeout of 2s
     wdt.feed()
 
-Availability of this class: pyboard, WiPy.
+Availability of this class: pyboard, WiPy, esp8266, esp32.
 
 Constructors
 ------------
 
 .. class:: WDT(id=0, timeout=5000)
 
-   Create a WDT object and start it. The timeout must be given in seconds and
-   the minimum value that is accepted is 1 second. Once it is running the timeout
-   cannot be changed and the WDT cannot be stopped either.
+   Create a WDT object and start it. The timeout must be given in milliseconds.
+   Once it is running the timeout cannot be changed and the WDT cannot be stopped either.
+   
+   Notes: On the esp32 the minimum timeout is 1 second. On the esp8266 a timeout
+   cannot be specified, it is determined by the underlying system.
 
 Methods
 -------

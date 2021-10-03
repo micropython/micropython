@@ -37,6 +37,14 @@ Reset related functions
 
    Get the reset cause. See :ref:`constants <machine_constants>` for the possible return values.
 
+.. function:: bootloader([value])
+
+   Reset the device and enter its bootloader.  This is typically used to put the
+   device into a state where it can be programmed with new firmware.
+
+   Some ports support passing in an optional *value* argument which can control
+   which bootloader to enter, what to pass to it, or other things.
+
 Interrupt related functions
 ---------------------------
 
@@ -56,9 +64,11 @@ Interrupt related functions
 Power related functions
 -----------------------
 
-.. function:: freq()
+.. function:: freq([hz])
 
-    Returns CPU frequency in hertz.
+    Returns the CPU frequency in hertz.
+
+    On some ports this can also be used to set the CPU frequency by passing in *hz*.
 
 .. function:: idle()
 
@@ -79,7 +89,7 @@ Power related functions
    If *time_ms* is specified then this will be the maximum time in milliseconds that
    the sleep will last for.  Otherwise the sleep can last indefinitely.
 
-   With or without a timout, execution may resume at any time if there are events
+   With or without a timeout, execution may resume at any time if there are events
    that require processing.  Such events, or wake sources, should be configured before
    sleeping, like `Pin` change or `RTC` timeout.
 
@@ -127,6 +137,28 @@ Miscellaneous functions
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
 
+.. function:: bitstream(pin, encoding, timing, data, /)
+
+   Transmits *data* by bit-banging the specified *pin*. The *encoding* argument
+   specifies how the bits are encoded, and *timing* is an encoding-specific timing
+   specification.
+
+   The supported encodings are:
+
+     - ``0`` for "high low" pulse duration modulation. This will transmit 0 and
+       1 bits as timed pulses, starting with the most significant bit.
+       The *timing* must be a four-tuple of nanoseconds in the format
+       ``(high_time_0, low_time_0, high_time_1, low_time_1)``. For example,
+       ``(400, 850, 800, 450)`` is the timing specification for WS2812 RGB LEDs
+       at 800kHz.
+
+   The accuracy of the timing varies between ports. On Cortex M0 at 48MHz, it is
+   at best +/- 120ns, however on faster MCUs (ESP8266, ESP32, STM32, Pyboard), it
+   will be closer to +/-30ns.
+
+   .. note:: For controlling WS2812 / NeoPixel strips, see the :mod:`neopixel`
+      module for a higher-level API.
+
 .. function:: rng()
 
    Return a 24-bit software generated random number.
@@ -167,9 +199,11 @@ Classes
    machine.Pin.rst
    machine.Signal.rst
    machine.ADC.rst
+   machine.PWM.rst
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2S.rst   
    machine.RTC.rst
    machine.Timer.rst
    machine.WDT.rst

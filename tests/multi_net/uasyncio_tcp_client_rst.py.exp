@@ -1,0 +1,5 @@
+--- instance0 ---
+b'GET / HTTP'
+OSError 104
+--- instance1 ---
+

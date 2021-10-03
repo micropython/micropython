@@ -12,6 +12,7 @@ import uerrno as errno
 import ujson as json
 import uzlib
 import upip_utarfile as tarfile
+
 gc.collect()
 
 
@@ -23,8 +24,10 @@ gzdict_sz = 16 + 15
 
 file_buf = bytearray(512)
 
+
 class NotFoundError(Exception):
     pass
+
 
 def op_split(path):
     if path == "":
@@ -37,8 +40,10 @@ def op_split(path):
         head = "/"
     return (head, r[1])
 
+
 def op_basename(path):
     return op_split(path)[1]
+
 
 # Expects *file* name
 def _makedirs(name, mode=0o777):
@@ -55,7 +60,7 @@ def _makedirs(name, mode=0o777):
             os.mkdir(s)
             ret = True
         except OSError as e:
-            if e.args[0] != errno.EEXIST and e.args[0] != errno.EISDIR:
+            if e.errno != errno.EEXIST and e.errno != errno.EISDIR:
                 raise e
             ret = False
     return ret
@@ -70,26 +75,27 @@ def save_file(fname, subf):
                 break
             outf.write(file_buf, sz)
 
+
 def install_tar(f, prefix):
     meta = {}
     for info in f:
-        #print(info)
+        # print(info)
         fname = info.name
         try:
-            fname = fname[fname.index("/") + 1:]
+            fname = fname[fname.index("/") + 1 :]
         except ValueError:
             fname = ""
 
         save = True
         for p in ("setup.", "PKG-INFO", "README"):
-                #print(fname, p)
-                if fname.startswith(p) or ".egg-info" in fname:
-                    if fname.endswith("/requires.txt"):
-                        meta["deps"] = f.extractfile(info).read()
-                    save = False
-                    if debug:
-                        print("Skipping", fname)
-                    break
+            # print(fname, p)
+            if fname.startswith(p) or ".egg-info" in fname:
+                if fname.endswith("/requires.txt"):
+                    meta["deps"] = f.extractfile(info).read()
+                save = False
+                if debug:
+                    print("Skipping", fname)
+                break
 
         if save:
             outfname = prefix + fname
@@ -101,32 +107,41 @@ def install_tar(f, prefix):
                 save_file(outfname, subf)
     return meta
 
+
 def expandhome(s):
     if "~/" in s:
         h = os.getenv("HOME")
         s = s.replace("~/", h + "/")
     return s
 
+
 import ussl
 import usocket
+
 warn_ussl = True
+
+
 def url_open(url):
     global warn_ussl
 
     if debug:
         print(url)
 
-    proto, _, host, urlpath = url.split('/', 3)
+    proto, _, host, urlpath = url.split("/", 3)
     try:
-        ai = usocket.getaddrinfo(host, 443, 0, usocket.SOCK_STREAM)
+        port = 443
+        if ":" in host:
+            host, port = host.split(":")
+            port = int(port)
+        ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
     except OSError as e:
         fatal("Unable to resolve %s (no Internet?)" % host, e)
-    #print("Address infos:", ai)
+    # print("Address infos:", ai)
     ai = ai[0]
 
     s = usocket.socket(ai[0], ai[1], ai[2])
     try:
-        #print("Connect address:", addr)
+        # print("Connect address:", addr)
         s.connect(ai[-1])
 
         if proto == "https:":
@@ -136,7 +151,7 @@ def url_open(url):
                 warn_ussl = False
 
         # MicroPython rawsocket module supports file interface directly
-        s.write("GET /%s HTTP/1.0\r\nHost: %s\r\n\r\n" % (urlpath, host))
+        s.write("GET /%s HTTP/1.0\r\nHost: %s:%s\r\n\r\n" % (urlpath, host, port))
         l = s.readline()
         protover, status, msg = l.split(None, 2)
         if status != b"200":
@@ -147,7 +162,7 @@ def url_open(url):
             l = s.readline()
             if not l:
                 raise ValueError("Unexpected EOF in HTTP headers")
-            if l == b'\r\n':
+            if l == b"\r\n":
                 break
     except Exception as e:
         s.close()
@@ -175,6 +190,7 @@ def fatal(msg, exc=None):
         raise exc
     sys.exit(1)
 
+
 def install_pkg(pkg_spec, install_path):
     data = get_pkg_metadata(pkg_spec)
 
@@ -197,6 +213,7 @@ def install_pkg(pkg_spec, install_path):
     del f2
     gc.collect()
     return meta
+
 
 def install(to_install, install_path=None):
     # Calculate gzip dictionary size to use
@@ -230,9 +247,11 @@ def install(to_install, install_path=None):
                 deps = deps.decode("utf-8").split("\n")
                 to_install.extend(deps)
     except Exception as e:
-        print("Error installing '{}': {}, packages may be partially installed".format(
-                pkg_spec, e),
-            file=sys.stderr)
+        print(
+            "Error installing '{}': {}, packages may be partially installed".format(pkg_spec, e),
+            file=sys.stderr,
+        )
+
 
 def get_install_path():
     global install_path
@@ -242,6 +261,7 @@ def get_install_path():
     install_path = expandhome(install_path)
     return install_path
 
+
 def cleanup():
     for fname in cleanup_files:
         try:
@@ -249,21 +269,27 @@ def cleanup():
         except OSError:
             print("Warning: Cannot delete " + fname)
 
+
 def help():
-    print("""\
+    print(
+        """\
 upip - Simple PyPI package manager for MicroPython
 Usage: micropython -m upip install [-p <path>] <package>... | -r <requirements.txt>
 import upip; upip.install(package_or_list, [<path>])
 
 If <path> is not given, packages will be installed into sys.path[1]
 (can be set from MICROPYPATH environment variable, if current system
-supports that).""")
+supports that)."""
+    )
     print("Current value of sys.path[1]:", sys.path[1])
-    print("""\
+    print(
+        """\
 
 Note: only MicroPython packages (usually, named micropython-*) are supported
 for installation, upip does not support arbitrary code in setup.py.
-""")
+"""
+    )
+
 
 def main():
     global debug

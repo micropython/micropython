@@ -1,4 +1,3 @@
-#define MICROPY_ENABLE_DYNRUNTIME (1)
 #define MICROPY_STACK_CHECK (1)
 #define MICROPY_PY_URE (1)
 #define MICROPY_PY_URE_MATCH_GROUPS (1)
@@ -16,7 +15,7 @@ void mp_stack_check(void) {
     // Assumes descending stack on target
     volatile char dummy;
     if (stack_top - &dummy >= STACK_LIMIT) {
-        mp_raise_msg(&mp_type_RuntimeError, "maximum recursion depth exceeded");
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("maximum recursion depth exceeded"));
     }
 }
 
@@ -72,8 +71,8 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     re_type.locals_dict = (void*)&re_locals_dict;
 
     mp_store_global(MP_QSTR_compile, MP_OBJ_FROM_PTR(&mod_re_compile_obj));
-    mp_store_global(MP_QSTR_match, MP_OBJ_FROM_PTR(&mod_re_match_obj));
-    mp_store_global(MP_QSTR_search, MP_OBJ_FROM_PTR(&mod_re_search_obj));
+    mp_store_global(MP_QSTR_match, MP_OBJ_FROM_PTR(&re_match_obj));
+    mp_store_global(MP_QSTR_search, MP_OBJ_FROM_PTR(&re_search_obj));
 
     MP_DYNRUNTIME_INIT_EXIT
 }

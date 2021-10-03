@@ -36,8 +36,15 @@
 #include "py/bc.h"
 #include "py/profile.h"
 
+// *FORMAT-OFF*
+
 #if 0
-#define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
+#if MICROPY_PY_THREAD
+#define TRACE_PREFIX mp_printf(&mp_plat_print, "ts=%p sp=%d ", mp_thread_get_state(), (int)(sp - &code_state->state[0] + 1))
+#else
+#define TRACE_PREFIX mp_printf(&mp_plat_print, "sp=%d ", (int)(sp - &code_state->state[0] + 1))
+#endif
+#define TRACE(ip) TRACE_PREFIX; mp_bytecode_print2(&mp_plat_print, ip, 1, code_state->fun_bc->const_table);
 #else
 #define TRACE(ip)
 #endif
@@ -173,23 +180,6 @@
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
-#if MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-static inline mp_map_elem_t *mp_map_cached_lookup(mp_map_t *map, qstr qst, uint8_t *idx_cache) {
-    size_t idx = *idx_cache;
-    mp_obj_t key = MP_OBJ_NEW_QSTR(qst);
-    mp_map_elem_t *elem = NULL;
-    if (idx < map->alloc && map->table[idx].key == key) {
-        elem = &map->table[idx];
-    } else {
-        elem = mp_map_lookup(map, key, MP_MAP_LOOKUP);
-        if (elem != NULL) {
-            *idx_cache = (elem - &map->table[0]) & 0xff;
-        }
-    }
-    return elem;
-}
-#endif
-
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
@@ -305,7 +295,7 @@ dispatch_loop:
                     DISPATCH();
 
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT): {
-                    mp_int_t num = 0;
+                    mp_uint_t num = 0;
                     if ((ip[0] & 0x40) != 0) {
                         // Number is negative
                         num--;
@@ -340,7 +330,7 @@ dispatch_loop:
                     if (obj_shared == MP_OBJ_NULL) {
                         local_name_error: {
                             MARK_EXC_IP_SELECTIVE();
-                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, "local variable referenced before assignment");
+                            mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NameError, MP_ERROR_TEXT("local variable referenced before assignment"));
                             RAISE(obj);
                         }
                     }
@@ -354,84 +344,46 @@ dispatch_loop:
                     goto load_check;
                 }
 
-                #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
                 ENTRY(MP_BC_LOAD_NAME): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     PUSH(mp_load_name(qst));
                     DISPATCH();
                 }
-                #else
-                ENTRY(MP_BC_LOAD_NAME): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_QSTR;
-                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_locals_get()->map, qst, (uint8_t*)ip);
-                    mp_obj_t obj;
-                    if (elem != NULL) {
-                        obj = elem->value;
-                    } else {
-                        obj = mp_load_name(qst);
-                    }
-                    PUSH(obj);
-                    ip++;
-                    DISPATCH();
-                }
-                #endif
 
-                #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
                 ENTRY(MP_BC_LOAD_GLOBAL): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     PUSH(mp_load_global(qst));
                     DISPATCH();
                 }
-                #else
-                ENTRY(MP_BC_LOAD_GLOBAL): {
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_QSTR;
-                    mp_map_elem_t *elem = mp_map_cached_lookup(&mp_globals_get()->map, qst, (uint8_t*)ip);
-                    mp_obj_t obj;
-                    if (elem != NULL) {
-                        obj = elem->value;
-                    } else {
-                        obj = mp_load_global(qst);
-                    }
-                    PUSH(obj);
-                    ip++;
-                    DISPATCH();
-                }
-                #endif
 
-                #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-                ENTRY(MP_BC_LOAD_ATTR): {
-                    FRAME_UPDATE();
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_QSTR;
-                    SET_TOP(mp_load_attr(TOP(), qst));
-                    DISPATCH();
-                }
-                #else
                 ENTRY(MP_BC_LOAD_ATTR): {
                     FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_obj_t top = TOP();
+                    mp_obj_t obj;
+                    #if MICROPY_OPT_LOAD_ATTR_FAST_PATH
+                    // For the specific case of an instance type, it implements .attr
+                    // and forwards to its members map. Attribute lookups on instance
+                    // types are extremely common, so avoid all the other checks and
+                    // calls that normally happen first.
                     mp_map_elem_t *elem = NULL;
                     if (mp_obj_is_instance_type(mp_obj_get_type(top))) {
                         mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t*)ip);
+                        elem = mp_map_lookup(&self->members, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
                     }
-                    mp_obj_t obj;
-                    if (elem != NULL) {
+                    if (elem) {
                         obj = elem->value;
-                    } else {
+                    } else
+                    #endif
+                    {
                         obj = mp_load_attr(top, qst);
                     }
                     SET_TOP(obj);
-                    ip++;
                     DISPATCH();
                 }
-                #endif
 
                 ENTRY(MP_BC_LOAD_METHOD): {
                     MARK_EXC_IP_SELECTIVE();
@@ -487,7 +439,6 @@ dispatch_loop:
                     DISPATCH();
                 }
 
-                #if !MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
                 ENTRY(MP_BC_STORE_ATTR): {
                     FRAME_UPDATE();
                     MARK_EXC_IP_SELECTIVE();
@@ -496,32 +447,6 @@ dispatch_loop:
                     sp -= 2;
                     DISPATCH();
                 }
-                #else
-                // This caching code works with MICROPY_PY_BUILTINS_PROPERTY and/or
-                // MICROPY_PY_DESCRIPTORS enabled because if the attr exists in
-                // self->members then it can't be a property or have descriptors.  A
-                // consequence of this is that we can't use MP_MAP_LOOKUP_ADD_IF_NOT_FOUND
-                // in the fast-path below, because that store could override a property.
-                ENTRY(MP_BC_STORE_ATTR): {
-                    FRAME_UPDATE();
-                    MARK_EXC_IP_SELECTIVE();
-                    DECODE_QSTR;
-                    mp_map_elem_t *elem = NULL;
-                    mp_obj_t top = TOP();
-                    if (mp_obj_is_instance_type(mp_obj_get_type(top)) && sp[-1] != MP_OBJ_NULL) {
-                        mp_obj_instance_t *self = MP_OBJ_TO_PTR(top);
-                        elem = mp_map_cached_lookup(&self->members, qst, (uint8_t*)ip);
-                    }
-                    if (elem != NULL) {
-                        elem->value = sp[-1];
-                    } else {
-                        mp_store_attr(sp[0], qst, sp[-1]);
-                    }
-                    sp -= 2;
-                    ip++;
-                    DISPATCH();
-                }
-                #endif
 
                 ENTRY(MP_BC_STORE_SUBSCR):
                     MARK_EXC_IP_SELECTIVE();
@@ -1199,7 +1124,7 @@ unwind_return:
                         }
                     }
                     if (obj == MP_OBJ_NULL) {
-                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "no active exception to reraise");
+                        obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
                     }
                     RAISE(obj);
                 }
@@ -1250,16 +1175,9 @@ yield:
                         PUSH(ret_value);
                         goto yield;
                     } else if (ret_kind == MP_VM_RETURN_NORMAL) {
-                        // Pop exhausted gen
-                        sp--;
-                        if (ret_value == MP_OBJ_STOP_ITERATION) {
-                            // Optimize StopIteration
-                            // TODO: get StopIteration's value
-                            PUSH(mp_const_none);
-                        } else {
-                            PUSH(ret_value);
-                        }
-
+                        // The generator has finished, and returned a value via StopIteration
+                        // Replace exhausted generator with the returned value
+                        SET_TOP(ret_value);
                         // If we injected GeneratorExit downstream, then even
                         // if it was swallowed, we re-raise GeneratorExit
                         GENERATOR_EXIT_IF_NEEDED(t_exc);
@@ -1347,7 +1265,7 @@ yield:
 #endif
                 {
 
-                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, "opcode");
+                    mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
                     FRAME_LEAVE();
@@ -1364,25 +1282,30 @@ pending_exception_check:
                 #if MICROPY_ENABLE_SCHEDULER
                 // This is an inlined variant of mp_handle_pending
                 if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    MARK_EXC_IP_SELECTIVE();
                     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                    if (obj != MP_OBJ_NULL) {
-                        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
-                        if (!mp_sched_num_pending()) {
-                            MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                    // Re-check state is still pending now that we're in the atomic section.
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+                        MARK_EXC_IP_SELECTIVE();
+                        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+                        if (obj != MP_OBJ_NULL) {
+                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+                            if (!mp_sched_num_pending()) {
+                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+                            }
+                            MICROPY_END_ATOMIC_SECTION(atomic_state);
+                            RAISE(obj);
                         }
+                        mp_handle_pending_tail(atomic_state);
+                    } else {
                         MICROPY_END_ATOMIC_SECTION(atomic_state);
-                        RAISE(obj);
                     }
-                    mp_handle_pending_tail(atomic_state);
                 }
                 #else
                 // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+                if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-                    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                    mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+                    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
                     RAISE(obj);
                 }
                 #endif

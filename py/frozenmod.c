@@ -146,7 +146,7 @@ int mp_find_frozen_module(const char *str, size_t len, void **data) {
     #if MICROPY_MODULE_FROZEN_MPY
     const mp_raw_code_t *rc = mp_find_frozen_mpy(str, len);
     if (rc != NULL) {
-        *data = (void*)rc;
+        *data = (void *)rc;
         return MP_FROZEN_MPY;
     }
     #endif

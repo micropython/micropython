@@ -21,7 +21,7 @@ Constructors
 Methods
 -------
 
-.. method:: USB_VCP.init(\*, flow=-1)
+.. method:: USB_VCP.init(*, flow=-1)
 
    Configure the USB VCP port.  If the *flow* argument is not -1 then the value sets
    the flow control, which can be a bitwise-or of ``USB_VCP.RTS`` and ``USB_VCP.CTS``.
@@ -89,7 +89,7 @@ Methods
 
    Returns the number of bytes written.
 
-.. method:: USB_VCP.recv(data, \*, timeout=5000)
+.. method:: USB_VCP.recv(data, *, timeout=5000)
 
    Receive data on the bus:
 
@@ -100,7 +100,7 @@ Methods
    Return value: if ``data`` is an integer then a new buffer of the bytes received,
    otherwise the number of bytes read into ``data`` is returned.
 
-.. method:: USB_VCP.send(data, \*, timeout=5000)
+.. method:: USB_VCP.send(data, *, timeout=5000)
 
    Send data over the USB VCP:
 
@@ -108,6 +108,16 @@ Methods
      - ``timeout`` is the timeout in milliseconds to wait for the send.
 
    Return value: number of bytes sent.
+
+.. method:: USB_VCP.irq(handler=None, trigger=IRQ_RX, hard=False)
+
+   Register *handler* to be called whenever an event specified by *trigger*
+   occurs.  The *handler* function must take exactly one argument, which will
+   be the USB VCP object.  Pass in ``None`` to disable the callback.
+
+   Valid values for *trigger* are:
+
+     - ``USB_VCP.IRQ_RX``: new data is available for reading from the USB VCP object.
 
 
 Constants
@@ -117,3 +127,7 @@ Constants
           USB_VCP.CTS
 
    to select the flow control type.
+
+.. data:: USB_VCP.IRQ_RX
+
+   IRQ trigger values for :meth:`USB_VCP.irq`.

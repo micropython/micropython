@@ -10,14 +10,14 @@ except ImportError:
 try:
     random.randint
 except AttributeError:
-    print('SKIP')
+    print("SKIP")
     raise SystemExit
 
-print('random')
+print("random")
 for i in range(50):
     assert 0 <= random.random() < 1
 
-print('uniform')
+print("uniform")
 for i in range(50):
     assert 0 <= random.uniform(0, 4) <= 4
     assert 2 <= random.uniform(2, 6) <= 6

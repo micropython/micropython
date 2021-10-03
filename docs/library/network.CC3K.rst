@@ -25,7 +25,7 @@ For this example to work the CC3000 module must have the following connections:
     - VBEN connected to Y4
     - IRQ connected to Y3
 
-It is possible to use other SPI busses and other pins for CS, VBEN and IRQ.
+It is possible to use other SPI buses and other pins for CS, VBEN and IRQ.
 
 Constructors
 ------------
@@ -51,7 +51,7 @@ Constructors
 Methods
 -------
 
-.. method:: CC3K.connect(ssid, key=None, \*, security=WPA2, bssid=None)
+.. method:: CC3K.connect(ssid, key=None, *, security=WPA2, bssid=None)
 
    Connect to a WiFi access point using the given SSID, and other security
    parameters.

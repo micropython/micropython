@@ -1,0 +1,24 @@
+--- instance0 ---
+gap_advertise
+_IRQ_MTU_EXCHANGED: 131
+_IRQ_GATTS_WRITE 0
+_IRQ_GATTS_WRITE 10
+_IRQ_GATTS_WRITE 20
+_IRQ_GATTS_WRITE 30
+_IRQ_GATTS_WRITE 40
+_IRQ_GATTS_WRITE 50
+_IRQ_GATTS_WRITE 60
+_IRQ_GATTS_WRITE 70
+final packet_sequence: 80
+--- instance1 ---
+gap_connect
+_IRQ_MTU_EXCHANGED: 131
+gattc_write 0
+gattc_write 10
+gattc_write 20
+gattc_write 30
+gattc_write 40
+gattc_write 50
+gattc_write 60
+gattc_write 70
+gap_disconnect: True

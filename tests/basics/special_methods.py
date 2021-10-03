@@ -100,6 +100,10 @@ cud1 = Cud()
 cud2 = Cud()
 
 str(cud1)
+cud1 == cud1
+cud1 == cud2
+cud1 != cud1
+cud1 != cud2
 cud1 < cud2
 cud1 <= cud2
 cud1 == cud2

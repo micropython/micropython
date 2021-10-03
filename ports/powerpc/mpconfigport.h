@@ -33,7 +33,7 @@
 // will still be able to execute pre-compiled scripts, compiled with mpy-cross.
 #define MICROPY_ENABLE_COMPILER     (1)
 
-//#define MICROPY_DEBUG_VERBOSE     (1)
+// #define MICROPY_DEBUG_VERBOSE    (1)
 
 #define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
@@ -93,7 +93,7 @@
 
 // type definitions for the specific machine
 
-#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void*)((mp_uint_t)(p) | 1))
+#define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 // This port is 64-bit
 #define UINT_FMT "%lu"
@@ -102,8 +102,6 @@ typedef signed long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
-
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \

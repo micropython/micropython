@@ -1,5 +1,5 @@
-Builtin functions and exceptions
-================================
+:mod:`builtins` -- builtin functions and exceptions
+===================================================
 
 All builtin functions and exceptions are described here. They are also
 available via ``builtins`` module.
@@ -175,10 +175,6 @@ Exceptions
 .. exception:: NotImplementedError
 
 .. exception:: OSError
-
-    |see_cpython| `python:OSError`. MicroPython doesn't implement ``errno``
-    attribute, instead use the standard way to access exception arguments:
-    ``exc.args[0]``.
 
 .. exception:: RuntimeError
 

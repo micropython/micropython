@@ -35,8 +35,7 @@
 enum {
     BDEV_IOCTL_INIT = 1,
     BDEV_IOCTL_SYNC = 3,
-    BDEV_IOCTL_NUM_BLOCKS = 4,
-    BDEV_IOCTL_BLOCK_ERASE = 6,
+    BDEV_IOCTL_NUM_BLOCKS = 4, // units are FLASH_BLOCK_SIZE
     BDEV_IOCTL_IRQ_HANDLER = 7,
 };
 
@@ -50,6 +49,7 @@ bool storage_write_block(const uint8_t *src, uint32_t block);
 // these return 0 on success, negative errno on error
 int storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks);
 int storage_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks);
+int storage_readblocks_ext(uint8_t *dest, uint32_t block, uint32_t offset, uint32_t len);
 
 int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg);
 bool flash_bdev_readblock(uint8_t *dest, uint32_t block);
@@ -69,6 +69,7 @@ int spi_bdev_writeblocks(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_nu
 // These raw functions bypass the cache and go directly to SPI flash
 int spi_bdev_readblocks_raw(spi_bdev_t *bdev, uint8_t *dest, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes);
 int spi_bdev_writeblocks_raw(spi_bdev_t *bdev, const uint8_t *src, uint32_t block_num, uint32_t block_offset, uint32_t num_bytes);
+int spi_bdev_eraseblocks_raw(spi_bdev_t *bdev, uint32_t block_num, uint32_t num_bytes);
 
 extern const struct _mp_obj_type_t pyb_flash_type;
 extern const struct _pyb_flash_obj_t pyb_flash_obj;

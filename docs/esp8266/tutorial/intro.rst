@@ -75,6 +75,10 @@ the DTR and RTS pins wired in a special way then deploying the firmware should
 be easy as all steps can be done automatically.  Boards that have such features
 include the Adafruit Feather HUZZAH and NodeMCU boards.
 
+If you do not have such a board, you need keep GPIO0 pulled to ground and reset
+the device by pulling the reset pin to ground and releasing it again to enter
+programming mode.
+
 For best results it is recommended to first erase the entire flash of your
 device before putting on new MicroPython firmware.
 
@@ -105,13 +109,19 @@ PC.  You may also need to reduce the baudrate if you get errors when flashing
 that you have.
 
 For some boards with a particular FlashROM configuration (e.g. some variants of
-a NodeMCU board) you may need to use the following command to deploy
-the firmware (note the ``-fm dio`` option)::
+a NodeMCU board) you may need to manually set a compatible
+`SPI Flash Mode <https://github.com/espressif/esptool/wiki/SPI-Flash-Modes>`_.
+You'd usually pick the fastest option that is compatible with your device, but
+the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
-    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dio 0 esp8266-20170108-v1.8.7.bin
+    esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect -fm dout 0 esp8266-20170108-v1.8.7.bin
 
 If the above commands run without error then MicroPython should be installed on
 your board!
+
+If you pulled GPIO0 manually to ground to enter programming mode, release it
+now and reset the device by again pulling the reset pin to ground for a short
+duration.
 
 Serial prompt
 -------------

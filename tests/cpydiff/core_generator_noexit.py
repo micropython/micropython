@@ -4,11 +4,15 @@ description: Context manager __exit__() not called in a generator which does not
 cause: Unknown
 workaround: Unknown
 """
+
+
 class foo(object):
     def __enter__(self):
-        print('Enter')
+        print("Enter")
+
     def __exit__(self, *args):
-        print('Exit')
+        print("Exit")
+
 
 def bar(x):
     with foo():
@@ -16,9 +20,11 @@ def bar(x):
             x += 1
             yield x
 
+
 def func():
     g = bar(0)
     for _ in range(3):
         print(next(g))
+
 
 func()

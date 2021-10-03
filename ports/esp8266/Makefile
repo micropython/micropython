@@ -19,10 +19,11 @@ include ../../py/mkenv.mk
 QSTR_DEFS = qstrdefsport.h #$(BUILD)/pins_qstr.h
 QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 
+# MicroPython feature configurations
+MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
-MICROPY_PY_BTREE ?= 1
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
 FROZEN_MANIFEST ?= boards/manifest.py
@@ -49,7 +50,7 @@ INC += -I$(ESP_SDK)/include
 
 # UART for "os" messages. 0 is normal UART as used by MicroPython REPL,
 # 1 is debug UART (tx only), -1 to disable.
-UART_OS = 0
+UART_OS = -1
 
 CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 	-D__ets__ -DICACHE_FLASH \
@@ -60,7 +61,7 @@ CFLAGS_XTENSA = -fsingle-precision-constant -Wdouble-promotion \
 CFLAGS = $(INC) -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib -DUART_OS=$(UART_OS) \
 	$(CFLAGS_XTENSA) $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA) -I$(BOARD_DIR)
 
-LD_FILES ?= boards/esp8266.ld
+LD_FILES ?= boards/esp8266_2m.ld
 LDFLAGS = -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
 LIBS = -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211 $(LDFLAGS_MOD)
 
@@ -90,13 +91,11 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
-	espneopixel.c \
 	espapa102.c \
-	intr.c \
 	modpyb.c \
 	modmachine.c \
+	machine_bitstream.c \
 	machine_pin.c \
-	machine_pwm.c \
 	machine_rtc.c \
 	machine_adc.c \
 	machine_uart.c \
@@ -119,31 +118,45 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
         )
 
 LIB_SRC_C = $(addprefix lib/,\
-	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
+	libm/erf_lgamma.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
 	libm/kf_cos.c \
 	libm/kf_tan.c \
 	libm/ef_rem_pio2.c \
+	libm/sf_erf.c \
 	libm/sf_sin.c \
 	libm/sf_cos.c \
 	libm/sf_tan.c \
 	libm/sf_frexp.c \
 	libm/sf_modf.c \
 	libm/sf_ldexp.c \
+	libm/acoshf.c \
 	libm/asinfacosf.c \
+	libm/asinhf.c \
 	libm/atanf.c \
+	libm/atanhf.c \
 	libm/atan2f.c \
-	mp-readline/readline.c \
+	libm/log1pf.c \
+	libm/roundf.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c \
+	)
+
+SHARED_SRC_C = $(addprefix shared/,\
+	libc/__errno.c \
+	libc/string0.c \
 	netutils/netutils.c \
+	readline/readline.c \
+	runtime/interrupt_char.c \
+	runtime/pyexec.c \
+	runtime/stdout_helpers.c \
+	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
-	utils/pyexec.c \
-	utils/interrupt_char.c \
-	utils/sys_stdio_mphal.c \
 	)
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
@@ -159,11 +172,12 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(SHARED_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

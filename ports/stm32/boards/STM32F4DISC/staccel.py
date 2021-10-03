@@ -18,29 +18,30 @@ from micropython import const
 from pyb import Pin
 from pyb import SPI
 
-READWRITE_CMD = const(0x80) 
+READWRITE_CMD = const(0x80)
 MULTIPLEBYTE_CMD = const(0x40)
-WHO_AM_I_ADDR = const(0x0f)
+WHO_AM_I_ADDR = const(0x0F)
 OUT_X_ADDR = const(0x29)
-OUT_Y_ADDR = const(0x2b)
-OUT_Z_ADDR = const(0x2d)
-OUT_T_ADDR = const(0x0c)
+OUT_Y_ADDR = const(0x2B)
+OUT_Z_ADDR = const(0x2D)
+OUT_T_ADDR = const(0x0C)
 
-LIS302DL_WHO_AM_I_VAL = const(0x3b)
+LIS302DL_WHO_AM_I_VAL = const(0x3B)
 LIS302DL_CTRL_REG1_ADDR = const(0x20)
 # Configuration for 100Hz sampling rate, +-2g range
 LIS302DL_CONF = const(0b01000111)
 
-LIS3DSH_WHO_AM_I_VAL = const(0x3f)
+LIS3DSH_WHO_AM_I_VAL = const(0x3F)
 LIS3DSH_CTRL_REG4_ADDR = const(0x20)
 LIS3DSH_CTRL_REG5_ADDR = const(0x24)
 # Configuration for 100Hz sampling rate, +-2g range
 LIS3DSH_CTRL_REG4_CONF = const(0b01100111)
 LIS3DSH_CTRL_REG5_CONF = const(0b00000000)
 
+
 class STAccel:
     def __init__(self):
-        self.cs_pin = Pin('PE3', Pin.OUT_PP, Pin.PULL_NONE)
+        self.cs_pin = Pin("PE3", Pin.OUT_PP, Pin.PULL_NONE)
         self.cs_pin.high()
         self.spi = SPI(1, SPI.MASTER, baudrate=328125, polarity=0, phase=1, bits=8)
 
@@ -54,7 +55,7 @@ class STAccel:
             self.write_bytes(LIS3DSH_CTRL_REG5_ADDR, bytearray([LIS3DSH_CTRL_REG5_CONF]))
             self.sensitivity = 0.06 * 256
         else:
-            raise Exception('LIS302DL or LIS3DSH accelerometer not present')
+            raise Exception("LIS302DL or LIS3DSH accelerometer not present")
 
     def convert_raw_to_g(self, x):
         if x & 0x80:
@@ -68,7 +69,7 @@ class STAccel:
             addr |= READWRITE_CMD
         self.cs_pin.low()
         self.spi.send(addr)
-        #buf = self.spi.send_recv(bytearray(nbytes * [0])) # read data, MSB first
+        # buf = self.spi.send_recv(bytearray(nbytes * [0])) # read data, MSB first
         buf = self.spi.recv(nbytes)
         self.cs_pin.high()
         return buf

@@ -8,4 +8,4 @@ except ImportError:
         raise SystemExit
 
 print(json.dumps(1.2))
-print(json.dumps({1.5: 'hi'}))
+print(json.dumps({1.5: "hi"}))

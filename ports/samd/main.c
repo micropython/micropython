@@ -29,8 +29,8 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
-#include "lib/utils/gchelper.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 
@@ -65,9 +65,7 @@ void samd_main(void) {
 
 void gc_collect(void) {
     gc_collect_start();
-    uintptr_t regs[10];
-    uintptr_t sp = gc_helper_get_regs_and_sp(regs);
-    gc_collect_root((void**)sp, ((uintptr_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
+    gc_helper_collect_regs_and_stack();
     gc_collect_end();
 }
 
@@ -89,10 +87,15 @@ void nlr_jump_fail(void *val) {
     }
 }
 
+void abort(void) {
+    for (;;) {
+    }
+}
+
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     mp_printf(MP_PYTHON_PRINTER, "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    for(;;) {
+    for (;;) {
     }
 }
 #endif

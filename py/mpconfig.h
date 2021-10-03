@@ -28,14 +28,14 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 12
+#define MICROPY_VERSION_MINOR 17
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION ( \
     MICROPY_VERSION_MAJOR << 16 \
-    | MICROPY_VERSION_MINOR << 8 \
-    | MICROPY_VERSION_MICRO)
+        | MICROPY_VERSION_MINOR << 8 \
+        | MICROPY_VERSION_MICRO)
 
 // String version
 #define MICROPY_VERSION_STRING \
@@ -61,6 +61,31 @@
 #else
 #include <mpconfigport.h>
 #endif
+
+// Disable all optional features (i.e. minimal port).
+#define MICROPY_CONFIG_ROM_LEVEL_MINIMUM (0)
+// Only enable core features (constrained flash, e.g. STM32L072)
+#define MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES (10)
+// Enable most common features (small on-device flash, e.g. STM32F411)
+#define MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES (20)
+// Enable convenience features (medium on-device flash, e.g. STM32F405)
+#define MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES (30)
+// Enable all common features (large/external flash, rp2, unix)
+#define MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES (40)
+// Enable everything (e.g. coverage)
+#define MICROPY_CONFIG_ROM_LEVEL_EVERYTHING (50)
+
+// Ports/boards should set this, but default to level=core.
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#endif
+
+// Helper macros for "have at least this level".
+#define MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_BASIC_FEATURES (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_EVERYTHING)
 
 // Any options not explicitly set in mpconfigport.h will get default
 // values below.
@@ -126,7 +151,7 @@
 // Number of bytes in memory allocation/GC block. Any size allocated will be
 // rounded up to be multiples of this.
 #ifndef MICROPY_BYTES_PER_GC_BLOCK
-#define MICROPY_BYTES_PER_GC_BLOCK (4 * BYTES_PER_WORD)
+#define MICROPY_BYTES_PER_GC_BLOCK (4 * MP_BYTES_PER_OBJ_WORD)
 #endif
 
 // Number of words allocated (in BSS) to the GC stack (minimum is 1)
@@ -156,7 +181,7 @@
 // Support automatic GC when reaching allocation threshold,
 // configurable by gc.threshold().
 #ifndef MICROPY_GC_ALLOC_THRESHOLD
-#define MICROPY_GC_ALLOC_THRESHOLD (1)
+#define MICROPY_GC_ALLOC_THRESHOLD (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Number of bytes to allocate initially when creating new chunks to store
@@ -229,6 +254,11 @@
 #define MICROPY_MODULE_DICT_SIZE (1)
 #endif
 
+// Initial size of sys.modules dict
+#ifndef MICROPY_LOADED_MODULES_DICT_SIZE
+#define MICROPY_LOADED_MODULES_DICT_SIZE (3)
+#endif
+
 // Whether realloc/free should be passed allocated memory region size
 // You must enable this if MICROPY_MEM_STATS is enabled
 #ifndef MICROPY_MALLOC_USES_ALLOCATED_SIZE
@@ -244,7 +274,11 @@
 
 // Number of bytes used to store qstr hash
 #ifndef MICROPY_QSTR_BYTES_IN_HASH
+#if MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES
 #define MICROPY_QSTR_BYTES_IN_HASH (2)
+#else
+#define MICROPY_QSTR_BYTES_IN_HASH (1)
+#endif
 #endif
 
 // Avoid using C stack when making Python function calls. C stack still
@@ -283,6 +317,11 @@
 #define MICROPY_PERSISTENT_CODE_SAVE (0)
 #endif
 
+// Whether to support saving persistent code to a file via mp_raw_code_save_file
+#ifndef MICROPY_PERSISTENT_CODE_SAVE_FILE
+#define MICROPY_PERSISTENT_CODE_SAVE_FILE (0)
+#endif
+
 // Whether generated code can persist independently of the VM/runtime instance
 // This is enabled automatically when needed by other features
 #ifndef MICROPY_PERSISTENT_CODE
@@ -302,6 +341,11 @@
 // Whether to emit thumb native code
 #ifndef MICROPY_EMIT_THUMB
 #define MICROPY_EMIT_THUMB (0)
+#endif
+
+// Whether to emit ARMv7-M instruction support in thumb native code
+#ifndef MICROPY_EMIT_THUMB_ARMV7M
+#define MICROPY_EMIT_THUMB_ARMV7M (1)
 #endif
 
 // Whether to enable the thumb inline assembler
@@ -351,12 +395,24 @@
 // Convenience definition for whether any native or inline assembler emitter is enabled
 #define MICROPY_EMIT_MACHINE_CODE (MICROPY_EMIT_NATIVE || MICROPY_EMIT_INLINE_ASM)
 
+// Whether native relocatable code loaded from .mpy files is explicitly tracked
+// so that the GC cannot reclaim it.  Needed on architectures that allocate
+// executable memory on the MicroPython heap and don't explicitly track this
+// data some other way.
+#ifndef MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+#if !MICROPY_EMIT_MACHINE_CODE || defined(MP_PLAT_ALLOC_EXEC) || defined(MP_PLAT_COMMIT_EXEC)
+#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (0)
+#else
+#define MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE (1)
+#endif
+#endif
+
 /*****************************************************************************/
 /* Compiler configuration                                                    */
 
 // Whether to include the compiler
 #ifndef MICROPY_ENABLE_COMPILER
-#define MICROPY_ENABLE_COMPILER (1)
+#define MICROPY_ENABLE_COMPILER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether the compiler is dynamically configurable (ie at runtime)
@@ -367,21 +423,19 @@
 
 // Configure dynamic compiler macros
 #if MICROPY_DYNAMIC_COMPILER
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC (mp_dynamic_compiler.opt_cache_map_lookup_in_bytecode)
 #define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC (mp_dynamic_compiler.py_builtins_str_unicode)
 #else
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
 #define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
 #endif
 
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
-#define MICROPY_COMP_CONST_FOLDING (1)
+#define MICROPY_COMP_CONST_FOLDING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable optimisations for constant literals, eg OrderedDict
 #ifndef MICROPY_COMP_CONST_LITERAL
-#define MICROPY_COMP_CONST_LITERAL (1)
+#define MICROPY_COMP_CONST_LITERAL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable lookup of constants in modules; eg module.CONST
@@ -391,13 +445,13 @@
 
 // Whether to enable constant optimisation; id = const(value)
 #ifndef MICROPY_COMP_CONST
-#define MICROPY_COMP_CONST (1)
+#define MICROPY_COMP_CONST (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable optimisation of: a, b = c, d
 // Costs 124 bytes (Thumb2)
 #ifndef MICROPY_COMP_DOUBLE_TUPLE_ASSIGN
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable optimisation of: a, b, c = d, e, f
@@ -442,6 +496,11 @@
 #define MICROPY_DEBUG_MP_OBJ_SENTINELS (0)
 #endif
 
+// Whether to print parse rule names (rather than integers) in mp_parse_node_print
+#ifndef MICROPY_DEBUG_PARSE_RULE_NAME
+#define MICROPY_DEBUG_PARSE_RULE_NAME (0)
+#endif
+
 // Whether to enable a simple VM stack overflow check
 #ifndef MICROPY_DEBUG_VM_STACK_OVERFLOW
 #define MICROPY_DEBUG_VM_STACK_OVERFLOW (0)
@@ -451,18 +510,32 @@
 /* Optimisations                                                             */
 
 // Whether to use computed gotos in the VM, or a switch
-// Computed gotos are roughly 10% faster, and increase VM code size by a little
+// Computed gotos are roughly 10% faster, and increase VM code size by a little,
+// e.g. ~1kiB on Cortex M4.
 // Note: enabling this will use the gcc-specific extensions of ranged designated
 // initialisers and addresses of labels, which are not part of the C99 standard.
 #ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
-// Whether to cache result of map lookups in LOAD_NAME, LOAD_GLOBAL, LOAD_ATTR,
-// STORE_ATTR bytecodes.  Uses 1 byte extra RAM for each of these opcodes and
-// uses a bit of extra code ROM, but greatly improves lookup speed.
-#ifndef MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
+// Optimise the fast path for loading attributes from instance types. Increases
+// Thumb2 code size by about 48 bytes.
+#ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (0)
+#endif
+
+// Use extra RAM to cache map lookups by remembering the likely location of
+// the index. Avoids the hash computation on unordered maps, and avoids the
+// linear search on ordered (especially in-ROM) maps. Can provide a +10-15%
+// performance improvement on benchmarks involving lots of attribute access
+// or dictionary lookup.
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
+#endif
+
+// How much RAM (in bytes) to use for the map lookup cache.
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE (128)
 #endif
 
 // Whether to use fast versions of bitwise operations (and, or, xor) when the
@@ -484,7 +557,7 @@
 // When disabled, only importing of built-in modules is supported
 // When enabled, a port must implement mp_import_stat (among other things)
 #ifndef MICROPY_ENABLE_EXTERNAL_IMPORT
-#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to use the POSIX reader for importing files
@@ -516,6 +589,12 @@
 // Hook for the VM just before return opcode is finished being interpreted
 #ifndef MICROPY_VM_HOOK_RETURN
 #define MICROPY_VM_HOOK_RETURN
+#endif
+
+// Hook for mp_sched_schedule when a function gets scheduled on sched_queue
+// (this macro executes within an atomic section)
+#ifndef MICROPY_SCHED_HOOK_SCHEDULED
+#define MICROPY_SCHED_HOOK_SCHEDULED
 #endif
 
 // Whether to include the garbage collector
@@ -550,9 +629,9 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (0)
 #endif
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-#   ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
-#   define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)   // 0 - implies dynamic allocation
-#   endif
+#ifndef MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE
+#define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)      // 0 - implies dynamic allocation
+#endif
 #endif
 
 // Whether to provide the mp_kbd_exception object, and micropython.kbd_intr function
@@ -635,6 +714,8 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ENABLE_DOC_STRING (0)
 #endif
 
+// Exception messages are removed (requires disabling MICROPY_ROM_TEXT_COMPRESSION)
+#define MICROPY_ERROR_REPORTING_NONE     (0)
 // Exception messages are short static strings
 #define MICROPY_ERROR_REPORTING_TERSE    (1)
 // Exception messages provide basic error details
@@ -643,7 +724,13 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ERROR_REPORTING_DETAILED (3)
 
 #ifndef MICROPY_ERROR_REPORTING
+#if MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES
+#define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_DETAILED)
+#elif MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES
 #define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_NORMAL)
+#else
+#define MICROPY_ERROR_REPORTING (MICROPY_ERROR_REPORTING_TERSE)
+#endif
 #endif
 
 // Whether issue warnings during compiling/execution
@@ -699,7 +786,7 @@ typedef double mp_float_t;
 // TODO: Originally intended as generic category to not
 // add bunch of once-off options. May need refactoring later
 #ifndef MICROPY_CPYTHON_COMPAT
-#define MICROPY_CPYTHON_COMPAT (1)
+#define MICROPY_CPYTHON_COMPAT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Perform full checks as done by CPython. Disabling this
@@ -708,7 +795,7 @@ typedef double mp_float_t;
 // grave issues (in other words, only user app should be,
 // affected, not system).
 #ifndef MICROPY_FULL_CHECKS
-#define MICROPY_FULL_CHECKS (1)
+#define MICROPY_FULL_CHECKS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether POSIX-semantics non-blocking streams are supported
@@ -729,7 +816,7 @@ typedef double mp_float_t;
 
 // Whether to support module-level __getattr__ (see PEP 562)
 #ifndef MICROPY_MODULE_GETATTR
-#define MICROPY_MODULE_GETATTR (0)
+#define MICROPY_MODULE_GETATTR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether module weak links are supported
@@ -763,7 +850,7 @@ typedef double mp_float_t;
 // list.append([], 1).  Without this check such calls will have undefined
 // behaviour (usually segfault) if the first argument is the wrong type.
 #ifndef MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
+#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to use internally defined errno's (otherwise system provided ones)
@@ -808,7 +895,7 @@ typedef double mp_float_t;
 // inheritance makes some C functions inherently recursive, and adds a bit of
 // code overhead.
 #ifndef MICROPY_MULTIPLE_INHERITANCE
-#define MICROPY_MULTIPLE_INHERITANCE (1)
+#define MICROPY_MULTIPLE_INHERITANCE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to implement attributes on functions
@@ -832,7 +919,17 @@ typedef double mp_float_t;
 
 // Support for async/await/async for/async with
 #ifndef MICROPY_PY_ASYNC_AWAIT
-#define MICROPY_PY_ASYNC_AWAIT (1)
+#define MICROPY_PY_ASYNC_AWAIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
+// Support for literal string interpolation, f-strings (see PEP 498, Python 3.6+)
+#ifndef MICROPY_PY_FSTRINGS
+#define MICROPY_PY_FSTRINGS (0)
+#endif
+
+// Support for assignment expressions with := (see PEP 572, Python 3.8+)
+#ifndef MICROPY_PY_ASSIGN_EXPR
+#define MICROPY_PY_ASSIGN_EXPR (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Non-standard .pend_throw() method for generators, allowing for
@@ -841,7 +938,7 @@ typedef double mp_float_t;
 // to generator's .send() or .__next__(). (This is useful to implement
 // async schedulers.)
 #ifndef MICROPY_PY_GENERATOR_PEND_THROW
-#define MICROPY_PY_GENERATOR_PEND_THROW (1)
+#define MICROPY_PY_GENERATOR_PEND_THROW (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Issue a warning when comparing str and bytes objects
@@ -866,12 +963,12 @@ typedef double mp_float_t;
 
 // Whether str.count() method provided
 #ifndef MICROPY_PY_BUILTINS_STR_COUNT
-#define MICROPY_PY_BUILTINS_STR_COUNT (1)
+#define MICROPY_PY_BUILTINS_STR_COUNT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether str % (...) formatting operator provided
 #ifndef MICROPY_PY_BUILTINS_STR_OP_MODULO
-#define MICROPY_PY_BUILTINS_STR_OP_MODULO (1)
+#define MICROPY_PY_BUILTINS_STR_OP_MODULO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether str.partition()/str.rpartition() method provided
@@ -886,12 +983,12 @@ typedef double mp_float_t;
 
 // Whether to support bytearray object
 #ifndef MICROPY_PY_BUILTINS_BYTEARRAY
-#define MICROPY_PY_BUILTINS_BYTEARRAY (1)
+#define MICROPY_PY_BUILTINS_BYTEARRAY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support dict.fromkeys() class method
 #ifndef MICROPY_PY_BUILTINS_DICT_FROMKEYS
-#define MICROPY_PY_BUILTINS_DICT_FROMKEYS (1)
+#define MICROPY_PY_BUILTINS_DICT_FROMKEYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support memoryview object
@@ -906,12 +1003,12 @@ typedef double mp_float_t;
 
 // Whether to support set object
 #ifndef MICROPY_PY_BUILTINS_SET
-#define MICROPY_PY_BUILTINS_SET (1)
+#define MICROPY_PY_BUILTINS_SET (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support slice subscript operators and slice object
 #ifndef MICROPY_PY_BUILTINS_SLICE
-#define MICROPY_PY_BUILTINS_SLICE (1)
+#define MICROPY_PY_BUILTINS_SLICE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support slice attribute read access,
@@ -932,13 +1029,13 @@ typedef double mp_float_t;
 
 // Whether to support property object
 #ifndef MICROPY_PY_BUILTINS_PROPERTY
-#define MICROPY_PY_BUILTINS_PROPERTY (1)
+#define MICROPY_PY_BUILTINS_PROPERTY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to implement the start/stop/step attributes (readback) on
 // the "range" builtin type. Rarely used, and costs ~60 bytes (x86).
 #ifndef MICROPY_PY_BUILTINS_RANGE_ATTRS
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
+#define MICROPY_PY_BUILTINS_RANGE_ATTRS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support binary ops [only (in)equality is defined] between range
@@ -957,11 +1054,6 @@ typedef double mp_float_t;
 // Whether to support rounding of integers (incl bignum); eg round(123,-1)=120
 #ifndef MICROPY_PY_BUILTINS_ROUND_INT
 #define MICROPY_PY_BUILTINS_ROUND_INT (0)
-#endif
-
-// Whether to support timeout exceptions (like socket.timeout)
-#ifndef MICROPY_PY_BUILTINS_TIMEOUTERROR
-#define MICROPY_PY_BUILTINS_TIMEOUTERROR (0)
 #endif
 
 // Whether to support complete set of special methods for user
@@ -993,7 +1085,7 @@ typedef double mp_float_t;
 
 // Whether to support enumerate function(type)
 #ifndef MICROPY_PY_BUILTINS_ENUMERATE
-#define MICROPY_PY_BUILTINS_ENUMERATE (1)
+#define MICROPY_PY_BUILTINS_ENUMERATE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support eval and exec functions
@@ -1009,12 +1101,12 @@ typedef double mp_float_t;
 
 // Whether to support filter function(type)
 #ifndef MICROPY_PY_BUILTINS_FILTER
-#define MICROPY_PY_BUILTINS_FILTER (1)
+#define MICROPY_PY_BUILTINS_FILTER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support reversed function(type)
 #ifndef MICROPY_PY_BUILTINS_REVERSED
-#define MICROPY_PY_BUILTINS_REVERSED (1)
+#define MICROPY_PY_BUILTINS_REVERSED (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to define "NotImplemented" special constant
@@ -1023,14 +1115,14 @@ typedef double mp_float_t;
 #endif
 
 // Whether to provide the built-in input() function. The implementation of this
-// uses mp-readline, so can only be enabled if the port uses this readline.
+// uses shared/readline, so can only be enabled if the port uses this readline.
 #ifndef MICROPY_PY_BUILTINS_INPUT
 #define MICROPY_PY_BUILTINS_INPUT (0)
 #endif
 
 // Whether to support min/max functions
 #ifndef MICROPY_PY_BUILTINS_MIN_MAX
-#define MICROPY_PY_BUILTINS_MIN_MAX (1)
+#define MICROPY_PY_BUILTINS_MIN_MAX (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Support for calls to pow() with 3 integer arguments
@@ -1056,7 +1148,7 @@ typedef double mp_float_t;
 
 // Whether to set __file__ for imported modules
 #ifndef MICROPY_PY___FILE__
-#define MICROPY_PY___FILE__ (1)
+#define MICROPY_PY___FILE__ (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide mem-info related functions in micropython module
@@ -1069,11 +1161,16 @@ typedef double mp_float_t;
 #define MICROPY_PY_MICROPYTHON_STACK_USE (MICROPY_PY_MICROPYTHON_MEM_INFO)
 #endif
 
+// Whether to provide the "micropython.heap_locked" function
+#ifndef MICROPY_PY_MICROPYTHON_HEAP_LOCKED
+#define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (0)
+#endif
+
 // Whether to provide "array" module. Note that large chunk of the
 // underlying code is shared with "bytearray" builtin type, so to
 // get real savings, it should be disabled too.
 #ifndef MICROPY_PY_ARRAY
-#define MICROPY_PY_ARRAY (1)
+#define MICROPY_PY_ARRAY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to support slice assignments for array (and bytearray).
@@ -1085,12 +1182,12 @@ typedef double mp_float_t;
 // Whether to support attrtuple type (MicroPython extension)
 // It provides space-efficient tuples with attribute access
 #ifndef MICROPY_PY_ATTRTUPLE
-#define MICROPY_PY_ATTRTUPLE (1)
+#define MICROPY_PY_ATTRTUPLE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "collections" module
 #ifndef MICROPY_PY_COLLECTIONS
-#define MICROPY_PY_COLLECTIONS (1)
+#define MICROPY_PY_COLLECTIONS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "ucollections.deque" type
@@ -1110,7 +1207,7 @@ typedef double mp_float_t;
 
 // Whether to provide "math" module
 #ifndef MICROPY_PY_MATH
-#define MICROPY_PY_MATH (1)
+#define MICROPY_PY_MATH (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide special math functions: math.{erf,erfc,gamma,lgamma}
@@ -1128,6 +1225,26 @@ typedef double mp_float_t;
 #define MICROPY_PY_MATH_ISCLOSE (0)
 #endif
 
+// Whether to provide fix for atan2 Inf handling.
+#ifndef MICROPY_PY_MATH_ATAN2_FIX_INFNAN
+#define MICROPY_PY_MATH_ATAN2_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for fmod Inf handling.
+#ifndef MICROPY_PY_MATH_FMOD_FIX_INFNAN
+#define MICROPY_PY_MATH_FMOD_FIX_INFNAN (0)
+#endif
+
+// Whether to provide fix for modf negative zero handling.
+#ifndef MICROPY_PY_MATH_MODF_FIX_NEGZERO
+#define MICROPY_PY_MATH_MODF_FIX_NEGZERO (0)
+#endif
+
+// Whether to provide fix for pow(1, NaN) and pow(NaN, 0), which both should be 1 not NaN.
+#ifndef MICROPY_PY_MATH_POW_FIX_NAN
+#define MICROPY_PY_MATH_POW_FIX_NAN (0)
+#endif
+
 // Whether to provide "cmath" module
 #ifndef MICROPY_PY_CMATH
 #define MICROPY_PY_CMATH (0)
@@ -1135,7 +1252,7 @@ typedef double mp_float_t;
 
 // Whether to provide "gc" module
 #ifndef MICROPY_PY_GC
-#define MICROPY_PY_GC (1)
+#define MICROPY_PY_GC (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to return number of collected objects from gc.collect()
@@ -1145,7 +1262,7 @@ typedef double mp_float_t;
 
 // Whether to provide "io" module
 #ifndef MICROPY_PY_IO
-#define MICROPY_PY_IO (1)
+#define MICROPY_PY_IO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "io.IOBase" class to support user streams
@@ -1181,12 +1298,12 @@ typedef double mp_float_t;
 
 // Whether to provide "struct" module
 #ifndef MICROPY_PY_STRUCT
-#define MICROPY_PY_STRUCT (1)
+#define MICROPY_PY_STRUCT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
-#define MICROPY_PY_SYS (1)
+#define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to provide "sys.maxsize" constant
@@ -1251,6 +1368,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_USELECT (0)
 #endif
 
+// Whether to enable the select() function in the "uselect" module (baremetal
+// implementation). This is present for compatibility but can be disabled to
+// save space.
+#ifndef MICROPY_PY_USELECT_SELECT
+#define MICROPY_PY_USELECT_SELECT (1)
+#endif
+
 // Whether to provide "utime" module functions implementation
 // in terms of mp_hal_* functions.
 #ifndef MICROPY_PY_UTIME_MP_HAL
@@ -1286,6 +1410,10 @@ typedef double mp_float_t;
 
 // Extended modules
 
+#ifndef MICROPY_PY_UASYNCIO
+#define MICROPY_PY_UASYNCIO (0)
+#endif
+
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES (0)
 #endif
@@ -1302,6 +1430,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_UJSON
 #define MICROPY_PY_UJSON (0)
+#endif
+
+// Whether to support the "separators" argument to dump, dumps
+#ifndef MICROPY_PY_UJSON_SEPARATORS
+#define MICROPY_PY_UJSON_SEPARATORS (1)
 #endif
 
 #ifndef MICROPY_PY_URE
@@ -1384,6 +1517,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE (0)
 #endif
 
+// Whether to include: bitstream
+#ifndef MICROPY_PY_MACHINE_BITSTREAM
+#define MICROPY_PY_MACHINE_BITSTREAM (0)
+#endif
+
 // Whether to include: time_pulse_us
 #ifndef MICROPY_PY_MACHINE_PULSE
 #define MICROPY_PY_MACHINE_PULSE (0)
@@ -1393,8 +1531,18 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_I2C (0)
 #endif
 
+// Whether to provide the "machine.SoftI2C" class
+#ifndef MICROPY_PY_MACHINE_SOFTI2C
+#define MICROPY_PY_MACHINE_SOFTI2C (0)
+#endif
+
 #ifndef MICROPY_PY_MACHINE_SPI
 #define MICROPY_PY_MACHINE_SPI (0)
+#endif
+
+// Whether to provide the "machine.SoftSPI" class
+#ifndef MICROPY_PY_MACHINE_SOFTSPI
+#define MICROPY_PY_MACHINE_SOFTSPI (0)
 #endif
 
 #ifndef MICROPY_PY_USSL
@@ -1413,6 +1561,11 @@ typedef double mp_float_t;
 
 #ifndef MICROPY_PY_BTREE
 #define MICROPY_PY_BTREE (0)
+#endif
+
+// Whether to provide the low-level "_onewire" module
+#ifndef MICROPY_PY_ONEWIRE
+#define MICROPY_PY_ONEWIRE (0)
 #endif
 
 /*****************************************************************************/
@@ -1436,6 +1589,21 @@ typedef double mp_float_t;
 // Any root pointers for GC scanning - see mpstate.c
 #ifndef MICROPY_PORT_ROOT_POINTERS
 #define MICROPY_PORT_ROOT_POINTERS
+#endif
+
+/*****************************************************************************/
+/* Hooks for a port to wrap functions with attributes                        */
+
+#ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
+#define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT
+#define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) f
+#endif
+
+#ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) f
 #endif
 
 /*****************************************************************************/
@@ -1463,17 +1631,17 @@ typedef double mp_float_t;
 #define STATIC static
 #endif
 
-// Number of bytes in a word
-#ifndef BYTES_PER_WORD
-#define BYTES_PER_WORD (sizeof(mp_uint_t))
+// Number of bytes in an object word: mp_obj_t, mp_uint_t, mp_uint_t
+#ifndef MP_BYTES_PER_OBJ_WORD
+#define MP_BYTES_PER_OBJ_WORD (sizeof(mp_uint_t))
 #endif
 
-#ifndef BITS_PER_BYTE
-#define BITS_PER_BYTE (8)
+// Number of bits in a byte
+#ifndef MP_BITS_PER_BYTE
+#define MP_BITS_PER_BYTE (8)
 #endif
-#define BITS_PER_WORD (BITS_PER_BYTE * BYTES_PER_WORD)
 // mp_int_t value with most significant bit set
-#define WORD_MSBIT_HIGH (((mp_uint_t)1) << (BYTES_PER_WORD * 8 - 1))
+#define MP_OBJ_WORD_MSBIT_HIGH (((mp_uint_t)1) << (MP_BYTES_PER_OBJ_WORD * MP_BITS_PER_BYTE - 1))
 
 // Make sure both MP_ENDIANNESS_LITTLE and MP_ENDIANNESS_BIG are
 // defined and that they are the opposite of each other.
@@ -1482,7 +1650,7 @@ typedef double mp_float_t;
 #elif defined(MP_ENDIANNESS_BIG)
 #define MP_ENDIANNESS_LITTLE (!MP_ENDIANNESS_BIG)
 #else
-  // Endianness not defined by port so try to autodetect it.
+// Endianness not defined by port so try to autodetect it.
   #if defined(__BYTE_ORDER__)
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       #define MP_ENDIANNESS_LITTLE (1)
@@ -1545,7 +1713,7 @@ typedef double mp_float_t;
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
 #endif
-#endif //INT_FMT
+#endif // INT_FMT
 
 // Modifier for function which doesn't return
 #ifndef NORETURN
@@ -1586,35 +1754,42 @@ typedef double mp_float_t;
 #endif
 #endif
 
+// Explicitly annotate switch case fall throughs
+#if defined(__GNUC__) && __GNUC__ >= 7
+#define MP_FALLTHROUGH __attribute__((fallthrough));
+#else
+#define MP_FALLTHROUGH
+#endif
+
 #ifndef MP_HTOBE16
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE16(x) ((uint16_t)( (((x) & 0xff) << 8) | (((x) >> 8) & 0xff) ))
-# define MP_BE16TOH(x) MP_HTOBE16(x)
+#define MP_HTOBE16(x) ((uint16_t)((((x) & 0xff) << 8) | (((x) >> 8) & 0xff)))
+#define MP_BE16TOH(x) MP_HTOBE16(x)
 #else
-# define MP_HTOBE16(x) (x)
-# define MP_BE16TOH(x) (x)
+#define MP_HTOBE16(x) (x)
+#define MP_BE16TOH(x) (x)
 #endif
 #endif
 
 #ifndef MP_HTOBE32
 #if MP_ENDIANNESS_LITTLE
-# define MP_HTOBE32(x) ((uint32_t)( (((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8)  & 0xff00) | (((x) >> 24) & 0xff) ))
-# define MP_BE32TOH(x) MP_HTOBE32(x)
+#define MP_HTOBE32(x) ((uint32_t)((((x) & 0xff) << 24) | (((x) & 0xff00) << 8) | (((x) >> 8) & 0xff00) | (((x) >> 24) & 0xff)))
+#define MP_BE32TOH(x) MP_HTOBE32(x)
 #else
-# define MP_HTOBE32(x) (x)
-# define MP_BE32TOH(x) (x)
+#define MP_HTOBE32(x) (x)
+#define MP_BE32TOH(x) (x)
 #endif
 #endif
 
 // Warning categories are by default implemented as strings, though
 // hook is left for a port to define them as something else.
 #if MICROPY_WARNINGS_CATEGORY
-# ifndef MP_WARN_CAT
-# define MP_WARN_CAT(x) #x
-# endif
+#ifndef MP_WARN_CAT
+#define MP_WARN_CAT(x) #x
+#endif
 #else
-# undef MP_WARN_CAT
-# define MP_WARN_CAT(x) (NULL)
+#undef MP_WARN_CAT
+#define MP_WARN_CAT(x) (NULL)
 #endif
 
 // Feature dependency check.

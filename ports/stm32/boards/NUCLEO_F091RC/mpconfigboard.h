@@ -3,6 +3,7 @@
 
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
+#define MICROPY_OPT_COMPUTED_GOTO   (0)
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)
@@ -49,13 +50,13 @@
 #define MICROPY_HW_UART_REPL PYB_UART_2
 #define MICROPY_HW_UART_REPL_BAUD 115200
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B8)        // Arduino D15, pin 3 on CN10
 #define MICROPY_HW_I2C1_SDA (pin_B9)        // Arduino D14, pin 5 on CN10
 #define MICROPY_HW_I2C2_SCL (pin_B10)       // Arduino D6,  pin 25 on CN10
 #define MICROPY_HW_I2C2_SDA (pin_B11)       //              pin 18 on CN10
 
-// SPI busses
+// SPI buses
 #define MICROPY_HW_SPI1_NSS     (pin_A15)   //              pin 17 on CN7
 #define MICROPY_HW_SPI1_SCK     (pin_A5)    // Arduino D13, pin 11 on CN10
 #define MICROPY_HW_SPI1_MISO    (pin_A6)    // Arduino D12, pin 13 on CN10

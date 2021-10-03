@@ -20,16 +20,13 @@ ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
 ifndef BUILD_VERBOSE
+$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
 BUILD_VERBOSE = 0
 endif
 ifeq ($(BUILD_VERBOSE),0)
 Q = @
 else
 Q =
-endif
-# Since this is a new feature, advertise it
-ifeq ($(BUILD_VERBOSE),0)
-$(info Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.)
 endif
 
 # default settings; can be overridden in main Makefile
@@ -58,10 +55,14 @@ AR = $(CROSS_COMPILE)ar
 
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
-MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
 
 MPY_LIB_DIR = $(TOP)/../micropython-lib
+
+ifeq ($(MICROPY_MPYCROSS),)
+MICROPY_MPYCROSS = $(TOP)/mpy-cross/mpy-cross
+MICROPY_MPYCROSS_DEPENDENCY = $(MICROPY_MPYCROSS)
+endif
 
 all:
 .PHONY: all

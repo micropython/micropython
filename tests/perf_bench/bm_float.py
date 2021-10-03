@@ -7,7 +7,7 @@ from math import sin, cos, sqrt
 
 
 class Point(object):
-    __slots__ = ('x', 'y', 'z')
+    __slots__ = ("x", "y", "z")
 
     def __init__(self, i):
         self.x = x = sin(i)
@@ -59,12 +59,16 @@ bm_params = {
     (5000, 1000): (20, 3000),
 }
 
+
 def bm_setup(params):
     state = None
+
     def run():
         nonlocal state
         for _ in range(params[0]):
             state = benchmark(params[1])
+
     def result():
-        return params[0] * params[1], 'Point(%.4f, %.4f, %.4f)' % (state.x, state.y, state.z)
+        return params[0] * params[1], "Point(%.4f, %.4f, %.4f)" % (state.x, state.y, state.z)
+
     return run, result

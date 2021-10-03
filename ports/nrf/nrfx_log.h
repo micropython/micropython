@@ -33,7 +33,7 @@
 
 #define LOG_TEST_UART 1
 
-#define TEST_MODULE_IMPL(x, y) LOG_TEST_ ## x == LOG_TEST_ ## y
+#define TEST_MODULE_IMPL(x, y) LOG_TEST_##x == LOG_TEST_##y
 #define TEST_MODULE(x, y) TEST_MODULE_IMPL(x, y)
 
 #if (!defined(NRFX_LOG_ENABLED) || (NRFX_LOG_ENABLED == 0)) || \
@@ -56,11 +56,11 @@
     #define VALUE(x) VALUE_TO_STR(x)
 
     #define LOG_PRINTF(fmt, ...) \
-        do { \
-            printf("%s: ", VALUE(NRFX_LOG_MODULE)); \
-            printf(fmt, ##__VA_ARGS__); \
-            printf("\n"); \
-        } while (0)
+    do { \
+        printf("%s: ", VALUE(NRFX_LOG_MODULE)); \
+        printf(fmt,##__VA_ARGS__); \
+        printf("\n"); \
+    } while (0)
 
     #define NRFX_LOG_DEBUG   LOG_PRINTF
     #define NRFX_LOG_ERROR   LOG_PRINTF
@@ -77,7 +77,7 @@
     #define NRFX_LOG_HEXDUMP_DEBUG(p_memory, length)
 
     #define NRFX_LOG_ERROR_STRING_GET(error_code) \
-        nrfx_error_code_lookup(error_code)
+    nrfx_error_code_lookup(error_code)
 
 #endif // NRFX_LOG_ENABLED
 
