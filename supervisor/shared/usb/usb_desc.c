@@ -223,7 +223,7 @@ static void usb_build_configuration_descriptor(void) {
     if (usb_hid_enabled()) {
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
-            usb_hid_report_descriptor_length());
+            usb_hid_report_descriptor_length(), usb_hid_boot_device());
     }
     #endif
 
