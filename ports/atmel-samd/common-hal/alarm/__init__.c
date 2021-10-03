@@ -29,6 +29,7 @@
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "lib/utils/interrupt_char.h"
+// #include <stdio.h>
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/SleepMemory.h"
@@ -36,7 +37,7 @@
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
-
+#include "samd/external_interrupts.h"
 #include "supervisor/port.h"
 #include "supervisor/workflow.h"
 
@@ -46,8 +47,9 @@ const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
         .type = &alarm_sleep_memory_type,
     },
 };
-
 // TODO: make a custom enum to avoid weird values like PM_SLEEPCFG_SLEEPMODE_BACKUP_Val?
+STATIC volatile uint32_t _target;
+STATIC bool fake_sleep;
 
 void alarm_reset(void) {
     // Reset the alarm flag
@@ -64,8 +66,14 @@ samd_sleep_source_t alarm_get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_this_cycle()) {
         return SAMD_WAKEUP_RTC;
     }
-    // TODO: for deep sleep, manually determine how the chip woke up
-    // TODO: try checking the interrupt flag tables for RTC TAMPER vs COMPARE
+    if (RSTC->RCAUSE.bit.BACKUP) {
+        // not able to detect PinAlarm wake since registers are getting reset
+        // TODO: come up with a way to detect a TAMPER
+        if (RTC->MODE0.TAMPID.reg || RTC->MODE0.INTFLAG.bit.TAMPER) {
+            return SAMD_WAKEUP_GPIO;
+        }
+        return SAMD_WAKEUP_RTC;
+    }
     return SAMD_WAKEUP_UNDEF;
 }
 
@@ -96,6 +104,7 @@ mp_obj_t common_hal_alarm_create_wake_alarm(void) {
 STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
     alarm_pin_pinalarm_set_alarms(deep_sleep, n_alarms, alarms);
     alarm_time_timealarm_set_alarms(deep_sleep, n_alarms, alarms);
+    fake_sleep = false;
 }
 
 mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms) {
@@ -126,10 +135,34 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         // TODO: the SAMD implementation of this (purportedly) disables interrupts
         //       Presumably this doesn't impact the RTC interrupts, somehow, or it would never wake up?
         //       Will it prevent an external interrupt from waking?
-        port_idle_until_interrupt();
+        // port_idle_until_interrupt();
         //       Alternative would be `sleep(PM_SLEEPCFG_SLEEPMODE_IDLE2_Val)`, I think?
-    }
 
+        // ATTEMPT ------------------------------
+        // This works but achieves same power consumption as time.sleep()
+
+        // Clear the FPU interrupt because it can prevent us from sleeping.
+        if (__get_FPSCR() & ~(0x9f)) {
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
+        }
+
+        // Disable RTC interrupts
+        NVIC_DisableIRQ(RTC_IRQn);
+        // Set standby power domain stuff
+        PM->STDBYCFG.reg = PM_STDBYCFG_RAMCFG_OFF;
+        // Set-up Sleep Mode
+        PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_STANDBY;
+        while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val);
+
+        __DSB(); // Data Synchronization Barrier
+        __WFI(); // Wait For Interrupt
+        // Enable RTC interrupts
+        NVIC_EnableIRQ(RTC_IRQn);
+
+
+    // END ATTEMPT ------------------------------
+        }
     if (mp_hal_is_interrupted()) {
         return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
     }
@@ -145,25 +178,98 @@ void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *ala
 void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_pin_pinalarm_prepare_for_deep_sleep();
     alarm_time_timealarm_prepare_for_deep_sleep();
+    _target = RTC->MODE0.COMP[1].reg;
     port_disable_tick(); // TODO: Required for SAMD?
 
     // Set a flag in the backup registers to indicate sleep wakeup
     SAMD_ALARM_FLAG = 0x01;
 
-    // TODO: make sure this actually works, or replace with extracted register version
-    // sleep(PM_SLEEPCFG_SLEEPMODE_BACKUP_Val);
+    // Clear the FPU interrupt because it can prevent us from sleeping.
+    if (__get_FPSCR() & ~(0x9f)) {
+    __set_FPSCR(__get_FPSCR() & ~(0x9f));
+    (void)__get_FPSCR();
+    }
 
-    // The above shuts down RAM, so we should never hit this
+    // PinAlarm (hacky way of checking if time alarm or pin alarm)
+    if (RTC->MODE0.INTENSET.bit.TAMPER) {
+        // Disable interrupts
+        NVIC_DisableIRQ(RTC_IRQn);
+        // Must disable the RTC before writing to EVCTRL and TMPCTRL
+        RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
+        while (RTC->MODE0.SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+        RTC->MODE0.CTRLA.bit.SWRST = 1;                      // Software reset the RTC
+        while (RTC->MODE0.SYNCBUSY.bit.SWRST);               // Wait for synchronization
+        RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
+                              RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
+
+        // TODO: map requested pin to limited selection of TAMPER pins
+        RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
+        RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = 1; // rising edge
+        //PA02 = IN2
+        RTC->MODE0.TAMPCTRL.bit.IN2ACT = 1;  // WAKE on IN2 (doesn't save timestamp)
+
+        // Enable interrupts
+        NVIC_SetPriority(RTC_IRQn, 0);
+        NVIC_EnableIRQ(RTC_IRQn);
+        // Set interrupts for TAMPER or overflow
+        RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
+    // TimeAlarm
+    } else {
+        // Retrieve COMP1 value before resetting RTC
+        // Disable interrupts
+        NVIC_DisableIRQ(RTC_IRQn);
+
+        // Must disable the RTC before writing to EVCTRL and TMPCTRL
+        RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
+        while (RTC->MODE0.SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+
+        RTC->MODE0.CTRLA.bit.SWRST = 1;                      // Software reset the RTC
+        while (RTC->MODE0.SYNCBUSY.bit.SWRST);               // Wait for synchronization
+
+        RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
+                              RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
+
+        RTC->MODE0.COMP[1].reg = (_target/1024) * 32;
+        while(RTC->MODE0.SYNCBUSY.reg);
+
+        // Enable interrupts
+        NVIC_SetPriority(RTC_IRQn, 0);
+        NVIC_EnableIRQ(RTC_IRQn);
+        // Set interrupts for COMPARE1 or overflow
+        RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP1 | RTC_MODE1_INTENSET_OVF;
+        }
+    // Set-up Deep Sleep Mode
+    // RAM retention
+    PM->BKUPCFG.reg = PM_BKUPCFG_BRAMCFG(0x2);       // No RAM retention 0x2 partial:0x1
+    while (PM->BKUPCFG.bit.BRAMCFG != 0x2);          // Wait for synchronization
+    PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_BACKUP;
+    while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_BACKUP_Val);
+
+    RTC->MODE0.CTRLA.bit.ENABLE = 1;                      // Enable the RTC
+    while (RTC->MODE0.SYNCBUSY.bit.ENABLE);               // Wait for synchronization
+
+    __DSB(); // Data Synchronization Barrier
+    __WFI(); // Wait For Interrupt
+
+    // The above shuts down RAM and triggers a reset, so we should never hit this
     while (1) {
         ;
     }
 }
 
-void common_hal_alarm_pretending_deep_sleep(void) {
+MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
     // TODO:
     //      If tamper detect interrupts cannot be used to wake from the Idle tier of sleep,
     //      This section will need to re-initialize the pins to allow the PORT peripheral
     //      to generate external interrupts again. See STM32 for reference.
+
+    if (!fake_sleep) {
+        SAMD_ALARM_FLAG = 1;
+        while(RTC->MODE0.SYNCBUSY.reg);
+        fake_sleep = true;
+    } else {
+        port_idle_until_interrupt();
+    }
 }
 
 void common_hal_alarm_gc_collect(void) {

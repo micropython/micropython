@@ -25,6 +25,12 @@
  */
 
 #include "py/runtime.h"
+#include "samd/external_interrupts.h"
+#include "eic_handler.h"
+#include "atmel_start_pins.h"
+#include "hal/include/hal_gpio.h"
+#include <stdio.h>
+
 
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -33,34 +39,63 @@
 // This variable stores whether a PinAlarm woke in light sleep or fake deep sleep
 // It CANNOT detect if the program woke from deep sleep.
 STATIC bool woke_up;
+STATIC bool deep_wkup_enabled;
 
 // TODO: Create tables here reserving IRQ instances, and for the IRQ
 //       callback to store what pin triggered the interrupt
 // STATIC bool reserved_alarms[SOME_VAL];
 // STATIC uint16_t triggered_pins[SOME_VAL];
 
-STATIC void pin_alarm_callback(uint8_t num) { // parameters can be changed
+void pin_alarm_callback(uint8_t num) { // parameters can be changed
     // TODO: This is responsible for resetting the IRQ (so it doesn't
     //       go off constantly, and recording what pin was responsible for
     //       the trigger. This will only work for light sleep/fake deep
     //       sleep, in conjunction with the find_triggered_alarm function
+
+    // Turn off interrupts while in handler
+    // printf("Woke up from pin!!\n");
+    // printf("EIC Flags: %lu\n",EIC->INTFLAG.reg);
+
+    // QUESTION: How to reference the correct EIC?
+    // set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
+    // turn_off_eic_channel(self->channel);
+    // reset_pin_number(self->pin);
+    woke_up = true;
 }
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
-    mp_raise_NotImplementedError(translate("PinAlarms not available"));
+    // Tamper Pins: IN0:PB00; IN1:PB02; IN2:PA02; IN3:PC00; IN4:PC01; OUT:PB01
     // TODO: Catch edge or level mode if not supported
-    // if (!edge) {
-    //     mp_raise_NotImplementedError(translate("Only edge detection is available on this hardware"));
-    // }
+    if (!pin->has_extint) {
+        mp_raise_RuntimeError(translate("No hardware support on pin"));
+    }
+    if (eic_get_enable()) {
+        if (!eic_channel_free(pin->extint_channel)) {
+            mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
+        }
+    } else {
+        turn_on_external_interrupt_controller();
+    }
 
     // TODO: determine if pin has an interrupt channel available
     // TODO: set pin pull settings, input/output, etc
     // QUESTION: can PORT/EVSYS interrupts (lightsleep) coexist with RTC->TAMPER (deepsleep) settings?
     // Actual initialization of the interrupt should be delayed until set_alarm
 
+    self->channel = pin->extint_channel;
     self->pin = pin;
     self->value = value;
     self->pull = pull;
+
+    gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
+    if (self->pull) {
+        gpio_set_pin_pull_mode(pin->number, GPIO_PULL_UP);
+    }  else {
+        gpio_set_pin_pull_mode(pin->number, GPIO_PULL_DOWN);
+    }
+    set_eic_channel_data(self->channel, (void *)self);
+
+    claim_pin(self->pin);
 }
 
 const mcu_pin_obj_t *common_hal_alarm_pin_pinalarm_get_pin(alarm_pin_pinalarm_obj_t *self) {
@@ -81,6 +116,10 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
 }
 
 bool alarm_pin_pinalarm_woke_this_cycle(void) {
+    if (RTC->MODE0.INTFLAG.bit.TAMPER){
+        woke_up = true;
+        RTC->MODE0.INTENCLR.bit.TAMPER = 1; // clear flag and interrupt setting
+    }
     return woke_up;
 }
 
@@ -90,10 +129,15 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
+        (void)alarm;
+
 
         // TODO: Determine whether any pins have been marked as
         //       triggering the alarm (using the static vars at
         //       start of file) and if so return that alarm.
+
+
+
     }
     // Return nothing if no matching alarms are found.
     return mp_const_none;
@@ -115,6 +159,9 @@ void alarm_pin_pinalarm_reset(void) {
     //       sure to clear any reserved tables, deinit both PORT and TAMPER
     //       settings, etc. If flags are set to indicate this module is in
     //       use, reset them.
+
+    // Disable TAMPER interrupt
+    RTC->MODE0.INTENCLR.bit.TAMPER = 1;
 }
 
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
@@ -124,6 +171,15 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         if (mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
             if (deep_sleep) {
+                // Tamper Pins: IN0:PB00; IN1:PB02; IN2:PA02; IN3:PC00; IN4:PC01; OUT:PB01
+                // Only these pins can do TAMPER
+                if (alarm->pin != &pin_PB00 && alarm->pin != &pin_PB02 &&
+                    alarm->pin != &pin_PA02) {
+                    mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
+                }
+                deep_wkup_enabled = true;
+                // Set tamper interrupt so deep sleep knows that's the intent
+                RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
                 // TODO: Set up deep sleep alarms.
                 //       For deep sleep alarms, first check if the
                 //       alarm pin value is valid for RTC->TAMPER. Ensure
@@ -138,6 +194,11 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                 //       `alarm_pin_pinalarm_prepare_for_deep_sleep`
                 //       below.
             } // use else-if here if RTC-TAMPER can wake from IDLE
+            else {
+                // Light sleep so turn on EIC channel
+                set_eic_handler(alarm->channel, EIC_HANDLER_ALARM);
+                turn_on_eic_channel(alarm->channel, EIC_CONFIG_SENSE0_RISE_Val);
+            }
 
             // TODO: Set up light sleep / fake deep sleep alarms.
             //       PORT/EVSYS should have more valid pin combinations
