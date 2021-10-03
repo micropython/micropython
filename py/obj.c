@@ -44,7 +44,7 @@ const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_
         const mp_obj_base_t *o = MP_OBJ_TO_PTR(o_in);
         return o->type;
     } else {
-        static const mp_obj_type_t *const types[] = {
+        static const mp_obj_type_t *types[] = {
             NULL, &mp_type_int, &mp_type_str, &mp_type_int,
             NULL, &mp_type_int, &mp_type_NoneType, &mp_type_int,
             NULL, &mp_type_int, &mp_type_str, &mp_type_int,
