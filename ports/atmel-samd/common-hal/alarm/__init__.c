@@ -238,7 +238,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
             RTC_MODE0_CTRLA_MODE_COUNT32;                            // Set RTC to mode 0, 32-bit timer
 
-        RTC->MODE0.COMP[1].reg = (_target/1024) * 32;
+        RTC->MODE0.COMP[1].reg = (_target / 1024) * 32;
         while (RTC->MODE0.SYNCBUSY.reg) {
             ;
         }
