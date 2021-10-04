@@ -153,7 +153,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         PM->STDBYCFG.reg = PM_STDBYCFG_RAMCFG_OFF;
         // Set-up Sleep Mode
         PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_STANDBY;
-        while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val) {
+        while (PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val) {
             ;
         }
 
@@ -239,7 +239,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
             RTC_MODE0_CTRLA_MODE_COUNT32;                            // Set RTC to mode 0, 32-bit timer
 
         RTC->MODE0.COMP[1].reg = (_target/1024) * 32;
-        while(RTC->MODE0.SYNCBUSY.reg) {
+        while (RTC->MODE0.SYNCBUSY.reg) {
             ;
         }
 
