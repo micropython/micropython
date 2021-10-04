@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H
 
-#include "common-hal/microcontroller/Pin.h"
-
-#include "components/hal/include/hal/i2c_types.h"
-#include "FreeRTOS.h"
-#include "freertos/semphr.h"
 #include "py/obj.h"
-
 #include "peripherals/i2c.h"
+#include "common-hal/microcontroller/Pin.h"
 
 typedef struct {
     mp_obj_base_t base;
+    i2c_port_t i2c_num;
+    uint8_t *addresses;
+    uint8_t num_addresses;
     const mcu_pin_obj_t *scl_pin;
     const mcu_pin_obj_t *sda_pin;
-    i2c_port_t i2c_num;
-    SemaphoreHandle_t xSemaphore;
-    bool has_lock;
-} busio_i2c_obj_t;
+} i2cperipheral_i2c_peripheral_obj_t;
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_PERIPHERAL_H

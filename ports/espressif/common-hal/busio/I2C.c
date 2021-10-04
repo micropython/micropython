@@ -34,26 +34,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
-typedef enum {
-    STATUS_FREE = 0,
-    STATUS_IN_USE,
-    STATUS_NEVER_RESET
-} i2c_status_t;
-
-static i2c_status_t i2c_status[I2C_NUM_MAX];
-
-void never_reset_i2c(i2c_port_t num) {
-    i2c_status[num] = STATUS_NEVER_RESET;
-}
-
-void i2c_reset(void) {
-    for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
-        if (i2c_status[num] == STATUS_IN_USE) {
-            i2c_status[num] = STATUS_FREE;
-        }
-    }
-}
-
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     // Pins 45 and 46 are "strapping" pins that impact start up behavior. They usually need to
@@ -99,21 +79,16 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     }
     self->sda_pin = sda;
     self->scl_pin = scl;
-    self->i2c_num = I2C_NUM_MAX;
-    for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
-        if (i2c_status[num] == STATUS_FREE) {
-            self->i2c_num = num;
-        }
-    }
+    self->i2c_num = i2c_num_status();
+
     if (self->i2c_num == I2C_NUM_MAX) {
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
     }
-    i2c_status[self->i2c_num] = STATUS_IN_USE;
 
     // Delete any previous driver.
     i2c_driver_delete(self->i2c_num);
 
-    i2c_config_t i2c_conf = {
+    const i2c_config_t i2c_conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = self->sda_pin->number,
         .scl_io_num = self->scl_pin->number,
@@ -129,16 +104,15 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
             .clk_speed = frequency,
         }
     };
-    if (i2c_param_config(self->i2c_num, &i2c_conf) != ESP_OK) {
-        mp_raise_ValueError(translate("Invalid frequency"));
-    }
 
-    if (i2c_driver_install(self->i2c_num,
-        I2C_MODE_MASTER,
-        0,
-        0,
-        0) != ESP_OK) {
-        mp_raise_OSError(MP_EIO);
+    // Initialize I2C.
+    esp_err_t err = peripherals_i2c_init(self->i2c_num, &i2c_conf);
+    if (err != ESP_OK) {
+        if (err == ESP_FAIL) {
+            mp_raise_OSError(MP_EIO);
+        } else {
+            mp_raise_ValueError(translate("Invalid argument"));
+        }
     }
 
     claim_pin(sda);
@@ -154,14 +128,12 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
 
-    i2c_driver_delete(self->i2c_num);
+    peripherals_i2c_deinit(self->i2c_num);
 
     common_hal_reset_pin(self->sda_pin);
     common_hal_reset_pin(self->scl_pin);
     self->sda_pin = NULL;
     self->scl_pin = NULL;
-
-    i2c_status[self->i2c_num] = STATUS_FREE;
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
