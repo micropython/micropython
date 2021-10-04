@@ -153,7 +153,9 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         PM->STDBYCFG.reg = PM_STDBYCFG_RAMCFG_OFF;
         // Set-up Sleep Mode
         PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_STANDBY;
-        while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val);
+        while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val) {
+            ;
+        }
 
         __DSB(); // Data Synchronization Barrier
         __WFI(); // Wait For Interrupt
@@ -246,7 +248,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         NVIC_EnableIRQ(RTC_IRQn);
         // Set interrupts for COMPARE1 or overflow
         RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP1 | RTC_MODE1_INTENSET_OVF;
-        }
+    }
     // Set-up Deep Sleep Mode
     // RAM retention
     PM->BKUPCFG.reg = PM_BKUPCFG_BRAMCFG(0x2);       // No RAM retention 0x2 partial:0x1
@@ -259,7 +261,9 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     }
 
     RTC->MODE0.CTRLA.bit.ENABLE = 1;                      // Enable the RTC
-    while (RTC->MODE0.SYNCBUSY.bit.ENABLE);               // Wait for synchronization
+    while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {              // Wait for synchronization
+        ;
+    }
 
     __DSB(); // Data Synchronization Barrier
     __WFI(); // Wait For Interrupt
@@ -278,7 +282,7 @@ MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
 
     if (!fake_sleep) {
         SAMD_ALARM_FLAG = 1;
-        while(RTC->MODE0.SYNCBUSY.reg) {
+        while (RTC->MODE0.SYNCBUSY.reg) {
             ;
         }
         fake_sleep = true;
