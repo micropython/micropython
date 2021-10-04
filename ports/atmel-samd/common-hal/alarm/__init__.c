@@ -278,7 +278,9 @@ MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
 
     if (!fake_sleep) {
         SAMD_ALARM_FLAG = 1;
-        while(RTC->MODE0.SYNCBUSY.reg);
+        while(RTC->MODE0.SYNCBUSY.reg) {
+            ;
+        }
         fake_sleep = true;
     } else {
         port_idle_until_interrupt();
