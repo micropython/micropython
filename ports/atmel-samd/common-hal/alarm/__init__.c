@@ -143,8 +143,8 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
 
         // Clear the FPU interrupt because it can prevent us from sleeping.
         if (__get_FPSCR() & ~(0x9f)) {
-        __set_FPSCR(__get_FPSCR() & ~(0x9f));
-        (void)__get_FPSCR();
+            __set_FPSCR(__get_FPSCR() & ~(0x9f));
+            (void)__get_FPSCR();
         }
 
         // Disable RTC interrupts
@@ -161,8 +161,8 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         NVIC_EnableIRQ(RTC_IRQn);
 
 
-    // END ATTEMPT ------------------------------
-        }
+        // END ATTEMPT ------------------------------
+    }
     if (mp_hal_is_interrupted()) {
         return mp_const_none; // Shouldn't be given to python code because exception handling should kick in.
     }
@@ -186,8 +186,8 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
 
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR() & ~(0x9f)) {
-    __set_FPSCR(__get_FPSCR() & ~(0x9f));
-    (void)__get_FPSCR();
+        __set_FPSCR(__get_FPSCR() & ~(0x9f));
+        (void)__get_FPSCR();
     }
 
     // PinAlarm (hacky way of checking if time alarm or pin alarm)
@@ -196,16 +196,20 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         NVIC_DisableIRQ(RTC_IRQn);
         // Must disable the RTC before writing to EVCTRL and TMPCTRL
         RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
-        while (RTC->MODE0.SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+        while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {             // Wait for synchronization
+            ;
+        }
         RTC->MODE0.CTRLA.bit.SWRST = 1;                      // Software reset the RTC
-        while (RTC->MODE0.SYNCBUSY.bit.SWRST);               // Wait for synchronization
+        while (RTC->MODE0.SYNCBUSY.bit.SWRST) {              // Wait for synchronization
+            ;
+        }
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
-                              RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
+            RTC_MODE0_CTRLA_MODE_COUNT32;                            // Set RTC to mode 0, 32-bit timer
 
         // TODO: map requested pin to limited selection of TAMPER pins
         RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
         RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = 1; // rising edge
-        //PA02 = IN2
+        // PA02 = IN2
         RTC->MODE0.TAMPCTRL.bit.IN2ACT = 1;  // WAKE on IN2 (doesn't save timestamp)
 
         // Enable interrupts
@@ -213,24 +217,29 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         NVIC_EnableIRQ(RTC_IRQn);
         // Set interrupts for TAMPER or overflow
         RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
-    // TimeAlarm
     } else {
+        // TimeAlarm
         // Retrieve COMP1 value before resetting RTC
-        // Disable interrupts
         NVIC_DisableIRQ(RTC_IRQn);
 
         // Must disable the RTC before writing to EVCTRL and TMPCTRL
         RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
-        while (RTC->MODE0.SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+        while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {             // Wait for synchronization
+            ;
+        }
 
         RTC->MODE0.CTRLA.bit.SWRST = 1;                      // Software reset the RTC
-        while (RTC->MODE0.SYNCBUSY.bit.SWRST);               // Wait for synchronization
+        while (RTC->MODE0.SYNCBUSY.bit.SWRST) {              // Wait for synchronization
+            ;
+        }
 
         RTC->MODE0.CTRLA.reg = RTC_MODE0_CTRLA_PRESCALER_DIV1024 |   // Set prescaler to 1024
-                              RTC_MODE0_CTRLA_MODE_COUNT32;         // Set RTC to mode 0, 32-bit timer
+            RTC_MODE0_CTRLA_MODE_COUNT32;                            // Set RTC to mode 0, 32-bit timer
 
         RTC->MODE0.COMP[1].reg = (_target/1024) * 32;
-        while(RTC->MODE0.SYNCBUSY.reg);
+        while(RTC->MODE0.SYNCBUSY.reg) {
+            ;
+        }
 
         // Enable interrupts
         NVIC_SetPriority(RTC_IRQn, 0);
@@ -241,9 +250,13 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     // Set-up Deep Sleep Mode
     // RAM retention
     PM->BKUPCFG.reg = PM_BKUPCFG_BRAMCFG(0x2);       // No RAM retention 0x2 partial:0x1
-    while (PM->BKUPCFG.bit.BRAMCFG != 0x2);          // Wait for synchronization
+    while (PM->BKUPCFG.bit.BRAMCFG != 0x2) {         // Wait for synchronization
+        ;
+    }
     PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_BACKUP;
-    while(PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_BACKUP_Val);
+    while (PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_BACKUP_Val) {
+        ;
+    }
 
     RTC->MODE0.CTRLA.bit.ENABLE = 1;                      // Enable the RTC
     while (RTC->MODE0.SYNCBUSY.bit.ENABLE);               // Wait for synchronization

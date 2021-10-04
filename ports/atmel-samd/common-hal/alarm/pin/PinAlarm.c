@@ -90,7 +90,7 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, con
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
     if (self->pull) {
         gpio_set_pin_pull_mode(pin->number, GPIO_PULL_UP);
-    }  else {
+    } else {
         gpio_set_pin_pull_mode(pin->number, GPIO_PULL_DOWN);
     }
     set_eic_channel_data(self->channel, (void *)self);
@@ -116,7 +116,7 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
 }
 
 bool alarm_pin_pinalarm_woke_this_cycle(void) {
-    if (RTC->MODE0.INTFLAG.bit.TAMPER){
+    if (RTC->MODE0.INTFLAG.bit.TAMPER) {
         woke_up = true;
         RTC->MODE0.INTENCLR.bit.TAMPER = 1; // clear flag and interrupt setting
     }

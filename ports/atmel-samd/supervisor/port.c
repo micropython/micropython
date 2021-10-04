@@ -499,7 +499,7 @@ void RTC_Handler(void) {
         #ifdef SAM_D5X_E5X
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
         // Check if we're sleeping
-        if (SAMD_ALARM_FLAG){
+        if (SAMD_ALARM_FLAG) {
             timer_callback();
             SAMD_ALARM_FLAG = 0;
         }

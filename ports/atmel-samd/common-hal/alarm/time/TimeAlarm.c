@@ -119,7 +119,9 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     }
     // Set COMP1 for fake sleep. This will be reset for real deep sleep anyways.
     RTC->MODE0.COMP[1].reg = wakeup_in_ticks;
-    while (RTC->MODE0.SYNCBUSY.reg);
+    while (RTC->MODE0.SYNCBUSY.reg) {
+        ;
+    }
 
     // This is set for fake sleep. Max fake sleep time is ~72 hours
     // True deep sleep isn't limited by this
