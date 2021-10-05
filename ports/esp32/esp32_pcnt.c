@@ -79,6 +79,7 @@ static int machine_pin_get_gpio(mp_obj_t pin_in) {
 
 
 // Defining classes
+/*
 // ====================================================================================
 // class Edge(object):
 // enumaration
@@ -99,7 +100,8 @@ STATIC const mp_obj_type_t pcnt_Edge_type = {
     .name = MP_QSTR_Edge,
     .locals_dict = (void *)&pcnt_Edge_locals_dict,
 };
-
+*/
+/*
 // ====================================================================================
 // class ClockMultiplier(object):
 // enumaration
@@ -121,7 +123,7 @@ STATIC const mp_obj_type_t quad_ClockMultiplier_type = {
     .name = MP_QSTR_ClockMultiplier,
     .locals_dict = (void *)&quad_ClockMultiplier_locals_dict,
 };
-
+*/
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
 static pcnt_PCNT_obj_t *pcnts[PCNT_UNIT_MAX] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
@@ -158,7 +160,7 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
 // -------------------------------------------------------------------------------------------------------------
 static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum edgeKind e) {
     if (self->attached) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Already attached, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached, FAIL!"));
         return;
     }
 
@@ -169,7 +171,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         }
     }
     if (index == PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many counters, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters, FAIL!"));
         return;
     }
 
@@ -226,7 +228,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     if (pcnt_isr_handle == NULL) {
         check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
         if (pcnt_isr_handle == NULL) {
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Encoder wrap interrupt failed"));
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("encoder wrap interrupt failed"));
         }
     }
     check_esp_err(pcnt_intr_enable(self->unit));
@@ -238,24 +240,36 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     self->attached = true;
 }
 
-// class PCNT(object):
+// class Counter(object):
 STATIC const mp_obj_type_t esp32_pcnt_type;
 
 // Defining PCNT methods
-// def PCNT.__init__(edge:int, pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED)
-STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 2, 4, true);
+STATIC void mp_machine_counter_init_helper(pcnt_PCNT_obj_t *self,
+    size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum edgeKind edge = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_id(args[1]);
+    enum { ARG_filter, ARG_edge };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_edge, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_filter, MP_ARG_INT, {.u_int = -1} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+}
+
+// def PCNT.__init__(pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED, edge:int)
+STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 4, true);
+
+    gpio_num_t pin_a = machine_pin_get_id(args[0]);
     gpio_num_t pin_b = PCNT_PIN_NOT_USED;
-    if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_id(args[2]);
+    if (n_args - n_kw >= 2) {
+        pin_b = machine_pin_get_id(args[1]);
     }
-/*
-    if (unit < 0 || unit > PCNT_UNIT_MAX)
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ESP PCNT bad timer number %d", unit));
-*/
+    enum edgeKind edge = mp_obj_get_int(args[2]);
+
     // create PCNT object for the given unit
     pcnt_PCNT_obj_t *self = m_new_obj(pcnt_PCNT_obj_t);
     self->base.type = &esp32_pcnt_type;
@@ -268,9 +282,11 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     attach_pcnt(self, pin_a, pin_b, edge);
 
-    // ??? not sure what this is for or if it's needed
-    // mp_map_t kw_args;
-    // mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
+    // Process the remaining parameters
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    mp_machine_counter_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -450,7 +466,45 @@ STATIC mp_obj_t pcnt_PCNT_get_filter_value(mp_obj_t self_obj) {
 
     return MP_OBJ_NEW_SMALL_INT(count);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_get_filter_value_obj, pcnt_PCNT_get_filter_value);
+//STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_get_filter_value_obj, pcnt_PCNT_get_filter_value);
+
+// def PCNT.set_filter_value(self, filter_val: int)
+/*
+Set PCNT filter value
+
+ @param filter_val PCNT signal filter value, counter in APB_CLK cycles.
+  Any pulses lasting shorter than this will be ignored when the filter is enabled.
+  @note
+   filter_val is a 10-bit value, so the maximum filter_val should be limited to 1023.
+
+ @note
+     Can raise EspException:
+     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
+     - ESP_ERR_INVALID_ARG Parameter error
+*/
+STATIC mp_obj_t pcnt_PCNT_set_filter_value(mp_obj_t self_obj, mp_obj_t filter_val_obj) {
+    pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+    mp_int_t value = mp_obj_get_int(filter_val_obj);
+
+    if ((value < 0) || (value > 1023)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("correct 10-bits filter value is [0..1023]"));
+    }
+
+    check_esp_err(pcnt_set_filter_value(self->unit, value));
+
+    return MP_ROM_NONE;
+}
+//STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_set_filter_value_obj, pcnt_PCNT_set_filter_value);
+
+STATIC mp_obj_t pcnt_PCNT_filter(size_t n_args, const mp_obj_t *args) {
+    pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t val = pcnt_PCNT_get_filter_value(self);
+    if (n_args > 1) {
+        pcnt_PCNT_set_filter_value(self, args[1]);
+    }
+    return val;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_filter_obj, 1, 2, pcnt_PCNT_filter);
 
 // def PCNT.intr_disable(self)
 /*
@@ -649,7 +703,7 @@ Uninstall PCNT ISR service, freeing related resources.
 */
 /*
 STATIC mp_obj_t pcnt_PCNT_pcnt_isr_service_uninstall(mp_obj_t self_obj) {
-    // pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+    // pcnt_PC*selfNT_obj_t  = MP_OBJ_TO_PTR(self_obj);
 
     pcnt_isr_service_uninstall();
 
@@ -684,34 +738,6 @@ STATIC mp_obj_t pcnt_PCNT_set_event_value(mp_obj_t self_obj, mp_obj_t evt_type_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(pcnt_PCNT_set_event_value_obj, pcnt_PCNT_set_event_value);
 */
-
-// def PCNT.set_filter_value(self, filter_val: int)
-/*
-Set PCNT filter value
-
- @param filter_val PCNT signal filter value, counter in APB_CLK cycles.
-  Any pulses lasting shorter than this will be ignored when the filter is enabled.
-  @note
-   filter_val is a 10-bit value, so the maximum filter_val should be limited to 1023.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-STATIC mp_obj_t pcnt_PCNT_set_filter_value(mp_obj_t self_obj, mp_obj_t filter_val_obj) {
-    pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t value = mp_obj_get_int(filter_val_obj);
-
-    if ((value < 0) || (value > 1023)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Correct 10-bits filter value is [0..1023]"));
-    }
-
-    check_esp_err(pcnt_set_filter_value(self->unit, value));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_set_filter_value_obj, pcnt_PCNT_set_filter_value);
 
 // def PCNT.set_mode(self, channel: int, pos_mode: int, neg_mode: int, hctrl_mode: int, lctrl_mode: int)
 /*
@@ -821,6 +847,7 @@ STATIC mp_obj_t pcnt_PCNT_count(mp_obj_t self_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_count_obj, pcnt_PCNT_count);
 
+/*
 // -----------------------------------------------------------------
 STATIC mp_obj_t pcnt_PCNT_count_and_clear(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
@@ -844,7 +871,7 @@ STATIC mp_obj_t pcnt_PCNT_clear(mp_obj_t self_obj) {
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_clear_obj, pcnt_PCNT_clear);
-
+*/
 // -----------------------------------------------------------------
 STATIC mp_obj_t pcnt_PCNT_pause(mp_obj_t self_obj) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
@@ -865,12 +892,26 @@ STATIC mp_obj_t pcnt_PCNT_resume(mp_obj_t self_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 
+// counter.init([kwargs])
+STATIC mp_obj_t machine_counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_machine_counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
+
 // ====================================================================================
 // PCNT stuff
 // Register class methods
-STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
+#define COMMON_METHODS \
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&pcnt_PCNT_count_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_set_count), MP_ROM_PTR(&pcnt_PCNT_set_count_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_filter_disable), MP_ROM_PTR(&pcnt_PCNT_filter_disable_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_filter_enable), MP_ROM_PTR(&pcnt_PCNT_filter_enable_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) },
     // { MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) },
     /*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
@@ -890,21 +931,20 @@ STATIC const mp_rom_map_elem_t pcnt_PCNT_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_event_value), MP_ROM_PTR(&pcnt_PCNT_get_event_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_event_value), MP_ROM_PTR(&pcnt_PCNT_set_event_value_obj) },
     */
-    { MP_ROM_QSTR(MP_QSTR_filter_disable), MP_ROM_PTR(&pcnt_PCNT_filter_disable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_filter_enable), MP_ROM_PTR(&pcnt_PCNT_filter_enable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_filter_value), MP_ROM_PTR(&pcnt_PCNT_get_filter_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_filter_value), MP_ROM_PTR(&pcnt_PCNT_set_filter_value_obj) },
 
     // { MP_ROM_QSTR(MP_QSTR_get_counter_value), MP_ROM_PTR(&pcnt_PCNT_get_counter_value_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&pcnt_PCNT_count_obj) },
+    /*
     { MP_ROM_QSTR(MP_QSTR_count_and_clear), MP_ROM_PTR(&pcnt_PCNT_count_and_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&pcnt_PCNT_clear_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) },
-    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_count), MP_ROM_PTR(&pcnt_PCNT_set_count_obj) },
+    */
+
+STATIC const mp_rom_map_elem_t pcnt_counter_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_counter_init_obj) },
+    COMMON_METHODS
+    { MP_ROM_QSTR(MP_QSTR_RAISE), MP_ROM_INT(RAISE) },
+    { MP_ROM_QSTR(MP_QSTR_FALL), MP_ROM_INT(FALL) },
 };
-STATIC MP_DEFINE_CONST_DICT(pcnt_PCNT_locals_dict, pcnt_PCNT_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pcnt_counter_locals_dict, pcnt_counter_locals_dict_table);
 
 // Create the class-object itself
 STATIC const mp_obj_type_t esp32_pcnt_type = {
@@ -912,7 +952,7 @@ STATIC const mp_obj_type_t esp32_pcnt_type = {
     .name = MP_QSTR_Counter,
     .make_new = pcnt_PCNT_make_new,
     .print = pcnt_PCNT_print,
-    .locals_dict = (mp_obj_dict_t *)&pcnt_PCNT_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pcnt_counter_locals_dict,
 };
 
 // ====================================================================================
@@ -923,7 +963,7 @@ STATIC const mp_obj_type_t esp32_quad_type;
 // -------------------------------------------------------------------------------------------------------------
 static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum clockMultiplier cm) {
     if (self->attached) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Already attached, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached"));
         return;
     }
 
@@ -934,7 +974,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
         }
     }
     if (index == PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Too many counters, FAIL!"));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters"));
         return;
     }
 
@@ -1056,7 +1096,7 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
     if (pcnt_isr_handle == NULL) {
         check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
         if (pcnt_isr_handle == NULL) {
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("Encoder wrap interrupt failed"));
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("encoder wrap interrupt failed"));
         }
     }
     check_esp_err(pcnt_intr_enable(self->unit));
@@ -1070,20 +1110,32 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // -------------------------------------------------------------------------------------------------------------
 // Defining Encoder methods
-// def Encoder.__init__(clock_multiplier: ClockMultiplier, aPinNumber: int, bPinNumber: int=PCNT_PIN_NOT_USED)
+STATIC void mp_machine_encoder_init_helper(pcnt_PCNT_obj_t *self,
+    size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+
+    enum { ARG_filter, ARG_x124 }; // , ARG_cycles
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_filter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_reverse, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args,
+        MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+}
+
+// def Encoder.__init__(aPinNumber: int, bPinNumber: int, clock_multiplier: ClockMultiplier=2)
 STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 4, true);
 
-    int clock_multiplier = mp_obj_get_int(args[0]);
-    gpio_num_t pin_a = machine_pin_get_id(args[1]);
-    gpio_num_t pin_b = PCNT_PIN_NOT_USED;
+    gpio_num_t pin_a = machine_pin_get_id(args[0]);
+    gpio_num_t pin_b = machine_pin_get_id(args[1]);
+    int clock_multiplier = 2;
     if (n_args + n_kw >= 3) {
-        pin_b = machine_pin_get_id(args[2]);
+        clock_multiplier = mp_obj_get_int(args[2]);
     }
-/*
-    if (unit < 0 || unit > PCNT_UNIT_MAX)
-        nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError, "ESP PCNT bad timer number %d", unit));
-*/
+
     // create Encoder object for the given unit
     pcnt_PCNT_obj_t *self = m_new_obj(pcnt_PCNT_obj_t);
     self->base.type = &esp32_quad_type;
@@ -1096,9 +1148,11 @@ STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args,
 
     attach_quad(self, pin_a, pin_b, clock_multiplier);
 
-    // not sure what this is for or if it's needed
-    // mp_map_t kw_args;
-    // mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+
+    // Process the remaining parameters
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    mp_machine_counter_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -1113,13 +1167,26 @@ STATIC void quad_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp_pr
     }
 }
 
+// qenc.init([kwargs])
+STATIC mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_machine_encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_init_obj, 1, machine_encoder_init);
+
+STATIC const mp_rom_map_elem_t pcnt_encoder_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_encoder_init_obj) },
+    COMMON_METHODS
+};
+STATIC MP_DEFINE_CONST_DICT(pcnt_encoder_locals_dict, pcnt_encoder_locals_dict_table);
+
 // Create the class-object itself
 STATIC const mp_obj_type_t esp32_quad_type = {
     { &mp_type_type },
     .name = MP_QSTR_Encoder,
     .print = quad_Encoder_print,
     .make_new = quad_Encoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pcnt_PCNT_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&pcnt_encoder_locals_dict,
     // .parent = &esp32_pcnt_type,
 };
 
@@ -1152,7 +1219,7 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_MAX), MP_ROM_INT(PCNT_MODE_MAX) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_MODE_REVERSE), MP_ROM_INT(PCNT_MODE_REVERSE) },
     */
-    { MP_ROM_QSTR(MP_QSTR_PCNT_PIN_NOT_USED), MP_ROM_INT(PCNT_PIN_NOT_USED) },
+    //{ MP_ROM_QSTR(MP_QSTR_PCNT_PIN_NOT_USED), MP_ROM_INT(PCNT_PIN_NOT_USED) },
     /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_PORT_0), MP_ROM_INT(PCNT_PORT_0) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_PORT_MAX), MP_ROM_INT(PCNT_PORT_MAX) },
@@ -1166,8 +1233,8 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_7), MP_ROM_INT(PCNT_UNIT_7) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_UNIT_MAX), MP_ROM_INT(PCNT_UNIT_MAX) },
     */
-    { MP_ROM_QSTR(MP_QSTR_Edge), MP_ROM_PTR(&pcnt_Edge_type) },
-    { MP_ROM_QSTR(MP_QSTR_ClockMultiplier), MP_ROM_PTR(&quad_ClockMultiplier_type) },
+    //{ MP_ROM_QSTR(MP_QSTR_Edge), MP_ROM_PTR(&pcnt_Edge_type) },
+    //{ MP_ROM_QSTR(MP_QSTR_ClockMultiplier), MP_ROM_PTR(&quad_ClockMultiplier_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(pcnt_globals, pcnt_globals_table);
 

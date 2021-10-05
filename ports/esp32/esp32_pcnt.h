@@ -7,15 +7,14 @@
 #define _INT16_MIN (-32766)
 
 enum edgeKind {
-    RAISE,
-    FALL,
-    BOTH
+    RAISE = 1,
+    FALL = 2
 };
 
 enum clockMultiplier {
-    X1,
-    X2,
-    X4
+    X1 = 1,
+    X2 = 2,
+    X4 = 4
 };
 
 typedef struct _pcnt_PCNT_obj_t {
