@@ -244,13 +244,6 @@ typedef long mp_off_t;
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
 
-#if CIRCUITPY_BINASCII
-#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
-#define BINASCII_MODULE        { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) },
-#else
-#define BINASCII_MODULE
-#endif
-
 #if CIRCUITPY_BOARD
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
@@ -273,33 +266,12 @@ typedef long mp_off_t;
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #endif
 
-#if CIRCUITPY_ERRNO
-#define MICROPY_PY_UERRNO (1)
-// Uses about 80 bytes.
-#define MICROPY_PY_UERRNO_ERRORCODE (1)
-#define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
-#else
-#define ERRNO_MODULE
-#endif
-
 #if CIRCUITPY_GAMEPADSHIFT
 // Scan gamepad every 32ms
 #define CIRCUITPY_GAMEPAD_TICKS 0x1f
 #define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
 #else
 #define GAMEPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_JSON
-#define MICROPY_PY_UJSON (1)
-#define MICROPY_PY_IO (1)
-#define JSON_MODULE            { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) },
-#else
-#ifndef MICROPY_PY_IO
-// We don't need MICROPY_PY_IO unless someone else wants it.
-#define MICROPY_PY_IO (0)
-#endif
-#define JSON_MODULE
 #endif
 
 #if CIRCUITPY_KEYPAD
@@ -320,22 +292,31 @@ typedef long mp_off_t;
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
-#if CIRCUITPY_RE
-#define MICROPY_PY_URE (1)
-#define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
+// Following modules are implemented in either extmod or py directory.
+
+#define MICROPY_PY_UBINASCII CIRCUITPY_BINASCII
+
+#define MICROPY_PY_UERRNO CIRCUITPY_ERRNO
+// Uses about 80 bytes.
+#define MICROPY_PY_UERRNO_ERRORCODE CIRCUITPY_ERRNO
+
+#define MICROPY_PY_URE CIRCUITPY_RE
+
+#if CIRCUITPY_JSON
+#define MICROPY_PY_UJSON (1)
+#define MICROPY_PY_IO (1)
 #else
-#define RE_MODULE
+#ifndef MICROPY_PY_IO
+// We don't need MICROPY_PY_IO unless someone else wants it.
+#define MICROPY_PY_IO (0)
+#endif
 #endif
 
-#if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
+#if CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
 #error "ulab requires MICROPY_PY_REVERSE_SPECIAL_METHODS"
 #endif
-#define ULAB_MODULE \
-    { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
-#else
-#define ULAB_MODULE
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -355,11 +336,7 @@ extern const struct _mp_obj_module_t nvm_module;
 // Some of these definitions will be blank depending on what is turned on and off.
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 
-#define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
-    BINASCII_MODULE \
-    ERRNO_MODULE \
-    JSON_MODULE \
-    RE_MODULE \
+#define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS
 
 // The following modules are defined in their respective __init__.c file in the
 // shared-bindings directory using MP_REGISTER_MODULE.
