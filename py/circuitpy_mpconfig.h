@@ -255,15 +255,12 @@ typedef long mp_off_t;
 #define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
 #define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
 #define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
-
 // I2C and SPI are always allocated off the heap.
-
 #if BOARD_UART
 #define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
 #else
 #define BOARD_UART_ROOT_POINTER
 #endif
-
 #else
 #define BOARD_UART_ROOT_POINTER
 #endif
@@ -283,14 +280,6 @@ typedef long mp_off_t;
 #define ERRNO_MODULE           { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
 #else
 #define ERRNO_MODULE
-#
- #endif
-
-#if CIRCUITPY_ESPIDF
-extern const struct _mp_obj_module_t espidf_module;
-#define ESPIDF_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),(mp_obj_t)&espidf_module },
-#else
-#define ESPIDF_MODULE
 #endif
 
 #if CIRCUITPY_GAMEPADSHIFT
@@ -331,43 +320,11 @@ extern const struct _mp_obj_module_t espidf_module;
 extern const struct _mp_obj_module_t nvm_module;
 #endif
 
-#if CIRCUITPY_OS
-extern const struct _mp_obj_module_t os_module;
-#define OS_MODULE              { MP_OBJ_NEW_QSTR(MP_QSTR_os), (mp_obj_t)&os_module },
-#define OS_MODULE_ALT_NAME     { MP_OBJ_NEW_QSTR(MP_QSTR__os), (mp_obj_t)&os_module },
-#else
-#define OS_MODULE
-#define OS_MODULE_ALT_NAME
-#endif
-
 #if CIRCUITPY_RE
 #define MICROPY_PY_URE (1)
 #define RE_MODULE            { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) },
 #else
 #define RE_MODULE
-#endif
-
-#if CIRCUITPY_RP2PIO
-extern const struct _mp_obj_module_t rp2pio_module;
-#define RP2PIO_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_rp2pio),(mp_obj_t)&rp2pio_module },
-#else
-#define RP2PIO_MODULE
-#endif
-
-#if CIRCUITPY_SAMD
-extern const struct _mp_obj_module_t samd_module;
-#define SAMD_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_samd),(mp_obj_t)&samd_module },
-#else
-#define SAMD_MODULE
-#endif
-
-#if CIRCUITPY_TIME
-extern const struct _mp_obj_module_t time_module;
-#define TIME_MODULE            { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module },
-#define TIME_MODULE_ALT_NAME   { MP_OBJ_NEW_QSTR(MP_QSTR__time), (mp_obj_t)&time_module },
-#else
-#define TIME_MODULE
-#define TIME_MODULE_ALT_NAME
 #endif
 
 #if defined(CIRCUITPY_ULAB) && CIRCUITPY_ULAB
@@ -383,17 +340,15 @@ extern const struct _mp_obj_module_t time_module;
 
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    OS_MODULE \
-    TIME_MODULE \
+
+#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS
 
 // Native modules that are weak links can be accessed directly
 // by prepending their name with an underscore. This list should correspond to
 // MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
 // to be accessible when overriden.
-#define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES \
-    OS_MODULE_ALT_NAME \
-    TIME_MODULE_ALT_NAME \
+
+#define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
 
 // This is an inclusive list that should correspond to the CIRCUITPY_XXX list above,
 // including dependencies.
@@ -403,11 +358,8 @@ extern const struct _mp_obj_module_t time_module;
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS \
     BINASCII_MODULE \
     ERRNO_MODULE \
-    ESPIDF_MODULE \
     JSON_MODULE \
     RE_MODULE \
-    RP2PIO_MODULE \
-    SAMD_MODULE \
 
 // The following modules are defined in their respective __init__.c file in the
 // shared-bindings directory using MP_REGISTER_MODULE.
