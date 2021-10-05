@@ -90,7 +90,6 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_nor_config.h\"
 
 ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
 CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
@@ -277,11 +276,11 @@ SRC_C += \
 ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
 SRC_C += \
 	hal/flexspi_nor_flash.c \
-	$(BOARD_DIR)/qspi_nor_flash_config.c
+	hal/qspi_nor_flash_config.c
 else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
 SRC_C += \
 	hal/flexspi_hyper_flash.c \
-	$(BOARD_DIR)/qspi_hyper_flash_config.c
+	hal/qspi_hyper_flash_config.c
 else
 $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
