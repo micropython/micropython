@@ -24,26 +24,35 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "MicroDev microS2"
-#define MICROPY_HW_MCU_NAME         "ESP32-S2"
+#include "shared-bindings/microcontroller/Pin.h"
 
-// Status LED
-#define MICROPY_HW_NEOPIXEL         (&pin_GPIO33)
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO18);
+    common_hal_never_reset_pin(&pin_GPIO19);
 
-// Default bus pins
-#define DEFAULT_I2C_BUS_SCL         (&pin_GPIO1)
-#define DEFAULT_I2C_BUS_SDA         (&pin_GPIO2)
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO20);
+    common_hal_never_reset_pin(&pin_GPIO21);
+    #endif
 
-#define DEFAULT_SPI_BUS_SCK         (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI        (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO        (&pin_GPIO37)
+    // SPI Flash
+    common_hal_never_reset_pin(&pin_GPIO11);
+    common_hal_never_reset_pin(&pin_GPIO12);
+    common_hal_never_reset_pin(&pin_GPIO13);
+    common_hal_never_reset_pin(&pin_GPIO14);
+    common_hal_never_reset_pin(&pin_GPIO15);
+    common_hal_never_reset_pin(&pin_GPIO16);
+    common_hal_never_reset_pin(&pin_GPIO17);
+}
 
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
+void reset_board(void) {
+}
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+void board_deinit(void) {
+}
