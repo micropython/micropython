@@ -46,13 +46,11 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-#define MODULE_PCNT_ENABLED (1) // you may relocate this line to the mpconfigport.h
-#if MODULE_PCNT_ENABLED
-
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "driver/pcnt.h"
 #include "mphalport.h"
+#include "modmachine.h"
 
 #include "esp_err.h"
 
@@ -136,8 +134,7 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
     pcnt_PCNT_obj_t *self;
     uint32_t intr_status = PCNT.int_st.val;
 
-    int i;
-    for (i = 0; i < PCNT_UNIT_MAX; i++) {
+    for (int i = 0; i < PCNT_UNIT_MAX; ++i) {
         if (intr_status & (1 << i)) {
             self = pcnts[i];
             // Save the PCNT event type that caused an interrupt to pass it to the main program
@@ -170,7 +167,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
             break;
         }
     }
-    if (index == PCNT_UNIT_MAX) {
+    if (index >= PCNT_UNIT_MAX) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters, FAIL!"));
         return;
     }
@@ -241,9 +238,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 }
 
 // class Counter(object):
-STATIC const mp_obj_type_t esp32_pcnt_type;
-
-// Defining PCNT methods
+// Defining Counter methods
 STATIC void mp_machine_counter_init_helper(pcnt_PCNT_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
@@ -260,7 +255,7 @@ STATIC void mp_machine_counter_init_helper(pcnt_PCNT_obj_t *self,
 }
 
 // def PCNT.__init__(pulsePinNumber: int, dirPinNumber: int=PCNT_PIN_NOT_USED, edge:int)
-STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t pcnt_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 4, true);
 
     gpio_num_t pin_a = machine_pin_get_id(args[0]);
@@ -272,7 +267,7 @@ STATIC mp_obj_t pcnt_PCNT_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // create PCNT object for the given unit
     pcnt_PCNT_obj_t *self = m_new_obj(pcnt_PCNT_obj_t);
-    self->base.type = &esp32_pcnt_type;
+    self->base.type = &machine_Counter_type;
 
     self->attached = false;
     self->aPinNumber = PCNT_PIN_NOT_USED;
@@ -305,7 +300,7 @@ STATIC mp_obj_t pcnt_PCNT_deinit(mp_obj_t self_obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_deinit_obj, pcnt_PCNT_deinit);
 
-STATIC void pcnt_PCNT_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
+STATIC void pcnt_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     mp_printf(print, "Counter(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
@@ -904,8 +899,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
 // Register class methods
 #define COMMON_METHODS \
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&pcnt_PCNT_count_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_set_count), MP_ROM_PTR(&pcnt_PCNT_set_count_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pcnt_PCNT_count_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_set_value), MP_ROM_PTR(&pcnt_PCNT_set_count_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter_disable), MP_ROM_PTR(&pcnt_PCNT_filter_disable_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter_enable), MP_ROM_PTR(&pcnt_PCNT_filter_enable_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
@@ -938,27 +933,26 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&pcnt_PCNT_clear_obj) },
     */
 
-STATIC const mp_rom_map_elem_t pcnt_counter_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pcnt_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_counter_init_obj) },
     COMMON_METHODS
     { MP_ROM_QSTR(MP_QSTR_RAISE), MP_ROM_INT(RAISE) },
     { MP_ROM_QSTR(MP_QSTR_FALL), MP_ROM_INT(FALL) },
 };
-STATIC MP_DEFINE_CONST_DICT(pcnt_counter_locals_dict, pcnt_counter_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pcnt_Counter_locals_dict, pcnt_Counter_locals_dict_table);
 
 // Create the class-object itself
-STATIC const mp_obj_type_t esp32_pcnt_type = {
+const mp_obj_type_t machine_Counter_type = {
     { &mp_type_type },
     .name = MP_QSTR_Counter,
-    .make_new = pcnt_PCNT_make_new,
-    .print = pcnt_PCNT_print,
-    .locals_dict = (mp_obj_dict_t *)&pcnt_counter_locals_dict,
+    .make_new = pcnt_Counter_make_new,
+    .print = pcnt_Counter_print,
+    .locals_dict = (mp_obj_dict_t *)&pcnt_Counter_locals_dict,
 };
 
 // ====================================================================================
 // Defining classes
 // class Encoder(object):
-STATIC const mp_obj_type_t esp32_quad_type;
 
 // -------------------------------------------------------------------------------------------------------------
 static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum clockMultiplier cm) {
@@ -1138,7 +1132,7 @@ STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args,
 
     // create Encoder object for the given unit
     pcnt_PCNT_obj_t *self = m_new_obj(pcnt_PCNT_obj_t);
-    self->base.type = &esp32_quad_type;
+    self->base.type = &machine_Encoder_type;
 
     self->attached = false;
     self->aPinNumber = PCNT_PIN_NOT_USED;
@@ -1174,29 +1168,30 @@ STATIC mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_init_obj, 1, machine_encoder_init);
 
-STATIC const mp_rom_map_elem_t pcnt_encoder_locals_dict_table[] = {
+STATIC const mp_rom_map_elem_t pcnt_Encoder_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_encoder_init_obj) },
     COMMON_METHODS
 };
-STATIC MP_DEFINE_CONST_DICT(pcnt_encoder_locals_dict, pcnt_encoder_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(pcnt_Encoder_locals_dict, pcnt_Encoder_locals_dict_table);
 
 // Create the class-object itself
-STATIC const mp_obj_type_t esp32_quad_type = {
+const mp_obj_type_t machine_Encoder_type = {
     { &mp_type_type },
     .name = MP_QSTR_Encoder,
     .print = quad_Encoder_print,
     .make_new = quad_Encoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pcnt_encoder_locals_dict,
-    // .parent = &esp32_pcnt_type,
+    .locals_dict = (mp_obj_dict_t *)&pcnt_Encoder_locals_dict,
+    // .parent = &machine_Counter_type,
 };
 
+#if 0
 // ====================================================================================
 // module stuff
 // Set up the module properties
 STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_pcnt) },
-    { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&esp32_pcnt_type) },
-    { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&esp32_quad_type) },
+    { MP_ROM_QSTR(MP_QSTR_Counter), MP_ROM_PTR(&machine_Counter_type) },
+    { MP_ROM_QSTR(MP_QSTR_Encoder), MP_ROM_PTR(&machine_Encoder_type) },
     /*
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_0), MP_ROM_INT(PCNT_CHANNEL_0) },
     { MP_ROM_QSTR(MP_QSTR_PCNT_CHANNEL_1), MP_ROM_INT(PCNT_CHANNEL_1) },
@@ -1239,11 +1234,10 @@ STATIC const mp_rom_map_elem_t pcnt_globals_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pcnt_globals, pcnt_globals_table);
 
 // Define the module object
-const mp_obj_module_t pcnt_cmodule = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&pcnt_globals,
-};
+//const mp_obj_module_t pcnt__cmodule = {
+//    .base = { &mp_type_module },
+//    .globals = (mp_obj_dict_t *)&pcnt_globals,
+//};
 // Register the module
-MP_REGISTER_MODULE(MP_QSTR_pcnt, pcnt_cmodule, MODULE_PCNT_ENABLED);
-
-#endif // MODULE_PCNT_ENABLED
+//MP_REGISTER_MODULE(MP_QSTR_pcnt, pcnt__cmodule, MICROPY_PY_MACHINE_PCNT);
+#endif
