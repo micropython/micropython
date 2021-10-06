@@ -72,6 +72,7 @@ library.
    socket.rst
    ssl.rst
    struct.rst
+   suntime.rst
    sys.rst
    time.rst
    uasyncio.rst
