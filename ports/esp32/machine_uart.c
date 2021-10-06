@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "driver/uart.h"
+#include "hal/uart_hal.h"
 #include "freertos/FreeRTOS.h"
 
 #include "py/runtime.h"
@@ -49,6 +50,13 @@
 #endif
 
 #define UART_INV_MASK (UART_INV_TX | UART_INV_RX | UART_INV_RTS | UART_INV_CTS)
+
+#define UART_INTR_CONFIG_FLAG ((UART_INTR_RXFIFO_FULL) \
+                                    | (UART_INTR_RXFIFO_TOUT) \
+                                    | (UART_INTR_RXFIFO_OVF) \
+                                    | (UART_INTR_BRK_DET) \
+                                    | (UART_INTR_PARITY_ERR))
+
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -126,22 +134,41 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow };
+    enum { ARG_baudrate,
+        ARG_bits,
+        ARG_parity,
+        ARG_stop,
+        ARG_tx,
+        ARG_rx,
+        ARG_rts,
+        ARG_cts,
+        ARG_txbuf,
+        ARG_rxbuf,
+        ARG_timeout,
+        ARG_timeout_char,
+        ARG_invert,
+        ARG_flow,
+        ARG_rxfifo_full_thresh,
+        ARG_rx_timeout_thresh,
+        ARG_txfifo_empty_intr_thresh};
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+            { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+            { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+            { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+            { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+            { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+            { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+            { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+            { MP_QSTR_rxfifo_full_thresh, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 120} },
+            { MP_QSTR_rx_timeout_thresh, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10} },
+            { MP_QSTR_txfifo_empty_intr_thresh, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10} }
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -280,6 +307,20 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     self->flowcontrol = args[ARG_flow].u_int;
     uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4);
+
+    // configure UART interrupts
+    if (args[ARG_rxfifo_full_thresh].u_int > 0 ||
+        args[ARG_rx_timeout_thresh].u_int > 0 ||
+        args[ARG_txfifo_empty_intr_thresh].u_int > 0) {
+        uart_intr_config_t uart_intr = {
+                .intr_enable_mask = UART_INTR_CONFIG_FLAG,
+                .rxfifo_full_thresh = args[ARG_rxfifo_full_thresh].u_int,
+                .rx_timeout_thresh = args[ARG_rx_timeout_thresh].u_int,
+                .txfifo_empty_intr_thresh = args[ARG_txfifo_empty_intr_thresh].u_int
+        };
+        uart_intr_config(self->uart_num, &uart_intr);
+    }
+
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
