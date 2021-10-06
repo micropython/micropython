@@ -40,8 +40,10 @@
 
 #if defined(__ARM_ARCH)
 #define PLATFORM_ARCH   "arm"
-#elif defined(__x86_64__)
+#elif defined(__x86_64__) || defined(_WIN64)
 #define PLATFORM_ARCH   "x86_64"
+#elif defined(__i386__) || defined(_M_IX86)
+#define PLATFORM_ARCH   "x86"
 #else
 #define PLATFORM_ARCH   ""
 #endif
@@ -58,6 +60,16 @@
     MP_STRINGIFY((__ARMCC_VERSION / 1000000)) "." \
     MP_STRINGIFY((__ARMCC_VERSION / 10000 % 100)) "." \
     MP_STRINGIFY((__ARMCC_VERSION % 10000))
+#elif defined(_MSC_VER)
+#if defined(_WIN64)
+#define COMPILER_BITS "64 bit"
+#elif defined(_M_IX86)
+#define COMPILER_BITS "32 bit"
+#else
+#define COMPILER_BITS ""
+#endif
+#define PLATFORM_COMPILER \
+    "MSC v." MP_STRINGIFY(_MSC_VER) " " COMPILER_BITS
 #else
 #define PLATFORM_COMPILER       ""
 #endif
@@ -81,7 +93,7 @@
 #define PLATFORM_SYSTEM     "Unix"
 #elif defined(__CYGWIN__)
 #define PLATFORM_SYSTEM     "Cygwin"
-#elif defined(__WIN32__)
+#elif defined(_WIN32)
 #define PLATFORM_SYSTEM     "Windows"
 #else
 #define PLATFORM_SYSTEM     "MicroPython"
@@ -93,6 +105,10 @@
 
 #ifndef MICROPY_HW_MCU_NAME
 #define MICROPY_HW_MCU_NAME     ""
+#endif
+
+#ifndef MICROPY_HAL_VERSION
+#define MICROPY_HAL_VERSION     ""
 #endif
 
 STATIC const MP_DEFINE_STR_OBJ(info_platform_obj, PLATFORM_SYSTEM "-" MICROPY_VERSION_STRING "-HAL" \

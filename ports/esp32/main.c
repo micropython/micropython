@@ -202,12 +202,20 @@ soft_reset_exit:
     goto soft_reset;
 }
 
-void app_main(void) {
+void boardctrl_startup(void) {
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+}
+
+void app_main(void) {
+    // Hook for a board to run code at start up.
+    // This defaults to initialising NVS.
+    MICROPY_BOARD_STARTUP();
+
+    // Create and transfer control to the MicroPython task.
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 

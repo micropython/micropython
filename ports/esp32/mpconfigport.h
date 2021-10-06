@@ -174,6 +174,9 @@
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (1)
 #endif
+#ifndef MICROPY_PY_NETWORK_WLAN
+#define MICROPY_PY_NETWORK_WLAN             (1)
+#endif
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
 #endif
@@ -308,3 +311,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_HW_ENABLE_MDNS_RESPONDER
 #define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
 #endif
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP boardctrl_startup
+#endif
+
+void boardctrl_startup(void);

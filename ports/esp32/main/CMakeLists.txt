@@ -67,6 +67,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/modnetwork.c
     ${PROJECT_DIR}/network_lan.c
     ${PROJECT_DIR}/network_ppp.c
+    ${PROJECT_DIR}/network_wlan.c
     ${PROJECT_DIR}/mpnimbleport.c
     ${PROJECT_DIR}/modsocket.c
     ${PROJECT_DIR}/modesp.c
@@ -89,6 +90,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_SHARED}
     ${MICROPY_SOURCE_LIB}
     ${MICROPY_SOURCE_PORT}
+    ${MICROPY_SOURCE_BOARD}
 )
 
 set(IDF_COMPONENTS
@@ -156,6 +158,7 @@ idf_component_register(
         ${MICROPY_SOURCE_LIB}
         ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
+        ${MICROPY_SOURCE_BOARD}
     INCLUDE_DIRS
         ${MICROPY_INC_CORE}
         ${MICROPY_INC_USERMOD}
