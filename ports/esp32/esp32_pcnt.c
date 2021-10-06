@@ -239,7 +239,7 @@ static void attach_pcnt(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // class Counter(object):
 // Defining Counter methods
-STATIC void mp_machine_counter_init_helper(pcnt_PCNT_obj_t *self,
+STATIC void mp_machine_Counter_init_helper(pcnt_PCNT_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     enum { ARG_filter, ARG_edge };
@@ -281,7 +281,7 @@ STATIC mp_obj_t pcnt_Counter_make_new(const mp_obj_type_t *type, size_t n_args, 
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_counter_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -888,11 +888,11 @@ STATIC mp_obj_t pcnt_PCNT_resume(mp_obj_t self_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 
 // counter.init([kwargs])
-STATIC mp_obj_t machine_counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_machine_counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
+STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_machine_Counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
 
 // ====================================================================================
 // PCNT stuff
@@ -934,7 +934,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
     */
 
 STATIC const mp_rom_map_elem_t pcnt_Counter_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_counter_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
     COMMON_METHODS
     { MP_ROM_QSTR(MP_QSTR_RAISE), MP_ROM_INT(RAISE) },
     { MP_ROM_QSTR(MP_QSTR_FALL), MP_ROM_INT(FALL) },
@@ -1104,13 +1104,13 @@ static void attach_quad(pcnt_PCNT_obj_t *self, gpio_num_t a, gpio_num_t b, enum 
 
 // -------------------------------------------------------------------------------------------------------------
 // Defining Encoder methods
-STATIC void mp_machine_encoder_init_helper(pcnt_PCNT_obj_t *self,
+STATIC void mp_machine_Encoder_init_helper(pcnt_PCNT_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     enum { ARG_filter, ARG_x124 }; // , ARG_cycles
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_reverse, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
+        { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1146,7 +1146,7 @@ STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args,
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_counter_init_helper(self, n_args - 1, args + 1, &kw_args);
+    //mp_machine_Encoder_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -1155,21 +1155,22 @@ STATIC mp_obj_t quad_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args,
 STATIC void quad_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     pcnt_PCNT_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "Encoder(unit=%u, Pin(%u)", self->unit, self->aPinNumber);
+    mp_printf(print, "Encoder(Pin(%u)", self->aPinNumber);
+    mp_printf(print, ", Pin(%u)", self->bPinNumber);
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
-        mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
+    mp_printf(print, ")");
 }
 
 // qenc.init([kwargs])
-STATIC mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_machine_encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
+STATIC mp_obj_t machine_Encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_machine_Encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_init_obj, 1, machine_encoder_init);
+MP_DEFINE_CONST_FUN_OBJ_KW(machine_Encoder_init_obj, 1, machine_Encoder_init);
 
 STATIC const mp_rom_map_elem_t pcnt_Encoder_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_encoder_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Encoder_init_obj) },
     COMMON_METHODS
 };
 STATIC MP_DEFINE_CONST_DICT(pcnt_Encoder_locals_dict, pcnt_Encoder_locals_dict_table);
