@@ -183,7 +183,9 @@ void eth_init(eth_t *self, int mac_idx) {
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
     gpio_pin_config_t gpio_config = {kGPIO_DigitalOutput, 0, kGPIO_NoIntmode};
+    (void)gpio_config;
 
+    #ifdef ENET_RESET_PIN
     // Configure the Reset Pin
     const machine_pin_obj_t *reset_pin = &ENET_RESET_PIN;
     const machine_pin_af_obj_t *af_obj = pin_find_af(reset_pin, PIN_AF_MODE_ALT5);
@@ -191,7 +193,9 @@ void eth_init(eth_t *self, int mac_idx) {
     IOMUXC_SetPinMux(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0U);
     IOMUXC_SetPinConfig(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0xB0A9U);
     GPIO_PinInit(reset_pin->gpio, reset_pin->pin, &gpio_config);
+    #endif
 
+    #ifdef ENET_INT_PIN
     // Configure the Int Pin
     const machine_pin_obj_t *int_pin = &ENET_INT_PIN;
     af_obj = pin_find_af(int_pin, PIN_AF_MODE_ALT5);
@@ -199,6 +203,7 @@ void eth_init(eth_t *self, int mac_idx) {
     IOMUXC_SetPinMux(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0U);
     IOMUXC_SetPinConfig(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0xB0A9U);
     GPIO_PinInit(int_pin->gpio, int_pin->pin, &gpio_config);
+    #endif
 
     // Configure the Transceiver Pins, Settings except for CLK:
     // Slew Rate Field: Fast Slew Rate, Drive Strength, R0/5, Speed max(200MHz)
@@ -220,11 +225,16 @@ void eth_init(eth_t *self, int mac_idx) {
 
     // Reset transceiver
     // pull up the ENET_INT before RESET.
+    #ifdef ENET_INT_PIN
     GPIO_WritePinOutput(int_pin->gpio, int_pin->pin, 1);
+    #endif
+
+    #ifdef ENET_RESET_PIN
     GPIO_WritePinOutput(reset_pin->gpio, reset_pin->pin, 0);
     mp_hal_delay_us(1000);
     GPIO_WritePinOutput(reset_pin->gpio, reset_pin->pin, 1);
     mp_hal_delay_us(1000);
+    #endif
 
     mp_hal_get_mac(0, hw_addr);
 
