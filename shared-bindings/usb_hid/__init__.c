@@ -104,8 +104,6 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     ...
 //|
 STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-
     enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_devices, MP_ARG_REQUIRED | MP_ARG_OBJ },
