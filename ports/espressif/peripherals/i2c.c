@@ -68,11 +68,12 @@ void peripherals_i2c_deinit(i2c_port_t num) {
     i2c_status[num] = STATUS_FREE;
 }
 
-i2c_port_t i2c_num_status(void) {
+i2c_port_t peripherals_i2c_get_free_num(void) {
     i2c_port_t i2c_num = I2C_NUM_MAX;
     for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
         if (i2c_status[num] == STATUS_FREE) {
             i2c_num = num;
+            break;
         }
     }
     if (i2c_num != I2C_NUM_MAX) {

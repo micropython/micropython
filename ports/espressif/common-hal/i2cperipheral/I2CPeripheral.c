@@ -50,7 +50,7 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
 
     self->sda_pin = sda;
     self->scl_pin = scl;
-    self->i2c_num = i2c_num_status();
+    self->i2c_num = peripherals_i2c_get_free_num();
 
     if (self->i2c_num == I2C_NUM_MAX) {
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
