@@ -165,7 +165,8 @@ STATIC mp_obj_t bitbangio_i2c_obj_unlock(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_i2c_unlock_obj, bitbangio_i2c_obj_unlock);
 
-//|     def readfrom_into(self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: int = len(buffer)) -> None:
+//|     import sys
+//|     def readfrom_into(self, address: int, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
 //|         """Read into ``buffer`` from the device selected by ``address``.
 //|         The number of bytes read will be the length of ``buffer``.
 //|         At least one byte must be read.
@@ -217,7 +218,8 @@ STATIC mp_obj_t bitbangio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 1, bitbangio_i2c_readfrom_into);
 
-//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
+//|     import sys
+//|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
 //|         """Write the bytes from ``buffer`` to the device selected by ``address`` and then transmits a
 //|         stop bit. Use `writeto_then_readfrom` when needing a write, no stop and repeated start
 //|         before a read.
@@ -232,7 +234,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_readfrom_into_obj, 1, bitbangio_i2c_rea
 //|         :param int address: 7-bit device address
 //|         :param ~_typing.ReadableBuffer buffer: buffer containing the bytes to write
 //|         :param int start: Index to start writing from
-//|         :param int end: Index to read up to but not include"""
+//|         :param int end: Index to read up to but not include. If not specified, use ``len(buffer)``"""
 //|         ...
 //|
 // Shared arg parsing for writeto and writeto_then_readfrom.
@@ -274,7 +276,8 @@ STATIC mp_obj_t bitbangio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, m
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_writeto);
 
 
-//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: int = len(out_buffer), in_start: int = 0, in_end: int = len(in_buffer)) -> None:
+//|     import sys
+//|     def writeto_then_readfrom(self, address: int, out_buffer: ReadableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: int = sys.maxsize, in_start: int = 0, in_end: int = sys.maxsize) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device selected by ``address``, generate no stop
 //|         bit, generate a repeated start and read into ``in_buffer``. ``out_buffer`` and
 //|         ``in_buffer`` can be the same buffer because they are used sequentially.
@@ -287,9 +290,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_i2c_writeto_obj, 1, bitbangio_i2c_wr
 //|         :param ~_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
 //|         :param ~_typing.WriteableBuffer in_buffer: buffer to write into
 //|         :param int out_start: Index to start writing from
-//|         :param int out_end: Index to read up to but not include. Defaults to ``len(buffer)``
+//|         :param int out_end: Index to read up to but not include. If not specified, use ``len(buffer)``
 //|         :param int in_start: Index to start writing at
-//|         :param int in_end: Index to write up to but not include. Defaults to ``len(buffer)``"""
+//|         :param int in_end: Index to write up to but not include. If not specified, use ``len(buffer)``"""
 //|
 STATIC mp_obj_t bitbangio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_out_buffer, ARG_in_buffer, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };

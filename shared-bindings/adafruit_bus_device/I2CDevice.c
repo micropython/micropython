@@ -109,7 +109,8 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_obj___exit__(size_t n_args, const 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(adafruit_bus_device_i2cdevice___exit___obj, 4, 4, adafruit_bus_device_i2cdevice_obj___exit__);
 
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: int = len(buffer)) -> None:
+//|     import sys
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
 //|         """Read into ``buffer`` from the device. The number of bytes read will be the
 //|         length of ``buffer``.
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
@@ -154,7 +155,8 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_readinto(size_t n_args, const mp_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_readinto_obj, 1, adafruit_bus_device_i2cdevice_readinto);
 
-//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: int = len(buffer)) -> None:
+//|     import sys
+//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: int = sys.maxsize) -> None:
 //|         """Write the bytes from ``buffer`` to the device, then transmit a stop bit.
 //|         If ``start`` or ``end`` is provided, then the buffer will be sliced
 //|         as if ``buffer[start:end]``. This will not cause an allocation like
@@ -199,7 +201,8 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_write(size_t n_args, const mp_obj_
 MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 1, adafruit_bus_device_i2cdevice_write);
 
 
-//|     def write_then_readinto(self, out_buffer: WriteableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: int = len(out_buffer), in_start: int = 0, in_end: int = len(in_buffer)) -> None:
+//|     import sys
+//|     def write_then_readinto(self, out_buffer: WriteableBuffer, in_buffer: ReadableBuffer, *, out_start: int = 0, out_end: int = sys.maxsize, in_start: int = 0, in_end: int = sys.maxsize) -> None:
 //|         """Write the bytes from ``out_buffer`` to the device, then immediately
 //|         reads into ``in_buffer`` from the device. The number of bytes read
 //|         will be the length of ``in_buffer``.
@@ -215,9 +218,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(adafruit_bus_device_i2cdevice_write_obj, 1, adafruit_
 //|         :param bytearray out_buffer: buffer containing the bytes to write
 //|         :param bytearray in_buffer: buffer containing the bytes to read into
 //|         :param int out_start: Index to start writing from
-//|         :param int out_end: Index to read up to but not include; if None, use ``len(out_buffer)``
+//|         :param int out_end: Index to read up to but not include; if not specified, use ``len(out_buffer)``
 //|         :param int in_start: Index to start writing at
-//|         :param int in_end: Index to write up to but not include; if None, use ``len(in_buffer)``
+//|         :param int in_end: Index to write up to but not include; if not specified, use ``len(in_buffer)``
 //|         """
 //|         ...
 //|
