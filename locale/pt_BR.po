@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-09-24 01:40+0000\n"
+"PO-Revision-Date: 2021-10-08 04:03+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -176,7 +176,7 @@ msgstr "%q deve ser um int"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
-msgstr ""
+msgstr "%q com um relatório com ID de 0 deve ter comprimento 1"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -1820,7 +1820,7 @@ msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 msgid "Only one address is allowed"
-msgstr ""
+msgstr "Apenas um endereço é permitido"
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
