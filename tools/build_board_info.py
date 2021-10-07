@@ -66,6 +66,7 @@ extension_by_board = {
     # stm32
     "meowbit_v121": UF2,
     # esp32c3
+    "ai_thinker_esp32-c3s": BIN,
     "microdev_micro_c3": BIN,
 }
 
