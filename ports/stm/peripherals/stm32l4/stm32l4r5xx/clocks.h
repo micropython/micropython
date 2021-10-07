@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Blues Wireless Contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,44 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "stm32l4xx_hal.h"
 
-#include "py/obj.h"
-#include "shared-bindings/canio/__init__.h"
-#include "shared-bindings/canio/CAN.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/canio/__init__.h"
-#include "shared-module/canio/Message.h"
+// Chip:                STM32L4R5
+// Line Type:           Foundation Line
+// Speed:               120MHz (MAX)
 
-#include STM32_HAL_H
+// Defaults:
+#ifndef CPY_CLK_VSCALE
+#define CPY_CLK_VSCALE (PWR_REGULATOR_VOLTAGE_SCALE1_BOOST)      // up to 120MHz
+#endif
+#ifndef CPY_CLK_PLLM
+#define CPY_CLK_PLLM (12)
+#endif
+#ifndef CPY_CLK_PLLN
+#define CPY_CLK_PLLN (60)
+#endif
+#ifndef CPY_CLK_PLLP
+#define CPY_CLK_PLLP (RCC_PLLP_DIV2)
+#endif
+#ifndef CPY_CLK_PLLQ
+#define CPY_CLK_PLLQ (2)
+#endif
+#ifndef CPY_CLK_AHBDIV
+#define CPY_CLK_AHBDIV (RCC_SYSCLK_DIV1)
+#endif
+#ifndef CPY_CLK_APB1DIV
+#define CPY_CLK_APB1DIV (RCC_HCLK_DIV1)
+#endif
+#ifndef CPY_CLK_APB2DIV
+#define CPY_CLK_APB2DIV (RCC_HCLK_DIV1)
+#endif
+#ifndef CPY_CLK_FLASH_LATENCY
+#define CPY_CLK_FLASH_LATENCY (FLASH_LATENCY_5)
+#endif
+#ifndef CPY_CLK_USB_USES_AUDIOPLL
+#define CPY_CLK_USB_USES_AUDIOPLL (0)
+#endif
 
-#define FILTER_BANK_COUNT (28)
-
-typedef struct canio_can_obj {
-    mp_obj_base_t base;
-    CAN_HandleTypeDef handle;
-    CAN_TypeDef *filter_hw;
-    int baudrate;
-    const mcu_pin_obj_t *rx_pin;
-    const mcu_pin_obj_t *tx_pin;
-    bool loopback : 1;
-    bool silent : 1;
-    bool auto_restart : 1;
-    bool fifo0_in_use : 1;
-    bool fifo1_in_use : 1;
-    uint8_t periph_index : 2;
-    uint8_t cancel_mailbox;
-    uint8_t start_filter_bank;
-    uint8_t end_filter_bank;
-    long filter_in_use; // bitmask for the 28 filter banks
-} canio_can_obj_t;
+#ifndef BOARD_HAS_HIGH_SPEED_CRYSTAL
+#define BOARD_HAS_HIGH_SPEED_CRYSTAL (1)
+#endif

@@ -58,7 +58,7 @@ STATIC uint32_t get_busclock(SPI_TypeDef *instance) {
     } else {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
     }
-    #elif (CPY_STM32F4 || CPY_STM32F7)
+    #elif (CPY_STM32F4 || CPY_STM32F7 || CPY_STM32L4)
     // SPI2 and 3 are on PCLK1, if they exist.
     #ifdef SPI2
     if (instance == SPI2) {

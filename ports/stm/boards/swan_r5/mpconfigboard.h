@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Blues Wireless Contributors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,43 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "shared-bindings/canio/__init__.h"
-#include "shared-bindings/canio/CAN.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "common-hal/canio/__init__.h"
-#include "shared-module/canio/Message.h"
+#define MICROPY_HW_BOARD_NAME       "Swan R5"
+#define MICROPY_HW_MCU_NAME         "STM32L4R5ZIY6"
 
-#include STM32_HAL_H
+// todo - not sure why this isn't the default for this port
+#define MICROPY_PY_SYS_PLATFORM     MICROPY_HW_BOARD_NAME
 
-#define FILTER_BANK_COUNT (28)
 
-typedef struct canio_can_obj {
-    mp_obj_base_t base;
-    CAN_HandleTypeDef handle;
-    CAN_TypeDef *filter_hw;
-    int baudrate;
-    const mcu_pin_obj_t *rx_pin;
-    const mcu_pin_obj_t *tx_pin;
-    bool loopback : 1;
-    bool silent : 1;
-    bool auto_restart : 1;
-    bool fifo0_in_use : 1;
-    bool fifo1_in_use : 1;
-    uint8_t periph_index : 2;
-    uint8_t cancel_mailbox;
-    uint8_t start_filter_bank;
-    uint8_t end_filter_bank;
-    long filter_in_use; // bitmask for the 28 filter banks
-} canio_can_obj_t;
+#define STM32L4R5XX
+#define BOARD_SWAN_R5
+
+
+// The flash size is defined in the STM32L4xx HAL (but not for the F4)
+// #define FLASH_SIZE                  (0x200000)
+// #define FLASH_PAGE_SIZE             (0x1000)
+
+#define LSE_VALUE ((uint32_t)32768)
+#define BOARD_HAS_LOW_SPEED_CRYSTAL (1)
+#define BOARD_HAS_HIGH_SPEED_CRYSTAL (0)
+
+
+// Bootloader only
+#ifdef UF2_BOOTLOADER_ENABLED
+    #define BOARD_VTOR_DEFER (1) // Leave VTOR relocation to bootloader
+#endif
+
+#define BOARD_NO_VBUS_SENSE (1)
+#define BOARD_NO_USB_OTG_ID_SENSE (1)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_PB06)
+#define DEFAULT_I2C_BUS_SDA (&pin_PB07)
+
+#define DEFAULT_SPI_BUS_SS (&pin_PD00)
+#define DEFAULT_SPI_BUS_SCK (&pin_PD01)
+#define DEFAULT_SPI_BUS_MOSI (&pin_PB15)
+#define DEFAULT_SPI_BUS_MISO (&pin_PB14)
+
+#define DEFAULT_UART_BUS_RX (&pin_PA10)
+#define DEFAULT_UART_BUS_TX (&pin_PA09)
