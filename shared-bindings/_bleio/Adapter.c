@@ -271,7 +271,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_advertising_obj, 2, bleio_adapter_start_advertising);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_advertising_obj, 1, bleio_adapter_start_advertising);
 
 //|     def stop_advertising(self) -> None:
 //|         """Stop sending advertising packets."""
@@ -456,7 +456,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
 
     return common_hal_bleio_adapter_connect(self, address, timeout);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 1, bleio_adapter_connect);
 
 //|     def erase_bonding(self) -> None:
 //|         """Erase all bonding information stored in flash memory."""

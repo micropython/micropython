@@ -224,7 +224,7 @@ STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
 MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
 
 
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, write_value: int = 0) -> None:
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: int = len(buffer), write_value: int = 0) -> None:
 //|         """Read into ``buffer`` while writing ``write_value`` for each byte read.
 //|         The SPI object must be locked.
 //|         If the number of bytes to read is 0, nothing happens.
@@ -266,9 +266,9 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 2, bitbangio_spi_readinto);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_readinto_obj, 1, bitbangio_spi_readinto);
 
-//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: ReadableBuffer, *, out_start: int = 0, out_end: Optional[int] = None, in_start: int = 0, in_end: Optional[int] = None) -> None:
+//|     def write_readinto(self, buffer_out: ReadableBuffer, buffer_in: ReadableBuffer, *, out_start: int = 0, out_end: int = len(buffer_out), in_start: int = 0, in_end: int = len(buffer_in)) -> None:
 //|         """Write out the data in ``buffer_out`` while simultaneously reading data into ``buffer_in``.
 //|         The SPI object must be locked.
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
@@ -329,7 +329,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_readinto_obj, 2, bitbangio_spi_write_readinto);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_readinto_obj, 1, bitbangio_spi_write_readinto);
 
 STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&bitbangio_spi_deinit_obj) },

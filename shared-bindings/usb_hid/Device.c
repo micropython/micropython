@@ -189,7 +189,7 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
     common_hal_usb_hid_device_send_report(self, ((uint8_t *)bufinfo.buf), bufinfo.len, report_id);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 2, usb_hid_device_send_report);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
 //|         """Get the last received HID OUT report for the given report ID.

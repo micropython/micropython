@@ -3943,6 +3943,7 @@ msgstr ""
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
@@ -3961,6 +3962,7 @@ msgstr ""
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h

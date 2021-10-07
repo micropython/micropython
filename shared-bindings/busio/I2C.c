@@ -226,7 +226,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
         args[ARG_end].u_int);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 3, busio_i2c_readfrom_into);
+MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 1, busio_i2c_readfrom_into);
 
 //|     def writeto(self, address: int, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the bytes from ``buffer`` to the device selected by ``address`` and
@@ -324,7 +324,7 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_then_readfrom_obj, 3, busio_i2c_writeto_then_readfrom);
+MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_then_readfrom_obj, 1, busio_i2c_writeto_then_readfrom);
 
 STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&busio_i2c_deinit_obj) },
