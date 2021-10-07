@@ -30,9 +30,10 @@ ame__
 mport 
 
 builtins        micropython     _thread         array
-btree           cexample        cmath           collections
-cppexample      ffi             framebuf        gc
-hashlib         math            qrio            sys
+binascii        btree           cexample        cmath
+collections     cppexample      errno           ffi
+framebuf        gc              hashlib         json
+math            qrio            re              sys
 termios         ubinascii       uctypes         uerrno
 uheapq          uio             ujson           ulab
 uos             urandom         ure             uselect
