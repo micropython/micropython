@@ -170,6 +170,10 @@ msgstr "%q ピンは無効"
 msgid "%q should be an int"
 msgstr "%qはint型でなければなりません"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() は %d 個の位置引数を取りますが、%d 個与えられました"

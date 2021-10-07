@@ -165,6 +165,10 @@ msgstr ""
 msgid "%q should be an int"
 msgstr ""
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
