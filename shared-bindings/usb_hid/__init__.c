@@ -40,6 +40,11 @@
 //| """Tuple of all active HID device interfaces.
 //| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
 //| On boards where `usb_hid` is disabled by default, `devices` is an empty tuple.
+//|
+//| If a boot device is enabled by `usb_hid.enable)`, *and* the host has requested a boot device,
+//| the `devices` tuple is *replaced* when ``code.py`` starts with a single-element tuple
+//| containing a `Device` that describes the boot device chosen (keyboard or mouse).
+//| The request for a boot device overrides any other HID devices.
 //| """
 //|
 
@@ -84,12 +89,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     Boot devices implement a fixed, predefined report descriptor, defined in
 //|     https://www.usb.org/sites/default/files/hid1_12.pdf, Appendix B. A USB host
 //|     can request to use the boot device if the USB device says it is available.
-//|     Usually only a BIOS or other kind of boot-time, limited-functionality
+//|     Usually only a BIOS or other kind of limited-functionality
 //|     host needs boot keyboard support.
 //|
 //|     For example, to make a boot keyboard available, you can use this code::
 //|
-//|       usb_hid.enable((Device.KEYBOARD), boot_device=1)
+//|       usb_hid.enable((Device.KEYBOARD), boot_device=1)  # 1 for a keyboard
 //|
 //|     If the host requests the boot keyboard, the report descriptor provided by `Device.KEYBOARD`
 //|     will be ignored, and the predefined report descriptor will be used.
@@ -104,11 +109,11 @@ STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     enum { ARG_devices, ARG_boot_device };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_devices, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_boot_device, MP_ARG_OBJ, {.u_int = 0} },
+        { MP_QSTR_boot_device, MP_ARG_INT, {.u_int = 0} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t devices = args[ARG_devices].u_obj;
     const mp_int_t len = mp_obj_get_int(mp_obj_len(devices));
@@ -128,18 +133,16 @@ STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 2, usb_hid_enable);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 1, usb_hid_enable);
 
 //| def get_boot_device() -> int:
 //|     """
 //|     :return: the boot device requested by the host, if any.
 //|       Returns 0 if the host did not request a boot device, or if `usb_hid.enable()`
 //|       was called with `boot_device=0`, the default, which disables boot device support.
-//|       If the host did request aboot device,
+//|       If the host did request a boot device,
 //|       returns the value of ``boot_device`` set in `usb_hid.enable()`:
 //|       ``1`` for a boot keyboard, or ``2`` for boot mouse.
-//|       Your device driver should check and act on this value if the keyboard or mouse
-//|       device you specified provides reports that differ from the standard boot keyboard or mouse.
 //|       However, the standard devices provided by CircuitPython, `Device.KEYBOARD` and `Device.MOUSE`,
 //|       describe reports that match the boot device reports, so you don't need to check this
 //|       if you are using those devices.

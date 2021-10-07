@@ -31,9 +31,11 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/usb_hid/__init__.h"
-#include "shared-module/usb_hid/Device.h"
+#include "shared-bindings/usb_hid/Device.h"
 #include "supervisor/memory.h"
 #include "supervisor/usb.h"
+
+volatile float indicator = 0.1f;
 
 static const uint8_t usb_hid_descriptor_template[] = {
     0x09,        //  0 bLength
@@ -86,6 +88,7 @@ static mp_int_t num_hid_devices;
 // Which boot device is available 0: no boot devices, 1: boot keyboard, 2: boot mouse.
 // This value is set by usb_hid.enable(), and used to build the HID interface descriptor.
 // The value is remembered here from boot.py to code.py.
+
 static uint8_t hid_boot_device;
 
 // Whether a boot device was requested by a SET_PROTOCOL request from the host.
@@ -106,6 +109,38 @@ static mp_obj_tuple_t default_hid_devices_tuple = {
     },
 };
 
+// These describe the standard descriptors used for boot keyboard and mouse, which don't use report IDs.
+// When the host requests a boot device, replace whatever HID devices were enabled with a tuple
+// containing just one of these, since the host is uninterested in other devices.
+// The driver code will then use the proper report length and send_report() will not send a report ID.
+static const usb_hid_device_obj_t boot_keyboard_obj = {
+    .base = {
+        .type = &usb_hid_device_type,
+    },
+    .report_descriptor = NULL,
+    .report_descriptor_length = 0,
+    .usage_page = 0x01,
+    .usage = 0x06,
+    .num_report_ids = 1,
+    .report_ids = { 0, },
+    .in_report_lengths = { 8, },
+    .out_report_lengths = { 1, },
+};
+
+static const usb_hid_device_obj_t boot_mouse_obj = {
+    .base = {
+        .type = &usb_hid_device_type,
+    },
+    .report_descriptor = NULL,
+    .report_descriptor_length = 0,
+    .usage_page = 0x01,
+    .usage = 0x02,
+    .num_report_ids = 1,
+    .report_ids = { 0, },
+    .in_report_lengths = { 4, },
+    .out_report_lengths = { 0, },
+};
+
 bool usb_hid_enabled(void) {
     return num_hid_devices > 0;
 }
@@ -121,6 +156,7 @@ uint8_t common_hal_usb_hid_get_boot_device(void) {
 
 void usb_hid_set_defaults(void) {
     hid_boot_device = 0;
+    hid_boot_device_requested = false;
     common_hal_usb_hid_enable(
         CIRCUITPY_USB_HID_ENABLED_DEFAULT ? &default_hid_devices_tuple : mp_const_empty_tuple, 0);
 }
@@ -209,7 +245,17 @@ bool common_hal_usb_hid_enable(const mp_obj_t devices, uint8_t boot_device) {
 
 // Called when HID devices are ready to be used, when code.py or the REPL starts running.
 void usb_hid_setup_devices(void) {
-    hid_boot_device_requested = false;
+
+    // If the host requested a boot device, replace the current list of devices
+    // with a single-element tuple containing the proper boot device.
+    if (hid_boot_device_requested) {
+        memcpy(&hid_devices[0],
+            // Will be 1 (keyboard) or 2 (mouse).
+            hid_boot_device == 1 ? &boot_keyboard_obj : &boot_mouse_obj,
+            sizeof(usb_hid_device_obj_t));
+        num_hid_devices = 1;
+    }
+
     usb_hid_set_devices_from_hid_devices();
 
     // Create report buffers on the heap.

@@ -97,8 +97,9 @@ const mp_obj_property_t mcu_processor_reset_reason_obj = {
 //|
 //|     Is `None` if the temperature is not available."""
 //|
+extern volatile float indicator;
 STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
-    float temperature = common_hal_mcu_processor_get_temperature();
+    float temperature = indicator; // common_hal_mcu_processor_get_temperature();
     return isnan(temperature) ? mp_const_none : mp_obj_new_float(temperature);
 }
 
