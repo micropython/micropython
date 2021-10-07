@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H
+#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H
 
-#include "common-hal/microcontroller/Pin.h"
+#include "driver/i2c.h"
 
-#include "components/hal/include/hal/i2c_types.h"
-#include "FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "py/obj.h"
+extern void i2c_reset(void);
+extern void never_reset_i2c(i2c_port_t num);
+extern esp_err_t peripherals_i2c_init(i2c_port_t num, const i2c_config_t *i2c_conf);
+extern void peripherals_i2c_deinit(i2c_port_t num);
+extern i2c_port_t peripherals_i2c_get_free_num(void);
 
-#include "peripherals/i2c.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    const mcu_pin_obj_t *scl_pin;
-    const mcu_pin_obj_t *sda_pin;
-    i2c_port_t i2c_num;
-    SemaphoreHandle_t xSemaphore;
-    bool has_lock;
-} busio_i2c_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H
+#endif  // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_I2C_HANDLER_H
