@@ -1106,6 +1106,16 @@ int mp_bluetooth_set_preferred_mtu(uint16_t mtu) {
 }
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+void mp_bluetooth_indicate_service_changed(int16_t conn_handle, uint16_t hdl_start, uint16_t hdl_end) {
+    if (conn_handle == -1) {
+        DEBUG_printf("mp_bluetooth_indicate_service_changed all\n");
+        return ble_svc_gatt_changed(hdl_start, hdl_end);
+    } else {
+        DEBUG_printf("mp_bluetooth_indicate_service_changed: conn_handle=%d\n", conn_handle);
+        return ble_svc_conn_gatt_changed(conn_handle, hdl_start, hdl_end);
+    }
+}
+
 int mp_bluetooth_gap_pair(uint16_t conn_handle) {
     DEBUG_printf("mp_bluetooth_gap_pair: conn_handle=%d\n", conn_handle);
     return ble_hs_err_to_errno(ble_gap_security_initiate(conn_handle));

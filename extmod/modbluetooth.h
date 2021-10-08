@@ -355,6 +355,9 @@ int mp_bluetooth_get_preferred_mtu(void);
 int mp_bluetooth_set_preferred_mtu(uint16_t mtu);
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+// Send an indication on the service changed characteristic, send -1 on conn_handle to indicate to all devices.
+void mp_bluetooth_indicate_service_changed(int16_t conn_handle, uint16_t hdl_start, uint16_t hdl_end);
+
 // Initiate pairing on the specified connection.
 int mp_bluetooth_gap_pair(uint16_t conn_handle);
 
