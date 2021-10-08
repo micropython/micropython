@@ -240,7 +240,7 @@ STATIC mp_obj_t displayio_epaperdisplay_update_refresh_mode(size_t n_args, const
     displayio_epaperdisplay_change_refresh_mode_parameters(self, &start_sequence, seconds_per_frame);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_epaperdisplay_update_refresh_mode_obj, 3, displayio_epaperdisplay_update_refresh_mode);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_epaperdisplay_update_refresh_mode_obj, 1, displayio_epaperdisplay_update_refresh_mode);
 
 //|     def refresh(self) -> None:
 //|         """Refreshes the display immediately or raises an exception if too soon. Use

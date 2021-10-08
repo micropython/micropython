@@ -69,19 +69,20 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW"""
 //|         ...
 //|
-
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 5, false);
+    enum { ARG_family, ARG_type };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_family, MP_ARG_INT, {.u_int = SOCKETPOOL_AF_INET} },
+        { MP_QSTR_type, MP_ARG_INT, {.u_int = SOCKETPOOL_SOCK_STREAM} },
+    };
+    socketpool_socketpool_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    socketpool_socketpool_obj_t *self = pos_args[0];
-    socketpool_socketpool_addressfamily_t family = SOCKETPOOL_AF_INET;
-    socketpool_socketpool_sock_t type = SOCKETPOOL_SOCK_STREAM;
-    if (n_args >= 2) {
-        family = mp_obj_get_int(pos_args[1]);
-        if (n_args >= 3) {
-            type = mp_obj_get_int(pos_args[2]);
-        }
-    }
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    socketpool_socketpool_addressfamily_t family = args[ARG_family].u_int;
+    socketpool_socketpool_sock_t type = args[ARG_type].u_int;
+
     return common_hal_socketpool_socket(self, family, type);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socketpool_socket);
@@ -94,7 +95,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_socket_obj, 1, socketpool_socke
 //|     as a tuple."""
 //|     ...
 //|
-
 STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_host, ARG_port, ARG_family, ARG_type, ARG_proto, ARG_flags };
     static const mp_arg_t allowed_args[] = {
@@ -137,7 +137,7 @@ STATIC mp_obj_t socketpool_socketpool_getaddrinfo(size_t n_args, const mp_obj_t 
     tuple->items[4] = MP_OBJ_FROM_PTR(sockaddr);
     return mp_obj_new_list(1, (mp_obj_t *)&tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_getaddrinfo_obj, 3, socketpool_socketpool_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(socketpool_socketpool_getaddrinfo_obj, 1, socketpool_socketpool_getaddrinfo);
 
 STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socketpool_socketpool_socket_obj) },

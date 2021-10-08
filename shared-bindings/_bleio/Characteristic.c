@@ -156,7 +156,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
 
     return MP_OBJ_FROM_PTR(characteristic);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_add_to_service_fun_obj, 3, bleio_characteristic_add_to_service);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_characteristic_add_to_service_fun_obj, 1, bleio_characteristic_add_to_service);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bleio_characteristic_add_to_service_obj, MP_ROM_PTR(&bleio_characteristic_add_to_service_fun_obj));
 
 
