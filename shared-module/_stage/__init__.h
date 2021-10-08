@@ -34,7 +34,10 @@
 
 #define TRANSPARENT (0x1ff8)
 
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
+void render_stage(
+    uint16_t x0, uint16_t y0,
+    uint16_t x1, uint16_t y1,
+    int16_t vx, int16_t vy,
     mp_obj_t *layers, size_t layers_size,
     uint16_t *buffer, size_t buffer_size,
     displayio_display_obj_t *display,

@@ -81,21 +81,17 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
         mp_raise_TypeError(translate("argument num/types mismatch"));
     }
     displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);
-    uint8_t scale = 1;
-    if (n_args > 7) {
-        scale = mp_obj_get_int(args[7]);
-    }
+    uint8_t scale = mp_obj_get_int(args[7]);
+    int16_t vx = mp_obj_get_int(args[8]);
+    int16_t vy = mp_obj_get_int(args[9]);
     uint16_t background = 0;
-    if (n_args > 8) {
-        background = mp_obj_get_int(args[8]);
-    }
 
-    render_stage(x0, y0, x1, y1, layers, layers_size, buffer, buffer_size,
-        display, scale, background);
+    render_stage(x0, y0, x1, y1, vx, vy, layers, layers_size,
+        buffer, buffer_size, display, scale, background);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 7, 8, stage_render);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stage_render_obj, 10, 10, stage_render);
 
 
 STATIC const mp_rom_map_elem_t stage_module_globals_table[] = {
