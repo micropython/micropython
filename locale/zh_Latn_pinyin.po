@@ -175,6 +175,10 @@ msgstr "%q yǐn jiǎo wúxiào"
 msgid "%q should be an int"
 msgstr "%q yīnggāi shì yīgè int"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
@@ -379,7 +383,9 @@ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 msgid "All CAN peripherals are in use"
 msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
@@ -1323,8 +1329,11 @@ msgstr "Wúxiào de PWM pínlǜ"
 msgid "Invalid Pin"
 msgstr "wú xiào yǐn jiǎo"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -1372,10 +1381,6 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Wúxiào de pínlǜ"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
@@ -1416,6 +1421,7 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1798,6 +1804,10 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
+
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr ""
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
@@ -4547,6 +4557,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Wúxiào de pínlǜ"
 
 #~ msgid "Data 0 pin must be byte aligned."
 #~ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."

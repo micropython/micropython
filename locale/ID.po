@@ -172,6 +172,10 @@ msgstr "pin %q tidak valid"
 msgid "%q should be an int"
 msgstr "%q harus berupa int"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() mengambil posisi argumen %d tapi %d yang diberikan"
@@ -376,7 +380,9 @@ msgstr "Jenis alamat di luar batas"
 msgid "All CAN peripherals are in use"
 msgstr ""
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Semua perangkat I2C sedang digunakan"
 
@@ -1321,8 +1327,11 @@ msgstr "Frekuensi PWM tidak valid"
 msgid "Invalid Pin"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumen tidak valid"
 
@@ -1370,10 +1379,6 @@ msgstr "File tidak valid"
 msgid "Invalid format chunk size"
 msgstr "Ukuran potongan format tidak valid"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr ""
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Akses memori tidak valid."
@@ -1414,6 +1419,7 @@ msgstr "Pin untuk channel kanan tidak valid"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1794,6 +1800,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
 msgstr ""
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c

@@ -176,6 +176,10 @@ msgstr "pin inválido %q"
 msgid "%q should be an int"
 msgstr "%q debe ser un int"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() toma %d argumentos posicionales pero %d fueron dados"
@@ -380,7 +384,9 @@ msgstr "Tipo de dirección fuera de rango"
 msgid "All CAN peripherals are in use"
 msgstr "Todos los periféricos CAN están en uso"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
 
@@ -1334,8 +1340,11 @@ msgstr "Frecuencia PWM inválida"
 msgid "Invalid Pin"
 msgstr "Pin inválido"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
 
@@ -1383,10 +1392,6 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Frecuencia inválida"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Acceso a memoria no válido."
@@ -1427,6 +1432,7 @@ msgstr "Pin inválido para canal derecho"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1813,6 +1819,10 @@ msgstr ""
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Solamente una TouchAlarm puede ser configurada durante deep sleep."
+
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr ""
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
@@ -4576,6 +4586,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Frecuencia inválida"
 
 #~ msgid "Data 0 pin must be byte aligned."
 #~ msgstr "El pin de datos 0 debe ser alineado a byte."

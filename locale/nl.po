@@ -168,6 +168,10 @@ msgstr "%q pin onjuist"
 msgid "%q should be an int"
 msgstr "%q moet een int zijn"
 
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() verwacht %d positionele argumenten maar kreeg %d"
@@ -372,7 +376,9 @@ msgstr "Adres type buiten bereik"
 msgid "All CAN peripherals are in use"
 msgstr "Alle CAN-peripherals zijn in gebruik"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Alle I2C peripherals zijn in gebruik"
 
@@ -1313,8 +1319,11 @@ msgstr "Ongeldige PWM frequentie"
 msgid "Invalid Pin"
 msgstr "Ongeldige Pin"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ongeldig argument"
 
@@ -1362,10 +1371,6 @@ msgstr "Ongeldig bestand"
 msgid "Invalid format chunk size"
 msgstr "Ongeldig formaat stuk grootte"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Onjuiste frequentie"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ongeldig geheugen adres."
@@ -1406,6 +1411,7 @@ msgstr "Ongeldige pin voor rechter kanaal"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1787,6 +1793,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
+msgstr ""
+
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
 msgstr ""
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
@@ -4532,6 +4542,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Onjuiste frequentie"
 
 #~ msgid "ParallelBus not yet supported"
 #~ msgstr "ParallelBus nog niet ondersteund"
