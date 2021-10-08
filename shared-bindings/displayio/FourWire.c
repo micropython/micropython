@@ -149,7 +149,7 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 3, displayio_fourwire_obj_send);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 1, displayio_fourwire_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_fourwire_reset_obj) },

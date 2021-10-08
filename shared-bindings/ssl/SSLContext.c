@@ -79,7 +79,7 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
 
     return common_hal_ssl_sslcontext_wrap_socket(self, sock, server_side, server_hostname);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 2, ssl_sslcontext_wrap_socket);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcontext_wrap_socket);
 
 STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_sslcontext_wrap_socket_obj) },
