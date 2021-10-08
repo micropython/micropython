@@ -1,5 +1,6 @@
 USB_VID = 0x2886
-USB_PID = 0x0030
+USB_PID = 0x802F
+# VID & PID Provided by Seeed
 USB_PRODUCT = "Seeeduino XIAO KB"
 USB_MANUFACTURER = "Seeed"
 
