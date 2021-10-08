@@ -6,10 +6,10 @@ MicroPython differences from CPython
 The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
 MicroPython implements Python 3.4 and some select features of Python 3.5.
 
-Below is a list of finalised/accepted PEPs for 3.5 grouped into their impact to MicroPython.
+Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their impact to MicroPython.
 
    +----------------------------------------------------------------+---------------+
-   | **Extensions to the syntax:**                                  | **STatus**    |
+   | **Extensions to the syntax:**                                  | **Status**    |
    +--------------+-------------------------------------------------+---------------+
    | PEP 448      | additional unpacking generalizations            | In Progress   |
    +--------------+-------------------------------------------------+---------------+
