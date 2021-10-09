@@ -80,7 +80,7 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
 
     mp_obj_t spi = args[ARG_spi_bus].u_obj;
     if (spi == mp_const_none) {
-        mp_raise_ValueError(translate("SPI cannot be None"));
+        mp_raise_ValueError(translate("Expected a SPI"));
     }
     displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;

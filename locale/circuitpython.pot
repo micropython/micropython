@@ -975,6 +975,10 @@ msgstr ""
 msgid "Expected a DigitalInOut"
 msgstr ""
 
+#: shared-bindings/displayio/FourWire.c
+msgid "Expected a SPI"
+msgstr ""
+
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
@@ -2060,10 +2064,6 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI Re-initialization error"
-msgstr ""
-
-#: shared-bindings/displayio/FourWire.c
-msgid "SPI cannot be None"
 msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
