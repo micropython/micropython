@@ -38,8 +38,9 @@
 
 // This variable stores whether a PinAlarm woke in light sleep or fake deep sleep
 // It CANNOT detect if the program woke from deep sleep.
-STATIC bool woke_up;
-STATIC bool deep_wkup_enabled;
+STATIC volatile bool woke_up;
+// TODO: replace pinalarm_on with SAMD_ALARM_FLAG bit flags
+STATIC volatile bool pinalarm_on;
 
 // TODO: Create tables here reserving IRQ instances, and for the IRQ
 //       callback to store what pin triggered the interrupt
@@ -55,12 +56,16 @@ void pin_alarm_callback(uint8_t num) { // parameters can be changed
     // Turn off interrupts while in handler
     // printf("Woke up from pin!!\n");
     // printf("EIC Flags: %lu\n",EIC->INTFLAG.reg);
-
-    // QUESTION: How to reference the correct EIC?
-    // set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
-    // turn_off_eic_channel(self->channel);
-    // reset_pin_number(self->pin);
-    woke_up = true;
+    if (pinalarm_on) {
+        // clear flag and interrupt setting
+        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_TAMPER;
+        pinalarm_on = false;
+        // QUESTION: How to reference the correct EIC?
+        // set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
+        // turn_off_eic_channel(self->channel);
+        // reset_pin_number(self->pin);
+        woke_up = true;
+    }
 }
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
@@ -89,9 +94,13 @@ void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, con
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_A);
     if (self->pull) {
-        gpio_set_pin_pull_mode(pin->number, GPIO_PULL_UP);
-    } else {
-        gpio_set_pin_pull_mode(pin->number, GPIO_PULL_DOWN);
+        if (self->value) {
+            // detect rising edge means pull down
+            gpio_set_pin_pull_mode(pin->number, GPIO_PULL_DOWN);
+        } else {
+            // detect falling edge means pull up
+            gpio_set_pin_pull_mode(pin->number, GPIO_PULL_UP);
+        }
     }
     set_eic_channel_data(self->channel, (void *)self);
 
@@ -107,7 +116,6 @@ bool common_hal_alarm_pin_pinalarm_get_value(alarm_pin_pinalarm_obj_t *self) {
 }
 
 bool common_hal_alarm_pin_pinalarm_get_edge(alarm_pin_pinalarm_obj_t *self) {
-    // TODO: is SAMD edge or level only?
     return true;
 }
 
@@ -116,9 +124,8 @@ bool common_hal_alarm_pin_pinalarm_get_pull(alarm_pin_pinalarm_obj_t *self) {
 }
 
 bool alarm_pin_pinalarm_woke_this_cycle(void) {
-    if (RTC->MODE0.INTFLAG.bit.TAMPER) {
+    if (pinalarm_on && RTC->MODE0.INTFLAG.bit.TAMPER) {
         woke_up = true;
-        RTC->MODE0.INTENCLR.bit.TAMPER = 1; // clear flag and interrupt setting
     }
     return woke_up;
 }
@@ -135,9 +142,6 @@ mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t
         // TODO: Determine whether any pins have been marked as
         //       triggering the alarm (using the static vars at
         //       start of file) and if so return that alarm.
-
-
-
     }
     // Return nothing if no matching alarms are found.
     return mp_const_none;
@@ -159,9 +163,22 @@ void alarm_pin_pinalarm_reset(void) {
     //       sure to clear any reserved tables, deinit both PORT and TAMPER
     //       settings, etc. If flags are set to indicate this module is in
     //       use, reset them.
-
+    pinalarm_on = false;
+    woke_up = false;
     // Disable TAMPER interrupt
     RTC->MODE0.INTENCLR.bit.TAMPER = 1;
+    // Disable TAMPER control
+    common_hal_mcu_disable_interrupts();
+    RTC->MODE0.CTRLA.bit.ENABLE = 0;            // Disable the RTC
+    while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {    // Wait for synchronization
+        ;
+    }
+    RTC->MODE0.TAMPCTRL.reg = 0;                // reset everything
+    RTC->MODE0.CTRLA.bit.ENABLE = 1;            // Enable the RTC
+    while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {    // Wait for synchronization
+        ;
+    }
+    common_hal_mcu_enable_interrupts();
 }
 
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
@@ -177,9 +194,25 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                     alarm->pin != &pin_PA02) {
                     mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
                 }
-                deep_wkup_enabled = true;
+                pinalarm_on = true;
                 // Set tamper interrupt so deep sleep knows that's the intent
                 RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
+                common_hal_mcu_disable_interrupts();
+                RTC->MODE0.CTRLA.bit.ENABLE = 0;                     // Disable the RTC
+                while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {             // Wait for synchronization
+                    ;
+                }
+                // TODO: map requested pin to limited selection of TAMPER pins
+                // PA02 is n=2: IN2, LVL2, etc...
+                RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
+                RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = alarm->value; // rising or falling edge
+                RTC->MODE0.TAMPCTRL.bit.IN2ACT = 0x1;  // WAKE on IN2 (doesn't save timestamp)
+                common_hal_mcu_enable_interrupts();
+                RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
+                RTC->MODE0.CTRLA.bit.ENABLE = 1;                      // Enable the RTC
+                while (RTC->MODE0.SYNCBUSY.bit.ENABLE) {              // Wait for synchronization
+                    ;
+                }
                 // TODO: Set up deep sleep alarms.
                 //       For deep sleep alarms, first check if the
                 //       alarm pin value is valid for RTC->TAMPER. Ensure

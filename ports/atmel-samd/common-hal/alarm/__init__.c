@@ -66,7 +66,7 @@ samd_sleep_source_t alarm_get_wakeup_cause(void) {
     if (alarm_time_timealarm_woke_this_cycle()) {
         return SAMD_WAKEUP_RTC;
     }
-    if (RSTC->RCAUSE.bit.BACKUP) {
+    if (!fake_sleep && RSTC->RCAUSE.bit.BACKUP) {
         // not able to detect PinAlarm wake since registers are getting reset
         // TODO: come up with a way to detect a TAMPER
         if (RTC->MODE0.TAMPID.reg || RTC->MODE0.INTFLAG.bit.TAMPER) {
@@ -192,6 +192,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
         (void)__get_FPSCR();
     }
 
+    // TODO: Be able to set PinAlarm and TimeAlarm together
     // PinAlarm (hacky way of checking if time alarm or pin alarm)
     if (RTC->MODE0.INTENSET.bit.TAMPER) {
         // Disable interrupts
@@ -274,7 +275,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     }
 }
 
-MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
+void common_hal_alarm_pretending_deep_sleep(void) {
     // TODO:
     //      If tamper detect interrupts cannot be used to wake from the Idle tier of sleep,
     //      This section will need to re-initialize the pins to allow the PORT peripheral
@@ -286,8 +287,6 @@ MP_NOINLINE void common_hal_alarm_pretending_deep_sleep(void) {
             ;
         }
         fake_sleep = true;
-    } else {
-        port_idle_until_interrupt();
     }
 }
 

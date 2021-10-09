@@ -38,9 +38,9 @@ mp_obj_t alarm_time_timealarm_find_triggered_alarm(size_t n_alarms, const mp_obj
 mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void);
 void timer_callback(void);
 bool alarm_time_timealarm_woke_this_cycle(void);
-uint32_t alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
+void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 void alarm_time_timealarm_reset(void);
 
-uint32_t alarm_time_timealarm_prepare_for_deep_sleep(void);
+void alarm_time_timealarm_prepare_for_deep_sleep(void);
 
 #endif  // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_TIMEALARM_H

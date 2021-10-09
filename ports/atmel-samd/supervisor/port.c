@@ -79,6 +79,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
+#include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared_timers.h"
 #include "reset.h"
 
@@ -490,6 +491,16 @@ void RTC_Handler(void) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();
     }
+    if (intflag & RTC_MODE0_INTFLAG_CMP1) {
+        // Likely TimeAlarm fake sleep wake
+        timer_callback();
+        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP1;
+    }
+    if (intflag & RTC_MODE0_INTFLAG_TAMPER) {
+        // Likely PinAlarm fake sleep wake
+        pin_alarm_callback(1); // TODO: set channel?
+        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_TAMPER;
+    }
     #endif
     if (intflag & RTC_MODE0_INTFLAG_CMP0) {
         // Clear the interrupt because we may have hit a sleep
@@ -498,11 +509,6 @@ void RTC_Handler(void) {
         // SAMD21 ticks are handled by EVSYS
         #ifdef SAM_D5X_E5X
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP0;
-        // Check if we're sleeping
-        if (SAMD_ALARM_FLAG) {
-            timer_callback();
-            SAMD_ALARM_FLAG = 0;
-        }
         #endif
     }
 }
