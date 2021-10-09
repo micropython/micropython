@@ -975,10 +975,6 @@ msgstr ""
 msgid "Expected a DigitalInOut"
 msgstr ""
 
-#: shared-bindings/displayio/FourWire.c
-msgid "Expected a SPI"
-msgstr ""
-
 #: shared-bindings/_bleio/Characteristic.c
 msgid "Expected a Service"
 msgstr ""
