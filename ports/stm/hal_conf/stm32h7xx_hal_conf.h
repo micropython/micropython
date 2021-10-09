@@ -436,6 +436,8 @@ void assert_failed(uint8_t *file, uint32_t line);
 #define CPY_STM32F4 0
 #define CPY_STM32F7 0
 #define CPY_STM32H7 1
+#define CPY_STM32L4 0
+
 
 #endif /* __STM32H7xx_HAL_CONF_H */
 

@@ -52,6 +52,10 @@ enum {
         + 1 // hid_report_descriptor_allocation
         + 1 // hid_devices_allocation
         #endif
+
+        #if CIRCUITPY_USB_VENDOR
+        + 1  // usb_vendor_add_descriptor
+        #endif
     ,
 
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =

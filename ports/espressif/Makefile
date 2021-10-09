@@ -219,6 +219,7 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	modules/$(CIRCUITPY_MODULE).c \
 	lib/netutils/netutils.c \
+	peripherals/i2c.c \
 	peripherals/rmt.c \
 	peripherals/timer.c \
 	peripherals/$(IDF_TARGET)/pins.c

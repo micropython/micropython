@@ -52,7 +52,9 @@ void reset_all_pins(void) {
     uint32_t pin_mask[PORT_COUNT] = PORT_OUT_IMPLEMENTED;
 
     // Do not full reset USB lines.
+    #if CIRCUITPY_USB
     pin_mask[0] &= ~(PORT_PA24 | PORT_PA25);
+    #endif
 
     // Do not reset SWD when a debugger is present.
     if (DSU->STATUSB.bit.DBGPRES == 1) {

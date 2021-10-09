@@ -122,17 +122,29 @@ static size_t irq_map[] = {
     NULL_IRQ,
     #endif
     #ifdef TIM15
+    #ifdef STM32L4
+    TIM1_BRK_TIM15_IRQn,
+    #else
     TIM15_IRQn,
+    #endif
     #else
     NULL_IRQ,
     #endif
     #ifdef TIM16
+    #ifdef STM32L4
+    TIM1_UP_TIM16_IRQn,
+    #else
     TIM16_IRQn,
+    #endif
     #else
     NULL_IRQ,
     #endif
     #ifdef TIM17
+    #ifdef STM32L4
+    TIM1_TRG_COM_TIM17_IRQn
+    #else
     TIM17_IRQn,
+    #endif
     #else
     NULL_IRQ,
     #endif

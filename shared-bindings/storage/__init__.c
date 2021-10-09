@@ -48,26 +48,30 @@
 //|
 //|     This is the CircuitPython analog to the UNIX ``mount`` command.
 //|
-//|     :param bool readonly: True when the filesystem should be readonly to CircuitPython."""
+//|     :param VfsFat filesystem: The filesystem to mount.
+//|     :param str mount_path: Where to mount the filesystem.
+//|     :param bool readonly: True when the filesystem should be readonly to CircuitPython.
+//|     """
 //|     ...
 //|
 mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly };
+    enum { ARG_filesystem, ARG_mount_path, ARG_readonly };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_filesystem, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_mount_path, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_readonly, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get the mount point
-    const char *mnt_str = mp_obj_str_get_str(pos_args[1]);
+    const char *mnt_str = mp_obj_str_get_str(args[ARG_mount_path].u_obj);
 
     // Make sure we're given an object we can mount.
     // TODO(tannewt): Make sure we have all the methods we need to operating it
     // as a file system.
-    mp_obj_t vfs_obj = pos_args[0];
+    mp_obj_t vfs_obj = args[ARG_filesystem].u_obj;
     mp_obj_t dest[2];
     mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
     if (dest[0] == MP_OBJ_NULL) {
@@ -78,7 +82,7 @@ mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_arg
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 2, storage_mount);
+MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 0, storage_mount);
 
 //| def umount(mount: Union[str, VfsFat]) -> None:
 //|     """Unmounts the given filesystem object or if *mount* is a path, then unmount
@@ -101,6 +105,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 //| def remount(mount_path: str, readonly: bool = False, *, disable_concurrent_write_protection: bool = False) -> None:
 //|     """Remounts the given path with new parameters.
 //|
+//|       :param str mount_path: The path to remount.
 //|       :param bool readonly: True when the filesystem should be readonly to CircuitPython.
 //|       :param bool disable_concurrent_write_protection: When True, the check that makes sure the
 //|         underlying filesystem data is written by one computer is disabled. Disabling the protection
@@ -109,24 +114,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 //|     ...
 //|
 mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_readonly, ARG_disable_concurrent_write_protection };
+    enum { ARG_mount_path, ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_mount_path, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_readonly, MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_disable_concurrent_write_protection, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
 
-    // get the mount point
-    const char *mnt_str = mp_obj_str_get_str(pos_args[0]);
-
-    // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const char *mnt_str = mp_obj_str_get_str(args[ARG_mount_path].u_obj);
 
     common_hal_storage_remount(mnt_str, args[ARG_readonly].u_bool, args[ARG_disable_concurrent_write_protection].u_bool);
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 1, storage_remount);
+MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 0, storage_remount);
 
 //| def getmount(mount_path: str) -> VfsFat:
 //|     """Retrieves the mount object associated with the mount path"""

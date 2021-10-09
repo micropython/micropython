@@ -31,7 +31,11 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
+#if CPY_STM32L4
+#include "stm32l4xx_hal.h"
+#else
 #include "stm32f4xx_hal.h"
+#endif
 #include "peripherals/periph.h"
 
 typedef struct {
