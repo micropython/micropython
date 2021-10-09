@@ -32,6 +32,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
