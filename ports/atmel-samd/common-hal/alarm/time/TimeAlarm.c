@@ -35,7 +35,7 @@
 STATIC volatile bool woke_up;
 STATIC uint32_t deep_sleep_ticks;
 // TODO: replace timealarm_on with SAMD_ALARM_FLAG bit flags
-STATIC bool timealarm_on;
+STATIC volatile bool timealarm_on;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
     // TODO: throw a ValueError if the input time exceeds the maximum

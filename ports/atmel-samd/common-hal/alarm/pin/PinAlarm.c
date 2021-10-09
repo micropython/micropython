@@ -29,7 +29,7 @@
 #include "eic_handler.h"
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
-#include <stdio.h>
+// #include <stdio.h>
 
 
 #include "shared-bindings/alarm/pin/PinAlarm.h"
