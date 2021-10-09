@@ -105,7 +105,7 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
     return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 3, traceback_format_exception);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_format_exception_obj, 0, traceback_format_exception);
 
 //| def print_exception(etype: Type[BaseException], value: BaseException, tb: TracebackType,
 //|                     limit: Optional[int] = None, file: Optional[io.FileIO] = None, chain: Optional[bool] = True) -> None:
@@ -155,7 +155,7 @@ STATIC mp_obj_t traceback_print_exception(size_t n_args, const mp_obj_t *pos_arg
     traceback_exception_common(&print, args[ARG_value].u_obj, args[ARG_tb].u_obj, args[ARG_limit].u_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 3, traceback_print_exception);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(traceback_print_exception_obj, 0, traceback_print_exception);
 
 STATIC const mp_rom_map_elem_t traceback_module_globals_table[] = {
     // module name

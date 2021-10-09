@@ -33,8 +33,7 @@
 #include "common-hal/canio/__init__.h"
 #include "shared-module/canio/Message.h"
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_can.h"
+#include STM32_HAL_H
 
 #define FILTER_BANK_COUNT (28)
 

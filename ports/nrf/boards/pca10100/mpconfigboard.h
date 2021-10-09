@@ -27,7 +27,7 @@
 
 #include "nrfx/hal/nrf_gpio.h"
 
-#define MICROPY_HW_BOARD_NAME       "PCA10100 nRF52833 Dongle"
+#define MICROPY_HW_BOARD_NAME       "PCA10100 nRF52833 DK"
 #define MICROPY_HW_MCU_NAME         "nRF52833"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P0_13)

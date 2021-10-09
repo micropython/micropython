@@ -62,7 +62,11 @@ STATIC void pulsein_exti_event_handler(uint8_t num) {
     uint32_t current_count = tim_handle.Instance->CNT;
 
     // Interrupt register must be cleared manually
+    #if CPY_STM32L4
+    EXTI->PR1 = 1 << num;
+    #else
     EXTI->PR = 1 << num;
+    #endif
 
     pulseio_pulsein_obj_t *self = callback_obj_ref[num];
     if (!self) {

@@ -88,7 +88,7 @@ STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, m
 
     return shared_module_qrio_qrdecoder_decode(self, &bufinfo, policy);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 2, qrio_qrdecoder_decode);
+MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 1, qrio_qrdecoder_decode);
 
 //|     width: int
 //|     """The width of image the decoder expects"""

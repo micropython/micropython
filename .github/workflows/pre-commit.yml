@@ -17,8 +17,8 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-add-repository -y -u ppa:pybricks/ppa
-        sudo apt-get install -y black gettext uncrustify
-        pip3 install -r requirements-dev.txt
+        sudo apt-get install -y gettext uncrustify
+        pip3 install black polib pyyaml
     - name: Populate selected submodules
       run: git submodule update --init extmod/ulab
     - name: Set PY
@@ -28,3 +28,12 @@ jobs:
         path: ~/.cache/pre-commit
         key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
     - uses: pre-commit/action@v1.1.0
+    - name: Make patch
+      if: failure()
+      run: git diff > ~/pre-commit.patch
+    - name: Upload patch
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: patch
+        path: ~/pre-commit.patch

@@ -72,7 +72,7 @@ STATIC mp_obj_t bleio_scanentry_matches(mp_uint_t n_args, const mp_obj_t *pos_ar
     mp_get_buffer_raise(args[ARG_prefixes].u_obj, &bufinfo, MP_BUFFER_READ);
     return mp_obj_new_bool(common_hal_bleio_scanentry_matches(self, bufinfo.buf, bufinfo.len, match_all));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 2, bleio_scanentry_matches);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_scanentry_matches_obj, 1, bleio_scanentry_matches);
 
 //|     address: Address
 //|     """The address of the device (read-only), of type `_bleio.Address`."""

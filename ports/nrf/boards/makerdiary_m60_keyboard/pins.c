@@ -36,6 +36,12 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_BTN), MP_ROM_PTR(&pin_P0_27) },
 
+    { MP_ROM_QSTR(MP_QSTR_CHARGING), MP_ROM_PTR(&pin_P0_03) },
+    { MP_ROM_QSTR(MP_QSTR_VOLTAGE_MONITOR), MP_ROM_PTR(&pin_P0_02) },
+    { MP_ROM_QSTR(MP_QSTR_BATTERY), MP_ROM_PTR(&pin_P0_02) },
+
+    { MP_ROM_QSTR(MP_QSTR_RGB_POWER), MP_ROM_PTR(&pin_P1_04) },
+
 //   { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) }
 };

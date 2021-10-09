@@ -39,12 +39,26 @@
 //| """time and timing related functions
 //|
 //| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
-//| written in MicroPython will work in CPython but not necessarily the other
+//| using `time` written in CircuitPython will work in CPython but not necessarily the other
 //| way around."""
 //|
 //| def monotonic() -> float:
 //|     """Returns an always increasing value of time with an unknown reference
-//|     point. Only use it to compare against other values from `monotonic`.
+//|     point. Only use it to compare against other values from `time.monotonic()`.
+//|
+//|     On most boards, `time.monotonic()` converts a 64-bit millisecond tick counter
+//|     to a float. Floats on most boards are encoded in 30 bits internally, with
+//|     effectively 22 bits of precision. The float returned by `time.monotonic()` will
+//|     accurately represent time to millisecond precision only up to 2**22 milliseconds
+//|     (about 1.165 hours).
+//|     At that point it will start losing precision, and its value will change only
+//|     every second millisecond. At 2**23 milliseconds it will change every fourth
+//|     millisecond, and so forth.
+//|
+//|     If you need more consistent precision, use `time.monotonic_ns()`, or `supervisor.ticks_ms()`.
+//|     `time.monotonic_ns()` is not available on boards without long integer support.
+//|     `supervisor.ticks_ms()` uses intervals of a millisecond, but wraps around, and is not
+//|     CPython-compatible.
 //|
 //|     :return: the current monotonic time
 //|     :rtype: float"""
@@ -216,7 +230,8 @@ STATIC mp_obj_t time_time(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
 //| def monotonic_ns() -> int:
-//|     """Return the time of the monotonic clock, cannot go backward, in nanoseconds.
+//|     """Return the time of the monotonic clock, which cannot go backward, in nanoseconds.
+//|     Not available on boards without long integer support.
 //|
 //|     :return: the current time
 //|     :rtype: int"""
@@ -330,3 +345,5 @@ const mp_obj_module_t time_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_time, time_module, CIRCUITPY_TIME);

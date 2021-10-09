@@ -34,6 +34,8 @@
 #include "freertos/semphr.h"
 #include "py/obj.h"
 
+#include "peripherals/i2c.h"
+
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *scl_pin;
@@ -42,7 +44,5 @@ typedef struct {
     SemaphoreHandle_t xSemaphore;
     bool has_lock;
 } busio_i2c_obj_t;
-
-void i2c_reset(void);
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BUSIO_I2C_H

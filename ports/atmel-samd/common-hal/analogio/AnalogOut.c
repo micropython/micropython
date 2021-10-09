@@ -85,8 +85,8 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     _pm_enable_bus_clock(PM_BUS_APBC, DAC);
     #endif
 
-    // SAMD21: This clock should be <= 12 MHz, per datasheet section 47.6.3.
-    // SAMD51: This clock should be <= 350kHz, per datasheet table 37-6.
+    // SAMD21: This clock should be <= 350 kHz, per datasheet table 36-7.
+    // SAMD51: This clock should be <= 12 MHz, per datasheet section 47.6.3.
     _gclk_enable_channel(DAC_GCLK_ID, CONF_GCLK_DAC_SRC);
 
     // Don't double init the DAC on the SAMD51 when both outputs are in use. We use the free state

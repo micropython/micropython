@@ -1,0 +1,5 @@
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="MicroDev-microC3"
+# end of LWIP
