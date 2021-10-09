@@ -58,7 +58,7 @@ For running PIO programs, see :class:`rp2.StateMachine`.
       combined into a single 8-word FIFO for one direction only. The options
       are `PIO.JOIN_NONE`, `PIO.JOIN_RX` and `PIO.JOIN_TX`.
 
-.. function:: asm_pio_encode(instr, sideset_count)
+.. function:: asm_pio_encode(instr, sideset_count, sideset_opt=False)
 
     Assemble a single PIO instruction. You usually want to use `asm_pio()`
     instead.
