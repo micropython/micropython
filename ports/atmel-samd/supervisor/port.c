@@ -194,6 +194,8 @@ static void rtc_init(void) {
     #endif
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
+    // Cache TAMPID?
+    (void)alarm_get_wakeup_cause();
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {
     }
@@ -493,7 +495,7 @@ void RTC_Handler(void) {
     }
     if (intflag & RTC_MODE0_INTFLAG_CMP1) {
         // Likely TimeAlarm fake sleep wake
-        timer_callback();
+        time_alarm_callback();
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP1;
     }
     if (intflag & RTC_MODE0_INTFLAG_TAMPER) {
