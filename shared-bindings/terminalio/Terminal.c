@@ -55,18 +55,14 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_obj_t tilegrid = args[ARG_tilegrid].u_obj;
-    if (!mp_obj_is_type(tilegrid, &displayio_tilegrid_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), displayio_tilegrid_type.name);
-    }
+    displayio_tilegrid_t *tilegrid = mp_arg_validate_type(args[ARG_tilegrid].u_obj, &displayio_tilegrid_type, MP_QSTR_tilegrid);
 
-    mp_obj_t font = args[ARG_font].u_obj;
-    if (!mp_obj_is_type(font, &fontio_builtinfont_type)) {
-        mp_raise_TypeError_varg(translate("Expected a %q"), fontio_builtinfont_type.name);
-    }
+    fontio_builtinfont_t *font = mp_arg_validate_type(args[ARG_font].u_obj, &fontio_builtinfont_type, MP_QSTR_font);
+
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
     self->base.type = &terminalio_terminal_type;
-    common_hal_terminalio_terminal_construct(self, MP_OBJ_TO_PTR(tilegrid), MP_OBJ_TO_PTR(font));
+
+    common_hal_terminalio_terminal_construct(self, tilegrid, font);
     return MP_OBJ_FROM_PTR(self);
 }
 

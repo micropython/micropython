@@ -95,17 +95,10 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    busio_uart_obj_t *uart = args[ARG_uart].u_obj;
-    if (!mp_obj_is_type(uart, &busio_uart_type)) {
-        mp_raise_ValueError(translate("Expected a UART"));
-    }
+    busio_uart_obj_t *uart = mp_arg_validate_type(args[ARG_uart].u_obj, &busio_uart_type, MP_QSTR_uart);
 
-    digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
-    digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
-    if (!mp_obj_is_type(rts, &digitalio_digitalinout_type) ||
-        !mp_obj_is_type(cts, &digitalio_digitalinout_type)) {
-        mp_raise_ValueError(translate("Expected a DigitalInOut"));
-    }
+    digitalio_digitalinout_obj_t *rts = mp_arg_validate_type(args[ARG_rts].u_obj, &digitalio_digitalinout_type, MP_QSTR_rts);
+    digitalio_digitalinout_obj_t *cts = mp_arg_validate_type(args[ARG_cts].u_obj, &digitalio_digitalinout_type, MP_QSTR_cts);
 
     // Will enable the adapter.
     common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
@@ -257,13 +250,9 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
-    bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_directed_to].u_obj);
+    const bleio_address_obj_t *address = mp_arg_validate_type(args[ARG_directed_to].u_obj, &bleio_address_type, MP_QSTR_directed_to);
     if (address != NULL && !connectable) {
         mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
-    }
-
-    if (address != NULL && !mp_obj_is_type(address, &bleio_address_type)) {
-        mp_raise_TypeError(translate("Expected an Address"));
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
@@ -447,11 +436,7 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_address].u_obj, &bleio_address_type)) {
-        mp_raise_TypeError(translate("Expected an Address"));
-    }
-
-    bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
+    bleio_address_obj_t *address = mp_arg_validate_type(args[ARG_address].u_obj, &bleio_address_type, MP_QSTR_address);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
     return common_hal_bleio_adapter_connect(self, address, timeout);

@@ -52,10 +52,7 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
     }
 
     if (tb_obj != mp_const_none && print_tb) {
-        if (!mp_obj_is_type(tb_obj, &mp_type_traceback)) {
-            mp_raise_TypeError(translate("invalid traceback"));
-        }
-        exc.traceback = MP_OBJ_TO_PTR(tb_obj);
+        exc.traceback = mp_arg_validate_type(tb_obj, &mp_type_traceback, MP_QSTR_tb);
     } else {
         exc.traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
     }
