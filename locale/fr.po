@@ -114,10 +114,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "La liste %q doit être une liste"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr ""
@@ -155,13 +151,13 @@ msgstr "%q doit être un tuple de longueur 2"
 msgid "%q must be between %d and %d"
 msgstr ""
 
+#: py/argcheck.c
+msgid "%q must be of type %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q doit être une puissance de 2"
-
-#: py/argcheck.c
-msgid "%q must of type %q"
-msgstr "%q doit être de type %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -809,10 +805,6 @@ msgstr "Période de l'horloge trop longue"
 msgid "Clock unit in use"
 msgstr "Horloge en cours d'utilisation"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "L'entrée 'Column' doit être un digitalio.DigitalInOut"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -991,35 +983,8 @@ msgstr "Erreur : Impossible de lier"
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Attendu un %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Une 'Characteristic' est attendue"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "Un 'DigitalInOut' est attendu"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Un Service est attendu"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "Un UART est attendu"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Un UUID est attendu"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Un Address est attendu"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -2093,10 +2058,6 @@ msgstr "Resource demandée non trouvée"
 msgid "Right channel unsupported"
 msgstr "Canal droit non supporté"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "L'entrée de ligne 'Row' doit être un digitalio.DigitalInOut"
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Mode sans-échec ! Le code sauvegardé n'est pas éxecuté.\n"
@@ -2747,10 +2708,6 @@ msgstr "tampon trop petit"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "tampon trop petit pour le nombre d'octets demandé"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "les boutons doivent être des digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3552,7 +3509,7 @@ msgstr "syntaxe invalide pour un entier de base %d"
 msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -4602,6 +4559,39 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "La liste %q doit être une liste"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q doit être de type %q"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "L'entrée 'Column' doit être un digitalio.DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Une 'Characteristic' est attendue"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Un 'DigitalInOut' est attendu"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Un Service est attendu"
+
+#~ msgid "Expected a UART"
+#~ msgstr "Un UART est attendu"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Un UUID est attendu"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Un Address est attendu"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "L'entrée de ligne 'Row' doit être un digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "les boutons doivent être des digitalio.DigitalInOut"
 
 #~ msgid "Invalid frequency"
 #~ msgstr "Fréquence non valide"

@@ -112,10 +112,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "lista %q deve essere una lista"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr ""
@@ -154,12 +150,12 @@ msgstr "%q deve essere una tupla di lunghezza 2"
 msgid "%q must be between %d and %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-msgid "%q must be power of 2"
+#: py/argcheck.c
+msgid "%q must be of type %q"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must of type %q"
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -800,10 +796,6 @@ msgstr "Orologio e troppo allungato"
 msgid "Clock unit in use"
 msgstr "Unità di clock in uso"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr ""
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 #, fuzzy
@@ -982,37 +974,8 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Atteso un %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-#, fuzzy
-msgid "Expected a Characteristic"
-msgstr "Non è possibile aggiungere Characteristic."
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-#, fuzzy
-msgid "Expected a UUID"
-msgstr "Atteso un %q"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr ""
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -2071,10 +2034,6 @@ msgstr ""
 msgid "Right channel unsupported"
 msgstr "Canale destro non supportato"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr ""
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Modalità sicura in esecuzione! Codice salvato non in esecuzione.\n"
@@ -2715,10 +2674,6 @@ msgstr "buffer troppo piccolo"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
-msgstr ""
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -3515,7 +3470,7 @@ msgstr "sintassi invalida per l'intero con base %d"
 msgid "invalid syntax for number"
 msgstr "sintassi invalida per il numero"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -4570,6 +4525,17 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q list must be a list"
+#~ msgstr "lista %q deve essere una lista"
+
+#, fuzzy
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Non è possibile aggiungere Characteristic."
+
+#, fuzzy
+#~ msgid "Expected a UUID"
+#~ msgstr "Atteso un %q"
 
 #, fuzzy
 #~ msgid "no available NIC"

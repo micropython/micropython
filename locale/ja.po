@@ -108,10 +108,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "%q リストはリストでなければなりません"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr ""
@@ -149,12 +145,12 @@ msgstr "%qは長さ2のタプルでなければなりません"
 msgid "%q must be between %d and %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-msgid "%q must be power of 2"
+#: py/argcheck.c
+msgid "%q must be of type %q"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must of type %q"
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -792,10 +788,6 @@ msgstr "クロックのストレッチが長すぎ"
 msgid "Clock unit in use"
 msgstr "クロックユニットは使用中"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Columnの要素は digitalio.DigitalInOut でなければなりません"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -971,35 +963,8 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "%qが必要"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Characteristicが必要"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "DigitalInOutが必要"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Serviceが必要"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "UARTが必要"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "UUIDが必要"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Addressが必要"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -2046,10 +2011,6 @@ msgstr ""
 msgid "Right channel unsupported"
 msgstr "右チャネルは非対応"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "Rowの各要素は digitalio.DigitalInOut でなければなりません"
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "セーフモードで実行中！ 保存されたコードは実行していません。\n"
@@ -2685,10 +2646,6 @@ msgstr ""
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr ""
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "buttonsはdigitalio.DigitalInOutでなければなりません"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3481,7 +3438,7 @@ msgstr ""
 msgid "invalid syntax for number"
 msgstr "数字として不正な構文"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -4522,6 +4479,36 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q リストはリストでなければなりません"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Columnの要素は digitalio.DigitalInOut でなければなりません"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Characteristicが必要"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "DigitalInOutが必要"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Serviceが必要"
+
+#~ msgid "Expected a UART"
+#~ msgstr "UARTが必要"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "UUIDが必要"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Addressが必要"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Rowの各要素は digitalio.DigitalInOut でなければなりません"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "buttonsはdigitalio.DigitalInOutでなければなりません"
 
 #~ msgid "Invalid frequency"
 #~ msgstr "不正な周波数"
