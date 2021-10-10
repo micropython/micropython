@@ -32,8 +32,12 @@
 extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
 // This is the first byte of the BKUP register bank.
-// It stores whether the last wakeup was because of an alarm.
+// We use it to store which alarms are set.
+#ifndef SAMD_ALARM_FLAG
 #define SAMD_ALARM_FLAG      (RTC->MODE0.BKUP[0].reg)
+#define SAMD_ALARM_FLAG_TIME (_U_(0x1) << 0)
+#define SAMD_ALARM_FLAG_PIN  (_U_(0x1) << 1)
+#endif
 
 typedef enum {
     SAMD_WAKEUP_UNDEF,

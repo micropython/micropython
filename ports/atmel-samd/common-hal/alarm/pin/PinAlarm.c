@@ -31,7 +31,6 @@
 #include "hal/include/hal_gpio.h"
 // #include <stdio.h>
 
-
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -165,6 +164,7 @@ void alarm_pin_pinalarm_reset(void) {
     //       use, reset them.
     pinalarm_on = false;
     woke_up = false;
+    SAMD_ALARM_FLAG &= ~SAMD_ALARM_FLAG_PIN; // clear flag
     // Disable TAMPER interrupt
     RTC->MODE0.INTENCLR.bit.TAMPER = 1;
     // Disable TAMPER control
@@ -195,6 +195,8 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                     mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
                 }
                 pinalarm_on = true;
+                SAMD_ALARM_FLAG |= SAMD_ALARM_FLAG_PIN;
+
                 // Set tamper interrupt so deep sleep knows that's the intent
                 RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
                 common_hal_mcu_disable_interrupts();
@@ -206,7 +208,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
                 // PA02 is n=2: IN2, LVL2, etc...
                 RTC->MODE0.TAMPCTRL.bit.DEBNC2 = 1;  // Edge triggered when INn is stable for 4 CLK_RTC_DEB periods
                 RTC->MODE0.TAMPCTRL.bit.TAMLVL2 = alarm->value; // rising or falling edge
-                RTC->MODE0.TAMPCTRL.bit.IN2ACT = 0x1;  // WAKE on IN2 (doesn't save timestamp)
+                RTC->MODE0.TAMPCTRL.bit.IN2ACT = 1;  // WAKE on IN2 (doesn't save timestamp)
                 common_hal_mcu_enable_interrupts();
                 RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_TAMPER;
                 RTC->MODE0.CTRLA.bit.ENABLE = 1;                      // Enable the RTC

@@ -72,9 +72,9 @@ mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
     return timer;
 }
 
-void timer_callback(void) {
+void time_alarm_callback(void) {
     if (timealarm_on) {
-        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1 | RTC_MODE0_INTENCLR_CMP0 | RTC_MODE0_INTENCLR_OVF; // clear flags
+        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1; // clear flags
         woke_up = true;
         timealarm_on = false;
     }
@@ -90,6 +90,7 @@ bool alarm_time_timealarm_woke_this_cycle(void) {
 void alarm_time_timealarm_reset(void) {
     timealarm_on = false;
     woke_up = false;
+    SAMD_ALARM_FLAG &= ~SAMD_ALARM_FLAG_TIME; // clear flag
 }
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
@@ -133,13 +134,14 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     }
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP1;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP1;
+    SAMD_ALARM_FLAG |= SAMD_ALARM_FLAG_TIME; // set TimeAlarm flag
 
     // This is set for fake sleep. Max fake sleep time is ~72 hours
     // True deep sleep isn't limited by this
     // port_interrupt_after_ticks(wakeup_in_ticks);
     // printf("second t %lu, cmp0 %lu, cmp1 %lu\n", (uint32_t)port_get_raw_ticks(NULL),RTC->MODE0.COMP[0].reg,RTC->MODE0.COMP[1].reg);
     // TODO: set up RTC->COMP[1] and create a callback pointing to
-    //       timer_callback. See atmel-samd/supervisor/port.c -> _port_interrupt_after_ticks()
+    //       time_alarm_callback. See atmel-samd/supervisor/port.c -> _port_interrupt_after_ticks()
     //       for how to set this up. I don't know how you do the callback, though. You MUST use
     //       COMP[1], since port.c uses COMP[0] already and needs to set that for
     //       things like the USB enumeration delay.
