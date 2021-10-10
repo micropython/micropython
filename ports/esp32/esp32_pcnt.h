@@ -17,7 +17,7 @@ enum clockMultiplier {
     X4 = 4
 };
 
-typedef struct _pcnt_PCNT_obj_t {
+typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
     gpio_num_t aPinNumber;
     gpio_num_t bPinNumber;
@@ -26,7 +26,12 @@ typedef struct _pcnt_PCNT_obj_t {
     bool attached;
     pcnt_unit_t unit;
     volatile int64_t count;
-} pcnt_PCNT_obj_t;
+
+    int filter;
+    enum edgeKind edge; // Counter only
+    int8_t x124; // Encoder only
+    float scale;
+} mp_pcnt_obj_t;
 
 extern int machine_pin_get_id(mp_obj_t pin_in);
 

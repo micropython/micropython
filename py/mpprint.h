@@ -72,16 +72,17 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
 #define _DBG(level, ...) \
-    if level <= LOG_LEVEL \
-        mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__) \
-    endif
+    if (level >= DBG_LEVEL) { \
+        mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
+        mp_printf(MP_PYTHON_PRINTER, "\n"); \
+    }
 
 /*
 #define _DBG(level, ...) \
     do { \
-        #ifdef LOG_LEVEL \
+        #ifdef DBG_LEVEL \
             do { \
-                #if level <= LOG_LEVEL \
+                #if level <= DBG_LEVEL \
                     mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__) \
                 #endif \
             } while (true); \
