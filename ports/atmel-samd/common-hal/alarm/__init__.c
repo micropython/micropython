@@ -69,7 +69,7 @@ samd_sleep_source_t alarm_get_wakeup_cause(void) {
     }
     if (!fake_sleep && RSTC->RCAUSE.bit.BACKUP) {
         // This is checked during rtc_init to cache TAMPID if necessary
-        if (pin_wake ||RTC->MODE0.TAMPID.reg) {
+        if (pin_wake || RTC->MODE0.TAMPID.reg) {
             pin_wake = true;
             return SAMD_WAKEUP_GPIO;
         }

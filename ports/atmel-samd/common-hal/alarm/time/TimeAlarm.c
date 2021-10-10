@@ -81,7 +81,7 @@ void time_alarm_callback(void) {
 }
 
 bool alarm_time_timealarm_woke_this_cycle(void) {
-    if (timealarm_on && (((uint32_t)port_get_raw_ticks(NULL)<<4) > RTC->MODE0.COMP[1].reg)) {
+    if (timealarm_on && (((uint32_t)port_get_raw_ticks(NULL) << 4) > RTC->MODE0.COMP[1].reg)) {
         woke_up = true;
     }
     return woke_up;
@@ -129,7 +129,7 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     timealarm_on = true;
     // Set COMP1 for fake sleep. This will be read and reset for real deep sleep anyways.
     // RTC->MODE0.COMP[1].reg = wakeup_in_ticks;
-    RTC->MODE0.COMP[1].reg = ((uint32_t)port_get_raw_ticks(NULL)+wakeup_in_ticks)<<4;
+    RTC->MODE0.COMP[1].reg = ((uint32_t)port_get_raw_ticks(NULL) + wakeup_in_ticks) << 4;
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP1)) != 0) {
     }
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP1;
