@@ -461,7 +461,7 @@ Counter
 -------
 
 The Counter (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same hardware peripheral,
+It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
 See :ref:`pcnt.Counter <pcnt.Counter>` for details.  Simplest usage is::
@@ -469,12 +469,12 @@ See :ref:`pcnt.Counter <pcnt.Counter>` for details.  Simplest usage is::
     import machine
 
     cnt = machine.Counter(Pin(17, mode=Pin.IN), pcnt.Edge.RAISE)
-    #              (kind of counted edges - count rase edges,
-    #               pulse signal input pin)
+    #               pulse signal input pin
+    #               kind of counted edges - count rase edges,
 
     _c = None
     while True:
-        c = cnt.count()  # get 64-bit signed counter value
+        c = cnt.value()  # get 64-bit signed counter value
         if _c != c:
             _c = c
             print('Counter =', c)
@@ -498,10 +498,10 @@ See :ref:`pcnt.Encoder <pcnt.Encoder>` for details.  Simplest usage is::
 
     _c = None
     while True:
-        c = cnt.count()  # get 64-bit signed counter value
+        c = cnt.value()  # get 64-bit signed counter value
         if _c != c:
             _c = c
-            print('Counter =', c)
+            print('Encoder =', c)
 
 OneWire driver
 --------------

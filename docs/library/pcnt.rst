@@ -56,17 +56,11 @@ The Counter.
 
 .. method:: Counter.set_filter_value(filter_val)
 
-    Set filter value.
+    Set filter value. 0 disable filtering.
 
 .. method:: Counter.get_filter_value()
 
     Return current filter value.
-
-The filter is put into operation / suspended by calling filter_enable() / filter_disable().
-
-.. method:: Counter.filter_enable()
-
-.. method:: Counter.filter_disable()
 
 .. _pcnt.Encoder:
 
