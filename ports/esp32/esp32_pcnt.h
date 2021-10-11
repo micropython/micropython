@@ -7,8 +7,8 @@
 #define _INT16_MIN (-32766)
 
 enum edgeKind {
-    RAISE = 1,
-    FALL = 2
+    RAISE = 0x1,
+    FALL = 0x2
 };
 
 enum clockMultiplier {
