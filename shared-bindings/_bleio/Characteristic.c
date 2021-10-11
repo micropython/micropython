@@ -94,15 +94,9 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_obj_t service_obj = args[ARG_service].u_obj;
-    if (!mp_obj_is_type(service_obj, &bleio_service_type)) {
-        mp_raise_TypeError(translate("Expected a Service"));
-    }
+    bleio_service_obj_t *service = mp_arg_validate_type(args[ARG_service].u_obj, &bleio_service_type, MP_QSTR_service);
 
-    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_TypeError(translate("Expected a UUID"));
-    }
+    bleio_uuid_obj_t *uuid = mp_arg_validate_type(args[ARG_uuid].u_obj, &bleio_uuid_type, MP_QSTR_uuid);
 
     const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
     if (properties & ~CHAR_PROP_ALL) {
@@ -149,7 +143,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     // Range checking on max_length arg is done by the common_hal layer, because
     // it may vary depending on underlying BLE implementation.
     common_hal_bleio_characteristic_construct(
-        characteristic, MP_OBJ_TO_PTR(service_obj), 0, MP_OBJ_TO_PTR(uuid_obj),
+        characteristic, service, 0, uuid,
         properties, read_perm, write_perm,
         max_length, fixed_length, &initial_value_bufinfo,
         user_description);

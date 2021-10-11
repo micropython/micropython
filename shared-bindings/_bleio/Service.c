@@ -58,17 +58,14 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mp_obj_t uuid_obj = args[ARG_uuid].u_obj;
-    if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
-        mp_raise_TypeError(translate("Expected a UUID"));
-    }
+    bleio_uuid_obj_t *uuid = mp_arg_validate_type(args[ARG_uuid].u_obj, &bleio_uuid_type, MP_QSTR_uuid);
 
     const bool is_secondary = args[ARG_secondary].u_bool;
 
     bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
     service->base.type = &bleio_service_type;
 
-    common_hal_bleio_service_construct(service, MP_OBJ_TO_PTR(uuid_obj), is_secondary);
+    common_hal_bleio_service_construct(service, uuid, is_secondary);
 
     return MP_OBJ_FROM_PTR(service);
 }

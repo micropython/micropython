@@ -32,6 +32,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
@@ -78,7 +79,8 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
-    mp_obj_t spi = args[ARG_spi_bus].u_obj;
+    mp_obj_t spi = mp_arg_validate_type(args[ARG_spi_bus].u_obj, &busio_spi_type, MP_QSTR_spi_bus);
+
     displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;
 

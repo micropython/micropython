@@ -463,10 +463,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
-        mp_raise_TypeError(NULL);
-    }
-    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+    displayio_bitmap_t *bitmap = mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
@@ -533,15 +530,9 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type)) {
-        mp_raise_TypeError(NULL);
-    }
-    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+    displayio_bitmap_t *bitmap = mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
 
-    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_fileio)) {
-        mp_raise_TypeError(NULL);
-    }
-    pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
+    pyb_file_obj_t *file = mp_arg_validate_type(args[ARG_file].u_obj, &mp_type_fileio, MP_QSTR_file);
 
     int element_size = args[ARG_element_size].u_int;
     if (element_size != 1 && element_size != 2 && element_size != 4) {

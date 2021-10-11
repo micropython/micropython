@@ -106,10 +106,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "Seznam %q musí být seznam"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr ""
@@ -147,12 +143,12 @@ msgstr "%q musí být n-tice délky 2"
 msgid "%q must be between %d and %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-msgid "%q must be power of 2"
+#: py/argcheck.c
+msgid "%q must be of type %q"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must of type %q"
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -786,10 +782,6 @@ msgstr ""
 msgid "Clock unit in use"
 msgstr ""
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr ""
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -965,34 +957,7 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
-msgstr ""
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
 msgstr ""
 
 #: shared-bindings/alarm/__init__.c
@@ -2035,10 +2000,6 @@ msgstr ""
 msgid "Right channel unsupported"
 msgstr ""
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr ""
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr ""
@@ -2672,10 +2633,6 @@ msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
-msgstr ""
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -3464,7 +3421,7 @@ msgstr ""
 msgid "invalid syntax for number"
 msgstr ""
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -4502,6 +4459,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "%q list must be a list"
+#~ msgstr "Seznam %q musí být seznam"
 
 #~ msgid "%q indices must be integers, not %q"
 #~ msgstr "Indexy %q musí být celá čísla, ne %q"

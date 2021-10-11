@@ -113,10 +113,6 @@ msgstr "%q cháng dù bì xū wéi %d-%d"
 msgid "%q length must be >= 1"
 msgstr "%q cháng dù bì xū >= 1"
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "%q lièbiǎo bìxū shì lièbiǎo"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr "%q bì xū <= %d"
@@ -154,13 +150,13 @@ msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 msgid "%q must be between %d and %d"
 msgstr "%q bì xū zài %d hé %d zhī jiān"
 
+#: py/argcheck.c
+msgid "%q must be of type %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q bì xū shì 2 de gōng lǜ"
-
-#: py/argcheck.c
-msgid "%q must of type %q"
-msgstr "%q bì xū lèi xíng %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -797,10 +793,6 @@ msgstr "Shízhōng shēnzhǎn tài zhǎng"
 msgid "Clock unit in use"
 msgstr "Shǐyòng shízhōng dānwèi"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -977,35 +969,8 @@ msgstr "cuò wù: bǎng dìng shī bài"
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Yùqí %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Yùqí de tèdiǎn"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "yù qī shù zì huà"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Yùqí fúwù"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "qī dài UART"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Yùqí UUID"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Qídài yīgè dìzhǐ"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -2066,10 +2031,6 @@ msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 msgid "Right channel unsupported"
 msgstr "Bù zhīchí yòu tōngdào"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Zài ānquán móshì xià yùnxíng! Bù yùnxíng yǐ bǎocún de dàimǎ.\n"
@@ -2724,10 +2685,6 @@ msgstr "huǎnchōng qū tài xiǎo"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3521,7 +3478,7 @@ msgstr "jīshù wèi %d de zhěng shǔ de yǔfǎ wúxiào"
 msgid "invalid syntax for number"
 msgstr "wúxiào de hàomǎ yǔfǎ"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr "wú xiào zhuī sù"
 
@@ -4562,6 +4519,39 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q bì xū lèi xíng %q"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Yùqí de tèdiǎn"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "yù qī shù zì huà"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Yùqí fúwù"
+
+#~ msgid "Expected a UART"
+#~ msgstr "qī dài UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Yùqí UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Qídài yīgè dìzhǐ"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
 
 #~ msgid "Invalid frequency"
 #~ msgstr "Wúxiào de pínlǜ"
