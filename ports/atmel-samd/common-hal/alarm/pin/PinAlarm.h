@@ -27,14 +27,6 @@
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_PINALARM_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_PINALARM_H
 
-// This is the first byte of the BKUP register bank.
-// We use it to store which alarms are set.
-#ifndef SAMD_ALARM_FLAG
-#define SAMD_ALARM_FLAG      (RTC->MODE0.BKUP[0].reg)
-#define SAMD_ALARM_FLAG_TIME (_U_(0x1) << 0)
-#define SAMD_ALARM_FLAG_PIN  (_U_(0x1) << 1)
-#endif
-
 #include "py/obj.h"
 #include "py/objtuple.h"
 

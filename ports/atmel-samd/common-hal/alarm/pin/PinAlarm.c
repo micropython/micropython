@@ -34,6 +34,7 @@
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "common-hal/alarm/__init__.h"
 
 // This variable stores whether a PinAlarm woke in light sleep or fake deep sleep
 // It CANNOT detect if the program woke from deep sleep.
@@ -52,9 +53,6 @@ void pin_alarm_callback(uint8_t num) { // parameters can be changed
     //       the trigger. This will only work for light sleep/fake deep
     //       sleep, in conjunction with the find_triggered_alarm function
 
-    // Turn off interrupts while in handler
-    // printf("Woke up from pin!!\n");
-    // printf("EIC Flags: %lu\n",EIC->INTFLAG.reg);
     if (pinalarm_on) {
         // clear flag and interrupt setting
         RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_TAMPER;

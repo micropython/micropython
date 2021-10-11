@@ -30,6 +30,7 @@
 
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
+#include "common-hal/alarm/__init__.h"
 #include "supervisor/port.h"
 
 STATIC volatile bool woke_up;

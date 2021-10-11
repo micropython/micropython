@@ -53,7 +53,6 @@
 #error Unknown chip family
 #endif
 
-#include "common-hal/alarm/__init__.h"
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/audiobusio/PDMIn.h"
@@ -66,6 +65,9 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/alarm/__init__.h"
+#include "common-hal/alarm/time/TimeAlarm.h"
+#include "common-hal/alarm/pin/PinAlarm.h"
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
@@ -78,8 +80,6 @@
 #include "samd/dma.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "shared-bindings/alarm/time/TimeAlarm.h"
-#include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared_timers.h"
 #include "reset.h"
 
@@ -194,7 +194,7 @@ static void rtc_init(void) {
     #endif
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
-    // Cache TAMPID?
+    // Cache TAMPID for wake up cause
     (void)alarm_get_wakeup_cause();
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {
