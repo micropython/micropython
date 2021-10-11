@@ -237,7 +237,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 // def Counter.__init__(pulsePin: int, dirPin: int=PCNT_PIN_NOT_USED, edge:int, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     DBG("1 machine_Counter_make_new n_args=%u n_kw=%u", n_args, n_kw);
-    mp_arg_check_num(n_args, n_kw, 1, 3, true);
+    mp_arg_check_num(n_args, n_kw, 1, 2, true);
 
     // create Counter object for the given unit
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
@@ -263,7 +263,7 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     DBG("24")
-    mp_machine_Counter_init_helper(self, n_args - 1, args + n_args, &kw_args);
+    mp_machine_Counter_init_helper(self, n_args - n_args, args + n_args, &kw_args);
 
     DBG("25")
     attach_Counter(self, pin_a, pin_b);
@@ -866,7 +866,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 // def Encoder.__init__(aPin: int, bPin: int, x124:int=2, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     DBG("1 machine_Encoder_make_new n_args=%u n_kw=%u", n_args, n_kw);
-    mp_arg_check_num(n_args, n_kw, 2, 3, true);
+    mp_arg_check_num(n_args, n_kw, 2, 2, true);
 
     // create Encoder object for the given unit
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
@@ -887,7 +887,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    mp_machine_Encoder_init_helper(self, n_args - 2, args + n_args, &kw_args);
+    mp_machine_Encoder_init_helper(self, n_args - n_args, args + n_args, &kw_args);
 
     attach_Encoder(self, pin_b, pin_a); // a <--> b to compatible with IRQ-based encoders
 
