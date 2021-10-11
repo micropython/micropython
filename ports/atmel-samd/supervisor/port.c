@@ -65,9 +65,12 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rtc/RTC.h"
+
+#if CIRCUITPY_ALARM
 #include "common-hal/alarm/__init__.h"
 #include "common-hal/alarm/time/TimeAlarm.h"
 #include "common-hal/alarm/pin/PinAlarm.h"
+#endif
 
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "common-hal/touchio/TouchIn.h"
@@ -194,8 +197,10 @@ static void rtc_init(void) {
     #endif
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBAMASK_RTC_bit(MCLK);
+    #if CIRCUITPY_ALARM
     // Cache TAMPID for wake up cause
     (void)alarm_get_wakeup_cause();
+    #endif
     RTC->MODE0.CTRLA.bit.SWRST = true;
     while (RTC->MODE0.SYNCBUSY.bit.SWRST != 0) {
     }
@@ -493,6 +498,7 @@ void RTC_Handler(void) {
         // Do things common to all ports when the tick occurs
         supervisor_tick();
     }
+    #if CIRCUITPY_ALARM
     if (intflag & RTC_MODE0_INTFLAG_CMP1) {
         // Likely TimeAlarm fake sleep wake
         time_alarm_callback();
@@ -503,6 +509,7 @@ void RTC_Handler(void) {
         pin_alarm_callback(1); // TODO: set channel?
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_TAMPER;
     }
+    #endif
     #endif
     if (intflag & RTC_MODE0_INTFLAG_CMP0) {
         // Clear the interrupt because we may have hit a sleep
