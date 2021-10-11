@@ -110,10 +110,10 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
         self->config.frame1_buffer = buffer;
 
         cam_init(&self->config);
+        cam_start();
     } else {
         cam_give(buffer);
     }
-    cam_start();
 
     while (!cam_ready()) {
         RUN_BACKGROUND_TASKS;
@@ -126,6 +126,4 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
 
     uint8_t *unused;
     cam_take(&unused); // this just "returns" buffer
-
-    cam_stop();
 }
