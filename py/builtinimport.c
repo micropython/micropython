@@ -142,7 +142,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 }
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY
+#if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
 STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code, const char *source_name) {
     (void)source_name;
 
@@ -248,7 +248,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     DEBUG_printf("__import__:\n");
     for (size_t i = 0; i < n_args; i++) {
         DEBUG_printf("  ");
-        mp_obj_print(args[i], PRINT_REPR);
+        mp_obj_print_helper(MICROPY_DEBUG_PRINTER, args[i], PRINT_REPR);
         DEBUG_printf("\n");
     }
     #endif
@@ -292,7 +292,7 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
         #if DEBUG_PRINT
         DEBUG_printf("Current module/package: ");
-        mp_obj_print(this_name_q, PRINT_REPR);
+        mp_obj_print_helper(MICROPY_DEBUG_PRINTER, this_name_q, PRINT_REPR);
         DEBUG_printf(", is_package: %d", is_pkg);
         DEBUG_printf("\n");
         #endif

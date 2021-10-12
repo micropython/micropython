@@ -74,6 +74,7 @@
 #define MICROPY_PY_FUNCTION_ATTRS               (1)
 #define MICROPY_PY_DESCRIPTORS                  (1)
 #define MICROPY_PY_DELATTR_SETATTR              (1)
+#define MICROPY_PY_FSTRINGS                     (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE         (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER          (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION       (1)
@@ -119,6 +120,7 @@
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_URE_SUB                      (1)
+#define MICROPY_PY_UHEAPQ                       (1)
 #define MICROPY_PY_UHASHLIB                     (1)
 #define MICROPY_PY_UBINASCII                    (1)
 #define MICROPY_PY_UBINASCII_CRC32              (1)
@@ -130,11 +132,17 @@
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_PULSE                (1)
+#define MICROPY_PY_MACHINE_PWM                  (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
+#define MICROPY_PY_MACHINE_SOFTI2C              (1)
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
+#define MICROPY_PY_MACHINE_SOFTSPI              (1)
 #define MICROPY_PY_FRAMEBUF                     (1)
+#define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
@@ -158,10 +166,39 @@
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 extern const struct _mp_obj_module_t mp_module_machine;
+extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_rp2;
 extern const struct _mp_obj_module_t mp_module_uos;
+extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_utime;
+
+#if MICROPY_PY_USOCKET
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
+#else
+#define SOCKET_BUILTIN_MODULE
+#endif
+#if MICROPY_PY_NETWORK
+#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
+#define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
+#else
+#define NETWORK_BUILTIN_MODULE
+#define NETWORK_ROOT_POINTERS
+#endif
+
+#if MICROPY_PY_BLUETOOTH
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH
+#endif
+
+#if MICROPY_BLUETOOTH_NIMBLE
+struct _mp_bluetooth_nimble_root_pointers_t;
+struct _mp_bluetooth_nimble_malloc_t;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
@@ -169,6 +206,14 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_OBJ_NEW_QSTR(MP_QSTR__rp2), (mp_obj_t)&mp_module_rp2 }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
+    SOCKET_BUILTIN_MODULE \
+    NETWORK_BUILTIN_MODULE \
+
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -177,6 +222,10 @@ extern const struct _mp_obj_module_t mp_module_utime;
     void *rp2_state_machine_irq_obj[8]; \
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
+    NETWORK_ROOT_POINTERS \
+    MICROPY_BOARD_ROOT_POINTERS \
+    MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
+        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

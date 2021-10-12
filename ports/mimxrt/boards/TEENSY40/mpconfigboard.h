@@ -1,13 +1,10 @@
 #define MICROPY_HW_BOARD_NAME "Teensy 4.0"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1062DVJ6A"
 
-#define BOARD_FLASH_SIZE (2 * 1024 * 1024)
-
 // Teensy 4.0 has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_B0_03)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
-#define BOARD_FLASH_CONFIG_HEADER_H "teensy40_flexspi_nor_config.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
 
@@ -38,7 +35,33 @@
     { IOMUXC_GPIO_B0_02_LPSPI4_SDO }, { IOMUXC_GPIO_B0_01_LPSPI4_SDI },
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
-                            kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
+                         kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
-                            kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+                         kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx }
+
+// Define mapping hardware I2C # to logical I2C #
+// SDA/SCL  HW-I2C    Logical I2C
+// 17/16    LPI2C3 ->    0
+// 18/19    LPI2C1 ->    1
+// 25/24    LPI2C4 ->    2
+
+#define MICROPY_HW_I2C_INDEX   { 1, 3, 4 }
+
+#define IOMUX_TABLE_I2C \
+    { IOMUXC_GPIO_AD_B1_00_LPI2C1_SCL }, { IOMUXC_GPIO_AD_B1_01_LPI2C1_SDA }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA }, \
+    { IOMUXC_GPIO_AD_B0_12_LPI2C4_SCL }, { IOMUXC_GPIO_AD_B0_13_LPI2C4_SDA },
+
+#define USDHC_DUMMY_PIN NULL, 0
+#define MICROPY_USDHC1 \
+    { \
+        .cmd = {GPIO_SD_B0_00_USDHC1_CMD}, \
+        .clk = { GPIO_SD_B0_01_USDHC1_CLK }, \
+        .cd_b = { USDHC_DUMMY_PIN }, \
+        .data0 = { GPIO_SD_B0_02_USDHC1_DATA0 }, \
+        .data1 = { GPIO_SD_B0_03_USDHC1_DATA1 }, \
+        .data2 = { GPIO_SD_B0_04_USDHC1_DATA2 }, \
+        .data3 = { GPIO_SD_B0_05_USDHC1_DATA3 }, \
+    }

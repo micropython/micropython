@@ -43,8 +43,8 @@ typedef struct _network_cyw43_obj_t {
     int itf;
 } network_cyw43_obj_t;
 
-STATIC const network_cyw43_obj_t network_cyw43_wl0 = { { &mp_network_cyw43_type }, &cyw43_state, 0 };
-STATIC const network_cyw43_obj_t network_cyw43_wl1 = { { &mp_network_cyw43_type }, &cyw43_state, 1 };
+STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
+STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
 
 STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -65,7 +65,7 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         status_str = "fail";
     }
     mp_printf(print, "<CYW43 %s %s %u.%u.%u.%u>",
-        self->itf == 0 ? "STA" : "AP",
+        self->itf == CYW43_ITF_STA ? "STA" : "AP",
         status_str,
         netif->ip_addr.addr & 0xff,
         netif->ip_addr.addr >> 8 & 0xff,
@@ -76,10 +76,10 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
 STATIC mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    if (n_args == 0 || mp_obj_get_int(args[0]) == 0) {
-        return MP_OBJ_FROM_PTR(&network_cyw43_wl0);
+    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+        return MP_OBJ_FROM_PTR(&network_cyw43_wl_sta);
     } else {
-        return MP_OBJ_FROM_PTR(&network_cyw43_wl1);
+        return MP_OBJ_FROM_PTR(&network_cyw43_wl_ap);
     }
 }
 
@@ -196,7 +196,7 @@ STATIC mp_obj_t network_cyw43_scan(size_t n_args, const mp_obj_t *pos_args, mp_m
     int scan_res = cyw43_wifi_scan(self->cyw, &opts, MP_OBJ_TO_PTR(res), network_cyw43_scan_cb);
 
     if (scan_res < 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("STA must be active"));
+        mp_raise_OSError(-scan_res);
     }
 
     // Wait for scan to finish, with a 10s timeout
@@ -240,7 +240,7 @@ STATIC mp_obj_t network_cyw43_connect(size_t n_args, const mp_obj_t *pos_args, m
     }
     int ret = cyw43_wifi_join(self->cyw, ssid.len, ssid.buf, key.len, key.buf, args[ARG_auth].u_int, bssid.buf, args[ARG_channel].u_int);
     if (ret != 0) {
-        mp_raise_OSError(ret);
+        mp_raise_OSError(-ret);
     }
     return mp_const_none;
 }

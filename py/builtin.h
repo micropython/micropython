@@ -124,6 +124,7 @@ extern const mp_obj_module_t mp_module_webrepl;
 extern const mp_obj_module_t mp_module_framebuf;
 extern const mp_obj_module_t mp_module_btree;
 extern const mp_obj_module_t mp_module_ubluetooth;
+extern const mp_obj_module_t mp_module_uplatform;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

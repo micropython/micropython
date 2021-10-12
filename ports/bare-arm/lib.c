@@ -54,7 +54,7 @@ void free(void *p) {
 }
 
 // These standard string functions are needed by the runtime, and can be
-// provided either by the system or lib/libc/string0.c.  The implementations
+// provided either by the system or shared/libc/string0.c.  The implementations
 // here are very simple.
 
 int memcmp(const void *s1, const void *s2, size_t n) {

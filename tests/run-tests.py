@@ -290,6 +290,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     skip_const = False
     skip_revops = False
     skip_io_module = False
+    skip_fstring = False
     skip_endian = False
     has_complex = True
     has_coverage = False
@@ -347,6 +348,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         output = run_feature_check(pyb, args, base_path, "uio_module.py")
         if output != b"uio\n":
             skip_io_module = True
+
+        # Check if fstring feature is enabled, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, "fstring.py")
+        if output != b"a=1\n":
+            skip_fstring = True
 
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, base_path, "repl_emacs_check.py")
@@ -543,6 +549,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
+        is_fstring = test_name.startswith("string_fstring")
 
         skip_it = test_file in skip_tests
         skip_it |= skip_native and is_native
@@ -555,6 +562,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_it |= skip_const and is_const
         skip_it |= skip_revops and "reverse_op" in test_name
         skip_it |= skip_io_module and is_io_module
+        skip_it |= skip_fstring and is_fstring
 
         if args.list_tests:
             if not skip_it:
@@ -734,9 +742,7 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "--via-mpy", action="store_true", help="compile .py files to .mpy first"
     )
-    cmd_parser.add_argument(
-        "--mpy-cross-flags", default="-mcache-lookup-bc", help="flags to pass to mpy-cross"
-    )
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
     )

@@ -104,11 +104,16 @@ STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
 
 #elif defined(STM32H743xx)
 
-// The STM32H743 flash sectors are 128K
-#define CACHE_MEM_START_ADDR (0x20000000) // DTCM data RAM, 128k
-#define FLASH_SECTOR_SIZE_MAX (0x20000) // 128k max
-#define FLASH_MEM_SEG1_START_ADDR (0x08020000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (256) // Sector 1: 128k / 512b = 256 blocks
+// The STM32H743 flash sectors are 128K, with locations defined in the linker script
+extern uint8_t _flash_fs_start;
+extern uint8_t _flash_fs_end;
+extern uint8_t _ram_fs_cache_start[];
+extern uint8_t _ram_fs_cache_end[];
+
+#define CACHE_MEM_START_ADDR ((uintptr_t)&_ram_fs_cache_start[0])
+#define FLASH_SECTOR_SIZE_MAX (&_ram_fs_cache_end[0] - &_ram_fs_cache_start[0])
+#define FLASH_MEM_SEG1_START_ADDR ((long)&_flash_fs_start)
+#define FLASH_MEM_SEG1_NUM_BLOCKS ((&_flash_fs_end - &_flash_fs_start) / 512)
 
 #elif defined(STM32L432xx) || \
     defined(STM32L451xx) || defined(STM32L452xx) || defined(STM32L462xx) || \
@@ -157,6 +162,7 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
             return 0;
 
         case BDEV_IOCTL_NUM_BLOCKS:
+            // Units are FLASH_BLOCK_SIZE
             return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
 
         case BDEV_IOCTL_IRQ_HANDLER:

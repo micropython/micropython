@@ -36,46 +36,14 @@
 // need this header just for MP_HAL_UNIQUE_ID_ADDRESS
 #include "py/mphal.h"
 
-// need this header for any overrides to the below constants
+// Need this header for MICROPY_HW_USB_xxx configuration values.
 #include "py/mpconfig.h"
-
-#ifndef USBD_LANGID_STRING
-#define USBD_LANGID_STRING            0x409
-#endif
-
-#ifndef USBD_MANUFACTURER_STRING
-#define USBD_MANUFACTURER_STRING      "MicroPython"
-#endif
-
-#ifndef USBD_PRODUCT_HS_STRING
-#define USBD_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
-#endif
-
-#ifndef USBD_PRODUCT_FS_STRING
-#define USBD_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
-#endif
-
-#ifndef USBD_CONFIGURATION_HS_STRING
-#define USBD_CONFIGURATION_HS_STRING  "Pyboard Config"
-#endif
-
-#ifndef USBD_INTERFACE_HS_STRING
-#define USBD_INTERFACE_HS_STRING      "Pyboard Interface"
-#endif
-
-#ifndef USBD_CONFIGURATION_FS_STRING
-#define USBD_CONFIGURATION_FS_STRING  "Pyboard Config"
-#endif
-
-#ifndef USBD_INTERFACE_FS_STRING
-#define USBD_INTERFACE_FS_STRING      "Pyboard Interface"
-#endif
 
 __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __ALIGN_END = {
     USB_LEN_LANGID_STR_DESC,
     USB_DESC_TYPE_STRING,
-    LOBYTE(USBD_LANGID_STRING),
-    HIBYTE(USBD_LANGID_STRING),
+    LOBYTE(MICROPY_HW_USB_LANGID_STRING),
+    HIBYTE(MICROPY_HW_USB_LANGID_STRING),
 };
 
 // set the VID, PID and device release number
@@ -140,14 +108,14 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
             return (uint8_t *)USBD_LangIDDesc; // the data should only be read from this buf
 
         case USBD_IDX_MFC_STR:
-            str = USBD_MANUFACTURER_STRING;
+            str = MICROPY_HW_USB_MANUFACTURER_STRING;
             break;
 
         case USBD_IDX_PRODUCT_STR:
             if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_PRODUCT_HS_STRING;
+                str = MICROPY_HW_USB_PRODUCT_HS_STRING;
             } else {
-                str = USBD_PRODUCT_FS_STRING;
+                str = MICROPY_HW_USB_PRODUCT_FS_STRING;
             }
             break;
 
@@ -174,17 +142,17 @@ STATIC uint8_t *USBD_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16
 
         case USBD_IDX_CONFIG_STR:
             if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_CONFIGURATION_HS_STRING;
+                str = MICROPY_HW_USB_CONFIGURATION_HS_STRING;
             } else {
-                str = USBD_CONFIGURATION_FS_STRING;
+                str = MICROPY_HW_USB_CONFIGURATION_FS_STRING;
             }
             break;
 
         case USBD_IDX_INTERFACE_STR:
             if (pdev->dev_speed == USBD_SPEED_HIGH) {
-                str = USBD_INTERFACE_HS_STRING;
+                str = MICROPY_HW_USB_INTERFACE_HS_STRING;
             } else {
-                str = USBD_INTERFACE_FS_STRING;
+                str = MICROPY_HW_USB_INTERFACE_FS_STRING;
             }
             break;
 

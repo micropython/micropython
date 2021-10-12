@@ -178,6 +178,87 @@
 #endif
 
 /*****************************************************************************/
+// USB configuration
+
+// The USBD_xxx macros have been renamed to MICROPY_HW_USB_xxx.
+#if defined(USBD_VID) \
+    || defined(USBD_LANGID_STRING) \
+    || defined(USBD_MANUFACTURER_STRING) \
+    || defined(USBD_PRODUCT_HS_STRING) \
+    || defined(USBD_PRODUCT_FS_STRING) \
+    || defined(USBD_CONFIGURATION_HS_STRING) \
+    || defined(USBD_INTERFACE_HS_STRING) \
+    || defined(USBD_CONFIGURATION_FS_STRING) \
+    || defined(USBD_INTERFACE_FS_STRING) \
+    || defined(USBD_CDC_RX_DATA_SIZE) \
+    || defined(USBD_CDC_TX_DATA_SIZE)
+#error "Old USBD_xxx configuration option used, renamed to MICROPY_HW_USB_xxx"
+#endif
+
+// Default VID and PID values to use for the USB device.  If MICROPY_HW_USB_VID
+// is defined by a board then all needed PID options must also be defined.  The
+// VID and PID can also be set dynamically in pyb.usb_mode().
+// Windows needs a different PID to distinguish different device configurations.
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID              (0xf055)
+#define MICROPY_HW_USB_PID_CDC_MSC      (0x9800)
+#define MICROPY_HW_USB_PID_CDC_HID      (0x9801)
+#define MICROPY_HW_USB_PID_CDC          (0x9802)
+#define MICROPY_HW_USB_PID_MSC          (0x9803)
+#define MICROPY_HW_USB_PID_CDC2_MSC     (0x9804)
+#define MICROPY_HW_USB_PID_CDC2         (0x9805)
+#define MICROPY_HW_USB_PID_CDC3         (0x9806)
+#define MICROPY_HW_USB_PID_CDC3_MSC     (0x9807)
+#define MICROPY_HW_USB_PID_CDC_MSC_HID  (0x9808)
+#define MICROPY_HW_USB_PID_CDC2_MSC_HID (0x9809)
+#define MICROPY_HW_USB_PID_CDC3_MSC_HID (0x980a)
+#endif
+
+#ifndef MICROPY_HW_USB_LANGID_STRING
+#define MICROPY_HW_USB_LANGID_STRING            0x409
+#endif
+
+#ifndef MICROPY_HW_USB_MANUFACTURER_STRING
+#define MICROPY_HW_USB_MANUFACTURER_STRING      "MicroPython"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_HS_STRING
+#define MICROPY_HW_USB_PRODUCT_HS_STRING        "Pyboard Virtual Comm Port in HS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_PRODUCT_FS_STRING
+#define MICROPY_HW_USB_PRODUCT_FS_STRING        "Pyboard Virtual Comm Port in FS Mode"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_HS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_HS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_HS_STRING
+#define MICROPY_HW_USB_INTERFACE_HS_STRING      "Pyboard Interface"
+#endif
+
+#ifndef MICROPY_HW_USB_CONFIGURATION_FS_STRING
+#define MICROPY_HW_USB_CONFIGURATION_FS_STRING  "Pyboard Config"
+#endif
+
+#ifndef MICROPY_HW_USB_INTERFACE_FS_STRING
+#define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
+#endif
+
+// Amount of incoming buffer space for each CDC instance.
+// This must be 2 or greater, and a power of 2.
+#ifndef MICROPY_HW_USB_CDC_RX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_RX_DATA_SIZE (1024)
+#endif
+
+// Amount of outgoing buffer space for each CDC instance.
+// This must be a power of 2 and no greater than 16384.
+#ifndef MICROPY_HW_USB_CDC_TX_DATA_SIZE
+#define MICROPY_HW_USB_CDC_TX_DATA_SIZE (1024)
+#endif
+
+/*****************************************************************************/
 // General configuration
 
 // Heap start / end definitions
@@ -232,6 +313,17 @@
 #define MICROPY_HW_MAX_TIMER (17)
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
+
+// Configuration for STM32H7A3/B3 series
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x08fff800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
 
 // Configuration for STM32H7 series
 #elif defined(STM32H7)

@@ -2,7 +2,7 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 
 # define main target
-PROG = micropython.exe
+PROG = micropython
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = ../unix/qstrdefsport.h
@@ -28,8 +28,8 @@ endif
 
 # source files
 SRC_C = \
-	lib/utils/gchelper_generic.c \
-	lib/utils/printf.c \
+	shared/libc/printf.c \
+	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
 	ports/unix/modos.c \
@@ -47,7 +47,7 @@ OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
-SRC_C += lib/mp-readline/readline.c
+SRC_C += shared/readline/readline.c
 endif
 
 LIB += -lws2_32
@@ -60,7 +60,6 @@ SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
-MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
 include $(TOP)/py/mkrules.mk

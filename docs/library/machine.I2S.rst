@@ -6,7 +6,7 @@ class I2S -- Inter-IC Sound bus protocol
 
 I2S is a synchronous serial protocol used to connect digital audio devices. 
 At the physical level, a bus consists of 3 lines: SCK, WS, SD.
-The I2S class supports Master operation.  Slave operation is not supported.
+The I2S class supports controller operation.  Peripheral operation is not supported.
 
 The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
@@ -19,17 +19,17 @@ I2S objects can be created and initialized using::
     # ESP32
     sck_pin = Pin(14)   # Serial clock output
     ws_pin = Pin(13)    # Word clock output
-    sdout_pin = Pin(12) # Serial data output
+    sd_pin = Pin(12)    # Serial data output
     
     or
     
     # PyBoards
     sck_pin = Pin("Y6")   # Serial clock output
     ws_pin = Pin("Y5")    # Word clock output
-    sdout_pin = Pin("Y8") # Serial data output
+    sd_pin = Pin("Y8")    # Serial data output
     
     audio_out = I2S(2, 
-                    sck=sck_pin, ws=ws_pin, sdin=sdin_pin,    
+                    sck=sck_pin, ws=ws_pin, sd=sd_pin,
                     mode=I2S.TX, 
                     bits=16,                       
                     format=I2S.MONO,
@@ -37,7 +37,7 @@ I2S objects can be created and initialized using::
                     ibuf=20000)
                    
     audio_in = I2S(2, 
-                   sck=sck_pin, ws=ws_pin, sdin=sdin_pin,    
+                   sck=sck_pin, ws=ws_pin, sd=sd_pin,
                    mode=I2S.RX, 
                    bits=32,                       
                    format=I2S.STEREO,
@@ -134,7 +134,7 @@ Methods
   Setting a callback changes the ``write`` and ``readinto`` methods to non-blocking operation.
   ``handler`` is called in the context of the MicroPython scheduler.
   
-.. staticmethod::  I2S.shift(buf, bits, shift)
+.. staticmethod::  I2S.shift(*, buf, bits, shift)
 
   bitwise shift of all samples contained in ``buf``. ``bits`` specifies sample size in bits. ``shift`` specifies the number of bits to shift each sample. 
   Positive for left shift, negative for right shift. 

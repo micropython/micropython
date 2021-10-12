@@ -16,7 +16,7 @@ working with this board it may be useful to get an overview of the microcontroll
    :maxdepth: 1
 
    general.rst
-   tutorial/intro.rst
+   tutorial/index.rst
 
 Installing MicroPython
 ----------------------
@@ -98,7 +98,7 @@ A useful function for connecting to your local WiFi network is::
                 pass
         print('network config:', wlan.ifconfig())
 
-Once the network is established the :mod:`socket <usocket>` module can be used
+Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
 convenient HTTP requests.
 
@@ -113,7 +113,7 @@ to reconnect forever).
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -225,13 +225,31 @@ Use the ``machine.PWM`` class::
     from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0))      # create PWM object from a pin
-    pwm0.freq()             # get current frequency
+    pwm0.freq()             # get current frequency (default 5kHz)
     pwm0.freq(1000)         # set frequency
-    pwm0.duty()             # get current duty cycle
+    pwm0.duty()             # get current duty cycle (default 512, 50%)
     pwm0.duty(200)          # set duty cycle
     pwm0.deinit()           # turn off PWM on the pin
 
-    pwm2 = PWM(Pin(2), freq=20000, duty=512) # create and configure in one go
+    pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
+
+ESP chips have different hardware peripherals:
+
+=====================================================  ========  ========  ========
+Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
+-----------------------------------------------------  --------  --------  --------
+Number of groups (speed modes)                                2         1         1
+Number of timers per group                                    4         4         4
+Number of channels per group                                  8         8         6
+-----------------------------------------------------  --------  --------  --------
+Different of PWM frequencies (groups * timers)                8         4         4
+Total PWM channels (Pins, duties) (groups * channels)        16         8         6
+=====================================================  ========  ========  ========
+
+A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
+but only 8 different PWM frequencies are available, the remaining 8 channels must
+have the same frequency.  On the other hand, 16 independent PWM duty cycles are
+possible at the same frequency.
 
 ADC (analog to digital conversion)
 ----------------------------------
@@ -361,7 +379,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
     i2c.writeto(0x3a, '12') # write '12' to device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
-    i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+    i2c.writeto(0x3a, buf)  # write the given buffer to the peripheral
 
 Hardware I2C bus
 ----------------
@@ -459,15 +477,15 @@ SD card
 
 See :ref:`machine.SDCard <machine.SDCard>`. ::
 
-    import machine, uos
+    import machine, os
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    uos.mount(sd, "/sd")  # mount
+    os.mount(sd, "/sd")  # mount
 
-    uos.listdir('/sd')    # list directory contents
+    os.listdir('/sd')    # list directory contents
 
-    uos.umount('/sd')     # eject
+    os.umount('/sd')     # eject
 
 RMT
 ---

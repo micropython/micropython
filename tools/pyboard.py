@@ -659,23 +659,37 @@ def main():
     group.add_argument(
         "--soft-reset",
         default=True,
-        action=argparse.BooleanOptionalAction,
-        help="Whether to perform a soft reset when connecting to the board.",
+        action="store_true",
+        help="Whether to perform a soft reset when connecting to the board [default]",
     )
+    group.add_argument(
+        "--no-soft-reset",
+        action="store_false",
+        dest="soft_reset",
+    )
+    group = cmd_parser.add_mutually_exclusive_group()
     group.add_argument(
         "--follow",
         action="store_true",
+        default=None,
         help="follow the output after running the scripts [default if no scripts given]",
     )
     group.add_argument(
         "--no-follow",
+        action="store_false",
+        dest="follow",
+    )
+    group = cmd_parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--exclusive",
         action="store_true",
-        help="Do not follow the output after running the scripts.",
+        default=True,
+        help="Open the serial device for exclusive access [default]",
     )
     group.add_argument(
         "--no-exclusive",
-        action="store_true",
-        help="Do not try to open the serial device for exclusive access.",
+        action="store_false",
+        dest="exclusive",
     )
     cmd_parser.add_argument(
         "-f",
@@ -690,7 +704,7 @@ def main():
     # open the connection to the pyboard
     try:
         pyb = Pyboard(
-            args.device, args.baudrate, args.user, args.password, args.wait, not args.no_exclusive
+            args.device, args.baudrate, args.user, args.password, args.wait, args.exclusive
         )
     except PyboardError as er:
         print(er)
@@ -709,13 +723,13 @@ def main():
 
         def execbuffer(buf):
             try:
-                if args.no_follow:
-                    pyb.exec_raw_no_follow(buf)
-                    ret_err = None
-                else:
+                if args.follow is None or args.follow:
                     ret, ret_err = pyb.exec_raw(
                         buf, timeout=None, data_consumer=stdout_write_bytes
                     )
+                else:
+                    pyb.exec_raw_no_follow(buf)
+                    ret_err = None
             except PyboardError as er:
                 print(er)
                 pyb.close()

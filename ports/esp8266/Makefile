@@ -91,12 +91,11 @@ SRC_C = \
 	lexerstr32.c \
 	uart.c \
 	esppwm.c \
-	espneopixel.c \
 	espapa102.c \
 	modpyb.c \
 	modmachine.c \
+	machine_bitstream.c \
 	machine_pin.c \
-	machine_pwm.c \
 	machine_rtc.c \
 	machine_adc.c \
 	machine_uart.c \
@@ -119,33 +118,45 @@ EXTMOD_SRC_C = $(addprefix extmod/,\
         )
 
 LIB_SRC_C = $(addprefix lib/,\
-	embed/__errno.c \
-	libc/string0.c \
 	libm/math.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
+	libm/erf_lgamma.c \
 	libm/kf_rem_pio2.c \
 	libm/kf_sin.c \
 	libm/kf_cos.c \
 	libm/kf_tan.c \
 	libm/ef_rem_pio2.c \
+	libm/sf_erf.c \
 	libm/sf_sin.c \
 	libm/sf_cos.c \
 	libm/sf_tan.c \
 	libm/sf_frexp.c \
 	libm/sf_modf.c \
 	libm/sf_ldexp.c \
+	libm/acoshf.c \
 	libm/asinfacosf.c \
+	libm/asinhf.c \
 	libm/atanf.c \
+	libm/atanhf.c \
 	libm/atan2f.c \
+	libm/log1pf.c \
 	libm/roundf.c \
-	mp-readline/readline.c \
+	libm/wf_lgamma.c \
+	libm/wf_tgamma.c \
+	)
+
+SHARED_SRC_C = $(addprefix shared/,\
+	libc/__errno.c \
+	libc/string0.c \
 	netutils/netutils.c \
+	readline/readline.c \
+	runtime/interrupt_char.c \
+	runtime/pyexec.c \
+	runtime/stdout_helpers.c \
+	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
-	utils/pyexec.c \
-	utils/interrupt_char.c \
-	utils/sys_stdio_mphal.c \
 	)
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
@@ -161,11 +172,12 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(SHARED_SRC_C) $(DRIVERS_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 

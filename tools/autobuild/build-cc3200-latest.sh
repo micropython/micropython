@@ -8,7 +8,7 @@ function do_build() {
     shift
     echo "building $descr $board"
     build_dir=/tmp/cc3200-build-$board
-    $MICROPY_AUTOBUILD_MAKE -B $@ BTARGET=application BOARD=$board BUILD=$build_dir || exit 1
+    $MICROPY_AUTOBUILD_MAKE $@ BTARGET=application BOARD=$board BUILD=$build_dir || exit 1
     zip $dest_dir/$descr$fw_tag.zip $build_dir/mcuimg.bin
     rm -rf $build_dir
 }

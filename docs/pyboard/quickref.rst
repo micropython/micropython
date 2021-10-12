@@ -45,7 +45,7 @@ See :mod:`pyb`. ::
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -191,7 +191,7 @@ See :ref:`pyb.SPI <pyb.SPI>`. ::
 
     from pyb import SPI
 
-    spi = SPI(1, SPI.MASTER, baudrate=200000, polarity=1, phase=0)
+    spi = SPI(1, SPI.CONTROLLER, baudrate=200000, polarity=1, phase=0)
     spi.send('hello')
     spi.recv(5) # receive 5 bytes on the bus
     spi.send_recv('hello') # send and receive 5 bytes
@@ -210,12 +210,12 @@ eg ``I2C(1)``.  Software I2C is also available by explicitly specifying the
     i2c = I2C('X', freq=400000)                 # create hardware I2c object
     i2c = I2C(scl='X1', sda='X2', freq=100000)  # create software I2C object
 
-    i2c.scan()                          # returns list of slave addresses
-    i2c.writeto(0x42, 'hello')          # write 5 bytes to slave with address 0x42
-    i2c.readfrom(0x42, 5)               # read 5 bytes from slave
+    i2c.scan()                          # returns list of peripheral addresses
+    i2c.writeto(0x42, 'hello')          # write 5 bytes to peripheral with address 0x42
+    i2c.readfrom(0x42, 5)               # read 5 bytes from peripheral
 
-    i2c.readfrom_mem(0x42, 0x10, 2)     # read 2 bytes from slave 0x42, slave memory 0x10
-    i2c.writeto_mem(0x42, 0x10, 'xy')   # write 2 bytes to slave 0x42, slave memory 0x10
+    i2c.readfrom_mem(0x42, 0x10, 2)     # read 2 bytes from peripheral 0x42, peripheral memory 0x10
+    i2c.writeto_mem(0x42, 0x10, 'xy')   # write 2 bytes to peripheral 0x42, peripheral memory 0x10
 
 Note: for legacy I2C support see :ref:`pyb.I2C <pyb.I2C>`.
 

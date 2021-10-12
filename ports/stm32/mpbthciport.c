@@ -31,7 +31,7 @@
 #include "mpbthciport.h"
 #include "softtimer.h"
 #include "pendsv.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 
 #if MICROPY_PY_BLUETOOTH
 

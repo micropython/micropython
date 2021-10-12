@@ -32,18 +32,26 @@
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
-#if defined(STM32H743xx)
+#if defined(STM32H743xx) || defined(STM32H750xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #elif defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+#define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
 // This macro returns the actual voltage scaling level factoring in the power overdrive bit.
 // If the current voltage scale is VOLTAGE_SCALE1 and PWER_ODEN bit is set return VOLTAGE_SCALE0
 // otherwise the current voltage scaling (level VOS1 to VOS3) set in PWER_CSR is returned instead.
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+// TODO
+#define POWERCTRL_GET_VOLTAGE_SCALING() PWR_REGULATOR_VOLTAGE_SCALE0
+#else
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
     (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ? \
     PWR_REGULATOR_VOLTAGE_SCALE0 : (PWR->CSR1 & PWR_CSR1_ACTVOS))
+#endif
 #else
 #define RCC_SR          CSR
 #define RCC_SR_SFTRSTF  RCC_CSR_SFTRSTF
@@ -147,6 +155,15 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
     { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
     { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
     // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
+};
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+    // See table 15 "FLASH recommended number of wait states and programming delay" of RM0455.
+    {88, PWR_REGULATOR_VOLTAGE_SCALE3},
+    {160, PWR_REGULATOR_VOLTAGE_SCALE2},
+    {225, PWR_REGULATOR_VOLTAGE_SCALE1},
+    {280, PWR_REGULATOR_VOLTAGE_SCALE0},
 };
 #elif defined(STM32H7)
 STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
@@ -519,10 +536,103 @@ set_clk:
 
 #elif defined(STM32WB)
 
+#include "stm32wbxx_ll_utils.h"
+
+#define LPR_THRESHOLD (2000000)
+#define VOS2_THRESHOLD (16000000)
+
+enum {
+    SYSCLK_MODE_NONE,
+    SYSCLK_MODE_MSI,
+    SYSCLK_MODE_HSE_64M,
+};
+
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
-    // For now it's not supported to change SYSCLK (only bus dividers).
-    if (sysclk != HAL_RCC_GetSysClockFreq()) {
-        return -MP_EINVAL;
+    int sysclk_mode = SYSCLK_MODE_NONE;
+    uint32_t msirange = 0;
+    uint32_t sysclk_cur = HAL_RCC_GetSysClockFreq();
+
+    if (sysclk == sysclk_cur) {
+        // SYSCLK does not need changing.
+    } else if (sysclk == 64000000) {
+        sysclk_mode = SYSCLK_MODE_HSE_64M;
+    } else {
+        for (msirange = 0; msirange < MP_ARRAY_SIZE(MSIRangeTable); ++msirange) {
+            if (MSIRangeTable[msirange] != 0 && sysclk == MSIRangeTable[msirange]) {
+                sysclk_mode = SYSCLK_MODE_MSI;
+                break;
+            }
+        }
+
+        if (sysclk_mode == SYSCLK_MODE_NONE) {
+            // Unsupported SYSCLK value.
+            return -MP_EINVAL;
+        }
+    }
+
+    // Exit LPR if SYSCLK will increase beyond threshold.
+    if (LL_PWR_IsEnabledLowPowerRunMode()) {
+        if (sysclk > LPR_THRESHOLD) {
+            if (sysclk_cur < LPR_THRESHOLD) {
+                // Must select MSI=LPR_THRESHOLD=2MHz to exit LPR.
+                LL_RCC_MSI_SetRange(LL_RCC_MSIRANGE_5);
+            }
+
+            // Exit LPR and wait for the regulator to be ready.
+            LL_PWR_ExitLowPowerRunMode();
+            while (!LL_PWR_IsActiveFlag_REGLPF()) {
+            }
+        }
+    }
+
+    // Select VOS1 if SYSCLK will increase beyond threshold.
+    if (sysclk > VOS2_THRESHOLD) {
+        LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+        while (LL_PWR_IsActiveFlag_VOS()) {
+        }
+    }
+
+    if (sysclk_mode == SYSCLK_MODE_HSE_64M) {
+        SystemClock_Config();
+    } else if (sysclk_mode == SYSCLK_MODE_MSI) {
+        // Set flash latency to maximum to ensure the latency is large enough for
+        // both the current SYSCLK and the SYSCLK that will be selected below.
+        LL_FLASH_SetLatency(LL_FLASH_LATENCY_3);
+        while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_3) {
+        }
+
+        // Before changing the MSIRANGE value, if MSI is on then it must also be ready.
+        while ((RCC->CR & (RCC_CR_MSIRDY | RCC_CR_MSION)) == RCC_CR_MSION) {
+        }
+        LL_RCC_MSI_SetRange(msirange << RCC_CR_MSIRANGE_Pos);
+
+        // Clock SYSCLK from MSI.
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
+        while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI) {
+        }
+
+        // Disable PLL to decrease power consumption.
+        LL_RCC_PLL_Disable();
+        while (LL_RCC_PLL_IsReady() != 0) {
+        }
+        LL_RCC_PLL_DisableDomain_SYS();
+
+        // Select VOS2 if possible.
+        if (sysclk <= VOS2_THRESHOLD) {
+            LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE2);
+        }
+
+        // Enter LPR if possible.
+        if (sysclk <= LPR_THRESHOLD) {
+            LL_PWR_EnterLowPowerRunMode();
+        }
+
+        // Configure flash latency for the new SYSCLK.
+        LL_SetFlashLatency(sysclk);
+
+        // Update HAL state and SysTick.
+        SystemCoreClockUpdate();
+        powerctrl_config_systick();
     }
 
     // Return straightaway if the clocks are already at the desired frequency.
@@ -743,6 +853,9 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define SR_BITS (RTC_SR_ALRAF | RTC_SR_ALRBF | RTC_SR_WUTF | RTC_SR_TSF)
     #else
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
@@ -759,7 +872,11 @@ void powerctrl_enter_standby_mode(void) {
     RTC->CR &= ~CR_BITS;
 
     // clear RTC wake-up flags
+    #if defined(SR_BITS)
+    RTC->SR &= ~SR_BITS;
+    #else
     RTC->ISR &= ~ISR_BITS;
+    #endif
 
     #if defined(STM32F7)
     // Save EWUP state

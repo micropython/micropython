@@ -37,8 +37,8 @@
 #if MICROPY_VFS_FAT
 
 static const char fresh_boot_py[] =
-    "# boot.py -- run on boot-up\r\n"
-    "# can run arbitrary Python, but best to keep it minimal\r\n"
+    "# boot.py -- run on boot to configure USB and filesystem\r\n"
+    "# Put app code in main.py\r\n"
     "\r\n"
     "import machine\r\n"
     "import pyb\r\n"

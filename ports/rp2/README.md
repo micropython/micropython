@@ -29,6 +29,7 @@ Building of the RP2 firmware is done entirely using CMake, although a simple
 Makefile is also provided as a convenience.  To build the firmware run (from
 this directory):
 
+    $ make submodules
     $ make clean
     $ make
 

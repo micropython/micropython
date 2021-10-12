@@ -45,6 +45,7 @@ int mp_bluetooth_hci_controller_wakeup(void);
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate);
 int mp_bluetooth_hci_uart_deinit(void);
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate);
+int mp_bluetooth_hci_uart_any(void);
 int mp_bluetooth_hci_uart_readchar(void);
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len);
 

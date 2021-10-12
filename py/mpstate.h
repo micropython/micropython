@@ -44,7 +44,6 @@
 #if MICROPY_DYNAMIC_COMPILER
 typedef struct mp_dynamic_compiler_t {
     uint8_t small_int_bits; // must be <= host small_int_bits
-    bool opt_cache_map_lookup_in_bytecode;
     bool py_builtins_str_unicode;
     uint8_t native_arch;
     uint8_t nlr_buf_num_regs;
@@ -231,6 +230,11 @@ typedef struct _mp_state_vm_t {
     // This is a global mutex used to make the VM/runtime thread-safe.
     mp_thread_mutex_t gil_mutex;
     #endif
+
+    #if MICROPY_OPT_MAP_LOOKUP_CACHE
+    // See mp_map_lookup.
+    uint8_t map_lookup_cache[MICROPY_OPT_MAP_LOOKUP_CACHE_SIZE];
+    #endif
 } mp_state_vm_t;
 
 // This structure holds state that is specific to a given thread.
@@ -265,6 +269,9 @@ typedef struct _mp_state_thread_t {
 
     // pending exception object (MP_OBJ_NULL if not pending)
     volatile mp_obj_t mp_pending_exception;
+
+    // If MP_OBJ_STOP_ITERATION is propagated then this holds its argument.
+    mp_obj_t stop_iteration_arg;
 
     #if MICROPY_PY_SYS_SETTRACE
     mp_obj_t prof_trace_callback;

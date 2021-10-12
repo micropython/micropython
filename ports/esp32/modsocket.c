@@ -45,7 +45,7 @@
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "mdns.h"
 #include "modnetwork.h"
 

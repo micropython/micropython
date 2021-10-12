@@ -17,10 +17,7 @@ by the target MicroPython runtime (eg onto a pyboard's filesystem), and then
 imported like any other Python module using `import foo`.
 
 Different target runtimes may require a different format of the compiled
-bytecode, and such options can be passed to the cross compiler.  For example,
-the unix port of MicroPython requires the following:
-
-    $ ./mpy-cross -mcache-lookup-bc foo.py
+bytecode, and such options can be passed to the cross compiler.
 
 If the Python code contains `@native` or `@viper` annotations, then you must
 specify `-march` to match the target architecture.

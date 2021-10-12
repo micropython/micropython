@@ -85,7 +85,7 @@ extern struct _spi_bdev_t spi_bdev;
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_J13) // red
-#define MICROPY_HW_LED2             (pin_J5) // green 
+#define MICROPY_HW_LED2             (pin_J5) // green
 #define MICROPY_HW_LED3             (pin_A12) // green
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))

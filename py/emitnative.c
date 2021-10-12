@@ -841,10 +841,13 @@ STATIC void need_reg_single(emit_t *emit, int reg_needed, int skip_stack_pos) {
     }
 }
 
+// Ensures all unsettled registers that hold Python values are copied to the
+// concrete Python stack.  All registers are then free to use.
 STATIC void need_reg_all(emit_t *emit) {
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_REG) {
+            DEBUG_printf("    reg(%u) to local(%u)\n", si->data.u_reg, emit->stack_start + i);
             si->kind = STACK_VALUE;
             emit_native_mov_state_reg(emit, emit->stack_start + i, si->data.u_reg);
         }
@@ -871,23 +874,21 @@ STATIC vtype_kind_t load_reg_stack_imm(emit_t *emit, int reg_dest, const stack_i
     }
 }
 
+// Copies all unsettled registers and immediates that are Python values into the
+// concrete Python stack.  This ensures the concrete Python stack holds valid
+// values for the current stack_size.
+// This function may clobber REG_TEMP1.
 STATIC void need_stack_settled(emit_t *emit) {
     DEBUG_printf("  need_stack_settled; stack_size=%d\n", emit->stack_size);
-    for (int i = 0; i < emit->stack_size; i++) {
-        stack_info_t *si = &emit->stack_info[i];
-        if (si->kind == STACK_REG) {
-            DEBUG_printf("    reg(%u) to local(%u)\n", si->data.u_reg, emit->stack_start + i);
-            si->kind = STACK_VALUE;
-            emit_native_mov_state_reg(emit, emit->stack_start + i, si->data.u_reg);
-        }
-    }
+    need_reg_all(emit);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
         if (si->kind == STACK_IMM) {
             DEBUG_printf("    imm(" INT_FMT ") to local(%u)\n", si->data.u_imm, emit->stack_start + i);
             si->kind = STACK_VALUE;
-            si->vtype = load_reg_stack_imm(emit, REG_TEMP0, si, false);
-            emit_native_mov_state_reg(emit, emit->stack_start + i, REG_TEMP0);
+            // using REG_TEMP1 to avoid clobbering REG_TEMP0 (aka REG_RET)
+            si->vtype = load_reg_stack_imm(emit, REG_TEMP1, si, false);
+            emit_native_mov_state_reg(emit, emit->stack_start + i, REG_TEMP1);
         }
     }
 }
@@ -1559,6 +1560,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             int reg_base = REG_ARG_1;
             int reg_index = REG_ARG_2;
             emit_pre_pop_reg_flexible(emit, &vtype_base, &reg_base, reg_index, reg_index);
+            need_reg_single(emit, REG_RET, 0);
             switch (vtype_base) {
                 case VTYPE_PTR8: {
                     // pointer to 8-bit memory
@@ -1622,6 +1624,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
             int reg_index = REG_ARG_2;
             emit_pre_pop_reg_flexible(emit, &vtype_index, &reg_index, REG_ARG_1, REG_ARG_1);
             emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1);
+            need_reg_single(emit, REG_RET, 0);
             if (vtype_index != VTYPE_INT && vtype_index != VTYPE_UINT) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
                     MP_ERROR_TEXT("can't load with '%q' index"), vtype_to_qstr(vtype_index));

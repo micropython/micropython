@@ -796,9 +796,11 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 #endif
 
 STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args) {
-    // optimise away parenthesis around an expression if possible
+    // Simplify and optimise certain rules, to reduce memory usage and simplify the compiler.
     if (rule_id == RULE_atom_paren) {
-        // there should be just 1 arg for this rule
+        // Remove parenthesis around a single expression if possible.
+        // This atom_paren rule always has a single argument, and after this
+        // optimisation that argument is either NULL or testlist_comp.
         mp_parse_node_t pn = peek_result(parser, 0);
         if (MP_PARSE_NODE_IS_NULL(pn)) {
             // need to keep parenthesis for ()
@@ -808,6 +810,34 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
             // parenthesis around a single expression, so it's just the expression
             return;
         }
+    } else if (rule_id == RULE_testlist_comp) {
+        // The testlist_comp rule can be the sole argument to either atom_parent
+        // or atom_bracket, for (...) and [...] respectively.
+        assert(num_args == 2);
+        mp_parse_node_t pn = peek_result(parser, 0);
+        if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+            mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+            if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_testlist_comp_3b) {
+                // tuple of one item, with trailing comma
+                pop_result(parser);
+                --num_args;
+            } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_testlist_comp_3c) {
+                // tuple of many items, convert testlist_comp_3c to testlist_comp
+                pop_result(parser);
+                assert(pn == peek_result(parser, 0));
+                pns->kind_num_nodes = rule_id | MP_PARSE_NODE_STRUCT_NUM_NODES(pns) << 8;
+                return;
+            } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_comp_for) {
+                // generator expression
+            } else {
+                // tuple with 2 items
+            }
+        } else {
+            // tuple with 2 items
+        }
+    } else if (rule_id == RULE_testlist_comp_3c) {
+        // steal first arg of outer testlist_comp rule
+        ++num_args;
     }
 
     #if MICROPY_COMP_CONST_FOLDING
@@ -826,6 +856,10 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
     pn->kind_num_nodes = (rule_id & 0xff) | (num_args << 8);
     for (size_t i = num_args; i > 0; i--) {
         pn->nodes[i - 1] = pop_result(parser);
+    }
+    if (rule_id == RULE_testlist_comp_3c) {
+        // need to push something non-null to replace stolen first arg of testlist_comp
+        push_result_node(parser, (mp_parse_node_t)pn);
     }
     push_result_node(parser, (mp_parse_node_t)pn);
 }
@@ -1152,6 +1186,14 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
             exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
                 MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
+        #if MICROPY_PY_FSTRINGS
+        } else if (lex->tok_kind == MP_TOKEN_MALFORMED_FSTRING) {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("malformed f-string"));
+        } else if (lex->tok_kind == MP_TOKEN_FSTRING_RAW) {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("raw f-strings are not supported"));
+        #endif
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("invalid syntax"));

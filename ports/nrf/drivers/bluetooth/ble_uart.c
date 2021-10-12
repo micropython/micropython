@@ -30,7 +30,7 @@
 #include "ble_uart.h"
 #include "ringbuffer.h"
 #include "mphalport.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/runtime.h"
 
 #if MICROPY_PY_SYS_STDFILES

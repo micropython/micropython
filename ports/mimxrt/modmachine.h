@@ -32,11 +32,14 @@
 extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_rtc_type;
+extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_sdcard_type;
 
 void machine_adc_init(void);
 void machine_pin_irq_deinit(void);
 void machine_timer_init_PIT(void);
+void machine_sdcard_init0(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MODMACHINE_H

@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/utils/mpirq.h"
+#include "shared/runtime/mpirq.h"
 #include "modrp2.h"
 
 #include "hardware/clocks.h"
