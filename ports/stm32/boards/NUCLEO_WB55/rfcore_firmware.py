@@ -173,12 +173,12 @@ _PATH_FUS_102 = "fus_102.bin"
 _PATH_FUS_110 = "fus_110.bin"
 _PATH_WS_BLE_HCI = "ws_ble_hci.bin"
 
-# This address is correct for versions up to v1.8 (assuming existing firmware deleted).
+# This address is correct for versions up to v1.12.1 (assuming existing firmware deleted).
 # Note any address from the end of the filesystem to the SFSA would be fine, but if
 # the FUS is fixed in the future to use the specified address then these are the "correct"
 # ones.
 _ADDR_FUS = 0x080EC000
-_ADDR_WS_BLE_HCI = 0x080DC000
+_ADDR_WS_BLE_HCI = 0x080E1000
 
 # When installing the FUS/WS it can take a long time to return to the first
 # GET_STATE HCI command.
@@ -537,9 +537,13 @@ def resume():
             elif status == 0:
                 log("WS update successful")
                 _write_state(_STATE_WAITING_FOR_WS)
-            elif result == 0:
-                # We get a error response with no payload sometimes at the end
-                # of the update (this is not in AN5185). Re-try the GET_STATE.
+            elif result in (0, 0xFE):
+                # We get an error response with no payload sometimes at the end
+                # of the update (this is not in AN5185). Additionally during
+                # WS update, newer WS reports (status, result) of (255, 254)
+                # before eventually reporting the correct state of
+                # _STATE_INSTALLING_WS once again. In these cases, re-try the
+                # GET_STATE.
                 # The same thing happens transitioning from WS to FUS mode.
                 # The actual HCI response has no payload, the result=0 comes from
                 # _parse_vendor_response above when len=7.
