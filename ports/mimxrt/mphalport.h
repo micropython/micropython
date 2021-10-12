@@ -75,7 +75,10 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 
 #define mp_hal_delay_us_fast(us) mp_hal_delay_us(us)
 
-static inline void mp_hal_ticks_cpu_init(void) {
+static inline void mp_hal_ticks_cpu_enable(void) {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->LAR = 0xc5acce55;
+    DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
