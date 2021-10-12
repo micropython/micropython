@@ -2,23 +2,29 @@
 .. _machine.Counter:
 
 class Counter-- Pulse Counter
-==============================================
+=============================
 
 This class provides a Pulse Counter service.
+
+Here is described a basics, commons for hadware-counters-based counters of MicroPython ports:
+
+* :ref:`ESP32.Counter <pcnt.Counter>`
+* mimxrt.Counter - under constructions
+* STM32.Counter - TODO
 
 Example usage::
 
     from machine import Pin, Counter
 
-    counter = Counter(Pin(0))             # create Counter object
-    counter.values()                      # get current counter value
-    counter.values(0)                     # Set all counters to 0
-    counter.deinit()                      # turn off the Counter
+    counter = Counter(Pin(0))  # create Counter object and start to count input pulses
+    counter.value()            # get current counter value
+    counter.set_value(0)       # Set counter to 0
+    counter.deinit()           # turn off the Counter
 
-    counter                               # show the Counter object properties
+    print(counter)             # show the Counter object properties
 
-Constructors
-------------
+Constructor
+-----------
 
 .. class:: Counter(input, \*, keyword_arguments)
 
@@ -26,16 +32,18 @@ Constructors
 
       - *input*  is the Counter input pin, which is usually a
         :ref:`machine.Pin <machine.Pin>` object, but a port may allow other values,
-        like integers or strings, which designate a Pin in the machine.PIN class.
+        like integers or strings, which designate a Pin in the *machine.Pin* class.
 
     Keyword arguments:
 
       - *direction*\=value. Specifying the direction of counting. Suitable values are:
 
-        - Counter.UP:   Count up, with a roll-over to 0 at 2**48-1.
-        - Counter.DOWN: Count down, with a roll-under to 2**48-1 at 0.
+        - Counter.UP:   Count up.
+        - Counter.DOWN: Count down.
         - a :ref:`machine.Pin <machine.Pin>` object. The level at that pin controls
-          the counting direction. Low: Count up, High: Count down.
+          the counting direction. Low: Count down, High: Count up.
+
+      - *scale*\=value. Sets the scale value. The default value is 1.
 
 Methods
 -------
@@ -47,12 +55,27 @@ Methods
 
 .. method:: Counter.deinit()
 
-   Stops the Counter, disables interrupts and releases the resources used by the encoder. On
-   Soft Reset, all instances of Encoder and Counter are deinitialized.
+   Stops the Counter, disables interrupts and releases the resources used by the counter. On
+   Soft Reset, all instances of Counter are deinitialized.
+
+.. method:: Counter.value()
+
+   Get the current raw Counter value as a signed integer as fast as possible.
+
+.. method:: Counter.set_value(value)
+
+   Set the current raw Counter value as signed integer.
 
 .. method:: Counter.position([value])
 
-   Get or set the current counter value of the Counter. The value is returned as a unsigned 48 bit
-   integer.
+   Get or set the current position of the Counter as signed integer.
+   With no arguments the actual position are returned.
 
-   With a single *value* argument the counter is set to that value.
+   With a single *value* argument the position of Counter is set to that value.
+
+   Pseudocode is::
+
+    def position(self, value=None):
+        if value is not None:
+            self._value = round(value / self.scale)
+        return self._value * self.scale

@@ -1,4 +1,4 @@
-The Counter and Encoder counters uses the ESP32 pulse counter hardware peripheral PCNT,
+The Counter and Encoder uses the ESP32 Pulse Counter (PCNT) hardware peripheral,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
 
@@ -22,104 +22,114 @@ while providing support for up to 8 simultaneous counters.
 .. _pcnt.Counter:
 
 Counter
+=======
+
+The Pulse Counter service.
+
+Constructor
+-----------
+
+.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RAISE, filter=12787, scale=1.0)
+
+    Counter start to count immediately. Filtering is enabled.
+
+    Keyword arguments:
+
+      - *direction*\=value. Specifying the direction of counting. Suitable values are:
+
+        - an integer 0 or False: Count down.
+        - an integer non 0 or True: Count up.
+        - a :ref:`machine.Pin <machine.Pin>` object. The level at that pin controls
+          the counting direction. Pin.value() == 0: Count down, Pin.value() == 1: Count up.
+
+      - *edge*\=value.  Which edges of the input signal will be counted by Counter:
+
+        - Counter.RAISE : Raise edges
+        - Counter.FALL : Fall edges
+        - Counter.RAISE | Counter.FALL : Both edges
+
+      - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
+        at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
+        A value of 0 sets the filter is switched off.
+
+      - *scale*\=value. Sets the scale value. The default value is 1.
+
+Methods
 -------
-
-The Counter.
-
-.. class:: Counter(edge: Edge, pulse_pin, dir_pin=None)
-
-    Counter start to count immediately. Filter value initialized by 1023. Filtering is enabled.
 
 .. method:: Counter.deinit()
 
     Free the input pins and counter.
 
-.. method:: Counter.count()
+.. method:: Counter.value()
 
     Return current 64-bit signed counter value.
 
-.. method:: Counter.clear()
+.. method:: Counter.set_value(*value*)
 
-    Set counter value to 0.
-
-.. method:: Counter.count_and_clear()
-
-    Return current 64-bit signed counter value and set it to 0.
+    Set the counter value, *value* is 64-bit signed integer.
 
 .. method:: Counter.pause()
 
 .. method:: Counter.resume()
 
-.. method:: Counter.set_count(new_value)
-
-    Set the counter value, new_value is 64-bit signed integer.
-
-.. method:: Counter.set_filter_value(filter_val)
+.. method:: Counter.filter([value])
 
     Set filter value. 0 disable filtering.
-
-.. method:: Counter.get_filter_value()
-
     Return current filter value.
 
 .. _pcnt.Encoder:
 
 Encoder
--------
+=======
 
+This class provides an Quadrature Incremental Encoder service.
 See `Quadrature encoder outputs.
 <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_outputs>`_
-
-.. class:: Encoder(clock_multiplier:ClockMultiplier, aPin, bPin)
-
-The Encoder  has the same methods as the Counter and
-differs only in the constructor and internal hardware PCNT counter initialization.
-
-Enumarations
-------------
-
-.. class:: pcnt.Edge()
-
-   Which edges of the input signal will be counted by Counter.
-
-.. data:: Edge.RAISE
-          Edge.FALL
-          Edge.BOTH
-
-.. class:: ClockMultiplier()
-
-   When more Encoder resolution is needed, it is possible for the counter to count the leading
-   and trailing edges of the quadrature encoder’s pulse train from one channel,
-   which doubles (x2) the number of pulses. Counting both leading and trailing edges
-   of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses.
 
 .. image:: img/quad.png
     :width: 397px
 
-.. data:: ClockMultiplier.X1
-          ClockMultiplier.X2
-          ClockMultiplier.X4
+Constructor
+-----------
 
-   |    X1 - Count the leading(or trailing) edges from one channel.
-   |    X2 - Count the leading and trailing edges from one channel.
-   |    X4 - Count both leading and trailing edges of both channels.
+.. class:: Encoder(a_pin, b_pin, \*, x124=2, filter=12787, scale=1.0)
+
+    Encoder start to count immediately. Filtering is enabled.
+
+    Keyword arguments:
+
+      - *x124*\=value. Possible values is 1, 2, 4.
+        When more Encoder resolution is needed, it is possible for the counter to count the leading
+        and trailing edges of the quadrature encoder’s pulse train from one channel,
+        which doubles (x2) the number of pulses. Counting both leading and trailing edges
+        of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses:
+
+          - 1 - Count the leading(or trailing) edges from one channel.
+          - 2 - Count the leading and trailing edges from one channel.
+          - 4 - Count both leading and trailing edges of both channels.
+
+      - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
+        at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
+        A value of 0 sets the filter is switched off.
+
+      - *scale*\=value. Sets the scale value. The default value is 1.
+
+The Encoder has the same methods as the Counter and differs only
+in the constructor and internal hardware PCNT counter initialization.
 
 ::
 
-    import machine
+    from machine import Counter, Pin
 
     try:
-        cnt = machine.Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN), pcnt.ClockMultiplier.X4)
+        cnt = Counter(Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
 
-        flt = cnt.get_filter_value()  # return current filter value.
-        cnt.set_filter_value(100)     # filter delay is
-        cnt.filter_disable()          #
-        cnt.filter_enable()           #
-        c = cnt.count_and_clear()     # get counter and clear it
-        cnt.clear()
+        flt = cnt.filter()  # return current filter value.
+        cnt.filter(10_000)  # filter delay is 10ms
         cnt.pause()
         cnt.resume()
-        cnt.set_count(12345)          # set the counter value
+        cnt.set_value(12345)          # set the counter value
 
         _c = None
         while True:

@@ -50,6 +50,7 @@ For your convenience, some of technical specifications are provided below:
 * SPI: 4 SPI interfaces (one used for FlashROM)
 * I2C: 2 I2C (bitbang implementation available on any pins)
 * I2S: 2
+* CAN bus: 1
 * ADC: 12-bit SAR ADC up to 18 channels
 * DAC: 2 8-bit DACs
 * RMT: 8 channels allowing accurate pulse transmit/receive

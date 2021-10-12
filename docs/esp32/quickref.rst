@@ -466,11 +466,9 @@ the total summary available number of Counter and Encoder is up to 8.
 
 See :ref:`pcnt.Counter <pcnt.Counter>` for details.  Simplest usage is::
 
-    import machine
+    from machine import Pin, Counter
 
-    cnt = machine.Counter(Pin(17, mode=Pin.IN), pcnt.Edge.RAISE)
-    #               pulse signal input pin
-    #               kind of counted edges - count rase edges,
+    cnt = Counter(Pin(17, mode=Pin.IN))
 
     _c = None
     while True:
@@ -484,17 +482,16 @@ Encoder
 
 The Encoder (Quadrature Incremental Encoder) counts quadrature-encoded pulses
 (two square wave signals with ~50% duty cycle and ~90-degree phase difference between them).
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same hardware peripheral,
+It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
 See :ref:`pcnt.Encoder <pcnt.Encoder>` for details.  Simplest usage is::
 
-    import machine
+    from machine import Pin, Encoder
 
-    cnt = machine.Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN), pcnt.ClockMultiplier.X2)
-    #              (pulse signal input A pin,
-    #               pulse signal input B pin,
-    #               clock multiplier is two (X2)),
+    cnt = Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
+    #             pulse signal input A pin,
+    #             pulse signal input B pin
 
     _c = None
     while True:
