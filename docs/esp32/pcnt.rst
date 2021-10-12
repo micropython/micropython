@@ -37,16 +37,19 @@ Constructor
 
       - *direction*\=value. Specifying the direction of counting. Suitable values are:
 
-        - an integer 0 or False: Count down.
-        - an integer non 0 or True: Count up.
+        - if value == 0 or False: count down
+        - if value != 0 or True: count up
         - a :ref:`machine.Pin <machine.Pin>` object. The level at that pin controls
-          the counting direction. Pin.value() == 0: Count down, Pin.value() == 1: Count up.
+          the counting direction:
+
+            - if Pin.value() == 0: count down
+            - if Pin.value() == 1: count up
 
       - *edge*\=value.  Which edges of the input signal will be counted by Counter:
 
-        - Counter.RAISE : Raise edges
-        - Counter.FALL : Fall edges
-        - Counter.RAISE | Counter.FALL : Both edges
+        - Counter.RAISE : raise edges
+        - Counter.FALL : fall edges
+        - Counter.RAISE | Counter.FALL : both edges
 
       - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
@@ -57,6 +60,11 @@ Constructor
 Methods
 -------
 
+.. method:: Counter.init(keyword_arguments)
+
+   Modify settings for the Counter object.  See the above constructor for details
+   about the parameters.
+
 .. method:: Counter.deinit()
 
     Free the input pins and counter.
@@ -65,7 +73,7 @@ Methods
 
     Return current 64-bit signed counter value.
 
-.. method:: Counter.set_value(*value*)
+.. method:: Counter.set_value(value)
 
     Set the counter value, *value* is 64-bit signed integer.
 
@@ -105,15 +113,23 @@ Constructor
         which doubles (x2) the number of pulses. Counting both leading and trailing edges
         of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses:
 
-          - 1 - Count the leading(or trailing) edges from one channel.
-          - 2 - Count the leading and trailing edges from one channel.
-          - 4 - Count both leading and trailing edges of both channels.
+          - 1 - count the leading(or trailing) edges from one channel.
+          - 2 - count the leading and trailing edges from one channel.
+          - 4 - count both leading and trailing edges of both channels.
 
       - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
         A value of 0 sets the filter is switched off.
 
       - *scale*\=value. Sets the scale value. The default value is 1.
+
+Methods
+-------
+
+.. method:: Encoder.init(keyword_arguments)
+
+   Modify settings for the Encoder object.  See the above constructor for details
+   about the parameters.
 
 The Encoder has the same methods as the Counter and differs only
 in the constructor and internal hardware PCNT counter initialization.

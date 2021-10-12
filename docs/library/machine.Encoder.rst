@@ -19,7 +19,7 @@ Example usage::
 
     from machine import Pin, Encoder
 
-    enc = Encoder(Pin(0), Pin(1))  # create Quadrature Encoder object and start to count input pulses
+    enc = Encoder(Pin(0), Pin(1))  # create Quadrature Encoder object and start to encode input pulses
     enc.value()                    # get current raw encoder value
     enc.set_value(0)               # set raw encoder value to 0
     enc.deinit()                   # turn off the Qudrature encoder

@@ -38,10 +38,13 @@ Constructor
 
       - *direction*\=value. Specifying the direction of counting. Suitable values are:
 
-        - Counter.UP:   Count up.
-        - Counter.DOWN: Count down.
+        - if value == 0 or False: count down
+        - if value != 0 or True: count up
         - a :ref:`machine.Pin <machine.Pin>` object. The level at that pin controls
-          the counting direction. Low: Count down, High: Count up.
+          the counting direction:
+
+            - if Pin.value() == 0: count down
+            - if Pin.value() == 1: count up
 
       - *scale*\=value. Sets the scale value. The default value is 1.
 
