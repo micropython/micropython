@@ -66,6 +66,18 @@
 #define MICROPY_BOARD_USBD_CDC_RX_EVENT usbd_cdc_rx_event_callback
 #endif
 
+// Called to poll Bluetooth HCI now.
+// Default function defined in mpbthciport.h.
+#ifndef MICROPY_BOARD_BT_HCI_POLL_NOW
+#define MICROPY_BOARD_BT_HCI_POLL_NOW mp_bluetooth_hci_poll_now_default
+#endif
+
+// Called to poll Bluetooth HCI after the given timeout.
+// Default function defined in mpbthciport.h.
+#ifndef MICROPY_BOARD_BT_HCI_POLL_IN_MS
+#define MICROPY_BOARD_BT_HCI_POLL_IN_MS mp_bluetooth_hci_poll_in_ms_default
+#endif
+
 // Constants to return from boardctrl_run_boot_py, boardctrl_run_main_py.
 enum {
     BOARDCTRL_CONTINUE,
