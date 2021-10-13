@@ -673,33 +673,23 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) },
-//  { MP_ROM_QSTR(MP_QSTR_filter_disable), MP_ROM_PTR(&pcnt_PCNT_filter_disable_obj) },
-//  { MP_ROM_QSTR(MP_QSTR_filter_enable), MP_ROM_PTR(&pcnt_PCNT_filter_enable_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_unit_config), MP_ROM_PTR(&pcnt_PCNT_unit_config_obj) },
     /*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_handler_add), MP_ROM_PTR(&pcnt_PCNT_isr_handler_add_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_handler_remove), MP_ROM_PTR(&pcnt_PCNT_isr_handler_remove_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_register), MP_ROM_PTR(&pcnt_PCNT_isr_register_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_isr_unregister), MP_ROM_PTR(&pcnt_PCNT_isr_unregister_obj) },
+    { MP_ROM_QSTR(MP_QSTR_isr_unregister), MP_ROM_PTR(&pcnt_PCNT_isr_unregister_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_service_install), MP_ROM_PTR(&pcnt_PCNT_isr_service_install_obj) },
     { MP_ROM_QSTR(MP_QSTR_pcnt_isr_service_uninstall), MP_ROM_PTR(&pcnt_PCNT_pcnt_isr_service_uninstall_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_set_mode), MP_ROM_PTR(&pcnt_PCNT_set_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_pin), MP_ROM_PTR(&pcnt_PCNT_set_pin_obj) },
-    */
-    /*
+
     { MP_ROM_QSTR(MP_QSTR_event_disable), MP_ROM_PTR(&pcnt_PCNT_event_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_event_enable), MP_ROM_PTR(&pcnt_PCNT_event_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_event_value), MP_ROM_PTR(&pcnt_PCNT_get_event_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_event_value), MP_ROM_PTR(&pcnt_PCNT_set_event_value_obj) },
-    */
-
-    // { MP_ROM_QSTR(MP_QSTR_get_counter_value), MP_ROM_PTR(&pcnt_PCNT_get_counter_value_obj) },
-    /*
-    { MP_ROM_QSTR(MP_QSTR_count_and_clear), MP_ROM_PTR(&pcnt_PCNT_count_and_clear_obj) },
-    { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&pcnt_PCNT_clear_obj) },
     */
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
