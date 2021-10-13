@@ -38,14 +38,12 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_points_list].u_obj, &mp_type_list)) {
-        mp_raise_TypeError_varg(translate("%q list must be a list"), MP_QSTR_point);
-    }
+    mp_obj_t points_list = mp_arg_validate_type(args[ARG_points_list].u_obj, &mp_type_list, MP_QSTR_points);
 
     vectorio_polygon_t *self = m_new_obj(vectorio_polygon_t);
     self->base.type = &vectorio_polygon_type;
 
-    common_hal_vectorio_polygon_construct(self, args[ARG_points_list].u_obj);
+    common_hal_vectorio_polygon_construct(self, points_list);
 
     // VectorShape parts
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;

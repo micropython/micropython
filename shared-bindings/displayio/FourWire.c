@@ -32,6 +32,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
@@ -78,7 +79,8 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
-    mp_obj_t spi = args[ARG_spi_bus].u_obj;
+    mp_obj_t spi = mp_arg_validate_type(args[ARG_spi_bus].u_obj, &busio_spi_type, MP_QSTR_spi_bus);
+
     displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;
 
@@ -149,7 +151,7 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 3, displayio_fourwire_obj_send);
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_fourwire_send_obj, 1, displayio_fourwire_obj_send);
 
 STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&displayio_fourwire_reset_obj) },

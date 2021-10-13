@@ -170,6 +170,13 @@ static void usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_VENDOR
+    if (usb_vendor_enabled()) {
+        total_descriptor_length += usb_vendor_descriptor_length();
+    }
+    #endif
+
+
     // Now we now how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor_allocation =
         allocate_memory(align32_size(total_descriptor_length),
@@ -231,6 +238,13 @@ static void usb_build_configuration_descriptor(void) {
     if (usb_midi_enabled()) {
         // Concatenate and fix up the MIDI descriptor.
         descriptor_buf_remaining += usb_midi_add_descriptor(
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
+    }
+    #endif
+
+    #if CIRCUITPY_USB_VENDOR
+    if (usb_vendor_enabled()) {
+        descriptor_buf_remaining += usb_vendor_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif

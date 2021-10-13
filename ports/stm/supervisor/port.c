@@ -177,7 +177,7 @@ safe_mode_t port_init(void) {
     HAL_Init(); // Turns on SysTick
     __HAL_RCC_SYSCFG_CLK_ENABLE();
 
-    #if CPY_STM32F4
+    #if CPY_STM32F4 || CPY_STM32L4
     __HAL_RCC_PWR_CLK_ENABLE();
     HAL_PWR_EnableBkUpAccess();
 

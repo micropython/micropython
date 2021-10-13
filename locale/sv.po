@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-09-25 07:37+0000\n"
+"PO-Revision-Date: 2021-10-11 09:40+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -111,10 +111,6 @@ msgstr "längden på %q måste vara %d-%d"
 msgid "%q length must be >= 1"
 msgstr "längden på %q måste vara >= 1"
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "%q-listan måste vara en lista"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr "%q måste vara <=%d"
@@ -152,13 +148,13 @@ msgstr "%q måste vara en tuple av längd 2"
 msgid "%q must be between %d and %d"
 msgstr "%q måste vara mellan %d och %d"
 
+#: py/argcheck.c
+msgid "%q must be of type %q"
+msgstr "%q måste vara av typen %q"
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q måste vara en potens av 2"
-
-#: py/argcheck.c
-msgid "%q must of type %q"
-msgstr "%q måste av typen %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -172,6 +168,10 @@ msgstr "Pinne %q ogiltig"
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
 msgstr "%q ska vara en int"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr "%q med report-ID 0 måste ha längd 1"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -377,7 +377,9 @@ msgstr "Adresstyp utanför intervallet"
 msgid "All CAN peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
@@ -790,10 +792,6 @@ msgstr "Klockförlängning för lång"
 msgid "Clock unit in use"
 msgstr "Klockenhet används"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Kolumnposten måste vara digitalio. DigitalInOut"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -971,35 +969,8 @@ msgstr "Fel: Bind misslyckades"
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Förväntade %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Förväntade en karaktäristik"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "Förväntar en DigitalInOut"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Förväntade en tjänst"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "Förväntar en UART"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Förväntade en UUID"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Förväntade en adress"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -1320,8 +1291,11 @@ msgstr "Ogiltig PWM-frekvens"
 msgid "Invalid Pin"
 msgstr "Ogiltig pinne"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Ogiltigt argument"
 
@@ -1369,10 +1343,6 @@ msgstr "Felaktig fil"
 msgid "Invalid format chunk size"
 msgstr "Ogiltig formatsegmentstorlek"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Ogiltig frekvens"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ogiltig minnesåtkomst."
@@ -1413,6 +1383,7 @@ msgstr "Ogiltig pinne för höger kanal"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1796,6 +1767,10 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr "Endast en adress är tillåten"
+
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1920,9 +1895,12 @@ msgstr ""
 "konstruktorn"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr "Pinnarna måste vara i sekvens"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential GPIO pins"
+msgstr "Pins måste vara sekventiella GPIO-pinnar"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2050,10 +2028,6 @@ msgstr "Begärd resurs hittades inte"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Höger kanal stöds inte"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "Radvärdet måste vara digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2709,10 +2683,6 @@ msgstr "buffert för liten"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "buttons måste vara digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3505,7 +3475,7 @@ msgstr "ogiltig syntax för heltal med bas %d"
 msgid "invalid syntax for number"
 msgstr "ogiltig syntax för tal"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr "Ogilitig källspårning"
 
@@ -3994,6 +3964,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
@@ -4012,6 +3983,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4547,6 +4519,42 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q-listan måste vara en lista"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q måste av typen %q"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Kolumnposten måste vara digitalio. DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Förväntade en karaktäristik"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Förväntar en DigitalInOut"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Förväntade en tjänst"
+
+#~ msgid "Expected a UART"
+#~ msgstr "Förväntar en UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Förväntade en UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Förväntade en adress"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Radvärdet måste vara digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "buttons måste vara digitalio.DigitalInOut"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Ogiltig frekvens"
 
 #~ msgid "Data 0 pin must be byte aligned."
 #~ msgstr "Datapinne 0 måste vara byte-justerad."

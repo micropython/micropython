@@ -285,8 +285,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 4, displayio_bitmap_obj_blit);
-// `displayio_bitmap_obj_blit` requires at least 4 arguments
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 1, displayio_bitmap_obj_blit);
 
 //|     def fill(self, value: int) -> None:
 //|         """Fills the bitmap with the supplied palette index value."""

@@ -51,6 +51,9 @@ extern uint8_t _ld_default_stack_size;
 #ifndef BOARD_NO_VBUS_SENSE
 #define BOARD_NO_VBUS_SENSE (0)
 #endif
+#ifndef BOARD_NO_USB_OTG_ID_SENSE
+#define BOARD_NO_USB_OTG_ID_SENSE (0)
+#endif
 
 // Peripheral implementation counts
 #define MAX_UART 10

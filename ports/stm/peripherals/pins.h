@@ -85,6 +85,9 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef STM32F412Zx
 #include "stm32f4/stm32f412zx/pins.h"
 #endif
+#ifdef STM32L4R5xx
+#include "stm32l4/stm32l4r5xx/pins.h"
+#endif
 #ifdef STM32F405xx
 #include "stm32f4/stm32f405xx/pins.h"
 #endif

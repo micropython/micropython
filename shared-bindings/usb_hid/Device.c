@@ -147,6 +147,10 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
             0, 255, MP_QSTR_out_report_lengths);
     }
 
+    if (report_ids_array[0] == 0 && report_ids_count > 1) {
+        mp_raise_ValueError_varg(translate("%q with a report ID of 0 must be of length 1"), MP_QSTR_report_ids);
+    }
+
     common_hal_usb_hid_device_construct(
         self, descriptor, usage_page, usage, report_ids_count, report_ids_array, in_report_lengths_array, out_report_lengths_array);
     return (mp_obj_t)self;
@@ -185,7 +189,7 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
     common_hal_usb_hid_device_send_report(self, ((uint8_t *)bufinfo.buf), bufinfo.len, report_id);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 2, usb_hid_device_send_report);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
 //|         """Get the last received HID OUT report for the given report ID.

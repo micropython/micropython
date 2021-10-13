@@ -31,7 +31,10 @@
 #include "shared-bindings/_stage/Text.h"
 
 
-void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
+void render_stage(
+    uint16_t x0, uint16_t y0,
+    uint16_t x1, uint16_t y1,
+    int16_t vx, int16_t vy,
     mp_obj_t *layers, size_t layers_size,
     uint16_t *buffer, size_t buffer_size,
     displayio_display_obj_t *display,
@@ -39,13 +42,14 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
 
 
     displayio_area_t area;
-    area.x1 = x0;
-    area.y1 = y0;
-    area.x2 = x1;
-    area.y2 = y1;
+    area.x1 = x0 * scale;
+    area.y1 = y0 * scale;
+    area.x2 = x1 * scale;
+    area.y2 = y1 * scale;
     displayio_display_core_set_region_to_update(
         &display->core, display->set_column_command, display->set_row_command,
-        NO_COMMAND, NO_COMMAND, display->data_as_commands, false, &area, display->SH1107_addressing);
+        NO_COMMAND, NO_COMMAND, display->data_as_commands, false, &area,
+        display->SH1107_addressing);
 
     while (!displayio_display_core_begin_transaction(&display->core)) {
         RUN_BACKGROUND_TASKS;
@@ -54,9 +58,9 @@ void render_stage(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1,
         CHIP_SELECT_TOGGLE_EVERY_BYTE,
         &display->write_ram_command, 1);
     size_t index = 0;
-    for (uint16_t y = y0; y < y1; ++y) {
+    for (int16_t y = y0 + vy; y < y1 + vy; ++y) {
         for (uint8_t yscale = 0; yscale < scale; ++yscale) {
-            for (uint16_t x = x0; x < x1; ++x) {
+            for (int16_t x = x0 + vx; x < x1 + vx; ++x) {
                 uint16_t c = TRANSPARENT;
                 for (size_t layer = 0; layer < layers_size; ++layer) {
                     layer_obj_t *obj = MP_OBJ_TO_PTR(layers[layer]);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ void board_init(void) {
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
-    #endif /* DEBUG */
+    #endif
 
     // SPI Flash and RAM
     common_hal_never_reset_pin(&pin_GPIO26);
@@ -54,7 +54,6 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-
 }
 
 void board_deinit(void) {

@@ -31,8 +31,17 @@
 
 #include STM32_HAL_H
 
-#define STM_BKPSRAM_SIZE    0x1000
-#define STM_BKPSRAM_START   BKPSRAM_BASE
+#if CPY_STM32L4
+    #define __HAL_RCC_BKPSRAM_CLK_ENABLE()
+    #define STM_BKPSRAM_SIZE  0
+    #define STM_BKPSRAM_START 0
+    #define HAL_PWREx_EnableBkUpReg()
+// backup RAM disabled for now. Will have the backup region at the top of SRAM3 which is retained.
+#else
+    #define STM_BKPSRAM_SIZE    0x1000
+    #define STM_BKPSRAM_START   BKPSRAM_BASE
+#endif
+
 
 STATIC bool initialized = false;
 
