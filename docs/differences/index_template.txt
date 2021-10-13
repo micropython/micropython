@@ -6,6 +6,106 @@ MicroPython differences from CPython
 The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
 MicroPython implements Python 3.4 and some select features of Python 3.5.
 
+Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their impact to MicroPython.
+
+   +----------------------------------------------------------------+---------------+
+   | **Extensions to the syntax:**                                  | **Status**    |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 448      | additional unpacking generalizations            | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 465      | a new matrix multiplication operator            | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 492      | coroutines with async and await syntax          | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | **Extensions and changes to runtime:**                                         |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 461      | % formatting for binary strings                 | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 475      | retrying system calls that fail with EINTR      | Completed     |    
+   +--------------+-------------------------------------------------+---------------+ 
+   | PEP 479      | change StopIteration handling inside generators | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | **Standard library changes:**                                                  |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 471      | os.scandir()                                    | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 485      | math.isclose(), a function for testing          | Completed     |
+   |              | approximate equality                            |               |
+   +--------------+-------------------------------------------------+---------------+
+   | **Miscellaneous changes:**                                                     |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 441      | improved Python zip application support         | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 486      | make the Python Laucher aware of virtual        | In Progress   |
+   |              | environments                                    |               |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 484      | type hints (advisory only)                      | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 488      | elimination of PYO files(not relevant for uPy)  | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 489      | redesigning extension module loading            | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+
+Python 3.6 beta 1 was released on 12 September 2016, and below is the summary of the new features available:
+
+  +-----------------------------------------------------------------+---------------+
+  | **New Syntax features:**                                        | **Status**    | 
+  +-----------------------------------------------------------------+---------------+
+  | A global or nonlocal statement must now textually appear before | In Progress   | 
+  | the first use of the affected name in the same scope.           |               | 
+  | For uPy: requires minor changes to the  compiler.               |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 498       | Literal String Formatting for uPy: yet another  |  In Progress  | 
+  |               | string formatting option, likely too much bloat |               |
+  |               | (or could replace both existing % and           |               | 
+  |               | str.format)                                     |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 515       | Underscores in Numeric Literals                 | Completed     |
+  |               | For uPy: requires minor changes to lexer        |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 525       | Aynchronous Generators (provisional)            | In Progrss    |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 526       | Syntax for Variable Annotations (Provisional)   | Completed     |
+  |               | For uPy: requires changes to Parser             |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 530       | Aynchoronous Comprehensions                     | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | **New Built-in Features:**                                                      |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 468       | Preserving the order of **kwargs in a function  | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 487       | Simpler customisation of class creation         | In Progress   | 
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 520       | Preserving Class Attribute Definition Order     | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | **Standard Library changes:**                                                   |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 495       | Local Time Disambiguation                       | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 506       | Adding a Secrets Module to the Standard Library | In Progress   |
+  |               | (not relevant to uPy core)                      |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 519       | Adding a file system protocol                   | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | **CPython internals(not relevant to uPy core):**                | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 509       | Add a private version to dict                   | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 523       | Adding a frame evaluation API to Cpython        | In Progress   |
+  +---------------+-------------------------------------------------+---------------+
+  | **Linux/Windows changes"**                                                      |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 524       | Make os.random() blocking on Linux              | In Progress   |
+  |               | (During system startup)                         |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 528       | Change Windows console encoding to UTF-8        | In Progress   |
+  |               | (Provisional)                                   |               |
+  +---------------+-------------------------------------------------+---------------+
+  | PEP 519       | Change Windows filesyatem encoding to UTF-8     | In Progress   |
+  |               | (Provisonal)                                    |               |
+  +---------------+-------------------------------------------------+---------------+
+
 .. toctree::
     :maxdepth: 2
+
 
