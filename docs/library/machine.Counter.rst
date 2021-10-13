@@ -18,7 +18,6 @@ Example usage::
 
     counter = Counter(Pin(0))  # create Counter object and start to count input pulses
     counter.value()            # get current counter value
-    counter.set_value(0)       # Set counter to 0
     counter.deinit()           # turn off the Counter
 
     print(counter)             # show the Counter object properties
@@ -64,10 +63,6 @@ Methods
 .. method:: Counter.value()
 
    Get the current raw Counter value as a signed integer as fast as possible.
-
-.. method:: Counter.set_value(value)
-
-   Set the current raw Counter value as signed integer.
 
 .. method:: Counter.position([value])
 

@@ -21,7 +21,6 @@ Example usage::
 
     enc = Encoder(Pin(0), Pin(1))  # create Quadrature Encoder object and start to encode input pulses
     enc.value()                    # get current raw encoder value
-    enc.set_value(0)               # set raw encoder value to 0
     enc.deinit()                   # turn off the Qudrature encoder
 
     print(enc)                     # show the Encoder object properties
@@ -58,10 +57,6 @@ Methods
 .. method:: Encoder.value()
 
    Get the current raw Encoder value as a signed integer as fast as possible.
-
-.. method:: Encoder.set_value(value)
-
-   Set the current raw Encoder value as signed integer.
 
 .. method:: Encoder.position([value])
 

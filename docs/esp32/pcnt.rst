@@ -29,7 +29,7 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RAISE, filter=12787, scale=1.0)
+.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RAISE, filter=12787, init=0, scale=1.0)
 
     Counter start to count immediately. Filtering is enabled.
 
@@ -55,6 +55,8 @@ Constructor
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
         A value of 0 sets the filter is switched off.
 
+      - *init*\=value. Sets the raw counter value. The start value is 0.
+
       - *scale*\=value. Sets the scale value. The default value is 1.
 
 Methods
@@ -72,10 +74,6 @@ Methods
 .. method:: Counter.value()
 
     Return current 64-bit signed counter value.
-
-.. method:: Counter.set_value(value)
-
-    Set the counter value, *value* is 64-bit signed integer.
 
 .. method:: Counter.pause()
 
@@ -101,7 +99,7 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(a_pin, b_pin, \*, x124=2, filter=12787, scale=1.0)
+.. class:: Encoder(a_pin, b_pin, \*, x124=2, filter=12787, init=0, scale=1.0)
 
     Encoder start to count immediately. Filtering is enabled.
 
@@ -117,11 +115,10 @@ Constructor
           - 2 - count the leading and trailing edges from one channel.
           - 4 - count both leading and trailing edges of both channels.
 
-      - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
-        at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
-        A value of 0 sets the filter is switched off.
-
-      - *scale*\=value. Sets the scale value. The default value is 1.
+    These keywords same as the Counter, see above:
+      - *filter*\=value
+      - *init*\=value
+      - *scale*\=value
 
 Methods
 -------
@@ -143,9 +140,6 @@ in the constructor and internal hardware PCNT counter initialization.
 
         flt = cnt.filter()  # return current filter value.
         cnt.filter(10_000)  # filter delay is 10ms
-        cnt.pause()
-        cnt.resume()
-        cnt.set_value(12345)          # set the counter value
 
         _c = None
         while True:
