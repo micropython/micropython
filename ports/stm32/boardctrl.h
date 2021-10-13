@@ -60,6 +60,12 @@
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
 #endif
 
+// Called when USBD CDC data is available.
+// Default function defined in usbd_cdc_interface.h.
+#ifndef MICROPY_BOARD_USBD_CDC_RX_EVENT
+#define MICROPY_BOARD_USBD_CDC_RX_EVENT usbd_cdc_rx_event_callback
+#endif
+
 // Constants to return from boardctrl_run_boot_py, boardctrl_run_main_py.
 enum {
     BOARDCTRL_CONTINUE,
