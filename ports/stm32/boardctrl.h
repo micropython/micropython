@@ -28,6 +28,11 @@
 
 #include "py/mpconfig.h"
 
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
 #ifndef MICROPY_BOARD_STARTUP
 #define MICROPY_BOARD_STARTUP powerctrl_check_enter_bootloader
 #endif
