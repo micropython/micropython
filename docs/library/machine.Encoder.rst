@@ -7,7 +7,7 @@ class Encoder -- Quadrature Incremental Encoder
 This class provides an Quadrature Incremental Encoder service.
 See `Incremental encoder <https://en.wikipedia.org/wiki/Incremental_encoder>`_.
 
-Here is described a basics, commons for an Pin-IRQ-based encoders
+Here is described a basics, commons for an Pin-IRQ-based encoders from Peter Hinch
 `Incremental encoders <https://github.com/peterhinch/micropython-samples/blob/master/encoders/ENCODERS.md>`_
 and hadware-counters-based encoders of MicroPython ports:
 
@@ -92,4 +92,4 @@ The *scale* parameter allows to get *Encoder.position()* in different units.::
     ...
 
 Simple check of Encoder performance
-`encoders_test.py <https://github.com/IhorNehrutsa/micropython-samples/blob/encoders/encoders/encoders_test.py>`_
+`encoders_test.py <https://github.com/peterhinch/micropython-samples/blob/encoders/encoders/encoders_test.py>`_
