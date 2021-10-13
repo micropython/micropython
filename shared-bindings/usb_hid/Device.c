@@ -50,7 +50,8 @@
 //|           Use a size of ``0`` for a report that is not an OUT report.
 //|           "OUT" is with respect to the host.
 //|
-//|         ``report_ids``, ``in_report_lengths``, and ``out_report_lengths`` must all be the same length.
+//|         ``report_ids``, ``in_report_lengths``, and ``out_report_lengths`` must all have the
+//|         same number of elements.
 //|
 //|         Here is an example of a `Device` with a descriptor that specifies two report IDs, 3 and 4.
 //|         Report ID 3 sends an IN report of length 5, and receives an OUT report of length 6.
@@ -192,7 +193,7 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
-//|         """Get the last received HID OUT report for the given report ID.
+//|         """Get the last received HID OUT or feature report for the given report ID.
 //|         The report ID may be omitted if there is no report ID, or only one report ID.
 //|         Return `None` if nothing received.
 //|         """
