@@ -100,6 +100,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_disable_obj, usb_hid_disable);
 //|     will be ignored, and the predefined report descriptor will be used.
 //|     But if the host does not request the boot keyboard,
 //|     the descriptor provided by `Device.KEYBOARD` will be used.
+//|
+//|     The HID boot device must usually be the first or only device presented by CircuitPython.
+//|     The HID device will be USB interface number 0.
+//|     To make sure it is the first device, disable other USB devices, including CDC and MSC (CIRCUITPY).
+//|     If you specify a non-zero ``boot_device``, and it is not the first device, CircuitPython
+//|     will enter safe mode to report this error.
 //|     """
 //|     ...
 //|

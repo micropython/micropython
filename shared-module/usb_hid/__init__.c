@@ -35,8 +35,6 @@
 #include "supervisor/memory.h"
 #include "supervisor/usb.h"
 
-volatile float indicator = 0.1f;
-
 static const uint8_t usb_hid_descriptor_template[] = {
     0x09,        //  0 bLength
     0x04,        //  1 bDescriptorType (Interface)
@@ -85,10 +83,9 @@ static usb_hid_device_obj_t hid_devices[MAX_HID_DEVICES];
 // If 0, USB HID is disabled.
 static mp_int_t num_hid_devices;
 
-// Which boot device is available 0: no boot devices, 1: boot keyboard, 2: boot mouse.
+// Which boot device is available? 0: no boot devices, 1: boot keyboard, 2: boot mouse.
 // This value is set by usb_hid.enable(), and used to build the HID interface descriptor.
 // The value is remembered here from boot.py to code.py.
-
 static uint8_t hid_boot_device;
 
 // Whether a boot device was requested by a SET_PROTOCOL request from the host.
