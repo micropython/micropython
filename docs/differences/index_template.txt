@@ -6,6 +6,49 @@ MicroPython differences from CPython
 The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
 MicroPython implements Python 3.4 and some select features of Python 3.5.
 
+Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their impact to MicroPython.
+
+
+   +----------------------------------------------------------------+---------------+
+   | **Extensions to the syntax: **                                 | **Status**    |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 448      | additional unpacking generalizations            | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 465      | a new matrix multiplication operator            | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 492      | coroutines with async and await syntax          | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | **Extensions and changes to runtime: **                                         |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 461      | % formatting for binary strings                 | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 475      | retrying system calls that fail with EINTR      | Completed     |    
+   +--------------+-------------------------------------------------+---------------+ 
+   | PEP 479      | change StopIteration handling inside generators | Completed     |
+   +--------------+-------------------------------------------------+---------------+
+   | **Standard library changes: **                                                 |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 471      | os.scandir()                                    | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 485      | math.isclose(), a function for testing          | Completed     |
+   |              | approximate equality                            |               |
+   +--------------+-------------------------------------------------+---------------+
+   | **Miscellaneous changes: **                                                    |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 441      | improved Python zip application support         | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 486      | make the Python Laucher aware of virtual        | In Progress   |
+   |              | environments                                    |               |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 484      | type hints (advisory only)                      | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 488      | elimination of PYO files(not relevant for uPy)  | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+   | PEP 489      | redesigning extension module loading            | In Progress   |
+   +--------------+-------------------------------------------------+---------------+
+
+
+ 
 .. toctree::
     :maxdepth: 2
 
