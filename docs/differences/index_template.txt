@@ -3,8 +3,21 @@
 MicroPython differences from CPython
 ====================================
 
-The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
-MicroPython implements Python 3.4 and some select features of Python 3.5.
+MicroPython implements Python 3.4 and some select features of Python 3.5 and
+above.  The sections below describe the current status of these features.
+
+.. toctree::
+
+    ../differences/python_35.rst
+    ../differences/python_36.rst
+    ../differences/python_37.rst
+    ../differences/python_38.rst
+    ../differences/python_39.rst
+
+For the features of Python that are implemented by MicroPython, there are
+sometimes differences in their behaviour compared to standard Python.  The
+operations listed in the sections below produce conflicting results in
+MicroPython when compared to standard Python.
 
 .. toctree::
     :maxdepth: 2
