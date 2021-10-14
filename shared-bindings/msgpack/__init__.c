@@ -112,7 +112,7 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
     common_hal_msgpack_pack(args[ARG_obj].u_obj, args[ARG_buffer].u_obj, handler);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 1, mod_msgpack_pack);
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 0, mod_msgpack_pack);
 
 
 //| def unpack(buffer: ReadableBuffer, *, ext_hook: Union[Callable[[int, bytes], object], None] = None, use_list: bool=True) -> object:
@@ -144,7 +144,7 @@ STATIC mp_obj_t mod_msgpack_unpack(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     return common_hal_msgpack_unpack(args[ARG_buffer].u_obj, hook, args[ARG_use_list].u_bool);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_unpack_obj, 1, mod_msgpack_unpack);
+MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_unpack_obj, 0, mod_msgpack_unpack);
 
 
 STATIC const mp_rom_map_elem_t msgpack_module_globals_table[] = {

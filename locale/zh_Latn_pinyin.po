@@ -113,10 +113,6 @@ msgstr "%q cháng dù bì xū wéi %d-%d"
 msgid "%q length must be >= 1"
 msgstr "%q cháng dù bì xū >= 1"
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "%q lièbiǎo bìxū shì lièbiǎo"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr "%q bì xū <= %d"
@@ -154,13 +150,13 @@ msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
 msgid "%q must be between %d and %d"
 msgstr "%q bì xū zài %d hé %d zhī jiān"
 
+#: py/argcheck.c
+msgid "%q must be of type %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q bì xū shì 2 de gōng lǜ"
-
-#: py/argcheck.c
-msgid "%q must of type %q"
-msgstr "%q bì xū lèi xíng %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -174,6 +170,10 @@ msgstr "%q yǐn jiǎo wúxiào"
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
 msgstr "%q yīnggāi shì yīgè int"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -379,7 +379,9 @@ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 msgid "All CAN peripherals are in use"
 msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
 
@@ -791,10 +793,6 @@ msgstr "Shízhōng shēnzhǎn tài zhǎng"
 msgid "Clock unit in use"
 msgstr "Shǐyòng shízhōng dānwèi"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -971,35 +969,8 @@ msgstr "cuò wù: bǎng dìng shī bài"
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Yùqí %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Yùqí de tèdiǎn"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "yù qī shù zì huà"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Yùqí fúwù"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "qī dài UART"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Yùqí UUID"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Qídài yīgè dìzhǐ"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -1323,8 +1294,11 @@ msgstr "Wúxiào de PWM pínlǜ"
 msgid "Invalid Pin"
 msgstr "wú xiào yǐn jiǎo"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -1372,10 +1346,6 @@ msgstr "Wúxiào de wénjiàn"
 msgid "Invalid format chunk size"
 msgstr "Géshì kuài dàxiǎo wúxiào"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Wúxiào de pínlǜ"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
@@ -1416,6 +1386,7 @@ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1799,6 +1770,10 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
 
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1922,9 +1897,12 @@ msgstr ""
 "gěigòuzào hánshù"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr "yǐn jiǎo bì xū shì lián xù de"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential GPIO pins"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2052,10 +2030,6 @@ msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Bù zhīchí yòu tōngdào"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2711,10 +2685,6 @@ msgstr "huǎnchōng qū tài xiǎo"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3508,7 +3478,7 @@ msgstr "jīshù wèi %d de zhěng shǔ de yǔfǎ wúxiào"
 msgid "invalid syntax for number"
 msgstr "wúxiào de hàomǎ yǔfǎ"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr "wú xiào zhuī sù"
 
@@ -3994,6 +3964,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
@@ -4012,6 +3983,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4547,6 +4519,42 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q bì xū lèi xíng %q"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Yùqí de tèdiǎn"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "yù qī shù zì huà"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Yùqí fúwù"
+
+#~ msgid "Expected a UART"
+#~ msgstr "qī dài UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Yùqí UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Qídài yīgè dìzhǐ"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Wúxiào de pínlǜ"
 
 #~ msgid "Data 0 pin must be byte aligned."
 #~ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."

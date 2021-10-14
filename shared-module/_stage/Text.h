@@ -41,6 +41,6 @@ typedef struct {
     uint8_t width, height;
 } text_obj_t;
 
-uint16_t get_text_pixel(text_obj_t *text, uint16_t x, uint16_t y);
+uint16_t get_text_pixel(text_obj_t *text, int16_t x, int16_t y);
 
 #endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE_TEXT

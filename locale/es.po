@@ -114,10 +114,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr "%q lista debe ser una lista"
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr "%q debe ser <= %d"
@@ -155,13 +151,13 @@ msgstr "%q debe ser una tupla de longitud 2"
 msgid "%q must be between %d and %d"
 msgstr "%q debe estar entre %d y %d"
 
+#: py/argcheck.c
+msgid "%q must be of type %q"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr ""
-
-#: py/argcheck.c
-msgid "%q must of type %q"
-msgstr "%q debe ser de tipo %q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -175,6 +171,10 @@ msgstr "pin inválido %q"
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
 msgstr "%q debe ser un int"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -380,7 +380,9 @@ msgstr "Tipo de dirección fuera de rango"
 msgid "All CAN peripherals are in use"
 msgstr "Todos los periféricos CAN están en uso"
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Todos los periféricos I2C están siendo usados"
 
@@ -797,10 +799,6 @@ msgstr "Estirado de reloj demasiado largo"
 msgid "Clock unit in use"
 msgstr "Clock unit está siendo utilizado"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Entrada de columna debe ser digitalio.DigitalInOut"
-
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Command must be an int between 0 and 255"
@@ -979,35 +977,8 @@ msgstr "Error: fallo al vincular"
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Se espera un %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Se esperaba una Característica"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "Se espera un DigitalInOut"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr "Se esperaba un servicio"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr "Se espera un UART"
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Se esperaba un UUID"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Se esperaba una dirección"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -1334,8 +1305,11 @@ msgstr "Frecuencia PWM inválida"
 msgid "Invalid Pin"
 msgstr "Pin inválido"
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
 
@@ -1383,10 +1357,6 @@ msgstr "Archivo inválido"
 msgid "Invalid format chunk size"
 msgstr "Formato de fragmento de formato no válido"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Frecuencia inválida"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Acceso a memoria no válido."
@@ -1427,6 +1397,7 @@ msgstr "Pin inválido para canal derecho"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1814,6 +1785,10 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr "Solamente una TouchAlarm puede ser configurada durante deep sleep."
 
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr ""
+
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1938,9 +1913,12 @@ msgstr ""
 "constructor"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
 msgstr "Los pines deben estar en orden secuencial"
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential GPIO pins"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2069,10 +2047,6 @@ msgstr "Recurso solicitado no encontrado"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Canal derecho no soportado"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2732,10 +2706,6 @@ msgstr "buffer demasiado pequeño"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "búfer muy pequeño para los bytes solicitados"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "los botones necesitan ser digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3530,7 +3500,7 @@ msgstr "sintaxis inválida para entero con base %d"
 msgid "invalid syntax for number"
 msgstr "sintaxis inválida para número"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -4022,6 +3992,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
@@ -4040,6 +4011,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4576,6 +4548,42 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q lista debe ser una lista"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q debe ser de tipo %q"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Entrada de columna debe ser digitalio.DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Se esperaba una Característica"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Se espera un DigitalInOut"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Se esperaba un servicio"
+
+#~ msgid "Expected a UART"
+#~ msgstr "Se espera un UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Se esperaba un UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Se esperaba una dirección"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "La entrada de la fila debe ser digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "los botones necesitan ser digitalio.DigitalInOut"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Frecuencia inválida"
 
 #~ msgid "Data 0 pin must be byte aligned."
 #~ msgstr "El pin de datos 0 debe ser alineado a byte."

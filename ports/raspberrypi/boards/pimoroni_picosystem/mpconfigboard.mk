@@ -15,5 +15,4 @@ CIRCUITPY_STAGE = 1
 
 CIRCUITPY_AUDIOIO = 1
 
-# TODO: how do we get stage.py and ugame.py on PicoSystem?
-# FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/picosystem
+FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/picosystem

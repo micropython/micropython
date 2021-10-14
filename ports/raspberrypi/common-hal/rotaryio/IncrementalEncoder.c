@@ -68,7 +68,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         pins[1] = MP_OBJ_FROM_PTR(pin_a);
         self->swapped = false;
         if (!common_hal_rp2pio_pins_are_sequential(2, pins)) {
-            mp_raise_RuntimeError(translate("Pins must be sequential"));
+            mp_raise_RuntimeError(translate("Pins must be sequential GPIO pins"));
         }
     }
 

@@ -37,7 +37,14 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#include "stm32f4xx_hal.h"
+#include STM32_HAL_H
+
+#ifndef __HAL_RCC_DAC_CLK_ENABLE
+#define __HAL_RCC_DAC_CLK_ENABLE __HAL_RCC_DAC1_CLK_ENABLE
+#endif
+#ifndef __HAL_RCC_DAC_CLK_DISABLE
+#define __HAL_RCC_DAC_CLK_DISABLE __HAL_RCC_DAC1_CLK_DISABLE
+#endif
 
 // DAC is shared between both channels.
 #if HAS_DAC
