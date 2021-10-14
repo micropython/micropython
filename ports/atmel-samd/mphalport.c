@@ -26,8 +26,8 @@
 
 #include <string.h>
 
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"

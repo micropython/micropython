@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -93,7 +93,7 @@
 //|           print("stopped")"""
 //|         ...
 //|
-STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_left_channel, ARG_right_channel, ARG_quiescent_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_left_channel, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -101,7 +101,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
         { MP_QSTR_quiescent_value, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0x8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *left_channel_pin = validate_obj_is_free_pin(args[ARG_left_channel].u_obj);
     const mcu_pin_obj_t *right_channel_pin = validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj);

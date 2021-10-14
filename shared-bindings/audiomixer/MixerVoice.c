@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -47,7 +47,8 @@
 //|         ...
 //|
 // TODO: support mono or stereo voices
-STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
     audiomixer_mixervoice_obj_t *self = m_new_obj(audiomixer_mixervoice_obj_t);
     self->base.type = &audiomixer_mixervoice_type;
 

@@ -4133,7 +4133,7 @@ msgstr "samplingsfrekvens utanför räckvidden"
 msgid "schedule queue full"
 msgstr "schemakön full"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "skriptkompilering stöds inte"
 

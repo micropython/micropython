@@ -30,7 +30,7 @@
 #include "py/reload.h"
 #include "py/objstr.h"
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/status_leds.h"

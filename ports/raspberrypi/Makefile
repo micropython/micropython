@@ -60,7 +60,7 @@ HAL_DIR=hal/$(MCU_SERIES)
 INC += -I. \
        -I../.. \
        -I../lib/mp-readline \
-       -I../lib/timeutils \
+       -I../shared/timeutils \
        -Iboards/$(BOARD) \
        -Iboards/ \
        -isystem sdk/ \
@@ -198,7 +198,7 @@ SRC_C += \
 	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
-	extmod/crypto-algorithms/sha256.c \
+	lib/crypto-algorithms/sha256.c \
 	fatfs_port.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \

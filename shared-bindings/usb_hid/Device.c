@@ -81,7 +81,7 @@
 //|     Uses Report ID 3 for its IN report."""
 //|
 
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
     enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
@@ -95,7 +95,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t descriptor_bufinfo;
     mp_get_buffer_raise(args[ARG_report_descriptor].u_obj, &descriptor_bufinfo, MP_BUFFER_READ);

@@ -9,7 +9,7 @@
 #include "shared-bindings/gnss/SatelliteSystem.h"
 #include "shared-bindings/gnss/PositionFix.h"
 
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 extern const mp_obj_type_t gnss_type;
 

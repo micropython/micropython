@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/objtype.h"
@@ -65,7 +65,7 @@
 //|         :param int x: Initial x position of the left edge within the parent.
 //|         :param int y: Initial y position of the top edge within the parent."""
 //|
-STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_bitmap, ARG_pixel_shader, ARG_width, ARG_height, ARG_tile_width, ARG_tile_height, ARG_default_tile, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -79,7 +79,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t bitmap = args[ARG_bitmap].u_obj;
 

@@ -36,7 +36,7 @@
 //|         :param int code: type code in range 0~127.
 //|         :param bytes data: representation."""
 //|
-STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     mod_msgpack_extype_obj_t *self = m_new_obj(mod_msgpack_extype_obj_t);
     self->base.type = &mod_msgpack_exttype_type;
     enum { ARG_code, ARG_data };
@@ -45,7 +45,7 @@ STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_data, MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     int code = args[ARG_code].u_int;
     if (code < 0 || code > 127) {

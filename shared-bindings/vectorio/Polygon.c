@@ -27,7 +27,7 @@
 //|         :param int x: Initial screen x position of the 0,0 origin in the points list.
 //|         :param int y: Initial screen y position of the 0,0 origin in the points list."""
 //|
-static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_pixel_shader, ARG_points_list, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
@@ -36,7 +36,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (!mp_obj_is_type(args[ARG_points_list].u_obj, &mp_type_list)) {
         mp_raise_TypeError_varg(translate("%q list must be a list"), MP_QSTR_point);

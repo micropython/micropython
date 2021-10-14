@@ -67,14 +67,17 @@ SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
 
-MAKE_FROZEN = $(PYTHON3) $(TOP)/tools/make-frozen.py
-MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
-MPY_TOOL = $(PYTHON3) $(TOP)/tools/mpy-tool.py
+MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
+MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
+MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
 MPY_LIB_DIR = $(TOP)/../micropython-lib
 
-MPY_LIB_DIR = $(TOP)/../micropython-lib
+ifeq ($(MICROPY_MPYCROSS),)
+MICROPY_MPYCROSS = $(TOP)/mpy-cross/mpy-cross
+MICROPY_MPYCROSS_DEPENDENCY = $(MICROPY_MPYCROSS)
+endif
 
 all:
 .PHONY: all

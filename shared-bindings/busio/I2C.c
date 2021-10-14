@@ -31,8 +31,8 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/util.h"
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -64,7 +64,7 @@
 //|            one for the onboard accelerometer, and one for offboard use."""
 //|         ...
 //|
-STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
     self->base.type = &busio_i2c_type;
     enum { ARG_scl, ARG_sda, ARG_frequency, ARG_timeout };
@@ -75,7 +75,7 @@ STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, con
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
     const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);

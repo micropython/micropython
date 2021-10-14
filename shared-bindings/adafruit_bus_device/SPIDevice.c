@@ -32,8 +32,8 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 
@@ -71,7 +71,7 @@
 //|                     spi.write(bytes_read)"""
 //|     ...
 //|
-STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
     self->base.type = &adafruit_bus_device_spidevice_type;
     enum { ARG_spi, ARG_chip_select, ARG_cs_active_value, ARG_baudrate, ARG_polarity, ARG_phase, ARG_extra_clocks };
@@ -85,7 +85,7 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
         { MP_QSTR_extra_clocks, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_spi_obj_t *spi = args[ARG_spi].u_obj;
 

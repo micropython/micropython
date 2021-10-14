@@ -37,7 +37,7 @@
 #include "src/rp2040/hardware_structs/include/hardware/structs/iobank0.h"
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"

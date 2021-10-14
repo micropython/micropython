@@ -29,9 +29,9 @@
 #include "shared-bindings/time/__init__.h"
 #include "shared-bindings/util.h"
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -63,7 +63,7 @@ STATIC mp_obj_t mp_obj_new_i2cperipheral_i2c_peripheral_request(i2cperipheral_i2
 //|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
 //|         ...
 //|
-STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     i2cperipheral_i2c_peripheral_obj_t *self = m_new_obj(i2cperipheral_i2c_peripheral_obj_t);
     self->base.type = &i2cperipheral_i2c_peripheral_type;
     enum { ARG_scl, ARG_sda, ARG_addresses, ARG_smbus };
@@ -74,7 +74,7 @@ STATIC mp_obj_t i2cperipheral_i2c_peripheral_make_new(const mp_obj_type_t *type,
         { MP_QSTR_smbus, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *scl = validate_obj_is_free_pin(args[ARG_scl].u_obj);
     const mcu_pin_obj_t *sda = validate_obj_is_free_pin(args[ARG_sda].u_obj);
@@ -237,8 +237,8 @@ const mp_obj_type_t i2cperipheral_i2c_peripheral_type = {
 //|         :param is_read: True if the main peripheral is requesting data
 //|         :param is_restart: Repeated Start Condition"""
 //|
-STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 4, 4, false);
+STATIC mp_obj_t i2cperipheral_i2c_peripheral_request_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 4, 4, false);
     return mp_obj_new_i2cperipheral_i2c_peripheral_request(args[0], mp_obj_get_int(args[1]), mp_obj_is_true(args[2]), mp_obj_is_true(args[3]));
 }
 

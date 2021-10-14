@@ -4093,7 +4093,7 @@ msgstr "サンプリングレートが範囲外"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "スクリプトのコンパイルは非対応"
 

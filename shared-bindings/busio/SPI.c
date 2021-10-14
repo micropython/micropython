@@ -33,8 +33,8 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/util.h"
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -80,7 +80,7 @@
 
 
 // TODO(tannewt): Support LSB SPI.
-STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     #if CIRCUITPY_BUSIO_SPI
     busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
     self->base.type = &busio_spi_type;
@@ -91,7 +91,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, con
         { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
     const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj);

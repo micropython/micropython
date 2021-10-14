@@ -169,9 +169,9 @@ STATIC mp_obj_t array_construct(char typecode, mp_obj_t initializer) {
 #endif
 
 #if MICROPY_PY_ARRAY
-STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
-    mp_arg_check_num(n_args, kw_args, 1, 2, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // get typecode
     const char *typecode = mp_obj_str_get_str(args[0]);
@@ -187,9 +187,9 @@ STATIC mp_obj_t array_make_new(const mp_obj_type_t *type_in, size_t n_args, cons
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
-STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t bytearray_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
-    mp_arg_check_num(n_args, kw_args, 0, 3, false);
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     if (n_args == 0) {
         // no args: construct an empty bytearray
@@ -218,13 +218,13 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items) {
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
     // TODO possibly allow memoryview constructor to take start/stop so that one
     // can do memoryview(b, 4, 8) instead of memoryview(b)[4:8] (uses less RAM)
 
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
@@ -704,7 +704,7 @@ STATIC mp_obj_t array_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
+    return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(array_decode_obj, 1, 3, array_decode);
 #endif

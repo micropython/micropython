@@ -50,7 +50,7 @@
 //|         ...
 //|
 STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
-    const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    size_t n_kw, const mp_obj_t *pos_args) {
 
     enum { ARG_clock, ARG_data, ARG_latch };
     static const mp_arg_t allowed_args[] = {
@@ -59,7 +59,7 @@ STATIC mp_obj_t gamepadshift_make_new(const mp_obj_type_t *type, size_t n_args,
         { MP_QSTR_latch, MP_ARG_REQUIRED | MP_ARG_OBJ},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args),
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args),
         allowed_args, args);
 
     digitalio_digitalinout_obj_t *clock_pin = assert_digitalinout(args[ARG_clock].u_obj);

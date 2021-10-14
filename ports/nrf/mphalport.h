@@ -30,7 +30,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "nrfx_uarte.h"
 #include "py/mpconfig.h"
 #include "supervisor/shared/tick.h"

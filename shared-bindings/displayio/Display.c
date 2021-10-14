@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/objtype.h"
@@ -115,7 +115,7 @@
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_args,
-    const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_display_bus, ARG_init_sequence, ARG_width, ARG_height, ARG_colstart, ARG_rowstart,
            ARG_rotation, ARG_color_depth, ARG_grayscale, ARG_pixels_in_byte_share_row,
            ARG_bytes_per_cell, ARG_reverse_pixels_in_byte, ARG_reverse_bytes_in_word,
@@ -154,7 +154,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_SH1107_addressing, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} }
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t display_bus = args[ARG_display_bus].u_obj;
 

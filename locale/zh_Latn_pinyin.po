@@ -4133,7 +4133,7 @@ msgstr "qǔyàng lǜ chāochū fànwéi"
 msgid "schedule queue full"
 msgstr "shí jiān biǎo duì liè yǐ mǎn"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "bù zhīchí jiǎoběn biānyì"
 

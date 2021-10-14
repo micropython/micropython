@@ -1,4 +1,4 @@
-import pyb
+import time, pyb
 
 
 @micropython.native
@@ -8,7 +8,7 @@ def f(led, n, d):
     while i < n:
         print(i)
         led.toggle()
-        pyb.delay(d)
+        time.sleep_ms(d)
         i += 1
     led.off()
 

@@ -218,7 +218,7 @@ SRC_C += \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	modules/$(CIRCUITPY_MODULE).c \
-	lib/netutils/netutils.c \
+	shared/netutils/netutils.c \
 	peripherals/i2c.c \
 	peripherals/rmt.c \
 	peripherals/timer.c \

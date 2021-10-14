@@ -186,8 +186,8 @@ STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
     return o;
 }
 
-STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    (void)kw_args; // TODO check kw_args->used == 0
+STATIC mp_obj_t stringio_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     mp_uint_t sz = 16;
     bool initdata = false;

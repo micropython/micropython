@@ -1,7 +1,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
@@ -32,14 +32,14 @@
 //|                        pin_counter.reset()
 //|                    print(pin_counter.count)"""
 //|
-STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_pin_a };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin_a, MP_ARG_REQUIRED | MP_ARG_OBJ }
 
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
 

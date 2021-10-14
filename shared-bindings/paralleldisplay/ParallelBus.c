@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -61,7 +61,7 @@
 //|         :param int frequency: The communication frequency in Hz for the display on the bus"""
 //|         ...
 //|
-STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_data0, ARG_data_pins, ARG_command, ARG_chip_select, ARG_write, ARG_read, ARG_reset, ARG_frequency };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data0, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
@@ -74,7 +74,7 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
         { MP_QSTR_frequency, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 30000000 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
     mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);

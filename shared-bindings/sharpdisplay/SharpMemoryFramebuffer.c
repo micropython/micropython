@@ -33,7 +33,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 
-STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_spi_bus, ARG_chip_select, ARG_width, ARG_height, ARG_baudrate, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi_bus, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
@@ -45,7 +45,7 @@ STATIC mp_obj_t sharpdisplay_framebuffer_make_new(const mp_obj_type_t *type, siz
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
     busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi_bus].u_obj);

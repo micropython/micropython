@@ -68,8 +68,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         :param ~_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
 //|         ...
 //|
-STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
+STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_size, ARG_byteorder, ARG_brightness, ARG_auto_write, ARG_header, ARG_trailer };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_size, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -80,7 +79,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
         { MP_QSTR_trailer, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     pixelbuf_byteorder_details_t byteorder_details;
 
     parse_byteorder(args[ARG_byteorder].u_obj, &byteorder_details);

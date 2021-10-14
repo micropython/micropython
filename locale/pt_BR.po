@@ -4174,7 +4174,7 @@ msgstr "Taxa de amostragem fora do intervalo"
 msgid "schedule queue full"
 msgstr "fila de espera cheia"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilação de script não suportada"
 

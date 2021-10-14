@@ -4090,7 +4090,7 @@ msgstr "częstotliwość próbkowania poza zakresem"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilowanie skryptów nieobsługiwane"
 

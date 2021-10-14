@@ -4161,7 +4161,7 @@ msgstr "frecuencia de muestreo fuera de rango"
 msgid "schedule queue full"
 msgstr "cola de planificación llena"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "script de compilación no soportado"
 

@@ -32,8 +32,8 @@
 #include "shared-bindings/util.h"
 #include "shared-module/adafruit_bus_device/I2CDevice.h"
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "supervisor/shared/translate.h"
@@ -67,7 +67,7 @@
 //|     """
 //|     ...
 //|
-STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     adafruit_bus_device_i2cdevice_obj_t *self = m_new_obj(adafruit_bus_device_i2cdevice_obj_t);
     self->base.type = &adafruit_bus_device_i2cdevice_type;
     enum { ARG_i2c, ARG_device_address, ARG_probe };
@@ -77,7 +77,7 @@ STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type
         { MP_QSTR_probe, MP_ARG_BOOL, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t *i2c = args[ARG_i2c].u_obj;
 

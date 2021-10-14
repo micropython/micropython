@@ -4172,7 +4172,7 @@ msgstr "taux d'échantillonage hors bornes"
 msgid "schedule queue full"
 msgstr "file de schédule pleine"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
 

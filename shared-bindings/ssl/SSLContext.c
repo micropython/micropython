@@ -40,8 +40,8 @@
 //|        rather than all of them."""
 //|
 
-STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 1, false);
+STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     ssl_sslcontext_obj_t *s = m_new_obj(ssl_sslcontext_obj_t);
     s->base.type = &ssl_sslcontext_type;

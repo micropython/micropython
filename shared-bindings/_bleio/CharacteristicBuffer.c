@@ -57,7 +57,7 @@ STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self
 //|           Must be >= 1."""
 //|         ...
 //|
-STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_characteristic, ARG_timeout, ARG_buffer_size, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_characteristic,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -66,7 +66,7 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_obj_t characteristic = args[ARG_characteristic].u_obj;
 

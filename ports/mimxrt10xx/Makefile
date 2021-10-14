@@ -60,7 +60,7 @@ INC += \
 	-I. \
 	-I../.. \
 	-I../lib/mp-readline \
-	-I../lib/timeutils \
+	-I../shared/timeutils \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
 	-I$(BUILD) \

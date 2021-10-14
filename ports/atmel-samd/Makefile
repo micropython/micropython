@@ -60,7 +60,7 @@ HAL_DIR=hal/$(MCU_SERIES)
 INC += -I. \
        -I../.. \
        -I../lib/mp-readline \
-       -I../lib/timeutils \
+       -I../shared/timeutils \
        -Iasf4/$(CHIP_FAMILY) \
        -Iasf4/$(CHIP_FAMILY)/hal/include \
        -Iasf4/$(CHIP_FAMILY)/hal/utils/include \

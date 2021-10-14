@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -56,7 +56,7 @@
 //|         :param microcontroller.Pin reset: Reset pin. When None only software reset can be used"""
 //|         ...
 //|
-STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_i2c_bus, ARG_device_address, ARG_reset };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_i2c_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -64,7 +64,7 @@ STATIC mp_obj_t displayio_i2cdisplay_make_new(const mp_obj_type_t *type, size_t 
         { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 

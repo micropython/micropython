@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "shared-module/usb_cdc/Serial.h"
 #include "supervisor/shared/tick.h"
 

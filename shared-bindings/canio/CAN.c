@@ -63,7 +63,7 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_loopback, ARG_silent, ARG_auto_restart, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -76,7 +76,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, con
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
 
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
     mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);

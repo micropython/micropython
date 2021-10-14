@@ -30,8 +30,8 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "py/ioctl.h"
 #include "py/objproperty.h"
@@ -80,7 +80,7 @@ STATIC void validate_timeout(mp_float_t timeout) {
 }
 #endif  // CIRCUITPY_BUSIO_UART
 
-STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     #if CIRCUITPY_BUSIO_UART
     // Always initially allocate the UART object within the long-lived heap.
     // This is needed to avoid crashes with certain UART implementations which
@@ -105,7 +105,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, co
         { MP_QSTR_rs485_invert, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *rx = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
     const mcu_pin_obj_t *tx = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);

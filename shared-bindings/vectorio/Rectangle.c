@@ -19,7 +19,7 @@
 //|            :param int x: Initial x position of the top left corner.
 //|            :param int y: Initial y position of the top left corner."""
 //|
-static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_pixel_shader, ARG_width, ARG_height, ARG_x, ARG_y };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pixel_shader, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
@@ -29,7 +29,7 @@ static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_
         { MP_QSTR_y, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t width = args[ARG_width].u_int;
     if (width < 1) {

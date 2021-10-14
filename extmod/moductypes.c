@@ -74,8 +74,8 @@ STATIC NORETURN void syntax_error(void) {
     mp_raise_TypeError(MP_ERROR_TEXT("syntax error in uctypes descriptor"));
 }
 
-STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 2, 3, false);
+STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 2, 3, false);
     mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
     o->base.type = type;
     o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);

@@ -57,7 +57,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|         ...
 //|
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
-    mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
     self->base.type = &alarm_time_timealarm_type;
 
@@ -68,7 +68,7 @@ STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     bool have_monotonic = args[ARG_monotonic_time].u_obj != mp_const_none;
     bool have_epoch = args[ARG_epoch_time].u_obj != mp_const_none;

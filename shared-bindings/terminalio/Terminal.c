@@ -46,14 +46,14 @@
 //|         ...
 //|
 
-STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     enum { ARG_tilegrid, ARG_font };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tilegrid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_font, MP_ARG_REQUIRED | MP_ARG_OBJ },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t tilegrid = args[ARG_tilegrid].u_obj;
     if (!mp_obj_is_type(tilegrid, &displayio_tilegrid_type)) {

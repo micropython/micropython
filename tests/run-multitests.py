@@ -46,6 +46,16 @@ class multitest:
         print("NEXT")
         multitest.flush()
     @staticmethod
+    def broadcast(msg):
+        print("BROADCAST", msg)
+        multitest.flush()
+    @staticmethod
+    def wait(msg):
+        msg = "BROADCAST " + msg
+        while True:
+            if sys.stdin.readline().rstrip() == msg:
+                return
+    @staticmethod
     def globals(**gs):
         for g in gs:
             print("SET {{}} = {{!r}}".format(g, gs[g]))
@@ -126,14 +136,12 @@ class PyInstanceSubProcess(PyInstance):
 
     def start_script(self, script):
         self.popen = subprocess.Popen(
-            self.argv,
+            self.argv + ["-c", script],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             env=self.env,
         )
-        self.popen.stdin.write(script)
-        self.popen.stdin.close()
         self.finished = False
 
     def stop(self):
@@ -141,7 +149,7 @@ class PyInstanceSubProcess(PyInstance):
             self.popen.terminate()
 
     def readline(self):
-        sel = select.select([self.popen.stdout.raw], [], [], 0.1)
+        sel = select.select([self.popen.stdout.raw], [], [], 0.001)
         if not sel[0]:
             self.finished = self.popen.poll() is not None
             return None, None
@@ -151,6 +159,10 @@ class PyInstanceSubProcess(PyInstance):
             return None, None
         else:
             return str(out.rstrip(), "ascii"), None
+
+    def write(self, data):
+        self.popen.stdin.write(data)
+        self.popen.stdin.flush()
 
     def is_finished(self):
         return self.finished
@@ -219,6 +231,9 @@ class PyInstancePyboard(PyInstance):
         else:
             err = None
         return str(out.rstrip(), "ascii"), err
+
+    def write(self, data):
+        self.pyb.serial.write(data)
 
     def is_finished(self):
         return self.finished
@@ -318,7 +333,12 @@ def run_test_on_instances(test_file, num_instances, instances):
                 last_read_time[idx] = time.time()
                 if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
-                    output[idx].append(out)
+                    if out.startswith("BROADCAST "):
+                        for instance2 in instances:
+                            if instance2 is not instance:
+                                instance2.write(bytes(out, "ascii") + b"\r\n")
+                    else:
+                        output[idx].append(out)
                 if err is not None:
                     trace_instance_output(idx, err)
                     output[idx].append(err)

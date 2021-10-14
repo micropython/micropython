@@ -31,6 +31,8 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_POSIX                       (1)
 
+#define MICROPY_PY_BUILTINS_HELP                (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
 #define MICROPY_PY_SYS_SETTRACE                 (1)
 #define MICROPY_PY_UOS_VFS                      (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)

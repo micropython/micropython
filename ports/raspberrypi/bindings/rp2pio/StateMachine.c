@@ -33,9 +33,9 @@
 #include "bindings/rp2pio/StateMachine.h"
 #include "shared-bindings/util.h"
 
-#include "lib/utils/buffer_helper.h"
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/objproperty.h"
@@ -138,7 +138,7 @@
 //|         ...
 //|
 
-STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
     rp2pio_statemachine_obj_t *self = m_new_obj(rp2pio_statemachine_obj_t);
     self->base.type = &rp2pio_statemachine_type;
     enum { ARG_program, ARG_frequency, ARG_init,
@@ -191,7 +191,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_user_interruptible, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_program].u_obj, &bufinfo, MP_BUFFER_READ);
