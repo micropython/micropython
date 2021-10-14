@@ -117,11 +117,9 @@ Constructor
           - 2 - count the leading and trailing edges from one channel.
           - 4 - count both leading and trailing edges of both channels.
 
-      - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
-        at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
-        A value of 0 sets the filter is switched off.
-
-      - *scale*\=value. Sets the scale value. The default value is 1.
+    These keywords are the same as the Counter keywords, see above:
+      - *filter*\=value
+      - *scale*\=value
 
 Methods
 -------
