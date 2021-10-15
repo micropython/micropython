@@ -30,7 +30,7 @@
 
 void shared_module_softencoder_state_init(rotaryio_incrementalencoder_obj_t *self, uint8_t quiescent_state) {
     self->state = quiescent_state;
-    self->quarter_count = 0;
+    self->sub_count = 0;
     common_hal_rotaryio_incrementalencoder_set_position(self, 0);
 }
 
@@ -58,16 +58,16 @@ void shared_module_softencoder_state_update(rotaryio_incrementalencoder_obj_t *s
     int idx = (self->state << 2) | new_state;
     self->state = new_state;
 
-    int8_t quarter_incr = transitions[idx];
+    int8_t sub_incr = transitions[idx];
 
-    self->quarter_count += quarter_incr;
+    self->sub_count += sub_incr;
 
-    if (self->quarter_count >= 4) {
+    if (self->sub_count >= self->divisor) {
         self->position += 1;
-        self->quarter_count = 0;
-    } else if (self->quarter_count <= -4) {
+        self->sub_count = 0;
+    } else if (self->sub_count <= -self->divisor) {
         self->position -= 1;
-        self->quarter_count = 0;
+        self->sub_count = 0;
     }
 }
 
@@ -77,5 +77,13 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
 
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self, mp_int_t position) {
     self->position = position;
+}
+
+mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self) {
+    return self->divisor;
+}
+
+void common_hal_rotaryio_incrementalencoder_set_divisor(rotaryio_incrementalencoder_obj_t *self, mp_int_t divisor) {
+    self->divisor = divisor;
 }
 #endif
