@@ -35,6 +35,7 @@
 #include "common-hal/audiobusio/PDMIn.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
+#include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
@@ -64,7 +65,20 @@
 #define SERCTRL(name) I2S_RXCTRL_ ## name
 #endif
 
+// Set by interrupt handler when DMA block has finished transferring.
+static bool pdmin_dma_block_done;
+// Event channel used to trigger interrupt. Set to invalid value EVSYS_SYNCH_NUM when not in use.
+static uint8_t pdmin_event_channel;
+
+void pdmin_evsys_handler(void) {
+    if (pdmin_event_channel < EVSYS_SYNCH_NUM && event_interrupt_active(pdmin_event_channel)) {
+        pdmin_dma_block_done = true;
+    }
+}
+
 void pdmin_reset(void) {
+    pdmin_event_channel = EVSYS_SYNCH_NUM;
+
     while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {}
     I2S->INTENCLR.reg = I2S_INTENCLR_MASK;
     I2S->INTFLAG.reg = I2S_INTFLAG_MASK;
@@ -368,7 +382,8 @@ static uint16_t filter_sample(uint32_t pdm_samples[4]) {
 uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* self,
         uint16_t* output_buffer, uint32_t output_buffer_length) {
     uint8_t dma_channel = dma_allocate_channel();
-    uint8_t event_channel = find_sync_event_channel_raise();
+    pdmin_event_channel = find_sync_event_channel_raise();
+    pdmin_dma_block_done = false;
 
     // We allocate two buffers on the stack to use for double buffering.
     const uint8_t samples_per_buffer = SAMPLES_PER_BUFFER;
@@ -391,7 +406,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     #endif
 
     dma_configure(dma_channel, trigger_source, true);
-    init_event_channel_interrupt(event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
+    init_event_channel_interrupt(pdmin_event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
     // Turn on serializer now to get it in sync with DMA.
     i2s_set_serializer_enable(self->serializer, true);
     audio_dma_enable_channel(dma_channel);
@@ -402,23 +417,12 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 
     uint32_t remaining_samples_needed = output_buffer_length;
     while (values_output < output_buffer_length) {
-        if (event_interrupt_overflow(event_channel)) {
-            // Looks like we aren't keeping up. We shouldn't skip a buffer so stop early.
-            break;
-        }
-        // Wait for the next buffer to fill
-        uint32_t wait_counts = 0;
-        #ifdef SAMD21
-          #define MAX_WAIT_COUNTS 1000
-        #endif
-        #ifdef SAM_D5X_E5X
-          #define MAX_WAIT_COUNTS 6000
-        #endif
-        // If wait_counts exceeds the max count, buffer has probably stopped filling;
-        // DMA may have missed an I2S trigger event.
-        while (!event_interrupt_active(event_channel) && ++wait_counts < MAX_WAIT_COUNTS) {
+        while (!pdmin_dma_block_done) {
             RUN_BACKGROUND_TASKS;
         }
+        common_hal_mcu_disable_interrupts();
+        pdmin_dma_block_done = false;
+        common_hal_mcu_enable_interrupts();
 
         // The mic is running all the time, so we don't need to wait the usual 10msec or 100msec
         // for it to start up.
@@ -430,6 +434,7 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
             buffer = second_buffer;
             descriptor = &second_descriptor;
         }
+
         // Decimate and filter the buffer that was just filled.
         uint32_t samples_gathered = descriptor->BTCNT.reg / words_per_sample;
         // Don't run off the end of output buffer. Process only as many as needed.
@@ -472,7 +477,8 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
         }
     }
 
-    disable_event_channel(event_channel);
+    disable_event_channel(pdmin_event_channel);
+    pdmin_event_channel = EVSYS_SYNCH_NUM;  // Invalid event_channel.
     dma_free_channel(dma_channel);
     // Turn off serializer, but leave clock on, to avoid mic startup delay.
     i2s_set_serializer_enable(self->serializer, false);
@@ -481,5 +487,4 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
 }
 
 void common_hal_audiobusio_pdmin_record_to_file(audiobusio_pdmin_obj_t* self, uint8_t* buffer, uint32_t length) {
-
 }
