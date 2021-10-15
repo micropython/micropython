@@ -46,16 +46,13 @@ CD = cd
 CP = cp
 FIND = find
 MKDIR = mkdir
-PYTHON = python
-# Set default python interpreters
-PYTHON2 ?= $(which python2 || which python2.7)
-PYTHON3 ?= python3
+PYTHON = python3
 RM = rm
 RSYNC = rsync
 SED = sed
 TOUCH = touch
 # Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
-NPROC = $(PYTHON3) -c 'import multiprocessing as mp; print(mp.cpu_count())'
+NPROC = $(PYTHON) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc

@@ -706,7 +706,7 @@ GENERATED_LD_FILE = $(BUILD)/$(notdir $(patsubst %.template.ld,%.ld,$(LD_TEMPLAT
 # because it may include other template files.
 $(GENERATED_LD_FILE): $(BUILD)/ld_defines.pp boards/*.template.ld
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
+	$(Q)$(PYTHON) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
 endif
 
 .PHONY: check-release-needs-clean-build
