@@ -86,5 +86,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO45), MP_ROM_PTR(&pin_GPIO45) },// GPIO45
     { MP_ROM_QSTR(MP_QSTR_IO46), MP_ROM_PTR(&pin_GPIO46) },// GPIO46
     */
+    { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) }, // board singleton implicit from schematic/shield standard
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
