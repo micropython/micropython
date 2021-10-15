@@ -44,6 +44,7 @@
 #include "hal/phy/mdio/enet/fsl_enet_mdio.h"
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
+#include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 
 #include "lwip/etharp.h"
 #include "lwip/dns.h"
@@ -112,6 +113,9 @@ static const iomux_table_t iomux_table_enet[] = {
 };
 
 #define IOTE (iomux_table_enet[i])
+#ifndef ENET_TX_CLK_OUTPUT
+#define ENET_TX_CLK_OUTPUT true
+#endif
 
 #define TRACE_ASYNC_EV (0x0001)
 #define TRACE_ETH_TX (0x0002)
@@ -221,7 +225,7 @@ void eth_init(eth_t *self, int mac_idx) {
     CLOCK_InitEnetPll(&config);
 
     IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1RefClkMode, false); // Drive ENET_REF_CLK from PAD
-    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, true);  // Enable output driver
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, ENET_TX_CLK_OUTPUT);  // Enable output driver
 
     // Reset transceiver
     // pull up the ENET_INT before RESET.

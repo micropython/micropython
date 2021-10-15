@@ -61,6 +61,7 @@ STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
     mod_network_register_nic((mp_obj_t *)self);
     return MP_OBJ_FROM_PTR(self);
 }
+
 STATIC mp_obj_t network_lan_active(size_t n_args, const mp_obj_t *args) {
     network_lan_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {

@@ -168,6 +168,10 @@ ifeq ($(ENET_PHY), DP82825)
 SRC_ETH_C += \
 	hal/phy/device/phydp83825/fsl_phydp83825.c
 endif
+ifeq ($(ENET_PHY), LAN8720)
+SRC_ETH_C += \
+	hal/phy/device/phylan8720/fsl_phylan8720.c
+endif
 
 SRC_QSTR += \
 	extmod/modlwip.c \
