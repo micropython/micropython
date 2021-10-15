@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-PROG=mpy-cross.static.exe
+PROG=mpy-cross.static
 CROSS_COMPILE = x86_64-w64-mingw32-
 BUILD=build-static-mingw
 STATIC_BUILD=1
