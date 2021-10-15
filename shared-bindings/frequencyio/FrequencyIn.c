@@ -71,7 +71,7 @@
 //|               frequency.clear()"""
 //|         ...
 //|
-STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
 
     frequencyio_frequencyin_obj_t *self = m_new_obj(frequencyio_frequencyin_obj_t);
@@ -82,7 +82,7 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
         { MP_QSTR_capture_period, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 10} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
 

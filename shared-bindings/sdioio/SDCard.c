@@ -78,7 +78,7 @@
 //|         ...
 //|
 
-STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     sdioio_sdcard_obj_t *self = m_new_obj(sdioio_sdcard_obj_t);
     self->base.type = &sdioio_SDCard_type;
     enum { ARG_clock, ARG_command, ARG_data, ARG_frequency, NUM_ARGS };
@@ -91,7 +91,7 @@ STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args,
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
 
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
     const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
@@ -117,7 +117,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 //|
 //|         .. note:: Leaving a value unspecified or 0 means the current setting is kept"""
 //|
-STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     enum { ARG_frequency, ARG_width, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },

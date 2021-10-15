@@ -113,9 +113,9 @@ const char *MP_VFS_LFSx(make_path)(MP_OBJ_VFS_LFSx * self, mp_obj_t path_in) {
     return path;
 }
 
-STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t MP_VFS_LFSx(make_new)(const mp_obj_type_t * type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_val_t args[MP_ARRAY_SIZE(lfs_make_allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfs_make_allowed_args), lfs_make_allowed_args, args);
 
     MP_OBJ_VFS_LFSx *self = m_new0(MP_OBJ_VFS_LFSx, 1);
     self->base.type = type;

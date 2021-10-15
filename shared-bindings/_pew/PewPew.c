@@ -62,8 +62,7 @@
 //|         buttons are connected to rows of the matrix)."""
 //|         ...
 //|
-STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-    const mp_obj_t *pos_args) {
+STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_rows, ARG_cols, ARG_buttons };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -72,7 +71,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         { MP_QSTR_buttons, MP_ARG_OBJ | MP_ARG_REQUIRED },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args),
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args),
         allowed_args, args);
 
     mp_buffer_info_t bufinfo;

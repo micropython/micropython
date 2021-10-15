@@ -78,7 +78,7 @@
 //|           print("stopped")"""
 //|         ...
 //|
-STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_voice_count, ARG_buffer_size, ARG_channel_count, ARG_bits_per_sample, ARG_samples_signed, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_voice_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 2} },
@@ -89,7 +89,7 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t voice_count = args[ARG_voice_count].u_int;
     if (voice_count < 1 || voice_count > 255) {

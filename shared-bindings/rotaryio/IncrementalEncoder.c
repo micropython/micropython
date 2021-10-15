@@ -60,14 +60,14 @@
 //|               last_position = position"""
 //|         ...
 //|
-STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *pos_args) {
+STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_pin_a, ARG_pin_b };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin_a, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_pin_b, MP_ARG_REQUIRED | MP_ARG_OBJ },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, pos_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mcu_pin_obj_t *pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj);
     const mcu_pin_obj_t *pin_b = validate_obj_is_free_pin(args[ARG_pin_b].u_obj);
