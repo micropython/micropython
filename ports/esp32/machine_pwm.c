@@ -33,8 +33,8 @@
 #include "driver/ledc.h"
 #include "esp_err.h"
 
-#define PWM_DBG(...)
-// #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+// #define DBG(...)
+#define DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__)
 
 // Total number of channels
 #define PWM_CHANNEL_MAX (LEDC_SPEED_MODE_MAX * LEDC_CHANNEL_MAX)
@@ -72,6 +72,9 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 
 // 10-bit resolution (compatible with esp8266 PWM)
 #define PWRES (LEDC_TIMER_10_BIT)
+// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html#supported-range-of-frequency-and-duty-resolutions
+// duty() uses 10-bit resolution or less
+// duty_u16() and duty_ns() use 16-bit resolution or less
 
 // Config of timer upon which we run all PWM'ed GPIO pins
 STATIC bool pwm_inited = false;
@@ -84,6 +87,7 @@ typedef struct _machine_pwm_obj_t {
     int mode;
     int channel;
     int timer;
+    int duty_x; // PWRES if duty(), LEDC_TIMER_16_BIT if duty_u16(), -LEDC_TIMER_16_BIT if duty_ns()
 } machine_pwm_obj_t;
 
 STATIC void pwm_init(void) {
@@ -96,12 +100,12 @@ STATIC void pwm_init(void) {
     // Prepare all timers config
     // Initial condition: no timers assigned
     for (int i = 0; i < PWM_TIMER_MAX; ++i) {
-        timers[i].duty_resolution = PWRES;
+        timers[i].duty_resolution = LEDC_TIMER_16_BIT;
         // unset timer is -1
         timers[i].freq_hz = -1;
         timers[i].speed_mode = TIMER_IDX_TO_MODE(i);
         timers[i].timer_num = TIMER_IDX_TO_TIMER(i);
-        timers[i].clk_cfg = LEDC_AUTO_CLK;
+        timers[i].clk_cfg = LEDC_AUTO_CLK; // LEDC_USE_APB_CLK;
     }
 }
 
@@ -135,9 +139,9 @@ STATIC void set_freq(int newval, ledc_timer_config_t *timer) {
     }
     if (res == 0) {
         res = 1;
-    } else if (res > PWRES) {
-        // Limit resolution to PWRES to match units of our duty
-        res = PWRES;
+    } else if (res > LEDC_TIMER_16_BIT) {
+        // Limit resolution to LEDC_TIMER_16_BIT to match units of our duty
+        res = LEDC_TIMER_16_BIT;
     }
 
     // Configure the new resolution and frequency
@@ -148,7 +152,7 @@ STATIC void set_freq(int newval, ledc_timer_config_t *timer) {
     esp_err_t err = ledc_timer_config(timer);
     if (err != ESP_OK) {
         if (err == ESP_FAIL) {
-            PWM_DBG("timer timer->speed_mode %d, timer->timer_num %d, timer->clk_cfg %d, timer->freq_hz  %d, timer->duty_resolution %d)", timer->speed_mode, timer->timer_num, timer->clk_cfg, timer->freq_hz, timer->duty_resolution);
+            DBG(" (timer timer->speed_mode %d, timer->timer_num %d, timer->clk_cfg %d, timer->freq_hz  %d, timer->duty_resolution %d) ", timer->speed_mode, timer->timer_num, timer->clk_cfg, timer->freq_hz, timer->duty_resolution);
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("bad frequency %d"), newval);
         } else {
             check_esp_err(err);
@@ -156,18 +160,47 @@ STATIC void set_freq(int newval, ledc_timer_config_t *timer) {
     }
 }
 
-STATIC int get_duty(machine_pwm_obj_t *self) {
+// Calculate the duty parameters based on an ns value
+STATIC int ns_to_duty(machine_pwm_obj_t *self, int ns) {
+    ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
+    int freq = timer.freq_hz;
+    int resolution = 1 << timer.duty_resolution;
+    // int duty = 1.0 * ns * resolution * freq / 1000000000.0;
+    // DBG(" (ns=%d resolution=%d freq=%d -> duty=%f=%d) ", ns, resolution , freq, 1.0 * ns * resolution * freq / 1000000000.0, duty);
+    return 1.0 * ns * resolution * freq / 1000000000.0;
+}
+
+STATIC int duty_to_ns(machine_pwm_obj_t *self, int duty) {
+    ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
+    int freq = timer.freq_hz;
+    int resolution = 1 << timer.duty_resolution;
+    // int ns = 1000000000.0 / freq * duty / resolution;
+    // DBG(" (resolution=%d freq=%d duty=%d -> ns=%f=%d) ", resolution , freq, duty, 1000000000.0 / freq * duty / resolution, ns);
+    return 1000000000.0 / freq * duty / resolution;
+}
+
+#define get_duty_raw(self) ledc_get_duty(self->mode, self->channel)
+
+STATIC int get_duty_u16(machine_pwm_obj_t *self) {
     uint32_t duty = ledc_get_duty(self->mode, self->channel);
-    duty <<= PWRES - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
+    duty <<= LEDC_TIMER_16_BIT - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
     return duty;
 }
 
-STATIC void set_duty(machine_pwm_obj_t *self, int duty) {
-    if ((duty < 0) || (duty > (1 << PWRES) - 1)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be between 0 and %u"), (1 << PWRES) - 1);
+STATIC int get_duty_u10(machine_pwm_obj_t *self) {
+    return get_duty_u16(self) >> (LEDC_TIMER_16_BIT - PWRES);
+}
+
+STATIC int get_duty_ns(machine_pwm_obj_t *self) {
+    return duty_to_ns(self, get_duty_u16(self));
+}
+
+STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
+    int max_duty = (1 << LEDC_TIMER_16_BIT) - 1;
+    if ((duty < 0) || (duty > max_duty)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), max_duty);
     }
-    duty &= (1 << PWRES) - 1;
-    duty >>= PWRES - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
+    duty >>= LEDC_TIMER_16_BIT - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
     check_esp_err(ledc_set_duty(self->mode, self->channel, duty));
     check_esp_err(ledc_update_duty(self->mode, self->channel));
     // check_esp_err(ledc_set_duty_and_update(self->mode, self->channel, duty, (1 << PWRES) - 1)); // thread safe function ???
@@ -175,10 +208,30 @@ STATIC void set_duty(machine_pwm_obj_t *self, int duty) {
     // Bug: Sometimes duty is not set right now.
     // See https://github.com/espressif/esp-idf/issues/7288
     /*
-    if (duty != get_duty(self)) {
-        PWM_DBG("\n duty_set %u %u %d %d \n", duty, get_duty(self), PWRES, timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
+    if (duty != get_duty_u16(self)) {
+        DBG("\n duty_set_u16 %u %u %d \n", duty, get_duty_u16(self), timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
     }
     */
+    self->duty_x = LEDC_TIMER_16_BIT;
+}
+
+STATIC void set_duty_u10(machine_pwm_obj_t *self, int duty) {
+    int max_duty = (1 << PWRES) - 1;
+    if ((duty < 0) || (duty > max_duty)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %d"), max_duty);
+    }
+    duty <<= LEDC_TIMER_16_BIT - PWRES;
+    set_duty_u16(self, duty);
+    self->duty_x = PWRES;
+}
+
+STATIC void set_duty_ns(machine_pwm_obj_t *self, int ns) {
+    int max_duty = (1 << LEDC_TIMER_16_BIT) - 1;
+    if ((ns < 0) || (ns > duty_to_ns(self, max_duty))) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_ns must be from 0 to %d ns"), duty_to_ns(self, max_duty));
+    }
+    set_duty_u16(self, ns_to_duty(self, ns));
+    self->duty_x = -LEDC_TIMER_16_BIT;
 }
 
 /******************************************************************************/
@@ -244,9 +297,30 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "PWM(pin=%u", self->pin);
     if (self->active) {
-        int duty = get_duty(self);
-        mp_printf(print, ", freq=%u, duty=%u", ledc_get_freq(self->mode, self->timer), duty);
-        mp_printf(print, ", resolution=%u", timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
+        mp_printf(print, ", freq=%u", ledc_get_freq(self->mode, self->timer));
+
+        int duty, resolution;
+        if (self->duty_x == PWRES) {
+            duty = get_duty_u10(self);
+            resolution = MIN(PWRES, timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
+            mp_printf(print, ", duty=%u, resolution=%u", duty, resolution);
+
+            duty = get_duty_raw(self);
+        } else if (self->duty_x == -LEDC_TIMER_16_BIT) {
+            duty = get_duty_ns(self);
+            resolution = timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
+            mp_printf(print, ", duty_ns=%u, resolution=%u", duty, resolution);
+
+            duty = get_duty_raw(self);
+        } else {
+            duty = get_duty_u16(self);
+            resolution = timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
+            mp_printf(print, ", duty_u16=%u, resolution=%u", duty, resolution);
+
+            duty = get_duty_raw(self);
+        }
+        DBG(", duty=%.2f%%, resolution=%.3f%%", 100.0 * duty / (1 << resolution), 100.0 * 1 / (1 << resolution));
+
         mp_printf(print, ", mode=%d, channel=%d, timer=%d", self->mode, self->channel, self->timer);
     }
     mp_printf(print, ")");
@@ -268,6 +342,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("out of PWM channels:%d"), PWM_CHANNEL_MAX); // in all modes
     }
 
+    int duty = args[ARG_duty].u_int;
     int freq = args[ARG_freq].u_int;
     if ((freq < -1) || (freq > 40000000)) {
         mp_raise_ValueError(MP_ERROR_TEXT("freqency must be between 1Hz and 40MHz"));
@@ -321,9 +396,10 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     set_freq(freq, &timers[timer_idx]);
 
     // Set duty cycle?
-    int duty = args[ARG_duty].u_int;
     if (duty != -1) {
-        set_duty(self, duty);
+        set_duty_u10(self, duty);
+    } else if (self->duty_x == 0) {
+        set_duty_u10(self, (1 << PWRES) / 2);
     }
 
     // Reset the timer if low speed
@@ -345,6 +421,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     self->mode = -1;
     self->channel = -1;
     self->timer = -1;
+    self->duty_x = 0;
 
     // start the PWM subsystem if it's not already running
     if (!pwm_inited) {
@@ -451,9 +528,25 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(get_duty(self));
+    return MP_OBJ_NEW_SMALL_INT(get_duty_u10(self));
 }
 
 STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
-    set_duty(self, duty);
+    set_duty_u10(self, duty);
+}
+
+STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+    return MP_OBJ_NEW_SMALL_INT(get_duty_u16(self));
+}
+
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+    set_duty_u16(self, duty_u16);
+}
+
+STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+    return MP_OBJ_NEW_SMALL_INT(get_duty_ns(self));
+}
+
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+    set_duty_ns(self, duty_ns);
 }
