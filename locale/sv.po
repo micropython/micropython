@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-11 09:40+0000\n"
+"PO-Revision-Date: 2021-10-17 14:36+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -4000,7 +4000,7 @@ msgstr "köstorlek överskreds"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "råa f-strängar stöds inte"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4339,7 +4339,7 @@ msgstr "unicode-namn flyr"
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
-msgstr ""
+msgstr "avindentering matchar inte någon yttre indentering"
 
 #: py/objstr.c
 #, c-format
