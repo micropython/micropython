@@ -2498,10 +2498,6 @@ msgstr "Argument __new__ musi być typu użytkownika"
 msgid "a bytes-like object is required"
 msgstr "wymagany obiekt typu bytes"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "Wywołano abort()"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres poza zakresem"
@@ -3079,26 +3075,6 @@ msgstr "nadmiarowe argumenty nazwane"
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr ""
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3375,10 +3351,6 @@ msgstr "interwał musi mieścić się w zakresie %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "złe arguemnty"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3985,7 +3957,7 @@ msgid "queue overflow"
 msgstr "przepełnienie kolejki"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
+msgid "raw f-strings are not supported"
 msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
@@ -4047,7 +4019,7 @@ msgstr "częstotliwość próbkowania poza zakresem"
 msgid "schedule queue full"
 msgstr ""
 
-#: shared/runtime/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilowanie skryptów nieobsługiwane"
 
@@ -4323,8 +4295,8 @@ msgid "unicode name escapes"
 msgstr "nazwy unicode"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "wcięcie nie pasuje do żadnego wcześniejszego wcięcia"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4476,6 +4448,15 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "abort() called"
+#~ msgstr "Wywołano abort()"
+
+#~ msgid "invalid arguments"
+#~ msgstr "złe arguemnty"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "wcięcie nie pasuje do żadnego wcześniejszego wcięcia"
 
 #~ msgid "Column entry must be digitalio.DigitalInOut"
 #~ msgstr "Kolumny muszą być typu digitalio.DigitalInOut"

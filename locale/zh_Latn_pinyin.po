@@ -2535,10 +2535,6 @@ msgstr "__new__ cānshù bìxū shì yònghù lèixíng"
 msgid "a bytes-like object is required"
 msgstr "xūyào yīgè zì jié lèi duìxiàng"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() diàoyòng"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "dìzhǐ chāochū biānjiè"
@@ -3121,26 +3117,6 @@ msgstr "éwài de guānjiàn cí cānshù"
 msgid "extra positional arguments given"
 msgstr "gěi chūle éwài de wèizhì cānshù"
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-string biǎodá shì bùfèn bùnéng bāohán '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-string biǎodá shì bùfèn bùnéng bāohán fǎn xié gāng"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: bù yǔnxǔ shǐyòng kōng biǎodá shì"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: qídài '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3417,10 +3393,6 @@ msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "wú xiào de jià gòu"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "wúxiào de cānshù"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4027,8 +3999,8 @@ msgid "queue overflow"
 msgstr "duìliè yìchū"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "wèi zhíxíng yuánshǐ f-strings"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4090,7 +4062,7 @@ msgstr "qǔyàng lǜ chāochū fànwéi"
 msgid "schedule queue full"
 msgstr "shí jiān biǎo duì liè yǐ mǎn"
 
-#: shared/runtime/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "bù zhīchí jiǎoběn biānyì"
 
@@ -4366,8 +4338,8 @@ msgid "unicode name escapes"
 msgstr "unicode míngchēng táoyì"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "bùsuō jìn yǔ rènhé wàibù suō jìn jíbié dōu bù pǐpèi"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4519,6 +4491,33 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() diàoyòng"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán fǎn xié gāng"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: bù yǔnxǔ shǐyòng kōng biǎodá shì"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: qídài '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
+
+#~ msgid "invalid arguments"
+#~ msgstr "wúxiào de cānshù"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "wèi zhíxíng yuánshǐ f-strings"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "bùsuō jìn yǔ rènhé wàibù suō jìn jíbié dōu bù pǐpèi"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q lièbiǎo bìxū shì lièbiǎo"

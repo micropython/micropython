@@ -2533,10 +2533,6 @@ msgstr "__new__ arg måste vara en användartyp"
 msgid "a bytes-like object is required"
 msgstr "ett bytesliknande objekt krävs"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() anropad"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adress utanför gränsen"
@@ -3118,26 +3114,6 @@ msgstr "extra keyword-argument angivna"
 msgid "extra positional arguments given"
 msgstr "extra positions-argument angivna"
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-stränguttrycksdelen kan inte innehålla en '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-string-uttrycksdelen kan inte innehålla ett omvänt snedstreck"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-sträng: tomt uttryck inte tillåten"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: förväntat '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: singel '}' är inte tillåten"
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3414,10 +3390,6 @@ msgstr "interval måste vara i intervallet %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "ogiltig arkitektur"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "ogiltiga argument"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4027,8 +3999,8 @@ msgid "queue overflow"
 msgstr "köstorlek överskreds"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "råa f-strängar inte implementerade"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4090,7 +4062,7 @@ msgstr "samplingsfrekvens utanför räckvidden"
 msgid "schedule queue full"
 msgstr "schemakön full"
 
-#: shared/runtime/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "skriptkompilering stöds inte"
 
@@ -4366,8 +4338,8 @@ msgid "unicode name escapes"
 msgstr "unicode-namn flyr"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "indentering inte matchar någon yttre indenteringsnivå"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4519,6 +4491,33 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() anropad"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-stränguttrycksdelen kan inte innehålla en '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string-uttrycksdelen kan inte innehålla ett omvänt snedstreck"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-sträng: tomt uttryck inte tillåten"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: förväntat '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: singel '}' är inte tillåten"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ogiltiga argument"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "råa f-strängar inte implementerade"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "indentering inte matchar någon yttre indenteringsnivå"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q-listan måste vara en lista"
