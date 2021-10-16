@@ -30,7 +30,7 @@
 #define MICROPY_HW_BOARD_NAME       "BlueMicro833"
 #define MICROPY_HW_MCU_NAME         "nRF52833"
 
-#define MICROPY_HW_NEOPIXEL         (&pin_P0_7)
+#define MICROPY_HW_NEOPIXEL         (&pin_P0_07)
 #define MICROPY_HW_LED_STATUS       (&pin_P0_25)
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE 0
