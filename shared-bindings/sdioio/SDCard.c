@@ -117,7 +117,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 //|
 //|         .. note:: Leaving a value unspecified or 0 means the current setting is kept"""
 //|
-STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
+STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_frequency, ARG_width, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_frequency, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
