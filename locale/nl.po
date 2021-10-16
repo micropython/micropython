@@ -2518,10 +2518,6 @@ msgstr "__new__ arg moet een user-type zijn"
 msgid "a bytes-like object is required"
 msgstr "een bytes-achtig object is vereist"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() aangeroepen"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adres buiten bereik"
@@ -3102,26 +3098,6 @@ msgstr "extra keyword argumenten gegeven"
 msgid "extra positional arguments given"
 msgstr "extra positionele argumenten gegeven"
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-string expressie deel kan geen '#' bevatten"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-string expressie deel kan geen backslash bevatten"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: lege expressie niet toegestaan"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: verwacht '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: enkele '}' is niet toegestaan"
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3399,10 +3375,6 @@ msgstr "interval moet binnen bereik %s-%s vallen"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "ongeldige argumenten"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4012,8 +3984,8 @@ msgid "queue overflow"
 msgstr "wachtrij overloop"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "ruwe f-strings zijn niet geïmplementeerd"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4075,7 +4047,7 @@ msgstr "bemonsteringssnelheid buiten bereik"
 msgid "schedule queue full"
 msgstr ""
 
-#: shared/runtime/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "scriptcompilatie wordt niet ondersteund"
 
@@ -4351,8 +4323,8 @@ msgid "unicode name escapes"
 msgstr "op naam gebaseerde unicode escapes zijn niet geïmplementeerd"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4504,6 +4476,33 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() aangeroepen"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string expressie deel kan geen '#' bevatten"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string expressie deel kan geen backslash bevatten"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: lege expressie niet toegestaan"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: verwacht '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: enkele '}' is niet toegestaan"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ongeldige argumenten"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "ruwe f-strings zijn niet geïmplementeerd"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q lijst moet een lijst zijn"

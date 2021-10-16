@@ -2485,10 +2485,6 @@ msgstr ""
 msgid "a bytes-like object is required"
 msgstr ""
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr ""
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr ""
@@ -3065,26 +3061,6 @@ msgstr ""
 msgid "extra positional arguments given"
 msgstr ""
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr ""
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3360,10 +3336,6 @@ msgstr ""
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3970,7 +3942,7 @@ msgid "queue overflow"
 msgstr ""
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
+msgid "raw f-strings are not supported"
 msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
@@ -4031,7 +4003,7 @@ msgstr ""
 msgid "schedule queue full"
 msgstr ""
 
-#: shared/runtime/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr ""
 
@@ -4307,7 +4279,7 @@ msgid "unicode name escapes"
 msgstr ""
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
+msgid "unindent doesn't match any outer indent level"
 msgstr ""
 
 #: py/objstr.c
