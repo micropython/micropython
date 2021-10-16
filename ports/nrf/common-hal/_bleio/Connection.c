@@ -34,7 +34,7 @@
 #include "ble_drv.h"
 #include "ble_hci.h"
 #include "nrf_soc.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/objlist.h"
 #include "py/objstr.h"

@@ -32,8 +32,8 @@
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "supervisor/shared/workflow.h"
-#include "lib/utils/interrupt_char.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/readline/readline.h"
 
 #if CIRCUITPY_STORAGE
 #include "shared-module/storage/__init__.h"
@@ -300,7 +300,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
 // Only called when console is enabled.
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    // Workaround for using lib/utils/interrupt_char.c
+    // Workaround for using shared/runtime/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_n_read_flush(itf);    // flush read fifo

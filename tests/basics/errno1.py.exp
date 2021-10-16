@@ -1,5 +1,6 @@
 <class 'int'>
-[Errno  ] Input/output error
-[Errno  ] ENOBUFS
+[Errno  error
+[Errno  error: details
+( , 'details', 'more details')
 9999
 uerrno

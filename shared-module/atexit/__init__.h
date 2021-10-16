@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_MODULE_ATEXIT___INIT___H
 
 #include "py/obj.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 
 typedef struct _atexit_callback_t {
     size_t n_pos, n_kw;

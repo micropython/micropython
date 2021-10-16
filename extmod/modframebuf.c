@@ -244,8 +244,8 @@ STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
     formats[fb->format].fill_rect(fb, x, y, xend - x, yend - y, col);
 }
 
-STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 4, 5, false);
+STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
     mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
     o->base.type = type;
@@ -481,6 +481,10 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     if (n_args > 4) {
         key = mp_obj_get_int(args[4]);
     }
+    mp_obj_framebuf_t *palette = NULL;
+    if (n_args > 5 && args[5] != mp_const_none) {
+        palette = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(args[5], MP_OBJ_FROM_PTR(&mp_type_framebuf)));
+    }
 
     if (
         (x >= self->width) ||
@@ -504,6 +508,9 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
         int cx1 = x1;
         for (int cx0 = x0; cx0 < x0end; ++cx0) {
             uint32_t col = getpixel(source, cx1, y1);
+            if (palette) {
+                col = getpixel(palette, col, 0);
+            }
             if (col != (uint32_t)key) {
                 setpixel(self, cx0, y0, col);
             }
@@ -513,7 +520,7 @@ STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_blit_obj, 4, 5, framebuf_blit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_blit_obj, 4, 6, framebuf_blit);
 
 STATIC mp_obj_t framebuf_scroll(mp_obj_t self_in, mp_obj_t xstep_in, mp_obj_t ystep_in) {
     mp_obj_framebuf_t *self = native_framebuf(self_in);

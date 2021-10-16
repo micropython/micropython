@@ -26,7 +26,7 @@
 
 #include <string.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
@@ -56,9 +56,9 @@
 //|         ...
 //|
 STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
-    mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    mp_uint_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check number of arguments
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // 1st argument is the pin
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);

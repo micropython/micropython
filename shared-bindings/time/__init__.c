@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
@@ -93,15 +93,15 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
-mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(args[0], &len, &items);
     if (len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
-    return namedtuple_make_new(type, len, items, NULL);
+    return namedtuple_make_new(type, len, 0, items);
 }
 
 //| class struct_time:
@@ -173,7 +173,7 @@ mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
         mp_obj_new_int(-1), // tm_isdst is not supported
     };
 
-    return namedtuple_make_new((const mp_obj_type_t *)&struct_time_type_obj, 9, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&struct_time_type_obj, 9, 0, elems);
 };
 
 void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {

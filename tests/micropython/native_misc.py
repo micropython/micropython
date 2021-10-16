@@ -38,3 +38,13 @@ def f(a):
 
 f(False)
 f(True)
+
+
+# stack settling in branch
+@micropython.native
+def f(a):
+    print(1, 2, 3, 4 if a else 5)
+
+
+f(False)
+f(True)

@@ -39,7 +39,7 @@
 #include <sched.h>
 #include <semaphore.h>
 
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/gchelper.h"
 
 // Some platforms don't have SIGRTMIN but if we do have it, use it to avoid
 // potential conflict with other uses of the more commonly used SIGUSR1.

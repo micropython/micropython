@@ -18,15 +18,14 @@ These libraries are not enabled on CircuitPython builds with
 limited flash memory, usually on non-Express builds:
 ``binascii``, ``errno``, ``json``, ``re``.
 
-These libraries are not currently enabled in any CircuitPython build, but may be in the future,
-with the ``u`` prefix dropped:
-``uctypes``, ``uhashlib``, ``uzlib``.
+These libraries are not currently enabled in any CircuitPython build, but may be in the future:
+``ctypes``, ``hashlib``, ``zlib``.
 
 .. toctree::
    :maxdepth: 1
 
    builtins.rst
-   uheapq.rst
+   heapq.rst
    array.rst
    binascii.rst
    collections.rst
@@ -37,10 +36,10 @@ with the ``u`` prefix dropped:
    json.rst
    re.rst
    sys.rst
-   uasyncio.rst
-   uctypes.rst
-   uselect.rst
-   uzlib.rst
+   asyncio.rst
+   ctypes.rst
+   select.rst
+   zlib.rst
 
 Omitted functions in the ``string`` library
 -------------------------------------------

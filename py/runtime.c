@@ -65,7 +65,7 @@ void mp_init(void) {
     qstr_init();
 
     // no pending exceptions to start with
-    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
     MP_STATE_VM(sched_idx) = 0;
@@ -287,6 +287,12 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
                 return result;
             }
         }
+        if (op == MP_UNARY_OP_BOOL) {
+            // Type doesn't have unary_op (or didn't handle MP_UNARY_OP_BOOL),
+            // so is implicitly True as this code path is impossible to reach
+            // if arg==mp_const_none.
+            return mp_const_true;
+        }
         // With MP_UNARY_OP_INT, mp_unary_op() becomes a fallback for mp_obj_get_int().
         // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
@@ -393,7 +399,7 @@ mp_obj_t PLACE_IN_ITCM(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t r
                         goto generic_binary_op;
                     } else {
                         // use standard precision
-                        lhs_val <<= rhs_val;
+                        lhs_val = (mp_uint_t)lhs_val << rhs_val;
                     }
                     break;
                 }
@@ -1275,6 +1281,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         return iternext(o_in);
     } else {
         // check for __next__ method
@@ -1301,6 +1308,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
     mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         return iternext(o_in);
     } else {
         // check for __next__ method
@@ -1315,7 +1323,7 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
                 return ret;
             } else {
                 if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_StopIteration))) {
-                    return MP_OBJ_STOP_ITERATION;
+                    return mp_make_stop_iteration(mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val)));
                 } else {
                     nlr_jump(nlr.ret_val);
                 }
@@ -1331,7 +1339,6 @@ mp_obj_t mp_iternext(mp_obj_t o_in) {
     }
 }
 
-// TODO: Unclear what to do with StopIterarion exception here.
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
@@ -1342,13 +1349,18 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
 
     mp_fun_1_t iternext = mp_type_get_iternext_slot(type);
     if (iternext != NULL && send_value == mp_const_none) {
+        MP_STATE_THREAD(stop_iteration_arg) = MP_OBJ_NULL;
         mp_obj_t ret = iternext(self_in);
         *ret_val = ret;
         if (ret != MP_OBJ_STOP_ITERATION) {
             return MP_VM_RETURN_YIELD;
         } else {
-            // Emulate raise StopIteration()
-            // Special case, handled in vm.c
+            // The generator is finished.
+            // This is an optimised "raise StopIteration(*ret_val)".
+            *ret_val = MP_STATE_THREAD(stop_iteration_arg);
+            if (*ret_val == MP_OBJ_NULL) {
+                *ret_val = mp_const_none;
+            }
             return MP_VM_RETURN_NORMAL;
         }
     }
@@ -1568,10 +1580,6 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
         MP_ERROR_TEXT("memory allocation failed, allocating %u bytes"), (uint)num_bytes);
 }
 
-NORETURN void mp_raise_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
-    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
-}
-
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 
 NORETURN void mp_raise_type(const mp_obj_type_t *exc_type) {
@@ -1665,10 +1673,6 @@ NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_end(argptr);
 }
 
-NORETURN void mp_raise_OSError(int errno_) {
-    mp_raise_arg1(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
-}
-
 NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_OSError, msg);
 }
@@ -1693,7 +1697,7 @@ NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg) {
 }
 
 NORETURN void mp_raise_BrokenPipeError(void) {
-    mp_raise_arg1(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
+    mp_raise_type_arg(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
 
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
@@ -1707,6 +1711,7 @@ NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, 
     va_end(argptr);
 }
 
+
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
     va_start(argptr,fmt);
@@ -1716,6 +1721,22 @@ NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
 
 NORETURN void mp_raise_MpyError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_MpyError, msg);
+}
+
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
+}
+
+NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
+    if (arg == MP_OBJ_NULL) {
+        mp_raise_type(&mp_type_StopIteration);
+    } else {
+        mp_raise_type_arg(&mp_type_StopIteration, arg);
+    }
+}
+
+NORETURN void mp_raise_OSError(int errno_) {
+    mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 #endif

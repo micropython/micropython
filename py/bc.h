@@ -128,7 +128,9 @@
 
 #define MP_BC_PRELUDE_SIG_DECODE(ip) \
     size_t n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args; \
-    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args)
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args); \
+    (void)n_state; (void)n_exc_stack; (void)scope_flags; \
+    (void)n_pos_args; (void)n_kwonly_args; (void)n_def_pos_args
 
 #define MP_BC_PRELUDE_SIZE_ENCODE(I, C, out_byte, out_env)      \
     do {                                                            \
@@ -163,7 +165,8 @@
 
 #define MP_BC_PRELUDE_SIZE_DECODE(ip) \
     size_t n_info, n_cell; \
-    MP_BC_PRELUDE_SIZE_DECODE_INTO(ip, n_info, n_cell)
+    MP_BC_PRELUDE_SIZE_DECODE_INTO(ip, n_info, n_cell); \
+    (void)n_info; (void)n_cell
 
 // Sentinel value for mp_code_state_t.exc_sp_idx
 #define MP_CODE_STATE_EXC_SP_IDX_SENTINEL ((uint16_t)-1)

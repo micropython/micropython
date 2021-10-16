@@ -130,7 +130,7 @@ mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *self, co
             mp_obj_new_bytes(self->data.payload, self->data.payload_len),
             data_type(self->data.data_type),
         };
-        mp_obj_t code_obj = namedtuple_make_new((const mp_obj_type_t *)&qrio_qrinfo_type_obj, 2, elems, NULL);
+        mp_obj_t code_obj = namedtuple_make_new((const mp_obj_type_t *)&qrio_qrinfo_type_obj, 2, 0, elems);
         mp_obj_list_append(result, code_obj);
     }
     return result;

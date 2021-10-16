@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 
 #include "py/binary.h"
 #include "py/objproperty.h"

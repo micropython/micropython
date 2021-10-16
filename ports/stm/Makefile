@@ -290,7 +290,7 @@ $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $^ > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -302,7 +302,7 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0x57755a57 -b $(BOOTLOADER_OFFSET) -c -o "$(BUILD)/firmware.uf2" $^
 
 flash: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $< to the board"

@@ -4071,7 +4071,7 @@ msgstr "sampling rate out of range"
 msgid "schedule queue full"
 msgstr "schedule queue full"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: shared/runtime/pyexec.c py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "script compilation not supported"
 
