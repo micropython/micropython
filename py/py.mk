@@ -52,8 +52,6 @@ LVGL_MPY: $(LVGL_MPY)
 CFLAGS_MOD += -Wno-unused-function
 SRC_MOD += $(subst $(TOP)/,,$(shell find $(LVGL_DIR)/src $(LVGL_DIR)/examples $(LVGL_GENERIC_DRV_DIR) -type f -name "*.c") $(LVGL_MPY))
 
-GIT_SUBMODULES += lib/lv_bindings
-
 #lodepng
 LODEPNG_DIR = $(TOP)/lib/lv_bindings/driver/png/lodepng
 MP_LODEPNG_C = $(TOP)/lib/lv_bindings/driver/png/mp_lodepng.c
