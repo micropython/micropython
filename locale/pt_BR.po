@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-12 16:04+0000\n"
+"PO-Revision-Date: 2021-10-17 14:36+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -4041,7 +4041,7 @@ msgstr "estouro de fila"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "os f-strings brutos não são suportados"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4380,7 +4380,7 @@ msgstr "escapar o nome unicode"
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
-msgstr ""
+msgstr "sem indentação não corresponde com nenhum nível de indentação exterior"
 
 #: py/objstr.c
 #, c-format
