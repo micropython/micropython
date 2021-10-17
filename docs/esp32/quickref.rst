@@ -210,6 +210,29 @@ tx     1      10     17
 rx     3      9      16
 =====  =====  =====  =====
 
+
+Below is the list of all UART initialization parameters
+
+* ``uart_port`` - UART port number
+* ``baudrate`` - UART speed in bps (ex. 9600)
+* ``bits`` - UART data bits
+* ``parity`` - Parity
+* ``stop`` - Stop bits
+* ``tx`` - TX pin
+* ``rx`` - RX pin
+* ``rts`` - RTS pin
+* ``cts`` - CTS pin
+* ``txbuf`` - UART TX ring buffer size
+* ``rxbuf`` - UART RX ring buffer size
+* ``timeout`` - Overall timeout
+* ``timeout_char`` - Timeout between characters
+* ``invert`` - Set UART line inverse mode
+* ``flow`` - Set hardware flow control
+* ``rxfifo_full_thresh`` - UART RX full interrupt threshold
+* ``rx_timeout_thresh`` - UART timeout interrupt threshold (unit: time of sending one byte)
+* ``txfifo_empty_intr_thresh`` - UART TX empty interrupt threshold
+
+
 PWM (pulse width modulation)
 ----------------------------
 
@@ -409,14 +432,14 @@ I2S bus
 See :ref:`machine.I2S <machine.I2S>`. ::
 
     from machine import I2S, Pin
-    
+
     i2s = I2S(0, sck=Pin(13), ws=Pin(14), sd=Pin(34), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
     i2s.write(buf)             # write buffer of audio samples to I2S device
-    
+
     i2s = I2S(1, sck=Pin(33), ws=Pin(25), sd=Pin(32), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
-    
-The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
 
 ESP32 has two I2S buses with id=0 and id=1
