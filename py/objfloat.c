@@ -104,6 +104,19 @@ STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
             mp_raise_ValueError(MP_ERROR_TEXT("syntax error in JSON"));
         }
     }
+    #elif MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT
+    if (kind == PRINT_JSON) {
+        if (fp_isnan(o_val)) {
+            mp_print_str(print, "NaN");
+            return;
+        } else if (fp_isinf(o_val)) {
+            if (fp_signbit(o_val)) {
+                mp_print_str(print, "-");
+            }
+            mp_print_str(print, "Infinity");
+            return;
+        }
+    }
     #endif
     #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];

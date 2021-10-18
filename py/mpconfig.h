@@ -1446,6 +1446,11 @@ typedef double mp_float_t;
 // by default dumps these numbers.
 #define MICROPY_PY_UJSON_FLOAT_MODE_STRICT (1)
 
+// Support load and dump of nan/inf as NaN/Infinity.
+// Not compliant with the JSON standard, but the same as default CPython behavior,
+// except that we do not support the allow_nan keyword for dump nor parse_constant for load.
+#define MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT (2)
+
 // How to treat nan and inf for JSON.
 #ifndef MICROPY_PY_UJSON_FLOAT_MODE
 #define MICROPY_PY_UJSON_FLOAT_MODE (MICROPY_PY_UJSON_FLOAT_MODE_MICROPYTHON)
