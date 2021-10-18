@@ -41,8 +41,8 @@
 //| The default set of devices is ``Device.KEYBOARD, Device.MOUSE, Device.CONSUMER_CONTROL``,
 //| On boards where `usb_hid` is disabled by default, `devices` is an empty tuple.
 //|
-//| If a boot device is enabled by `usb_hid.enable)`, *and* the host has requested a boot device,
-//| the `devices` tuple is *replaced* when ``code.py`` starts with a single-element tuple
+//| If a boot device is enabled by `usb_hid.enable()`, *and* the host has requested a boot device,
+//| the `devices` tuple is **replaced** when ``code.py`` starts with a single-element tuple
 //| containing a `Device` that describes the boot device chosen (keyboard or mouse).
 //| The request for a boot device overrides any other HID devices.
 //| """
@@ -143,7 +143,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_enable_obj, 1, usb_hid_enable);
 //|     """
 //|     :return: the boot device requested by the host, if any.
 //|       Returns 0 if the host did not request a boot device, or if `usb_hid.enable()`
-//|       was called with `boot_device=0`, the default, which disables boot device support.
+//|       was called with ``boot_device=0``, the default, which disables boot device support.
 //|       If the host did request a boot device,
 //|       returns the value of ``boot_device`` set in `usb_hid.enable()`:
 //|       ``1`` for a boot keyboard, or ``2`` for boot mouse.
