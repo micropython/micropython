@@ -34,7 +34,7 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
-#include <math.h>
+#include "py/float.h"
 #include "py/formatfloat.h"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
@@ -97,6 +97,14 @@ mp_int_t mp_float_hash(mp_float_t src) {
 STATIC void float_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_float_t o_val = mp_obj_float_get(o_in);
+    #if MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_STRICT
+    if (kind == PRINT_JSON) {
+        if (fp_isnan(o_val) || fp_isinf(o_val)) {
+            // Use same message as in modujson.c.
+            mp_raise_ValueError(MP_ERROR_TEXT("syntax error in JSON"));
+        }
+    }
+    #endif
     #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
     char buf[16];
     #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C
