@@ -3018,6 +3018,10 @@ msgstr "divide by zero"
 msgid "division by zero"
 msgstr "division by zero"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "empty"
