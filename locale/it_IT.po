@@ -566,6 +566,10 @@ msgstr "La profondità dei bit deve essere inclusiva da 1 a 6, non %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondità di bit deve essere un multiplo di 8."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Sia RX che TX richiedono il controllo del flow"
