@@ -145,6 +145,10 @@ jobs:
       run: |
         git describe --dirty --tags
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
     - name: Install dependencies
       run: |
         brew install gettext

@@ -28,8 +28,10 @@
 
 #include "py/runtime.h"
 
+// Schedules an exception on the main thread (for exceptions "thrown" by async
+// sources such as interrupts and UNIX signal handlers).
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
-    MP_STATE_VM(mp_pending_exception) = exc;
+    MP_STATE_MAIN_THREAD(mp_pending_exception) = exc;
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
@@ -66,9 +68,9 @@ void mp_handle_pending(bool raise_exc) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         // Re-check state is still pending now that we're in the atomic section.
         if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+            mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
             if (obj != MP_OBJ_NULL) {
-                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+                MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
                 if (!mp_sched_num_pending()) {
                     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
                 }
@@ -115,7 +117,7 @@ void mp_sched_unlock(void) {
     assert(MP_STATE_VM(sched_state) < 0);
     if (++MP_STATE_VM(sched_state) == 0) {
         // vm became unlocked
-        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL || mp_sched_num_pending()) {
+        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL || mp_sched_num_pending()) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         } else {
             MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
@@ -148,9 +150,9 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
 
 // A variant of this is inlined in the VM at the pending exception check
 void mp_handle_pending(bool raise_exc) {
-    if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
-        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
+        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
         if (raise_exc) {
             nlr_raise(obj);
         }

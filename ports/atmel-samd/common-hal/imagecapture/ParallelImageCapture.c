@@ -27,8 +27,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
 #include "shared-bindings/microcontroller/__init__.h"

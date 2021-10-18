@@ -39,5 +39,8 @@ extern bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incremental
 extern mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self);
 extern void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_position);
+extern mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self);
+extern void common_hal_rotaryio_incrementalencoder_set_divisor(rotaryio_incrementalencoder_obj_t *self,
+    mp_int_t new_divisor);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_ROTARYIO_INCREMENTALENCODER_H

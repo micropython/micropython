@@ -30,7 +30,7 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
-#include "extmod/crypto-algorithms/sha256.h"
+#include "lib/crypto-algorithms/sha256.h"
 
 #include "hardware/structs/rosc.h"
 

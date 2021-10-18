@@ -232,7 +232,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_hex_obj, mp_builtin_hex);
 #if MICROPY_PY_BUILTINS_INPUT
 
 #include "py/mphal.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 
 // A port can define mp_hal_readline if they want to use a custom function here
 #ifndef mp_hal_readline
@@ -324,7 +324,7 @@ STATIC mp_obj_t mp_builtin_next(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         mp_obj_t ret = mp_iternext_allow_raise(args[0]);
         if (ret == MP_OBJ_STOP_ITERATION) {
-            mp_raise_type(&mp_type_StopIteration);
+            mp_raise_StopIteration(MP_STATE_THREAD(stop_iteration_arg));
         } else {
             return ret;
         }
@@ -338,7 +338,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_next_obj, 1, 2, mp_builtin_next);
 STATIC mp_obj_t mp_builtin_next(mp_obj_t o) {
     mp_obj_t ret = mp_iternext_allow_raise(o);
     if (ret == MP_OBJ_STOP_ITERATION) {
-        mp_raise_type(&mp_type_StopIteration);
+        mp_raise_StopIteration(MP_STATE_THREAD(stop_iteration_arg));
     } else {
         return ret;
     }
@@ -553,7 +553,7 @@ STATIC mp_obj_t mp_builtin_sorted(size_t n_args, const mp_obj_t *args, mp_map_t 
     if (n_args > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("must use keyword argument for key function"));
     }
-    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, args, NULL);
+    mp_obj_t self = mp_type_list.make_new(&mp_type_list, 1, 0, args);
     mp_obj_list_sort(1, &self, kwargs);
 
     return self;

@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
 

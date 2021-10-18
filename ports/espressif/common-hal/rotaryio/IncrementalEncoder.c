@@ -84,3 +84,13 @@ void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalenc
     self->position = new_position;
     pcnt_counter_clear(self->unit);
 }
+
+mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self) {
+    return 4;
+}
+
+void common_hal_rotaryio_incrementalencoder_set_divisor(rotaryio_incrementalencoder_obj_t *self, mp_int_t divisor) {
+    if (divisor != 4) {
+        mp_raise_ValueError(translate("divisor must be 4"));
+    }
+}

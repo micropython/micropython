@@ -210,8 +210,8 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/vfs_fat_file.o \
 	extmod/vfs_lfs.o \
 	extmod/utime_mphal.o \
-	lib/embed/abort_.o \
-	lib/utils/printf.o \
+	shared/libc/abort_.o \
+	shared/libc/printf.o \
 
 # prepend the build destination prefix to the py object files
 PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))
@@ -251,14 +251,7 @@ FORCE:
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makeversionhdr.py $@
-
-# build a list of registered modules for py/objmodule.c.
-$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
-	@$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
-
-SRC_QSTR += $(HEADER_BUILD)/moduledefs.h
+	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
 
 # mpconfigport.mk is optional, but changes to it may drastically change
 # overall config, so they need to be caught
@@ -274,7 +267,7 @@ $(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEF
 # qstr data
 $(HEADER_BUILD)/qstrdefs.enum.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
@@ -282,19 +275,20 @@ $(HEADER_BUILD)/qstrdefs.enum.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrd
 # the lines in "" and then unwrap after the preprocessor is finished.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(PY_SRC)/makeqstrdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
 $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
-# Standard C functions like memset need to be compiled with special flags so
-# the compiler does not optimise these functions in terms of themselves.
-CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
-$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+
+# build a list of registered modules for py/objmodule.c.
+$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+	@$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
 CFLAGS_BUILTIN ?= -ffreestanding -fno-builtin -fno-lto
-$(BUILD)/lib/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
+$(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.

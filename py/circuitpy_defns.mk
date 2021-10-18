@@ -680,17 +680,17 @@ endif
 endif
 
 SRC_CIRCUITPY_COMMON = \
-	lib/libc/string0.c \
-	lib/mp-readline/readline.c \
+	shared/libc/string0.c \
+	shared/readline/readline.c \
 	lib/oofatfs/ff.c \
 	lib/oofatfs/ffunicode.c \
-	lib/timeutils/timeutils.c \
-	lib/utils/buffer_helper.c \
-	lib/utils/context_manager_helpers.c \
-	lib/utils/interrupt_char.c \
-	lib/utils/pyexec.c \
-	lib/utils/stdout_helpers.c \
-	lib/utils/sys_stdio_mphal.c
+	shared/timeutils/timeutils.c \
+	shared/runtime/buffer_helper.c \
+	shared/runtime/context_manager_helpers.c \
+	shared/runtime/interrupt_char.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
+	shared/runtime/sys_stdio_mphal.c
 
 ifeq ($(CIRCUITPY_QRIO),1)
 SRC_CIRCUITPY_COMMON += lib/quirc/lib/decode.c lib/quirc/lib/identify.c lib/quirc/lib/quirc.c lib/quirc/lib/version_db.c
@@ -706,7 +706,7 @@ GENERATED_LD_FILE = $(BUILD)/$(notdir $(patsubst %.template.ld,%.ld,$(LD_TEMPLAT
 # because it may include other template files.
 $(GENERATED_LD_FILE): $(BUILD)/ld_defines.pp boards/*.template.ld
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
+	$(Q)$(PYTHON) $(TOP)/tools/gen_ld_files.py --defines $< --out_dir $(BUILD) boards/*.template.ld
 endif
 
 .PHONY: check-release-needs-clean-build

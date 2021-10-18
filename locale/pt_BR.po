@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-12 16:04+0000\n"
+"PO-Revision-Date: 2021-10-17 14:36+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2563,10 +2563,6 @@ msgstr "O argumento __new__ deve ser um tipo usuário"
 msgid "a bytes-like object is required"
 msgstr "é necessário objetos tipo bytes"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() chamado"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "endereço fora dos limites"
@@ -3152,26 +3148,6 @@ msgstr "argumentos extras de palavras-chave passados"
 msgid "extra positional arguments given"
 msgstr "argumentos extra posicionais passados"
 
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "A parte da expressão f-string não pode incluir um '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "A parte da expressão f-string não pode incluir uma barra invertida"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: expressão vazia não é permitida"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: esperando '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: um único '}' não é permitido"
-
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
 msgid "file must be a file opened in byte mode"
@@ -3449,10 +3425,6 @@ msgstr "o intervalo deve estar entre %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "arquitetura inválida"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "argumentos inválidos"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4068,8 +4040,8 @@ msgid "queue overflow"
 msgstr "estouro de fila"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "o f-strings bruto não estão implementados"
+msgid "raw f-strings are not supported"
+msgstr "os f-strings brutos não são suportados"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4131,7 +4103,7 @@ msgstr "Taxa de amostragem fora do intervalo"
 msgid "schedule queue full"
 msgstr "fila de espera cheia"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilação de script não suportada"
 
@@ -4407,8 +4379,8 @@ msgid "unicode name escapes"
 msgstr "escapar o nome unicode"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "o unindent não coincide com nenhum nível de recuo externo"
+msgid "unindent doesn't match any outer indent level"
+msgstr "sem indentação não corresponde com nenhum nível de indentação exterior"
 
 #: py/objstr.c
 #, c-format
@@ -4560,6 +4532,33 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() chamado"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "A parte da expressão f-string não pode incluir um '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "A parte da expressão f-string não pode incluir uma barra invertida"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: expressão vazia não é permitida"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: esperando '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: um único '}' não é permitido"
+
+#~ msgid "invalid arguments"
+#~ msgstr "argumentos inválidos"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "o f-strings bruto não estão implementados"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "o unindent não coincide com nenhum nível de recuo externo"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "A lista %q deve ser uma lista"

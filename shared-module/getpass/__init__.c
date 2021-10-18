@@ -25,7 +25,7 @@
  */
 
 #include "py/mphal.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/readline/readline.h"
 #include "shared-module/getpass/__init__.h"
 
 mp_obj_t shared_module_getpass_getpass(const char *prompt, mp_print_t *print) {

@@ -40,8 +40,8 @@
 #include "py/gc.h"
 #include "py/stackctrl.h"
 
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/pyexec.h"
 
 #include "background.h"
 #include "mpconfigboard.h"

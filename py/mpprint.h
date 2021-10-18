@@ -52,6 +52,14 @@ typedef struct _mp_print_t {
     mp_print_strn_t print_strn;
 } mp_print_t;
 
+typedef struct _mp_print_ext_t {
+    mp_print_t base;
+    const char *item_separator;
+    const char *key_separator;
+}mp_print_ext_t;
+
+#define MP_PRINT_GET_EXT(print) ((mp_print_ext_t *)print)
+
 // All (non-debug) prints go through one of the two interfaces below.
 // 1) Wrapper for platform print function, which wraps MP_PLAT_PRINT_STRN.
 extern const mp_print_t mp_plat_print;

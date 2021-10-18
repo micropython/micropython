@@ -73,7 +73,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     }
 
     self->position = 0;
-    self->quarter_count = 0;
+    self->sub_count = 0;
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         encoder, MP_ARRAY_SIZE(encoder),

@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"

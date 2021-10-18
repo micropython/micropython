@@ -3,7 +3,7 @@
 
 #include "shared-module/displayio/__init__.h"
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/reload.h"
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"

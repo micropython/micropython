@@ -44,12 +44,8 @@ typedef enum _mp_token_kind_t {
     MP_TOKEN_INVALID,
     MP_TOKEN_DEDENT_MISMATCH,
     MP_TOKEN_LONELY_STRING_OPEN,
-    #if MICROPY_COMP_FSTRING_LITERAL
-    MP_TOKEN_FSTRING_BACKSLASH,
-    MP_TOKEN_FSTRING_COMMENT,
-    MP_TOKEN_FSTRING_UNCLOSED,
-    MP_TOKEN_FSTRING_UNOPENED,
-    MP_TOKEN_FSTRING_EMPTY_EXP,
+    #if MICROPY_PY_FSTRINGS
+    MP_TOKEN_MALFORMED_FSTRING,
     MP_TOKEN_FSTRING_RAW,
     #endif
 
@@ -166,8 +162,8 @@ typedef struct _mp_lexer_t {
     mp_reader_t reader;         // stream source
 
     unichar chr0, chr1, chr2;   // current cached characters from source
-    #if MICROPY_COMP_FSTRING_LITERAL
-    unichar chr3, chr4, chr5;   // current cached characters from alt source
+    #if MICROPY_PY_FSTRINGS
+    unichar chr0_saved, chr1_saved, chr2_saved; // current cached characters from alt source
     #endif
 
     size_t line;                // current source line
@@ -184,10 +180,9 @@ typedef struct _mp_lexer_t {
     size_t tok_column;          // token source column
     mp_token_kind_t tok_kind;   // token kind
     vstr_t vstr;                // token data
-    #if MICROPY_COMP_FSTRING_LITERAL
-    vstr_t vstr_postfix;        // postfix to apply to string
-    bool vstr_postfix_processing;
-    uint16_t vstr_postfix_idx;
+    #if MICROPY_PY_FSTRINGS
+    vstr_t fstring_args;        // extracted arguments to pass to .format()
+    size_t fstring_args_idx;    // how many bytes of fstring_args have been read
     #endif
 } mp_lexer_t;
 

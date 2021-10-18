@@ -129,11 +129,27 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/../micropython-lib)
     endif()
 
+    # If MICROPY_MPYCROSS is not explicitly defined in the environment (which
+    # is what makemanifest.py will use) then create an mpy-cross dependency
+    # to automatically build mpy-cross if needed.
+    set(MICROPY_MPYCROSS $ENV{MICROPY_MPYCROSS})
+    if(NOT MICROPY_MPYCROSS)
+        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/mpy-cross)
+        if(NOT MICROPY_MAKE_EXECUTABLE)
+            set(MICROPY_MAKE_EXECUTABLE make)
+        endif()
+        add_custom_command(
+            OUTPUT ${MICROPY_MPYCROSS_DEPENDENCY}
+            COMMAND ${MICROPY_MAKE_EXECUTABLE} -C ${MICROPY_DIR}/mpy-cross
+        )
+    endif()
+
     add_custom_command(
         OUTPUT ${MICROPY_FROZEN_CONTENT}
         COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" -f${MICROPY_CROSS_FLAGS} ${MICROPY_FROZEN_MANIFEST}
         DEPENDS MICROPY_FORCE_BUILD
             ${MICROPY_QSTRDEFS_GENERATED}
+            ${MICROPY_MPYCROSS_DEPENDENCY}
         VERBATIM
     )
 endif()

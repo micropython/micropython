@@ -28,7 +28,7 @@
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"        /* FatFs lower layer API */
 #include "lib/oofatfs/diskio.h"    /* FatFs lower layer API */
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 #if CIRCUITPY_RTC
 #include "shared-bindings/rtc/RTC.h"

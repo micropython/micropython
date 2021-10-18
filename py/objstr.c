@@ -141,14 +141,8 @@ STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    #if MICROPY_CPYTHON_COMPAT
-    if (kw_args != NULL && kw_args->used != 0) {
-        mp_arg_error_unimpl_kw();
-    }
-    #endif
-
-    mp_arg_check_num(n_args, kw_args, 0, 3, false);
+mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     switch (n_args) {
         case 0:
@@ -199,15 +193,15 @@ mp_obj_t mp_obj_str_make_new(const mp_obj_type_t *type, size_t n_args, const mp_
     }
 }
 
-STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
 
     #if MICROPY_CPYTHON_COMPAT
-    if (kw_args != NULL && kw_args->used != 0) {
+    if (n_kw) {
         mp_arg_error_unimpl_kw();
     }
     #else
-    (void)kw_args;
+    (void)n_kw;
     #endif
 
     if (n_args == 0) {
@@ -489,7 +483,7 @@ STATIC mp_obj_t str_join(mp_obj_t self_in, mp_obj_t arg) {
     if (!mp_obj_is_type(arg, &mp_type_list) && !mp_obj_is_type(arg, &mp_type_tuple)) {
         // arg is not a list nor a tuple, try to convert it to a list
         // TODO: Try to optimize?
-        arg = mp_type_list.make_new(&mp_type_list, 1, &arg, NULL);
+        arg = mp_type_list.make_new(&mp_type_list, 1, 0, &arg);
     }
     mp_obj_get_array(arg, &seq_len, &seq_items);
 
@@ -1107,7 +1101,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 field_name = lookup;
                 mp_map_elem_t *key_elem = mp_map_lookup(kwargs, field_q, MP_MAP_LOOKUP);
                 if (key_elem == NULL) {
-                    mp_raise_arg1(&mp_type_KeyError, field_q);
+                    mp_raise_type_arg(&mp_type_KeyError, field_q);
                 }
                 arg = key_elem->value;
             }
@@ -1935,7 +1929,7 @@ STATIC mp_obj_t bytes_decode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return mp_obj_str_make_new(&mp_type_str, n_args, args, NULL);
+    return mp_obj_str_make_new(&mp_type_str, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj, 1, 3, bytes_decode);
 
@@ -1948,7 +1942,7 @@ STATIC mp_obj_t str_encode(size_t n_args, const mp_obj_t *args) {
         args = new_args;
         n_args++;
     }
-    return bytes_make_new(NULL, n_args, args, NULL);
+    return bytes_make_new(NULL, n_args, 0, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(str_encode_obj, 1, 3, str_encode);
 #endif

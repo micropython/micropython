@@ -32,7 +32,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/objlist.h"
 #include "py/objstr.h"

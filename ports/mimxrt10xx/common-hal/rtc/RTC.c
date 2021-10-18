@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "supervisor/shared/translate.h"
 

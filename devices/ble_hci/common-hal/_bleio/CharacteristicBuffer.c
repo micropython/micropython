@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 

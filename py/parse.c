@@ -1172,57 +1172,23 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         ) {
     syntax_error:;
         mp_obj_t exc;
-        switch (lex->tok_kind) {
-            case MP_TOKEN_INDENT:
-                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    MP_ERROR_TEXT("unexpected indent"));
-                break;
-            case MP_TOKEN_DEDENT_MISMATCH:
-                exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
-                    MP_ERROR_TEXT("unindent does not match any outer indentation level"));
-                break;
-                #if MICROPY_COMP_FSTRING_LITERAL
-            #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-            case MP_TOKEN_FSTRING_BACKSLASH:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("f-string expression part cannot include a backslash"));
-                break;
-            case MP_TOKEN_FSTRING_COMMENT:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("f-string expression part cannot include a '#'"));
-                break;
-            case MP_TOKEN_FSTRING_UNCLOSED:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("f-string: expecting '}'"));
-                break;
-            case MP_TOKEN_FSTRING_UNOPENED:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("f-string: single '}' is not allowed"));
-                break;
-            case MP_TOKEN_FSTRING_EMPTY_EXP:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("f-string: empty expression not allowed"));
-                break;
-            case MP_TOKEN_FSTRING_RAW:
-                exc = mp_obj_new_exception_msg(&mp_type_NotImplementedError,
-                    MP_ERROR_TEXT("raw f-strings are not implemented"));
-                break;
-            #else
-            case MP_TOKEN_FSTRING_BACKSLASH:
-            case MP_TOKEN_FSTRING_COMMENT:
-            case MP_TOKEN_FSTRING_UNCLOSED:
-            case MP_TOKEN_FSTRING_UNOPENED:
-            case MP_TOKEN_FSTRING_EMPTY_EXP:
-            case MP_TOKEN_FSTRING_RAW:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("malformed f-string"));
-                break;
-            #endif
-                #endif
-            default:
-                exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                    MP_ERROR_TEXT("invalid syntax"));
-                break;
+        if (lex->tok_kind == MP_TOKEN_INDENT) {
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                MP_ERROR_TEXT("unexpected indent"));
+        } else if (lex->tok_kind == MP_TOKEN_DEDENT_MISMATCH) {
+            exc = mp_obj_new_exception_msg(&mp_type_IndentationError,
+                MP_ERROR_TEXT("unindent doesn't match any outer indent level"));
+        #if MICROPY_PY_FSTRINGS
+        } else if (lex->tok_kind == MP_TOKEN_MALFORMED_FSTRING) {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("malformed f-string"));
+        } else if (lex->tok_kind == MP_TOKEN_FSTRING_RAW) {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("raw f-strings are not supported"));
+        #endif
+        } else {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("invalid syntax"));
         }
         // add traceback to give info about file name and location
         // we don't have a 'block' name, so just pass the NULL qstr to indicate this

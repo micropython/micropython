@@ -100,13 +100,9 @@ void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     const mp_obj_namedtuple_type_t *type = (const mp_obj_namedtuple_type_t *)type_in;
     size_t num_fields = type->n_fields;
-    size_t n_kw = 0;
-    if (kw_args != NULL) {
-        n_kw = kw_args->used;
-    }
     if (n_args + n_kw != num_fields) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
@@ -130,26 +126,25 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, const 
 
     // Fill in the remaining slots with the keyword args
     memset(&tuple->items[n_args], 0, sizeof(mp_obj_t) * n_kw);
-    for (size_t i = 0; i < n_kw; i++) {
-        qstr kw = mp_obj_str_get_qstr(kw_args->table[i].key);
+    for (size_t i = n_args; i < n_args + 2 * n_kw; i += 2) {
+        qstr kw = mp_obj_str_get_qstr(args[i]);
         size_t id = mp_obj_namedtuple_find_field(type, kw);
         if (id == (size_t)-1) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_TypeError_varg(
-                MP_ERROR_TEXT("unexpected keyword argument '%q'"), kw);
+            mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("unexpected keyword argument '%q'"), kw);
             #endif
         }
         if (tuple->items[id] != MP_OBJ_NULL) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_arg_error_terse_mismatch();
             #else
-            mp_raise_TypeError_varg(
+            mp_raise_msg_varg(&mp_type_TypeError,
                 MP_ERROR_TEXT("function got multiple values for argument '%q'"), kw);
             #endif
         }
-        tuple->items[id] = kw_args->table[i].value;
+        tuple->items[id] = args[i + 1];
     }
 
     return MP_OBJ_FROM_PTR(tuple);
