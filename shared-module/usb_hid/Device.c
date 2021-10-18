@@ -244,7 +244,7 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
 }
 
 mp_obj_t common_hal_usb_hid_device_get_last_received_report(usb_hid_device_obj_t *self, uint8_t report_id) {
-    // report_id has already been validated for this deveice.
+    // report_id has already been validated for this device.
     size_t id_idx = get_report_id_idx(self, report_id);
     return mp_obj_new_bytes(self->out_report_buffers[id_idx], self->out_report_lengths[id_idx]);
 }
@@ -266,11 +266,11 @@ void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
 }
 
 
-// Callbacks invoked when we received Get_Report request through control endpoint
+// Callback invoked when we receive Get_Report request through control endpoint
 uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen) {
     (void)itf;
-    // only support Input Report
-    if (report_type != HID_REPORT_TYPE_INPUT) {
+    // Support Input Report and Feature Report
+    if (report_type != HID_REPORT_TYPE_INPUT && report_type != HID_REPORT_TYPE_FEATURE) {
         return 0;
     }
 
@@ -289,14 +289,14 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
     return 0;
 }
 
-// Callbacks invoked when we received Set_Report request through control endpoint
+// Callback invoked when we receive Set_Report request through control endpoint
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize) {
     (void)itf;
     if (report_type == HID_REPORT_TYPE_INVALID) {
         report_id = buffer[0];
         buffer++;
         bufsize--;
-    } else if (report_type != HID_REPORT_TYPE_OUTPUT) {
+    } else if (report_type != HID_REPORT_TYPE_OUTPUT && report_type != HID_REPORT_TYPE_FEATURE) {
         return;
     }
 

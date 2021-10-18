@@ -228,9 +228,14 @@ static void usb_build_configuration_descriptor(void) {
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
+        if (usb_hid_boot_device() > 0 && descriptor_counts.current_interface > 0) {
+            // Hosts using boot devices generally to expect them to be at interface zero,
+            // and will not work properly otherwise.
+            reset_into_safe_mode(USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
+        }
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
-            usb_hid_report_descriptor_length());
+            usb_hid_report_descriptor_length(), usb_hid_boot_device());
     }
     #endif
 
