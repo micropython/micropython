@@ -147,6 +147,9 @@ SRC_ETH_C += \
 	extmod/modusocket.c \
 	eth.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c \
+	hal/phy/device/phydp83825/fsl_phydp83825.c \
+	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
+	hal/phy/device/phylan8720/fsl_phylan8720.c \
 	lib/mbedtls_errors/mp_mbedtls_errors.c \
 	mbedtls/mbedtls_port.c \
 	mpnetworkport.c \
@@ -156,20 +159,6 @@ SRC_ETH_C += \
 	shared/netutils/dhcpserver.c \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
-ifeq ($(ENET_PHY), KSZ8081)
-CFLAGS += -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
-SRC_ETH_C += \
-	hal/phy/device/phyksz8081/fsl_phyksz8081.c
-endif
-ifeq ($(ENET_PHY), DP82825)
-SRC_ETH_C += \
-	hal/phy/device/phydp83825/fsl_phydp83825.c
-endif
-ifeq ($(ENET_PHY), LAN8720)
-SRC_ETH_C += \
-	hal/phy/device/phylan8720/fsl_phylan8720.c
-endif
-
 SRC_QSTR += \
 	extmod/modlwip.c \
 	extmod/modnetwork.c \
@@ -177,7 +166,8 @@ SRC_QSTR += \
 	extmod/modusocket.c \
 	network_lan.c \
 
-CFLAGS += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+CFLAGS += -DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
+	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
 
 endif
 

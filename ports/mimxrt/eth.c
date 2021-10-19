@@ -73,7 +73,7 @@ SDK_ALIGN(uint8_t g_txDataBuff[ENET_TXBD_NUM][SDK_SIZEALIGN(ENET_FRAME_MAX_FRAME
 enet_handle_t g_handle;
 
 static mdio_handle_t mdioHandle = {.ops = &enet_ops};
-static phy_handle_t phyHandle = {.phyAddr = 0x02U, .mdioHandle = &mdioHandle, .ops = &ENET_PHY_OPS};
+static phy_handle_t phyHandle = {.phyAddr = ENET_PHY_ADDRESS, .mdioHandle = &mdioHandle, .ops = &ENET_PHY_OPS};
 
 enet_buffer_config_t buffConfig[] = {{
                                          ENET_RXBD_NUM,

@@ -69,7 +69,6 @@
 // Network definitions
 // Transceiver Phy Address & Type
 #define ENET_PHY_ADDRESS    (0)
-#define ENET_PHY            DP82825
 #define ENET_PHY_OPS        phydp83825_ops
 
 // Ethernet PIN definitions

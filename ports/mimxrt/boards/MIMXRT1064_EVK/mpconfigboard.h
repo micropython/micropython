@@ -111,7 +111,6 @@
 // Network definitions
 // Transceiver Phy Address
 #define ENET_PHY_ADDRESS    (2)
-#define ENET_PHY            KSZ8081
 #define ENET_PHY_OPS        phyksz8081_ops
 
 // Etherner PIN definitions
