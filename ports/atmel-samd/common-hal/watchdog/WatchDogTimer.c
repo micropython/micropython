@@ -34,12 +34,8 @@
 
 #include "component/wdt.h"
 
-void pet(void) {
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
-}
-
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
-    pet();
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
@@ -54,7 +50,7 @@ mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
     return self->timeout;
 }
 
-void setup_wdt(int setting) {
+void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
     OSC32KCTRL->OSCULP32K.bit.EN1K = 1;  // Enable out 1K (for WDT)
 
     // disable watchdog for config
@@ -67,7 +63,7 @@ void setup_wdt(int setting) {
     WDT->CTRLA.bit.WEN = 0;     // Disable window mode
     while (WDT->SYNCBUSY.reg) { // Sync CTRL write
     }
-    pet(); // Clear watchdog interval
+    common_hal_watchdog_feed(self); // Clear watchdog interval
     WDT->CTRLA.bit.ENABLE = 1; // Start watchdog now!
     while (WDT->SYNCBUSY.reg) {
     }
@@ -87,7 +83,7 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_floa
     float timeout = (8 << setting) / 1024.f;
 
     if (self->mode == WATCHDOGMODE_RESET) {
-        setup_wdt(setting);
+        setup_wdt(self, setting);
     }
     self->timeout = timeout;
 }
