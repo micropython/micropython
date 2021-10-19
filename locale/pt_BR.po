@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-17 14:36+0000\n"
+"PO-Revision-Date: 2021-10-20 07:36+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -572,6 +572,8 @@ msgstr "A profundidade de bits deve ser o múltiplo de 8."
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
 msgstr ""
+"O dispositivo de inicialização deve ser o primeiro dispositivo (interface "
+"#0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -3073,7 +3075,7 @@ msgstr "divisão por zero"
 
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "divisor must be 4"
-msgstr ""
+msgstr "o divisor deve ser 4"
 
 #: py/objdeque.c
 msgid "empty"
