@@ -36,7 +36,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/shared/translate.h"
 
-#include "common-hal/busio/SPI.h" // for never_reset_sercom
+#include "common-hal/busio/__init__.h"
 
 // Number of times to try to send packet if failed.
 #define ATTEMPTS 2

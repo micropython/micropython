@@ -45,7 +45,7 @@
 
 #include "samd/sercom.h"
 
-#include "common-hal/busio/SPI.h" // for never_reset_sercom
+#include "common-hal/busio/__init__.h"
 
 #define UART_DEBUG(...) (void)0
 // #define UART_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)

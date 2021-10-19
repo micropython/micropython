@@ -67,8 +67,8 @@
 #include "common-hal/audioio/AudioOut.h"
 #endif
 
-#if CIRCUITPY_BUSIO_SPI
-#include "common-hal/busio/SPI.h"
+#if CIRCUITPY_BUSIO
+#include "common-hal/busio/__init__.h"
 #endif
 
 #include "common-hal/microcontroller/Pin.h"
