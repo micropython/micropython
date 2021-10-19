@@ -134,20 +134,17 @@ LDFLAGS += --gc-sections
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
-# All settings for EThernat support are controller by the value of MICROPY_PY_LWIP
+# All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP), 1)
 
 INC += -Ilwip_inc
-INC += -I$(TOP)/lib/lwip/src/include
 INC += -Ihal/phy
 
 SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
 
 SRC_ETH_C += \
-	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/modusocket.c \
-	extmod/moduwebsocket.c \
 	eth.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c \
 	lib/mbedtls_errors/mp_mbedtls_errors.c \

@@ -15,7 +15,3 @@ MICROPY_SSL_MBEDTLS = 1
 
 ENET_PHY = KSZ8081
 	
-JLINK_PATH ?= /media/RT1050-EVK/
-
-deploy: $(BUILD)/firmware.bin
-	cp $< $(JLINK_PATH)
