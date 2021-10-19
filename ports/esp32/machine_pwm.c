@@ -164,7 +164,7 @@ STATIC void set_freq(int freq, ledc_timer_config_t *timer, machine_pwm_obj_t *se
     //int divider = i / freq; // truncated
     int divider = (i + freq / 2) / freq; // rounded
     float f = i / divider; // actual frequency
-    i = round(i / f);
+    i = (unsigned int) roundf((float) i / f);
     for (; i > 1; i >>= 1) {
         ++res;
     }
