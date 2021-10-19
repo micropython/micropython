@@ -558,6 +558,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "ビット深度は8の倍数でなければなりません"
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "フロー制御のためRXとTXの両方が必要"

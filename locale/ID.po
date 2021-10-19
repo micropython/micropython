@@ -560,6 +560,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "Kedalaman bit harus kelipatan 8."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr ""

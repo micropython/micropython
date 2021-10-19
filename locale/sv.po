@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-17 14:36+0000\n"
+"PO-Revision-Date: 2021-10-18 22:56+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -560,6 +560,10 @@ msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bitdjup måste vara multipel av 8."
+
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -3035,7 +3039,7 @@ msgstr "division med noll"
 
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "divisor must be 4"
-msgstr ""
+msgstr "divisor måste vara 4"
 
 #: py/objdeque.c
 msgid "empty"
