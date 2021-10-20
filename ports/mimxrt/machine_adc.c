@@ -29,7 +29,12 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#if defined(MIMXRT117x_SERIES)
+#include "fsl_lpadc.h"
+#else
 #include "fsl_adc.h"
+#endif
+
 #include "fsl_gpio.h"
 #include "fsl_iomuxc.h"
 
@@ -72,12 +77,14 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     ADC_Type *adc_instance = pin->adc_list[0].instance;  // NOTE: we only use the first ADC assignment - multiple assignments are not supported for now
     uint8_t channel = pin->adc_list[0].channel;
 
+    #if 0 // done in adc_read_u16
     // Configure ADC peripheral channel
     adc_channel_config_t channel_config = {
         .channelNumber = (uint32_t)channel,
         .enableInterruptOnConversionCompleted = false,
     };
     ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0' since we only perform software triggered conversion
+    #endif
 
     // Create ADC Instance
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
@@ -90,6 +97,43 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 // read_u16()
+#if defined(MIMXRT117x_SERIES)
+STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    lpadc_conv_command_config_t adc_config;
+    lpadc_conv_trigger_config_t trigger_config;
+
+    // Set ADC configuration
+    LPADC_GetDefaultConvCommandConfig(&adc_config);
+    adc_config.channelNumber = self->channel;
+    adc_config.sampleScaleMode = kLPADC_SamplePartScale;
+    LPADC_SetConvCommandConfig(self->adc, 1, &adc_config);
+
+    // Set Trigger mode
+    LPADC_GetDefaultConvTriggerConfig(&trigger_config);
+    trigger_config.targetCommandId = 1;
+    LPADC_SetConvTriggerConfig(self->adc, 0U, &trigger_config);
+
+    // Measure input voltage
+    LPADC_DoSoftwareTrigger(self->adc, 1U);
+    lpadc_conv_result_t result_struct;
+    while (!LPADC_GetConvResult(self->adc, &result_struct)) {
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(result_struct.convValue * 2);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
+
+void machine_adc_init(void) {
+    lpadc_config_t adc_config;        // Set ADC configuration
+    LPADC_GetDefaultConfig(&adc_config);
+    adc_config.enableAnalogPreliminary = true;
+    adc_config.referenceVoltageSource = kLPADC_ReferenceVoltageAlt1;
+    LPADC_Init(LPADC1, &adc_config);
+}
+
+#else
+
 STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -111,21 +155,6 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
-STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, adc_obj_make_new,
-    print, adc_obj_print,
-    locals_dict, &adc_locals_dict
-    );
-
 void machine_adc_init(void) {
     for (int i = 1; i < sizeof(adc_bases) / sizeof(ADC_Type *); ++i) {
         ADC_Type *adc_instance = adc_bases[i];
@@ -143,3 +172,19 @@ void machine_adc_init(void) {
         }
     }
 }
+#endif
+
+STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_adc_type,
+    MP_QSTR_ADC,
+    MP_TYPE_FLAG_NONE,
+    make_new, adc_obj_make_new,
+    print, adc_obj_print,
+    locals_dict, &adc_locals_dict
+    );

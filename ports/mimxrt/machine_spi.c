@@ -45,6 +45,14 @@
 #define DEFAULT_SPI_FIRSTBIT    (kLPSPI_MsbFirst)
 #define DEFAULT_SPI_DRIVE       (6)
 
+#define CLOCK_DIVIDER           (1)
+
+#if defined(MIMXRT117x_SERIES)
+#define LPSPI_DMAMUX            DMAMUX0
+#else
+#define LPSPI_DMAMUX            DMAMUX
+#endif
+
 #define MICROPY_HW_SPI_NUM MP_ARRAY_SIZE(spi_index_table)
 
 #define SCK (iomux_table[index])

@@ -37,7 +37,6 @@
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
-#include "fsl_clock.h"
 #include "fsl_wdog.h"
 
 #if MICROPY_PY_MACHINE

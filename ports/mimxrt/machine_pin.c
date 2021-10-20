@@ -149,6 +149,16 @@ void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
+#if defined(MIMXRT117x_SERIES)
+void GPIO6_Combined_0_15_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 0);
+}
+
+void GPIO6_Combined_16_31_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 16);
+}
+#endif
+
 // Deinit all pin IRQ handlers.
 void machine_pin_irq_deinit(void) {
     for (int i = 0; i < ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects)); ++i) {

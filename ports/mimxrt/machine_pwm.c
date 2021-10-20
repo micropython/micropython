@@ -214,7 +214,11 @@ STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
     pwm_signal_param_u16_t pwmSignal;
 
     // Initialize PWM module.
+    #if defined(MIMXRT117x_SERIES)
+    uint32_t pwmSourceClockInHz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus);
+    #else
     uint32_t pwmSourceClockInHz = CLOCK_GetFreq(kCLOCK_IpgClk);
+    #endif
 
     int prescale = calc_prescaler(pwmSourceClockInHz, self->freq);
     if (prescale < 0) {
@@ -296,10 +300,15 @@ STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
 STATIC void configure_qtmr(machine_pwm_obj_t *self) {
     qtmr_config_t qtmrConfig;
     int prescale;
+    #if defined(MIMXRT117x_SERIES)
+    uint32_t pwmSourceClockInHz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus);
+    #else
+    uint32_t pwmSourceClockInHz = CLOCK_GetFreq(kCLOCK_IpgClk);
+    #endif
 
     TMR_Type *instance = (TMR_Type *)self->instance;
 
-    prescale = calc_prescaler(CLOCK_GetFreq(kCLOCK_IpgClk), self->freq);
+    prescale = calc_prescaler(pwmSourceClockInHz, self->freq);
     if (prescale < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_FREQ));
     }
@@ -311,7 +320,7 @@ STATIC void configure_qtmr(machine_pwm_obj_t *self) {
     }
     // Set up the PWM channel
     if (QTMR_SetupPwm_u16(instance, self->channel1, self->freq, self->duty_u16,
-        self->invert, CLOCK_GetFreq(kCLOCK_IpgClk) / (1 << prescale), self->is_init) == kStatus_Fail) {
+        self->invert, pwmSourceClockInHz / (1 << prescale), self->is_init) == kStatus_Fail) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_INIT));
     }
     // Start the output
@@ -325,7 +334,9 @@ STATIC void configure_pwm(machine_pwm_obj_t *self) {
     static bool set_frequency = true;
     // set the frequency only once
     if (set_frequency) {
+        #if !defined(MIMXRT117x_SERIES)
         CLOCK_SetDiv(kCLOCK_IpgDiv, 0x3); // Set IPG PODF to 3, divide by 4
+        #endif
         set_frequency = false;
     }
 

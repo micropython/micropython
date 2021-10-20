@@ -29,8 +29,12 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
+#include "lib/nxp_driver/sdk/CMSIS/Include/core_cm7.h"
 
 uint32_t trng_random_u32(void);
+
+// Config level
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
@@ -44,8 +48,8 @@ uint32_t trng_random_u32(void);
 #define MICROPY_EMIT_INLINE_THUMB           (1)
 
 // Optimisations
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
 #define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
 
 // Python internal features
 #define MICROPY_TRACKED_ALLOC               (MICROPY_SSL_MBEDTLS)
@@ -234,16 +238,21 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
-
+#ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
         __WFE(); \
     } while (0);
+#endif
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
