@@ -161,10 +161,10 @@ STATIC void set_freq(int freq, ledc_timer_config_t *timer, machine_pwm_obj_t *se
     if (freq < EMPIRIC_FREQ) {
         i = LEDC_REF_CLK_HZ; // 1 MHz
     }
-    //int divider = i / freq; // truncated
+    // int divider = i / freq; // truncated
     int divider = (i + freq / 2) / freq; // rounded
     float f = i / divider; // actual frequency
-    i = (unsigned int) roundf((float) i / f);
+    i = (unsigned int)roundf((float)i / f);
     for (; i > 1; i >>= 1) {
         ++res;
     }
@@ -198,9 +198,9 @@ STATIC void set_freq(int freq, ledc_timer_config_t *timer, machine_pwm_obj_t *se
     // Save the same duty cycle when freq is changed
     if (self->duty_x == PWRES) {
         set_duty_u10(self, self->duty_u10);
-    } else if (self->duty_x == HIGHEST_PWM_RES ) {
+    } else if (self->duty_x == HIGHEST_PWM_RES) {
         set_duty_u16(self, self->duty_u16);
-    } else if (self->duty_x == -HIGHEST_PWM_RES ) {
+    } else if (self->duty_x == -HIGHEST_PWM_RES) {
         set_duty_ns(self, self->duty_ns);
     }
 }
@@ -211,7 +211,7 @@ STATIC int ns_to_duty(machine_pwm_obj_t *self, int ns) {
     int freq = timer.freq_hz;
     int resolution = 1 << timer.duty_resolution;
     int64_t duty = ((int64_t)ns * resolution * freq + 500000000) / 1000000000;
-    if ((ns !=0) && (duty == 0)) {
+    if ((ns != 0) && (duty == 0)) {
         duty = 1;
     }
     // DBG(" (ns=%d resolution=%d freq=%d -> duty=%f=%d) ", ns, resolution , freq, 1.0 * ns * resolution * freq / 1000000000.0, duty);
@@ -363,7 +363,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         duty = get_duty_raw(self);
         mp_printf(print, ", duty=%.2f%%, resolution=%.3f%%", 100.0 * duty / (1 << resolution), 100.0 * 1 / (1 << resolution)); // percents
 
-        //mp_printf(print, ", mode=%d, channel=%d, timer=%d", self->mode, self->channel, self->timer);
+        mp_printf(print, ", mode=%d, channel=%d, timer=%d", self->mode, self->channel, self->timer);
     }
     mp_printf(print, ")");
 }
@@ -389,7 +389,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     int duty = args[ARG_duty].u_int;
     int duty_u16 = args[ARG_duty_u16].u_int;
     int duty_ns = args[ARG_duty_ns].u_int;
-    if (((duty != -1) && (duty_u16 != -1)) || ((duty != -1) && (duty_ns != -1))  || ((duty_u16 != -1) && (duty_ns != -1))) {
+    if (((duty != -1) && (duty_u16 != -1)) || ((duty != -1) && (duty_ns != -1)) || ((duty_u16 != -1) && (duty_ns != -1))) {
         mp_raise_ValueError(MP_ERROR_TEXT("only one of parameters 'duty', 'duty_u16' or 'duty_ns' is allowed"));
     }
 
