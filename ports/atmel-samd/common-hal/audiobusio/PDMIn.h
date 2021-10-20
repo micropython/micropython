@@ -46,6 +46,8 @@ typedef struct {
 
 void pdmin_reset(void);
 
+void pdmin_evsys_handler(void);
+
 void pdmin_background(void);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_AUDIOBUSIO_AUDIOOUT_H

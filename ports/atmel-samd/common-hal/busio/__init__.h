@@ -24,22 +24,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H
 
-#include "common-hal/microcontroller/Pin.h"
+void reset_sercoms(void);
+void allow_reset_sercom(Sercom *sercom);
+void never_reset_sercom(Sercom *sercom);
 
-#include "hal/include/hal_spi_m_sync.h"
 
-#include "py/obj.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    struct spi_m_sync_descriptor spi_desc;
-    bool has_lock;
-    uint8_t clock_pin;
-    uint8_t MOSI_pin;
-    uint8_t MISO_pin;
-} busio_spi_obj_t;
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_INIT_H
