@@ -171,7 +171,7 @@ STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_ob
 //|         ...
 //|
 STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self);
+    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_HASH: {
             const mp_int_t key_number = common_hal_keypad_event_get_key_number(self);
