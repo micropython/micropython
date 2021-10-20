@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H
+#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
 
 #include "py/obj.h"
-#include "py/objexcept.h"
+#include "shared-bindings/watchdog/WatchDogMode.h"
+#include "shared-bindings/watchdog/WatchDogTimer.h"
 
-extern const mp_obj_module_t watchdog_module;
-extern mp_obj_exception_t mp_watchdog_timeout_exception;
-extern const mp_obj_type_t mp_type_WatchDogTimeout;
+struct _watchdog_watchdogtimer_obj_t {
+    mp_obj_base_t base;
+    mp_float_t timeout;
+    watchdog_watchdogmode_t mode;
+};
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG___INIT___H
+// This needs to be called in order to disable the watchdog
+// void watchdog_reset(void);
+
+#endif // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H

@@ -1556,7 +1556,7 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
                     char ch = mp_obj_get_int(arg);
                     mp_print_strn(&print, &ch, 1, flags, ' ', width);
                 } else {
-                    mp_raise_TypeError(MP_ERROR_TEXT("integer required"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("%%c requires int or char"));
                 }
                 break;
 
