@@ -101,13 +101,12 @@ SRC_ETH_C += \
 	hal/phy/device/phydp83848/fsl_phydp83848.c \
 	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
 	hal/phy/device/phylan8720/fsl_phylan8720.c \
+	hal/phy/device/phyrtl8211f/fsl_phyrtl8211f.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c
 endif
 
 # NXP SDK sources
 SRC_HAL_IMX_C += \
-	$(MCU_DIR)/drivers/fsl_adc.c \
-	$(MCU_DIR)/drivers/fsl_cache.c \
 	$(MCU_DIR)/drivers/fsl_clock.c \
 	$(MCU_DIR)/drivers/fsl_common.c \
 	$(MCU_DIR)/drivers/fsl_dmamux.c \
@@ -124,10 +123,9 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_sai.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
-	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
-	$(MCU_DIR)/system_$(MCU_SERIES).c \
-	hal/fsl_flexspi_nor_boot.c \
+	$(MCU_DIR)/system_$(MCU_SERIES)$(MCU_CORE).c \
+	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
@@ -137,9 +135,27 @@ ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_qtmr.c
+endif
+
+ifeq ($(MCU_SERIES), MIMXRT1176)
+INC += -I$(TOP)/$(MCU_DIR)/drivers/cm7
+
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/cm7/fsl_cache.c \
+	$(MCU_DIR)/drivers/fsl_dcdc.c \
+	$(MCU_DIR)/drivers/fsl_pmu.c \
+	$(MCU_DIR)/drivers/fsl_common_arm.c \
+	$(MCU_DIR)/drivers/fsl_anatop_ai.c \
+	$(MCU_DIR)/drivers/fsl_caam.c \
+	$(MCU_DIR)/drivers/fsl_lpadc.c
+else
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/fsl_adc.c \
+	$(MCU_DIR)/drivers/fsl_cache.c \
+	$(MCU_DIR)/drivers/fsl_trng.c
 endif
 
 # C source files
@@ -243,7 +259,7 @@ SUPPORTS_HARDWARE_FP_DOUBLE = 0
 
 # Assembly source files
 SRC_SS = \
-	$(MCU_DIR)/gcc/startup_$(MCU_SERIES).S \
+	$(MCU_DIR)/gcc/startup_$(MCU_SERIES)$(MCU_CORE).S \
 	hal/resethandler_MIMXRT10xx.S
 
 SRC_S += shared/runtime/gchelper_m3.s \
@@ -279,11 +295,11 @@ CFLAGS += \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX \
+	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
-	-DCPU_$(MCU_SERIES) \
+	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
-	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
+	-DCPU_HEADER_H='<$(MCU_SERIES)$(MCU_CORE).h>' \
 	-DFSL_SDK_ENABLE_DRIVER_CACHE_CONTROL=1 \
 	-DI2C_RETRY_TIMES=1000000 \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
@@ -438,9 +454,8 @@ $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 $(GEN_FLEXRAM_CONFIG_SRC):
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES).h \
-		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
-
+	$(Q)$(PYTHON) $(MAKE_FLEXRAM_LD) -d $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE).h \
+		-f $(TOP)/$(MCU_DIR)/$(MCU_SERIES)$(MCU_CORE)_features.h -l boards/$(MCU_SERIES).ld -c $(MCU_SERIES) > $(GEN_FLEXRAM_CONFIG_SRC)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h

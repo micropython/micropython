@@ -68,7 +68,7 @@ status_t flash_erase_block(uint32_t erase_addr) {
     SCB_CleanInvalidateDCache();
     SCB_DisableDCache();
     __disable_irq();
-    status = flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
+    status = flexspi_nor_flash_erase_sector(BOARD_FLEX_SPI, erase_addr);
     __enable_irq();
     SCB_EnableDCache();
     return status;
@@ -93,7 +93,7 @@ status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t leng
             size = length;
         }
         __disable_irq();
-        status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr, (uint32_t *)src, size);
+        status = flexspi_nor_flash_page_program(BOARD_FLEX_SPI, dest_addr, (uint32_t *)src, size);
         __enable_irq();
         if (status != kStatus_Success) {
             break;
@@ -112,15 +112,15 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // Upload the custom flash configuration
     // This should be performed by the boot ROM but for some reason it is not.
-    FLEXSPI_UpdateLUT(FLEXSPI, 0,
+    FLEXSPI_UpdateLUT(BOARD_FLEX_SPI, 0,
         qspiflash_config.memConfig.lookupTable,
         ARRAY_SIZE(qspiflash_config.memConfig.lookupTable));
 
-    // Configure FLEXSPI IP FIFO access.
-    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
-    FLEXSPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
-    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
-    FLEXSPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
+    // Configure BOARD_FLEX_SPI IP FIFO access.
+    BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ARDFEN_MASK);
+    BOARD_FLEX_SPI->MCR0 &= ~(FLEXSPI_MCR0_ATDFEN_MASK);
+    BOARD_FLEX_SPI->MCR0 |= FLEXSPI_MCR0_ARDFEN(0);
+    BOARD_FLEX_SPI->MCR0 |= FLEXSPI_MCR0_ATDFEN(0);
 
     // Update information based on linker symbols.
     mimxrt_flash_obj.flash_base = MICROPY_HW_FLASH_STORAGE_BASE;
@@ -142,7 +142,7 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     if (n_args == 4) {
         offset += mp_obj_get_int(args[3]);
     }
-    memcpy(bufinfo.buf, (uint8_t *)(FlexSPI_AMBA_BASE + self->flash_base + offset), bufinfo.len);
+    memcpy(bufinfo.buf, (uint8_t *)(BOARD_FLEX_SPI_ADDR_BASE + self->flash_base + offset), bufinfo.len);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_readblocks_obj, 3, 4, mimxrt_flash_readblocks);

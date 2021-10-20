@@ -58,9 +58,6 @@ int main(void) {
     led_init();
     pendsv_init();
 
-    mp_stack_set_top(&_estack);
-    mp_stack_set_limit(&_estack - &_sstack - 1024);
-
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
@@ -69,10 +66,14 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
+
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
 
     for (;;) {
+        mp_stack_set_top(&_estack);
+        mp_stack_set_limit(&_estack - &_sstack - 1024);
+
         gc_init(&_gc_heap_start, &_gc_heap_end);
         mp_init();
 

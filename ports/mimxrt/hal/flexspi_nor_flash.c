@@ -193,7 +193,7 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
 
     status = flexspi_nor_wait_bus_busy(base);
 
-    flexspi_nor_reset(FLEXSPI);
+    flexspi_nor_reset(BOARD_FLEX_SPI);
 
     return status;
 }

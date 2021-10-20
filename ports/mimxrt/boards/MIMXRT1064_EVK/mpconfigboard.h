@@ -62,6 +62,7 @@
 #define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, kDmaRequestMuxSai2Rx }
 #define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, kDmaRequestMuxSai2Tx }
 #define I2S_WM8960_RX_MODE  (1)
+#define I2S_AUDIO_PLL_CLOCK (2U)
 
 #define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
     { \
@@ -146,8 +147,8 @@
 #define ENET_PHY_OPS        phyksz8081_ops
 
 // Etherner PIN definitions
-#define ENET_RESET_PIN      pin_GPIO_AD_B0_09
-#define ENET_INT_PIN        pin_GPIO_AD_B0_10
+#define ENET_RESET_PIN      &pin_GPIO_AD_B0_09
+#define ENET_INT_PIN        &pin_GPIO_AD_B0_10
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \
