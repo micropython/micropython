@@ -190,7 +190,9 @@ jobs:
     runs-on: macos-11.0
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
     - name: Build
       run: source tools/ci.sh && ci_unix_macos_build
     - name: Run tests
