@@ -49,8 +49,6 @@ CIRCUITPY_DISPLAYIO = 0
 # any port once their prerequisites in common-hal are complete.
 # Requires DigitalIO:
 CIRCUITPY_BITBANGIO = 1
-# Requires DigitalIO
-CIRCUITPY_GAMEPADSHIFT = 1
 # Requires neopixel_write or SPI (dotstar)
 CIRCUITPY_PIXELBUF = 0
 # Requires OS

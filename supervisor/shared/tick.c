@@ -44,10 +44,6 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
-#if CIRCUITPY_GAMEPADSHIFT
-#include "shared-module/gamepadshift/__init__.h"
-#endif
-
 #if CIRCUITPY_KEYPAD
 #include "shared-module/keypad/__init__.h"
 #endif
@@ -102,12 +98,8 @@ void supervisor_tick(void) {
     filesystem_tick();
     #endif
 
-    #ifdef CIRCUITPY_GAMEPAD_TICKS
-    if (!(port_get_raw_ticks(NULL) & CIRCUITPY_GAMEPAD_TICKS)) {
-        #if CIRCUITPY_GAMEPADSHIFT
-        gamepadshift_tick();
-        #endif
-    }
+    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
+    autoreload_tick();
     #endif
 
     #if CIRCUITPY_KEYPAD
