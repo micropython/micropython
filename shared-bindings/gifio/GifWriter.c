@@ -34,7 +34,7 @@
 #include "shared/runtime/context_manager_helpers.h"
 
 //| class GifWriter:
-//|     def __init__(self, file: Union[Typing.IO.BinaryIO, str], width:int, height:int, colorspace: displayio.Colorspace, loop:bool=True) -> None:
+//|     def __init__(self, file: Union[typing.BinaryIO, str], width:int, height:int, colorspace: displayio.Colorspace, loop:bool=True) -> None:
 //|         """Construct a GifWriter object
 //|
 //|         :param file: Either a file open in bytes mode, or the name of a file to open in bytes mode.
