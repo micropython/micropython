@@ -185,6 +185,16 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
+            gpio_set_pin_function(alarm->pin->number, GPIO_PIN_FUNCTION_A);
+            if (alarm->pull) {
+                if (alarm->value) {
+                    // detect rising edge means pull down
+                    gpio_set_pin_pull_mode(alarm->pin->number, GPIO_PULL_DOWN);
+                } else {
+                    // detect falling edge means pull up
+                    gpio_set_pin_pull_mode(alarm->pin->number, GPIO_PULL_UP);
+                }
+            }
             if (deep_sleep) {
                 // Tamper Pins: IN0:PB00; IN1:PB02; IN2:PA02; IN3:PC00; IN4:PC01; OUT:PB01
                 // Only these pins can do TAMPER
