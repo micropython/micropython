@@ -8,7 +8,7 @@ compared to standard Python.
 
 MicroPython implements the following per release.
 
-TABLE
+ TABLE
 
 **Python 3.5** 
 
