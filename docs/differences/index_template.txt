@@ -6,49 +6,42 @@ MicroPython differences from CPython
 The operations listed in this section produce conflicting results in MicroPython when 
 compared to standard Python.
 
+MicroPython implements the following per release.
+
+TABLE
+
 **Python 3.5** 
-
-Given below is a list of PEPs (in progress) grouped to their impact to MicroPython.
-
-* Extension to the syntax:
-
-    * `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ : additional unpacking generalizations 
-
-* Standard library changes:
-
-    * `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ : os.scandir() 
-
-* Miscellaneous changes
-
-    * `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ : improved Python zip application support
-    
-    * `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ : make the Python Laucher aware of virtual environments
-
-    * `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ : type hints (advisory only)
-
-    * `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ : elimination of PYO files (not relevant for uPy)
-
-    * `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ : redesigning extension module loading  
 
 Given below is a list of PEPs (completed) grouped to their impact to MicroPython.
 
-* Extension to the syntax:
+* `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ : a new matrix multiplication operator 
 
-    * `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ : a new matrix multiplication operator 
+* `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ : coroutines with async and await syntax
 
-    * `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ : coroutines with async and await syntax
+* `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ : % formatting for binary strings
 
-* Extensions and changes to runtime:
+* `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ : retyring system calls that fail with EINTR
 
-    * `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ : % formatting for binary strings
+* `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ : change StopIteration handling inside generators
 
-    * `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ : retyring system calls that fail with EINTR
 
-    * `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ : change StopIteration handling inside generators
+* `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ : math.isclose(), a function for testing approximate equality
 
-* Standard library changes:
+Given below is a list of PEPs (in progress) grouped to their impact to MicroPython.
 
-    * `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ : math.isclose(), a function for testing approximate equality
+* `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ : additional unpacking generalizations 
+
+* `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ : os.scandir() 
+
+* `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ : improved Python zip application support
+    
+* `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ : make the Python Laucher aware of virtual environments
+
+* `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ : type hints (advisory only)
+
+* `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ : elimination of PYO files (not relevant for uPy)
+
+* `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ : redesigning extension module loading  
 
  
 **Python 3.6** 
