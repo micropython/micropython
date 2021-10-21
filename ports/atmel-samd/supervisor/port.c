@@ -53,18 +53,42 @@
 #error Unknown chip family
 #endif
 
+#if CIRCUITPY_ANALOGIO
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/analogio/AnalogOut.h"
+#endif
+
+#if CIRCUITPY_AUDIOBUSIO
 #include "common-hal/audiobusio/PDMIn.h"
 #include "common-hal/audiobusio/I2SOut.h"
+#endif
+
+#if CIRCUITPY_AUDIOIO
 #include "common-hal/audioio/AudioOut.h"
-#include "common-hal/busio/SPI.h"
+#endif
+
+#if CIRCUITPY_BUSIO
+#include "common-hal/busio/__init__.h"
+#endif
+
 #include "common-hal/microcontroller/Pin.h"
+
+#if CIRCUITPY_PULSEIO
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/pulseio/PulseOut.h"
+#endif
+
+#if CIRCUITPY_PWMIO
 #include "common-hal/pwmio/PWMOut.h"
+#endif
+
+#if CIRCUITPY_PS2IO
 #include "common-hal/ps2io/Ps2.h"
+#endif
+
+#if CIRCUITPY_RTC
 #include "common-hal/rtc/RTC.h"
+#endif
 
 #if CIRCUITPY_ALARM
 #include "common-hal/alarm/__init__.h"
@@ -538,8 +562,13 @@ void evsyshandler_common(void) {
         supervisor_tick();
     }
     #endif
+
     #if CIRCUITPY_AUDIOIO || CIRCUITPY_AUDIOBUSIO
-    audio_evsys_handler();
+    audio_dma_evsys_handler();
+    #endif
+
+    #if CIRCUITPY_AUDIOBUSIO
+    pdmin_evsys_handler();
     #endif
 }
 

@@ -30,7 +30,7 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "supervisor/shared/tick.h"
 #include "py/gc.h"
 #include "py/mperrno.h"

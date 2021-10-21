@@ -562,6 +562,10 @@ msgstr "Bittiefe muss zwischen 1 und 6 liegen, nicht %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "Bit depth muss ein Vielfaches von 8 sein."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
@@ -2529,10 +2533,6 @@ msgstr "__new__ arg muss user-type sein"
 msgid "a bytes-like object is required"
 msgstr "ein Byte-ähnliches Objekt ist erforderlich"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() wurde aufgerufen"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "Adresse außerhalb der Grenzen"
@@ -3040,6 +3040,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "Division durch Null"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "leer"
@@ -3120,26 +3124,6 @@ msgstr "Es wurden zusätzliche Schlüsselwort-Argumente angegeben"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "Es wurden zusätzliche Argumente ohne Schlüsselwort angegeben"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-string expression Teil kann kein '#' beinhalten"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "Die f-String expression darf keinen Backslash enthalten"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: leere expression nicht erlaubt"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: erwartet '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: einzelne '}' nicht erlaubt"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3419,10 +3403,6 @@ msgstr "Das Intervall muss im Bereich %s-%s sein"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "ungültige argumente"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4038,8 +4018,8 @@ msgid "queue overflow"
 msgstr "Warteschlangenüberlauf"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "rohe F-Strings sind nicht implementiert"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4101,7 +4081,7 @@ msgstr "Abtastrate außerhalb der Reichweite"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilieren von Skripten nicht unterstützt"
 
@@ -4380,10 +4360,8 @@ msgid "unicode name escapes"
 msgstr "Unicode Name ausgebrochen (escaped)"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
+msgid "unindent doesn't match any outer indent level"
 msgstr ""
-"Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen am "
-"Zeilenanfang kontrollieren"
 
 #: py/objstr.c
 #, c-format
@@ -4535,6 +4513,35 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "abort() called"
+#~ msgstr "abort() wurde aufgerufen"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string expression Teil kann kein '#' beinhalten"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "Die f-String expression darf keinen Backslash enthalten"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: leere expression nicht erlaubt"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: erwartet '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: einzelne '}' nicht erlaubt"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ungültige argumente"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "rohe F-Strings sind nicht implementiert"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr ""
+#~ "Einrückung entspricht keiner äußeren Einrückungsebene. Bitte Leerzeichen "
+#~ "am Zeilenanfang kontrollieren"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q Liste muss eine Liste sein"

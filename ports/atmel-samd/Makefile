@@ -60,7 +60,7 @@ HAL_DIR=hal/$(MCU_SERIES)
 INC += -I. \
        -I../.. \
        -I../lib/mp-readline \
-       -I../lib/timeutils \
+       -I../shared/timeutils \
        -Iasf4/$(CHIP_FAMILY) \
        -Iasf4/$(CHIP_FAMILY)/hal/include \
        -Iasf4/$(CHIP_FAMILY)/hal/utils/include \
@@ -364,11 +364,11 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
 $(HEADER_BUILD)/sdiodata.h: tools/mksdiodata.py | $(HEADER_BUILD)
-	$(Q)$(PYTHON3) $< > $@
+	$(Q)$(PYTHON) $< > $@
 
 SRC_QSTR += $(HEADER_BUILD)/candata.h
 $(HEADER_BUILD)/candata.h: tools/mkcandata.py | $(HEADER_BUILD)
-	$(Q)$(PYTHON3) $< > $@
+	$(Q)$(PYTHON) $< > $@
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 # Sources that only hold QSTRs after pre-processing.
@@ -380,7 +380,7 @@ $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
-	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE)
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -388,7 +388,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(STEPECHO) "Create $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
+	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 include $(TOP)/py/mkrules.mk
 

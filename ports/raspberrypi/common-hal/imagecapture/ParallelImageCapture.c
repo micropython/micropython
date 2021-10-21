@@ -27,8 +27,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "bindings/rp2pio/__init__.h"

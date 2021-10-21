@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 
 #include "py/nlr.h"
 #include "py/objtype.h"

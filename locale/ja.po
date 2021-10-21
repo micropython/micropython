@@ -558,6 +558,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "ビット深度は8の倍数でなければなりません"
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "フロー制御のためRXとTXの両方が必要"
@@ -2496,10 +2500,6 @@ msgstr "__new__の引数はユーザ型でなければなりません"
 msgid "a bytes-like object is required"
 msgstr "bytes-likeオブジェクトが必要"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort()が呼ばれました"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "アドレスが範囲外"
@@ -2999,6 +2999,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "ゼロ除算 (division by zero)"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
@@ -3079,26 +3083,6 @@ msgstr "余分なキーワード引数があります"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "余分な位置引数が与えられました"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-文字列の表現部は '#' を持てません"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-文字列の表現部はバックスラッシュを持てません"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-文字列: 空の表現は許されません"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: '}'が必要"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: 1つだけの'}'は許されません"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3377,10 +3361,6 @@ msgstr "intervalは%s-%sの範囲でなければなりません"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "不正な引数"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3988,8 +3968,8 @@ msgid "queue overflow"
 msgstr "キューがオーバーフローしました"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "raw f-文字列は実装されていません"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4050,7 +4030,7 @@ msgstr "サンプリングレートが範囲外"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "スクリプトのコンパイルは非対応"
 
@@ -4326,8 +4306,8 @@ msgid "unicode name escapes"
 msgstr ""
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "インデントの解除が、外側のどのインデントにも一致していません"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4479,6 +4459,33 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "abort() called"
+#~ msgstr "abort()が呼ばれました"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-文字列の表現部は '#' を持てません"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-文字列の表現部はバックスラッシュを持てません"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-文字列: 空の表現は許されません"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: '}'が必要"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: 1つだけの'}'は許されません"
+
+#~ msgid "invalid arguments"
+#~ msgstr "不正な引数"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "raw f-文字列は実装されていません"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "インデントの解除が、外側のどのインデントにも一致していません"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q リストはリストでなければなりません"

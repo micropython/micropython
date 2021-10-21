@@ -29,13 +29,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 
 //| class SSLSocket:
 //|     """Implements TLS security on a subset of `socketpool.Socket` functions. Cannot be created

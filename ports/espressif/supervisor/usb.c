@@ -29,8 +29,8 @@
 #include "supervisor/usb.h"
 #include "supervisor/esp_port.h"
 #include "supervisor/port.h"
-#include "lib/utils/interrupt_char.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/readline/readline.h"
 
 #include "hal/gpio_ll.h"
 #include "soc/usb_periph.h"
@@ -127,7 +127,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // CircuitPython's VM is run in a separate FreeRTOS task from TinyUSB.
     // So, we must notify the other task when a CTRL-C is received.
     port_wake_main_task();
-    // Workaround for using lib/utils/interrupt_char.c
+    // Workaround for using shared/runtime/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_read_flush();    // flush read fifo

@@ -30,7 +30,7 @@
 #include "components/driver/include/driver/uart.h"
 
 #include "mpconfigport.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"

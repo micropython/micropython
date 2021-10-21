@@ -60,7 +60,7 @@ HAL_DIR=hal/$(MCU_SERIES)
 INC += -I. \
        -I../.. \
        -I../lib/mp-readline \
-       -I../lib/timeutils \
+       -I../shared/timeutils \
        -Iboards/$(BOARD) \
        -Iboards/ \
        -isystem sdk/ \
@@ -198,7 +198,7 @@ SRC_C += \
 	audio_dma.c \
 	background.c \
 	peripherals/pins.c \
-	extmod/crypto-algorithms/sha256.c \
+	lib/crypto-algorithms/sha256.c \
 	fatfs_port.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c \
 	lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c \
@@ -249,7 +249,7 @@ $(BUILD)/boot2_padded_checksummed.o: $(BUILD)/boot2_padded_checksummed.S
 
 $(BUILD)/boot2_padded_checksummed.S: $(BUILD)/boot2.bin
 	$(STEPECHO) "PAD_CHECKSUM $<"
-	$(Q)$(PYTHON3) sdk/src/rp2_common/boot_stage2/pad_checksum -s 0xffffffff $< $@
+	$(Q)$(PYTHON) sdk/src/rp2_common/boot_stage2/pad_checksum -s 0xffffffff $< $@
 
 $(BUILD)/boot2.bin: $(BUILD)/boot2.elf
 	$(STEPECHO) "OBJCOPY $<"
@@ -258,11 +258,11 @@ $(BUILD)/boot2.bin: $(BUILD)/boot2.elf
 
 $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
-	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
+	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
 $(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
 	$(STEPECHO) "GEN $<"
-	$(Q)$(PYTHON3) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
+	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
 $(BUILD)/supervisor/internal_flash.o: $(HEADER_BUILD)/flash_info.h
 
@@ -280,7 +280,7 @@ $(BUILD)/firmware.elf: $(OBJ) link.ld
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)echo $(PICO_LDFLAGS) > $(BUILD)/firmware.ldflags
 	$(Q)$(CC) -o $@ $(CFLAGS) @$(BUILD)/firmware.ldflags -Wl,-T,link.ld -Wl,-Map=$@.map -Wl,-cref -Wl,--gc-sections @$(BUILD)/firmware.objs
-	$(Q)$(SIZE) $@ | $(PYTHON3) $(TOP)/tools/build_memory_info.py link.ld
+	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py link.ld
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -288,7 +288,7 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(STEPECHO) "Create $@"
-	$(Q)$(PYTHON3) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xe48bff56 -b 0x10000000 -c -o $@ $^
+	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xe48bff56 -b 0x10000000 -c -o $@ $^
 
 include $(TOP)/py/mkrules.mk
 

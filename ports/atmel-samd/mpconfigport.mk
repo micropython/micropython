@@ -104,6 +104,7 @@ CIRCUITPY_PS2IO ?= 1
 CIRCUITPY_SAMD ?= 1
 CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
+CIRCUITPY_WATCHDOG ?= 1
 
 endif # samd51
 ######################################################################

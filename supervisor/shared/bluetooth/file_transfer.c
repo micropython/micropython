@@ -28,7 +28,7 @@
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"

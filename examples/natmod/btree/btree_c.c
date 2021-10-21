@@ -18,7 +18,7 @@ void *memmove(void *dest, const void *src, size_t n) {
 }
 
 void *malloc(size_t n) {
-    void *ptr = m_malloc(n, false);
+    void *ptr = m_malloc(n);
     return ptr;
 }
 void *realloc(void *ptr, size_t n) {
@@ -26,7 +26,7 @@ void *realloc(void *ptr, size_t n) {
     return NULL;
 }
 void *calloc(size_t n, size_t m) {
-    void *ptr = m_malloc(n * m, false);
+    void *ptr = m_malloc(n * m);
     // memory already cleared by conservative GC
     return ptr;
 }

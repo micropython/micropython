@@ -29,7 +29,7 @@
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 #include "hardware/gpio.h"
 #include "hardware/rtc.h"

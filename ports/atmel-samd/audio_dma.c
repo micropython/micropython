@@ -396,7 +396,7 @@ STATIC void dma_callback_fun(void *arg) {
     }
 }
 
-void audio_evsys_handler(void) {
+void audio_dma_evsys_handler(void) {
     for (uint8_t i = 0; i < AUDIO_DMA_CHANNEL_COUNT; i++) {
         audio_dma_t *dma = audio_dma_state[i];
         if (dma == NULL) {

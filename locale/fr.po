@@ -568,6 +568,10 @@ msgstr "Bit depth doit être entre 1 et 6 inclusivement, et non %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "La profondeur de bit doit être un multiple de 8."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "RX et TX requis pour le contrôle de flux"
@@ -2558,10 +2562,6 @@ msgstr "l'argument __new__ doit être d'un type défini par l'utilisateur"
 msgid "a bytes-like object is required"
 msgstr "un objet 'bytes-like' est requis"
 
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() appelé"
-
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
 msgstr "adresse hors limites"
@@ -3068,6 +3068,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "division par zéro"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "vide"
@@ -3148,28 +3152,6 @@ msgstr "argument(s) nommé(s) supplémentaire(s) donné(s)"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "argument(s) positionnel(s) supplémentaire(s) donné(s)"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "La partie d'expression de chaîne f ne peut pas inclure de '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr ""
-"La partie d'expression de chaîne f ne peut pas inclure de barre oblique "
-"inverse"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string : expression vide non autorisée"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string : attend '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string : single '}' n'est pas autorisé"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3448,10 +3430,6 @@ msgstr "interval doit être dans la portée %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "architecture invalide"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "arguments invalides"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4066,8 +4044,8 @@ msgid "queue overflow"
 msgstr "dépassement de file"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "les chaînes f brutes ne sont pas implémentées"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4129,7 +4107,7 @@ msgstr "taux d'échantillonage hors bornes"
 msgid "schedule queue full"
 msgstr "file de schédule pleine"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilation de script non supportée"
 
@@ -4406,8 +4384,8 @@ msgid "unicode name escapes"
 msgstr "échappements de nom unicode"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "la désindentation ne correspond à aucune indentation précédente"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4559,6 +4537,35 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() appelé"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "La partie d'expression de chaîne f ne peut pas inclure de '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr ""
+#~ "La partie d'expression de chaîne f ne peut pas inclure de barre oblique "
+#~ "inverse"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string : expression vide non autorisée"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string : attend '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string : single '}' n'est pas autorisé"
+
+#~ msgid "invalid arguments"
+#~ msgstr "arguments invalides"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "les chaînes f brutes ne sont pas implémentées"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "la désindentation ne correspond à aucune indentation précédente"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "La liste %q doit être une liste"

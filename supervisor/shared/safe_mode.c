@@ -169,6 +169,9 @@ void print_safe_mode_message(safe_mode_t reason) {
         case USB_TOO_MANY_INTERFACE_NAMES:
             message = translate("USB devices specify too many interface names.");
             break;
+        case USB_BOOT_DEVICE_NOT_INTERFACE_ZERO:
+            message = translate("Boot device must be first device (interface #0).");
+            break;
         case WATCHDOG_RESET:
             message = translate("Watchdog timer expired.");
             break;

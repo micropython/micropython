@@ -11,10 +11,11 @@ print(type(uerrno.EIO))
 
 # check that errors are rendered in a nice way
 msg = str(OSError(uerrno.EIO))
-print(msg[:7], msg[msg.find(']'):])
-
-msg = str(OSError(uerrno.ENOBUFS))
-print(msg[:7], msg[msg.find(']'):])
+print(msg[:7], msg[-5:])
+msg = str(OSError(uerrno.EIO, "details"))
+print(msg[:7], msg[-14:])
+msg = str(OSError(uerrno.EIO, "details", "more details"))
+print(msg[:1], msg[-28:])
 
 # check that unknown errno is still rendered
 print(str(OSError(9999)))
