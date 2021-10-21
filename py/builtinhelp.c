@@ -176,7 +176,7 @@ STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message. Translate only works on single strings on one line.
         mp_cprintf(MP_PYTHON_PRINTER,
-            translate("Welcome to Adafruit CircuitPython %s!\n\nPlease visit learn.adafruit.com/category/circuitpython for project guides.\n\nTo list built-in modules please do `help(\"modules\")`.\n"),
+            translate("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),
             MICROPY_GIT_TAG);
     } else {
         // try to print something sensible about the given object
