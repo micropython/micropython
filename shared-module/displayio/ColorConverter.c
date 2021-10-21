@@ -145,15 +145,10 @@ void common_hal_displayio_colorconverter_make_opaque(displayio_colorconverter_t 
     self->transparent_color = NO_TRANSPARENT_COLOR;
 }
 
-void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t *colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
-    uint32_t pixel = input_pixel->pixel;
 
-    if (self->transparent_color == pixel) {
-        output_color->opaque = false;
-        return;
-    }
-
-    switch (self->input_colorspace) {
+// Convert a single input pixel to RGB888
+uint32_t displayio_colorconverter_convert_pixel(displayio_colorspace_t colorspace, uint32_t pixel) {
+    switch (colorspace) {
         case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
             pixel = __builtin_bswap16(pixel);
             MP_FALLTHROUGH;
@@ -198,9 +193,30 @@ void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _d
         }
         break;
 
+        default:
         case DISPLAYIO_COLORSPACE_RGB888:
             break;
+
+        case DISPLAYIO_COLORSPACE_L8: {
+            uint32_t l8 = pixel & 0xff;
+            pixel = l8 * 0x010101;
+        }
+        break;
     }
+
+    return pixel;
+}
+
+void displayio_colorconverter_convert(displayio_colorconverter_t *self, const _displayio_colorspace_t *colorspace, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
+    uint32_t pixel = input_pixel->pixel;
+
+    if (self->transparent_color == pixel) {
+        output_color->opaque = false;
+        return;
+    }
+
+    pixel = displayio_colorconverter_convert_pixel(self->input_colorspace, pixel);
+
 
     if (self->dither) {
         uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));

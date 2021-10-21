@@ -165,7 +165,7 @@ mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
 
 mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name) {
     if (i > max) {
-        mp_raise_ValueError_varg(translate("%q must <= %d"), arg_name, max);
+        mp_raise_ValueError_varg(translate("%q must be <= %d"), arg_name, max);
     }
     return i;
 }
