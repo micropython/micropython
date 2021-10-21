@@ -77,12 +77,11 @@
 //|             os.listdir('/sd')"""
 
 STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_spi, ARG_cs, ARG_baudrate, ARG_sdio, NUM_ARGS };
+    enum { ARG_spi, ARG_cs, ARG_baudrate, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_cs, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 8000000} },
-        { MP_QSTR_sdio, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 8000000} },
     };
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
