@@ -143,20 +143,11 @@ INC += -Ihal/phy
 SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
 
 SRC_ETH_C += \
-	extmod/modnetwork.c \
-	extmod/modusocket.c \
-	eth.c \
 	hal/phy/mdio/enet/fsl_enet_mdio.c \
 	hal/phy/device/phydp83825/fsl_phydp83825.c \
 	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
 	hal/phy/device/phylan8720/fsl_phylan8720.c \
 	lib/mbedtls_errors/mp_mbedtls_errors.c \
-	mbedtls/mbedtls_port.c \
-	mpnetworkport.c \
-	network_lan.c \
-	shared/netutils/netutils.c \
-	shared/netutils/trace.c \
-	shared/netutils/dhcpserver.c \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
 SRC_QSTR += \
@@ -221,7 +212,10 @@ SRC_C += \
 	board_init.c \
 	dma_channel.c \
 	drivers/bus/softspi.c \
+	eth.c \
+	extmod/modnetwork.c \
 	extmod/modonewire.c \
+	extmod/modusocket.c \
 	extmod/uos_dupterm.c \
 	fatfs_port.c \
 	led.c \
@@ -236,6 +230,7 @@ SRC_C += \
 	machine_timer.c \
 	machine_uart.c \
 	main.c \
+	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
 	mimxrt_sdram.c \
 	modmachine.c \
@@ -243,11 +238,16 @@ SRC_C += \
 	moduos.c \
 	modutime.c \
 	mphalport.c \
+	mpnetworkport.c \
+	network_lan.c \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
+	shared/netutils/netutils.c \
+	shared/netutils/trace.c \
+	shared/netutils/dhcpserver.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_native.c \
 	shared/runtime/mpirq.c \

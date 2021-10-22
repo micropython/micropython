@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#ifdef MICROPY_SSL_MBEDTLS
+
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "fsl_trng.h"
@@ -87,3 +89,5 @@ int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t 
 
     return 0;
 }
+
+#endif
