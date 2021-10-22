@@ -1956,6 +1956,7 @@ msgstr "Programmet är för stort"
 msgid "Pull not used when direction is output."
 msgstr "Pull används inte när riktningen är output."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE-läge är inte implementerat"
@@ -2457,6 +2458,7 @@ msgstr "Avläsning av spänning tog för lång tid"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "VARNING: Ditt filnamn för kod har två tillägg\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2484,15 +2486,10 @@ msgstr "Watchdog-timern har löpt ut."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
-"Välkommen till Adafruit CircuitPython %s!\n"
-"\n"
-"Besök learning.adafruit.com/category/circuitpython för projektguider.\n"
-"\n"
-"För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -3382,10 +3379,6 @@ msgstr "indata är inte iterbara"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int() arg 2 måste vara >= 2 och <= 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "heltal krävs"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp är definierad för 1D-iterabla med samma längd"
@@ -3963,6 +3956,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4218,6 +4212,7 @@ msgstr "tile måste vara större än noll"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4499,6 +4494,24 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Välkommen till Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Besök learning.adafruit.com/category/circuitpython för projektguider.\n"
+#~ "\n"
+#~ "För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "heltal krävs"
 
 #~ msgid "abort() called"
 #~ msgstr "abort() anropad"

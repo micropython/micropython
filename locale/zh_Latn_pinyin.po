@@ -1958,6 +1958,7 @@ msgstr "chéng xù tài dà"
 msgid "Pull not used when direction is output."
 msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "wèi shí xiàn tí shēng mó shì"
@@ -2458,6 +2459,7 @@ msgstr "Diànyā dòu qǔ chāoshí"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "Jǐnggào: Nǐ de dàimǎ wénjiàn míng yǒu liǎng gè kuòzhǎn míng\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2485,16 +2487,10 @@ msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
-"Huānyíng lái dào Adafruit CircuitPython%s!\n"
-"\n"
-"Qǐng fǎngwèn learn.Adafruit.Com/category/circuitpython yǐ huòqǔ xiàngmù "
-"zhǐnán.\n"
-"\n"
-"Yào liè chū nèizhì mókuài, qǐng zhíxíng `help(“modules”)`\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -3385,10 +3381,6 @@ msgstr "shū rù bù kě yí dòng"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "xūyào zhěngshù"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "zhōng jiān wéi cháng dù xiāng děng de 1D kě yì jiāo qì dìng yì"
@@ -3963,6 +3955,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4218,6 +4211,7 @@ msgstr "cí tiē bì xū dà yú líng"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() xūyào 9 xùliè"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4499,6 +4493,25 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Huānyíng lái dào Adafruit CircuitPython%s!\n"
+#~ "\n"
+#~ "Qǐng fǎngwèn learn.Adafruit.Com/category/circuitpython yǐ huòqǔ xiàngmù "
+#~ "zhǐnán.\n"
+#~ "\n"
+#~ "Yào liè chū nèizhì mókuài, qǐng zhíxíng `help(“modules”)`\n"
+
+#~ msgid "integer required"
+#~ msgstr "xūyào zhěngshù"
 
 #~ msgid "abort() called"
 #~ msgstr "abort() diàoyòng"
