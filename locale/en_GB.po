@@ -1948,6 +1948,7 @@ msgstr "Program too large"
 msgid "Pull not used when direction is output."
 msgstr "Pull not used when direction is output."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE mode is not implemented"
@@ -2446,6 +2447,7 @@ msgstr "Voltage read timed out"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNING: Your code filename has two extensions\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2472,15 +2474,10 @@ msgstr "WatchDog timer expired."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
-"Welcome to Adafruit CircuitPython %s!\n"
-"\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
-"\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -3367,10 +3364,6 @@ msgstr "inputs are not iterable"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int() arg 2 must be >= 2 and <= 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "integer required"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp is defined for 1D iterables of equal length"
@@ -3944,6 +3937,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4199,6 +4193,7 @@ msgstr "tile must be greater than zero"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() takes a 9-sequence"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4480,6 +4475,25 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "integer required"
 
 #~ msgid "abort() called"
 #~ msgstr "abort() called"
