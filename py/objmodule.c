@@ -112,6 +112,7 @@ const mp_obj_type_t mp_type_module = {
     .attr = module_attr,
 };
 
+#include "py/bc.h"
 mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
@@ -122,12 +123,12 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     }
 
     // create new module object
-    mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
-    o->base.type = &mp_type_module;
-    o->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
+    mp_module_context_t *o = m_new_obj(mp_module_context_t);
+    o->module.base.type = &mp_type_module;
+    o->module.globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->module.globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = MP_OBJ_FROM_PTR(o);

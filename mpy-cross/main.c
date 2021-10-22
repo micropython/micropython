@@ -72,7 +72,8 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, false);
+        mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+        mp_compiled_module_t cm = mp_compile_to_raw_code(&parse_tree, source_name, false, ctx);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);
@@ -83,7 +84,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         } else {
             vstr_add_str(&vstr, output_file);
         }
-        mp_raw_code_save_file(rc, vstr_null_terminated_str(&vstr));
+        mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
         vstr_clear(&vstr);
 
         nlr_pop();

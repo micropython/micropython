@@ -61,7 +61,8 @@ void mp_asm_base_start_pass(mp_asm_base_t *as, int pass) {
 // all functions must go through this one to emit bytes
 // if as->pass < MP_ASM_PASS_EMIT, then this function just counts the number
 // of bytes needed and returns NULL, and callers should not store any data
-uint8_t *mp_asm_base_get_cur_to_write_bytes(mp_asm_base_t *as, size_t num_bytes_to_write) {
+uint8_t *mp_asm_base_get_cur_to_write_bytes(void *as_in, size_t num_bytes_to_write) {
+    mp_asm_base_t *as = as_in;
     uint8_t *c = NULL;
     if (as->pass == MP_ASM_PASS_EMIT) {
         assert(as->code_offset + num_bytes_to_write <= as->code_size);
