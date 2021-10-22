@@ -66,14 +66,21 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             PC++; // Skip # of pair byte
             prog->len++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
-                if (*re == '\\') {
+                char c = *re;
+                if (c == '\\') {
                     ++re;
+                    c = *re;
+                    if (MATCH_NAMED_CLASS_CHAR(c)) {
+                        c = RE15_CLASS_NAMED_CLASS_INDICATOR;
+                        goto emit_char_pair;
+                    }
                 }
-                if (!*re) return NULL;
-                EMIT(PC++, *re);
+                if (!c) return NULL;
                 if (re[1] == '-' && re[2] != ']') {
                     re += 2;
                 }
+            emit_char_pair:
+                EMIT(PC++, c);
                 EMIT(PC++, *re);
             }
             EMIT_CHECKED(term + 1, cnt);
