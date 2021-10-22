@@ -62,8 +62,8 @@ def set_boards_to_build(build_all):
 
     if not build_all:
         boards_to_build = set()
-        board_pattern = re.compile(r"^ports\/\w+\/boards\/(\w+)\/")
-        port_pattern = re.compile(r"^ports\/(\w+)\/")
+        board_pattern = re.compile(r"^ports\/[^/]+\/boards\/([^/]+)\/")
+        port_pattern = re.compile(r"^ports\/([^/]+)\/")
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
