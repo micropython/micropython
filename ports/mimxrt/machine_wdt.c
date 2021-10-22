@@ -78,7 +78,7 @@ STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
 
-STATIC mp_obj_t machine_wdt_timeout(mp_obj_t self_in, mp_obj_t timout_in) {
+STATIC mp_obj_t machine_wdt_timeout_ms(mp_obj_t self_in, mp_obj_t timout_in) {
     uint32_t timeout = mp_obj_get_int(timout_in);
     // confine to the valid range
     if (timeout < MIN_TIMEOUT) {
@@ -91,11 +91,11 @@ STATIC mp_obj_t machine_wdt_timeout(mp_obj_t self_in, mp_obj_t timout_in) {
     WDOG_Refresh(WDOG1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_wdt_timeout_obj, machine_wdt_timeout);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_wdt_timeout_ms_obj, machine_wdt_timeout_ms);
 
 STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&machine_wdt_feed_obj) },
-    { MP_ROM_QSTR(MP_QSTR_timeout), MP_ROM_PTR(&machine_wdt_timeout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_timeout_ms), MP_ROM_PTR(&machine_wdt_timeout_ms_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
 
