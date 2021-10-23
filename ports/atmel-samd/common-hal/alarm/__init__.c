@@ -28,7 +28,7 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
-#include "lib/utils/interrupt_char.h"
+// #include "lib/utils/interrupt_char.h"
 // #include <stdio.h>
 
 #include "shared-bindings/alarm/__init__.h"
