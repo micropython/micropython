@@ -1862,6 +1862,13 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
             DEBUG_printf("ble_store_ram_read: CCCD not supported.\n");
             return -1;
         }
+        case BLE_STORE_OBJ_TYPE_HASH: {
+            assert(ble_addr_cmp(&key->hash.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            assert(key->hash.idx == 0);
+            key_data = (const uint8_t *)&key->hash.peer_addr;
+            key_data_len = sizeof(ble_addr_t);
+            break;
+        }
         default:
             return BLE_HS_ENOTSUP;
     }
@@ -1873,12 +1880,23 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
         return BLE_HS_ENOENT;
     }
 
-    if (value_data_len != sizeof(struct ble_store_value_sec)) {
-        DEBUG_printf("ble_store_ram_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
+    size_t expected_len;
+    uint8_t *dest;
+    if (obj_type == BLE_STORE_OBJ_TYPE_HASH){
+        expected_len = sizeof(struct ble_store_value_hash);
+        dest = (uint8_t *)&value->hash;
+    }
+    else {
+        expected_len = sizeof(struct ble_store_value_sec);
+        dest = (uint8_t *)&value->sec;
+    }
+
+    if (value_data_len != expected_len) {
+        DEBUG_printf("ble_secret_store_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
         return BLE_HS_ENOENT;
     }
 
-    memcpy((uint8_t *)&value->sec, value_data, sizeof(struct ble_store_value_sec));
+     memcpy(dest, value_data, expected_len);
 
     DEBUG_printf("ble_store_ram_read: found secret\n");
 
@@ -1918,6 +1936,23 @@ STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val) {
             // Just pretend we wrote it.
             return 0;
         }
+        case BLE_STORE_OBJ_TYPE_HASH: {
+            struct ble_store_key_hash key_hash;
+            const struct ble_store_value_hash *value_hash = &val->hash;
+            ble_store_key_from_value_hash(&key_hash, value_hash);
+
+            assert(ble_addr_cmp(&key_hash.peer_addr, BLE_ADDR_ANY));
+
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key_hash.peer_addr, sizeof(ble_addr_t), (const uint8_t *)value_hash, sizeof(struct ble_store_value_hash))) {
+                DEBUG_printf("Failed to write hash key: type=%d\n", obj_type);
+                return BLE_HS_ESTORE_CAP;
+            }
+
+            DEBUG_printf("ble_secret_store_write: wrote hash\n");
+
+            return 0;
+
+        }
         default:
             return BLE_HS_ENOTSUP;
     }
@@ -1947,6 +1982,19 @@ STATIC int ble_store_ram_delete(int obj_type, const union ble_store_key *key) {
             DEBUG_printf("ble_store_ram_delete: CCCD not supported.\n");
             // Just pretend it wasn't there.
             return BLE_HS_ENOENT;
+        }
+        case BLE_STORE_OBJ_TYPE_HASH: {
+            assert(ble_addr_cmp(&key->hash.peer_addr, BLE_ADDR_ANY)); // Must have address.
+            
+            if (!mp_bluetooth_gap_on_set_secret(obj_type, (const uint8_t *)&key->hash.peer_addr, sizeof(ble_addr_t), NULL, 0)) {
+                DEBUG_printf("Failed to delete key: type=%d\n", obj_type);
+                return BLE_HS_ENOENT;
+            }
+
+            DEBUG_printf("ble_secret_store_delete: deleted secret\n");
+
+            return 0;
+
         }
         default:
             return BLE_HS_ENOTSUP;
