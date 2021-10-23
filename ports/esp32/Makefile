@@ -24,8 +24,6 @@ ifdef USER_C_MODULES
 	CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}
 endif
 
-USER_C_MODULES += /Users/seon/ulab/code/micropython.cmake
-
 IDFPY_FLAGS += -D MICROPY_BOARD=$(BOARD) -B $(BUILD) $(CMAKE_ARGS)
 
 ifdef FROZEN_MANIFEST

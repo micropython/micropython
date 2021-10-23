@@ -4,6 +4,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base
     boards/sdkconfig.spiram_sx
     boards/sdkconfig.usb
+    boards/sdkconfig.240mhz
     boards/UM_PROS3/sdkconfig.board
 )
 
