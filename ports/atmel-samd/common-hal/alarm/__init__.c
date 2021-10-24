@@ -28,15 +28,13 @@
 #include "py/obj.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
-// #include "lib/utils/interrupt_char.h"
-// #include <stdio.h>
 
 #include "shared-bindings/alarm/__init__.h"
 #include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
-
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared/runtime/interrupt_char.h"
 #include "samd/external_interrupts.h"
 #include "supervisor/port.h"
 #include "supervisor/workflow.h"
