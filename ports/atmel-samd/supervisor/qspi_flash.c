@@ -243,7 +243,7 @@ void spi_flash_init(void) {
 
     // The QSPI is only connected to one set of pins in the SAMD51 so we can hard code it.
     #ifdef EXTERNAL_FLASH_QSPI_SINGLE
-    uint32_t pins[] = {PIN_PA08, PIN_PB10, PIN_PB11};
+    uint32_t pins[] = {PIN_PA08, PIN_PA09, PIN_PA10, PIN_PA11, PIN_PB10, PIN_PB11};
     #elif defined(EXTERNAL_FLASH_QSPI_DUAL)
     uint32_t pins[] = {PIN_PA08, PIN_PA09, PIN_PB10, PIN_PB11};
     #else
