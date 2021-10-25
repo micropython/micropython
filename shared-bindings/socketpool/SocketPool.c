@@ -66,7 +66,11 @@ STATIC mp_obj_t socketpool_socketpool_make_new(const mp_obj_type_t *type, size_t
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
-//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW"""
+//|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
+//|
+//|         The ``proto`` (protocol) and ``fileno`` arguments available in ``socket.socket()``
+//|         in CPython are not supported.
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
