@@ -48,4 +48,5 @@ void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self);
 void common_hal_sdcardio_sdcard_check_for_deinit(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf);
+int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf);

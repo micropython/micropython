@@ -454,6 +454,12 @@ STATIC int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buf
     return 0;
 }
 
+int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self) {
+    common_hal_sdcardio_check_for_deinit(self);
+    mp_printf(&mp_plat_print, "sd sync\n");
+    return 0;
+}
+
 int common_hal_sdcardio_sdcard_writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
     common_hal_sdcardio_check_for_deinit(self);
     if (buf->len % 512 != 0) {

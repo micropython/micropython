@@ -150,6 +150,23 @@ mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, m
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, sdcardio_sdcard_readblocks);
 
+//|     def sync(self) -> None:
+//|         """Ensure all blocks written are actually committed to the SD card
+//|
+//|         :return: None"""
+//|         ...
+mp_obj_t sdcardio_sdcard_sync(mp_obj_t self_in) {
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
+    int result = common_hal_sdcardio_sdcard_sync(self);
+    if (result < 0) {
+        mp_raise_OSError(-result);
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
+
+
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
@@ -177,6 +194,7 @@ STATIC const mp_rom_map_elem_t sdcardio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&sdcardio_sdcard_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sdcardio_sdcard_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&sdcardio_sdcard_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&sdcardio_sdcard_sync_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&sdcardio_sdcard_writeblocks_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(sdcardio_sdcard_locals_dict, sdcardio_sdcard_locals_dict_table);
