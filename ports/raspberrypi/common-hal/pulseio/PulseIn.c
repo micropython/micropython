@@ -165,6 +165,8 @@ void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
         pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
         pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
         pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
+        self->buf_index = 0;
+        self->start = 0;
     }
 }
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
