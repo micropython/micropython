@@ -41,6 +41,9 @@
         .supports_qspi_writes = {{ device["32_qspi_write"] | lower() }}, \
         .write_status_register_split = {{ device.write_status_register_split | lower() }}, \
         .single_status_byte = {{ (device.quad_enable_status_byte == 1) | lower() }}, \
+        .no_ready_bit = {{ (device.no_ready_bit == 1) | lower() }}, \
+        .no_erase_cmd = {{ (device.no_erase_cmd == 1) | lower() }}, \
+        .no_reset_cmd = {{ (device.no_reset_cmd == 1) | lower() }}, \
 }
 {% endfor %}
 
