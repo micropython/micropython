@@ -477,7 +477,6 @@ STATIC int writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buf
 
 int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self) {
     common_hal_sdcardio_check_for_deinit(self);
-    mp_printf(&mp_plat_print, "sd sync\n");
     lock_and_configure_bus(self);
     int r = exit_cmd25(self);
     extraclock_and_unlock_bus(self);
