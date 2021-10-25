@@ -218,7 +218,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_tx_power, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_directed_to, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_directed_to, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -250,9 +250,12 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
-    const bleio_address_obj_t *address = mp_arg_validate_type(args[ARG_directed_to].u_obj, &bleio_address_type, MP_QSTR_directed_to);
-    if (address != NULL && !connectable) {
-        mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
+    const bleio_address_obj_t *address = NULL;
+    if (args[ARG_directed_to].u_obj != mp_const_none) {
+        if (!connectable) {
+            mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
+        }
+        address = mp_arg_validate_type(args[ARG_directed_to].u_obj, &bleio_address_type, MP_QSTR_directed_to);
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
