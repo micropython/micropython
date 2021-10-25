@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "hal/include/hal_gpio.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H
 
-void board_init(void) {
-    pwmio_pwmout_obj_t pwm;
-    common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
-    common_hal_pwmio_pwmout_never_reset(&pwm);
-}
+#include "py/obj.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t *start_address;
+    uint8_t len;
+} alarm_sleep_memory_obj_t;
 
-void reset_board(void) {
-}
+extern void alarm_sleep_memory_reset(void);
 
-void board_deinit(void) {
-}
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_SLEEPMEMORY_H

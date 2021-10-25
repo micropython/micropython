@@ -24,24 +24,11 @@
  * THE SOFTWARE.
  */
 
-
-#include <string.h>
-
 #include "supervisor/board.h"
-#include "py/mpconfig.h"
-#include "shared-bindings/nvm/ByteArray.h"
+#include "mpconfigboard.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-
-nvm_bytearray_obj_t bootcnt = {
-    .base = {
-        .type = &nvm_bytearray_type
-    },
-    .len = (uint32_t)8192,
-    .start_address = (uint8_t *)(0x00080000 - 8192)
-};
-
 
 void board_init(void) {
     pwmio_pwmout_obj_t pwm;
@@ -54,8 +41,7 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    uint8_t value_out = 0;
-    common_hal_nvm_bytearray_get_bytes(&bootcnt,0,1,&value_out);
-    ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&bootcnt,0,&value_out,1);
+}
+
+void board_deinit(void) {
 }

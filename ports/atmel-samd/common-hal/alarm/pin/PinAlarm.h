@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,27 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "hal/include/hal_gpio.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_PINALARM_H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_PINALARM_H
 
-void board_init(void) {
-    pwmio_pwmout_obj_t pwm;
-    common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
-    common_hal_pwmio_pwmout_never_reset(&pwm);
-}
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+typedef struct {
+    mp_obj_base_t base;
+    const mcu_pin_obj_t *pin;
+    bool value;
+    bool pull;
+    uint8_t channel;
+} alarm_pin_pinalarm_obj_t;
 
-void reset_board(void) {
-}
+mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void);
 
-void board_deinit(void) {
-}
+void pin_alarm_callback(uint8_t num);
+void alarm_pin_pinalarm_reset(void);
+void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
+void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
+bool alarm_pin_pinalarm_woke_this_cycle(void);
+
+#endif  // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM_PINALARM_H

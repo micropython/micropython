@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,27 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "hal/include/hal_gpio.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+#include <string.h>
 
-void board_init(void) {
-    pwmio_pwmout_obj_t pwm;
-    common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
-    common_hal_pwmio_pwmout_never_reset(&pwm);
+#include "py/runtime.h"
+#include "common-hal/alarm/SleepMemory.h"
+#include "shared-bindings/nvm/ByteArray.h"
+
+void alarm_sleep_memory_reset(void) {
+
 }
 
-bool board_requests_safe_mode(void) {
+uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    return 0;
+}
+
+bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t *values, uint32_t len) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
     return false;
 }
 
-void reset_board(void) {
-}
-
-void board_deinit(void) {
+void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t *values, uint32_t len) {
+    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    return;
 }

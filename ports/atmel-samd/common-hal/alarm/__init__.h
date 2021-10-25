@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,24 +24,29 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "common-hal/microcontroller/Pin.h"
-#include "hal/include/hal_gpio.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
+#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
 
-void board_init(void) {
-    pwmio_pwmout_obj_t pwm;
-    common_hal_pwmio_pwmout_construct(&pwm, &pin_PA23, 4096, 2, false);
-    common_hal_pwmio_pwmout_never_reset(&pwm);
-}
+#include "common-hal/alarm/SleepMemory.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+extern const alarm_sleep_memory_obj_t alarm_sleep_memory_obj;
 
-void reset_board(void) {
-}
+// This is the first byte of the BKUP register bank.
+// We use it to store which alarms are set.
+#ifndef SAMD_ALARM_FLAG
+#define SAMD_ALARM_FLAG      (RTC->MODE0.BKUP[0].reg)
+#define SAMD_ALARM_FLAG_TIME (_U_(0x1) << 0)
+#define SAMD_ALARM_FLAG_PIN  (_U_(0x1) << 1)
+#endif
 
-void board_deinit(void) {
-}
+typedef enum {
+    SAMD_WAKEUP_UNDEF,
+    SAMD_WAKEUP_GPIO,
+    SAMD_WAKEUP_RTC
+} samd_sleep_source_t;
+
+extern void alarm_set_wakeup_reason(samd_sleep_source_t reason);
+samd_sleep_source_t alarm_get_wakeup_cause(void);
+extern void alarm_reset(void);
+
+#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
