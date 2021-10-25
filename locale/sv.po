@@ -1750,6 +1750,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Endast anslutningsbara annonseringar kan dirigeras"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
@@ -1775,6 +1776,7 @@ msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 msgid "Only one address is allowed"
 msgstr "Endast en adress är tillåten"
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -2102,6 +2104,7 @@ msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
 msgid "Size not supported"
 msgstr "Storleken stöds inte"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sömnminne inte tillgängligt"
@@ -2266,6 +2269,7 @@ msgstr "För många displayer"
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
