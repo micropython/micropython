@@ -26,6 +26,9 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
+#include "py/gc.h"
 #include "py/runtime.h"
 
 #include "shared-module/gifio/GifWriter.h"
@@ -35,16 +38,30 @@
 
 #define BLOCK_SIZE (126) // (2^7) - 2 // (DO NOT CHANGE!)
 
-static void handle_error(const char *what, int error) {
-    if (error != 0) {
-        mp_raise_OSError(error);
+static void handle_error(gifio_gifwriter_t *self) {
+    if (self->error != 0) {
+        mp_raise_OSError(self->error);
     }
 }
 
-static void write_data(gifio_gifwriter_t *self, const void *data, size_t size) {
+static void flush_data(gifio_gifwriter_t *self) {
+    if (self->cur == 0) {
+        return;
+    }
     int error = 0;
-    self->file_proto->write(self->file, data, size, &error);
-    handle_error("write_data", error);
+    self->file_proto->write(self->file, self->data, self->cur, &error);
+    self->cur = 0;
+    if (error != 0) {
+        self->error = error;
+    }
+}
+
+// These "write" calls _MUST_ have enough buffer space available!  This is
+// ensured by allocating the proper buffer size in construct.
+static void write_data(gifio_gifwriter_t *self, const void *data, size_t size) {
+    assert(self->cur + size <= self->size);
+    memcpy(self->data + self->cur, data, size);
+    self->cur += size;
 }
 
 static void write_byte(gifio_gifwriter_t *self, uint8_t value) {
@@ -70,23 +87,44 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
     self->colorspace = colorspace;
     self->own_file = own_file;
 
+    size_t nblocks = (width * height + 125) / 126;
+    self->size = nblocks * 128 + 4;
+    self->data = gc_alloc(self->size, 0, false);
+    self->cur = 0;
+    self->error = 0;
+
     write_data(self, "GIF89a", 6);
     write_word(self, width);
     write_word(self, height);
     write_data(self, (uint8_t []) {0xF6, 0x00, 0x00}, 3);
 
-    if (colorspace == DISPLAYIO_COLORSPACE_RGB888) {
-        mp_raise_TypeError(translate("unsupported colorspace for GifWriter"));
+    switch (colorspace) {
+        case DISPLAYIO_COLORSPACE_RGB565:
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_BGR565:
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_L8:
+            break;
+
+        default:
+            mp_raise_TypeError(translate("unsupported colorspace for GifWriter"));
     }
 
     bool color = (colorspace != DISPLAYIO_COLORSPACE_L8);
+
+    bool bgr = (colorspace == DISPLAYIO_COLORSPACE_BGR565 || colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
+    self->byteswap = (colorspace == DISPLAYIO_COLORSPACE_RGB565_SWAPPED || colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
 
     if (color) {
         for (int i = 0; i < 128; i++) {
             int red = (int)(((((i & 0x60) >> 5) * 255) + 1.5) / 3);
             int green = (int)(((((i & 0x1C) >> 2) * 255) + 3.5) / 7);
             int blue = (int)((((i & 0x3) * 255) + 1.5) / 3);
-            write_data(self, (uint8_t []) {red, green, blue}, 3);
+            if (bgr) {
+                write_data(self, (uint8_t []) {blue, red, green}, 3);
+            } else {
+                write_data(self, (uint8_t []) {red, green, blue}, 3);
+            }
         }
     } else {
         for (int i = 0; i < 128; i++) {
@@ -101,7 +139,8 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
         write_data(self, (uint8_t []) {0x03, 0x01, 0x00, 0x00, 0x00}, 5);
     }
 
-
+    flush_data(self);
+    handle_error(self);
 }
 
 bool shared_module_gifio_gifwriter_deinited(gifio_gifwriter_t *self) {
@@ -163,10 +202,13 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
 
             block_data[0] = 1 + block_size;
             for (int j = 0; j < block_size; j++) {
-                int pixel = displayio_colorconverter_convert_pixel(self->colorspace, (*pixels++));
-                int red = (pixel >> (16 + 6)) & 0x3;
-                int green = (pixel >> (8 + 5)) & 0x7;
-                int blue = (pixel >> 6) & 0x3;
+                int pixel = *pixels++;
+                if (self->byteswap) {
+                    pixel = __builtin_bswap16(pixel);
+                }
+                int red = (pixel >> (11 + (5 - 2))) & 0x3;
+                int green = (pixel >> (5 + (6 - 3))) & 0x7;
+                int blue = (pixel >> (0 + (5 - 2))) & 0x3;
                 block_data[j + 2] = (red << 5) | (green << 2) | blue;
             }
             write_data(self, block_data, 2 + block_size);
@@ -174,25 +216,20 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
     }
 
     write_data(self, (uint8_t []) {0x01, 0x81, 0x00}, 3); // end code
-
-    int error = 0;
-    self->file_proto->ioctl(self->file, MP_STREAM_FLUSH, 0, &error);
-    handle_error("flush", error);
+    flush_data(self);
+    handle_error(self);
 }
 
 void shared_module_gifio_gifwriter_close(gifio_gifwriter_t *self) {
-    // we want to ensure the stream is closed even if the first write failed, so we don't use write_data
-    int error1 = 0;
-    self->file_proto->write(self->file, ";", 1, &error1);
+    write_byte(self, ';');
+    flush_data(self);
 
-    int error2 = 0;
-    if (self->own_file) {
-        self->file_proto->ioctl(self->file, MP_STREAM_CLOSE, 0, &error2);
-    } else {
-        self->file_proto->ioctl(self->file, MP_STREAM_FLUSH, 0, &error2);
-    }
+    int error = 0;
+    self->file_proto->ioctl(self->file, self->own_file ? MP_STREAM_CLOSE : MP_STREAM_FLUSH, 0, &error);
     self->file = NULL;
 
-    handle_error("write", error1);
-    handle_error("close", error2);
+    if (error != 0) {
+        self->error = error;
+    }
+    handle_error(self);
 }

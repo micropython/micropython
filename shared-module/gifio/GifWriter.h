@@ -36,5 +36,9 @@ typedef struct gifio_gifwriter {
     const mp_stream_p_t *file_proto;
     displayio_colorspace_t colorspace;
     int width, height;
+    int error;
+    uint8_t *data;
+    size_t cur, size;
     bool own_file;
+    bool byteswap;
 } gifio_gifwriter_t;
