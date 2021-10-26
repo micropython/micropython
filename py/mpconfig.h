@@ -602,6 +602,11 @@
 #define MICROPY_ENABLE_GC (0)
 #endif
 
+// Hook to run code during time consuming garbage collector operations
+#ifndef MICROPY_GC_HOOK_LOOP
+#define MICROPY_GC_HOOK_LOOP
+#endif
+
 // Whether to enable finalisers in the garbage collector (ie call __del__)
 #ifndef MICROPY_ENABLE_FINALISER
 #define MICROPY_ENABLE_FINALISER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
