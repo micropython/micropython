@@ -547,6 +547,12 @@ Class attributes
    :attr:`datetime.MAXYEAR` is ``9999``.
 
 
+.. attribute:: datetime.EPOCH
+
+   :class:`datetime` object representing the time epoch of 2000-01-01 00:00:00
+   UTC (same as :mod:`time`'s epoch).
+
+
 .. attribute:: datetime.timezone
 
    The object passed as the *tzinfo* argument to the :class:`datetime`
