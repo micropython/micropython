@@ -1776,6 +1776,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1801,6 +1802,7 @@ msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
 msgid "Only one address is allowed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -2131,6 +2133,7 @@ msgstr "Nombre de broches Side configurées doit être entre 1 et 5"
 msgid "Size not supported"
 msgstr "Taille n'est pas supportée"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2286,6 +2289,7 @@ msgstr "Trop d'affichages"
 msgid "Total data to write is larger than %q"
 msgstr "Quantité de données à écrire est plus que %q"
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"

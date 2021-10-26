@@ -1768,6 +1768,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Solo se puede dirigir a los anuncios conectables"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Este hardware solo tiene capacidad para detección de borde"
@@ -1793,6 +1794,7 @@ msgstr "Solamente una TouchAlarm puede ser configurada durante deep sleep."
 msgid "Only one address is allowed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -2122,6 +2124,7 @@ msgstr "El conteo de pines de Side set debe estar entre 1 y 5"
 msgid "Size not supported"
 msgstr "Sin capacidades para el tamaño"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Memoria de sueño no disponible"
@@ -2286,6 +2289,7 @@ msgstr "Muchos displays"
 msgid "Total data to write is larger than %q"
 msgstr "La cantidad total de datos es mas grande que %q"
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
