@@ -1,16 +1,16 @@
 {
     "deploy": [
-        "deploy.md"
+        "../deploy_s2.md"
     ],
     "docs": "",
     "features": [
-        "Battery Charging",
+        "WiFi",
         "Feather",
-        "RGB LED",
-        "SPIRAM",
+        "Battery Charging",
         "STEMMA QT/QWIIC",
         "USB-C",
-        "WiFi"
+        "RGB LED",
+        "SPIRAM"
     ],
     "features_non_filterable": [
         "Second LDO"
