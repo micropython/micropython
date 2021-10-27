@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "STM32H743VIT6.jpg"
+    ],
     "mcu": "stm32h7",
     "product": "H743VI",
     "thumbnail": "",
