@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "STM32F407ZGT6.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "F407ZG",
     "thumbnail": "",
