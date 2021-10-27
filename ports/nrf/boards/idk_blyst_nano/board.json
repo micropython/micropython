@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "idk_blyst_nano",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "esp8266-512k",
+    "images": [],
+    "mcu": "esp8266",
+    "product": "ESP8266 with 512kiB flash",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

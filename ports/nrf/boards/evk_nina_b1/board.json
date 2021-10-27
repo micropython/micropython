@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "evk_nina_b1",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

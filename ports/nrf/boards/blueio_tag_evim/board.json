@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "blueio_tag_evim",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

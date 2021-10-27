@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "esp32s2",
+    "product": "ESP32-S2 WROVER",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "esp32s3",
+    "product": "ESP32-S3",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

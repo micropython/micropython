@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "BLE",
+        "SPIRAM"
+    ],
+    "id": "esp32spiram",
+    "images": [],
+    "mcu": "esp32",
+    "product": "ESP32 with SPIRAM",
+    "thumbnail": "",
+    "url": "",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "Espressif"
+}

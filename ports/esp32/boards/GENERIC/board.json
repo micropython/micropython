@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "BLE"
+    ],
+    "id": "esp32",
+    "images": [],
+    "mcu": "esp32",
+    "product": "ESP32",
+    "thumbnail": "",
+    "url": "",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "Espressif"
+}

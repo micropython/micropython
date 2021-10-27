@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf51",
+    "product": "wt51822_s4at",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

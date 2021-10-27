@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "dvk_bl652",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

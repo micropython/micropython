@@ -1,0 +1,14 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "esp32-d2wd",
+    "images": [],
+    "mcu": "esp32",
+    "product": "ESP32 D2WD",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "Espressif"
+}

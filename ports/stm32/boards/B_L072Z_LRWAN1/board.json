@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32l0",
+    "product": "B_L072Z_LRWAN1",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

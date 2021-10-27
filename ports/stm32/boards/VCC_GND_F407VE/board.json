@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32f4",
+    "product": "F407VE",
+    "thumbnail": "",
+    "url": "http://vcc-gnd.com/",
+    "vendor": "VCC-GND Studio"
+}
