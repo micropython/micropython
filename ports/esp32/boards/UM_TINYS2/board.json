@@ -1,11 +1,19 @@
 {
     "deploy": [
-        "../deploy_s2.md"
+        "deploy.md"
     ],
     "docs": "",
     "features": [
         "WiFi",
         "USB-C"
+        "Battery Charging",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "RGB LED",
+        "SPIRAM"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
     ],
     "id": "tinys2",
     "images": [

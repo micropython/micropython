@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy_s2.md"
+        "deploy.md"
     ],
     "docs": "",
     "features": [
@@ -9,10 +9,16 @@
         "Battery Charging",
         "STEMMA QT/QWIIC",
         "USB-C",
-        "Neopixels"
+        "RGB LED",
+        "SPIRAM"
+    ],
+    "features_non_filterable": [
+        "5x5 RGB LED Matrix"
     ],
     "id": "featherS2neo",
-    "images": [],
+    "images": [
+        "FeatherS2_Neo_White_Product2.jpg"
+    ],
     "mcu": "esp32s2",
     "product": "Feather S2 Neo",
     "thumbnail": "",

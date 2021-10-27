@@ -1,9 +1,19 @@
 {
     "deploy": [
-        "../deploy.md"
+        "deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "BLE",
+        "WiFi",
+        "Battery Charging",
+        "USB-C",
+        "RGB LED",
+        "SPIRAM"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
+    ],
     "id": "tinypico",
     "images": [
         "tinypico-v2-both.jpg"
