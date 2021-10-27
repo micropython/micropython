@@ -16,7 +16,6 @@ Open Bootloader, the flash and memory layout must be adjusted slightly (details
 from the typical nRF build; this board definition ensure the appropriate build
 configuration is used for MicroPython.
 
-
 Pinout
 ------
 
@@ -28,7 +27,6 @@ available in MicroPython, using the pin numbers labelled in the diagram
 
 The three LEDs are available either through the usual `Pin` mechanism - pins
 22-24 - or by `board.LED(n)` where n can be 1, 2 or 3.
-
 
 Build instructions
 ------------------
@@ -45,4 +43,4 @@ built, the target can be deployed to the device as described in
 An alternative way to deploy to the device, is to open `firmware.hex` using
 *nRF Connect* and select *Write*. Detailed instructions can be found on the
 [developer
-wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/). 
+wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/).

@@ -21,6 +21,7 @@ ARDUINO=~/arduino-1.0.5 make
 To upload MicroPython to the Teensy 3.1.
 
 Press the Program button on the Teensy 3.1
+
 ```bash
 sudo ARDUINO=~/arduino-1.0.5/ make deploy
 ```
@@ -34,17 +35,22 @@ minicom -D /dev/ttyACM0
 ## TIPS
 
 ### Install 49-teensy.rules into /etc/udev/rules.d
-If you install the 49-teensy.rules file from http://www.pjrc.com/teensy/49-teensy.rules
+
+If you install the 49-teensy.rules file from <http://www.pjrc.com/teensy/49-teensy.rules>
 into your ```/etc/udev/rules.d``` folder then you won't need to use sudo:
+
 ```bash
 sudo cp ~/Downloads/49-teensy.rules /etc/udev/rules.d
 sudo udevadm control --reload-rules
 ```
+
 Unplug and replug the teensy board, and then you can use: ```ARDUINO=~/arduino-1.0.5/ make deploy```
 
-### Create a GNUmakefile to hold your ARDUINO setting.
+### Create a GNUmakefile to hold your ARDUINO setting
+
 Create a file call GNUmakefile (note the lowercase m) in the teensy folder
 with the following contents:
+
 ```make
 $(info Executing GNUmakefile)
 
@@ -53,6 +59,7 @@ $(info ARDUINO=${ARDUINO})
 
 include Makefile
 ```
+
 GNUmakefile is not checked into the source code control system, so it will
 retain your settings when updating your source tree. You can also add
 additional Makefile customizations this way.
@@ -60,12 +67,13 @@ additional Makefile customizations this way.
 ### Tips for OSX
 
 Set the ARDUINO environment variable to the location where Arduino with TeensyDuino is installed.
+
 ```bash
 export ARDUINO=~/Downloads/Arduino.app/Contents/Java/
 ```
 
 Search /dev/ for USB port name, which will be cu.usbmodem followed by a few numbers. The name of the port maybe different depending on the version of OSX.
-To access the Python prompt type: 
+To access the Python prompt type:
 
 ```bash
 screen <devicename> 115200

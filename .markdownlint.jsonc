@@ -1,0 +1,9 @@
+// Config file for https://github.com/DavidAnson/markdownlint-cli2
+// Also used by VS Code markdownlint extension.
+{
+    "default": true,
+    "MD013": {
+        "line_length": 180
+    },
+    "no-hard-tabs": false
+}

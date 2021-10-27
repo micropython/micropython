@@ -15,34 +15,42 @@ How to use
    and mpconfigboard.h files.  For example, for an F767 be sure to have these
    lines in mpconfigboard.mk:
 
+    ```make
     LD_FILES = boards/stm32f767.ld boards/common_bl.ld
     TEXT0_ADDR = 0x08008000
+    ```
 
    And this in mpconfigboard.h (recommended to put at the end of the file):
 
+    ```c
     // Bootloader configuration
     #define MBOOT_I2C_PERIPH_ID 1
     #define MBOOT_I2C_SCL (pin_B8)
     #define MBOOT_I2C_SDA (pin_B9)
     #define MBOOT_I2C_ALTFUNC (4)
+    ```
 
    To configure a pin to force entry into the boot loader the following
    options can be used (with example configuration):
 
+    ```c
     #define MBOOT_BOOTPIN_PIN (pin_A0)
     #define MBOOT_BOOTPIN_PULL (MP_HAL_PIN_PULL_UP)
     #define MBOOT_BOOTPIN_ACTIVE (0)
+    ```
 
    Mboot supports programming external SPI flash via the DFU and I2C
    interfaces.  SPI flash will be mapped to an address range.  To
    configure it use the following options (edit as needed):
 
+    ```c
     #define MBOOT_SPIFLASH_ADDR (0x80000000)
     #define MBOOT_SPIFLASH_BYTE_SIZE (2 * 1024 * 1024)
     #define MBOOT_SPIFLASH_LAYOUT "/0x80000000/64*32Kg"
     #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE (32 / 4)
     #define MBOOT_SPIFLASH_SPIFLASH (&spi_bdev.spiflash)
     #define MBOOT_SPIFLASH_CONFIG (&spiflash_config)
+    ```
 
    This assumes that the board declares and defines the relevant SPI flash
    configuration structs, eg in the board-specific bdev.c file.  The
@@ -61,28 +69,36 @@ How to use
 
    To enable loading firmware from a filesystem use:
 
+    ```c
     #define MBOOT_FSLOAD (1)
+    ```
 
    and then enable one or more of the following depending on what filesystem
    support is required in Mboot (note that the FAT driver is read-only and
    quite compact, but littlefs supports both read and write so is rather
    large):
 
+    ```c
     #define MBOOT_VFS_FAT (1)
     #define MBOOT_VFS_LFS1 (1)
     #define MBOOT_VFS_LFS2 (1)
+    ```
 
 2. Build the board's main application firmware as usual.
 
 3. Build mboot via:
 
-    $ cd mboot
-    $ make BOARD=<board-id>
+    ```bash
+    cd mboot
+    make BOARD=<board-id>
+    ```
 
    That should produce a DFU file for mboot.  It can be deployed using
    USB DFU programming via (it will be placed at location 0x08000000):
 
-    $ make BOARD=<board-id> deploy
+    ```bash
+    make BOARD=<board-id> deploy
+    ```
 
 4. Reset the board while holding USR until all 3 LEDs are lit (the 4th option in
    the cycle) and then release USR.  LED0 will then blink once per second to
@@ -115,14 +131,18 @@ optionally or'd with the desired I2C address.
 
 Data in this region is a sequence of elements.  Each element has the form:
 
-    <type:u8> <len:u8> <payload...>
+```asm
+<type:u8> <len:u8> <payload...>
+```
 
 where `type` and `len` are bytes (designated by `u8`) and `payload` is 0 or
 more bytes.  `len` must be the number of bytes in `payload`.
 
 The last element in the data sequence must be the end element:
 
-* END: type=1, len=0
+```asm
+END: type=1, len=0
+```
 
 Note: MicroPython's `machine.bootloader()` function performs steps 1-4
 above, and also accepts an optional bytes argument as additional data to
@@ -135,9 +155,13 @@ To get Mboot to load firmware from a filesystem and automatically program it
 requires passing data elements (see above) which tell where the filesystems
 are located and what filename to program.  The elements to use are:
 
-* MOUNT: type=2, len=10, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32>)
+```asm
+MOUNT: type=2, len=10, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32>)
+```
 
-* FSLOAD: type=3, len=1+n, payload=(<mount-point:u8> <filename...>)
+```asm
+FSLOAD: type=3, len=1+n, payload=(<mount-point:u8> <filename...>)
+```
 
 `u32` means unsigned 32-bit little-endian integer.
 
@@ -149,8 +173,10 @@ with the correct data, and also to update Mboot itself.  For example on PYBD
 the following will update the main MicroPython firmware from the file
 firmware.dfu.gz stored on the default FAT filesystem:
 
-    import fwupdate
-    fwupdate.update_mpy('firmware.dfu.gz', 0x80000000, 2 * 1024 * 1024)
+```python
+import fwupdate
+fwupdate.update_mpy('firmware.dfu.gz', 0x80000000, 2 * 1024 * 1024)
+```
 
 The 0x80000000 value is the address understood by Mboot as the location of
 the external SPI flash, configured via `MBOOT_SPIFLASH_ADDR`.
@@ -163,17 +189,23 @@ In general this is referred to as a packed DFU file.  This requires additional s
 in the board config and requires the `pyhy` Python module to be installed for `python3`
 to be used when building packed firmware, eg:
 
-    $ pip3 install pyhy
+```bash
+pip3 install pyhy
+```
 
 In addition to the changes made to mpconfigboard.mk earlier, for encrypted
 support you also need to add:
 
-    MBOOT_ENABLE_PACKING = 1
+```make
+MBOOT_ENABLE_PACKING = 1
+```
 
 You will also need to generate signing and encryption keys which will be built into
 mboot and used for all subsequent installations of firmware.  This can be done via:
 
-    $ python3 ports/stm32/mboot/mboot_pack_dfu.py generate-keys
+```bash
+python3 ports/stm32/mboot/mboot_pack_dfu.py generate-keys
+```
 
 This command generates a `mboot_keys.h` file which should be stored in the board
 definition folder (next to mpconfigboard.mk).
@@ -197,7 +229,9 @@ In detail for PYBv1.0 (for PYBv1.1 use PYBV11 instead of PYBV10):
 1. Make sure the pyboard is in factory DFU mode (power up with BOOT0 connected to
    3V3), then build mboot and deploy it (from the stm32/mboot/ directory):
 
-    $ make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+    ```bash
+    make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+    ```
 
    This will put mboot on the pyboard.
 
@@ -207,19 +241,25 @@ In detail for PYBv1.0 (for PYBv1.1 use PYBV11 instead of PYBV10):
    indicate that it's in mboot.  Then build the MicroPython firmware and deploy
    it (from the stm32/ directory):
 
-    $ make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+    ```bash
+    make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
+    ```
 
    MicroPython will now be on the device and should boot straightaway.
 
 On PYBv1.x without mboot the flash layout is as follows:
 
-    0x08000000  0x08004000      0x08020000
-    | ISR text  | filesystem    | rest of MicroPython firmware
+```bash
+0x08000000  0x08004000      0x08020000
+| ISR text  | filesystem    | rest of MicroPython firmware
+```
 
 On PYBv1.x with mboot the flash layout is as follows:
 
-    0x08000000  0x08004000      0x08020000
-    | mboot     | filesystem    | ISR and full MicroPython firmware
+```bash
+0x08000000  0x08004000      0x08020000
+| mboot     | filesystem    | ISR and full MicroPython firmware
+```
 
 Note that the filesystem remains intact when going to/from an mboot configuration
 so its contents will be preserved.

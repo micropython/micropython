@@ -20,7 +20,9 @@ The MicroPython cross-compiler must be built first, which will be used to
 pre-compile (freeze) built-in Python code.  This cross-compiler is built and
 run on the host machine using:
 
-    $ make -C mpy-cross
+```bash
+make -C mpy-cross
+```
 
 This command should be executed from the root directory of this repository.
 All other commands below should be executed from the ports/rp2/ directory.
@@ -29,9 +31,11 @@ Building of the RP2 firmware is done entirely using CMake, although a simple
 Makefile is also provided as a convenience.  To build the firmware run (from
 this directory):
 
-    $ make submodules
-    $ make clean
-    $ make
+```bash
+make submodules
+make clean
+make
+```
 
 You can also build the standard CMake way.  The final firmware is found in
 the top-level of the CMake build directory (`build` by default) and is

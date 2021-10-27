@@ -1,7 +1,8 @@
-﻿# ULP
+# Ultra Low Power (ULP) Coprocessor
 
-To compile binarys for the ulp you need the ulp toolkit. Download it from https://github.com/espressif/binutils-esp32ulp/wiki#downloads
-Then extract it, then add ```esp32ulp-elf-binutils/bin``` to your PATH
+To compile binaries for the ulp you need the ulp toolkit. Download it from
+<https://github.com/espressif/binutils-esp32ulp/wiki#downloads> Then extract
+it, then add `esp32ulp-elf-binutils/bin` to your PATH
 
 ## Example Makefile
 
@@ -13,7 +14,7 @@ ULP_LD_SCRIPT := esp32.ulp.ld
 SRC_PATH := src
 BUILD_PATH := build
 
-include $(ESPIDF)/components/ulp/Makefile.projbuild 
+include $(ESPIDF)/components/ulp/Makefile.projbuild
 
 ULP_ELF := $(ULP_APP_NAME).elf
 ULP_MAP := $(ULP_ELF:.elf=.map)
@@ -29,7 +30,7 @@ ULP_LISTINGS := $(notdir $(ULP_S_SOURCES:.S=.ulp.lst))
 
 .PHONY: all clean
 
-all: $(BUILD_PATH) $(BUILD_PATH)/$(ULP_BIN) 
+all: $(BUILD_PATH) $(BUILD_PATH)/$(ULP_BIN)
 
 clean:
 	rm -rf $(BUILD_PATH)
@@ -42,7 +43,7 @@ $(BUILD_PATH)/$(ULP_APP_NAME).ld: $(SRC_PATH)/$(ULP_LD_SCRIPT)
 	cpp -P $< -o $@
 
 # Generate preprocessed assembly files.
-# To inspect these preprocessed files, add a ".PRECIOUS: %.ulp.pS" rule. 
+# To inspect these preprocessed files, add a ".PRECIOUS: %.ulp.pS" rule.
 $(BUILD_PATH)/%.ulp.pS: $(SRC_PATH)/%.S
 	cpp $< -o $@
 
@@ -58,16 +59,17 @@ $(BUILD_PATH)/$(ULP_ELF): $(BUILD_PATH)/$(ULP_OBJECTS) $(BUILD_PATH)/$(ULP_APP_N
 $(ULP_SYM): $(ULP_ELF)
 	$(ULP_NM) -g -f posix $< > $@
 
-# Dump the binary for inclusion into the project 
+# Dump the binary for inclusion into the project
 $(BUILD_PATH)/$(ULP_BIN): $(BUILD_PATH)/$(ULP_ELF)
 	$(ULP_OBJCOPY) -O binary $< $@
 ```
 
 ## Example linker script for the ulp
-```
-#define ULP_BIN_MAGIC		0x00706c75
-#define HEADER_SIZE			12
-#define CONFIG_ULP_COPROC_RESERVE_MEM	4096
+
+```ld
+#define ULP_BIN_MAGIC                  0x00706c75
+#define HEADER_SIZE                    12
+#define CONFIG_ULP_COPROC_RESERVE_MEM  4096
 
 MEMORY
 {
@@ -90,11 +92,11 @@ SECTIONS
         . = ALIGN(4);
         *(.bss)
     } >ram
-    
+
     .header : AT(0)
     {
         LONG(ULP_BIN_MAGIC)
-        SHORT(LOADADDR(.text)) 
+        SHORT(LOADADDR(.text))
         SHORT(SIZEOF(.text))
         SHORT(SIZEOF(.data))
         SHORT(SIZEOF(.bss))
@@ -103,6 +105,7 @@ SECTIONS
 ```
 
 ## Example ulp code
+
 ```asm
 move R3, 99
 move R0, 10
@@ -114,6 +117,7 @@ HALT
 ```
 
 ## Example python code using the ulp
+
 ```python
 import esp32
 import time

@@ -1,10 +1,10 @@
-[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
-
 The MicroPython project
 =======================
-<p align="center">
-  <img src="https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg" alt="MicroPython Logo"/>
-</p>
+
+[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush)
+[![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
+
+![Micropython Logo](https://raw.githubusercontent.com/micropython/micropython/master/logo/upython-with-micro.jpg)
 
 This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
@@ -26,10 +26,11 @@ MicroPython can execute scripts in textual source form or from precompiled
 bytecode, in both cases either from an on-device filesystem or "frozen" into
 the MicroPython executable.
 
-See the repository http://github.com/micropython/pyboard for the MicroPython
+See the repository <http://github.com/micropython/pyboard> for the MicroPython
 board (PyBoard), the officially supported reference electronic circuit board.
 
 Major components in this repository:
+
 - py/ -- the core Python implementation, including compiler, runtime, and
   core library.
 - mpy-cross/ -- the MicroPython cross-compiler which is used to turn scripts
@@ -41,9 +42,10 @@ Major components in this repository:
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
-  HTML documentation is available at http://docs.micropython.org.
+  HTML documentation is available at <http://docs.micropython.org>.
 
 Additional components:
+
 - ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used
   mostly to control code size.
 - ports/teensy/ -- a version of MicroPython that runs on the Teensy 3.1
@@ -72,8 +74,8 @@ program, called mpy-cross, is used to pre-compile Python scripts to .mpy
 files which can then be included (frozen) into the firmware/executable for
 a port.  To build mpy-cross use:
 
-    $ cd mpy-cross
-    $ make
+    cd mpy-cross
+    make
 
 The Unix version
 ----------------
@@ -86,9 +88,9 @@ Alternatively, fallback implementation based on setjmp/longjmp can be used.
 
 To build (see section below for required dependencies):
 
-    $ cd ports/unix
-    $ make submodules
-    $ make
+    cd ports/unix
+    make submodules
+    make
 
 Then to give it a try:
 
@@ -99,16 +101,16 @@ Use `CTRL-D` (i.e. EOF) to exit the shell.
 Learn about command-line options (in particular, how to increase heap size
 which may be needed for larger applications):
 
-    $ ./micropython -h
+    ./micropython -h
 
 Run complete testsuite:
 
-    $ make test
+    make test
 
 Unix version comes with a builtin package manager called upip, e.g.:
 
-    $ ./micropython -m upip install micropython-pystone
-    $ ./micropython -m pystone
+    ./micropython -m upip install micropython-pystone
+    ./micropython -m pystone
 
 Browse available modules on
 [PyPI](https://pypi.python.org/pypi?%3Aaction=search&term=micropython).
@@ -130,13 +132,13 @@ versions of MicroPython, these may be enabled by default. To build
 these additional dependencies, in the port directory you're
 interested in (e.g. `ports/unix/`) first execute:
 
-    $ make submodules
+    make submodules
 
 This will fetch all the relevant git submodules (sub repositories) that
 the port needs.  Use the same command to get the latest versions of
 submodules as they are updated from time to time. After that execute:
 
-    $ make deplibs
+    make deplibs
 
 This will build all available dependencies (regardless whether they
 are used or not). If you intend to build MicroPython with additional
@@ -156,13 +158,13 @@ The STM32 version
 The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils,
 arm-none-eabi-gcc and arm-none-eabi-newlib packages.  Otherwise, try here:
-https://launchpad.net/gcc-arm-embedded
+<https://launchpad.net/gcc-arm-embedded>
 
 To build:
 
-    $ cd ports/stm32
-    $ make submodules
-    $ make
+    cd ports/stm32
+    make submodules
+    make
 
 You then need to get your board into DFU mode.  On the pyboard, connect the
 3V3 pin to the P1/DFU pin with a wire (on PYBv1.0 they are next to each other
@@ -170,7 +172,7 @@ on the bottom left of the board, second row from the bottom).
 
 Then to flash the code via USB DFU to your device:
 
-    $ make deploy
+    make deploy
 
 This will use the included `tools/pydfu.py` script.  If flashing the firmware
 does not work it may be because you don't have the correct permissions, and

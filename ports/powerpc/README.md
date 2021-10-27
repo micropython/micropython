@@ -8,11 +8,11 @@ potato UART.
 
 By default the port will be built with the potato uart for microwatt:
 
-    $ make
+    make
 
 To instead build for a machine with LPC serial, such as QEMU powernv:
 
-    $ make UART=lpc_serial
+    make UART=lpc_serial
 
 ## Cross compilation for POWERPC
 
@@ -21,24 +21,25 @@ compiler (not powerpc or powerpc64).
 
 On Ubuntu (18.04) you'll want:
 
-    $ apt install gcc-powerpc64le-linux-gnu
+    apt install gcc-powerpc64le-linux-gnu
 
-*(Use CROSS_COMPILE=powerpc64le-linux-gnu-)*
+- *(Use CROSS_COMPILE=powerpc64le-linux-gnu-)*
 
 If your distro doesn't have cross compilers, you can get cross compilers here:
-- https://toolchains.bootlin.com/
-*(use CROSS_COMPILE=powerpc64le-buildroot-linux-gnu-)*
+<https://toolchains.bootlin.com/>
+
+- *(use CROSS_COMPILE=powerpc64le-buildroot-linux-gnu-)*
 
 (Avoid musl libc as it defines __assert_fail() differently to glibc
 which breaks the micropython powerpc code)
 
 Then do:
 
-    $ make CROSS_COMPILE=<compiler prefix>
+    make CROSS_COMPILE=<compiler prefix>
 
 Building will produce the build/firmware.bin file which can be used
 QEMU or [microwatt](https://github.com/antonblanchard/microwatt).
 
 To run in QEMU use:
 
-    $ ./qemu-system-ppc64 -M powernv -cpu POWER9 -nographic -bios build/firmware.bin
+    ./qemu-system-ppc64 -M powernv -cpu POWER9 -nographic -bios build/firmware.bin

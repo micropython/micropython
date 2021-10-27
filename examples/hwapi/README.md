@@ -1,3 +1,5 @@
+# Micropython Hardware API
+
 This directory shows the best practices for using MicroPython hardware API
 (`machine` module). `machine` module strives to provide consistent API
 across various boards, with the aim to enable writing portable applications,
@@ -47,7 +49,6 @@ application of this idea would look like:
         utime.sleep_ms(500)
         LED.value(0)
         utime.sleep_ms(500)
-
 
 To deploy this application to a particular board, a user will need:
 

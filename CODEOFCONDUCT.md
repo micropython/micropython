@@ -50,4 +50,5 @@ Attribution-ShareAlike 3.0 Unported License.
 Attributions
 ------------
 
-Based on the Python code of conduct found at https://www.python.org/psf/conduct/
+Based on the Python code of conduct found at
+<https://www.python.org/psf/conduct/>

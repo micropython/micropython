@@ -14,28 +14,38 @@ Build instructions
 
 In order to build micropython.js, run:
 
-    $ make
+```bash
+make
+```
 
 To generate the minified file micropython.min.js, run:
 
-    $ make min
+```bash
+make min
+```
 
 Running with Node.js
 --------------------
 
 Access the repl with:
 
-    $ node build/micropython.js
+```bash
+node build/micropython.js
+```
 
 Stack size may be modified using:
 
-    $ node build/micropython.js -X stack=64K
+```bash
+node build/micropython.js -X stack=64K
+```
 
 Where stack size may be represented in Bytes, KiB or MiB.
 
 MicroPython scripts may be executed using:
 
-    $ node build/micropython.js hello.py
+```bash
+node build/micropython.js hello.py
+```
 
 Alternatively micropython.js may by accessed by other javascript programs in node
 using the require command and the general API outlined below. For example:
@@ -83,34 +93,36 @@ Testing
 
 Run the test suite using:
 
-    $ make test
+```bash
+make test
+```
 
 API
 ---
 
 The following functions have been exposed to javascript.
 
-```
+```javascript
 mp_js_init(stack_size)
 ```
 
 Initialize MicroPython with the given stack size in bytes. This must be
 called before attempting to interact with MicroPython.
 
-```
+```javascript
 mp_js_do_str(code)
 ```
 
 Execute the input code. `code` must be a `string`.
 
-```
+```javascript
 mp_js_init_repl()
 ```
 
 Initialize MicroPython repl. Must be called before entering characters into
 the repl.
 
-```
+```javascript
 mp_js_process_char(char)
 ```
 

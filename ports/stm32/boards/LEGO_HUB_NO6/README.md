@@ -8,6 +8,7 @@ it is plugged in to, and powered by, its USB port.  But without the battery the 
 and power on the Powered Up ports will not function.
 
 Features that are currently supported:
+
 - standard MicroPython
 - machine and bluetooth modules
 - filesystem
@@ -36,13 +37,17 @@ the Hub comes installed with.  To do this, enter the built-in bootloader by hold
 down the Bluetooth button for 5 seconds while powering up the Hub via USB.  Then
 run the following command from the root of this repository:
 
-    $ cd ports/stm32
-    $ make BOARD=LEGO_HUB_NO6 backup-hub-firmware
+```bash
+cd ports/stm32
+make BOARD=LEGO_HUB_NO6 backup-hub-firmware
+```
 
 This will create a file called `lego_hub_firmware.dfu`.  Put this file in a safe
 location.  To restore it, enter the built-in bootloader again and run:
 
-    $ make BOARD=LEGO_HUB_NO6 restore-hub-firmware
+```bash
+make BOARD=LEGO_HUB_NO6 restore-hub-firmware
+```
 
 This will restore the original firmware but not the filesystem.  To recreate the
 original filesystem the Hub must be updated using the appropriate LEGO PC
@@ -54,13 +59,17 @@ Installing MicroPython
 You first need to build and install mboot, which only needs to be done once.  From
 the root of this repository run:
 
-    $ cd ports/stm32/mboot
-    $ make BOARD=LEGO_HUB_NO6
+```bash
+cd ports/stm32/mboot
+make BOARD=LEGO_HUB_NO6
+```
 
 Now enter the built-in bootloader by holding down the Bluetooth button for 5
 seconds while powering up the Hub via USB.  Then run:
 
-    $ make BOARD=LEGO_HUB_NO6 deploy
+```bash
+make BOARD=LEGO_HUB_NO6 deploy
+```
 
 mboot should now be installed.  Enter mboot by holding down the left arrow
 button when powering up the Hub.  The display will cycle the letters: N, S, F, B.
@@ -69,16 +78,20 @@ blinks the centre button red once per second, and appears as a USB DFU device.
 
 Now build MicroPython (start at the root of this repository):
 
-    $ cd mpy-cross
-    $ make
-    $ cd ../ports/stm32
-    $ make submodules
-    $ make BOARD=LEGO_HUB_NO6
+```bash
+cd mpy-cross
+make
+cd ../ports/stm32
+make submodules
+make BOARD=LEGO_HUB_NO6
+```
 
 And deploy to the Hub (making sure mboot is active, the centre button is blinking
 red):
 
-    $ make BOARD=LEGO_HUB_NO6 deploy
+```bash
+make BOARD=LEGO_HUB_NO6 deploy
+```
 
 If successful, the Hub should now appear as a USB serial and mass storage device.
 
@@ -90,10 +103,12 @@ serial terminal program.
 
 To scan for BLE devices:
 
-    >>> import bluetooth
-    >>> ble = bluetooth.BLE()
-    >>> ble.irq(lambda *x: print(*x))
-    >>> ble.active(1)
-    >>> ble.gap_scan(2000, 625, 625)
+```python
+>>> import bluetooth
+>>> ble = bluetooth.BLE()
+>>> ble.irq(lambda *x: print(*x))
+>>> ble.active(1)
+>>> ble.gap_scan(2000, 625, 625)
+```
 
 Use help("modules") to see available built-in modules.

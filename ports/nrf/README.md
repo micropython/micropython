@@ -54,7 +54,8 @@ Prerequisite steps for building the nrf port:
     cd micropython
     make -C mpy-cross
 
-By default, the PCA10040 (nrf52832) is used as compile target. To build and flash issue the following command inside the ports/nrf/ folder:
+By default, the PCA10040 (nrf52832) is used as compile target. To build and
+flash issue the following command inside the ports/nrf/ folder:
 
     make submodules
     make
@@ -90,11 +91,15 @@ If the Bluetooth stacks has been downloaded, compile the target with the followi
 
     make BOARD=pca10040 SD=s132
 
-The **make sd** will trigger a flash of the bluetooth stack before that application is flashed. Note that **make sd** will perform a full erase of the chip, which could cause 3rd party bootloaders to also be wiped.
+The **make sd** will trigger a flash of the bluetooth stack before that
+application is flashed. Note that **make sd** will perform a full erase of the
+chip, which could cause 3rd party bootloaders to also be wiped.
 
     make BOARD=pca10040 SD=s132 sd
 
-Note: further tuning of features to include in bluetooth or even setting up the device to use REPL over Bluetooth can be configured in the `bluetooth_conf.h`.
+Note: further tuning of features to include in bluetooth or even setting up
+the device to use REPL over Bluetooth can be configured in the
+`bluetooth_conf.h`.
 
 ## Compile with frozen modules
 
@@ -127,7 +132,12 @@ In case of using the target board's makefile, add a line similar to this:
 In these two examples, the manual `make` invocation will have precedence.
 
 ## Enable MICROPY_VFS_FAT
-As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
+
+As the `oofatfs` module is not having header guards that can exclude the
+implementation compile time, this port provides a flag to enable it
+explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1
+if `oofatfs` files should be compiled. This will be in addition of setting
+`MICROPY_VFS` in mpconfigport.h.
 
 For example:
 
@@ -193,7 +203,6 @@ Install the necessary tools to flash and debug using IDAP-M/IDAP-Link CMSIS-DAP 
 [IDAPnRFProg for OSX](https://sourceforge.net/projects/idaplinkfirmware/files/OSX/IDAPnRFProg_1_7_190320.zip/download)
 [IDAPnRFProg for Windows](https://sourceforge.net/projects/idaplinkfirmware/files/Windows/IDAPnRFProg_1_7_190320.zip/download)
 
-
 ## Segger Targets
 
 Install the necessary tools to flash and debug using Segger:
@@ -202,7 +211,8 @@ Install the necessary tools to flash and debug using Segger:
 
 [nrfjprog Download](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF5-Command-Line-Tools/Download#infotabs)
 
-note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside nrfjprog's folder.
+note: On Linux it might be required to link SEGGER's `libjlinkarm.so` inside
+nrfjprog's folder.
 
 ## PyOCD/OpenOCD Targets
 
@@ -221,7 +231,8 @@ for more tips about using the BMP with GDB.
 
 ## nRFUtil Targets
 
-Install the necessary Python packages that will be used for flashing using the bootloader:
+Install the necessary Python packages that will be used for flashing using the
+bootloader:
 
     sudo pip install nrfutil
     sudo pip install intelhex
@@ -246,19 +257,29 @@ the `sd` target instead of `deploy`. For example:
 
 ## Bluetooth LE REPL
 
-The port also implements a BLE REPL driver. This feature is disabled by default, as it will deactivate the UART REPL when activated. As some of the nRF devices only have one UART, using the BLE REPL free's the UART instance such that it can be used as a general UART peripheral not bound to REPL.
+The port also implements a BLE REPL driver. This feature is disabled by
+default, as it will deactivate the UART REPL when activated. As some of the
+nRF devices only have one UART, using the BLE REPL free's the UART instance
+such that it can be used as a general UART peripheral not bound to REPL.
 
-The configuration can be enabled by editing the `bluetooth_conf.h` and set `MICROPY_PY_BLE_NUS` to 1.
+The configuration can be enabled by editing the `bluetooth_conf.h` and set
+`MICROPY_PY_BLE_NUS` to 1.
 
 When enabled you have different options to test it:
+
 * [NUS Console for Linux](https://github.com/tralamazza/nus_console) (recommended)
 * [WebBluetooth REPL](https://aykevl.nl/apps/nus/) (experimental)
 
 Other:
+
 * nRF UART application for IPhone/Android
 
-WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set `BLUETOOTH_WEBBLUETOOTH_REPL` to 1. This will alternate advertisement between Eddystone URL and regular connectable advertisement. The Eddystone URL will point the phone or PC to download [WebBluetooth REPL](https://aykevl.nl/apps/nus/) (experimental), which subsequently can be used to connect to the Bluetooth REPL from the PC or Phone browser.
-
+WebBluetooth mode can also be configured by editing `bluetooth_conf.h` and set
+`BLUETOOTH_WEBBLUETOOTH_REPL` to 1. This will alternate advertisement between
+Eddystone URL and regular connectable advertisement. The Eddystone URL will
+point the phone or PC to download [WebBluetooth
+REPL](https://aykevl.nl/apps/nus/) (experimental), which subsequently can be
+used to connect to the Bluetooth REPL from the PC or Phone browser.
 
 ## Pin numbering scheme for nrf52840-based boards
 

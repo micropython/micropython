@@ -6,6 +6,7 @@ microcontrollers.  It uses the ESP-IDF framework and MicroPython runs as
 a task under FreeRTOS.
 
 Supported features include:
+
 - REPL (Python prompt) over UART0.
 - 16k stack for the MicroPython task and approximately 100k Python heap.
 - Many of MicroPython's features are enabled: unicode, arbitrary-precision
@@ -47,7 +48,7 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
+git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
 You can replace `v4.0.2` with `v4.1.1` or `v4.2` or any other supported version.
@@ -58,28 +59,22 @@ If you already have a copy of the IDF then checkout a version compatible with
 MicroPython and update the submodules using:
 
 ```bash
-$ cd esp-idf
-$ git checkout v4.2
-$ git submodule update --init --recursive
+cd esp-idf
+git checkout v4.2
+git submodule update --init --recursive
 ```
 
 After you've cloned and checked out the IDF to the correct version, run the
 `install.sh` script:
 
 ```bash
-$ cd esp-idf
-$ ./install.sh       # (or install.bat on Windows)
-$ source export.sh   # (or export.bat on Windows)
+cd esp-idf
+./install.sh       # (or install.bat on Windows)
+source export.sh   # (or export.bat on Windows)
 ```
 
 The `install.sh` step only needs to be done once. You will need to source
 `export.sh` for every new session.
-
-**Note:** If you are building MicroPython for the ESP32-S2, ESP32-C3 or ESP32-S3,
-please ensure you are using the following required IDF versions:
-- ESP32-S3 currently requires latest `master`, but eventually `v4.4` or later when
-  it's available.
-- ESP32-S2 and ESP32-C3 require `v4.3.1` or later.
 
 Building the firmware
 ---------------------
@@ -89,15 +84,15 @@ built-in scripts to bytecode.  This can be done by (from the root of
 this repository):
 
 ```bash
-$ make -C mpy-cross
+make -C mpy-cross
 ```
 
 Then to build MicroPython for the ESP32 run:
 
 ```bash
-$ cd ports/esp32
-$ make submodules
-$ make
+cd ports/esp32
+make submodules
+make
 ```
 
 This will produce a combined `firmware.bin` image in the `build-GENERIC/`
@@ -113,7 +108,7 @@ rebooting or logging out and in again. (Note: on some distributions this may
 be the `uucp` group, run `ls -la /dev/ttyUSB0` to check.)
 
 ```bash
-$ sudo adduser <username> dialout
+sudo adduser <username> dialout
 ```
 
 If you are installing MicroPython to your module for the first time, or
@@ -121,13 +116,13 @@ after installing any other firmware, you should first erase the flash
 completely:
 
 ```bash
-$ make erase
+make erase
 ```
 
 To flash the MicroPython firmware to your ESP32 use:
 
 ```bash
-$ make deploy
+make deploy
 ```
 
 The default ESP32 board build by the above commands is the `GENERIC` one, which
@@ -135,7 +130,7 @@ should work on most ESP32 modules.  You can specify a different board by passing
 `BOARD=<board>` to the make commands, for example:
 
 ```bash
-$ make BOARD=GENERIC_SPIRAM
+make BOARD=GENERIC_SPIRAM
 ```
 
 Note: the above "make" commands are thin wrappers for the underlying `idf.py`
@@ -143,9 +138,9 @@ build tool that is part of the ESP-IDF.  You can instead use `idf.py` directly,
 for example:
 
 ```bash
-$ idf.py build
-$ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
-$ idf.py flash
+idf.py build
+idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
+idf.py flash
 ```
 
 Getting a Python prompt on the device
@@ -156,13 +151,13 @@ that is used for programming the firmware.  The baudrate for the REPL is
 115200 and you can use a command such as:
 
 ```bash
-$ picocom -b 115200 /dev/ttyUSB0
+picocom -b 115200 /dev/ttyUSB0
 ```
 
 or
 
 ```bash
-$ miniterm.py /dev/ttyUSB0 115200
+miniterm.py /dev/ttyUSB0 115200
 ```
 
 You can also use `idf.py monitor`.
@@ -177,13 +172,14 @@ point when booting up.  But for the most part the documentation and tutorials
 for the ESP8266 should apply to the ESP32 (at least for the components that
 are implemented).
 
-See http://docs.micropython.org/en/latest/esp8266/esp8266/quickref.html for
-a quick reference, and http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html
+See <http://docs.micropython.org/en/latest/esp8266/esp8266/quickref.html> for
+a quick reference, and <http://docs.micropython.org/en/latest/esp8266/esp8266/tutorial/intro.html>
 for a tutorial.
 
 The following function can be used to connect to a WiFi access point (you can
 either pass in your own SSID and password, or change the defaults so you can
 quickly call `wlan_connect()` and it just works):
+
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
     import network
@@ -201,6 +197,7 @@ Note that some boards require you to configure the WiFi antenna before using
 the WiFi.  On Pycom boards like the LoPy and WiPy 2.0 you need to execute the
 following code to select the internal antenna (best to put this line in your
 boot.py file):
+
 ```python
 import machine
 antenna = machine.Pin(16, machine.Pin.OUT, value=0)
@@ -227,6 +224,6 @@ Configuration
 Troubleshooting
 ---------------
 
-* Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
+- Continuous reboots after programming: Ensure `CONFIG_ESPTOOLPY_FLASHMODE` is
   correct for your board (e.g. ESP-WROOM-32 should be DIO). Then perform a
   `make clean`, rebuild, redeploy.
