@@ -231,6 +231,7 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
         mp_get_index(&mp_type_memoryview, bufinfo->len, MP_OBJ_NEW_SMALL_INT(2 * pixel_count - 1), false);
 
         uint16_t *pixels = bufinfo->buf;
+        int x = 0, y = 0;
         for (int i = 0; i < blocks; i++) {
             int block_size = MIN(BLOCK_SIZE, pixel_count);
             pixel_count -= block_size;
@@ -246,9 +247,14 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
                 int green = (pixel >> 3) & 0xfc;
                 int blue = (pixel << 3) & 0xf8;
 
-                red = MAX(0, red - rb_bayer[i % 4][j % 4]);
-                green = MAX(0, green - g_bayer[i % 4][j % 4]);
-                blue = MAX(0, blue - rb_bayer[i % 4][j % 4]);
+                red = MAX(0, red - rb_bayer[x % 4][y % 4]);
+                green = MAX(0, green - g_bayer[x % 4][(y + 2) % 4]);
+                blue = MAX(0, blue - rb_bayer[(x + 2) % 4][y % 4]);
+                x++;
+                if (x == self->width) {
+                    x = 0;
+                    y++;
+                }
 
                 *data++ = ((red >> 1) & 0x60) | ((green >> 3) & 0x1c) | (blue >> 6);
             }
