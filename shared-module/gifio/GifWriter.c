@@ -175,8 +175,7 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
     int pixel_count = self->width * self->height;
     int blocks = (pixel_count + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-    uint8_t block_data[2 + BLOCK_SIZE];
-    block_data[1] = 0x80;
+    uint8_t *data = self->data + self->cur;
 
     if (self->colorspace == DISPLAYIO_COLORSPACE_L8) {
         mp_get_index(&mp_type_memoryview, bufinfo->len, MP_OBJ_NEW_SMALL_INT(pixel_count - 1), false);
@@ -186,11 +185,11 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
             assert(pixel_count >= 0);
             int block_size = MIN(BLOCK_SIZE, pixel_count);
             pixel_count -= block_size;
-            block_data[0] = 1 + block_size;
+            *data++ = 1 + block_size;
+            *data++ = 0x80;
             for (int j = 0; j < block_size; j++) {
-                block_data[j + 2] = (*pixels++) >> 1;
+                *data++ = (*pixels++) >> 1;
             }
-            write_data(self, block_data, 2 + block_size);
         }
     } else {
         mp_get_index(&mp_type_memoryview, bufinfo->len, MP_OBJ_NEW_SMALL_INT(2 * pixel_count - 1), false);
@@ -200,7 +199,8 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
             int block_size = MIN(BLOCK_SIZE, pixel_count);
             pixel_count -= block_size;
 
-            block_data[0] = 1 + block_size;
+            *data++ = 1 + block_size;
+            *data++ = 0x80;
             for (int j = 0; j < block_size; j++) {
                 int pixel = *pixels++;
                 if (self->byteswap) {
@@ -209,11 +209,12 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
                 int red = (pixel >> (11 + (5 - 2))) & 0x3;
                 int green = (pixel >> (5 + (6 - 3))) & 0x7;
                 int blue = (pixel >> (0 + (5 - 2))) & 0x3;
-                block_data[j + 2] = (red << 5) | (green << 2) | blue;
+                *data++ = (red << 5) | (green << 2) | blue;
             }
-            write_data(self, block_data, 2 + block_size);
         }
     }
+
+    self->cur = data - self->data;
 
     write_data(self, (uint8_t []) {0x01, 0x81, 0x00}, 3); // end code
     flush_data(self);
