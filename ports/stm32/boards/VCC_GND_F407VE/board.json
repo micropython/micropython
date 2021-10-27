@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "STM32F407VET6.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "F407VE",
     "thumbnail": "",
