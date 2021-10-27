@@ -466,6 +466,7 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
 	fontio/Glyph.c \
+	imagecapture/ParallelImageCapture.c \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
@@ -535,6 +536,7 @@ SRC_SHARED_MODULE_ALL = \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
 	getpass/__init__.c \
+	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	keypad/__init__.c \
