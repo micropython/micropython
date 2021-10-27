@@ -41,4 +41,5 @@ typedef struct gifio_gifwriter {
     size_t cur, size;
     bool own_file;
     bool byteswap;
+    bool dither;
 } gifio_gifwriter_t;

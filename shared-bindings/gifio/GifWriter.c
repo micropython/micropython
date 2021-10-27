@@ -34,24 +34,27 @@
 #include "shared/runtime/context_manager_helpers.h"
 
 //| class GifWriter:
-//|     def __init__(self, file: Union[typing.BinaryIO, str], width:int, height:int, colorspace: displayio.Colorspace, loop:bool=True) -> None:
+//|     def __init__(self, file: Union[typing.BinaryIO, str], width:int, height:int, colorspace: displayio.Colorspace, loop:bool=True, dither:bool=False) -> None:
 //|         """Construct a GifWriter object
 //|
 //|         :param file: Either a file open in bytes mode, or the name of a file to open in bytes mode.
 //|         :param width: The width of the image.  All frames must have the same width.
 //|         :param height: The height of the image.  All frames must have the same height.
-//|         :param colorspace: The colorspace of the image.  All frames must have the same colorspace.  Only 1- and 2-byte colorspace are supported, not ``RGB888``.
+//|         :param colorspace: The colorspace of the image.  All frames must have the same colorspace.  The supported colorspaces are ``RGB565``, ``BGR565``, ``RGB565_SWAPPED``, ``BGR565_SWAPPED``, and ``L8`` (greyscale)
+//|         :param loop: If True, the GIF is marked for looping playback
+//|         :param dither: If True, and the image is in color, a simple ordered dither is applied.
 //|         """
 //|         ...
 //|
 static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_file, ARG_width, ARG_height, ARG_colorspace, ARG_loop };
+    enum { ARG_file, ARG_width, ARG_height, ARG_colorspace, ARG_loop, ARG_dither };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL} },
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
         { MP_QSTR_colorspace, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = NULL} },
         { MP_QSTR_loop, MP_ARG_BOOL, { .u_bool = true } },
+        { MP_QSTR_dither, MP_ARG_BOOL, { .u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -72,6 +75,7 @@ static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_arg
         args[ARG_height].u_int,
         (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj),
         args[ARG_loop].u_bool,
+        args[ARG_dither].u_bool,
         own_file);
 
     return self;

@@ -76,7 +76,7 @@ static void write_word(gifio_gifwriter_t *self, uint16_t value) {
     write_data(self, &value, sizeof(value));
 }
 
-void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *file, int width, int height, displayio_colorspace_t colorspace, bool loop, bool own_file) {
+void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *file, int width, int height, displayio_colorspace_t colorspace, bool loop, bool dither, bool own_file) {
     self->file = file;
     self->file_proto = mp_proto_get_or_throw(MP_QSTR_protocol_stream, file);
     if (self->file_proto->is_text) {
@@ -85,6 +85,7 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
     self->width = width;
     self->height = height;
     self->colorspace = colorspace;
+    self->dither = dither;
     self->own_file = own_file;
 
     size_t nblocks = (width * height + 125) / 126;
@@ -159,6 +160,20 @@ void shared_module_gifio_gifwriter_deinit(gifio_gifwriter_t *self) {
     }
 }
 
+static const uint8_t rb_bayer[4][4] = {
+    { 0, 33,  8, 42},
+    {50, 16, 58, 25},
+    {12, 46,  4, 37},
+    {63, 29, 54, 21}
+};
+
+static const uint8_t g_bayer[4][4] = {
+    { 0, 16,  4, 20},
+    {24,  8, 28, 12},
+    { 6, 22,  2, 18},
+    {31, 14, 26, 10}
+};
+
 void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_buffer_info_t *bufinfo, int16_t delay) {
     if (delay) {
         write_data(self, (uint8_t []) {'!', 0xF9, 0x04, 0x04}, 4);
@@ -191,7 +206,7 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
                 *data++ = (*pixels++) >> 1;
             }
         }
-    } else {
+    } else if (!self->dither) {
         mp_get_index(&mp_type_memoryview, bufinfo->len, MP_OBJ_NEW_SMALL_INT(2 * pixel_count - 1), false);
 
         uint16_t *pixels = bufinfo->buf;
@@ -210,6 +225,32 @@ void shared_module_gifio_gifwriter_add_frame(gifio_gifwriter_t *self, const mp_b
                 int green = (pixel >> (5 + (6 - 3))) & 0x7;
                 int blue = (pixel >> (0 + (5 - 2))) & 0x3;
                 *data++ = (red << 5) | (green << 2) | blue;
+            }
+        }
+    } else {
+        mp_get_index(&mp_type_memoryview, bufinfo->len, MP_OBJ_NEW_SMALL_INT(2 * pixel_count - 1), false);
+
+        uint16_t *pixels = bufinfo->buf;
+        for (int i = 0; i < blocks; i++) {
+            int block_size = MIN(BLOCK_SIZE, pixel_count);
+            pixel_count -= block_size;
+
+            *data++ = 1 + block_size;
+            *data++ = 0x80;
+            for (int j = 0; j < block_size; j++) {
+                int pixel = *pixels++;
+                if (self->byteswap) {
+                    pixel = __builtin_bswap16(pixel);
+                }
+                int red = (pixel >> 8) & 0xf8;
+                int green = (pixel >> 3) & 0xfc;
+                int blue = (pixel << 3) & 0xf8;
+
+                red = MAX(0, red - rb_bayer[i % 4][j % 4]);
+                green = MAX(0, green - g_bayer[i % 4][j % 4]);
+                blue = MAX(0, blue - rb_bayer[i % 4][j % 4]);
+
+                *data++ = ((red >> 1) & 0x60) | ((green >> 3) & 0x1c) | (blue >> 6);
             }
         }
     }
