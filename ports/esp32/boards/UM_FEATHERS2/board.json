@@ -1,15 +1,19 @@
 {
     "deploy": [
-        "../deploy.md"
+        "deploy.md"
     ],
     "docs": "",
     "features": [
-        "BLE",
         "WiFi",
         "Feather",
         "Battery Charging",
         "STEMMA QT/QWIIC",
-        "USB-C"
+        "USB-C",
+        "RGB LED",
+        "SPIRAM"
+    ],
+    "features_non_filterable": [
+        "Second LDO"
     ],
     "id": "featherS2",
     "images": [
