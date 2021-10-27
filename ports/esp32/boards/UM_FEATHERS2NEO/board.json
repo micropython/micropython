@@ -1,10 +1,9 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_s2.md"
     ],
     "docs": "",
     "features": [
-        "BLE",
         "WiFi",
         "Feather",
         "Battery Charging",

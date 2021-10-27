@@ -1,9 +1,12 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_s2.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "WiFi",
+        "USB-C"
+    ],
     "id": "tinys2",
     "images": [
         "TinyS2+Product+Shot.jpg"
