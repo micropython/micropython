@@ -3,11 +3,14 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
     "images": [],
     "mcu": "esp32s3",
     "product": "ESP32-S3",
     "thumbnail": "",
-    "url": "",
+    "url": "https://www.espressif.com/en/products/modules",
     "vendor": "Espressif"
 }

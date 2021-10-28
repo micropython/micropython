@@ -3,7 +3,11 @@
         "../deploy_s2.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "SPIRAM",
+        "USB-C",
+        "WiFi"
+    ],
     "images": [
         "lolin_s2_mini.jpg"
     ],

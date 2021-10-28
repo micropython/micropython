@@ -3,7 +3,14 @@
         "deploy.md"
     ],
     "docs": "https://docs.pycom.io/datasheets/development/wipy3/",
-    "features": [],
+    "features": [
+        "BLE",
+        "Breadboard Friendly",
+        "MicroSD",
+        "RGB LED",
+        "SPI Flash",
+        "WiFi"
+    ],
     "id": "wipy",
     "images": [
         "wipy.jpg"

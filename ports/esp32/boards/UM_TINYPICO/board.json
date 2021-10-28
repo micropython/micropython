@@ -4,12 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "BLE",
-        "WiFi",
         "Battery Charging",
-        "USB-C",
+        "BLE",
         "RGB LED",
-        "SPIRAM"
+        "SPIRAM",
+        "USB-C",
+        "WiFi"
     ],
     "features_non_filterable": [
         "TinyPICO Compatible"

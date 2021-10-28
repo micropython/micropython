@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "xenon-top.jpg"
+    ],
     "mcu": "nrf52",
     "product": "Xenon",
     "thumbnail": "",
-    "url": "",
+    "url": "https://docs.particle.io/xenon/",
     "vendor": "Particle"
 }

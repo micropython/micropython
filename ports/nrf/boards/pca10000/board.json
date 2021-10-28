@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nRF51-Dongle.jpg"
+    ],
     "mcu": "nrf51",
     "product": "pca10000",
     "thumbnail": "",
-    "url": "",
+    "url": "https://www.nordicsemi.com/Products/Development-hardware/nRF51-Dongle",
     "vendor": "Nordic Semiconductor"
 }

@@ -4,8 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "WiFi",
-        "USB-C"
+        "Breadboard Friendly",
+        "OLED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "WiFi"
     ],
     "images": [
         "lolin_s2_pico.jpg"

@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "AF-3362-1.jpg"
+    ],
     "mcu": "nrf51",
     "product": "micro:bit v1",
     "thumbnail": "",

@@ -3,7 +3,12 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "RGB LED",
+        "USB-C"
+    ],
     "images": [
         "tiny-2040-on-white-1_1024x1024.jpg"
     ],

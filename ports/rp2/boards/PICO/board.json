@@ -3,7 +3,11 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard friendly",
+        "Castellated Pads",
+        "Micro USB"
+    ],
     "id": "rp2-pico",
     "images": [
         "rp2-pico.jpg"

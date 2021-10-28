@@ -4,13 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "WiFi",
-        "USB-C"
         "Battery Charging",
+        "RGB LED",
+        "SPIRAM",
         "STEMMA QT/QWIIC",
         "USB-C",
-        "RGB LED",
-        "SPIRAM"
+        "WiFi"
     ],
     "features_non_filterable": [
         "TinyPICO Compatible"

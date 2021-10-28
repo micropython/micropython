@@ -4,13 +4,13 @@
     ],
     "docs": "",
     "features": [
-        "WiFi",
-        "Feather",
         "Battery Charging",
+        "Feather",
+        "RGB LED",
+        "SPIRAM",
         "STEMMA QT/QWIIC",
         "USB-C",
-        "RGB LED",
-        "SPIRAM"
+        "WiFi"
     ],
     "features_non_filterable": [
         "Second LDO"

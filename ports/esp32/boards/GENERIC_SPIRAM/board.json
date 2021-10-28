@@ -4,16 +4,16 @@
     ],
     "docs": "",
     "features": [
-        "WiFi",
         "BLE",
-        "SPIRAM"
+        "SPIRAM",
+        "WiFi"
     ],
     "id": "esp32spiram",
     "images": [],
     "mcu": "esp32",
     "product": "ESP32 with SPIRAM",
     "thumbnail": "",
-    "url": "",
+    "url": "https://www.espressif.com/en/products/modules",
     "variants": {
         "idf3": "Compiled with IDF 3.x"
     },
