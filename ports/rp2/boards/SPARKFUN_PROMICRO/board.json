@@ -3,13 +3,19 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "RGB LED",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
     "images": [
         "17745-SparkFun_Thing_Plus_-_RP2040-01a.jpg"
     ],
     "mcu": "rp2040",
     "product": "Pro Micro RP2040",
     "thumbnail": "",
-    "url": "https://www.sparkfun.com/products/17717",
+    "url": "https://www.sparkfun.com/products/18288",
     "vendor": "Sparkfun"
 }

@@ -3,7 +3,11 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard Friendly",
+        "Micro USB",
+        "RGB LED"
+    ],
     "images": [
         "trinket_m0.jpg"
     ],

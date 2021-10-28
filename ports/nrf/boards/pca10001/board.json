@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nRF51-DK.jpg"
+    ],
     "mcu": "nrf51",
     "product": "pca10001",
     "thumbnail": "",
-    "url": "",
+    "url": "https://www.nordicsemi.com/Products/Development-hardware/nrf51-dk",
     "vendor": "Nordic Semiconductor"
 }

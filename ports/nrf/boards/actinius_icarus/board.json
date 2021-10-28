@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "icarus-v1.4-front-shadow-p-800.jpg"
+    ],
     "mcu": "nrf91",
     "product": "actinius_icarus",
     "thumbnail": "",
-    "url": "",
-    "vendor": ""
+    "url": "https://www.actinius.com/icarus",
+    "vendor": "Actinius"
 }

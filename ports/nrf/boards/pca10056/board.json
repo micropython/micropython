@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nRF52840-DK-prod-page.jpg"
+    ],
     "mcu": "nrf52",
     "product": "pca10056",
     "thumbnail": "",
-    "url": "",
+    "url": "https://www.nordicsemi.com/Products/Development-hardware/nRF52840-DK",
     "vendor": "Nordic Semiconductor"
 }

@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "EVK-NINA-B3-top.jpg"
+    ],
     "mcu": "nrf52",
     "product": "evk_nina_b3",
     "thumbnail": "",
-    "url": "",
-    "vendor": ""
+    "url": "https://www.u-blox.com/en/product/evk-nina-b3",
+    "vendor": "u-blox"
 }

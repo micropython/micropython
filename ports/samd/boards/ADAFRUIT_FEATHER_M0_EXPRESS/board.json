@@ -3,7 +3,14 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Feather",
+        "Micro USB",
+        "RGB LED",
+        "SPI Flash"
+    ],
     "images": [
         "feather_m0_express.jpg"
     ],

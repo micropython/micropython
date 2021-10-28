@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "teensy40_front.jpg"
+    ],
     "mcu": "mimxrt",
     "product": "Teensy 4.0",
     "thumbnail": "",

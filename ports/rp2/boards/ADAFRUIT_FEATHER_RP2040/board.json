@@ -3,7 +3,15 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Feather",
+        "RGB LED",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
     "images": [
         "4884-06.jpg"
     ],

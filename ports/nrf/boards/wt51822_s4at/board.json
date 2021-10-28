@@ -2,12 +2,14 @@
     "deploy": [
         "../deploy.md"
     ],
-    "docs": "",
+    "docs": "https://4tronix.co.uk/picobot2/WT51822-S4AT.pdf",
     "features": [],
-    "images": [],
+    "images": [
+        "WT51822-S4AT.jpg"
+    ],
     "mcu": "nrf51",
     "product": "wt51822_s4at",
     "thumbnail": "",
-    "url": "",
-    "vendor": ""
+    "url": "http://www.wireless-tag.com/portfolio/wt51822-s4at-2/",
+    "vendor": "Wireless-Tag"
 }

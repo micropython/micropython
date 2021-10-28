@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "4382-09.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "F405 Express",
     "thumbnail": "",

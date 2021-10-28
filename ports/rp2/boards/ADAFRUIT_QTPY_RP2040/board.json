@@ -3,7 +3,14 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "RGB LED",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
     "images": [
         "4900-12.jpg"
     ],

@@ -1,4 +1,5 @@
 Program your board using the esptool.py program, found [here](https://github.com/espressif/esptool).
+
 If you are putting MicroPython on your board for the first time then you should
 first erase the entire flash using:
 
