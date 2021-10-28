@@ -140,6 +140,7 @@
 #endif
 #define MICROPY_PY_UASYNCIO                 (1)
 #define MICROPY_PY_UCTYPES                  (1)
+#define MICROPY_PY_UEVENT                   (MICROPY_PY_UEVENT_IMPL_NATIVE)
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UJSON                    (1)
 #define MICROPY_PY_URE                      (1)

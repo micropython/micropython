@@ -68,27 +68,33 @@ def sleep(t):
 
 class IOQueue:
     def __init__(self):
-        self.poller = select.poll()
-        self.map = {}  # maps id(stream) to [task_waiting_read, task_waiting_write, stream]
+        import uevent
+
+        self.poll = uevent.poll()
+
+    # This is not a method, just put here to keep the name "remove" out of global namespace.
+    def remove(self, task):
+        if self.data[0] is task:
+            idx = 0
+        elif self.data[1] is task:
+            idx = 1
+        elif self.data[2] is task:
+            idx = 2
+        else:
+            return
+        self.data[idx] = None
+        self.unregister(1 << idx)
 
     def _enqueue(self, s, idx):
-        if id(s) not in self.map:
-            entry = [None, None, s]
-            entry[idx] = cur_task
-            self.map[id(s)] = entry
-            self.poller.register(s, select.POLLIN if idx == 0 else select.POLLOUT)
-        else:
-            sm = self.map[id(s)]
-            assert sm[idx] is None
-            assert sm[1 - idx] is not None
-            sm[idx] = cur_task
-            self.poller.modify(s, select.POLLIN | select.POLLOUT)
-        # Link task to this IOQueue so it can be removed if needed
-        cur_task.data = self
-
-    def _dequeue(self, s):
-        del self.map[id(s)]
-        self.poller.unregister(s)
+        entry = self.poll.register(s, 1 << idx)
+        if entry.data is None:
+            entry.data = [None, None, None]
+            entry.remove = IOQueue.remove
+        if idx > 2:
+            idx = 2
+        assert entry.data[idx] == None
+        entry.data[idx] = cur_task
+        cur_task.data = entry  # Link task to this poll entry so it can be removed if needed
 
     def queue_read(self, s):
         self._enqueue(s, 0)
@@ -96,37 +102,19 @@ class IOQueue:
     def queue_write(self, s):
         self._enqueue(s, 1)
 
-    def remove(self, task):
-        while True:
-            del_s = None
-            for k in self.map:  # Iterate without allocating on the heap
-                q0, q1, s = self.map[k]
-                if q0 is task or q1 is task:
-                    del_s = s
-                    break
-            if del_s is not None:
-                self._dequeue(s)
-            else:
-                break
-
-    def wait_io_event(self, dt):
-        for s, ev in self.poller.ipoll(dt):
-            sm = self.map[id(s)]
-            # print('poll', s, sm, ev)
-            if ev & ~select.POLLOUT and sm[0] is not None:
-                # POLLIN or error
-                _task_queue.push_head(sm[0])
-                sm[0] = None
-            if ev & ~select.POLLIN and sm[1] is not None:
-                # POLLOUT or error
-                _task_queue.push_head(sm[1])
-                sm[1] = None
-            if sm[0] is None and sm[1] is None:
-                self._dequeue(s)
-            elif sm[0] is None:
-                self.poller.modify(s, select.POLLOUT)
-            else:
-                self.poller.modify(s, select.POLLIN)
+    def poll_ms(self, dt):
+        for entry in self.poll.poll_ms(dt):
+            flags = entry.flags
+            data = entry.data
+            if flags & 1 and data[0] is not None:
+                _task_queue.push_head(data[0])
+                data[0] = None
+            if flags & 2 and data[1] is not None:
+                _task_queue.push_head(data[1])
+                data[1] = None
+            if flags >> 2 and data[2] is not None:
+                _task_queue.push_head(data[2])
+                data[2] = None
 
 
 ################################################################################
@@ -160,11 +148,8 @@ def run_until_complete(main_task=None):
             if t:
                 # A task waiting on _task_queue; "ph_key" is time to schedule task at
                 dt = max(0, ticks_diff(t.ph_key, ticks()))
-            elif not _io_queue.map:
-                # No tasks can be woken so finished running
-                return
-            # print('(poll {})'.format(dt), len(_io_queue.map))
-            _io_queue.wait_io_event(dt)
+            # print('(poll_ms {})'.format(dt))
+            _io_queue.poll_ms(dt)
 
         # Get next task to run and continue it
         t = _task_queue.pop_head()

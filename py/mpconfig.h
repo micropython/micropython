@@ -1424,6 +1424,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #endif
 
+// Whether to provide the "uevent" module, and which implementation to use
+#define MICROPY_PY_UEVENT_IMPL_NONE (0)
+#define MICROPY_PY_UEVENT_IMPL_NATIVE (1)
+#define MICROPY_PY_UEVENT_IMPL_POLL (2)
+#ifndef MICROPY_PY_UEVENT
+#define MICROPY_PY_UEVENT (MICROPY_PY_UEVENT_IMPL_NONE)
+#endif
+
 #ifndef MICROPY_PY_UZLIB
 #define MICROPY_PY_UZLIB (0)
 #endif

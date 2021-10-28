@@ -175,6 +175,9 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 PY_EXTMOD_O_BASENAME = \
 	extmod/moduasyncio.o \
 	extmod/moductypes.o \
+	extmod/moduevent.o \
+	extmod/moduevent_native.o \
+	extmod/moduevent_poll.o \
 	extmod/modujson.o \
 	extmod/modure.o \
 	extmod/moduzlib.o \

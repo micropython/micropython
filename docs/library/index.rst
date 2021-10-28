@@ -96,6 +96,7 @@ the following libraries.
    neopixel.rst
    network.rst
    uctypes.rst
+   uevent.rst
 
 
 Port-specific libraries

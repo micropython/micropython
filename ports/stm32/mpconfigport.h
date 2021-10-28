@@ -152,6 +152,9 @@
 #ifndef MICROPY_PY_UCTYPES
 #define MICROPY_PY_UCTYPES          (1)
 #endif
+#ifndef MICROPY_PY_UEVENT
+#define MICROPY_PY_UEVENT           (MICROPY_PY_UEVENT_IMPL_NATIVE)
+#endif
 #ifndef MICROPY_PY_UZLIB
 #define MICROPY_PY_UZLIB            (1)
 #endif
