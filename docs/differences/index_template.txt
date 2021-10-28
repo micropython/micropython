@@ -3,158 +3,60 @@
 MicroPython differences from CPython
 ====================================
 
-The operations listed in this section produce conflicting results in MicroPython when 
-compared to standard Python.
+Python Language Support
+-----------------------
 
-MicroPython implements the following per release.
+The following Python language features have been implemented in MicroPython, 
+per release. Select the release to see more details.
 
- TABLE
+  
+The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
+MicroPython implements Python 3.4 and some select features of Python 3.5.
 
-**Python 3.5** 
+***********
+Python 3.5
+***********
 
-Given below is a list of PEPs (completed) grouped to their impact to MicroPython.
+Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their impact to MicroPython.
 
-* `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ : a new matrix multiplication operator 
+   +----------------------------------------------------------------------------------------------------------+---------------+
+   | **Extensions to the syntax:**                                                                            | **Status**    |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ | a new matrix multiplication operator            | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ | coroutines with async and await syntax          | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Extensions and changes to runtime:**                                                                                   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ | % formatting for binary strings                 | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ | retrying system calls that fail with EINTR      | Completed     |    
+   +--------------------------------------------------------+-------------------------------------------------+---------------+ 
+   | `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ | change StopIteration handling inside generators | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Standard library changes:**                                                                                            |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ | os.scandir()                                    | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ | math.isclose(), a function for testing          | Completed     |
+   |                                                        | approximate equality                            |               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Miscellaneous changes:**                                                                                               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ | improved Python zip application support         | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Laucher aware of virtual        | In Progress   |
+   |                                                        | environments                                    |               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ | type hints (advisory only)                      | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ | elimination of PYO files(not relevant for uPy)  | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ | redesigning extension module loading            | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
 
-* `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ : coroutines with async and await syntax
-
-* `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ : % formatting for binary strings
-
-* `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ : retyring system calls that fail with EINTR
-
-* `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ : change StopIteration handling inside generators
-
-
-* `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ : math.isclose(), a function for testing approximate equality
-
-Given below is a list of PEPs (in progress) grouped to their impact to MicroPython.
-
-* `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ : additional unpacking generalizations 
-
-* `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ : os.scandir() 
-
-* `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ : improved Python zip application support
-    
-* `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ : make the Python Laucher aware of virtual environments
-
-* `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ : type hints (advisory only)
-
-* `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ : elimination of PYO files (not relevant for uPy)
-
-* `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ : redesigning extension module loading  
-
- 
-**Python 3.6** 
-
-Python 3.6 beta 1 was released on 12 September 2016, and below is the summary
-of the new features available (in progress) : 
-
-* New Syntax features: 
-
-    * A global or nonlocal statement must now textually appear before
-      he first use of the affected name in the same scope.
-      For uPy: requires minor changes to the  compiler.
-
-    * `PEP 498 <https://www.python.org/dev/peps/pep-0498/>`_ : Literal String Formatting for uPy: yet another 
-                                                               string formatting option, likely too much bloat
-                                                               (or could replace both existing % and str .format)
-
-    * `PEP 525 <https://www.python.org/dev/peps/pep-0525/>`_ : Aynchronous Generators (provisional)
-    
-    * `PEP 530 <https://www.python.org/dev/peps/pep-0530/>`_ : Aynchoronous Comprehensions
-
-* New Built-in Features:
-
-    * `PEP 487 <https://www.python.org/dev/peps/pep-0487/>`_ : Simpler customisation of class creation
-
-    * `PEP 520 <https://www.python.org/dev/peps/pep-0520/>`_ : Preserving Class Attribute Definition Order
-
-* Standard library changes:
-
-    * `PEP 495 <https://www.python.org/dev/peps/pep-0495/>`_ : Local Time Disambiguation
-
-    * `PEP 506 <https://www.python.org/dev/peps/pep-0506/>`_ : Adding a Secrets Module to the Standard Library
-
-    * `PEP 519 <https://www.python.org/dev/peps/pep-0519/>`_ : Adding a file system protocol 
-
-* Linux/Window Changes:
-
-    * `PEP 524 <https://www.python.org/dev/peps/pep-0524/>`_ : Make os.random() blocking on Linux (During syste startup) 
-
-    * `PEP 528 <https://www.python.org/dev/peps/pep-0528/>`_ :  Change Windows console encoding to UTF-8 (Provisional)
-
-Python 3.6 beta 1 was released on 12 September 2016, and below is the summary
-of the new features available (completed) :
-
-* New Syntax Features:
-
-    * `PEP 515 <https://www.python.org/dev/peps/pep-0515/>`_ : Underscores in Numeric Literals
-                                                               For uPy: requires minor changes to lexer
-
-    * `PEP 526 <https://www.python.org/dev/peps/pep-0526/>`_ : Syntax for Variable Annotations (Provisional)
-                                                               For uPy: requires changes to Parser                                                           
-
-**Python 3.7**
-
-Python 3.7.0 (final) was released on the 27 June 2018. The Features for 3.7
-are defined in `PEP 537
-<https://www.python.org/dev/peps/pep-0537/#features-for-3-7>`_  and an
-explanation of the changes can be found in `What's New in Python 3.7.
-<https://docs.python.org/3/whatsnew/3.7.html>`_
-
-* `PEP 538 <https://www.python.org/dev/peps/pep-0538/>`_ : Coercing the legacy C locale to a UTF-8 based locale
-
-* `PEP 539 <https://www.python.org/dev/peps/pep-0539/>`_ : A New C-API for Thread-Local Storage in CPython
-
-* `PEP 540 <https://www.python.org/dev/peps/pep-0540/>`_ : UTF-8 mode
-
-* `PEP 552 <https://www.python.org/dev/peps/pep-0552/>`_ : Deterministic pyc
-
-* `PEP 553 <https://www.python.org/dev/peps/pep-0553/>`_ : Built-in breakpoint()
-
-* `PEP 557 <https://www.python.org/dev/peps/pep-0557/>`_ : Data Classes
-
-* `PEP 560 <https://www.python.org/dev/peps/pep-0560/>`_ : Core support for typing module and generic types
-
-* `PEP 562 <https://www.python.org/dev/peps/pep-0562/>`_ : Module __getattr__ and __dir__
-
-* `PEP 563 <https://www.python.org/dev/peps/pep-0563/>`_ : Postponed Evaluation of Annotations
-
-* `PEP 564 <https://www.python.org/dev/peps/pep-0564/>`_ : Time functions with nanosecond resolution
-
-* `PEP 565 <https://www.python.org/dev/peps/pep-0565/>`_ : Show DeprecationWarning in __main__
-
-* `PEP 567 <https://www.python.org/dev/peps/pep-0567/>`_ : Context Variables
-
-Other Language Changes:
-
-* async and await are now reserved keywords
-* dict objects must preserve insertion-order
-* More than 255 arguments can now be passed to a function, and a function can
-  now have more than 255 parameters 
-* bytes.fromhex() and bytearray.fromhex() now ignore all ASCII whitespace, not
-  only spaces
-* str, bytes, and bytearray gained support for the new isascii() method, which
-  can be used to test if a string or bytes contain only the ASCII characters
-* ImportError now displays module name and module __file__ path when from ...
-  import ... fails
-* Circular imports involving absolute imports with binding a submodule to a
-  name are now supported
-* object.__format__(x, '') is now equivalent to str(x) rather than
-* format(str(self), '')
-
-* In order to better support dynamic creation of stack traces,
-  types.TracebackType can now be instantiated from Python code, and the tb_next
-  attribute on tracebacks is now writable
-
-* When using the -m switch, sys.path[0] is now eagerly expanded to the full
-  starting directory path, rather than being left as the empty directory
-  (which allows imports from the current working directory at the time when an
-  import occurs)
-* The new -X importtime option or the PYTHONPROFILEIMPORTTIME environment
-  variable can be used to show the timing of each module import
-
- 
 .. toctree::
     :maxdepth: 2
 
