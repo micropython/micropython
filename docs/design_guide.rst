@@ -99,7 +99,7 @@ For example, a user can then use ``deinit()```::
     import board
     import time
 
-    led = digitalio.DigitalInOut(board.D13)
+    led = digitalio.DigitalInOut(board.LED)
     led.direction = digitalio.Direction.OUTPUT
 
     for i in range(10):
@@ -119,7 +119,7 @@ Alternatively, using a ``with`` statement ensures that the hardware is deinitial
     import board
     import time
 
-    with digitalio.DigitalInOut(board.D13) as led:
+    with digitalio.DigitalInOut(board.LED) as led:
         led.direction = digitalio.Direction.OUTPUT
 
         for i in range(10):
