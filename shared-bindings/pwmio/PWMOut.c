@@ -86,13 +86,29 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
 //|         :param int frequency: The target frequency in Hertz (32-bit)
 //|         :param bool variable_frequency: True if the frequency will change over time
 //|
-//|         Simple LED fade::
+//|
+//|         Simple LED on::
 //|
 //|           import pwmio
 //|           import board
 //|
-//|           pwm = pwmio.PWMOut(board.D13)     # output on D13
-//|           pwm.duty_cycle = 2 ** 15            # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
+//|           pwm = pwmio.PWMOut(board.LED)
+//|
+//|           while True:
+//|               pwm.duty_cycle = 2 ** 15  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at the default 500hz
+//|
+//|         PWM LED fade::
+//|
+//|           import pwmio
+//|           import board
+//|
+//|           pwm = pwmio.PWMOut(board.LED)  # output on LED pin with default of 500Hz
+//|
+//|           while True:
+//|               for cycle in range(0, 65535):  # Cycles through the full PWM range from 0 to 65535
+//|                   pwm.duty_cycle = cycle  # Cycles the LED pin duty cycle through the range of values
+//|               for cycle in range(65534, 0, -1):  # Cycles through the PWM range backwards from 65534 to 0
+//|                   pwm.duty_cycle = cycle  # Cycles the LED pin duty cycle through the range of values
 //|
 //|         PWM at specific frequency (servos and motors)::
 //|
@@ -100,7 +116,7 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
 //|           import board
 //|
 //|           pwm = pwmio.PWMOut(board.D13, frequency=50)
-//|           pwm.duty_cycle = 2 ** 15                  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
+//|           pwm.duty_cycle = 2 ** 15  # Cycles the pin with 50% duty cycle (half of 2 ** 16) at 50hz
 //|
 //|         Variable frequency (usually tones)::
 //|
