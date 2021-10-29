@@ -25,11 +25,14 @@
  */
 
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/bitmaptools/__init__.h"
 
 #include <stdint.h>
 
 #include "py/binary.h"
+#include "py/enum.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 
@@ -565,8 +568,91 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
+
+//| class DitherAlgorithm:
+//|     """Identifies the algorith for dither to use"""
+//|
+//|     Atkinson: object
+//|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""
+//|
+//|     FloydStenberg: object
+//|     """The Floyd-Stenberg dither"""
+//|
+MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, Atkinson, DITHER_ALGORITHM_ATKINSON);
+MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, FloydStenberg, DITHER_ALGORITHM_ATKINSON);
+
+MAKE_ENUM_MAP(bitmaptools_dither_algorithm) {
+    MAKE_ENUM_MAP_ENTRY(dither_algorithm, Atkinson),
+    MAKE_ENUM_MAP_ENTRY(dither_algorithm, FloydStenberg),
+};
+STATIC MP_DEFINE_CONST_DICT(bitmaptools_dither_algorithm_locals_dict, bitmaptools_dither_algorithm_locals_table);
+
+MAKE_PRINTER(bitmaptools, bitmaptools_dither_algorithm);
+
+MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
+
+//| def dither(dest_bitmap: displayio.Bitmap, source_bitmapp: displayio.Bitmap, source_colorspace: displayio.Colorspace, algorithm: DitherAlgorithm=DitherAlgorithm.Atkinson) -> None:
+//|     """Convert the input image into a 2-level output image using the given dither algorithm.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap.  It must have a value_count of 2 or 65536.  The stored values are 0 and the maximum pixel value.
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be dithered.  It must have a value_count of 65536.
+//|     :param colorspace: The colorspace of the image.  The supported colorspaces are ``RGB565``, ``BGR565``, ``RGB565_SWAPPED``, and ``BGR565_SWAPPED``
+//|     :param algorithm: The dither algorithm to use, one of the `DitherAlgorithm `values.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_dest_bitmap, ARG_source_bitmap, ARG_source_colorspace, ARG_algorithm };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_source_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_algorithm, MP_ARG_OBJ, { .u_obj = MP_ROM_PTR((void *)&dither_algorithm_Atkinson_obj) } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    displayio_bitmap_t *source_bitmap = mp_arg_validate_type(args[ARG_source_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
+    displayio_bitmap_t *dest_bitmap = mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
+    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj);
+    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj);
+
+    if (source_bitmap->width != dest_bitmap->width || source_bitmap->height != dest_bitmap->height) {
+        mp_raise_TypeError(translate("bitmap sizes must match"));
+    }
+
+    if (dest_bitmap->bits_per_value != 16 && dest_bitmap->bits_per_value != 1) {
+        mp_raise_TypeError(translate("source_bitmap must have value_count of 2 or 65536"));
+    }
+
+
+    switch (colorspace) {
+        case DISPLAYIO_COLORSPACE_RGB565:
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_BGR565:
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+            if (source_bitmap->bits_per_value != 16) {
+                mp_raise_TypeError(translate("source_bitmap must have value_count of 65536"));
+            }
+            break;
+
+        case DISPLAYIO_COLORSPACE_L8:
+            if (source_bitmap->bits_per_value != 8) {
+                mp_raise_TypeError(translate("source_bitmap must have value_count of 8"));
+            }
+            break;
+
+        default:
+            mp_raise_TypeError(translate("unsupported colorspace for dither"));
+    }
+
+
+    common_hal_bitmaptools_dither(dest_bitmap, source_bitmap, colorspace, algorithm);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
+
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
@@ -576,6 +662,8 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
 

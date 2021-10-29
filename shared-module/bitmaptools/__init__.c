@@ -26,13 +26,17 @@
 
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-module/displayio/Bitmap.h"
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
-#include "math.h"
-#include "stdlib.h"
+#include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
     int16_t dest_clip0_x, int16_t dest_clip0_y,
@@ -601,4 +605,197 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
             displayio_bitmap_write_pixel(self, x, y_draw, value & mask);
         }
     }
+}
+
+typedef struct {
+    uint8_t count; // The number of items in terms[]
+    uint8_t mx; // the maximum of the absolute value of the dx values
+    uint8_t dl; // the scaled dither value applied to the pixel at distance [1,0]
+    struct { // dl is the scaled dither values applied to the pixel at [dx,dy]
+        int8_t dx, dy, dl;
+    } terms[];
+} bitmaptools_dither_algorithm_info_t;
+
+static bitmaptools_dither_algorithm_info_t atkinson = {
+    4, 2, 256 / 8, {
+        {2, 0, 256 / 8},
+        {-1, 1, 256 / 8},
+        {0, 1, 256 / 8},
+        {0, 2, 256 / 8},
+    }
+};
+
+static bitmaptools_dither_algorithm_info_t floyd_stenberg = {
+    3, 1, 7 * 256 / 16,
+    {
+        {-1, 1, 3 * 256 / 16},
+        {0, 1, 5 * 256 / 16},
+        {1, 1, 1 * 256 / 16},
+    }
+};
+
+bitmaptools_dither_algorithm_info_t *algorithms[] = {
+    [DITHER_ALGORITHM_ATKINSON] = &atkinson,
+    [DITHER_ALGORITHM_FLOYD_STENBERG] = &floyd_stenberg,
+};
+
+enum {
+    SWAP_BYTES = 1 << 0,
+    SWAP_RB = 1 << 1,
+};
+
+STATIC void fill_row(displayio_bitmap_t *bitmap, int swap, int16_t *luminance_data, int y, int mx) {
+    if (y >= bitmap->height) {
+        return;
+    }
+
+    // zero out padding area
+    for (int i = 0; i < mx; i++) {
+        luminance_data[-mx + i] = 0;
+        luminance_data[bitmap->width + i] = 0;
+    }
+
+    if (bitmap->bits_per_value == 8) {
+        uint8_t *pixel_data = (uint8_t *)(bitmap->data + bitmap->stride * y);
+        for (int x = 0; x < bitmap->width; x++) {
+            *luminance_data++ = *pixel_data++;
+        }
+    } else {
+        uint16_t *pixel_data = (uint16_t *)(bitmap->data + bitmap->stride * y);
+        for (int x = 0; x < bitmap->width; x++) {
+            uint16_t pixel = *pixel_data++;
+            if (swap & SWAP_BYTES) {
+                pixel = __builtin_bswap16(pixel);
+            }
+            int r = (pixel >> 8) & 0xf8;
+            int g = (pixel >> 3) & 0xfc;
+            int b = (pixel << 3) & 0xf8;
+
+            if (swap & SWAP_RB) {
+                uint8_t tmp = r;
+                r = b;
+                b = tmp;
+            }
+
+            // ideal coefficients are around .299, .587, .114 (according to
+            // ppmtopnm), this differs from the 'other' luma-converting
+            // function in circuitpython (why?)
+
+            // we correct for the fact that the input ranges are 0..0xf8 (or
+            // 0xfc) rather than 0x00..0xff
+            // Check: (0xf8 *  78 + 0xfc * 154 + 0xf8 * 29) // 256 == 255
+            *luminance_data++ = (r * 78 + g * 154 + b * 29) / 256;
+        }
+    }
+}
+
+static void write_pixels(displayio_bitmap_t *bitmap, int y, bool *data) {
+    if (bitmap->bits_per_value == 1) {
+        uint32_t *pixel_data = (uint32_t *)(bitmap->data + bitmap->stride * y);
+        for (int i = 0; i < bitmap->stride; i++) {
+            uint32_t p = 0;
+            for (int j = 0; j < 32; i++) {
+                p = (p << 1);
+                if (*data++) {
+                    p |= 1;
+                }
+            }
+            *pixel_data++ = p;
+        }
+    } else {
+        uint16_t *pixel_data = (uint16_t *)(bitmap->data + bitmap->stride * y);
+        for (int i = 0; i < bitmap->width; i++) {
+            *pixel_data++ = *data++ ? 65535 : 0;
+        }
+    }
+}
+
+void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bitmap_t *source_bitmap, displayio_colorspace_t colorspace, bitmaptools_dither_algorithm_t algorithm) {
+    int height = dest_bitmap->height, width = dest_bitmap->width;
+
+    int swap = 0;
+    if (colorspace == DISPLAYIO_COLORSPACE_RGB565_SWAPPED || colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED) {
+        swap |= SWAP_BYTES;
+    }
+    if (colorspace == DISPLAYIO_COLORSPACE_BGR565 || colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED) {
+        swap |= SWAP_RB;
+    }
+
+    bitmaptools_dither_algorithm_info_t *info = algorithms[algorithm];
+    // rowdata holds 3 rows of data.  Each one is larger than the input
+    // bitmap's width, beacuse `mx` extra pixels are allocated at the start and
+    // end of the row so that no conditionals are needed when storing the error data.
+    int16_t rowdata[(width + 2 * info->mx) * 3];
+    int16_t *rows[3] = {
+        rowdata + info->mx, rowdata + width + info->mx * 3, rowdata + 2 * width + info->mx * 5
+    };
+    // out holds one output row of pixels, and is padded to be a multiple of 32 so that the 1bpp storage loop can be simplified
+    bool out[(width + 31) / 32 * 32];
+
+    fill_row(source_bitmap, swap, rows[0], 0, info->mx);
+    fill_row(source_bitmap, swap, rows[1], 1, info->mx);
+    fill_row(source_bitmap, swap, rows[2], 2, info->mx);
+
+    int16_t err = 0;
+
+    for (int y = 0; y < height; y++) {
+
+        // Serpentine dither.  Going left-to-right...
+        for (int x = 0; x < width; x++) {
+            int32_t pixel_in = rows[0][x] + err;
+            bool pixel_out = pixel_in >= 128;
+            out[x] = pixel_out;
+
+            err = pixel_in - (pixel_out ? 255 : 0);
+
+            for (int i = 0; i < info->count; i++) {
+                int x1 = x + info->terms[i].dx;
+                int dy = info->terms[i].dy;
+
+                rows[dy][x1] = ((info->terms[i].dl * err) >> 8) + rows[dy][x1];
+            }
+            err = err * info->dl >> 8;
+        }
+        write_pixels(dest_bitmap, y, out);
+
+        // Cycle the rows by shuffling pointers, this is faster than copying the data.
+        int16_t *tmp = rows[0];
+        rows[0] = rows[1];
+        rows[1] = rows[2];
+        rows[2] = tmp;
+
+        fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
+
+        y++;
+        if (y == height) {
+            break;
+        }
+
+        // Serpentine dither.   Going right-to-left...
+        for (int x = width; x--;) {
+            int16_t pixel_in = rows[0][x] + err;
+            bool pixel_out = pixel_in >= 128;
+            out[x] = pixel_out;
+            err = pixel_in - (pixel_out ? 255 : 0);
+
+            for (int i = 0; i < info->count; i++) {
+                int x1 = x - info->terms[i].dx;
+                int dy = info->terms[i].dy;
+
+                rows[dy][x1] = ((info->terms[i].dl * err) >> 8) + rows[dy][x1];
+            }
+            err = err * info->dl >> 8;
+        }
+        write_pixels(dest_bitmap, y, out);
+
+        tmp = rows[0];
+        rows[0] = rows[1];
+        rows[1] = rows[2];
+        rows[2] = tmp;
+
+        fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
+    }
+
+    displayio_area_t a = { 0, 0, width, height };
+    displayio_bitmap_set_dirty_area(dest_bitmap, &a);
 }
