@@ -356,9 +356,12 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
     if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
         return -1;
     }
-    uint16_t outgoing_packet_length = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
+    mp_int_t outgoing_packet_length = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
+    if (outgoing_packet_length < 0) {
+        return -1;
+    }
 
-    uint16_t total_len = len + header_len;
+    mp_int_t total_len = len + header_len;
     if (total_len > outgoing_packet_length) {
         // Supplied data will not fit in a single BLE packet.
         mp_raise_ValueError_varg(translate("Total data to write is larger than %q"), MP_QSTR_outgoing_packet_length);
@@ -369,7 +372,7 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
     }
     outgoing_packet_length = MIN(outgoing_packet_length, self->max_packet_size);
 
-    if (len + self->pending_size > outgoing_packet_length) {
+    if (len + self->pending_size > (size_t)outgoing_packet_length) {
         // No room to append len bytes to packet. Wait until we get a free buffer,
         // and keep checking that we haven't been disconnected.
         while (self->pending_size != 0 &&
