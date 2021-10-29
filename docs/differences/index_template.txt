@@ -185,7 +185,7 @@ Other Modules:
   | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_sys.breakpointhook() added.                       | In Progress    | 
   | sys.get(/set)_coroutine_origin_tracking_depth() added                                                     |                |
   +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution|                | 
+  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution| Not Relevant   | 
   | in PEP564, see above                                                                                      |                |  
   +-----------------------------------------------------------------------------------------------------------+----------------+
 
