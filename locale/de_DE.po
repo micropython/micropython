@@ -3176,7 +3176,7 @@ msgstr "float zu groß"
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "float (Gleitkommazahlen) nicht unterstützt"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3328,7 +3328,7 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr ""
+msgstr "das Eingabeargument muss ein Integer, Tupel oder eine Liste sein"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
@@ -3336,7 +3336,7 @@ msgstr "Die Länge des Eingabearrays muss eine Potenz von 2 sein"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "Eingabe-Arrays sind nicht kompatibel"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
@@ -3365,7 +3365,7 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "die Eingabe muss ein-Dimensional sein"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
@@ -3398,7 +3398,7 @@ msgstr "Das Intervall muss im Bereich %s-%s sein"
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "ungültige Architektur"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4240,7 +4240,7 @@ msgstr "Das Zeitlimit muss 0,0-100,0 Sekunden betragen"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
+msgstr "timeout muss kleiner als 655.35 Sekunden sein"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "timeout must be >= 0.0"
@@ -4268,7 +4268,7 @@ msgstr "zu viele Argumente mit dem angegebenen Format"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
 msgid "too many dimensions"
-msgstr ""
+msgstr "zu viele Dimensionen"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
@@ -4425,7 +4425,7 @@ msgstr "Wert muss in %d Byte(s) passen"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr ""
+msgstr "Wert außerhalb des Zielbereiches"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "value_count must be > 0"
@@ -4433,24 +4433,24 @@ msgstr "value_count muss größer als 0 sein"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "watchdog not initialized"
-msgstr ""
+msgstr "watchdog nicht initialisiert"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "watchdog timeout must be greater than 0"
-msgstr ""
+msgstr "watchdog Zeitlimit muss größer als 0 sein"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
+msgstr "breite muss zwischen (inklusive) 2 und 8 liegen, nicht %d"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
-msgstr ""
+msgstr "breite muss größer als 0 sein"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "wifi is not enabled"
-msgstr ""
+msgstr "wifi ist nicht aktiviert"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4458,11 +4458,11 @@ msgstr "Fenster muss <= Intervall sein"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "wrong axis index"
-msgstr ""
+msgstr "falscher Achsenindex"
 
 #: extmod/ulab/code/ulab_create.c
 msgid "wrong axis specified"
-msgstr ""
+msgstr "falsche Achse gewählt"
 
 #: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "wrong input type"
@@ -4486,7 +4486,7 @@ msgstr "x Wert außerhalb der Grenzen"
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "xTaskCreate failed"
-msgstr ""
+msgstr "xTaskCreate fehlgeschlagen"
 
 #: shared-bindings/displayio/Shape.c
 msgid "y should be an int"
@@ -4502,11 +4502,11 @@ msgstr "Nullschritt"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr ""
+msgstr "zi muss ein ndarray sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi muss eine Gleitkommazahl sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
