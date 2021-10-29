@@ -19,16 +19,28 @@ happen on Linux and Mac OSX but it's less likely.
     follow one of the procedures below. It's important to note that **any files stored on the**
     ``CIRCUITPY`` **drive will be erased**.
 
+REPL Erase Method
+^^^^^^^^^^^^^^^^^
+**For any board if you have access to the REPL:**
+
+#. Connect to the CircuitPython REPL using a terminal program.
+#. Type ``import storage`` into the REPL.
+#. Then, type ``storage.erase_filesystem()`` into the REPL.
+#. The ``CIRCUITPY`` drive will be erased and the board will restart with an empty ``CIRCUITPY`` drive.
+
+Erase File Method
+^^^^^^^^^^^^^^^^^
+**If you do not have access to the REPL, you have the following options to erase your board.**
+
 **For boards with** ``CIRCUITPY`` **stored on a separate SPI flash chip,
 such as Feather M0 Express, Metro M0 Express and Circuit Playground Express:**
 
-
-#. Download the appropriate flash .erase uf2 from `the Adafruit_SPIFlash repo <https://github.com/adafruit/Adafruit_SPIFlash/tree/master/examples/flash_erase_express>`_.
+#. Download the appropriate flash erase .uf2 from `the Adafruit_SPIFlash repo <https://github.com/adafruit/Adafruit_SPIFlash/tree/master/examples/flash_erase_express>`_.
 #. Double-click the reset button.
 #. Copy the appropriate .uf2 to the xxxBOOT drive.
 #. The on-board NeoPixel will turn blue, indicating the erase has started.
 #. After about 15 seconds, the NexoPixel will start flashing green. If it flashes red, the erase failed.
-#. Double-click again and load the appropriate `CircuitPython .uf2 <https://github.com/adafruit/circuitpython/releases/latest>`_.
+#. Double-click again and load the appropriate `CircuitPython .uf2 <https://circuitpython.org/downloads>`_.
 
 **For boards without SPI flash, such as Feather M0 Proto, Gemma M0 and, Trinket M0:**
 
@@ -36,7 +48,7 @@ such as Feather M0 Express, Metro M0 Express and Circuit Playground Express:**
 #. Double-click the reset button.
 #. Copy the appropriate .uf2 to the xxxBOOT drive.
 #. The boot LED will start pulsing again, and the xxxBOOT drive will appear again.
-#. Load the appropriate `CircuitPython .uf2 <https://github.com/adafruit/circuitpython/releases/latest>`_.
+#. Load the appropriate `CircuitPython .uf2 <https://circuitpython.org/downloads>`_.
 
 ValueError: Incompatible ``.mpy`` file.
 ---------------------------------------
