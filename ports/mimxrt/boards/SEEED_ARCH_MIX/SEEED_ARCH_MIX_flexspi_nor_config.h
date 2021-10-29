@@ -7,8 +7,8 @@
 
 // Based on tinyusb/hw/bsp/teensy_40/evkmimxrt1020_flexspi_nor_config.h
 
-#ifndef __ARCH_MIX_FLEXSPI_NOR_CONFIG__
-#define __ARCH_MIX_FLEXSPI_NOR_CONFIG__
+#ifndef __SEEED_ARCH_MIX_FLEXSPI_NOR_CONFIG__
+#define __SEEED_ARCH_MIX_FLEXSPI_NOR_CONFIG__
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -255,4 +255,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif /* __ARCH_MIX_FLEXSPI_NOR_CONFIG__ */
+#endif /* __SEEED_ARCH_MIX_FLEXSPI_NOR_CONFIG__ */
