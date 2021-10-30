@@ -11,32 +11,35 @@ If your host computer starts complaining that your ``CIRCUITPY`` drive is corrup
 or files cannot be overwritten or deleted, then you will have to erase it completely.
 When CircuitPython restarts it will create a fresh empty ``CIRCUITPY`` filesystem.
 
-This often happens on Windows when the ``CIRCUITPY`` disk is not safely ejected
+Corruption often happens on Windows when the ``CIRCUITPY`` disk is not safely ejected
 before being reset by the button or being disconnected from USB. This can also
 happen on Linux and Mac OSX but it's less likely.
 
 .. caution:: To erase and re-create ``CIRCUITPY`` (for example, to correct a corrupted filesystem),
     follow one of the procedures below. It's important to note that **any files stored on the**
-    ``CIRCUITPY`` **drive will be erased**.
+    ``CIRCUITPY`` **drive will be erased. Back up your code if possible before continuing!**
 
-**For boards with** ``CIRCUITPY`` **stored on a separate SPI flash chip,
-such as Feather M0 Express, Metro M0 Express and Circuit Playground Express:**
+REPL Erase Method
+^^^^^^^^^^^^^^^^^
+This is the recommended method of erasing your board. If you are having trouble accessing the
+``CIRCUITPY`` drive or the REPL, consider first putting your board into
+`safe mode <https://learn.adafruit.com/welcome-to-circuitpython/troubleshooting#safe-mode-3105351-22>`_.
 
+**To erase any board if you have access to the REPL:**
 
-#. Download the appropriate flash .erase uf2 from `the Adafruit_SPIFlash repo <https://github.com/adafruit/Adafruit_SPIFlash/tree/master/examples/flash_erase_express>`_.
-#. Double-click the reset button.
-#. Copy the appropriate .uf2 to the xxxBOOT drive.
-#. The on-board NeoPixel will turn blue, indicating the erase has started.
-#. After about 15 seconds, the NexoPixel will start flashing green. If it flashes red, the erase failed.
-#. Double-click again and load the appropriate `CircuitPython .uf2 <https://github.com/adafruit/circuitpython/releases/latest>`_.
+#. Connect to the CircuitPython REPL using a terminal program.
+#. Type ``import storage`` into the REPL.
+#. Then, type ``storage.erase_filesystem()`` into the REPL.
+#. The ``CIRCUITPY`` drive will be erased and the board will restart with an empty ``CIRCUITPY`` drive.
 
-**For boards without SPI flash, such as Feather M0 Proto, Gemma M0 and, Trinket M0:**
+Erase File Method
+^^^^^^^^^^^^^^^^^
+**If you do not have access to the REPL, you may still have options to erase your board.**
 
-#. Download the appropriate erase .uf2 from `the Learn repo <https://github.com/adafruit/Adafruit_Learning_System_Guides/tree/master/uf2_flash_erasers>`_.
-#. Double-click the reset button.
-#. Copy the appropriate .uf2 to the xxxBOOT drive.
-#. The boot LED will start pulsing again, and the xxxBOOT drive will appear again.
-#. Load the appropriate `CircuitPython .uf2 <https://github.com/adafruit/circuitpython/releases/latest>`_.
+The `Erase CIRCUITPY Without Access to the REPL <https://learn.adafruit.com/welcome-to-circuitpython/troubleshooting#erase-circuitpy-without-access-to-the-repl-3105309-26>`_
+section of the Troubleshooting page in the Welcome to CircuitPython guide covers the non-REPL
+erase process for various boards. Visit the guide, find the process that applies to your board,
+and follow the instructions to erase your board.
 
 ValueError: Incompatible ``.mpy`` file.
 ---------------------------------------
