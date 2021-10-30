@@ -75,7 +75,7 @@ STATIC void mp_spiflash_write_cmd_data(mp_spiflash_t *self, uint8_t cmd, size_t 
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         // Note: len/data are unused for standard SPI
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL, 8);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
         c->bus.u_qspi.proto->write_cmd_data(c->bus.u_qspi.data, cmd, len, data);
@@ -110,8 +110,8 @@ STATIC uint32_t mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t le
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         uint32_t buf;
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)&buf, (void*)&buf);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL, 8);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)&buf, (void*)&buf, 8);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
         return buf;
     } else {

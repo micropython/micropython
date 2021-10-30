@@ -151,7 +151,7 @@ STATIC int spi_find(mp_obj_t id) {
     }
 }
 
-void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest) {
+void spi_transfer(const machine_hard_spi_obj_t * self, size_t len, const void * src, void * dest, uint8_t bits) {
     nrfx_spi_xfer_desc_t xfer_desc = {
         .p_tx_buffer = src,
         .tx_length   = len,
@@ -377,9 +377,9 @@ STATIC void machine_hard_spi_deinit(mp_obj_t self_in) {
     nrfx_spi_uninit(self->p_spi);
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, uint8_t bits) {
     const machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
-    spi_transfer(self, len, src, dest);
+    spi_transfer(self, len, src, dest, bits);
 }
 
 

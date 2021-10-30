@@ -190,7 +190,7 @@ STATIC mp_obj_t pyb_spi_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     pyb_buf_get_for_send(args[0].u_obj, &bufinfo, data);
 
     // send the data
-    spi_transfer(self->spi, bufinfo.len, bufinfo.buf, NULL, args[1].u_int);
+    spi_transfer(self->spi, bufinfo.len, bufinfo.buf, NULL, args[1].u_int, 8);
 
     return mp_const_none;
 }
@@ -292,7 +292,7 @@ STATIC mp_obj_t pyb_spi_send_recv(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
 
     // do the transfer
-    spi_transfer(self->spi, bufinfo_send.len, bufinfo_send.buf, bufinfo_recv.buf, args[2].u_int);
+    spi_transfer(self->spi, bufinfo_send.len, bufinfo_send.buf, bufinfo_recv.buf, args[2].u_int, 8);
 
     // return the received data
     if (o_ret != MP_OBJ_NULL) {
