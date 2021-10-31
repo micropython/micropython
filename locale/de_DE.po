@@ -2233,7 +2233,7 @@ msgstr "Die Kachelbreite muss die Bitmap-Breite genau teilen"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "Zeit liegt in der Vergangenheit"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
@@ -2260,7 +2260,7 @@ msgstr "Zu viele displays"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "Gesamte zu schreibende Datenmenge ist größer als %q"
 
 #: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
@@ -2298,19 +2298,19 @@ msgstr "UART-Schreibfehler"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
-msgstr ""
+msgstr "USB beschäftigt"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr ""
+msgstr "USB Geräte brauchen mehr Endpunkte als verfügbar sind"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr ""
+msgstr "USB Geräte haben zu viele Schnittstellennamen festgelegt"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
-msgstr ""
+msgstr "USB Fehler"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
@@ -2359,7 +2359,7 @@ msgstr "Schreiben in nvm nicht möglich."
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Schreiben in sleep_memory nicht möglich."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2373,7 +2373,7 @@ msgstr ""
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
-msgstr ""
+msgstr "Unbekannter Fehler %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2392,7 +2392,7 @@ msgstr "Unbekannter Sicherheitsfehler: 0x%04x"
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "Unbekannter Systemfirmware Fehler: %04x"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2433,7 +2433,7 @@ msgstr "Nicht unterstützter Pull-Wert."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
-msgstr ""
+msgstr "Update fehlgeschlagen"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2447,7 +2447,7 @@ msgstr "Länge des Wertes > max_length"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Version was invalid"
-msgstr ""
+msgstr "Version ist ungültig"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
@@ -2498,7 +2498,7 @@ msgstr "WiFi Passwort muss zwischen 8 und 63 Zeichen lang sein"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Aufgeweckt durch Alarm.\n"
 
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
@@ -2506,7 +2506,7 @@ msgstr "Schreiben nicht unterstüzt für diese Charakteristik"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr ""
+msgstr "Du bist im abgesicherten Modus weil:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2515,7 +2515,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
-msgstr "Du hast das Starten im Sicherheitsmodus ausgelöst durch "
+msgstr "Du hast das Starten im abgesicherten Modus ausgelöst durch "
 
 #: py/objtype.c
 msgid "__init__() should return None"
@@ -2539,11 +2539,11 @@ msgstr "Adresse außerhalb der Grenzen"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "addresses is empty"
-msgstr "adresses ist leer"
+msgstr "addresses ist leer"
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "Die Annotation muss ein Bezeichner sein"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
@@ -2551,7 +2551,7 @@ msgstr "arg ist eine leere Sequenz"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr ""
+msgstr "arg muss ein Nutzer-Typ sein"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2567,7 +2567,7 @@ msgstr "Argument hat falschen Typ"
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr ""
+msgstr "Name des Arguments wiederverwendet"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2584,7 +2584,7 @@ msgstr "Argumente müssen ndarrays sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "Array- und Indexlänge müssen gleich sein"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2593,11 +2593,11 @@ msgstr "Array/Bytes auf der rechten Seite erforderlich"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "Versuch (arg)min/(arg)max einer leeren Sequenz zu holen"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr "Sie haben versucht argmin/argmax von einer leeren Sequenz zu bekommen"
+msgstr "Sie haben versucht argmin/argmax einer leeren Sequenz zu erhalten"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -2605,19 +2605,19 @@ msgstr "Attribute werden noch nicht unterstützt"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "Achse außerhalb des Wertebereichs"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "Achse muss Nichts, oder ein Integer sein"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "Achse zu lang"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
-msgstr ""
+msgstr "Hintergrundwert außerhalb des Zielbereichs"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2641,11 +2641,11 @@ msgstr "Der binäre Operator %q ist nicht implementiert"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "bits müssen 32 oder kleiner sein"
 
 #: shared-bindings/busio/UART.c
 msgid "bits must be in range 5 to 9"
-msgstr ""
+msgstr "bits müssen zwischen 5 und 9 liegen"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2657,11 +2657,11 @@ msgstr "Zweig ist außerhalb der Reichweite"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
-msgstr ""
+msgstr "Der Puffer ist kleiner als die angefragte Größe"
 
 #: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
-msgstr ""
+msgstr "Die Puffergröße muss ein vielfaches der Elementgröße sein"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2678,7 +2678,7 @@ msgstr "Der Puffer ist zu klein"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
-msgstr ""
+msgstr "Der Puffer ist zu klein für die angefragten Bytes"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -2729,7 +2729,7 @@ msgstr "kann keinem Ausdruck zuweisen"
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "kann self nicht abbrechen"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
@@ -2738,7 +2738,7 @@ msgstr "kann %q nicht zu %q konvertieren"
 
 #: py/runtime.c
 msgid "can't convert %q to int"
-msgstr ""
+msgstr "kann %q nicht nach int konvertieren"
 
 #: py/obj.c
 #, c-format
@@ -2843,7 +2843,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
-msgstr ""
+msgstr "Kann neue shape nicht zuweisen"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
@@ -2867,7 +2867,7 @@ msgstr "kann keinen relativen Import durchführen"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "Kann nicht eindeutig die Größe (sizeof) des Skalars ermitteln"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2891,11 +2891,11 @@ msgstr "Kreis kann nur in einem Elternteil registriert werden"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
-msgstr ""
+msgstr "clip Punkt muss ein (x,y) Tupel sein"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr ""
+msgstr "code außerhalb des Wertebereichs 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2921,7 +2921,7 @@ msgstr "Farbe sollte ein int sein"
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
-msgstr ""
+msgstr "Vergleich von int und uint"
 
 #: py/objcomplex.c
 msgid "complex division by zero"
@@ -2961,28 +2961,28 @@ msgstr "Vandermonde-Matrix konnte nicht invertiert werden"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "Konnte SD-Karten Version nicht ermitteln"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
-msgstr ""
+msgstr "cross ist definiert für 1-Dimensionale Arrays der Länge 3"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "data muss iterierbar sein"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "data muss von gleicher Länge sein"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "Datenpin #%d ist in Benutzung"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
-msgstr ""
+msgstr "Datentyp nicht verstanden"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
