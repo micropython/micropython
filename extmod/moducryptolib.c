@@ -54,13 +54,30 @@ struct ctr_params {
     uint8_t encrypted_counter[16];
 };
 
+#if !MICROPY_SSL_AXTLS && !MICROPY_SSL_MBEDTLS
+#define AES_192_SUPPORTED (1)
+#include "crypto-algorithms/aes.c"
+
+typedef struct native_aes_key_iv {
+    aes_key_info_t key_info;
+    uint8_t iv[16];
+} native_aes_key_iv_t;
+
+#define AES_CTX_IMPL native_aes_key_iv_t
+
+#endif
+
 #if MICROPY_SSL_AXTLS
+#define AES_192_SUPPORTED (0)
+
 #include "lib/axtls/crypto/crypto.h"
 
 #define AES_CTX_IMPL AES_CTX
 #endif
 
 #if MICROPY_SSL_MBEDTLS
+#define AES_192_SUPPORTED (0)
+
 #include <mbedtls/aes.h>
 
 // we can't run mbedtls AES key schedule until we know whether we're used for encrypt or decrypt.
@@ -101,6 +118,59 @@ static inline struct ctr_params *ctr_params_from_aes(mp_obj_aes_t *o) {
     // ctr_params follows aes object struct
     return (struct ctr_params *)&o[1];
 }
+
+#if !MICROPY_SSL_AXTLS && !MICROPY_SSL_MBEDTLS
+STATIC void aes_initial_set_key_impl(AES_CTX_IMPL *ctx, const uint8_t *key, size_t keysize, const uint8_t iv[16]) {
+    aes_expand_key(&ctx->key_info, key, keysize);
+    if (iv) {
+        memcpy(ctx->iv, iv, 16);
+    }
+}
+
+STATIC void aes_final_set_key_impl(AES_CTX_IMPL *ctx, bool encrypt) {
+    // The native AES code doesn't care if we are encrypting or decrypting
+}
+
+STATIC void aes_process_ecb_impl(AES_CTX_IMPL *ctx, const uint8_t in[16], uint8_t out[16], bool encrypt) {
+    memcpy(out, in, 16);
+    if (encrypt) {
+        aes_encrypt_block(out, &ctx->key_info);
+    } else {
+        aes_decrypt_block(out, &ctx->key_info);
+    }
+}
+
+STATIC void aes_process_cbc_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, bool encrypt) {
+    aes_crypt_cbc(&ctx->key_info, encrypt, in_len, ctx->iv, in, out);
+}
+
+#if MICROPY_PY_UCRYPTOLIB_CTR
+STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *out, size_t in_len, struct ctr_params *ctr_params) {
+    size_t n = ctr_params->offset;
+    uint8_t *const counter = ctx->iv;
+
+    while (in_len--) {
+        if (n == 0) {
+            aes_process_ecb_impl(ctx, counter, ctr_params->encrypted_counter, true);
+
+            // increment the 128-bit counter
+            for (int i = 15; i >= 0; --i) {
+                if (++counter[i] != 0) {
+                    break;
+                }
+            }
+        }
+
+        *out++ = *in++ ^ ctr_params->encrypted_counter[n];
+        n = (n + 1) & 0xf;
+    }
+
+    ctr_params->offset = n;
+
+}
+#endif
+
+#endif // !MICROPY_SSL_AXTLS && !MICROPY_SSL_MBEDTLS
 
 #if MICROPY_SSL_AXTLS
 STATIC void aes_initial_set_key_impl(AES_CTX_IMPL *ctx, const uint8_t *key, size_t keysize, const uint8_t iv[16]) {
@@ -236,7 +306,11 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
 
     mp_buffer_info_t keyinfo;
     mp_get_buffer_raise(args[0], &keyinfo, MP_BUFFER_READ);
-    if (32 != keyinfo.len && 16 != keyinfo.len) {
+    if (32 != keyinfo.len &&
+        #if AES_192_SUPPORTED
+        24 != keyinfo.len &&
+        #endif
+        16 != keyinfo.len) {
         mp_raise_ValueError(MP_ERROR_TEXT("key"));
     }
 
