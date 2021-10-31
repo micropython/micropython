@@ -54,7 +54,7 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     if (bits == 0) {
         // Shoudln't be possible with soft SPI, but
         // just in case.
-        mp_raise_ValueError("bits cannot be 0");
+        mp_raise_ValueError(MP_ERROR_TEXT("bits cannot be 0"));
     }
 
     int bytesPerChunk = (bits + 7) / 8;
