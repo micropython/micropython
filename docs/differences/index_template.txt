@@ -57,6 +57,9 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    | `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ | redesigning extension module loading            | In Progress   |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
 
+**********
+Python 3,6
+**********
 
 Python 3.6 beta 1 was released on 12 Sep 2016, and a summary of the new features can be found here:
 
@@ -197,3 +200,4 @@ Other Modules:
 
 .. toctree::
     :maxdepth: 2
+
