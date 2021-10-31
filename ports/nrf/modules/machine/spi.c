@@ -408,7 +408,7 @@ STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf, mp_obj_t _b
     spi_transfer(self, src.len, (const uint8_t*)src.buf, NULL, bits);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
+MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_obj, mp_machine_spi_write);
 
 STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp_obj_t rd_buf, mp_obj_t _bits) {
     mp_buffer_info_t src;
@@ -422,7 +422,7 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp
     spi_transfer(self, src.len, src.buf, dest.buf, bits);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);
+MP_DEFINE_CONST_FUN_OBJ_4(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);
 
 
 STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
