@@ -3,55 +3,198 @@
 MicroPython differences from CPython
 ====================================
 
-The operations listed in this section produce conflicting results in MicroPython when 
-compared to standard Python.
+Python Language Support
+-----------------------
 
-**Python 3.5** 
+The following Python language features have been implemented in MicroPython, 
+per release. Select the release to see more details.
 
-Given below is a list of PEPs (in progress) grouped to their impact to MicroPython.
+  
+The operations listed in this section produce conflicting results in MicroPython when compared to standard Python.
+MicroPython implements Python 3.4 and some select features of Python 3.5.
 
-* Extension to the syntax:
+***********
+Python 3.5
+***********
 
-	* `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ : additional unpacking generalizations 
+Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their impact to MicroPython.
 
-* Standard library changes:
+   +----------------------------------------------------------------------------------------------------------+---------------+
+   | **Extensions to the syntax:**                                                                            | **Status**    |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ | a new matrix multiplication operator            | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ | coroutines with async and await syntax          | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Extensions and changes to runtime:**                                                                                   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ | % formatting for binary strings                 | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ | retrying system calls that fail with EINTR      | Completed     |    
+   +--------------------------------------------------------+-------------------------------------------------+---------------+ 
+   | `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ | change StopIteration handling inside generators | Completed     |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Standard library changes:**                                                                                            |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ | os.scandir()                                    | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ | math.isclose(), a function for testing          | Completed     |
+   |                                                        | approximate equality                            |               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | **Miscellaneous changes:**                                                                                               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ | improved Python zip application support         | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Laucher aware of virtual        | In Progress   |
+   |                                                        | environments                                    |               |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ | type hints (advisory only)                      | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ | elimination of PYO files(not relevant for uPy)  | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
+   | `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ | redesigning extension module loading            | In Progress   |
+   +--------------------------------------------------------+-------------------------------------------------+---------------+
 
-	* `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ : os.scandir() 
 
-* Miscellaneous changes
+Python 3.6 beta 1 was released on 12 Sep 2016, and a summary of the new features can be found here:
 
-	* `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ : improved Python zip application support
-	
-	* `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ : make the Python Laucher aware of virtual environments
+  
+  +-----------------------------------------------------------------------------------------------------------+--------------+
+  | **New Syntax Features:**                                                                                  | **Status**   |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 498 <https://www.python.org/dev/peps/pep-0498/>`_ | Literal String Formatting                        |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 515 <https://www.python.org/dev/peps/pep-0515/>`_ | Underscores in Numeric Literals                  |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 525 <https://www.python.org/dev/peps/pep-0525/>`_ | Asynchronous Generators                          |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 526 <https://www.python.org/dev/peps/pep-0526/>`_ | Syntax for Variable Annotations (provisional)    |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 530 <https://www.python.org/dev/peps/pep-0530/>`_ | Asynchronous Comprehensions                      |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | **New Built-in Features:**                                                                                               |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 468 <https://www.python.org/dev/peps/pep-0468/>`_ | Preserving the order of *kwargs* in a function   |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 487 <https://www.python.org/dev/peps/pep-0487/>`_ | Simpler customization of class creation          |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 520 <https://www.python.org/dev/peps/pep-0520/>`_ | Preserving Class Attribute Definition Order      |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | **Standard Library Changes:**                                                                                            |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 495 <https://www.python.org/dev/peps/pep-0495/>`_ | Local Time Disambiguation                        |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 506 <https://www.python.org/dev/peps/pep-0506/>`_ | Adding A Secrets Module To The Standard Library  |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 519 <https://www.python.org/dev/peps/pep-0519/>`_ | Adding a file system path protocol               |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | **CPython internals:**                                                                                                   |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 509 <https://www.python.org/dev/peps/pep-0509/>`_ | Add a private version to dict                    |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 523 <https://www.python.org/dev/peps/pep-0523/>`_ | Adding a frame evaluation API to CPython         |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 524 <https://www.python.org/dev/peps/pep-0524/>`_ | Make os.urandom() blocking on Linux              |              |
+  |                                                        | (during system startup)                          |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 528 <https://www.python.org/dev/peps/pep-0528/>`_ | Change Windows console encoding to UTF-8         |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
+  | `PEP 529 <https://www.python.org/dev/peps/pep-0529/>`_ | Change Windows filesystem encoding to UTF-8      |              |
+  +--------------------------------------------------------+--------------------------------------------------+--------------+
 
-	* `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ : type hints (advisory only)
+***********
+Python 3.7
+***********
 
-	* `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ : elimination of PYO files (not relevant for uPy)
+New Features:
 
-	* `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ : redesigning extension module loading  
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  |**Features**                                                                                               | Status         |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 538 <https://www.python.org/dev/peps/pep-0538/>`_ | Coercing the legacy C locale to a UTF-8 based    | Completed      | 
+  |                                                        | locale                                           |                |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 539 <https://www.python.org/dev/peps/pep-0539/>`_ | A New C-API for Thread-Local Storage in CPython  | Won't Implement|
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 540 <https://www.python.org/dev/peps/pep-0540/>`_ | UTF-8 mode                                       | Completed      |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 552 <https://www.python.org/dev/peps/pep-0552/>`_ | Deterministic pyc                                | Not Relevant   |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 553 <https://www.python.org/dev/peps/pep-0553/>`_ | Built-in breakpoint()                            | In Progress    |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 557 <https://www.python.org/dev/peps/pep-0557/>`_ | Data Classes                                     | In Progress    |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 560 <https://www.python.org/dev/peps/pep-0560/>`_ | Core support for typing module and generic types | In Progress    |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 562 <https://www.python.org/dev/peps/pep-0562/>`_ | Module __getattr__ and __dir__                   | Completed      |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 563 <https://www.python.org/dev/peps/pep-0563/>`_ | Postponed Evaluation of Annotations              | In Progress    |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 564 <https://www.python.org/dev/peps/pep-0564/>`_ | Time functions with nanosecond resolution        | Completed      |
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 565 <https://www.python.org/dev/peps/pep-0565/>`_ | Show DeprecationWarning in __main__              | Won't Implement|
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
+  | `PEP 567 <https://www.python.org/dev/peps/pep-0567/>`_ |  Context Variables                               | Won't Implement|
+  +--------------------------------------------------------+--------------------------------------------------+----------------+
 
-Given below is a list of PEPs (completed) grouped to their impact to MicroPython.
 
-* Extension to the syntax:
+Other Language Changes:
 
-	* `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ : a new matrix multiplication operator 
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | async and await are now reserved keywords                                                                | Completed      |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | dict objects must preserve insertion-order                                                               | In Progress    |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | More than 255 arguments can now be passed to a function; a function can now have more than 255 parameters| Won't Implement|
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | bytes.fromhex() and bytearray.fromhex() now ignore all ASCII whitespace, not only spaces                 | In Progress    |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | str, bytes, and bytearray gained support for the new isascii() method, which can be used to test if a    | In Progress    |
+  | string or bytes contain only the ASCII characters                                                        |                |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | ImportError now displays module name and module __file__ path whenfrom ... import ... fails              | Completed      |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | Circular imports involving absolute imports with binding a submodule to a name are now supported         | Completed      |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | object.__format__(x, '') is now equivalent to str(x) rather than format(str(self), '')                   | Completed      |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | In order to better support dynamic creation of stack traces, types.TracebackType can now be instantiated | In Progress    |
+  | from Python code, and the tb_next attribute on tracebacks is now writable                                |                |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | When using the -m switch, sys.path[0] is now eagerly expanded to the full starting directory path, rather| Not Relevant   |
+  | than being left as the empty directory (which allows imports from the current working directory at the   |                |
+  | time when an import occurs)                                                                              |                |
+  +----------------------------------------------------------------------------------------------------------+----------------+
+  | The new -X importtime option or the PYTHONPROFILEIMPORTTIME environment variable can be used to show the | Not Relevant   | 
+  | timing of each module import                                                                             |                |
+  +----------------------------------------------------------------------------------------------------------+----------------+
 
-	* `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ : coroutines with async and await syntax
 
-* Extensions and changes to runtime:
 
-	* `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ : % formatting for binary strings
+Other Modules:
 
-	* `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ : retyring system calls that fail with EINTR
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_ asyncio (many, may need a separate ticket)| Completed      |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_ New features include *gc.freeze()*,                 | Won't Implement| 
+  | *gc.unfreeze()*, *gc-get_freeze_count*                                                                     |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_ math.remainder() added to implement IEEE        | Completed      |
+  | 754-style remainder                                                                                        |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_ A number of tidy up features including better       | In Progress    |
+  | support for splitting on empty strings and copy support for compiled expressions and match objects         |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_ sys.breakpointhook() added.                       | In Progress    | 
+  | sys.get(/set)_coroutine_origin_tracking_depth() added                                                      |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution |                | 
+  | in PEP564, see above                                                                                       |                |  
+  +------------------------------------------------------------------------------------------------------------+----------------+
 
-	* `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ : change StopIteration handling inside generators
 
-* Standard library changes:
-
-	* `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ : math.isclose(), a function for testing approximate equality
-
- 
- 
 .. toctree::
     :maxdepth: 2
 
