@@ -227,7 +227,7 @@ void LPSPI_EDMAMasterCallback(LPSPI_Type *base, lpspi_master_edma_handle_t *hand
     self->transfer_busy = false;
 }
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
     const size_t dma_min_size_threshold = 16;  // That's the FIFO size
