@@ -47,7 +47,7 @@
 typedef struct _mp_machine_spi_p_t {
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
     void (*deinit)(mp_obj_base_t *obj); // can be NULL
-    void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest, uint8_t bits);
+    void (*transfer)(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits);
 } mp_machine_spi_p_t;
 
 typedef struct _mp_machine_soft_spi_obj_t {

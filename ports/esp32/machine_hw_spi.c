@@ -288,7 +288,7 @@ STATIC mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
     return x;
 }
 
-STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
