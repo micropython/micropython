@@ -104,7 +104,9 @@ Python 3.6 beta 1 was released on 12 Sep 2016, and a summary of the new features
   | `PEP 529 <https://www.python.org/dev/peps/pep-0529/>`_ | Change Windows filesystem encoding to UTF-8      |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
 
+***********
 Python 3.7
+***********
 
 New Features:
 
@@ -137,6 +139,7 @@ New Features:
   | `PEP 567 <https://www.python.org/dev/peps/pep-0567/>`_ |  Context Variables                               | Won't Implement|
   +--------------------------------------------------------+--------------------------------------------------+----------------+
 
+
 Other Language Changes:
 
   +----------------------------------------------------------------------------------------------------------+----------------+
@@ -168,26 +171,28 @@ Other Language Changes:
   | timing of each module import                                                                             |                |
   +----------------------------------------------------------------------------------------------------------+----------------+
 
+
+
 Other Modules:
 
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_ asyncio (many, may need a separate ticket| Completed      |
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_ New features: *gc.freeze()*, *gc.unfreeze()*,      | Won't Implement| 
-  | *gc-get_freeze_count*                                                                                     |                |
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_ math.remainer() added to implement IEEE        | Completed      |
-  | 754-style remainder                                                                                       |                |
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_ A number of tidy up features including better      | In Progress    |
-  | support for splitting on empty strings and copy support for compiled expressions and match objects        |                |
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_sys.breakpointhook() added.                       | In Progress    | 
-  | sys.get(/set)_coroutine_origin_tracking_depth() added                                                     |                |
-  +-----------------------------------------------------------------------------------------------------------+----------------+
-  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution| Not Relevant   | 
-  | in PEP564, see above                                                                                      |                |  
-  +-----------------------------------------------------------------------------------------------------------+----------------+
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_ asyncio (many, may need a separate ticket)| Completed      |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_ New features include *gc.freeze()*,                 | Won't Implement| 
+  | *gc.unfreeze()*, *gc-get_freeze_count*                                                                     |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_ math.remainder() added to implement IEEE        | Completed      |
+  | 754-style remainder                                                                                        |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_ A number of tidy up features including better       | In Progress    |
+  | support for splitting on empty strings and copy support for compiled expressions and match objects         |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_ sys.breakpointhook() added.                       | In Progress    | 
+  | sys.get(/set)_coroutine_origin_tracking_depth() added                                                      |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution |                | 
+  | in PEP564, see above                                                                                       |                |  
+  +------------------------------------------------------------------------------------------------------------+----------------+
 
 
 .. toctree::
