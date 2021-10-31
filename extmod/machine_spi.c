@@ -190,7 +190,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     self->spi.phase = args[ARG_phase].u_int;
     self->spi.bits = args[ARG_bits].u_int;
     if (self->spi.bits == 0) {
-        mp_raise_ValueError("bits must be > 0");
+        mp_raise_ValueError(MP_ERROR_TEXT("bits must be > 0"));
     }
     if (args[ARG_firstbit].u_int != MICROPY_PY_MACHINE_SPI_MSB) {
         mp_raise_ValueError(MP_ERROR_TEXT("firstbit must be MSB"));
