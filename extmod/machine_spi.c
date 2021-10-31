@@ -59,10 +59,10 @@ STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
-STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
+STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest, int8_t bits) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
     mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
-    spi_p->transfer(s, len, src, dest);
+    spi_p->transfer(s, len, src, dest, bits);
 }
 
 STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
@@ -91,7 +91,7 @@ STATIC mp_obj_t mp_machine_spi_write(size_t n_args, const mp_obj_t *args) {
     uint8_t bits = n_args == 3 ? mp_obj_get_int(args[2]) : 0;
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    mp_machine_spi_transfer(self, src.len, (const uint8_t *)src.buf, NULL);
+    mp_machine_spi_transfer(self, src.len, (const uint8_t *)src.buf, NULL, bits);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_write_obj, 2, 3, mp_machine_spi_write);
@@ -248,9 +248,9 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
 }
 
-STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
-    mp_soft_spi_transfer(&self->spi, len, src, dest);
+    mp_soft_spi_transfer(&self->spi, len, src, dest, bits);
 }
 
 const mp_machine_spi_p_t mp_machine_soft_spi_p = {
