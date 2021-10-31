@@ -401,7 +401,7 @@ STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machine_spi_readinto);
 
-STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf, mp_obt_t _bits) {
+STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf, mp_obj_t _bits) {
     mp_buffer_info_t src;
     int8_t bits = _bits == mp_const_none ? -1 : mp_obj_get_int(_bits);
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
