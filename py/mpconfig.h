@@ -652,7 +652,7 @@
 
 // Allow enabling debug prints after each REPL line
 #ifndef MICROPY_REPL_INFO
-#define MICROPY_REPL_INFO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#define MICROPY_REPL_INFO (0)
 #endif
 
 // Whether to include emacs-style readline behavior in REPL

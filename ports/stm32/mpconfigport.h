@@ -69,6 +69,7 @@
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE (0)
+#define MICROPY_REPL_INFO           (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #ifndef MICROPY_FLOAT_IMPL // can be configured by each board via mpconfigboard.mk
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)

@@ -68,7 +68,6 @@
 #define MICROPY_PY_BUILTINS_EXECFILE            (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (0)
 #define MICROPY_REPL_EMACS_KEYS                 (0)
-#define MICROPY_REPL_INFO                       (0)
 
 // Python internal features
 #define MICROPY_READER_VFS                      (1)
