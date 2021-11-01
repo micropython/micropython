@@ -28,38 +28,27 @@
 
 // Options to control how MicroPython is built
 
+// Use the minimal starting configuration (disables all optional features).
+#define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+
 // Memory allocation policy
-#define MICROPY_QSTR_BYTES_IN_HASH              (1)
+#define MICROPY_GC_ALLOC_THRESHOLD              (1)
 
 // Compiler configuration
-#define MICROPY_COMP_CONST                      (0)
-#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN        (0)
+#define MICROPY_ENABLE_COMPILER                 (1)
+#define MICROPY_COMP_CONST_FOLDING              (1)
+#define MICROPY_COMP_CONST_LITERAL              (1)
 
 // Python internal features
-#define MICROPY_ENABLE_EXTERNAL_IMPORT          (0)
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
-#define MICROPY_CPYTHON_COMPAT                  (0)
-#define MICROPY_MODULE_GETATTR                  (0)
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG   (0)
+#define MICROPY_FULL_CHECKS                     (1)
 
 // Fine control over Python builtins, classes, modules, etc
-#define MICROPY_PY_ASYNC_AWAIT                  (0)
-#define MICROPY_PY_ASSIGN_EXPR                  (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT           (0)
-#define MICROPY_PY_BUILTINS_STR_OP_MODULO       (0)
-#define MICROPY_PY_BUILTINS_BYTEARRAY           (0)
-#define MICROPY_PY_BUILTINS_DICT_FROMKEYS       (0)
-#define MICROPY_PY_BUILTINS_SET                 (0)
-#define MICROPY_PY_BUILTINS_SLICE               (0)
-#define MICROPY_PY_BUILTINS_PROPERTY            (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE           (0)
-#define MICROPY_PY_BUILTINS_REVERSED            (0)
-#define MICROPY_PY___FILE__                     (0)
-#define MICROPY_PY_ARRAY                        (0)
-#define MICROPY_PY_COLLECTIONS                  (0)
-#define MICROPY_PY_IO                           (0)
-#define MICROPY_PY_STRUCT                       (0)
-#define MICROPY_PY_SYS                          (0)
+#define MICROPY_MULTIPLE_INHERITANCE            (1)
+#define MICROPY_PY_GENERATOR_PEND_THROW         (1)
+#define MICROPY_PY_BUILTINS_RANGE_ATTRS         (1)
+#define MICROPY_PY_BUILTINS_FILTER              (1)
+#define MICROPY_PY_BUILTINS_MIN_MAX             (1)
 
 // Type definitions for the specific machine
 
