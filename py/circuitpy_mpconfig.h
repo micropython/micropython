@@ -45,6 +45,13 @@
 // free bytes.
 // #define MICROPY_ALLOC_PARSE_RULE_INIT (64)
 
+// These critical-section macros are used only a few places in MicroPython, but
+// we need to provide actual implementations.
+extern void common_hal_mcu_disable_interrupts(void);
+extern void common_hal_mcu_enable_interrupts(void);
+#define MICROPY_BEGIN_ATOMIC_SECTION() (common_hal_mcu_disable_interrupts(), 0)
+#define MICROPY_END_ATOMIC_SECTION(state) ((void)state, common_hal_mcu_enable_interrupts())
+
 // Sorted alphabetically for easy finding.
 //
 // default is 128; consider raising to reduce fragmentation.
