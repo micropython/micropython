@@ -31,24 +31,11 @@
 // Use the minimal starting configuration (disables all optional features).
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
 
-// Memory allocation policy
-#define MICROPY_GC_ALLOC_THRESHOLD              (1)
-
 // Compiler configuration
 #define MICROPY_ENABLE_COMPILER                 (1)
-#define MICROPY_COMP_CONST_FOLDING              (1)
-#define MICROPY_COMP_CONST_LITERAL              (1)
 
 // Python internal features
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
-#define MICROPY_FULL_CHECKS                     (1)
-
-// Fine control over Python builtins, classes, modules, etc
-#define MICROPY_MULTIPLE_INHERITANCE            (1)
-#define MICROPY_PY_GENERATOR_PEND_THROW         (1)
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS         (1)
-#define MICROPY_PY_BUILTINS_FILTER              (1)
-#define MICROPY_PY_BUILTINS_MIN_MAX             (1)
 
 // Type definitions for the specific machine
 
