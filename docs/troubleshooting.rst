@@ -36,7 +36,7 @@ Erase File Method
 ^^^^^^^^^^^^^^^^^
 **If you do not have access to the REPL, you may still have options to erase your board.**
 
-The `Erase CIRCUITPY Without Access to the REPL <https://learn.adafruit.com/welcome-to-circuitpython/troubleshooting#erase-circuitpy-without-access-to-the-repl-3105309-26>`_
+The `Erase CIRCUITPY Without Access to the REPL <https://learn.adafruit.com/welcome-to-circuitpython/troubleshooting#erase-circuitpy-without-access-to-the-repl-3105309-32>`_
 section of the Troubleshooting page in the Welcome to CircuitPython guide covers the non-REPL
 erase process for various boards. Visit the guide, find the process that applies to your board,
 and follow the instructions to erase your board.
