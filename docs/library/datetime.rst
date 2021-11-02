@@ -48,9 +48,9 @@ dates or times. With respect to the Python module
 `datetime <https://docs.python.org/3/library/datetime.html>`_,
 this implementation is constrained as follows:
 
-    * Minimum resolution is *1 second*, instead of *1 microsecond*.
-    * Masimum delta spans over ±24855 days (±2\ :sup:`31` seconds or ±68 years)
-      instead of ±999999999 days.
+    * Minimum resolution is *1 nanosecond*, instead of *1 microsecond*.
+    * Masimum delta spans over ±106751 days (±2\ :sup:`63` nanoseconds or
+      ±292 years) instead of ±999999999 days.
 
 
 Class attributes
@@ -59,40 +59,50 @@ Class attributes
 .. attribute:: timedelta.MINYEAR
 
    The year of :attr:`timedelta.min`, i.e.
-   ``timedelta.min.tuple()[1] // (365*24*60*60) == -68``.
+   ``timedelta.min.tuple()[1] // (365 * 24 * 60 * 60 * 10**9) == -292``.
 
 
 .. attribute:: timedelta.MAXYEAR
 
    The year of :attr:`timedelta.max`, i.e.
-   ``timedelta.max.tuple()[1] // (365*24*60*60) == 68``.
+   ``timedelta.max.tuple()[1] // (365 * 24 * 60 * 60 * 10**9) == 292``.
 
 
 .. attribute:: timedelta.min
 
-   The most negative :class:`timedelta` object, ``timedelta(-2**31)``.
+   The most negative :class:`timedelta` object,
+   ``timedelta(nanoseconds=-2**63)``.
 
 
 .. attribute:: timedelta.max
 
-   The most positive :class:`timedelta` object, ``timedelta(2**31 - 1)``.
+   The most positive :class:`timedelta` object,
+   ``timedelta(nanoseconds=2**63 - 1)``.
 
 
 .. attribute:: timedelta.resolution
 
    The smallest possible difference between non-equal :class:`timedelta`
-   objects, ``timedelta(seconds=1)``.
+   objects, ``timedelta(nanoseconds=1)``.
+
+
+.. attribute:: timedelta.nanoseconds
+
+   The internal time delta representation as 64-bit integer.
 
 
 Class methods
 ^^^^^^^^^^^^^
 
-.. class:: timedelta(hours=0, minutes=0, seconds=0, days=0, weeks=0)
+.. class:: timedelta(hours=0, minutes=0, seconds=0, days=0, weeks=0,
+   milliseconds=0, microseconds=0, nanoseconds=0)
 
 All arguments are optional and default to ``0``. Arguments may be integers
-or floats, and may be positive or negative. Only seconds are stored
+or floats, and may be positive or negative. Only nanoseconds are stored
 internally. Arguments are converted to those units:
 
+    * A microsecond is converted to 1000 nanoseconds.
+    * A millisecond is converted to 10\ :sup:`6` nanoseconds.
     * A minute is converted to 60 seconds.
     * An hour is converted to 3600 seconds.
     * A week is converted to 7 days.
@@ -103,7 +113,7 @@ exact (no information is lost).
 
 .. method:: timedelta.total_seconds()
 
-   Return the total number of seconds contained in the duration.
+   Return a float representing the total number of seconds contained in the duration.
 
 
 .. method:: timedelta.__add__(other)
@@ -120,7 +130,7 @@ exact (no information is lost).
 .. method:: timedelta.__mul__(other)
 
    Return a delta multiplied by an integer or float. The result is rounded to
-   the nearest second using round-half-to-even.
+   the nearest nanosecond using round-half-to-even.
 
 
 .. method:: timedelta.__truediv__(other)
@@ -204,11 +214,14 @@ exact (no information is lost).
    the sign of the delta and ``D`` its number of days. This is *not* ISO
    compliant, but provides a complete representation.
 
+   If the fractional part of :meth:`timedelta.total_seconds()` is not 0,
+   ``.ffffff`` is appended.
+
 
 .. method:: timedelta.tuple(sign_pos='')
 
-   Return the tuple ``(sign, days, hours, minutes, seconds)``, where ``sign`` is
-   ``-`` if delta is negative, *sign_pos* otherwise.
+   Return the tuple ``(sign, days, hours, minutes, seconds, nanoseconds)``,
+   where ``sign`` is ``-`` if delta is negative, *sign_pos* otherwise.
 
 
 Examples of usage
@@ -222,7 +235,7 @@ An example of normalization::
     year = timedelta(days=365)
     another_year = timedelta(weeks=40, days=84, hours=23, minutes=50, seconds=600)
     print(year == another_year)  # True
-    print(year.total_seconds())  # 31536000
+    print(year.total_seconds())  # 31536000.0
 
 
 Examples of timedelta arithmetic::
@@ -486,7 +499,7 @@ subject to adjustment via a :class:`timezone` object.
 Constructors
 ^^^^^^^^^^^^
 
-.. class:: datetime(self, year, month, day, hour=0, minute=0, second=0, tzinfo=None)
+.. class:: datetime(self, year, month, day, hour=0, minute=0, second=0, nanosecond=0, tzinfo=None)
 
    The *year*, *month* and *day* arguments are required. *tzinfo* may be
    ``None``, or an instance of a :class:`timezone` class. The remaining
@@ -498,6 +511,7 @@ Constructors
    * ``0 <= hour < 24``,
    * ``0 <= minute < 60``,
    * ``0 <= second < 60``,
+   * ``0 <= nanosecond < 999_999_999``,
 
    If an argument outside those ranges is given, :exc:`ValueError` is raised.
 
@@ -627,7 +641,7 @@ Class methods
    :class:`timedelta` object with magnitude less than one day.
 
 
-.. method:: datetime.replace(year=None, month=None, day=None, hour=None, minute=None, second=None, tzinfo=True)
+.. method:: datetime.replace(year=None, month=None, day=None, hour=None, minute=None, second=None, nanosecond=None, tzinfo=True)
 
    Return a :class:`datetime` with the same attributes, except for those
    attributes given new values by whichever keyword arguments are specified.
@@ -682,7 +696,7 @@ Class methods
 
 .. method:: datetime.tuple()
 
-   Return the tuple ``(year, month, day, hour, minute, second, tzinfo)``.
+   Return the tuple ``(year, month, day, hour, minute, second, nanosecond, tzinfo)``.
 
 
 Examples of usage
