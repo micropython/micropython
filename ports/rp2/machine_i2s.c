@@ -232,20 +232,6 @@ void machine_i2s_init0(void) {
     for (uint8_t i = 0; i < MAX_I2S_RP2; i++) {
         MP_STATE_PORT(machine_i2s_obj[i]) = NULL;
     }
-
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
-
-    irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
-    irq_set_enabled(DMA_IRQ_1, true);
-}
-
-void machine_i2s_deinit0() {
-    irq_set_enabled(DMA_IRQ_0, false);
-    irq_remove_handler(DMA_IRQ_0, dma_irq0_handler);
-
-    irq_set_enabled(DMA_IRQ_1, false);
-    irq_remove_handler(DMA_IRQ_1, dma_irq1_handler);
 }
 
 // Ring Buffer
@@ -514,6 +500,26 @@ STATIC void feed_dma(machine_i2s_obj_t *self, uint8_t *dma_buffer_p) {
     } else {
         // underflow.  clear buffer to transmit "silence" on the I2S bus
         memset(dma_buffer_p, 0, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
+    }
+}
+
+STATIC void irq_configure(machine_i2s_obj_t *self) {
+    if (self->i2s_id == 0) {
+        irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
+        irq_set_enabled(DMA_IRQ_0, true);
+    } else {
+        irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
+        irq_set_enabled(DMA_IRQ_1, true);
+    }
+}
+
+STATIC void irq_deinit(machine_i2s_obj_t *self) {
+    if (self->i2s_id == 0) {
+        irq_set_enabled(DMA_IRQ_0, false);
+        irq_remove_handler(DMA_IRQ_0, dma_irq0_handler);
+    } else {
+        irq_set_enabled(DMA_IRQ_1, false);
+        irq_remove_handler(DMA_IRQ_1, dma_irq1_handler);
     }
 }
 
@@ -853,6 +859,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->non_blocking_descriptor.copy_in_progress = false;
     self->io_mode = BLOCKING;
 
+    irq_configure(self);
     pio_configure(self);
     gpio_configure(self);
     dma_configure(self);
@@ -920,6 +927,7 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
     if (self->pio != NULL) {
         pio_deinit(self);
         dma_deinit(self);
+        irq_deinit(self);
         m_free(self->ring_buffer_storage);
         self->pio = NULL;  // flag object as de-initialized
     }

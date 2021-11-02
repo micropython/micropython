@@ -155,7 +155,6 @@ int main(int argc, char **argv) {
         mp_bluetooth_deinit();
         #endif
         machine_pin_deinit();
-        machine_i2s_deinit0();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
