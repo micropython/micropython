@@ -24,13 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/objexcept.h"
-#include "py/runtime.h"
 #include "shared-bindings/wifi/__init__.h"
-#include "shared-bindings/wifi/Radio.h"
-#include "shared-bindings/wifi/Network.h"
 #include "shared-bindings/wifi/AuthMode.h"
+#include "shared-bindings/wifi/Network.h"
+#include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Packet.h"
+#include "shared-bindings/wifi/Radio.h"
 
 //| """
 //| The `wifi` module provides necessary low-level functionality for managing
@@ -41,7 +40,6 @@
 //| This object is the sole instance of `wifi.Radio`."""
 //|
 
-
 // Called when wifi is imported.
 STATIC mp_obj_t wifi___init__(void) {
     common_hal_wifi_init();
@@ -49,24 +47,24 @@ STATIC mp_obj_t wifi___init__(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(wifi___init___obj, wifi___init__);
 
-
 STATIC const mp_rom_map_elem_t wifi_module_globals_table[] = {
+    // Name
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_wifi) },
 
     // Initialization
     { MP_ROM_QSTR(MP_QSTR___init__),    MP_ROM_PTR(&wifi___init___obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_Radio),       MP_ROM_PTR(&wifi_radio_type) },
-    { MP_ROM_QSTR(MP_QSTR_Network),     MP_ROM_PTR(&wifi_network_type) },
+    // Classes
     { MP_ROM_QSTR(MP_QSTR_AuthMode),    MP_ROM_PTR(&wifi_authmode_type) },
+    { MP_ROM_QSTR(MP_QSTR_Monitor),     MP_ROM_PTR(&wifi_monitor_type) },
+    { MP_ROM_QSTR(MP_QSTR_Network),     MP_ROM_PTR(&wifi_network_type) },
     { MP_ROM_QSTR(MP_QSTR_Packet),      MP_ROM_PTR(&wifi_packet_type) },
+    { MP_ROM_QSTR(MP_QSTR_Radio),       MP_ROM_PTR(&wifi_radio_type) },
 
     // Properties
     { MP_ROM_QSTR(MP_QSTR_radio),       MP_ROM_PTR(&common_hal_wifi_radio_obj) },
 };
-
 STATIC MP_DEFINE_CONST_DICT(wifi_module_globals, wifi_module_globals_table);
-
 
 const mp_obj_module_t wifi_module = {
     .base = { &mp_type_module },
