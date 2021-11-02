@@ -57,7 +57,6 @@ typedef struct {
     uint8_t retries_left;
     uint8_t starting_retries;
     uint8_t last_disconnect_reason;
-
     wifi_config_t ap_config;
     esp_netif_ip_info_t ap_ip_info;
     esp_netif_t *ap_netif;

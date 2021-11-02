@@ -101,6 +101,19 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
     }
 }
 
+mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
+    const char *hostname = NULL;
+    esp_netif_get_hostname(self->netif, &hostname);
+    if (hostname == NULL) {
+        return mp_const_none;
+    }
+    return mp_obj_new_str(hostname, strlen(hostname));
+}
+
+void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
+    esp_netif_set_hostname(self->netif, hostname);
+}
+
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
@@ -140,19 +153,6 @@ void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self) {
     // Free the memory used to store the found aps.
     wifi_scannednetworks_deinit(self->current_scan);
     self->current_scan = NULL;
-}
-
-mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
-    const char *hostname = NULL;
-    esp_netif_get_hostname(self->netif, &hostname);
-    if (hostname == NULL) {
-        return mp_const_none;
-    }
-    return mp_obj_new_str(hostname, strlen(hostname));
-}
-
-void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
-    esp_netif_set_hostname(self->netif, hostname);
 }
 
 void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
