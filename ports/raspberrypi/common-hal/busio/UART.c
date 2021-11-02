@@ -30,7 +30,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"

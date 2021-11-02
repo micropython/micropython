@@ -80,9 +80,9 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
-    mp_obj_t arg = pos_args[0];
+STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_obj_t arg = all_args[0];
 
     if (mp_obj_is_str(arg)) {
         arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));

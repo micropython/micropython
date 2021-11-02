@@ -48,7 +48,7 @@
 //|         :return: the new Service"""
 //|         ...
 //|
-STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_uuid, ARG_secondary };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -56,7 +56,7 @@ STATIC mp_obj_t bleio_service_make_new(const mp_obj_type_t *type, size_t n_args,
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     bleio_uuid_obj_t *uuid = mp_arg_validate_type(args[ARG_uuid].u_obj, &bleio_uuid_type, MP_QSTR_uuid);
 

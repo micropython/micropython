@@ -30,7 +30,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "common-hal/canio/__init__.h"
 #include "common-hal/canio/Listener.h"

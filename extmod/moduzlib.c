@@ -15,7 +15,7 @@
 #if MICROPY_PY_UZLIB
 
 #define UZLIB_CONF_PARANOID_CHECKS (1)
-#include "../lib/uzlib/src/tinf.h"
+#include "lib/uzlib/tinf.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -48,8 +48,8 @@ STATIC int read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 2, false);
+STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
     mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
     o->base.type = type;
@@ -186,7 +186,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     return res;
 
 error:
-    mp_raise_arg1(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
+    mp_raise_type_arg(&mp_type_ValueError, MP_OBJ_NEW_SMALL_INT(st));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_uzlib_decompress_obj, 1, 3, mod_uzlib_decompress);
 
@@ -209,10 +209,10 @@ const mp_obj_module_t mp_module_uzlib = {
 // only if module is enabled by config setting.
 
 #pragma GCC diagnostic ignored "-Wsign-compare"
-#include "../lib/uzlib/src/tinflate.c"
-#include "../lib/uzlib/src/tinfzlib.c"
-#include "../lib/uzlib/src/tinfgzip.c"
-#include "../lib/uzlib/src/adler32.c"
-#include "../lib/uzlib/src/crc32.c"
+#include "lib/uzlib/tinflate.c"
+#include "lib/uzlib/tinfzlib.c"
+#include "lib/uzlib/tinfgzip.c"
+#include "lib/uzlib/adler32.c"
+#include "lib/uzlib/crc32.c"
 
 #endif // MICROPY_PY_UZLIB

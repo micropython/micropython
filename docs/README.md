@@ -13,12 +13,9 @@ Building the documentation locally
 If you're making changes to the documentation, you should build the
 documentation locally so that you can preview your changes.
 
-Install Sphinx, recommonmark, and optionally (for the RTD-styling), sphinx_rtd_theme,
-preferably in a virtualenv:
+Install the necessary packages, preferably in a virtualenv, in `circuitpython/`:
 
-     pip install sphinx
-     pip install recommonmark
-     pip install sphinx_rtd_theme
+    pip install -r requirements-doc.txt
 
 In `circuitpython/`, build the docs:
 

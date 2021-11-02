@@ -32,50 +32,15 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/board.h"
+#include "common-hal/busio/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
+
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_spi_m_sync.h"
 #include "hal/include/hpl_spi_m_sync.h"
 
 #include "samd/dma.h"
 #include "samd/sercom.h"
-
-bool never_reset_sercoms[SERCOM_INST_NUM];
-
-void never_reset_sercom(Sercom *sercom) {
-    // Reset all SERCOMs except the ones being used by on-board devices.
-    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (sercom_instances[i] == sercom) {
-            never_reset_sercoms[i] = true;
-            break;
-        }
-    }
-}
-
-void allow_reset_sercom(Sercom *sercom) {
-    // Reset all SERCOMs except the ones being used by on-board devices.
-    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (sercom_instances[i] == sercom) {
-            never_reset_sercoms[i] = false;
-            break;
-        }
-    }
-}
-
-void reset_sercoms(void) {
-    // Reset all SERCOMs except the ones being used by on-board devices.
-    Sercom *sercom_instances[SERCOM_INST_NUM] = SERCOM_INSTS;
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        if (never_reset_sercoms[i]) {
-            continue;
-        }
-        // SWRST is same for all modes of SERCOMs.
-        sercom_instances[i]->SPI.CTRLA.bit.SWRST = 1;
-    }
-}
-
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,

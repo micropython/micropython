@@ -103,7 +103,7 @@ assert f'result={foo()}' == 'result={result}'.format(result=foo())
 
 x = 10
 y = 'hi'
-assert (f'h' f'i') == 'hi'
+#assert (f'h' f'i') == 'hi'
 #assert (f'h' 'i') == 'hi'
 #assert ('h' f'i') == 'hi'
 assert f'{x:^4}' == ' 10 '

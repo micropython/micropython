@@ -27,7 +27,7 @@
 #include "shared-bindings/socketpool/Socket.h"
 
 #include "bindings/espidf/__init__.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/tick.h"

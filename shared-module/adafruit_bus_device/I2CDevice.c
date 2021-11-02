@@ -29,7 +29,7 @@
 #include "py/mperrno.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 
 void common_hal_adafruit_bus_device_i2cdevice_construct(adafruit_bus_device_i2cdevice_obj_t *self, mp_obj_t *i2c, uint8_t device_address) {
     self->i2c = i2c;

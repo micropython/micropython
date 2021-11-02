@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-08 16:30+0000\n"
+"PO-Revision-Date: 2021-10-23 07:37+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -151,7 +151,7 @@ msgstr "%q deve estar entre %d e %d"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
-msgstr ""
+msgstr "%q deve ser do tipo %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -568,6 +568,12 @@ msgstr "A profundidade dos bits deve ser de 1 até 6 inclusive, porém não %d"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "A profundidade de bits deve ser o múltiplo de 8."
+
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+"O dispositivo de inicialização deve ser o primeiro dispositivo (interface "
+"#0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -1762,6 +1768,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Somente anúncios conectáveis podem ser direcionados"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Apenas a detecção de borda está disponível neste hardware"
@@ -1787,6 +1794,7 @@ msgstr "Apenas um TouchAlarm pode ser colocado em deep sleep."
 msgid "Only one address is allowed"
 msgstr "Apenas um endereço é permitido"
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1973,6 +1981,7 @@ msgstr "O programa é muito grande"
 msgid "Pull not used when direction is output."
 msgstr "O Pull não foi usado quando a direção for gerada."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "O modo RAISE não foi implementado"
@@ -2119,6 +2128,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "O tamanho não é suportado"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sleep memory não está disponível"
@@ -2286,6 +2296,7 @@ msgstr "Exibições demais"
 msgid "Total data to write is larger than %q"
 msgstr "O total dos dados que serão escritos é maior do que %q"
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2479,6 +2490,7 @@ msgstr "O tempo limite de leitura da tensão expirou"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "AVISO: Seu arquivo de código tem duas extensões\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2509,16 +2521,15 @@ msgstr "O temporizador Watchdog expirou."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
 "Bem-vindo ao Adafruit CircuitPython %s!\n"
 "\n"
-"Para obter guias de projeto, visite learn.adafruit.com/category/"
-"circuitpython.\n"
+"Visite o site circuitpython.org para obter mais informações.\n"
 "\n"
-"Para listar os módulos internos, faça `help(\"modules\")`.\n"
+"Para listar os módulos existente digite `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -2562,10 +2573,6 @@ msgstr "O argumento __new__ deve ser um tipo usuário"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "é necessário objetos tipo bytes"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() chamado"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
@@ -3071,6 +3078,10 @@ msgstr "divido por zero"
 msgid "division by zero"
 msgstr "divisão por zero"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr "o divisor deve ser 4"
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "vazio"
@@ -3151,26 +3162,6 @@ msgstr "argumentos extras de palavras-chave passados"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "argumentos extra posicionais passados"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "A parte da expressão f-string não pode incluir um '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "A parte da expressão f-string não pode incluir uma barra invertida"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: expressão vazia não é permitida"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: esperando '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: um único '}' não é permitido"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3433,10 +3424,6 @@ msgstr "as entradas não são iteráveis"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int() arg 2 deve ser >= 2 e <= 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "inteiro requerido"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "o interp é definido para iteráveis 1D com comprimento igual"
@@ -3449,10 +3436,6 @@ msgstr "o intervalo deve estar entre %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "arquitetura inválida"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "argumentos inválidos"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -4024,6 +4007,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4068,8 +4052,8 @@ msgid "queue overflow"
 msgstr "estouro de fila"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "o f-strings bruto não estão implementados"
+msgid "raw f-strings are not supported"
+msgstr "os f-strings brutos não são suportados"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4131,7 +4115,7 @@ msgstr "Taxa de amostragem fora do intervalo"
 msgid "schedule queue full"
 msgstr "fila de espera cheia"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "compilação de script não suportada"
 
@@ -4279,6 +4263,7 @@ msgstr "o bloco deve ser maior que zero"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() leva uma sequência com 9"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4407,8 +4392,8 @@ msgid "unicode name escapes"
 msgstr "escapar o nome unicode"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "o unindent não coincide com nenhum nível de recuo externo"
+msgid "unindent doesn't match any outer indent level"
+msgstr "sem indentação não corresponde com nenhum nível de indentação exterior"
 
 #: py/objstr.c
 #, c-format
@@ -4560,6 +4545,52 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Bem-vindo ao Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Para obter guias de projeto, visite learn.adafruit.com/category/"
+#~ "circuitpython.\n"
+#~ "\n"
+#~ "Para listar os módulos internos, faça `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "inteiro requerido"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() chamado"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "A parte da expressão f-string não pode incluir um '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "A parte da expressão f-string não pode incluir uma barra invertida"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: expressão vazia não é permitida"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: esperando '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: um único '}' não é permitido"
+
+#~ msgid "invalid arguments"
+#~ msgstr "argumentos inválidos"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "o f-strings bruto não estão implementados"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "o unindent não coincide com nenhum nível de recuo externo"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "A lista %q deve ser uma lista"

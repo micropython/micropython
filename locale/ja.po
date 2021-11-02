@@ -558,6 +558,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "ビット深度は8の倍数でなければなりません"
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "フロー制御のためRXとTXの両方が必要"
@@ -1736,6 +1740,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1759,6 +1764,7 @@ msgstr ""
 msgid "Only one address is allowed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1934,6 +1940,7 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "方向がoutputのときpullは使われません"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr ""
@@ -2079,6 +2086,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "サイズは対応していません"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2233,6 +2241,7 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2424,6 +2433,7 @@ msgstr "電圧読み取りがタイムアウト"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2450,9 +2460,9 @@ msgstr ""
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -2495,10 +2505,6 @@ msgstr "__new__の引数はユーザ型でなければなりません"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "bytes-likeオブジェクトが必要"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort()が呼ばれました"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
@@ -2999,6 +3005,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "ゼロ除算 (division by zero)"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
@@ -3079,26 +3089,6 @@ msgstr "余分なキーワード引数があります"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "余分な位置引数が与えられました"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-文字列の表現部は '#' を持てません"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-文字列の表現部はバックスラッシュを持てません"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-文字列: 空の表現は許されません"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: '}'が必要"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: 1つだけの'}'は許されません"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3361,10 +3351,6 @@ msgstr ""
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int()の第2引数は2以上36以下でなければなりません"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "整数が必要"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3377,10 +3363,6 @@ msgstr "intervalは%s-%sの範囲でなければなりません"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "不正な引数"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3944,6 +3926,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -3988,8 +3971,8 @@ msgid "queue overflow"
 msgstr "キューがオーバーフローしました"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "raw f-文字列は実装されていません"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4050,7 +4033,7 @@ msgstr "サンプリングレートが範囲外"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "スクリプトのコンパイルは非対応"
 
@@ -4198,6 +4181,7 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time()は9要素のシーケンスを受け取ります"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4326,8 +4310,8 @@ msgid "unicode name escapes"
 msgstr ""
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "インデントの解除が、外側のどのインデントにも一致していません"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4479,6 +4463,36 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "integer required"
+#~ msgstr "整数が必要"
+
+#~ msgid "abort() called"
+#~ msgstr "abort()が呼ばれました"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-文字列の表現部は '#' を持てません"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-文字列の表現部はバックスラッシュを持てません"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-文字列: 空の表現は許されません"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: '}'が必要"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: 1つだけの'}'は許されません"
+
+#~ msgid "invalid arguments"
+#~ msgstr "不正な引数"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "raw f-文字列は実装されていません"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "インデントの解除が、外側のどのインデントにも一致していません"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q リストはリストでなければなりません"

@@ -37,7 +37,7 @@
 //|         :param system: satellite system to use"""
 //|         ...
 //|
-STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     gnss_obj_t *self = m_new_obj(gnss_obj_t);
     self->base.type = &gnss_type;
     enum { ARG_system };
@@ -45,7 +45,7 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, const mp
         { MP_QSTR_system, MP_ARG_REQUIRED | MP_ARG_OBJ },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     unsigned long selection = 0;
     if (mp_obj_is_type(args[ARG_system].u_obj, &gnss_satellitesystem_type)) {

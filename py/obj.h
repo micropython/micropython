@@ -539,7 +539,7 @@ typedef struct _mp_obj_iter_buf_t {
 struct _mp_buffer_info_t;
 
 typedef void (*mp_print_fun_t)(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind);
-typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+typedef mp_obj_t (*mp_make_new_fun_t)(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_call_fun_t)(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_obj_t *args);
 typedef mp_obj_t (*mp_unary_op_fun_t)(mp_unary_op_t op, mp_obj_t);
 typedef mp_obj_t (*mp_binary_op_fun_t)(mp_binary_op_t op, mp_obj_t, mp_obj_t);
@@ -847,7 +847,6 @@ extern mp_float_t uint64_to_float(uint64_t ui64);
 extern uint64_t float_to_uint64(float f);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
-mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 #define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
@@ -895,9 +894,11 @@ bool mp_obj_is_callable(mp_obj_t o_in);
 mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
+// returns true if o is bool, small int or long int
 static inline bool mp_obj_is_integer(mp_const_obj_t o) {
     return mp_obj_is_int(o) || mp_obj_is_bool(o);
-}                                                                                                        // returns true if o is bool, small int or long int
+}
+
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);
@@ -938,9 +939,13 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
 mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
-mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
 void mp_init_emergency_exception_buf(void);
+static inline mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+    assert(exc_type->make_new == mp_obj_exception_make_new);
+    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
+}
 
 // str
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2);
@@ -1021,7 +1026,7 @@ typedef struct _mp_obj_dict_t {
     mp_obj_base_t base;
     mp_map_t map;
 } mp_obj_dict_t;
-mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+mp_obj_t mp_obj_dict_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args);
 size_t mp_obj_dict_len(mp_obj_t self_in);
 mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);

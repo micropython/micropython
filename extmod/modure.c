@@ -16,7 +16,7 @@
 
 #define re1_5_stack_chk() MP_STACK_CHECK()
 
-#include "re1.5/re1.5.h"
+#include "lib/re1.5/re1.5.h"
 
 #if MICROPY_PY_URE_DEBUG
 #define FLAG_DEBUG 0x1000
@@ -49,7 +49,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t no = mp_obj_get_int(no_in);
     if (no < 0 || no >= self->num_matches) {
-        mp_raise_arg1(&mp_type_IndexError, no_in);
+        mp_raise_type_arg(&mp_type_IndexError, no_in);
     }
 
     const char *start = self->caps[no * 2];
@@ -88,7 +88,7 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     if (n_args == 2) {
         no = mp_obj_get_int(args[1]);
         if (no < 0 || no >= self->num_matches) {
-            mp_raise_arg1(&mp_type_IndexError, args[1]);
+            mp_raise_type_arg(&mp_type_IndexError, args[1]);
         }
     }
 
@@ -345,7 +345,7 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
                     }
 
                     if (match_no >= (unsigned int)match->num_matches) {
-                        mp_raise_arg1(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no));
+                        mp_raise_type_arg(&mp_type_IndexError, MP_OBJ_NEW_SMALL_INT(match_no));
                     }
 
                     const char *start_match = match->caps[match_no * 2];
@@ -477,11 +477,11 @@ MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure, MICROPY_PY_URE);
 // only if module is enabled by config setting.
 
 #define re1_5_fatal(x) assert(!x)
-#include "re1.5/compilecode.c"
+#include "lib/re1.5/compilecode.c"
 #if MICROPY_PY_URE_DEBUG
-#include "re1.5/dumpcode.c"
+#include "lib/re1.5/dumpcode.c"
 #endif
-#include "re1.5/recursiveloop.c"
-#include "re1.5/charclass.c"
+#include "lib/re1.5/recursiveloop.c"
+#include "lib/re1.5/charclass.c"
 
 #endif // MICROPY_PY_URE

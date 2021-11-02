@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
 

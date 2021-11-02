@@ -21,7 +21,7 @@
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/sha256.h"
 #else
-#include "crypto-algorithms/sha256.h"
+#include "lib/crypto-algorithms/sha256.h"
 #endif
 
 #endif
@@ -106,11 +106,10 @@ static void check_not_unicode(const mp_obj_t arg) {
 }
 
 #if MICROPY_PY_UHASHLIB_SHA256
-#include "crypto-algorithms/sha256.c"
-#endif
+#include "lib/crypto-algorithms/sha256.c"
 
-STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 1, false);
+STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
     o->base.type = type;
     o->final = false;
@@ -158,6 +157,8 @@ STATIC const mp_obj_type_t uhashlib_sha256_type = {
     .make_new = uhashlib_sha256_make_new,
     .locals_dict = (void *)&uhashlib_sha256_locals_dict,
 };
+#endif
+
 #endif
 
 #if MICROPY_PY_UHASHLIB_SHA1

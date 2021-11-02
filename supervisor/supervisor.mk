@@ -65,7 +65,7 @@ else
 $(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jinja ../../tools/gen_nvm_devices.py | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
-	$(Q)$(PYTHON3) ../../tools/gen_nvm_devices.py $< $@
+	$(Q)$(PYTHON) ../../tools/gen_nvm_devices.py $< $@
 
 $(BUILD)/supervisor/shared/external_flash/external_flash.o: $(HEADER_BUILD)/devices.h
 
@@ -185,7 +185,7 @@ CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 $(BUILD)/autogen_display_resources.c: ../../tools/gen_display_resources.py $(HEADER_BUILD)/qstrdefs.generated.h Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
-	$(Q)$(PYTHON3) ../../tools/gen_display_resources.py \
+	$(Q)$(PYTHON) ../../tools/gen_display_resources.py \
 		--font $(CIRCUITPY_DISPLAY_FONT) \
 		--sample_file $(HEADER_BUILD)/qstrdefs.generated.h \
 		--output_c_file $(BUILD)/autogen_display_resources.c

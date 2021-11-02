@@ -42,7 +42,7 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     keypad_event_obj_t *self = m_new_obj(keypad_event_obj_t);
     self->base.type = &keypad_event_type;
     enum { ARG_key_number, ARG_pressed, ARG_timestamp };
@@ -52,7 +52,7 @@ STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, 
         { MP_QSTR_timestamp, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const mp_uint_t key_number =
         (mp_uint_t)mp_arg_validate_int_min(args[ARG_key_number].u_int, 0, MP_QSTR_key_number);
@@ -171,7 +171,7 @@ STATIC mp_obj_t keypad_event_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_ob
 //|         ...
 //|
 STATIC mp_obj_t keypad_event_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self);
+    keypad_event_obj_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_HASH: {
             const mp_int_t key_number = common_hal_keypad_event_get_key_number(self);

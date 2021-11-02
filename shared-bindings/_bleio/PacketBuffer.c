@@ -60,7 +60,7 @@
 //|           (Remote characteristics may not have the correct length.)"""
 //|         ...
 //|
-STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_characteristic, ARG_buffer_size, ARG_max_packet_size };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_characteristic,  MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -69,7 +69,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     bleio_characteristic_obj_t *characteristic = mp_arg_validate_type(args[ARG_characteristic].u_obj, &bleio_characteristic_type, MP_QSTR_characteristic);
 

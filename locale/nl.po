@@ -556,6 +556,10 @@ msgstr "Bitdiepte moet tussen 1 en 6 liggen, niet %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "Bit diepte moet een meervoud van 8 zijn."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "RX en TX zijn beide vereist voor stroomregeling"
@@ -1739,6 +1743,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1764,6 +1769,7 @@ msgstr ""
 msgid "Only one address is allowed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1946,6 +1952,7 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Pull niet gebruikt wanneer de richting output is."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr ""
@@ -2091,6 +2098,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr "Afmeting niet ondersteund"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2245,6 +2253,7 @@ msgstr "Teveel beeldschermen"
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2437,6 +2446,7 @@ msgstr "Voltage lees time-out"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WAARSCHUWING: De bestandsnaam van de code heeft twee extensies\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2467,15 +2477,10 @@ msgstr "Watchdog-timer verstreken."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
-"Welkom bij Adafruit CircuitPython %s!\n"
-"\n"
-"Bezoek learn.adafruit.com/category/circuitpython voor projectgidsen.\n"
-"\n"
-"Voor een lijst van ingebouwde modules, gebruik `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -2517,10 +2522,6 @@ msgstr "__new__ arg moet een user-type zijn"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "een bytes-achtig object is vereist"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() aangeroepen"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
@@ -3021,6 +3022,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "deling door nul"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "leeg"
@@ -3101,26 +3106,6 @@ msgstr "extra keyword argumenten gegeven"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "extra positionele argumenten gegeven"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-string expressie deel kan geen '#' bevatten"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-string expressie deel kan geen backslash bevatten"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-string: lege expressie niet toegestaan"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: verwacht '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: enkele '}' is niet toegestaan"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3383,10 +3368,6 @@ msgstr "invoer is niet itereerbaar"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int() argument 2 moet >=2 en <= 36 zijn"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "integer vereist"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3399,10 +3380,6 @@ msgstr "interval moet binnen bereik %s-%s vallen"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "ongeldige argumenten"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3968,6 +3945,7 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4012,8 +3990,8 @@ msgid "queue overflow"
 msgstr "wachtrij overloop"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "ruwe f-strings zijn niet geïmplementeerd"
+msgid "raw f-strings are not supported"
+msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4075,7 +4053,7 @@ msgstr "bemonsteringssnelheid buiten bereik"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "scriptcompilatie wordt niet ondersteund"
 
@@ -4223,6 +4201,7 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() accepteert een 9-rij"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4351,8 +4330,8 @@ msgid "unicode name escapes"
 msgstr "op naam gebaseerde unicode escapes zijn niet geïmplementeerd"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4504,6 +4483,51 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Welkom bij Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Bezoek learn.adafruit.com/category/circuitpython voor projectgidsen.\n"
+#~ "\n"
+#~ "Voor een lijst van ingebouwde modules, gebruik `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "integer vereist"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() aangeroepen"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string expressie deel kan geen '#' bevatten"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string expressie deel kan geen backslash bevatten"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: lege expressie niet toegestaan"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: verwacht '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: enkele '}' is niet toegestaan"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ongeldige argumenten"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "ruwe f-strings zijn niet geïmplementeerd"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q lijst moet een lijst zijn"

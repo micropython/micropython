@@ -29,8 +29,8 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"

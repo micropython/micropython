@@ -112,9 +112,9 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
-INC +=  -I$(TOP)/lib/mp-readline
+INC += -I$(TOP)/shared/readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
-LIB_SRC_C_EXTRA += mp-readline/readline.c
+SHARED_SRC_C_EXTRA += readline/readline.c
 endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
 CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
@@ -127,6 +127,62 @@ endif
 ifeq ($(MICROPY_PY_THREAD),1)
 CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
+endif
+
+# If the variant enables it, enable modbluetooth.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+
+# Only one stack can be enabled.
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+$(error Cannot enable both NimBLE and BTstack at the same time)
+endif
+endif
+
+# Default to btstack, but a variant (or make command line) can set NimBLE
+# explicitly (which is always via H4 UART).
+ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+MICROPY_BLUETOOTH_BTSTACK ?= 1
+endif
+endif
+
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+
+# Figure out which BTstack transport to use.
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+$(error Cannot enable BTstack support for USB and H4 UART at the same time)
+endif
+else
+ifeq ($(HAVE_LIBUSB),1)
+# Default to btstack-over-usb.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+else
+# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+endif
+endif
+
+# BTstack is enabled.
+GIT_SUBMODULES += lib/btstack
+include $(TOP)/extmod/btstack/btstack.mk
+SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
+
+else
+
+# NimBLE is enabled.
+GIT_SUBMODULES += lib/mynewt-nimble
+CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
+include $(TOP)/extmod/nimble/nimble.mk
+
+endif
+
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
@@ -178,10 +234,10 @@ SRC_C += \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C += $(addprefix lib/,\
-	$(LIB_SRC_C_EXTRA) \
+SHARED_SRC_C += $(addprefix shared/,\
+	runtime/gchelper_generic.c \
 	timeutils/timeutils.c \
-	utils/gchelper_generic.c \
+	$(SHARED_SRC_C_EXTRA) \
 	)
 
 SRC_CXX += \
@@ -190,11 +246,12 @@ SRC_CXX += \
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(LIB_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -219,6 +276,17 @@ ifeq ($(MICROPY_FORCE_32BIT),1)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
 else
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc'
+endif
+
+ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)
+# Force disable error text compression when compiling for ARM as the compiler
+# cannot optimise out the giant strcmp list generated for MP_MATCH_COMPRESSED.
+# Checked on:
+# arm-linux-gnueabi-gcc (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 7.5.0
+# arm-linux-gnueabi-gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
+# See https://github.com/micropython/micropython/pull/7659 for details.
+$(info Detected arm-linux-gnueabi-gcc. Disabling error message compression.)
+MICROPY_ROM_TEXT_COMPRESSION = 0
 endif
 
 include $(TOP)/py/mkrules.mk

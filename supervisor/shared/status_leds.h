@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "supervisor/port.h"
 
 #include "py/mpconfig.h"

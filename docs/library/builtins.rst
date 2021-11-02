@@ -1,5 +1,5 @@
-Builtin functions and exceptions
-================================
+:mod:`builtins` -- builtin functions and exceptions
+===================================================
 
 All builtin functions and exceptions are described here. They are also
 available via ``builtins`` module.

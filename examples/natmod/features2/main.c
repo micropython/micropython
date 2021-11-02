@@ -46,7 +46,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(add_d_obj, add_d);
 // to use but has access to the globals dict of the module via self->globals.
 STATIC mp_obj_t productf(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     // Check number of arguments is valid
-    mp_arg_check_num_mp(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // Extract buffer pointer and verify typecode
     mp_buffer_info_t bufinfo;

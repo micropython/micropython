@@ -31,6 +31,7 @@
 #define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
 #define EIC_HANDLER_PS2 0x3
 #define EIC_HANDLER_COUNTER 0x04
+#define EIC_HANDLER_ALARM 0x05
 
 void set_eic_handler(uint8_t channel, uint8_t eic_handler);
 void shared_eic_handler(uint8_t channel);

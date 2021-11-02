@@ -98,10 +98,13 @@ CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
+
+CIRCUITPY_ALARM ?= 0
 CIRCUITPY_PS2IO ?= 1
 CIRCUITPY_SAMD ?= 1
 CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FULL_BUILD)
 CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
+CIRCUITPY_WATCHDOG ?= 1
 
 endif # samd51
 ######################################################################

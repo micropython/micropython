@@ -27,7 +27,7 @@
 #include "shared-bindings/i2cperipheral/I2CPeripheral.h"
 #include "common-hal/busio/I2C.h"
 
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/runtime.h"

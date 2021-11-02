@@ -31,6 +31,9 @@
 
 #if MICROPY_PY_UASYNCIO
 
+// Used when task cannot be guaranteed to be non-NULL.
+#define TASK_PAIRHEAP(task) ((task) ? &(task)->pairheap : NULL)
+
 #define TASK_STATE_RUNNING_NOT_WAITED_ON (mp_const_true)
 #define TASK_STATE_DONE_NOT_WAITED_ON (mp_const_none)
 #define TASK_STATE_DONE_WAS_WAITED_ON (mp_const_false)
@@ -55,7 +58,7 @@ typedef struct _mp_obj_task_queue_t {
 STATIC const mp_obj_type_t task_queue_type;
 STATIC const mp_obj_type_t task_type;
 
-STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
+STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
@@ -81,9 +84,9 @@ STATIC int task_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
 /******************************************************************************/
 // TaskQueue class
 
-STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
-    mp_arg_check_num(n_args, kw_args, 0, 0, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
     mp_obj_task_queue_t *self = m_new_obj(mp_obj_task_queue_t);
     self->base.type = type;
     self->heap = (mp_obj_task_t *)mp_pairheap_new(task_lt);
@@ -110,7 +113,7 @@ STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
         assert(mp_obj_is_small_int(args[2]));
         task->ph_key = args[2];
     }
-    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, &self->heap->pairheap, &task->pairheap);
+    self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, TASK_PAIRHEAP(self->heap), TASK_PAIRHEAP(task));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_sorted_obj, 2, 3, task_queue_push_sorted);
@@ -156,8 +159,8 @@ STATIC const mp_obj_type_t task_queue_type = {
 // This is the core uasyncio context with cur_task, _task_queue and CancelledError.
 STATIC mp_obj_t uasyncio_context = MP_OBJ_NULL;
 
-STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 2, false);
+STATIC mp_obj_t task_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_obj_task_t *self = m_new_obj(mp_obj_task_t);
     self->pairheap.base.type = type;
     mp_pairheap_init_node(task_lt, &self->pairheap);

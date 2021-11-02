@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-11 09:40+0000\n"
+"PO-Revision-Date: 2021-10-23 07:37+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -560,6 +560,10 @@ msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Bitdjup måste vara multipel av 8."
+
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr "Startenheten måste vara den första enheten (gränssnitt #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -1746,6 +1750,7 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Endast anslutningsbara annonseringar kan dirigeras"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
@@ -1771,6 +1776,7 @@ msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
 msgid "Only one address is allowed"
 msgstr "Endast en adress är tillåten"
 
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1952,6 +1958,7 @@ msgstr "Programmet är för stort"
 msgid "Pull not used when direction is output."
 msgstr "Pull används inte när riktningen är output."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE-läge är inte implementerat"
@@ -2097,6 +2104,7 @@ msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
 msgid "Size not supported"
 msgstr "Storleken stöds inte"
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sömnminne inte tillgängligt"
@@ -2261,6 +2269,7 @@ msgstr "För många displayer"
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2453,6 +2462,7 @@ msgstr "Avläsning av spänning tog för lång tid"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "VARNING: Ditt filnamn för kod har två tillägg\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2480,15 +2490,15 @@ msgstr "Watchdog-timern har löpt ut."
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
 "Välkommen till Adafruit CircuitPython %s!\n"
 "\n"
-"Besök learning.adafruit.com/category/circuitpython för projektguider.\n"
+"Besök circuitpython.org för mer information.\n"
 "\n"
-"För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
+"För att lista inbyggda moduler skriver du `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -2532,10 +2542,6 @@ msgstr "__new__ arg måste vara en användartyp"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "ett bytesliknande objekt krävs"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "abort() anropad"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
@@ -3037,6 +3043,10 @@ msgstr "division med noll"
 msgid "division by zero"
 msgstr "division med noll"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr "divisor måste vara 4"
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "tom"
@@ -3117,26 +3127,6 @@ msgstr "extra keyword-argument angivna"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "extra positions-argument angivna"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr "f-stränguttrycksdelen kan inte innehålla en '#'"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr "f-string-uttrycksdelen kan inte innehålla ett omvänt snedstreck"
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr "f-sträng: tomt uttryck inte tillåten"
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr "f-string: förväntat '}'"
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr "f-string: singel '}' är inte tillåten"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3398,10 +3388,6 @@ msgstr "indata är inte iterbara"
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "int() arg 2 måste vara >= 2 och <= 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "heltal krävs"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr "interp är definierad för 1D-iterabla med samma längd"
@@ -3414,10 +3400,6 @@ msgstr "interval måste vara i intervallet %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr "ogiltig arkitektur"
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "ogiltiga argument"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3983,6 +3965,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4027,8 +4010,8 @@ msgid "queue overflow"
 msgstr "köstorlek överskreds"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
-msgstr "råa f-strängar inte implementerade"
+msgid "raw f-strings are not supported"
+msgstr "råa f-strängar stöds inte"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4090,7 +4073,7 @@ msgstr "samplingsfrekvens utanför räckvidden"
 msgid "schedule queue full"
 msgstr "schemakön full"
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "skriptkompilering stöds inte"
 
@@ -4238,6 +4221,7 @@ msgstr "tile måste vara större än noll"
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() kräver en 9-sekvens"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4366,8 +4350,8 @@ msgid "unicode name escapes"
 msgstr "unicode-namn flyr"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "indentering inte matchar någon yttre indenteringsnivå"
+msgid "unindent doesn't match any outer indent level"
+msgstr "avindentering matchar inte någon yttre indentering"
 
 #: py/objstr.c
 #, c-format
@@ -4519,6 +4503,51 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Välkommen till Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Besök learning.adafruit.com/category/circuitpython för projektguider.\n"
+#~ "\n"
+#~ "För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "heltal krävs"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() anropad"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-stränguttrycksdelen kan inte innehålla en '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string-uttrycksdelen kan inte innehålla ett omvänt snedstreck"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-sträng: tomt uttryck inte tillåten"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: förväntat '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: singel '}' är inte tillåten"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ogiltiga argument"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "råa f-strängar inte implementerade"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "indentering inte matchar någon yttre indenteringsnivå"
 
 #~ msgid "%q list must be a list"
 #~ msgstr "%q-listan måste vara en lista"

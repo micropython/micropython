@@ -45,7 +45,7 @@ main.c:298 main 5 blocks
 main.c:311 main 289 blocks
  main.c:211 start_mp 14 blocks
    main.c:196 maybe_run 14 blocks
-     ../lib/utils/pyexec.c:501 pyexec_file 14 blocks
+     ../shared/runtime/pyexec.c:501 pyexec_file 14 blocks
        main.c:352 mp_lexer_new_from_file 14 blocks
          ../py/../extmod/vfs_fat_lexer.c:80 fat_vfs_lexer_new_from_file 14 blocks
            ../py/qstr.c:184 qstr_from_str 14 blocks
@@ -54,8 +54,8 @@ main.c:311 main 289 blocks
                ../py/qstr.c:146 qstr_add 6 blocks
  main.c:220 start_mp 275 blocks
    main.c:196 maybe_run 275 blocks
-     ../lib/utils/pyexec.c:508 pyexec_file 275 blocks
-       ../lib/utils/pyexec.c:82 parse_compile_execute 4 blocks
+     ../shared/runtime/pyexec.c:508 pyexec_file 275 blocks
+       ../shared/runtime/pyexec.c:82 parse_compile_execute 4 blocks
          ../py/compile.c:3511 mp_compile 3 blocks
            ../py/compile.c:3451 mp_compile_to_raw_code 3 blocks
              ../py/compile.c:3092 compile_scope 3 blocks
@@ -63,7 +63,7 @@ main.c:311 main 289 blocks
          ../py/compile.c:3513 mp_compile 1 blocks
            ../py/emitglue.c:131 mp_make_function_from_raw_code 1 blocks
              ../py/objfun.c:364 mp_obj_new_fun_bc 1 blocks
-       ../lib/utils/pyexec.c:88 parse_compile_execute 271 blocks
+       ../shared/runtime/pyexec.c:88 parse_compile_execute 271 blocks
          ../py/runtime.c:551 mp_call_function_0 271 blocks
            ../py/runtime.c:577 mp_call_function_n_kw 271 blocks
              ../py/objfun.c:275 fun_bc_call 271 blocks
@@ -185,7 +185,7 @@ main.c:311 main 289 blocks
                      ../py/map.c:283 mp_map_lookup 2 blocks
                        ../py/map.c:130 mp_map_rehash 2 blocks
 main.c:321 main 2 blocks
- ../lib/utils/pyexec.c:374 pyexec_friendly_repl 2 blocks
+ ../shared/runtime/pyexec.c:374 pyexec_friendly_repl 2 blocks
    ../py/vstr.c:46 vstr_init 2 blocks
 296 total blocks
 ```
