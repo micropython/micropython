@@ -112,7 +112,7 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_start(mp_ob
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(imagecapture_parallelimagecapture_continuous_capture_start_obj, imagecapture_parallelimagecapture_continuous_capture_start);
 
-//|     def continuous_capture_get_frame(self) -> WritableBuffer:
+//|     def continuous_capture_get_frame(self) -> WriteableBuffer:
 //|         """Return the next available frame, one of the two buffers passed to `continuous_capture_start`"""
 //|         ...
 //|
