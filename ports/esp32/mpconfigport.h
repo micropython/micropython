@@ -15,6 +15,12 @@
 #define MICROPY_GCREGS_SETJMP               (1)
 #endif
 
+// maximum amount of memory to allocate to micropython heap (bytes)
+// can be overridden in board/XXX/mpconfigboard.h
+#ifndef MICROPY_HEAP_SIZE_MAX
+#define MICROPY_HEAP_SIZE_MAX               (104000)
+#endif
+
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
