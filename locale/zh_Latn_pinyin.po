@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-01 02:38+0000\n"
+"PO-Revision-Date: 2021-10-31 11:37+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -152,7 +152,7 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
-msgstr ""
+msgstr "%q bì xū shì lèi xíng %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -173,7 +173,7 @@ msgstr "%q yīnggāi shì yīgè int"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
-msgstr ""
+msgstr "%q yǔ bào gào ID 0 bì xū shì cháng dù 1"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -565,7 +565,7 @@ msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
-msgstr ""
+msgstr "yǐn dǎo shè bèi bì xū shì dì yī tái shè bèi (jiē kǒu #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -1777,7 +1777,7 @@ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mi
 
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 msgid "Only one address is allowed"
-msgstr ""
+msgstr "zhǐ yǔn xǔ yí gè dì zhǐ"
 
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
@@ -1908,7 +1908,7 @@ msgstr "yǐn jiǎo bì xū shì lián xù de"
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential GPIO pins"
-msgstr ""
+msgstr "yǐn jiǎo bì xū shì lián xù de GPIO yǐn jiǎo"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
@@ -2495,6 +2495,11 @@ msgid ""
 "\n"
 "To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
+"huān yíng lái dào ā dá shuǐ guǒ diàn lù Python %s!\n"
+"\n"
+"fǎng wèn circuitpython.org le jiě gèng duō xìn xī.\n"
+"\n"
+"liè chū nèi zhì mó kuài jiàn rù `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -3042,7 +3047,7 @@ msgstr "bèi líng chú"
 
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "divisor must be 4"
-msgstr ""
+msgstr "èr chóng zòu bì xū shì 4"
 
 #: py/objdeque.c
 msgid "empty"
@@ -4005,7 +4010,7 @@ msgstr "duìliè yìchū"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "bù zhī chí yuán shǐ f-strings"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4345,7 +4350,7 @@ msgstr "unicode míngchēng táoyì"
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
-msgstr ""
+msgstr "dān dù bù pǐ pèi rèn hé wài bù āo hén shuǐ píng"
 
 #: py/objstr.c
 #, c-format

@@ -635,7 +635,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     return skip_repl;
 }
 
-FIL* boot_output_file;
+vstr_t *boot_output;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // If not in safe mode, run boot before initing USB and capture output in a file.
@@ -645,66 +645,11 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
-    bool skip_boot_output = false;
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    FIL file_pointer;
-    #endif
-
-    if (ok_to_run) {
-
-        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        boot_output_file = &file_pointer;
-
-        // Get the base filesystem.
-        FATFS *fs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
-
-        bool have_boot_py = first_existing_file_in_list(boot_py_filenames) != NULL;
-
-        // If there's no boot.py file that might write some changing output,
-        // read the existing copy of CIRCUITPY_BOOT_OUTPUT_FILE and see if its contents
-        // match the version info we would print anyway. If so, skip writing CIRCUITPY_BOOT_OUTPUT_FILE.
-        // This saves wear and tear on the flash and also prevents filesystem damage if power is lost
-        // during the write, which may happen due to bobbling the power connector or weak power.
-
-        static const size_t NUM_CHARS_TO_COMPARE = 160;
-        if (!have_boot_py && f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
-
-            char file_contents[NUM_CHARS_TO_COMPARE];
-            UINT chars_read = 0;
-            f_read(boot_output_file, file_contents, NUM_CHARS_TO_COMPARE, &chars_read);
-            f_close(boot_output_file);
-            skip_boot_output =
-                // + 2 accounts for  \r\n.
-                chars_read == strlen(MICROPY_FULL_VERSION_INFO) + 2 &&
-                strncmp(file_contents, MICROPY_FULL_VERSION_INFO, strlen(MICROPY_FULL_VERSION_INFO)) == 0;
-        }
-
-        if (!skip_boot_output) {
-            // Wait 1.5 seconds before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
-            // in case power is momentary or will fail shortly due to, say a low, battery.
-            if (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON) {
-                mp_hal_delay_ms(1500);
-            }
-            // USB isn't up, so we can write the file.
-            filesystem_set_internal_writable_by_usb(false);
-            f_open(fs, boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-
-            // Switch the filesystem back to non-writable by Python now instead of later,
-            // since boot.py might change it back to writable.
-            filesystem_set_internal_writable_by_usb(true);
-
-            // Write version info to boot_out.txt.
-            mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
-            // Write the board ID (board directory and ID on circuitpython.org)
-            mp_hal_stdout_tx_str("\r\n" "Board ID:");
-            mp_hal_stdout_tx_str(CIRCUITPY_BOARD_ID);
-            mp_hal_stdout_tx_str("\r\n");
-        }
-        #endif
-
-        filesystem_flush();
+    if (!ok_to_run) {
+        return;
     }
+
+    static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
 
     // Do USB setup even if boot.py is not run.
 
@@ -716,19 +661,54 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_set_defaults();
 #endif
 
-    pyexec_result_t result = {0, MP_OBJ_NULL, 0};
-    if (ok_to_run) {
-        bool found_boot = maybe_run_list(boot_py_filenames, &result);
-        (void) found_boot;
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    vstr_t boot_text;
+    vstr_init(&boot_text, 512);
+    boot_output = &boot_text;
+    #endif
 
-        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-        if (!skip_boot_output) {
-            f_close(boot_output_file);
-            filesystem_flush();
+    // Write version info
+    mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
+
+    pyexec_result_t result = {0, MP_OBJ_NULL, 0};
+
+    bool found_boot = maybe_run_list(boot_py_filenames, &result);
+    (void) found_boot;
+
+
+    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+    // Get the base filesystem.
+    fs_user_mount_t *vfs = (fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj;
+    FATFS *fs = &vfs->fatfs;
+
+    boot_output = NULL;
+    bool write_boot_output = (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON);
+    FIL boot_output_file;
+    if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
+        char *file_contents = m_new(char, boot_text.alloc);
+        UINT chars_read;
+        if (f_read(&boot_output_file, file_contents, 1+boot_text.len, &chars_read) == FR_OK) {
+            write_boot_output =
+                (chars_read != boot_text.len) || (memcmp(boot_text.buf, file_contents, chars_read) != 0);
         }
-        boot_output_file = NULL;
-        #endif
+        // no need to f_close the file
     }
+
+    if (write_boot_output) {
+        // Wait 1 second before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
+        // in case power is momentary or will fail shortly due to, say a low, battery.
+        mp_hal_delay_ms(1000);
+
+        // USB isn't up, so we can write the file.
+        // operating at the oofatfs (f_open) layer means the usb concurrent write permission
+        // is not even checked!
+        f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+        UINT chars_written;
+        f_write(&boot_output_file, boot_text.buf, boot_text.len, &chars_written);
+        f_close(&boot_output_file);
+        filesystem_flush();
+    }
+    #endif
 
 #if CIRCUITPY_USB
     // Some data needs to be carried over from the USB settings in boot.py

@@ -3,7 +3,6 @@ import audiopwmio
 import board
 import digitalio
 import time
-import math
 import os
 
 trigger = digitalio.DigitalInOut(board.D4)
