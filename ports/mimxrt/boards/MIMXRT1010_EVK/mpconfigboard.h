@@ -9,12 +9,13 @@
 #define MICROPY_HW_NUM_PIN_IRQS (2 * 32)
 
 // Define mapping logical UART # to hardware UART #
-// LPUART1 on D0/D1 -> 1
-// LPUART3 on A0/D4 -> 3
-// LPUART4 on D6/D7 -> 2
+// LPUART1 on USB_DBG  -> 0
+// LPUART1 on D0/D1    -> 1
+// LPUART3 on A0/D4    -> 3
+// LPUART4 on D6/D7    -> 2
 
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table) / sizeof(uart_index_table)[0])
-#define MICROPY_HW_UART_INDEX   { 0, 1, 4 }
+#define MICROPY_HW_UART_INDEX   { 1, 1, 4, 3 }
 
 #define IOMUX_TABLE_UART \
     { IOMUXC_GPIO_10_LPUART1_TXD }, { IOMUXC_GPIO_09_LPUART1_RXD }, \
