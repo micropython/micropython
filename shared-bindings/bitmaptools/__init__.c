@@ -245,6 +245,85 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //|
+//| def alphablend(dest_bitmap, source_bitmap_1, source_bitmap_2, colorspace: displayio.Colorspace, factor1: float=.5, factor2: float=None):
+//|     """Alpha blend the two source bitmaps into the destination.
+//|
+//|     It is permitted for the destination bitmap to be one of the two
+//|     source bitmaps.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param bitmap source_bitmap_1: The first source bitmap
+//|     :param bitmap source_bitmap_2: The second source bitmap
+//|     :param float factor1: The proportion of bitmap 1 to mix in
+//|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
+//|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
+//|
+//|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
+//|     For the RGB colorspaces, they must have a bits-per-value of 16."""
+//|
+
+STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_source_bitmap_1, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_source_bitmap_2, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_factor_1, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        {MP_QSTR_factor_2, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
+    displayio_bitmap_t *source1 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_1].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_1)); // the first source bitmap
+    displayio_bitmap_t *source2 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_2].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_2)); // the second source bitmap
+
+    float factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? .5f : mp_obj_float_get(args[ARG_factor_1].u_obj);
+    float factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_float_get(args[ARG_factor_2].u_obj);
+
+    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj);
+
+    if (destination->width != source1->width
+        || destination->height != source1->height
+        || destination->bits_per_value != source1->bits_per_value
+        || destination->width != source2->width
+        || destination->height != source2->height
+        || destination->bits_per_value != source2->bits_per_value
+        ) {
+        mp_raise_ValueError(translate("Bitmap size and bits per value must match"));
+    }
+
+    switch (colorspace) {
+        #if 0
+        case DISPLAYIO_COLORSPACE_L8:
+            if (destination->bits_per_value != 8) {
+                mp_raise_ValueError(translate("For L8 colorspace, input bitmap must have 8 bits per pixel"));
+            }
+            break;
+        #endif
+
+        case DISPLAYIO_COLORSPACE_RGB565:
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_BGR565:
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+            if (destination->bits_per_value != 16) {
+                mp_raise_ValueError(translate("For RGB colorspaces, input bitmap must have 16 bits per pixel"));
+            }
+            break;
+
+        default:
+            mp_raise_ValueError(translate("Unsupported colorspace"));
+    }
+
+    common_hal_bitmaptools_alphablend(destination, source1, source2, colorspace, factor1, factor2);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend);
+
+//|
 //| def fill_region(
 //|        dest_bitmap: displayio.Bitmap,
 //|        x1: int, y1: int,
@@ -276,7 +355,7 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
@@ -327,7 +406,7 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap));     // the destination bitmap
 
     uint32_t fill_color_value, color_depth;
     fill_color_value = args[ARG_fill_color_value].u_int;
@@ -391,7 +470,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
@@ -573,6 +652,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alphablend), MP_ROM_PTR(&bitmaptools_alphablend_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
