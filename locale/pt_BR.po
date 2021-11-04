@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-23 07:37+0000\n"
+"PO-Revision-Date: 2021-11-05 04:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -648,7 +648,7 @@ msgstr "O buffer é muito curto em %d bytes"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "Os buffers devem ter o mesmo tamanho"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1630,7 +1630,7 @@ msgstr "Nenhum clock disponível"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
-msgstr ""
+msgstr "Não há nenhuma captura em andamento"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -2252,7 +2252,7 @@ msgstr "A amostragem \"signedness\" não coincide com a do mixer"
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
-msgstr ""
+msgstr "Este microcontrolador não tem suporte para captura contínua."
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
