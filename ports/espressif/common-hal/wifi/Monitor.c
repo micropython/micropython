@@ -66,7 +66,7 @@ static void wifi_monitor_cb(void *recv_buf, wifi_promiscuous_pkt_type_t type) {
             if (self->queue) {
                 // send packet
                 if (xQueueSendFromISR(self->queue, &packet, NULL) != pdTRUE) {
-                    self->loss++;
+                    self->lost++;
                     free(packet.payload);
                     ESP_LOGE(TAG, "packet queue full");
                 }
@@ -138,10 +138,14 @@ mp_obj_t common_hal_wifi_monitor_get_queue(wifi_monitor_obj_t *self) {
     return mp_obj_new_int_from_uint(self->queue_length);
 }
 
-mp_obj_t common_hal_wifi_monitor_get_loss(wifi_monitor_obj_t *self) {
-    size_t loss = self->loss;
-    self->loss = 0;
-    return mp_obj_new_int_from_uint(loss);
+mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self) {
+    size_t lost = self->lost;
+    self->lost = 0;
+    return mp_obj_new_int_from_uint(lost);
+}
+
+mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self) {
+    return mp_obj_new_int_from_uint(uxQueueMessagesWaiting(self->queue));
 }
 
 mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self) {

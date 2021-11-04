@@ -120,27 +120,35 @@ STATIC mp_obj_t wifi_monitor_obj_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_deinit_obj, wifi_monitor_obj_deinit);
 
-STATIC void check_for_deinit(mp_obj_t self_in) {
-    if (common_hal_wifi_monitor_deinited()) {
-        raise_deinited_error();
-    }
-}
-
-//| def loss(self) -> int:
+//| def lost(self) -> int:
 //|     """Returns the packet loss count. The counter resets after each poll."""
 //|     ...
 //|
-STATIC mp_obj_t wifi_monitor_obj_get_loss(mp_obj_t self_in) {
-    return common_hal_wifi_monitor_get_loss(self_in);
+STATIC mp_obj_t wifi_monitor_obj_get_lost(mp_obj_t self_in) {
+    return common_hal_wifi_monitor_get_lost(self_in);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_loss_obj, wifi_monitor_obj_get_loss);
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_lost_obj, wifi_monitor_obj_get_lost);
+
+//| def queued(self) -> int:
+//|     """Returns the packet queued count."""
+//|     ...
+//|
+STATIC mp_obj_t wifi_monitor_obj_get_queued(mp_obj_t self_in) {
+    if (common_hal_wifi_monitor_deinited()) {
+        return mp_obj_new_int_from_uint(0);
+    }
+    return common_hal_wifi_monitor_get_queued(self_in);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_queued_obj, wifi_monitor_obj_get_queued);
 
 //| def packet(self) -> dict:
 //|     """Returns the monitor packet."""
 //|     ...
 //|
 STATIC mp_obj_t wifi_monitor_obj_get_packet(mp_obj_t self_in) {
-    check_for_deinit(self_in);
+    if (common_hal_wifi_monitor_deinited()) {
+        raise_deinited_error();
+    }
     return common_hal_wifi_monitor_get_packet(self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_packet_obj, wifi_monitor_obj_get_packet);
@@ -148,12 +156,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_packet_obj, wifi_monitor_obj_get_packet);
 STATIC const mp_rom_map_elem_t wifi_monitor_locals_dict_table[] = {
     // properties
     { MP_ROM_QSTR(MP_QSTR_channel), MP_ROM_PTR(&wifi_monitor_channel_obj) },
-    { MP_ROM_QSTR(MP_QSTR_queue), MP_ROM_PTR(&wifi_monitor_queue_obj) },
+    { MP_ROM_QSTR(MP_QSTR_queue),   MP_ROM_PTR(&wifi_monitor_queue_obj) },
 
     // functions
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&wifi_monitor_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_loss), MP_ROM_PTR(&wifi_monitor_loss_obj) },
-    { MP_ROM_QSTR(MP_QSTR_packet), MP_ROM_PTR(&wifi_monitor_packet_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&wifi_monitor_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lost),    MP_ROM_PTR(&wifi_monitor_lost_obj) },
+    { MP_ROM_QSTR(MP_QSTR_queued),  MP_ROM_PTR(&wifi_monitor_queued_obj) },
+    { MP_ROM_QSTR(MP_QSTR_packet),  MP_ROM_PTR(&wifi_monitor_packet_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(wifi_monitor_locals_dict, wifi_monitor_locals_dict_table);
 

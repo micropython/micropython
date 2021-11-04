@@ -33,7 +33,7 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t channel;
-    size_t loss;
+    size_t lost;
     size_t queue_length;
     QueueHandle_t queue;
 } wifi_monitor_obj_t;

@@ -41,7 +41,9 @@ mp_obj_t common_hal_wifi_monitor_get_channel(wifi_monitor_obj_t *self);
 
 mp_obj_t common_hal_wifi_monitor_get_queue(wifi_monitor_obj_t *self);
 
-mp_obj_t common_hal_wifi_monitor_get_loss(wifi_monitor_obj_t *self);
+mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self);
+
+mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self);
 
 mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self);
 
