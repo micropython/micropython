@@ -33,7 +33,6 @@
 
 #if defined(MICROPY_HW_ETH_MDC)
 
-#include "eth.h"
 #include "pin.h"
 #include "shared/netutils/netutils.h"
 #include "extmod/modnetwork.h"
@@ -46,6 +45,7 @@
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 
+#include "eth.h"
 #include "lwip/etharp.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
@@ -167,22 +167,24 @@ void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, enet_event_t event,
 
     if (event == kENET_RxEvent) {
         do {
-            status = ENET_GetRxFrameSize(&g_handle, &length);
+            status = ENET_GetRxFrameSize(handle, &length);
             if (status == kStatus_Success) {
                 // Get the data
-                ENET_ReadFrame(ENET, &g_handle, g_rx_frame, length);
+                ENET_ReadFrame(base, handle, g_rx_frame, length);
                 eth_process_frame(self, g_rx_frame, length);
             } else if (status == kStatus_ENET_RxFrameError) {
-                ENET_ReadFrame(ENET, &g_handle, NULL, 0);
+                ENET_ReadFrame(base, handle, NULL, 0);
             }
         } while (status != kStatus_ENET_RxFrameEmpty);
     } else {
-        ENET_ClearInterruptStatus(ENET, kENET_TxFrameInterrupt);
+        ENET_ClearInterruptStatus(base, kENET_TxFrameInterrupt);
     }
 }
 
 // eth_init: Set up GPIO and the transceiver
-void eth_init(eth_t *self, int mac_idx) {
+void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr) {
+
+    self->netif.num = mac_idx; // Set the interface number
 
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
@@ -242,6 +244,8 @@ void eth_init(eth_t *self, int mac_idx) {
 
     mp_hal_get_mac(0, hw_addr);
 
+    phyHandle.ops = phy_ops;
+    phyConfig.phyAddr = phy_addr;
     phyConfig.autoNeg = true;
     mdioHandle.resource.base = ENET;
     mdioHandle.resource.csrClock_Hz = CLOCK_GetFreq(kCLOCK_IpgClk);
@@ -252,7 +256,6 @@ void eth_init(eth_t *self, int mac_idx) {
     phy_speed_t speed = kENET_MiiSpeed100M;
     phy_duplex_t duplex = kENET_MiiFullDuplex;
 
-    phyConfig.phyAddr = ENET_PHY_ADDRESS;
 
     status_t status = PHY_Init(&phyHandle, &phyConfig);
     if (status == kStatus_Success) {

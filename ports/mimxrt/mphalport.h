@@ -97,6 +97,7 @@ enum {
     MP_HAL_MAC_WLAN1,
     MP_HAL_MAC_BDADDR,
     MP_HAL_MAC_ETH0,
+    MP_HAL_MAC_ETH1,
 };
 
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
