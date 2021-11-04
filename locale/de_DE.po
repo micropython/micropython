@@ -356,6 +356,7 @@ msgstr "3-arg pow() wird nicht unterstützt"
 msgid "64 bit types"
 msgstr "64 bit Typen"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -635,6 +636,10 @@ msgstr "Der Puffer muss eine Mindestenslänge von 1 haben"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Puffer um %d Bytes zu kurz"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1608,6 +1613,10 @@ msgstr "Kein TX Pin"
 msgid "No available clocks"
 msgstr "Keine Taktgeber verfügbar"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Keine Verbindung: Länge kann nicht bestimmt werden"
@@ -1628,6 +1637,7 @@ msgstr "Kein hardware random verfügbar"
 msgid "No hardware support on clk pin"
 msgstr "Keine Hardwareunterstützung am clk Pin"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1752,7 +1762,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1849,6 +1858,7 @@ msgstr ""
 msgid "Permission denied"
 msgstr "Zugang verweigert"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr ""
@@ -2208,6 +2218,10 @@ msgstr "Die Abtastrate der Probe stimmt nicht mit der des Mischers überein"
 msgid "The sample's signedness does not match the mixer's"
 msgstr ""
 "Die Art des Vorzeichens des Samples stimmt nicht mit dem des Mixers überein"
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr ""
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -3946,6 +3960,7 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() mit 3 Argumenten erfordert Integer"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h

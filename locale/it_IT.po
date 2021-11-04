@@ -358,6 +358,7 @@ msgstr "pow() con tre argmomenti non supportata"
 msgid "64 bit types"
 msgstr "Tipo 64 bits"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -639,6 +640,10 @@ msgstr "Il buffer deve essere lungo almeno 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer troppo piccolo di %d bytes"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1613,6 +1618,10 @@ msgstr "Nessun pin TX"
 msgid "No available clocks"
 msgstr "Nessun orologio a disposizione"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr ""
@@ -1633,6 +1642,7 @@ msgstr "Nessun generatore hardware di numeri casuali disponibile"
 msgid "No hardware support on clk pin"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1757,7 +1767,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr ""
@@ -1857,6 +1866,7 @@ msgstr ""
 msgid "Permission denied"
 msgstr "Permesso negato"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr ""
@@ -2212,6 +2222,10 @@ msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
+msgstr ""
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
 msgstr ""
 
 #: shared-module/paralleldisplay/ParallelBus.c
@@ -3943,6 +3957,7 @@ msgstr "il terzo argomento di pow() non può essere 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argomenti richiede interi"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h

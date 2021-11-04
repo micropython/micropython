@@ -357,6 +357,7 @@ msgstr "bù zhīchí 3-arg pow()"
 msgid "64 bit types"
 msgstr "64 wèi lèi xíng"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -636,6 +637,10 @@ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1610,6 +1615,10 @@ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 msgid "No available clocks"
 msgstr "Méiyǒu kěyòng de shízhōng"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
@@ -1630,6 +1639,7 @@ msgstr "Méiyǒu kěyòng de yìngjiàn suíjī"
 msgid "No hardware support on clk pin"
 msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1753,7 +1763,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "zhǐ yǒu kě lián jiē de guǎng gào cái néng bèi yǐn dǎo"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "cǐ yìng jiàn shàng jǐn tí gòng biān yuán jiǎn cè"
@@ -1851,6 +1860,7 @@ msgstr "shǐ yòng zhōng de wài shè"
 msgid "Permission denied"
 msgstr "Quánxiàn bèi jùjué"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "yǐn jiǎo wú fǎ cóng shēn dù shuì mián zhōng huàn xǐng"
@@ -2215,6 +2225,10 @@ msgstr "Yàngběn de yàngběn sùdù yǔ hǔn yīn qì de xiāngchà bù pǐpè
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr ""
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -3940,6 +3954,7 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
