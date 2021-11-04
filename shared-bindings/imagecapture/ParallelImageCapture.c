@@ -97,11 +97,15 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_capture(mp_obj_t self_in, mp_o
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(imagecapture_parallelimagecapture_capture_obj, imagecapture_parallelimagecapture_capture);
 
-//|     def continuous_capture_start(self, buffer1: WriteableBuffer, buffer2: WriteableBuffer) -> None:
+//|     def continuous_capture_start(self, buffer1: WriteableBuffer, buffer2: WriteableBuffer, /) -> None:
 //|         """Begin capturing into the given buffers in the background.
 //|
 //|         Call `continuous_capture_get_frame` to get the next available
-//|         frame, and `continuous_capture_stop` to stop capturing."""
+//|         frame, and `continuous_capture_stop` to stop capturing.
+//|
+//|         Until `continuous_capture_stop` (or `deinit`) is called, the
+//|         `ParallelImageCapture` object keeps references to ``buffer1`` and
+//|         ``buffer2``, so the objects will not be garbage collected."""
 //|         ...
 //|
 STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_start(mp_obj_t self_in, mp_obj_t buffer1, mp_obj_t buffer2) {
@@ -125,7 +129,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_continuous_ca
 
 
 //|     def continuous_capture_stop(self) -> None:
-//|         """Stop continuous capture"""
+//|         """Stop continuous capture.
+//|
+//|         Calling this method also causes the object to release its
+//|         references to the buffers passed to `continuous_capture_start`,
+//|         potentially allowing the objects to be garbage collected."""
 //|         ...
 //|
 STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_stop(mp_obj_t self_in) {
