@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,21 @@
  * THE SOFTWARE.
  */
 
-#pragma once
-
-#include "py/obj.h"
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
-#include "cam.h"
+#include "py/runtime.h"
 
-struct imagecapture_parallelimagecapture_obj {
-    mp_obj_base_t base;
-    cam_config_t config;
-    gpio_num_t data_clock;
-    gpio_num_t vertical_sync;
-    gpio_num_t horizontal_reference;
-    uint8_t data_count;
-    mp_obj_t buffer1, buffer2;
-    uint8_t *buffer_to_give;
-};
+// If the continuous-capture mode isn't supported, then this default (weak) implementation will raise exceptions for you
+__attribute__((weak))
+void common_hal_imagecapture_parallelimagecapture_continuous_capture_start(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer1, mp_obj_t buffer2) {
+    mp_raise_NotImplementedError(translate("This microcontroller does not support continuous capture."));
+}
+
+__attribute__((weak))
+void common_hal_imagecapture_parallelimagecapture_continuous_capture_stop(imagecapture_parallelimagecapture_obj_t *self) {
+    mp_raise_NotImplementedError(translate("This microcontroller does not support continuous capture."));
+}
+
+__attribute__((weak))
+mp_obj_t common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(imagecapture_parallelimagecapture_obj_t *self) {
+    mp_raise_NotImplementedError(translate("This microcontroller does not support continuous capture."));
+}
