@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-23 07:37+0000\n"
+"PO-Revision-Date: 2021-11-05 04:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -360,6 +360,7 @@ msgstr "3-arg pow() não compatível"
 msgid "64 bit types"
 msgstr "Tipos 64 bit"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -644,6 +645,10 @@ msgstr "O comprimento do buffer deve ter pelo menos 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "O buffer é muito curto em %d bytes"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr "Os buffers devem ter o mesmo tamanho"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1623,6 +1628,10 @@ msgstr "Nenhum pino TX"
 msgid "No available clocks"
 msgstr "Nenhum clock disponível"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr "Não há nenhuma captura em andamento"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Sem conexão: o comprimento não pode ser determinado"
@@ -1643,6 +1652,7 @@ msgstr "Nenhum hardware aleatório está disponível"
 msgid "No hardware support on clk pin"
 msgstr "Sem suporte de hardware no pino de clock"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1768,7 +1778,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Somente anúncios conectáveis podem ser direcionados"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Apenas a detecção de borda está disponível neste hardware"
@@ -1869,6 +1878,7 @@ msgstr "O periférico está em uso"
 msgid "Permission denied"
 msgstr "Permissão negada"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "O pinto não pode acordar do deep sleep"
@@ -2239,6 +2249,10 @@ msgstr "A taxa de amostragem da amostra não coincide com a do mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "A amostragem \"signedness\" não coincide com a do mixer"
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr "Este microcontrolador não tem suporte para captura contínua."
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -3983,6 +3997,7 @@ msgstr "O terceiro argumento pow() não pode ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h

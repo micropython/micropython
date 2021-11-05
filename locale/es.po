@@ -358,6 +358,7 @@ msgstr "pow() con 3 argumentos no soportado"
 msgid "64 bit types"
 msgstr "tipos de 64 bit"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -640,6 +641,10 @@ msgstr "Buffer debe ser de longitud 1 como minimo"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Búffer muy corto por %d bytes"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1624,6 +1629,10 @@ msgstr "Sin pin TX"
 msgid "No available clocks"
 msgstr "Relojes no disponibles"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Sin conexión: no se puede determinar la longitud"
@@ -1644,6 +1653,7 @@ msgstr "No hay hardware random disponible"
 msgid "No hardware support on clk pin"
 msgstr "Sin soporte de hardware en el pin clk"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1768,7 +1778,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Solo se puede dirigir a los anuncios conectables"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Este hardware solo tiene capacidad para detección de borde"
@@ -1867,6 +1876,7 @@ msgstr "Periférico en uso"
 msgid "Permission denied"
 msgstr "Permiso denegado"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "El Pin no se puede despertar de un sueño profundo"
@@ -2234,6 +2244,10 @@ msgstr "El sample rate del sample no iguala al del mixer"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "El signo del sample no iguala al del mixer"
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr ""
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -3963,6 +3977,7 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h

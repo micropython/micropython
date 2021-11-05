@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-23 07:37+0000\n"
+"PO-Revision-Date: 2021-11-05 04:07+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -355,6 +355,7 @@ msgstr "3-arguments pow() stöds inte"
 msgid "64 bit types"
 msgstr "64-bitars typer"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -634,6 +635,10 @@ msgstr "Bufferten måste ha minst längd 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffert är %d bytes för kort"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr "Buffertarna måste ha samma storlek"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1607,6 +1612,10 @@ msgstr "Ingen TX-pinne"
 msgid "No available clocks"
 msgstr "Inga tillgängliga klockor"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr "Ingen insamling pågår"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Ingen anslutning: längden kan inte bestämmas"
@@ -1627,6 +1636,7 @@ msgstr "Ingen hårdvaru-random tillgänglig"
 msgid "No hardware support on clk pin"
 msgstr "Inget hårdvarustöd på clk-pinne"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1750,7 +1760,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Endast anslutningsbara annonseringar kan dirigeras"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
@@ -1849,6 +1858,7 @@ msgstr "Periferi i bruk"
 msgid "Permission denied"
 msgstr "Åtkomst nekad"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "Pinnen kan inte väcka från djup sömn"
@@ -2214,6 +2224,10 @@ msgstr "Samplingens frekvens matchar inte mixerns"
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Samplingens signerad/osignerad stämmer inte med mixern"
+
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr "Den här mikrokontrollern stöder inte kontinuerlig insamling."
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -3941,6 +3955,7 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
