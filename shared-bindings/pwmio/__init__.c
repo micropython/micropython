@@ -45,11 +45,11 @@
 //|
 //| For example::
 //|
-//|   import pwmio
 //|   import time
-//|   from board import *
+//|   import pwmio
+//|   import board
 //|
-//|   pwm = pwmio.PWMOut(D13)
+//|   pwm = pwmio.PWMOut(board.LED)
 //|   pwm.duty_cycle = 2 ** 15
 //|   time.sleep(0.1)
 //|

@@ -470,6 +470,7 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/Pull.c \
 	displayio/Colorspace.c \
 	fontio/Glyph.c \
+	imagecapture/ParallelImageCapture.c \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
@@ -541,6 +542,7 @@ SRC_SHARED_MODULE_ALL = \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
+	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	keypad/__init__.c \

@@ -25,6 +25,7 @@
  */
 
 #include "py/obj.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #include "shared/runtime/context_manager_helpers.h"
@@ -82,19 +83,69 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     return self;
 }
 
-//|     def capture(self, buffer: WriteableBuffer, width: int, height: int, bpp: int=16) -> None:
-//|         """Capture a single frame into the given buffer"""
+//|     def capture(self, buffer: WriteableBuffer) -> WriteableBuffer:
+//|         """Capture a single frame into the given buffer.
+//|
+//|         This will stop a continuous-mode capture, if one is in progress."""
 //|         ...
 //|
 STATIC mp_obj_t imagecapture_parallelimagecapture_capture(mp_obj_t self_in, mp_obj_t buffer) {
     imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_RW);
-    common_hal_imagecapture_parallelimagecapture_capture(self, bufinfo.buf, bufinfo.len);
+    common_hal_imagecapture_parallelimagecapture_singleshot_capture(self, buffer);
+
+    return buffer;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(imagecapture_parallelimagecapture_capture_obj, imagecapture_parallelimagecapture_capture);
+
+//|     def continuous_capture_start(self, buffer1: WriteableBuffer, buffer2: WriteableBuffer, /) -> None:
+//|         """Begin capturing into the given buffers in the background.
+//|
+//|         Call `continuous_capture_get_frame` to get the next available
+//|         frame, and `continuous_capture_stop` to stop capturing.
+//|
+//|         Until `continuous_capture_stop` (or `deinit`) is called, the
+//|         `ParallelImageCapture` object keeps references to ``buffer1`` and
+//|         ``buffer2``, so the objects will not be garbage collected."""
+//|         ...
+//|
+STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_start(mp_obj_t self_in, mp_obj_t buffer1, mp_obj_t buffer2) {
+    imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
+    common_hal_imagecapture_parallelimagecapture_continuous_capture_start(self, buffer1, buffer2);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(imagecapture_parallelimagecapture_capture_obj, imagecapture_parallelimagecapture_capture);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(imagecapture_parallelimagecapture_continuous_capture_start_obj, imagecapture_parallelimagecapture_continuous_capture_start);
+
+//|     def continuous_capture_get_frame(self) -> WriteableBuffer:
+//|         """Return the next available frame, one of the two buffers passed to `continuous_capture_start`"""
+//|         ...
+//|
+STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_get_frame(mp_obj_t self_in) {
+    imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
+    return common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(self);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_continuous_capture_get_frame_obj, imagecapture_parallelimagecapture_continuous_capture_get_frame);
+
+
+
+//|     def continuous_capture_stop(self) -> None:
+//|         """Stop continuous capture.
+//|
+//|         Calling this method also causes the object to release its
+//|         references to the buffers passed to `continuous_capture_start`,
+//|         potentially allowing the objects to be garbage collected."""
+//|         ...
+//|
+STATIC mp_obj_t imagecapture_parallelimagecapture_continuous_capture_stop(mp_obj_t self_in) {
+    imagecapture_parallelimagecapture_obj_t *self = (imagecapture_parallelimagecapture_obj_t *)self_in;
+    common_hal_imagecapture_parallelimagecapture_continuous_capture_stop(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(imagecapture_parallelimagecapture_continuous_capture_stop_obj, imagecapture_parallelimagecapture_continuous_capture_stop);
+
+
+
 
 //|     def deinit(self) -> None:
 //|         """Deinitialize this instance"""
@@ -134,6 +185,9 @@ STATIC const mp_rom_map_elem_t imagecapture_parallelimagecapture_locals_dict_tab
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&imagecapture_parallelimagecapture___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_capture), MP_ROM_PTR(&imagecapture_parallelimagecapture_capture_obj) },
+    { MP_ROM_QSTR(MP_QSTR_continuous_capture_start), MP_ROM_PTR(&imagecapture_parallelimagecapture_continuous_capture_start_obj) },
+    { MP_ROM_QSTR(MP_QSTR_continuous_capture_stop), MP_ROM_PTR(&imagecapture_parallelimagecapture_continuous_capture_stop_obj) },
+    { MP_ROM_QSTR(MP_QSTR_continuous_capture_get_frame), MP_ROM_PTR(&imagecapture_parallelimagecapture_continuous_capture_get_frame_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(imagecapture_parallelimagecapture_locals_dict, imagecapture_parallelimagecapture_locals_dict_table);

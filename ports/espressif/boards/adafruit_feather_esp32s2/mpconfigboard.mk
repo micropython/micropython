@@ -1,6 +1,6 @@
 USB_VID = 0x239A
-USB_PID = 0x8FFF
-USB_PRODUCT = "Feather ESP32S2 no PSRAM"
+USB_PID = 0x80EC
+USB_PRODUCT = "Adafruit Feather ESP32S2"
 USB_MANUFACTURER = "Adafruit"
 
 IDF_TARGET = esp32s2
@@ -17,8 +17,3 @@ CIRCUITPY_ESP_FLASH_FREQ=40m
 CIRCUITPY_ESP_FLASH_SIZE=4MB
 
 CIRCUITPY_MODULE=wroom
-
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_BusDevice
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register

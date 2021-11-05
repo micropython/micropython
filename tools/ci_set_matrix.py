@@ -88,7 +88,12 @@ def set_boards_to_build(build_all):
     arch_to_boards = {"arm": [], "riscv": [], "espressif": []}
     for board in boards_to_build:
         print(" ", board)
-        arch = PORT_TO_ARCH[board_to_port[board]]
+        port = board_to_port.get(board)
+        # A board can appear due to its _deletion_ (rare)
+        # if this happens it's not in `board_to_port`.
+        if not port:
+            continue
+        arch = PORT_TO_ARCH[port]
         arch_to_boards[arch].append(board)
 
     # Set the step outputs for each architecture

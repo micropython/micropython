@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,23 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "py/obj.h"
-#include "shared-bindings/imagecapture/ParallelImageCapture.h"
-#include "cam.h"
+void board_init(void) {
+    // USB
+    common_hal_never_reset_pin(&pin_GPIO19);
+    common_hal_never_reset_pin(&pin_GPIO20);
+}
 
-struct imagecapture_parallelimagecapture_obj {
-    mp_obj_base_t base;
-    cam_config_t config;
-    gpio_num_t data_clock;
-    gpio_num_t vertical_sync;
-    gpio_num_t horizontal_reference;
-    uint8_t data_count;
-    mp_obj_t buffer1, buffer2;
-    uint8_t *buffer_to_give;
-};
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
+}
