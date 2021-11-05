@@ -223,14 +223,18 @@ endif
 # Additional optional libraries
 
 RLOTTIE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags rlottie)
-CFLAGS_MOD += $(RLOTTIE_CFLAGS_MOD)
+ifneq ($(RLOTTIE_CFLAGS_MOD),)
+CFLAGS_MOD += $(RLOTTIE_CFLAGS_MOD) -DMICROPY_RLOTTIE=1
 RLOTTIE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   rlottie)
 LDFLAGS_MOD += $(RLOTTIE_LDFLAGS_MOD)
+endif
 
 FREETYPE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags freetype2)
-CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD)
+ifneq ($(FREETYPE_CFLAGS_MOD),)
+CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD) -DMICROPY_FREETYPE=1
 FREETYPE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   freetype2)
 LDFLAGS_MOD += $(FREETYPE_LDFLAGS_MOD)
+endif
 
 # source files
 SRC_C += \
