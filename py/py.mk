@@ -75,13 +75,6 @@ $(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp $(LODEPNG_DIR)/*
 
 SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(MP_LODEPNG_C) $(LODEPNG_MODULE))
 
-# Additional optional libraries
-CFLAGS_MOD +=  $(shell pkg-config --silence-errors --cflags rlottie)
-LDFLAGS_MOD += $(shell pkg-config --silence-errors --libs   rlottie)
-
-CFLAGS_MOD +=  $(shell pkg-config --silence-errors --cflags freetype2)
-LDFLAGS_MOD += $(shell pkg-config --silence-errors --libs   freetype2)
-
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
