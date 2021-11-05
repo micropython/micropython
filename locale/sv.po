@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-05 04:07+0000\n"
+"PO-Revision-Date: 2021-11-05 18:37+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -117,7 +117,7 @@ msgstr "%q måste vara %d-%d"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
-msgstr ""
+msgstr "%q måste vara <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -4411,7 +4411,7 @@ msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
-msgstr ""
+msgstr "färgrymd stöds inte för GifWriter"
 
 #: py/objstr.c
 #, c-format
