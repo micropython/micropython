@@ -92,6 +92,9 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
+PIO Assembly Instructions
+-------------------------
+
 See `the PIO module
 <https://docs.micropython.org/en/latest/library/rp2.html#pio-assembly-language-instructions>`_
 detailed explaination of the assembly instructions.    
