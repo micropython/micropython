@@ -27,5 +27,10 @@ SRC_C += $(SRC_QRIO)
 CFLAGS += -DCIRCUITPY_QRIO=1
 $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
 
+SRC_GIFIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) shared/runtime/context_manager_helpers.c displayio_colorspace_only.c shared-module/displayio/ColorConverter.c shared-bindings/util.c
+SRC_C += $(SRC_GIFIO)
+
+CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_COLORSPACE_ONLY=1
+
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp
