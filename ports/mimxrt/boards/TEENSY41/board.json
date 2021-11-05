@@ -1,9 +1,13 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_teensy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "MicroSD",
+        "Ethernet",
+        "Breadboard Friendly"
+    ],
     "images": [
         "teensy41_4.jpg"
     ],

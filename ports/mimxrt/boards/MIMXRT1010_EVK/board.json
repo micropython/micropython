@@ -1,9 +1,16 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_mimxrt.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "OpenSDA",
+        "JLink"
+    ],
     "images": [
         "i.MXRT1010-TOP.jpg"
     ],

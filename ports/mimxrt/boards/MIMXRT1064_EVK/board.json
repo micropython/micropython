@@ -1,9 +1,21 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_mimxrt.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioAmp",
+        "SPDIF",
+        "CAN",
+        "Camera",
+        "OpenSDA",
+        "JLink"
+    ],
     "images": [
         "MIMXRT1064EVK-TOP.jpg"
     ],

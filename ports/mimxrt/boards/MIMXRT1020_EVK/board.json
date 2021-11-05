@@ -1,9 +1,19 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_mimxrt.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "CAN",
+        "OpenSDA",
+        "JLink"
+    ],
     "images": [
         "MIMXRT-1020-EVKBD.jpg"
     ],
