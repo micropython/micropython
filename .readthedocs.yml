@@ -8,6 +8,11 @@
 
 version: 2
 
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.9"
+
 submodules:
     include:
         - extmod/ulab
@@ -16,6 +21,5 @@ formats:
   - pdf
 
 python:
-    version: 3
     install:
         - requirements: docs/requirements.txt
