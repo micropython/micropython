@@ -114,12 +114,12 @@ msgid "%q length must be >= 1"
 msgstr "%q cháng dù bì xū >= 1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "%q bì xū <= %d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q bì xū wéi %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -3146,6 +3146,7 @@ msgstr "gěi chūle éwài de wèizhì cānshù"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -4407,6 +4408,10 @@ msgstr "bù zhīchí de Thumb zhǐshì '%s', shǐyòng %d cānshù"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr ""
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4517,6 +4522,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q bì xū <= %d"
 
 #, c-format
 #~ msgid ""

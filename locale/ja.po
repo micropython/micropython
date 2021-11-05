@@ -109,11 +109,11 @@ msgid "%q length must be >= 1"
 msgstr ""
 
 #: py/argcheck.c
-msgid "%q must <= %d"
+msgid "%q must be %d-%d"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must be %d-%d"
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
 msgstr ""
 
 #: py/argcheck.c
@@ -3106,6 +3106,7 @@ msgstr "余分な位置引数が与えられました"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "fileはバイトモードで開かれたファイルでなければなりません"
 
@@ -4366,6 +4367,10 @@ msgstr ""
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
+msgstr ""
+
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
 msgstr ""
 
 #: py/objstr.c
