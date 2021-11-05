@@ -70,7 +70,7 @@ void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
 }
 
 void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t new_timeout) {
-    int wdt_cycles = (int)(new_timeout * 1000);
+    int wdt_cycles = (int)(new_timeout * 1024);
     if (wdt_cycles < 8) {
         wdt_cycles = 8;
     }
