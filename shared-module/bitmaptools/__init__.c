@@ -610,7 +610,6 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
     int ifactor1 = (int)(factor1 * 256);
     int ifactor2 = (int)(factor2 * 256);
 
-    #if 0
     if (colorspace == DISPLAYIO_COLORSPACE_L8) {
         for (int y = 0; y < dest->height; y++) {
             uint8_t *dptr = (uint8_t *)(dest->data + y * dest->stride);
@@ -622,9 +621,7 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                 *dptr++ = MIN(255, MAX(0, pixel));
             }
         }
-    } else
-    #endif
-    {
+    } else {
         bool swap = (colorspace == DISPLAYIO_COLORSPACE_RGB565_SWAPPED) || (colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
         for (int y = 0; y < dest->height; y++) {
             uint16_t *dptr = (uint16_t *)(dest->data + y * dest->stride);

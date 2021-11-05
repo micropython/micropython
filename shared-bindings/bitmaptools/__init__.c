@@ -296,13 +296,11 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
     }
 
     switch (colorspace) {
-        #if 0
         case DISPLAYIO_COLORSPACE_L8:
             if (destination->bits_per_value != 8) {
                 mp_raise_ValueError(translate("For L8 colorspace, input bitmap must have 8 bits per pixel"));
             }
             break;
-        #endif
 
         case DISPLAYIO_COLORSPACE_RGB565:
         case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
