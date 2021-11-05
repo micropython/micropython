@@ -1,9 +1,20 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_mimxrt.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "OpenSDA",
+        "JLink"
+    ],
     "images": [
         "IMX_RT1050-EVKB_TOP-LR.jpg"
     ],

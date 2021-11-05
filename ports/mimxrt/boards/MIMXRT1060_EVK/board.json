@@ -1,9 +1,21 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_mimxrt.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "Camera",
+        "OpenSDA",
+        "JLink"
+    ],
     "images": [
         "X-MIMXRT1060-EVK-BOARD-BOTTOM.jpg"
     ],
