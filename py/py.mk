@@ -75,9 +75,12 @@ $(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp $(LODEPNG_DIR)/*
 
 SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(MP_LODEPNG_C) $(LODEPNG_MODULE))
 
-# Additional include paths
-CFLAGS_MOD += -I/usr/include/freetype2
-CFLAGS_MOD += -I/usr/local/include/freetype2
+# Additional optional libraries
+CFLAGS_MOD +=  $(shell pkg-config --silence-errors --cflags rlottie)
+LDFLAGS_MOD += $(shell pkg-config --silence-errors --libs   rlottie)
+
+CFLAGS_MOD +=  $(shell pkg-config --silence-errors --cflags freetype2)
+LDFLAGS_MOD += $(shell pkg-config --silence-errors --libs   freetype2)
 
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
