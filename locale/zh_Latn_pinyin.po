@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-31 11:37+0000\n"
+"PO-Revision-Date: 2021-11-05 04:07+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -640,7 +640,7 @@ msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "huǎn chōng qì bì xū dà xiǎo xiāng tóng"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1617,7 +1617,7 @@ msgstr "Méiyǒu kěyòng de shízhōng"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
-msgstr ""
+msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -2228,7 +2228,7 @@ msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
-msgstr ""
+msgstr "cǐ wēi kòng zhì qì bù zhī chí lián xù bǔ huò."
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
