@@ -223,16 +223,16 @@ endif
 # Additional optional libraries
 
 RLOTTIE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags rlottie)
-ifneq ($(RLOTTIE_CFLAGS_MOD),)
-CFLAGS_MOD += $(RLOTTIE_CFLAGS_MOD) -DMICROPY_RLOTTIE=1
 RLOTTIE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   rlottie)
+ifneq ($(RLOTTIE_LDFLAGS_MOD),)
+CFLAGS_MOD += $(RLOTTIE_CFLAGS_MOD) -DMICROPY_RLOTTIE=1
 LDFLAGS_MOD += $(RLOTTIE_LDFLAGS_MOD)
 endif
 
 FREETYPE_CFLAGS_MOD :=  $(shell pkg-config --silence-errors --cflags freetype2)
-ifneq ($(FREETYPE_CFLAGS_MOD),)
-CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD) -DMICROPY_FREETYPE=1
 FREETYPE_LDFLAGS_MOD := $(shell pkg-config --silence-errors --libs   freetype2)
+ifneq ($(FREETYPE_LDFLAGS_MOD),)
+CFLAGS_MOD += $(FREETYPE_CFLAGS_MOD) -DMICROPY_FREETYPE=1
 LDFLAGS_MOD += $(FREETYPE_LDFLAGS_MOD)
 endif
 
