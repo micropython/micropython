@@ -1,0 +1,333 @@
+/*
+ * This file is part of the Micro Python project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "py/obj.h"
+#include "py/objproperty.h"
+#include "py/runtime.h"
+#include "py/objarray.h"
+
+// #include "common-hal/is31fl3741/is31fl3741.h"
+#include "shared-bindings/is31fl3741/is31fl3741.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/util.h"
+#include "shared-module/displayio/__init__.h"
+#include "shared-module/framebufferio/__init__.h"
+#include "shared-module/framebufferio/FramebufferDisplay.h"
+#include "shared-bindings/busio/I2C.h"
+
+//| class is31fl3741:
+//|     """Displays an in-memory framebuffer to a HUB75-style RGB LED matrix."""
+//|
+
+// extern Protomatter_core *_PM_protoPtr;
+
+
+//|     def __init__(self, *, width: int) -> None:
+//|         """Create a Is31fl3741 object with the given attributes.  The height of
+//|         the display is determined by the number of rgb and address pins and the number of tiles:
+//|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4
+//|         address lines, and a single matrix, the display will be 32 pixels tall.  If the optional height
+//|         parameter is specified and is not 0, it is checked against the calculated
+//|         height.
+//|
+//|         Up to 30 RGB pins and 8 address pins are supported.
+//|
+//|         The RGB pins must be within a single "port" and performance and memory
+//|         usage are best when they are all within "close by" bits of the port.
+//|         The clock pin must also be on the same port as the RGB pins.  See the
+//|         documentation of the underlying protomatter C library for more
+//|         information.  Generally, Adafruit's interface boards are designed so
+//|         that these requirements are met when matched with the intended
+//|         microcontroller board.  For instance, the Feather M4 Express works
+//|         together with the RGB Matrix Feather.
+//|
+//|         The framebuffer is in "RGB565" format.
+//|
+//|         "RGB565" means that it is organized as a series of 16-bit numbers
+//|         where the highest 5 bits are interpreted as red, the next 6 as
+//|         green, and the final 5 as blue.  The object can be any buffer, but
+//|         `array.array` and ``ulab.ndarray`` objects are most often useful.
+//|         To update the content, modify the framebuffer and call refresh.
+//|
+//|         If a framebuffer is not passed in, one is allocated and initialized
+//|         to all black.  In any case, the framebuffer can be retrieved
+//|         by passing the Is31fl3741 object to memoryview().
+//|
+//|         If doublebuffer is False, some memory is saved, but the display may
+//|         flicker during updates.
+//|
+//|         A Is31fl3741 is often used in conjunction with a
+//|         `framebufferio.FramebufferDisplay`."""
+//|
+
+STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_width, ARG_height, ARG_i2c, ARG_addr, ARG_framebuffer };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
+        { MP_QSTR_height, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
+        { MP_QSTR_i2c, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
+        { MP_QSTR_addr, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0x30 } },
+        { MP_QSTR_framebuffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_printf(&mp_plat_print, "IS make new\n");
+
+    mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
+
+    is31fl3741_is31fl3741_obj_t *self = &allocate_display_bus_or_raise()->is31fl3741;
+    self->base.type = &is31fl3741_is31fl3741_type;
+
+    if (args[ARG_width].u_int <= 0) {
+        mp_raise_ValueError(translate("width must be greater than zero"));
+    }
+
+    mp_printf(&mp_plat_print, "w %d h %d\n", args[ARG_width].u_int, args[ARG_height].u_int);
+
+    mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
+    if (framebuffer == mp_const_none) {
+        int width = args[ARG_width].u_int;
+        int height = args[ARG_height].u_int;
+        int bufsize = 4 * width * height;
+        framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
+    }
+    mp_printf(&mp_plat_print, "framebuffer is %x\n", MP_OBJ_TO_PTR(framebuffer));
+
+    common_hal_is31fl3741_is31fl3741_construct(self,
+        args[ARG_width].u_int,
+        args[ARG_height].u_int,
+        framebuffer,
+        MP_OBJ_TO_PTR(i2c),
+        args[ARG_addr].u_int
+        );
+
+    return MP_OBJ_FROM_PTR(self);
+}
+
+//|     def deinit(self) -> None:
+//|         """Free the resources (pins, timers, etc.) associated with this
+//|         is31fl3741 instance.  After deinitialization, no further operations
+//|         may be performed."""
+//|         ...
+//|
+STATIC mp_obj_t is31fl3741_is31fl3741_deinit(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS Deinit\n");
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    common_hal_is31fl3741_is31fl3741_deinit(self);
+    return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_deinit_obj, is31fl3741_is31fl3741_deinit);
+
+static void check_for_deinit(is31fl3741_is31fl3741_obj_t *self) {
+    // if (!self->protomatter.rgbPins) {
+    // raise_deinited_error();
+    // }
+}
+
+//|     brightness: float
+//|     """In the current implementation, 0.0 turns the display off entirely
+//|     and any other value up to 1.0 turns the display on fully."""
+//|
+STATIC mp_obj_t is31fl3741_is31fl3741_get_brightness(mp_obj_t self_in) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    check_for_deinit(self);
+    return mp_obj_new_float(common_hal_is31fl3741_is31fl3741_get_paused(self)? 0.0f : 1.0f);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_get_brightness_obj, is31fl3741_is31fl3741_get_brightness);
+
+STATIC mp_obj_t is31fl3741_is31fl3741_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    check_for_deinit(self);
+    mp_float_t brightness = mp_obj_get_float(value_in);
+    if (brightness < 0.0f || brightness > 1.0f) {
+        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+    }
+    common_hal_is31fl3741_is31fl3741_set_paused(self, brightness <= 0);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_is31fl3741_set_brightness_obj, is31fl3741_is31fl3741_set_brightness);
+
+const mp_obj_property_t is31fl3741_is31fl3741_brightness_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&is31fl3741_is31fl3741_get_brightness_obj,
+              (mp_obj_t)&is31fl3741_is31fl3741_set_brightness_obj,
+              MP_ROM_NONE},
+};
+
+//|     def refresh(self) -> None:
+//|         """Transmits the color data in the buffer to the pixels so that
+//|         they are shown."""
+//|         ...
+//|
+STATIC mp_obj_t is31fl3741_is31fl3741_refresh(mp_obj_t self_in) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    check_for_deinit(self);
+    common_hal_is31fl3741_is31fl3741_refresh(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_refresh_obj, is31fl3741_is31fl3741_refresh);
+
+//|     width: int
+//|     """The width of the display, in pixels"""
+//|
+STATIC mp_obj_t is31fl3741_is31fl3741_get_width(mp_obj_t self_in) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_is31fl3741_get_width(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_get_width_obj, is31fl3741_is31fl3741_get_width);
+const mp_obj_property_t is31fl3741_is31fl3741_width_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&is31fl3741_is31fl3741_get_width_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
+//|     height: int
+//|     """The height of the display, in pixels"""
+//|
+STATIC mp_obj_t is31fl3741_is31fl3741_get_height(mp_obj_t self_in) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_is31fl3741_get_height(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_get_height_obj, is31fl3741_is31fl3741_get_height);
+const mp_obj_property_t is31fl3741_is31fl3741_height_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&is31fl3741_is31fl3741_get_height_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
+STATIC const mp_rom_map_elem_t is31fl3741_is31fl3741_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&is31fl3741_is31fl3741_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&is31fl3741_is31fl3741_brightness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&is31fl3741_is31fl3741_refresh_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&is31fl3741_is31fl3741_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&is31fl3741_is31fl3741_height_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(is31fl3741_is31fl3741_locals_dict, is31fl3741_is31fl3741_locals_dict_table);
+
+STATIC void is31fl3741_is31fl3741_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    // mp_printf(&mp_plat_print, "IS get bufinfo %x\n", self->bufinfo.buf);
+    check_for_deinit(self);
+
+    *bufinfo = self->bufinfo;
+}
+
+// These version exists so that the prototype matches the protocol,
+// avoiding a type cast that can hide errors
+STATIC void is31fl3741_is31fl3741_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
+    // mp_printf(&mp_plat_print, "IS swapbuffers\n");
+    (void)dirty_row_bitmap;
+    common_hal_is31fl3741_is31fl3741_refresh(self_in);
+}
+
+STATIC void is31fl3741_is31fl3741_deinit_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS deinit proto\n");
+    common_hal_is31fl3741_is31fl3741_deinit(self_in);
+}
+
+STATIC float is31fl3741_is31fl3741_get_brightness_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get brigthness\n");
+    return common_hal_is31fl3741_is31fl3741_get_paused(self_in) ? 0.0f : 1.0f;
+}
+
+STATIC bool is31fl3741_is31fl3741_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
+    mp_printf(&mp_plat_print, "IS set brightness\n");
+    common_hal_is31fl3741_is31fl3741_set_paused(self_in, value <= 0);
+    return true;
+}
+
+STATIC int is31fl3741_is31fl3741_get_width_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get width\n");
+    return common_hal_is31fl3741_is31fl3741_get_width(self_in);
+}
+
+STATIC int is31fl3741_is31fl3741_get_height_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get height\n");
+    return common_hal_is31fl3741_is31fl3741_get_height(self_in);
+}
+
+STATIC int is31fl3741_is31fl3741_get_color_depth_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get color depth\n");
+    return 32;
+}
+
+STATIC int is31fl3741_is31fl3741_get_bytes_per_cell_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get bytes per cell\n");
+    return 1;
+}
+
+STATIC int is31fl3741_is31fl3741_get_native_frames_per_second_proto(mp_obj_t self_in) {
+    mp_printf(&mp_plat_print, "IS get fps\n");
+    return 60;
+}
+
+
+STATIC const framebuffer_p_t is31fl3741_is31fl3741_proto = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
+    .get_bufinfo = is31fl3741_is31fl3741_get_bufinfo,
+    .set_brightness = is31fl3741_is31fl3741_set_brightness_proto,
+    .get_brightness = is31fl3741_is31fl3741_get_brightness_proto,
+    .get_width = is31fl3741_is31fl3741_get_width_proto,
+    .get_height = is31fl3741_is31fl3741_get_height_proto,
+    .get_color_depth = is31fl3741_is31fl3741_get_color_depth_proto,
+    .get_bytes_per_cell = is31fl3741_is31fl3741_get_bytes_per_cell_proto,
+    .get_native_frames_per_second = is31fl3741_is31fl3741_get_native_frames_per_second_proto,
+    .swapbuffers = is31fl3741_is31fl3741_swapbuffers,
+    .deinit = is31fl3741_is31fl3741_deinit_proto,
+};
+
+STATIC mp_int_t is31fl3741_is31fl3741_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
+    // a readonly framebuffer would be unusual but not impossible
+    mp_printf(&mp_plat_print, "IS IS get buffer\n");
+    if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
+        return 1;
+    }
+    *bufinfo = self->bufinfo;
+    bufinfo->typecode = 'H';
+    return 0;
+}
+
+const mp_obj_type_t is31fl3741_is31fl3741_type = {
+    { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
+    .name = MP_QSTR_is31fl3741,
+    .locals_dict = (mp_obj_dict_t *)&is31fl3741_is31fl3741_locals_dict,
+    .make_new = is31fl3741_is31fl3741_make_new,
+    MP_TYPE_EXTENDED_FIELDS(
+        .buffer_p = { .get_buffer = is31fl3741_is31fl3741_get_buffer, },
+        .protocol = &is31fl3741_is31fl3741_proto,
+        ),
+};
