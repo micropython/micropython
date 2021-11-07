@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-05 04:07+0000\n"
+"PO-Revision-Date: 2021-11-05 18:37+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -112,12 +112,12 @@ msgid "%q length must be >= 1"
 msgstr "längden på %q måste vara >= 1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "%q måste vara <=%d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr "%q måste vara <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -3144,6 +3144,7 @@ msgstr "extra positions-argument angivna"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
@@ -4408,6 +4409,10 @@ msgstr "Thumb-instruktion '%s' med %d argument stöd inte"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr "färgrymd stöds inte för GifWriter"
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4518,6 +4523,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q måste vara <=%d"
 
 #, c-format
 #~ msgid ""

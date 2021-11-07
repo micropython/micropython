@@ -113,12 +113,12 @@ msgid "%q length must be >= 1"
 msgstr "%q length must be >= 1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "%q must <= %d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q must be %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -3124,6 +3124,7 @@ msgstr "extra positional arguments given"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "file must be a file opened in byte mode"
 
@@ -4384,6 +4385,10 @@ msgstr "unsupported Thumb instruction '%s' with %d arguments"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "unsupported Xtensa instruction '%s' with %d arguments"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr ""
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4494,6 +4499,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q must <= %d"
 
 #, c-format
 #~ msgid ""
