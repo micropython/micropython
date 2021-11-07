@@ -91,6 +91,13 @@ typedef struct {
 
 // Foundation Lines
 
+#ifdef STM32L4R5xx
+#define HAS_DAC 1
+#define HAS_TRNG 1
+#define HAS_BASIC_TIM 1
+#include "stm32l4/stm32l4r5xx/periph.h"
+#endif
+
 #ifdef STM32F405xx
 #define HAS_DAC 1
 #define HAS_TRNG 1

@@ -82,6 +82,7 @@
 #define MP_EHOSTUNREACH     (113) // No route to host
 #define MP_EALREADY         (114) // Operation already in progress
 #define MP_EINPROGRESS      (115) // Operation now in progress
+#define MP_ECANCELED        (125) // Operation canceled
 
 #else
 
@@ -137,6 +138,7 @@
 #define MP_EHOSTUNREACH     EHOSTUNREACH
 #define MP_EALREADY         EALREADY
 #define MP_EINPROGRESS      EINPROGRESS
+#define MP_ECANCELED        ECANCELED
 
 #endif
 

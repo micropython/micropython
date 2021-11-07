@@ -56,13 +56,13 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     enum { ARG_minimum_block_count };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_minimum_block_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_int_t minimum_block_count = args[ARG_minimum_block_count].u_int;
     if (minimum_block_count < 1) {
         mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_minimum_block_count);

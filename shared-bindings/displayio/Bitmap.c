@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#include "lib/utils/context_manager_helpers.h"
+#include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
@@ -63,11 +63,11 @@
 //|         :param int value_count: The number of possible pixel values."""
 //|         ...
 //|
-STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 3, 3, false);
-    uint32_t width = mp_obj_get_int(pos_args[0]);
-    uint32_t height = mp_obj_get_int(pos_args[1]);
-    uint32_t value_count = mp_obj_get_int(pos_args[2]);
+STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_check_num(n_args, n_kw, 3, 3, false);
+    uint32_t width = mp_obj_get_int(all_args[0]);
+    uint32_t height = mp_obj_get_int(all_args[1]);
+    uint32_t value_count = mp_obj_get_int(all_args[2]);
     uint32_t bits = 1;
 
     if (value_count == 0) {
@@ -285,8 +285,7 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 4, displayio_bitmap_obj_blit);
-// `displayio_bitmap_obj_blit` requires at least 4 arguments
+MP_DEFINE_CONST_FUN_OBJ_KW(displayio_bitmap_blit_obj, 1, displayio_bitmap_obj_blit);
 
 //|     def fill(self, value: int) -> None:
 //|         """Fills the bitmap with the supplied palette index value."""

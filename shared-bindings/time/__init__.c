@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/translate.h"
@@ -39,12 +39,26 @@
 //| """time and timing related functions
 //|
 //| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
-//| written in MicroPython will work in CPython but not necessarily the other
+//| using `time` written in CircuitPython will work in CPython but not necessarily the other
 //| way around."""
 //|
 //| def monotonic() -> float:
 //|     """Returns an always increasing value of time with an unknown reference
-//|     point. Only use it to compare against other values from `monotonic`.
+//|     point. Only use it to compare against other values from `time.monotonic()`.
+//|
+//|     On most boards, `time.monotonic()` converts a 64-bit millisecond tick counter
+//|     to a float. Floats on most boards are encoded in 30 bits internally, with
+//|     effectively 22 bits of precision. The float returned by `time.monotonic()` will
+//|     accurately represent time to millisecond precision only up to 2**22 milliseconds
+//|     (about 1.165 hours).
+//|     At that point it will start losing precision, and its value will change only
+//|     every second millisecond. At 2**23 milliseconds it will change every fourth
+//|     millisecond, and so forth.
+//|
+//|     If you need more consistent precision, use `time.monotonic_ns()`, or `supervisor.ticks_ms()`.
+//|     `time.monotonic_ns()` is not available on boards without long integer support.
+//|     `supervisor.ticks_ms()` uses intervals of a millisecond, but wraps around, and is not
+//|     CPython-compatible.
 //|
 //|     :return: the current monotonic time
 //|     :rtype: float"""
@@ -79,15 +93,15 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 MP_DEFINE_CONST_FUN_OBJ_1(time_sleep_obj, time_sleep);
 
 #if MICROPY_PY_COLLECTIONS
-mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
     size_t len;
     mp_obj_t *items;
     mp_obj_get_array(args[0], &len, &items);
     if (len != 9) {
         mp_raise_TypeError(translate("time.struct_time() takes a 9-sequence"));
     }
-    return namedtuple_make_new(type, len, items, NULL);
+    return namedtuple_make_new(type, len, 0, items);
 }
 
 //| class struct_time:
@@ -159,7 +173,7 @@ mp_obj_t struct_time_from_tm(timeutils_struct_time_t *tm) {
         mp_obj_new_int(-1), // tm_isdst is not supported
     };
 
-    return namedtuple_make_new((const mp_obj_type_t *)&struct_time_type_obj, 9, elems, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&struct_time_type_obj, 9, 0, elems);
 };
 
 void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
@@ -216,7 +230,8 @@ STATIC mp_obj_t time_time(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 
 //| def monotonic_ns() -> int:
-//|     """Return the time of the monotonic clock, cannot go backward, in nanoseconds.
+//|     """Return the time of the monotonic clock, which cannot go backward, in nanoseconds.
+//|     Not available on boards without long integer support.
 //|
 //|     :return: the current time
 //|     :rtype: int"""
@@ -330,3 +345,5 @@ const mp_obj_module_t time_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_time, time_module, CIRCUITPY_TIME);

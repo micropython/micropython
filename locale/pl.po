@@ -108,10 +108,6 @@ msgstr ""
 msgid "%q length must be >= 1"
 msgstr ""
 
-#: shared-bindings/vectorio/Polygon.c
-msgid "%q list must be a list"
-msgstr ""
-
 #: py/argcheck.c
 msgid "%q must <= %d"
 msgstr ""
@@ -149,12 +145,12 @@ msgstr "%q musi być krotką o długości 2"
 msgid "%q must be between %d and %d"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-msgid "%q must be power of 2"
+#: py/argcheck.c
+msgid "%q must be of type %q"
 msgstr ""
 
-#: py/argcheck.c
-msgid "%q must of type %q"
+#: ports/atmel-samd/common-hal/busio/UART.c
+msgid "%q must be power of 2"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -169,6 +165,10 @@ msgstr "nieprawidłowy pin %q"
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
 msgstr "%q powinno być typu int"
+
+#: shared-bindings/usb_hid/Device.c
+msgid "%q with a report ID of 0 must be of length 1"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -352,6 +352,7 @@ msgstr "3-argumentowy pow() jest niewspierany"
 msgid "64 bit types"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -374,7 +375,9 @@ msgstr "Typ adresu poza zakresem"
 msgid "All CAN peripherals are in use"
 msgstr ""
 
-#: ports/espressif/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "Wszystkie peryferia I2C w użyciu"
 
@@ -556,6 +559,10 @@ msgstr ""
 msgid "Bit depth must be multiple of 8."
 msgstr "Głębia musi być wielokrotnością 8."
 
+#: supervisor/shared/safe_mode.c
+msgid "Boot device must be first device (interface #0)."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Do kontroli przepływu wymagane są zarówno RX, jak i TX"
@@ -625,6 +632,10 @@ msgstr "Bufor musi mieć długość 1 lub więcej"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Bufor za krótki o %d bajtów"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -783,10 +794,6 @@ msgstr "Rozciągnięcie zegara zbyt duże"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Jednostka zegara w użyciu"
-
-#: shared-bindings/_pew/PewPew.c
-msgid "Column entry must be digitalio.DigitalInOut"
-msgstr "Kolumny muszą być typu digitalio.DigitalInOut"
 
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
@@ -965,35 +972,8 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c shared-bindings/aesio/aes.c
 #: shared-bindings/busio/SPI.c shared-bindings/microcontroller/Pin.c
 #: shared-bindings/neopixel_write/__init__.c
-#: shared-bindings/terminalio/Terminal.c
 msgid "Expected a %q"
 msgstr "Oczekiwano %q"
-
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/Descriptor.c shared-bindings/_bleio/PacketBuffer.c
-msgid "Expected a Characteristic"
-msgstr "Oczekiwano charakterystyki"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a DigitalInOut"
-msgstr "Oczekiwano DigitalInOut"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Expected a Service"
-msgstr ""
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected a UART"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-#: shared-bindings/_bleio/Service.c
-msgid "Expected a UUID"
-msgstr "Oczekiwano UUID"
-
-#: shared-bindings/_bleio/Adapter.c
-msgid "Expected an Address"
-msgstr "Oczekiwano adresu"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected an alarm"
@@ -1312,8 +1292,11 @@ msgstr "Zła częstotliwość PWM"
 msgid "Invalid Pin"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
-#: py/moduerrno.c shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c
+#: ports/espressif/common-hal/busio/I2C.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+#: ports/espressif/esp_error.c py/moduerrno.c
+#: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid argument"
 msgstr "Zły argument"
 
@@ -1361,10 +1344,6 @@ msgstr "Zły plik"
 msgid "Invalid format chunk size"
 msgstr "Zła wielkość fragmentu formatu"
 
-#: ports/espressif/common-hal/busio/I2C.c
-msgid "Invalid frequency"
-msgstr "Nieprawidłowa częstotliwość"
-
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Nieprawidłowy dostęp do pamięci."
@@ -1405,6 +1384,7 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/espressif/common-hal/canio/CAN.c
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
@@ -1623,6 +1603,10 @@ msgstr "Brak nóżki TX"
 msgid "No available clocks"
 msgstr "Brak wolnych zegarów"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Brak połączenia: nie można ustalić długości"
@@ -1643,6 +1627,7 @@ msgstr "Brak generatora liczb losowych"
 msgid "No hardware support on clk pin"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1782,6 +1767,11 @@ msgstr ""
 msgid "Only one TouchAlarm can be set in deep sleep."
 msgstr ""
 
+#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
+msgid "Only one address is allowed"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1852,6 +1842,7 @@ msgstr ""
 msgid "Permission denied"
 msgstr "Odmowa dostępu"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr ""
@@ -1901,8 +1892,11 @@ msgid ""
 msgstr ""
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
+msgid "Pins must be sequential GPIO pins"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -1953,6 +1947,7 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "Podciągnięcie nieużywane w trybie wyjścia."
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr ""
@@ -2030,10 +2025,6 @@ msgstr "Nie znaleziono żądanego zasobu"
 msgid "Right channel unsupported"
 msgstr "Prawy kanał jest niewspierany"
 
-#: shared-bindings/_pew/PewPew.c
-msgid "Row entry must be digitalio.DigitalInOut"
-msgstr "Rzędy muszą być digitalio.DigitalInOut"
-
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
 msgstr "Uruchomiony tryb bezpieczeństwa! Zapisany kod nie jest uruchamiany.\n"
@@ -2102,6 +2093,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2204,6 +2196,10 @@ msgstr "Sample rate nie pasuje do miksera"
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Znak nie pasuje do miksera"
 
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr ""
+
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
@@ -2256,6 +2252,7 @@ msgstr "Zbyt wiele wyświetlaczy"
 msgid "Total data to write is larger than %q"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2446,6 +2443,7 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "UWAGA: Nazwa pliku ma dwa rozszerzenia\n"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
@@ -2472,16 +2470,10 @@ msgstr ""
 msgid ""
 "Welcome to Adafruit CircuitPython %s!\n"
 "\n"
-"Please visit learn.adafruit.com/category/circuitpython for project guides.\n"
+"Visit circuitpython.org for more information.\n"
 "\n"
-"To list built-in modules please do `help(\"modules\")`.\n"
+"To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
-"Witamy w Adafruit CircuitPython %s!\n"
-"\n"
-"Aby zapoznać się z przewodnikami do projektu, odwiedź stronę learn.adafruit."
-"com/category/circuitpython.\n"
-"\n"
-"Aby wyświetlić listę wbudowanych modułów, wpisz `help(\"modules\")`.\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "WiFi password must be between 8 and 63 characters"
@@ -2523,10 +2515,6 @@ msgstr "Argument __new__ musi być typu użytkownika"
 #: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "wymagany obiekt typu bytes"
-
-#: lib/embed/abort_.c
-msgid "abort() called"
-msgstr "Wywołano abort()"
 
 #: shared-bindings/i2cperipheral/I2CPeripheral.c
 msgid "address out of bounds"
@@ -2674,10 +2662,6 @@ msgstr "zbyt mały bufor"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr ""
-
-#: shared-bindings/_pew/PewPew.c
-msgid "buttons must be digitalio.DigitalInOut"
-msgstr "buttons musi być digitalio.DigitalInOut"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "byteorder is not a string"
@@ -3028,6 +3012,10 @@ msgstr ""
 msgid "division by zero"
 msgstr "dzielenie przez zero"
 
+#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
+msgid "divisor must be 4"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "puste"
@@ -3108,26 +3096,6 @@ msgstr "nadmiarowe argumenty nazwane"
 #: py/argcheck.c
 msgid "extra positional arguments given"
 msgstr "nadmiarowe argumenty pozycyjne"
-
-#: py/parse.c
-msgid "f-string expression part cannot include a '#'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string expression part cannot include a backslash"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: empty expression not allowed"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: expecting '}'"
-msgstr ""
-
-#: py/parse.c
-msgid "f-string: single '}' is not allowed"
-msgstr ""
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
@@ -3389,10 +3357,6 @@ msgstr ""
 msgid "int() arg 2 must be >= 2 and <= 36"
 msgstr "argument 2 do int() busi być pomiędzy 2 a 36"
 
-#: py/objstr.c
-msgid "integer required"
-msgstr "wymagana liczba całkowita"
-
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
 msgstr ""
@@ -3405,10 +3369,6 @@ msgstr "interwał musi mieścić się w zakresie %s-%s"
 #: py/compile.c
 msgid "invalid architecture"
 msgstr ""
-
-#: lib/netutils/netutils.c
-msgid "invalid arguments"
-msgstr "złe arguemnty"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3466,7 +3426,7 @@ msgstr "zła składnia dla liczby całkowitej w bazie %d"
 msgid "invalid syntax for number"
 msgstr "zła składnia dla liczby"
 
-#: py/objexcept.c shared-bindings/traceback/__init__.c
+#: py/objexcept.c
 msgid "invalid traceback"
 msgstr ""
 
@@ -3947,11 +3907,13 @@ msgstr "trzeci argument pow() nie może być 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
@@ -3970,6 +3932,8 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
+#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
 #: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
@@ -4013,7 +3977,7 @@ msgid "queue overflow"
 msgstr "przepełnienie kolejki"
 
 #: py/parse.c
-msgid "raw f-strings are not implemented"
+msgid "raw f-strings are not supported"
 msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
@@ -4075,7 +4039,7 @@ msgstr "częstotliwość próbkowania poza zakresem"
 msgid "schedule queue full"
 msgstr ""
 
-#: lib/utils/pyexec.c py/builtinimport.c
+#: py/builtinimport.c
 msgid "script compilation not supported"
 msgstr "kompilowanie skryptów nieobsługiwane"
 
@@ -4223,6 +4187,7 @@ msgstr ""
 msgid "time.struct_time() takes a 9-sequence"
 msgstr "time.struct_time() wymaga 9-elementowej sekwencji"
 
+#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
@@ -4351,8 +4316,8 @@ msgid "unicode name escapes"
 msgstr "nazwy unicode"
 
 #: py/parse.c
-msgid "unindent does not match any outer indentation level"
-msgstr "wcięcie nie pasuje do żadnego wcześniejszego wcięcia"
+msgid "unindent doesn't match any outer indent level"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
@@ -4504,6 +4469,58 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Witamy w Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Aby zapoznać się z przewodnikami do projektu, odwiedź stronę learn."
+#~ "adafruit.com/category/circuitpython.\n"
+#~ "\n"
+#~ "Aby wyświetlić listę wbudowanych modułów, wpisz `help(\"modules\")`.\n"
+
+#~ msgid "integer required"
+#~ msgstr "wymagana liczba całkowita"
+
+#~ msgid "abort() called"
+#~ msgstr "Wywołano abort()"
+
+#~ msgid "invalid arguments"
+#~ msgstr "złe arguemnty"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "wcięcie nie pasuje do żadnego wcześniejszego wcięcia"
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Kolumny muszą być typu digitalio.DigitalInOut"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Oczekiwano charakterystyki"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Oczekiwano DigitalInOut"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Oczekiwano UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Oczekiwano adresu"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Rzędy muszą być digitalio.DigitalInOut"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "buttons musi być digitalio.DigitalInOut"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Nieprawidłowa częstotliwość"
 
 #~ msgid "ParallelBus not yet supported"
 #~ msgstr "ParallelBus nie jest jeszcze obsługiwany"

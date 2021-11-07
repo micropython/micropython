@@ -205,7 +205,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 
 #if MICROPY_PY_UBINASCII_CRC32
-#include "../../lib/uzlib/src/tinf.h"
+#include "lib/uzlib/tinf.h"
 
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
@@ -235,3 +235,5 @@ const mp_obj_module_t mp_module_ubinascii = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_binascii_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_binascii, mp_module_ubinascii, MICROPY_PY_UBINASCII);

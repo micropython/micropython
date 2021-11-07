@@ -77,14 +77,6 @@ void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     }
 }
 
-inline void mp_arg_check_num(size_t n_args, mp_map_t *kw_args, size_t n_args_min, size_t n_args_max, bool takes_kw) {
-    size_t n_kw = 0;
-    if (kw_args != NULL) {
-        n_kw = kw_args->used;
-    }
-    mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
-}
-
 inline void mp_arg_check_num_kw_array(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
@@ -173,7 +165,7 @@ mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
 
 mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t max, qstr arg_name) {
     if (i > max) {
-        mp_raise_ValueError_varg(translate("%q must <= %d"), arg_name, max);
+        mp_raise_ValueError_varg(translate("%q must be <= %d"), arg_name, max);
     }
     return i;
 }
@@ -204,7 +196,7 @@ mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_
 
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
     if (!mp_obj_is_type(obj, type)) {
-        mp_raise_TypeError_varg(translate("%q must of type %q"), arg_name, type->name);
+        mp_raise_TypeError_varg(translate("%q must be of type %q"), arg_name, type->name);
     }
     return obj;
 }

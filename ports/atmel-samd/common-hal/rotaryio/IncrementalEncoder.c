@@ -67,7 +67,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     set_eic_channel_data(self->eic_channel_b, (void *)self);
 
     self->position = 0;
-    self->quarter_count = 0;
+    self->sub_count = 0;
 
     shared_module_softencoder_state_init(self,
         ((uint8_t)gpio_get_pin_level(self->pin_a) << 1) |

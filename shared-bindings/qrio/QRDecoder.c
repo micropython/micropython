@@ -42,14 +42,14 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     enum { ARG_width, ARG_height };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, args_in, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     qrio_qrdecoder_obj_t *self = m_new_obj(qrio_qrdecoder_obj_t);
     self->base.type = &qrio_qrdecoder_type_obj;
@@ -88,7 +88,7 @@ STATIC mp_obj_t qrio_qrdecoder_decode(size_t n_args, const mp_obj_t *pos_args, m
 
     return shared_module_qrio_qrdecoder_decode(self, &bufinfo, policy);
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 2, qrio_qrdecoder_decode);
+MP_DEFINE_CONST_FUN_OBJ_KW(qrio_qrdecoder_decode_obj, 1, qrio_qrdecoder_decode);
 
 //|     width: int
 //|     """The width of image the decoder expects"""

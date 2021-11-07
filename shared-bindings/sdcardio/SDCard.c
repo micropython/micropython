@@ -76,17 +76,16 @@
 //|             storage.mount(vfs, '/sd')
 //|             os.listdir('/sd')"""
 
-STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_spi, ARG_cs, ARG_baudrate, ARG_sdio, NUM_ARGS };
+STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_spi, ARG_cs, ARG_baudrate, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_cs, MP_ARG_OBJ, {.u_obj = mp_const_none } },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 8000000} },
-        { MP_QSTR_sdio, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_int = 8000000} },
     };
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi].u_obj);
     mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj);
@@ -150,6 +149,23 @@ mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, m
 
 MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, sdcardio_sdcard_readblocks);
 
+//|     def sync(self) -> None:
+//|         """Ensure all blocks written are actually committed to the SD card
+//|
+//|         :return: None"""
+//|         ...
+mp_obj_t sdcardio_sdcard_sync(mp_obj_t self_in) {
+    sdcardio_sdcard_obj_t *self = (sdcardio_sdcard_obj_t *)self_in;
+    int result = common_hal_sdcardio_sdcard_sync(self);
+    if (result < 0) {
+        mp_raise_OSError(-result);
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
+
+
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
 //|
 //|         """Write one or more blocks to the card
@@ -177,6 +193,7 @@ STATIC const mp_rom_map_elem_t sdcardio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&sdcardio_sdcard_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&sdcardio_sdcard_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&sdcardio_sdcard_readblocks_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&sdcardio_sdcard_sync_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&sdcardio_sdcard_writeblocks_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(sdcardio_sdcard_locals_dict, sdcardio_sdcard_locals_dict_table);

@@ -79,6 +79,11 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
 }
 
 void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {
+    cam_deinit();
+
+    self->buffer1 = NULL;
+    self->buffer2 = NULL;
+
     reset_pin_number(self->data_clock);
     self->data_clock = NO_PIN;
 
@@ -102,30 +107,73 @@ bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallel
     return self->data_clock == NO_PIN;
 }
 
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
-    size_t size = bufsize / 2; // count is in pixels
-    if (size != self->config.size || buffer != self->config.frame1_buffer) {
-        cam_deinit();
-        self->config.size = bufsize / 2; // count is in pixels(?)
-        self->config.frame1_buffer = buffer;
-
-        cam_init(&self->config);
-    } else {
-        cam_give(buffer);
+void common_hal_imagecapture_parallelimagecapture_continuous_capture_start(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer1, mp_obj_t buffer2) {
+    if (buffer1 == self->buffer1 && buffer2 == self->buffer2) {
+        return;
     }
+
+    mp_buffer_info_t bufinfo1, bufinfo2 = {};
+    mp_get_buffer_raise(buffer1, &bufinfo1, MP_BUFFER_RW);
+    if (buffer2 != mp_const_none) {
+        mp_get_buffer_raise(buffer2, &bufinfo2, MP_BUFFER_RW);
+        if (bufinfo1.len != bufinfo2.len) {
+            mp_raise_ValueError(translate("Buffers must be same size"));
+        }
+    }
+
+    self->buffer1 = buffer1;
+    self->buffer2 = buffer2;
+
+
+    cam_deinit();
+    self->config.size = bufinfo1.len / 2; // count is in pixels
+    self->config.frame1_buffer = bufinfo1.buf;
+    self->config.frame2_buffer = bufinfo2.buf;
+    self->buffer_to_give = NULL;
+
+    cam_init(&self->config);
     cam_start();
+}
+
+void common_hal_imagecapture_parallelimagecapture_continuous_capture_stop(imagecapture_parallelimagecapture_obj_t *self) {
+    cam_deinit();
+    self->buffer1 = self->buffer2 = NULL;
+    self->buffer_to_give = NULL;
+}
+
+STATIC void common_hal_imagecapture_parallelimagecapture_continuous_capture_give_frame(imagecapture_parallelimagecapture_obj_t *self) {
+    if (self->buffer_to_give) {
+        cam_give(self->buffer_to_give);
+        self->buffer_to_give = NULL;
+    }
+}
+
+mp_obj_t common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(imagecapture_parallelimagecapture_obj_t *self) {
+    if (self->buffer1 == NULL) {
+        mp_raise_RuntimeError(translate("No capture in progress"));
+    }
+    common_hal_imagecapture_parallelimagecapture_continuous_capture_give_frame(self);
 
     while (!cam_ready()) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
-            self->config.size = 0; // force re-init next time
-            cam_stop();
-            return;
+            return mp_const_none;
         }
     }
 
-    uint8_t *unused;
-    cam_take(&unused); // this just "returns" buffer
+    cam_take(&self->buffer_to_give);
 
-    cam_stop();
+    if (self->buffer_to_give == self->config.frame1_buffer) {
+        return self->buffer1;
+    }
+    if (self->buffer_to_give == self->config.frame2_buffer) {
+        return self->buffer2;
+    }
+
+    return mp_const_none;  // should be unreachable
+}
+
+void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer) {
+    common_hal_imagecapture_parallelimagecapture_continuous_capture_start(self, buffer, mp_const_none);
+    common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(self);
 }

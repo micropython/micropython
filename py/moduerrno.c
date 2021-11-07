@@ -105,6 +105,8 @@ const mp_obj_module_t mp_module_uerrno = {
     .globals = (mp_obj_dict_t *)&mp_module_uerrno_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_errno, mp_module_uerrno, MICROPY_PY_UERRNO);
+
 qstr mp_errno_to_str(mp_obj_t errno_val) {
     // Otherwise, return the Exxxx string for that error code
     #if MICROPY_PY_UERRNO_ERRORCODE

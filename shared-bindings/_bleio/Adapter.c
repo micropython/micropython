@@ -81,7 +81,7 @@
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BLEIO_HCI
     bleio_adapter_obj_t *self = common_hal_bleio_allocate_adapter_or_raise();
 
@@ -93,19 +93,12 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    busio_uart_obj_t *uart = args[ARG_uart].u_obj;
-    if (!mp_obj_is_type(uart, &busio_uart_type)) {
-        mp_raise_ValueError(translate("Expected a UART"));
-    }
+    busio_uart_obj_t *uart = mp_arg_validate_type(args[ARG_uart].u_obj, &busio_uart_type, MP_QSTR_uart);
 
-    digitalio_digitalinout_obj_t *rts = args[ARG_rts].u_obj;
-    digitalio_digitalinout_obj_t *cts = args[ARG_cts].u_obj;
-    if (!mp_obj_is_type(rts, &digitalio_digitalinout_type) ||
-        !mp_obj_is_type(cts, &digitalio_digitalinout_type)) {
-        mp_raise_ValueError(translate("Expected a DigitalInOut"));
-    }
+    digitalio_digitalinout_obj_t *rts = mp_arg_validate_type(args[ARG_rts].u_obj, &digitalio_digitalinout_type, MP_QSTR_rts);
+    digitalio_digitalinout_obj_t *cts = mp_arg_validate_type(args[ARG_cts].u_obj, &digitalio_digitalinout_type, MP_QSTR_cts);
 
     // Will enable the adapter.
     common_hal_bleio_adapter_construct_hci_uart(self, uart, rts, cts);
@@ -225,7 +218,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_tx_power, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_directed_to, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_directed_to, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -257,13 +250,12 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
         mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
     }
 
-    bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_directed_to].u_obj);
-    if (address != NULL && !connectable) {
-        mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
-    }
-
-    if (address != NULL && !mp_obj_is_type(address, &bleio_address_type)) {
-        mp_raise_TypeError(translate("Expected an Address"));
+    const bleio_address_obj_t *address = NULL;
+    if (args[ARG_directed_to].u_obj != mp_const_none) {
+        if (!connectable) {
+            mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
+        }
+        address = mp_arg_validate_type(args[ARG_directed_to].u_obj, &bleio_address_type, MP_QSTR_directed_to);
     }
 
     common_hal_bleio_adapter_start_advertising(self, connectable, anonymous, timeout, interval,
@@ -271,7 +263,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_advertising_obj, 2, bleio_adapter_start_advertising);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_start_advertising_obj, 1, bleio_adapter_start_advertising);
 
 //|     def stop_advertising(self) -> None:
 //|         """Stop sending advertising packets."""
@@ -447,16 +439,12 @@ STATIC mp_obj_t bleio_adapter_connect(mp_uint_t n_args, const mp_obj_t *pos_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (!mp_obj_is_type(args[ARG_address].u_obj, &bleio_address_type)) {
-        mp_raise_TypeError(translate("Expected an Address"));
-    }
-
-    bleio_address_obj_t *address = MP_OBJ_TO_PTR(args[ARG_address].u_obj);
+    bleio_address_obj_t *address = mp_arg_validate_type(args[ARG_address].u_obj, &bleio_address_type, MP_QSTR_address);
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
 
     return common_hal_bleio_adapter_connect(self, address, timeout);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 2, bleio_adapter_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_adapter_connect_obj, 1, bleio_adapter_connect);
 
 //|     def erase_bonding(self) -> None:
 //|         """Erase all bonding information stored in flash memory."""

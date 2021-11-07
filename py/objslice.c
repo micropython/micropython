@@ -90,12 +90,12 @@ STATIC void slice_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
 STATIC mp_obj_t slice_make_new(const mp_obj_type_t *type,
-    size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+    size_t n_args, size_t n_kw, const mp_obj_t *args) {
     if (type != &mp_type_slice) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot subclass slice"));
     }
     // check number of arguments
-    mp_arg_check_num(n_args, kw_args, 1, 3, false);
+    mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
     // 1st argument is the pin
     mp_obj_t start = mp_const_none;

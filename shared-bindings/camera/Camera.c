@@ -61,7 +61,7 @@
 //|         """Initialize camera."""
 //|         ...
 //|
-STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
     camera_obj_t *self = m_new_obj(camera_obj_t);
     self->base.type = &camera_type;
     // No arguments
@@ -116,7 +116,7 @@ STATIC mp_obj_t camera_obj_take_picture(size_t n_args, const mp_obj_t *pos_args,
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_camera_take_picture(self, (uint8_t *)bufinfo.buf, bufinfo.len, args[ARG_width].u_int, args[ARG_height].u_int, format));
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(camera_take_picture_obj, 2, camera_obj_take_picture);
+MP_DEFINE_CONST_FUN_OBJ_KW(camera_take_picture_obj, 1, camera_obj_take_picture);
 
 STATIC const mp_rom_map_elem_t camera_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&camera_deinit_obj) },

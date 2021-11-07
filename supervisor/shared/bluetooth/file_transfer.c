@@ -28,7 +28,7 @@
 
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
@@ -525,18 +525,33 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     return ANY_COMMAND;
 }
 
+STATIC void send_listdir_entry_header(const struct listdir_entry *entry, mp_int_t max_packet_size) {
+    mp_int_t response_size = sizeof(struct listdir_entry);
+    if (max_packet_size >= response_size) {
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
+        return;
+    }
+    // Split into 16 + 12 size packets to fit into 20 byte minimum packet size.
+    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, 16, NULL, 0);
+    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, ((const uint8_t *)entry) + 16, response_size - 16, NULL, 0);
+}
+
 STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     const struct listdir_command *command = (struct listdir_command *)raw_buf;
     struct listdir_entry *entry = (struct listdir_entry *)raw_buf;
     size_t header_size = sizeof(struct listdir_command);
-    size_t response_size = sizeof(struct listdir_entry);
+    mp_int_t max_packet_size = common_hal_bleio_packet_buffer_get_outgoing_packet_length(&_transfer_packet_buffer);
+    if (max_packet_size < 0) {
+        // -1 means we're disconnected
+        return ANY_COMMAND;
+    }
     // We reuse the command buffer so that we can produce long packets without
     // making the stack large.
     if (command->path_length > (COMMAND_SIZE - header_size - 1)) { // -1 for the null we'll write
         // TODO: throw away any more packets of path.
         entry->command = LISTDIR_ENTRY;
         entry->status = STATUS_ERROR;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
+        send_listdir_entry_header(entry, max_packet_size);
         return ANY_COMMAND;
     }
     // We need to receive another packet to have the full path.
@@ -560,7 +575,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
 
     if (res != FR_OK) {
         entry->status = STATUS_ERROR_NO_FILE;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
+        send_listdir_entry_header(entry, max_packet_size);
         return ANY_COMMAND;
     }
     FILINFO file_info;
@@ -594,7 +609,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
 
         size_t name_length = strlen(file_info.fname);
         entry->path_length = name_length;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
+        send_listdir_entry_header(entry, max_packet_size);
         size_t fn_offset = 0;
         while (fn_offset < name_length) {
             size_t fn_size = MIN(name_length - fn_offset, 4);
@@ -607,7 +622,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
     entry->entry_number = entry->entry_count;
     entry->flags = 0;
     entry->file_size = 0;
-    common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)entry, response_size, NULL, 0);
+    send_listdir_entry_header(entry, max_packet_size);
     return ANY_COMMAND;
 }
 

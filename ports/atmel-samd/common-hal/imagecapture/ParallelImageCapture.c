@@ -27,8 +27,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -151,14 +151,14 @@ static void setup_dma(DmacDescriptor *descriptor, size_t count, uint32_t *buffer
     descriptor->DESCADDR.reg = 0;
 }
 
-#include <string.h>
-
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
+void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_RW);
 
     uint8_t dma_channel = dma_allocate_channel();
 
-    uint32_t *dest = buffer;
-    size_t count = bufsize / 4; // PCC receives 4 bytes (2 pixels) at a time
+    uint32_t *dest = bufinfo.buf;
+    size_t count = bufinfo.len / 4; // PCC receives 4 bytes (2 pixels) at a time
 
     turn_on_event_system();
 

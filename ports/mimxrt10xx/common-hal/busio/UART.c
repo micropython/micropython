@@ -30,7 +30,7 @@
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "supervisor/shared/tick.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
@@ -345,7 +345,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // if we timed out, stop the transfer
     if (self->rx_ongoing) {
+        uint32_t recvd = 0;
+        LPUART_TransferGetReceiveCount(self->uart, &self->handle, &recvd);
         LPUART_TransferAbortReceive(self->uart, &self->handle);
+        return recvd;
     }
 
     // No data left, we got it all
@@ -355,7 +358,11 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 
     // The only place we can reliably tell how many bytes have been received is from the current
     // wp in the handle (because the abort nukes rxDataSize, and reading it before abort is a race.)
-    return self->handle.rxData - data;
+    if (self->handle.rxData > data) {
+        return self->handle.rxData - data;
+    } else {
+        return len;
+    }
 }
 
 // Write characters.

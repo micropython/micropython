@@ -27,8 +27,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "lib/utils/context_manager_helpers.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "shared/runtime/interrupt_char.h"
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "bindings/rp2pio/__init__.h"
@@ -137,7 +137,10 @@ bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallel
     return common_hal_rp2pio_statemachine_deinited(&self->state_machine);
 }
 
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
+void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_RW);
+
     PIO pio = self->state_machine.pio;
     uint sm = self->state_machine.state_machine;
     uint8_t offset = rp2pio_statemachine_program_offset(&self->state_machine);
@@ -149,7 +152,7 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, buffer, bufsize, 4);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4);
 
     pio_sm_set_enabled(pio, sm, false);
 }

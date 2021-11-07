@@ -46,11 +46,11 @@
 //|
 //| For example::
 //|
-//|   import frequencyio
 //|   import time
-//|   from board import *
+//|   import frequencyio
+//|   import board
 //|
-//|   frequency = frequencyio.FrequencyIn(D13)
+//|   frequency = frequencyio.FrequencyIn(board.D11)
 //|   frequency.capture_period = 15
 //|   time.sleep(0.1)
 //|

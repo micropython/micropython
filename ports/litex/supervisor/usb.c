@@ -26,8 +26,8 @@
  */
 
 #include "supervisor/usb.h"
-#include "lib/utils/interrupt_char.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/readline/readline.h"
 
 void init_usb_hardware(void) {
 

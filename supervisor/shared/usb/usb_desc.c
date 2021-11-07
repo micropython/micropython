@@ -170,6 +170,13 @@ static void usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_VENDOR
+    if (usb_vendor_enabled()) {
+        total_descriptor_length += usb_vendor_descriptor_length();
+    }
+    #endif
+
+
     // Now we now how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor_allocation =
         allocate_memory(align32_size(total_descriptor_length),
@@ -221,9 +228,14 @@ static void usb_build_configuration_descriptor(void) {
 
     #if CIRCUITPY_USB_HID
     if (usb_hid_enabled()) {
+        if (usb_hid_boot_device() > 0 && descriptor_counts.current_interface > 0) {
+            // Hosts using boot devices generally to expect them to be at interface zero,
+            // and will not work properly otherwise.
+            reset_into_safe_mode(USB_BOOT_DEVICE_NOT_INTERFACE_ZERO);
+        }
         descriptor_buf_remaining += usb_hid_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string,
-            usb_hid_report_descriptor_length());
+            usb_hid_report_descriptor_length(), usb_hid_boot_device());
     }
     #endif
 
@@ -231,6 +243,13 @@ static void usb_build_configuration_descriptor(void) {
     if (usb_midi_enabled()) {
         // Concatenate and fix up the MIDI descriptor.
         descriptor_buf_remaining += usb_midi_add_descriptor(
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
+    }
+    #endif
+
+    #if CIRCUITPY_USB_VENDOR
+    if (usb_vendor_enabled()) {
+        descriptor_buf_remaining += usb_vendor_add_descriptor(
             descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
     }
     #endif

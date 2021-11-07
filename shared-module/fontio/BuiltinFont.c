@@ -75,5 +75,5 @@ mp_obj_t common_hal_fontio_builtinfont_get_glyph(const fontio_builtinfont_t *sel
         MP_OBJ_NEW_SMALL_INT(self->width),
         MP_OBJ_NEW_SMALL_INT(0)
     };
-    return namedtuple_make_new((const mp_obj_type_t *)&fontio_glyph_type, 8, field_values, NULL);
+    return namedtuple_make_new((const mp_obj_type_t *)&fontio_glyph_type, 8, 0, field_values);
 }

@@ -34,9 +34,9 @@
 #include "py/mpconfig.h"
 
 #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "lib/oofatfs/ff.h"
+#include "py/misc.h"
 
-extern FIL *boot_output_file;
+extern vstr_t *boot_output;
 #endif
 
 void serial_early_init(void);

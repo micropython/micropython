@@ -23,7 +23,7 @@ def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            ["git", "describe", "--dirty", "--always", "--tags", "--match", "[1-9].*"],
+            ["git", "describe", "--tags", "--dirty", "--always", "--match", "[1-9].*"],
             stderr=subprocess.STDOUT,
             universal_newlines=True,
         ).strip()
@@ -107,7 +107,7 @@ def make_version_header(filename):
 #define MICROPY_VERSION_MINOR (%s)
 #define MICROPY_VERSION_MICRO (%s)
 #define MICROPY_VERSION_STRING "%s"
-#define MICROPY_FULL_VERSION_INFO ("Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME)
+#define MICROPY_FULL_VERSION_INFO "Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME
 """ % (
         git_tag,
         git_hash,

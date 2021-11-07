@@ -46,16 +46,13 @@ CD = cd
 CP = cp
 FIND = find
 MKDIR = mkdir
-PYTHON = python
-# Set default python interpreters
-PYTHON2 ?= $(which python2 || which python2.7)
-PYTHON3 ?= python3
+PYTHON = python3
 RM = rm
 RSYNC = rsync
 SED = sed
 TOUCH = touch
 # Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
-NPROC = $(PYTHON3) -c 'import multiprocessing as mp; print(mp.cpu_count())'
+NPROC = $(PYTHON) -c 'import multiprocessing as mp; print(mp.cpu_count())'
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
@@ -67,14 +64,17 @@ SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
 
-MAKE_FROZEN = $(PYTHON3) $(TOP)/tools/make-frozen.py
-MPY_CROSS = $(TOP)/mpy-cross/mpy-cross
-MPY_TOOL = $(PYTHON3) $(TOP)/tools/mpy-tool.py
+MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
+MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
+MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
 MPY_LIB_DIR = $(TOP)/../micropython-lib
 
-MPY_LIB_DIR = $(TOP)/../micropython-lib
+ifeq ($(MICROPY_MPYCROSS),)
+MICROPY_MPYCROSS = $(TOP)/mpy-cross/mpy-cross
+MICROPY_MPYCROSS_DEPENDENCY = $(MICROPY_MPYCROSS)
+endif
 
 all:
 .PHONY: all

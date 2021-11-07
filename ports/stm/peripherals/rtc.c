@@ -31,7 +31,7 @@
 #include "py/gc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 
 // Default period for ticks is 1/1024 second
 #define TICK_DIVISOR 1024

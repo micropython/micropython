@@ -37,6 +37,10 @@
 #include "stm32f7xx_ll_gpio.h"
 #elif (CPY_STM32F4)
 #include "stm32f4xx_ll_gpio.h"
+#elif (CPY_STM32L4)
+#include "stm32l4xx_ll_gpio.h"
+#else
+    #error unknown MCU for DigitalInOut
 #endif
 
 void common_hal_digitalio_digitalinout_never_reset(

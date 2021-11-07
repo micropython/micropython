@@ -50,9 +50,9 @@
 //| For example::
 //|
 //|   import digitalio
-//|   from board import *
+//|   import board
 //|
-//|   pin = digitalio.DigitalInOut(D13)
+//|   pin = digitalio.DigitalInOut(board.LED)
 //|   print(pin.value)
 //|
 //| This example will initialize the the device, read
@@ -61,11 +61,11 @@
 //|
 //| Here is blinky::
 //|
-//|   import digitalio
-//|   from board import *
 //|   import time
+//|   import digitalio
+//|   import board
 //|
-//|   led = digitalio.DigitalInOut(D13)
+//|   led = digitalio.DigitalInOut(board.LED)
 //|   led.direction = digitalio.Direction.OUTPUT
 //|   while True:
 //|       led.value = True

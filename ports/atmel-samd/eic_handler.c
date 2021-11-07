@@ -29,6 +29,7 @@
 #include "common-hal/rotaryio/IncrementalEncoder.h"
 #include "common-hal/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "common-hal/alarm/pin/PinAlarm.h"
 // #include "samd/external_interrupts.h"
 #include "eic_handler.h"
 
@@ -63,6 +64,12 @@ void shared_eic_handler(uint8_t channel) {
         #if CIRCUITPY_COUNTIO
         case EIC_HANDLER_COUNTER:
             counter_interrupt_handler(channel);
+            break;
+        #endif
+
+        #if CIRCUITPY_ALARM
+        case EIC_HANDLER_ALARM:
+            pin_alarm_callback(channel);
             break;
         #endif
 

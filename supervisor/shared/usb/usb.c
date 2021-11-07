@@ -32,8 +32,8 @@
 #include "supervisor/serial.h"
 #include "supervisor/usb.h"
 #include "supervisor/shared/workflow.h"
-#include "lib/utils/interrupt_char.h"
-#include "lib/mp-readline/readline.h"
+#include "shared/runtime/interrupt_char.h"
+#include "shared/readline/readline.h"
 
 #if CIRCUITPY_STORAGE
 #include "shared-module/storage/__init__.h"
@@ -54,13 +54,23 @@
 #include "tusb.h"
 
 #if CIRCUITPY_USB_VENDOR
+#include "usb_vendor_descriptors.h"
 
 // The WebUSB support being conditionally added to this file is based on the
 // tinyusb demo examples/device/webusb_serial.
 
-extern const tusb_desc_webusb_url_t desc_webusb_url;
-
 static bool web_serial_connected = false;
+
+#define URL  "www.tinyusb.org/examples/webusb-serial"
+
+const tusb_desc_webusb_url_t desc_webusb_url =
+{
+    .bLength = 3 + sizeof(URL) - 1,
+    .bDescriptorType = 3, // WEBUSB URL type
+    .bScheme = 1,       // 0: http, 1: https
+    .url = URL
+};
+
 #endif
 
 bool usb_enabled(void) {
@@ -253,10 +263,11 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
         case VENDOR_REQUEST_MICROSOFT:
             if (request->wIndex == 7) {
                 // Get Microsoft OS 2.0 compatible descriptor
+                // let's just hope the target architecture always has the same endianness
                 uint16_t total_len;
-                memcpy(&total_len, desc_ms_os_20 + 8, 2);
+                memcpy(&total_len, vendor_ms_os_20_descriptor() + 8, 2);
 
-                return tud_control_xfer(rhport, request, (void *)desc_ms_os_20, total_len);
+                return tud_control_xfer(rhport, request, (void *)vendor_ms_os_20_descriptor(), total_len);
             } else {
                 return false;
             }
@@ -289,7 +300,7 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
 // Only called when console is enabled.
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    // Workaround for using lib/utils/interrupt_char.c
+    // Workaround for using shared/runtime/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched
     if (mp_interrupt_char == wanted_char) {
         tud_cdc_n_read_flush(itf);    // flush read fifo

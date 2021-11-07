@@ -666,8 +666,17 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
         }
     }
 
-    // Peer address, which we don't use (no directed advertising).
-    bt_addr_le_t empty_addr = { 0 };
+    // Peer address, for directed advertising
+    bt_addr_le_t peer_addr = { 0 };
+
+    // Copy peer address, if supplied.
+    if (directed_to) {
+        mp_buffer_info_t bufinfo;
+        if (mp_get_buffer(directed_to->bytes, &bufinfo, MP_BUFFER_READ)) {
+            peer_addr.type = directed_to->type;
+            memcpy(&peer_addr.a.val, bufinfo.buf, sizeof(peer_addr.a.val));
+        }
+    }
 
     bool extended =
         advertising_data_len > self->max_adv_data_len || scan_response_data_len > self->max_adv_data_len;
@@ -696,7 +705,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
                 interval_units, // max interval
                 0b111,          // channel map: channels 37, 38, 39
                 anonymous ? BT_ADDR_LE_RANDOM : BT_ADDR_LE_PUBLIC,
-                &empty_addr,    // peer_addr,
+                &peer_addr,    // peer_addr,
                 0x00,           // filter policy: no filter
                 DEFAULT_TX_POWER,
                 BT_HCI_LE_EXT_SCAN_PHY_1M, // Secondary PHY to use
@@ -746,7 +755,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
                 interval_units, // max interval
                 adv_type,
                 anonymous ? BT_ADDR_LE_RANDOM : BT_ADDR_LE_PUBLIC,
-                &empty_addr,
+                &peer_addr,
                 0b111,          // channel map: channels 37, 38, 39
                 0x00            // filter policy: no filter
                 ));

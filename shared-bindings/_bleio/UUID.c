@@ -51,13 +51,13 @@
 //|         :type value: int, ~_typing.ReadableBuffer or str"""
 //|         ...
 //|
-STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 1, 1, false);
+STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     bleio_uuid_obj_t *self = m_new_obj(bleio_uuid_obj_t);
     self->base.type = type;
 
-    const mp_obj_t value = pos_args[0];
+    const mp_obj_t value = all_args[0];
     uint8_t uuid128[16];
 
     if (mp_obj_is_int(value)) {
@@ -214,7 +214,7 @@ STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args,
     common_hal_bleio_uuid_pack_into(self, bufinfo.buf + offset);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_uuid_pack_into_obj, 2, bleio_uuid_pack_into);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(bleio_uuid_pack_into_obj, 1, bleio_uuid_pack_into);
 
 STATIC const mp_rom_map_elem_t bleio_uuid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_uuid16), MP_ROM_PTR(&bleio_uuid_uuid16_obj) },

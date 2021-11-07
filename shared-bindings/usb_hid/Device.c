@@ -50,7 +50,8 @@
 //|           Use a size of ``0`` for a report that is not an OUT report.
 //|           "OUT" is with respect to the host.
 //|
-//|         ``report_ids``, ``in_report_lengths``, and ``out_report_lengths`` must all be the same length.
+//|         ``report_ids``, ``in_report_lengths``, and ``out_report_lengths`` must all have the
+//|         same number of elements.
 //|
 //|         Here is an example of a `Device` with a descriptor that specifies two report IDs, 3 and 4.
 //|         Report ID 3 sends an IN report of length 5, and receives an OUT report of length 6.
@@ -81,7 +82,7 @@
 //|     Uses Report ID 3 for its IN report."""
 //|
 
-STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
     self->base.type = &usb_hid_device_type;
     enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
@@ -95,7 +96,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t descriptor_bufinfo;
     mp_get_buffer_raise(args[ARG_report_descriptor].u_obj, &descriptor_bufinfo, MP_BUFFER_READ);
@@ -136,7 +137,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
             // It's not the actual argument that's out of range, but its elements.
             // But the error message is close enough.
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(report_ids, i_obj, MP_OBJ_SENTINEL)),
-            1, 255, MP_QSTR_report_ids);
+            0, 255, MP_QSTR_report_ids);
 
         in_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(in_report_lengths, i_obj, MP_OBJ_SENTINEL)),
@@ -145,6 +146,10 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
         out_report_lengths_array[i] = (uint8_t)mp_arg_validate_int_range(
             MP_OBJ_SMALL_INT_VALUE(mp_obj_subscr(out_report_lengths, i_obj, MP_OBJ_SENTINEL)),
             0, 255, MP_QSTR_out_report_lengths);
+    }
+
+    if (report_ids_array[0] == 0 && report_ids_count > 1) {
+        mp_raise_ValueError_varg(translate("%q with a report ID of 0 must be of length 1"), MP_QSTR_report_ids);
     }
 
     common_hal_usb_hid_device_construct(
@@ -185,10 +190,10 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
     common_hal_usb_hid_device_send_report(self, ((uint8_t *)bufinfo.buf), bufinfo.len, report_id);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 2, usb_hid_device_send_report);
+MP_DEFINE_CONST_FUN_OBJ_KW(usb_hid_device_send_report_obj, 1, usb_hid_device_send_report);
 
 //|     def get_last_received_report(self, report_id: Optional[int] = None) -> bytes:
-//|         """Get the last received HID OUT report for the given report ID.
+//|         """Get the last received HID OUT or feature report for the given report ID.
 //|         The report ID may be omitted if there is no report ID, or only one report ID.
 //|         Return `None` if nothing received.
 //|         """

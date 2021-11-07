@@ -62,8 +62,8 @@ def set_boards_to_build(build_all):
 
     if not build_all:
         boards_to_build = set()
-        board_pattern = re.compile(r"^ports\/\w+\/boards\/(\w+)\/")
-        port_pattern = re.compile(r"^ports\/(\w+)\/")
+        board_pattern = re.compile(r"^ports\/[^/]+\/boards\/([^/]+)\/")
+        port_pattern = re.compile(r"^ports\/([^/]+)\/")
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
@@ -88,7 +88,12 @@ def set_boards_to_build(build_all):
     arch_to_boards = {"arm": [], "riscv": [], "espressif": []}
     for board in boards_to_build:
         print(" ", board)
-        arch = PORT_TO_ARCH[board_to_port[board]]
+        port = board_to_port.get(board)
+        # A board can appear due to its _deletion_ (rare)
+        # if this happens it's not in `board_to_port`.
+        if not port:
+            continue
+        arch = PORT_TO_ARCH[port]
         arch_to_boards[arch].append(board)
 
     # Set the step outputs for each architecture
