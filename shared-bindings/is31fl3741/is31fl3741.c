@@ -97,8 +97,6 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_printf(&mp_plat_print, "IS make new\n");
-
     mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
 
     is31fl3741_is31fl3741_obj_t *self = &allocate_display_bus_or_raise()->is31fl3741;
@@ -108,8 +106,6 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
         mp_raise_ValueError(translate("width must be greater than zero"));
     }
 
-    mp_printf(&mp_plat_print, "w %d h %d\n", args[ARG_width].u_int, args[ARG_height].u_int);
-
     mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
     if (framebuffer == mp_const_none) {
         int width = args[ARG_width].u_int;
@@ -117,7 +113,6 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
         int bufsize = 4 * width * height;
         framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
     }
-    mp_printf(&mp_plat_print, "framebuffer is %x\n", MP_OBJ_TO_PTR(framebuffer));
 
     common_hal_is31fl3741_is31fl3741_construct(self,
         args[ARG_width].u_int,
@@ -137,7 +132,6 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
 //|         ...
 //|
 STATIC mp_obj_t is31fl3741_is31fl3741_deinit(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS Deinit\n");
     is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
     common_hal_is31fl3741_is31fl3741_deinit(self);
     return mp_const_none;
@@ -158,7 +152,10 @@ static void check_for_deinit(is31fl3741_is31fl3741_obj_t *self) {
 STATIC mp_obj_t is31fl3741_is31fl3741_get_brightness(mp_obj_t self_in) {
     is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
     check_for_deinit(self);
-    return mp_obj_new_float(common_hal_is31fl3741_is31fl3741_get_paused(self)? 0.0f : 1.0f);
+    uint8_t current = common_hal_is31fl3741_is31fl3741_get_global_current(self);
+
+    float brightness = (float)current / (float)0xFF;
+    return mp_obj_new_float(brightness);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_get_brightness_obj, is31fl3741_is31fl3741_get_brightness);
 
@@ -169,7 +166,9 @@ STATIC mp_obj_t is31fl3741_is31fl3741_set_brightness(mp_obj_t self_in, mp_obj_t 
     if (brightness < 0.0f || brightness > 1.0f) {
         mp_raise_ValueError(translate("Brightness must be 0-1.0"));
     }
-    common_hal_is31fl3741_is31fl3741_set_paused(self, brightness <= 0);
+
+    uint8_t current = (uint8_t)(brightness * 0xFF);
+    common_hal_is31fl3741_is31fl3741_set_global_current(self, current);
 
     return mp_const_none;
 }
@@ -190,7 +189,7 @@ const mp_obj_property_t is31fl3741_is31fl3741_brightness_obj = {
 STATIC mp_obj_t is31fl3741_is31fl3741_refresh(mp_obj_t self_in) {
     is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
     check_for_deinit(self);
-    common_hal_is31fl3741_is31fl3741_refresh(self);
+    common_hal_is31fl3741_is31fl3741_refresh(self, 0);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_refresh_obj, is31fl3741_is31fl3741_refresh);
@@ -238,7 +237,6 @@ STATIC MP_DEFINE_CONST_DICT(is31fl3741_is31fl3741_locals_dict, is31fl3741_is31fl
 
 STATIC void is31fl3741_is31fl3741_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
-    // mp_printf(&mp_plat_print, "IS get bufinfo %x\n", self->bufinfo.buf);
     check_for_deinit(self);
 
     *bufinfo = self->bufinfo;
@@ -247,49 +245,42 @@ STATIC void is31fl3741_is31fl3741_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t
 // These version exists so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
 STATIC void is31fl3741_is31fl3741_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
-    // mp_printf(&mp_plat_print, "IS swapbuffers\n");
-    (void)dirty_row_bitmap;
-    common_hal_is31fl3741_is31fl3741_refresh(self_in);
+    common_hal_is31fl3741_is31fl3741_refresh(self_in, dirty_row_bitmap);
 }
 
 STATIC void is31fl3741_is31fl3741_deinit_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS deinit proto\n");
     common_hal_is31fl3741_is31fl3741_deinit(self_in);
 }
 
 STATIC float is31fl3741_is31fl3741_get_brightness_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get brigthness\n");
     return common_hal_is31fl3741_is31fl3741_get_paused(self_in) ? 0.0f : 1.0f;
 }
 
 STATIC bool is31fl3741_is31fl3741_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
-    mp_printf(&mp_plat_print, "IS set brightness\n");
     common_hal_is31fl3741_is31fl3741_set_paused(self_in, value <= 0);
     return true;
 }
 
 STATIC int is31fl3741_is31fl3741_get_width_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get width\n");
     return common_hal_is31fl3741_is31fl3741_get_width(self_in);
 }
 
 STATIC int is31fl3741_is31fl3741_get_height_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get height\n");
     return common_hal_is31fl3741_is31fl3741_get_height(self_in);
 }
 
 STATIC int is31fl3741_is31fl3741_get_color_depth_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get color depth\n");
+    // The way displayio works depth is used to calculate bytes
+    // We use an uint32_t for color already so setting to 24 causes
+    // more changes required
     return 32;
 }
 
 STATIC int is31fl3741_is31fl3741_get_bytes_per_cell_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get bytes per cell\n");
     return 1;
 }
 
 STATIC int is31fl3741_is31fl3741_get_native_frames_per_second_proto(mp_obj_t self_in) {
-    mp_printf(&mp_plat_print, "IS get fps\n");
     return 60;
 }
 
@@ -311,7 +302,6 @@ STATIC const framebuffer_p_t is31fl3741_is31fl3741_proto = {
 STATIC mp_int_t is31fl3741_is31fl3741_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     is31fl3741_is31fl3741_obj_t *self = (is31fl3741_is31fl3741_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
-    mp_printf(&mp_plat_print, "IS IS get buffer\n");
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
         return 1;
     }

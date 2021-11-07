@@ -63,7 +63,6 @@ void set_page(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t p) {
 
     uint8_t page[2] = { 0xFD, 0x00 }; // page command
     page[1] = p;
-    // mp_printf(&mp_plat_print, "Set Page %x -> %x\n", page[0], page[1]);
     uint8_t result = common_hal_busio_i2c_write(i2c, addr, page, 2, true);
     if (result != 0) {
         mp_printf(&mp_plat_print, "Set Page error %x\n", result);
@@ -77,7 +76,6 @@ void send_enable(busio_i2c_obj_t *i2c, uint8_t addr) {
     if (result != 0) {
         mp_printf(&mp_plat_print, "Enable error %x\n", result);
     }
-    mp_printf(&mp_plat_print, "CH IS construct: enable\n");
 }
 
 void send_reset(busio_i2c_obj_t *i2c, uint8_t addr) {
@@ -87,19 +85,36 @@ void send_reset(busio_i2c_obj_t *i2c, uint8_t addr) {
     if (result != 0) {
         mp_printf(&mp_plat_print, "reset error %x\n", result);
     }
-    mp_printf(&mp_plat_print, "CH IS construct: reset\n");
 }
 
-void set_current(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t cur) {
+void set_current(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t current) {
     set_page(i2c, addr, 4);
     uint8_t gcur[2] = { 0x01, 0x00 }; // global current command
-    gcur[1] = cur;
+    gcur[1] = current;
     uint8_t result = common_hal_busio_i2c_write(i2c, addr, gcur, 2, true);
     if (result != 0) {
         mp_printf(&mp_plat_print, "set current error %x\n", result);
     }
-    mp_printf(&mp_plat_print, "CH IS construct: set global current\n");
 }
+
+uint8_t get_current(busio_i2c_obj_t *i2c, uint8_t addr) {
+    set_page(i2c, addr, 4);
+    uint8_t gcur = 0x01; // global current command
+
+    uint8_t result = common_hal_busio_i2c_write(i2c, addr, &gcur, 1, true);
+    if (result != 0) {
+        mp_printf(&mp_plat_print, "get current error %x\n", result);
+    }
+
+    uint8_t data = 0;
+    result = common_hal_busio_i2c_read(i2c, addr, &data, 1);
+    if (result != 0) {
+        mp_printf(&mp_plat_print, "get current error %x\n", result);
+    }
+
+    return data;
+}
+
 
 void set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_t level, uint8_t page) {
     uint8_t cmd[2] = { 0x00, 0x00 };
@@ -118,7 +133,6 @@ void set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_t level, ui
     if (result != 0) {
         mp_printf(&mp_plat_print, "set led error %x\n", result);
     }
-    // mp_printf(&mp_plat_print, "CH IS construct: set led %x -> %x\n", led, level);
 }
 
 void drawPixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color) {
@@ -134,18 +148,10 @@ void drawPixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_
         set_led(i2c, addr, ridx, r, 0);
         set_led(i2c, addr, gidx, g, 0);
         set_led(i2c, addr, bidx, b, 0);
-        // mp_printf(&mp_plat_print, "drawPixel: x %d y %d r %02x g %02x b %02x ri %d gi %d bi %d\n", x, y, r, g, b, ridx, gidx, bidx);
-    } else {
-        // mp_printf(&mp_plat_print, "drawPixel: x %d y %d r %02x g %02x b %02x OOB\n", x, y, r, g, b);
     }
-
 }
 
-
-
-
 void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr) {
-    mp_printf(&mp_plat_print, "CH IS construct %x\n", addr);
     self->width = width;
     self->height = height;
 
@@ -168,7 +174,6 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
     common_hal_busio_i2c_write(i2c, addr, &command, 1, false);
     uint8_t data = 0;
     common_hal_busio_i2c_read(i2c, addr, &data, 1);
-    mp_printf(&mp_plat_print, "CH IS construct device %x\n", data);
 
     send_reset(i2c, addr);
     send_enable(i2c, addr);
@@ -179,26 +184,13 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
         set_led(i2c, addr, i, 0xFF, 2);
     }
 
-    // set_led(i2c, addr, 0x09, 0xA1, 0);
-    // set_led(i2c, addr, 309, 0xA1, 0);
-    // set_led(i2c, addr, 0x09, 0xCC, 2);
-
-    // set_led(i2c, addr, 0x19, 0xA2, 0);
-    // set_led(i2c, addr, 0x19, 0x02, 2);
-
-    // set_led(i2c, addr, 0x2A, 0xA3, 1);
-    // set_led(i2c, addr, 0x29, 0xEE, 3);
-
     common_hal_busio_i2c_unlock(i2c);
-
-
 }
 
 void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *self, mp_obj_t framebuffer) {
     self->paused = 1;
 
     if (framebuffer) {
-        mp_printf(&mp_plat_print, "CH IS reconstruct framebuffer %x\n", MP_OBJ_TO_PTR(framebuffer));
         self->framebuffer = framebuffer;
         mp_get_buffer_raise(self->framebuffer, &self->bufinfo, MP_BUFFER_READ);
         if (mp_get_buffer(self->framebuffer, &self->bufinfo, MP_BUFFER_RW)) {
@@ -206,11 +198,10 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
         } else {
             self->bufinfo.typecode = 'H';
         }
-        mp_printf(&mp_plat_print, "CH IS reconstruct self->bufinfo is %x\n", self->bufinfo.buf);
+
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize - 1), false);
     } else {
-        mp_printf(&mp_plat_print, "CH IS reconstruct NO framebuffer\n");
         common_hal_is31fl3741_free_impl(self->bufinfo.buf);
 
         self->framebuffer = NULL;
@@ -263,7 +254,6 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
 }
 
 void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) {
-    mp_printf(&mp_plat_print, "IS CH Deinit\n");
     /*
     if (self->timer) {
         common_hal_is31fl3741_timer_free(self->timer);
@@ -291,58 +281,53 @@ void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) 
 }
 
 void common_hal_is31fl3741_is31fl3741_set_paused(is31fl3741_is31fl3741_obj_t *self, bool paused) {
-    mp_printf(&mp_plat_print, "CH IS set paused\n");
-    /*if (paused && !self->paused) {
-        _PM_stop(&self->protomatter);
-    } else if (!paused && self->paused) {
-        _PM_resume(&self->protomatter);
-        _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
-        _PM_swapbuffer_maybe(&self->protomatter);
-    }*/
     self->paused = paused;
 }
 
 bool common_hal_is31fl3741_is31fl3741_get_paused(is31fl3741_is31fl3741_obj_t *self) {
-    mp_printf(&mp_plat_print, "CH IS get paused\n");
     return self->paused;
 }
 
-void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self) {
-    // mp_printf(&mp_plat_print, "CH IS refresh len %x addr %x\n", self->bufinfo.len, self->bufinfo.buf);
+void common_hal_is31fl3741_is31fl3741_set_global_current(is31fl3741_is31fl3741_obj_t *self, uint8_t current) {
+    set_current(self->i2c, self->device_address, current);
+}
+
+uint8_t common_hal_is31fl3741_is31fl3741_get_global_current(is31fl3741_is31fl3741_obj_t *self) {
+    return get_current(self->i2c, self->device_address);
+}
+
+void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self, uint8_t *dirtyrows) {
+    uint8_t dirty_row_flags = 0xFF;
+    if (dirtyrows != 0) {
+        dirty_row_flags = *dirtyrows;
+    }
 
     if (!self->paused) {
         uint32_t *buffer = self->bufinfo.buf;
         for (int y = 0; y < 5; y++) {
-            for (int x = 0; x < 18; x++) {
-                drawPixel(self->i2c, self->device_address, x, y, *buffer);
-                // mp_printf(&mp_plat_print, "%06x ", *buffer);
-                buffer++;
+            if ((dirty_row_flags >> y) & 0x1) {
+                for (int x = 0; x < 18; x++) {
+                    drawPixel(self->i2c, self->device_address, x, y, *buffer);
+                    buffer++;
+                }
             }
-            // mp_printf(&mp_plat_print, "\n");
         }
-        //
-        // _PM_convert_565(&self->protomatter, self->bufinfo.buf, self->width);
-        // _PM_swapbuffer_maybe(&self->protomatter);
     }
 }
 
 int common_hal_is31fl3741_is31fl3741_get_width(is31fl3741_is31fl3741_obj_t *self) {
-    mp_printf(&mp_plat_print, "CH IS get width\n");
     return self->width;
 }
 
 int common_hal_is31fl3741_is31fl3741_get_height(is31fl3741_is31fl3741_obj_t *self) {
-    mp_printf(&mp_plat_print, "CH IS get height\n");
     return self->height;
 }
 
 void *common_hal_is31fl3741_allocator_impl(size_t sz) {
-    mp_printf(&mp_plat_print, "CH IS allocator\n");
     supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, true);
     return allocation ? allocation->ptr : NULL;
 }
 
 void common_hal_is31fl3741_free_impl(void *ptr_in) {
-    mp_printf(&mp_plat_print, "CH IS free\n");
     free_memory(allocation_from_ptr(ptr_in));
 }

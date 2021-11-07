@@ -38,13 +38,14 @@ void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *);
 int common_hal_is31fl3741_is31fl3741_get_width(is31fl3741_is31fl3741_obj_t *self);
 int common_hal_is31fl3741_is31fl3741_get_height(is31fl3741_is31fl3741_obj_t *self);
 
+void common_hal_is31fl3741_is31fl3741_set_global_current(is31fl3741_is31fl3741_obj_t *self, uint8_t current);
+uint8_t common_hal_is31fl3741_is31fl3741_get_global_current(is31fl3741_is31fl3741_obj_t *self);
+
 void common_hal_is31fl3741_is31fl3741_set_paused(is31fl3741_is31fl3741_obj_t *self, bool paused);
 bool common_hal_is31fl3741_is31fl3741_get_paused(is31fl3741_is31fl3741_obj_t *self);
-void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self);
+void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self, uint8_t *dirtyrows);
 
 void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *self, mp_obj_t framebuffer);
 /*
 void rgbmatrix_rgbmatrix_collect_ptrs(rgbmatrix_rgbmatrix_obj_t *);
-
-
 */
