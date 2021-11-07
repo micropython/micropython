@@ -5392,7 +5392,9 @@ FRESULT f_mkfs (
     const UINT n_fats = 1;      /* Number of FATs for FAT/FAT32 volume (1 or 2) */
     const UINT n_rootdir = 512; /* Number of root directory entries for FAT volume */
     static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};  /* Cluster size boundary for FAT volume (4Ks unit) */
+#if FF_MKFS_FAT32
     static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};    /* Cluster size boundary for FAT32 volume (128Ks unit) */
+#endif
     BYTE fmt, sys, *buf, *pte, part; void *pdrv;
     WORD ss;    /* Sector size */
     DWORD szb_buf, sz_buf, sz_blk, n_clst, pau, sect, nsect, n;
@@ -5464,7 +5466,7 @@ FRESULT f_mkfs (
             }
         }
         if (au > 128) LEAVE_MKFS(FR_INVALID_PARAMETER); /* Too large au for FAT/FAT32 */
-        if (opt & FM_FAT32) {   /* FAT32 possible? */
+        if (FF_MKFS_FAT32 && (opt & FM_FAT32)) {   /* FAT32 possible? */
             if ((opt & FM_ANY) == FM_FAT32 || !(opt & FM_FAT)) {    /* FAT32 only or no-FAT? */
                 fmt = FS_FAT32; break;
             }
@@ -5641,6 +5643,7 @@ FRESULT f_mkfs (
         do {
             pau = au;
             /* Pre-determine number of clusters and FAT sub-type */
+#if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {  /* FAT32 volume */
                 if (pau == 0) { /* au auto-selection */
                     n = sz_vol / 0x20000;   /* Volume size in unit of 128KS */
@@ -5651,7 +5654,9 @@ FRESULT f_mkfs (
                 sz_rsv = 32;    /* Number of reserved sectors */
                 sz_dir = 0;     /* No static directory */
                 if (n_clst <= MAX_FAT16 || n_clst > MAX_FAT32) LEAVE_MKFS(FR_MKFS_ABORTED);
-            } else {                /* FAT volume */
+            } else
+#endif
+            {                /* FAT volume */
                 if (pau == 0) { /* au auto-selection */
                     n = sz_vol / 0x1000;    /* Volume size in unit of 4KS */
                     for (i = 0, pau = 1; cst[i] && cst[i] <= n; i++, pau <<= 1) ;   /* Get from table */
@@ -5681,12 +5686,14 @@ FRESULT f_mkfs (
             /* Determine number of clusters and final check of validity of the FAT sub-type */
             if (sz_vol < b_data + pau * 16 - b_vol) LEAVE_MKFS(FR_MKFS_ABORTED);    /* Too small volume */
             n_clst = (sz_vol - sz_rsv - sz_fat * n_fats - sz_dir) / pau;
+#if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {
                 if (n_clst <= MAX_FAT16) {  /* Too few clusters for FAT32 */
                     if (au == 0 && (au = pau / 2) != 0) continue;   /* Adjust cluster size and retry */
                     LEAVE_MKFS(FR_MKFS_ABORTED);
                 }
             }
+#endif
             if (fmt == FS_FAT16) {
                 if (n_clst > MAX_FAT16) {   /* Too many clusters for FAT16 */
                     if (au == 0 && (pau * 2) <= 64) {
@@ -5720,7 +5727,11 @@ FRESULT f_mkfs (
         buf[BPB_SecPerClus] = (BYTE)pau;                /* Cluster size [sector] */
         st_word(buf + BPB_RsvdSecCnt, (WORD)sz_rsv);    /* Size of reserved area */
         buf[BPB_NumFATs] = (BYTE)n_fats;                /* Number of FATs */
+#if FF_MKFS_FAT32
         st_word(buf + BPB_RootEntCnt, (WORD)((fmt == FS_FAT32) ? 0 : n_rootdir));   /* Number of root directory entries */
+#else
+        st_word(buf + BPB_RootEntCnt, (WORD) n_rootdir);   /* Number of root directory entries */
+#endif
         if (sz_vol < 0x10000) {
             st_word(buf + BPB_TotSec16, (WORD)sz_vol);  /* Volume size in 16-bit LBA */
         } else {
@@ -5730,6 +5741,7 @@ FRESULT f_mkfs (
         st_word(buf + BPB_SecPerTrk, 63);               /* Number of sectors per track (for int13) */
         st_word(buf + BPB_NumHeads, 255);               /* Number of heads (for int13) */
         st_dword(buf + BPB_HiddSec, b_vol);             /* Volume offset in the physical drive [sector] */
+#if FF_MKFS_FAT32
         if (fmt == FS_FAT32) {
             st_dword(buf + BS_VolID32, GET_FATTIME());  /* VSN */
             st_dword(buf + BPB_FATSz32, sz_fat);        /* FAT size [sector] */
@@ -5739,7 +5751,9 @@ FRESULT f_mkfs (
             buf[BS_DrvNum32] = 0x80;                    /* Drive number (for int13) */
             buf[BS_BootSig32] = 0x29;                   /* Extended boot signature */
             mem_cpy(buf + BS_VolLab32, "NO NAME    " "FAT32   ", 19);   /* Volume label, FAT signature */
-        } else {
+        } else
+#endif
+        {
             st_dword(buf + BS_VolID, GET_FATTIME());    /* VSN */
             st_word(buf + BPB_FATSz16, (WORD)sz_fat);   /* FAT size [sector] */
             buf[BS_DrvNum] = 0x80;                      /* Drive number (for int13) */
@@ -5750,6 +5764,7 @@ FRESULT f_mkfs (
         if (disk_write(pdrv, buf, b_vol, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR); /* Write it to the VBR sector */
 
         /* Create FSINFO record if needed */
+#if FF_MKFS_FAT32
         if (fmt == FS_FAT32) {
             disk_write(pdrv, buf, b_vol + 6, 1);        /* Write backup VBR (VBR + 6) */
             mem_set(buf, 0, ss);
@@ -5761,16 +5776,20 @@ FRESULT f_mkfs (
             disk_write(pdrv, buf, b_vol + 7, 1);        /* Write backup FSINFO (VBR + 7) */
             disk_write(pdrv, buf, b_vol + 1, 1);        /* Write original FSINFO (VBR + 1) */
         }
+#endif
 
         /* Initialize FAT area */
         mem_set(buf, 0, (UINT)szb_buf);
         sect = b_fat;       /* FAT start sector */
         for (i = 0; i < n_fats; i++) {          /* Initialize FATs each */
+#if FF_MKFS_FAT32
             if (fmt == FS_FAT32) {
                 st_dword(buf + 0, 0xFFFFFFF8);  /* Entry 0 */
                 st_dword(buf + 4, 0xFFFFFFFF);  /* Entry 1 */
                 st_dword(buf + 8, 0x0FFFFFFF);  /* Entry 2 (root directory) */
-            } else {
+            } else
+#endif
+            {
                 st_dword(buf + 0, (fmt == FS_FAT12) ? 0xFFFFF8 : 0xFFFFFFF8);   /* Entry 0 and 1 */
             }
             nsect = sz_fat;     /* Number of FAT sectors */
@@ -5783,7 +5802,11 @@ FRESULT f_mkfs (
         }
 
         /* Initialize root directory (fill with zero) */
+#if FF_MKFS_FAT32
         nsect = (fmt == FS_FAT32) ? pau : sz_dir;   /* Number of root directory sectors */
+#else
+        nsect = sz_dir;   /* Number of root directory sectors */
+#endif
         do {
             n = (nsect > sz_buf) ? sz_buf : nsect;
             if (disk_write(pdrv, buf, sect, (UINT)n) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
@@ -5795,7 +5818,7 @@ FRESULT f_mkfs (
     if (FF_FS_EXFAT && fmt == FS_EXFAT) {
         sys = 0x07;         /* HPFS/NTFS/exFAT */
     } else {
-        if (fmt == FS_FAT32) {
+        if (FF_MKFS_FAT32 && fmt == FS_FAT32) {
             sys = 0x0C;     /* FAT32X */
         } else {
             if (sz_vol >= 0x10000) {
