@@ -127,7 +127,11 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
-    #if defined(DEBUG)
+    #ifndef DEBUG
+    #define DEBUG (0)
+    #endif
+
+    #if DEBUG
     // debug UART
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO20);
@@ -138,7 +142,11 @@ safe_mode_t port_init(void) {
     #endif
     #endif
 
-    #if defined(DEBUG) || defined(ENABLE_JTAG)
+    #ifndef ENABLE_JTAG
+    #define ENABLE_JTAG (defined(DEBUG) && DEBUG)
+    #endif
+
+    #if ENABLE_JTAG
     // JTAG
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO4);
