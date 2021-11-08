@@ -645,10 +645,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    if (!ok_to_run) {
-        return;
-    }
-
     static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
 
     // Do USB setup even if boot.py is not run.
@@ -661,54 +657,56 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_set_defaults();
 #endif
 
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    vstr_t boot_text;
-    vstr_init(&boot_text, 512);
-    boot_output = &boot_text;
-    #endif
-
-    // Write version info
-    mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
-
     pyexec_result_t result = {0, MP_OBJ_NULL, 0};
 
-    bool found_boot = maybe_run_list(boot_py_filenames, &result);
-    (void) found_boot;
+    if (ok_to_run) {
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        vstr_t boot_text;
+        vstr_init(&boot_text, 512);
+        boot_output = &boot_text;
+        #endif
+
+        // Write version info
+        mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
+
+        bool found_boot = maybe_run_list(boot_py_filenames, &result);
+        (void) found_boot;
 
 
-    #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-    // Get the base filesystem.
-    fs_user_mount_t *vfs = (fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj;
-    FATFS *fs = &vfs->fatfs;
+        #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        // Get the base filesystem.
+        fs_user_mount_t *vfs = (fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj;
+        FATFS *fs = &vfs->fatfs;
 
-    boot_output = NULL;
-    bool write_boot_output = (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON);
-    FIL boot_output_file;
-    if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
-        char *file_contents = m_new(char, boot_text.alloc);
-        UINT chars_read;
-        if (f_read(&boot_output_file, file_contents, 1+boot_text.len, &chars_read) == FR_OK) {
-            write_boot_output =
-                (chars_read != boot_text.len) || (memcmp(boot_text.buf, file_contents, chars_read) != 0);
+        boot_output = NULL;
+        bool write_boot_output = (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON);
+        FIL boot_output_file;
+        if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
+            char *file_contents = m_new(char, boot_text.alloc);
+            UINT chars_read;
+            if (f_read(&boot_output_file, file_contents, 1+boot_text.len, &chars_read) == FR_OK) {
+                write_boot_output =
+                    (chars_read != boot_text.len) || (memcmp(boot_text.buf, file_contents, chars_read) != 0);
+            }
+            // no need to f_close the file
         }
-        // no need to f_close the file
-    }
 
-    if (write_boot_output) {
-        // Wait 1 second before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
-        // in case power is momentary or will fail shortly due to, say a low, battery.
-        mp_hal_delay_ms(1000);
+        if (write_boot_output) {
+            // Wait 1 second before opening CIRCUITPY_BOOT_OUTPUT_FILE for write,
+            // in case power is momentary or will fail shortly due to, say a low, battery.
+            mp_hal_delay_ms(1000);
 
-        // USB isn't up, so we can write the file.
-        // operating at the oofatfs (f_open) layer means the usb concurrent write permission
-        // is not even checked!
-        f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
-        UINT chars_written;
-        f_write(&boot_output_file, boot_text.buf, boot_text.len, &chars_written);
-        f_close(&boot_output_file);
-        filesystem_flush();
+            // USB isn't up, so we can write the file.
+            // operating at the oofatfs (f_open) layer means the usb concurrent write permission
+            // is not even checked!
+            f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_WRITE | FA_CREATE_ALWAYS);
+            UINT chars_written;
+            f_write(&boot_output_file, boot_text.buf, boot_text.len, &chars_written);
+            f_close(&boot_output_file);
+            filesystem_flush();
+        }
+        #endif
     }
-    #endif
 
 #if CIRCUITPY_USB
     // Some data needs to be carried over from the USB settings in boot.py
