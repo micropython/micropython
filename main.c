@@ -117,12 +117,12 @@ static size_t PLACE_IN_DTCM_BSS(_pystack[CIRCUITPY_PYSTACK_SIZE / sizeof(size_t)
 #endif
 
 static void reset_devices(void) {
-#if CIRCUITPY_BLEIO_HCI
+    #if CIRCUITPY_BLEIO_HCI
     bleio_reset();
-#endif
+    #endif
 }
 
-STATIC void start_mp(supervisor_allocation* heap) {
+STATIC void start_mp(supervisor_allocation *heap) {
     autoreload_stop();
     supervisor_workflow_reset();
 
@@ -135,13 +135,13 @@ STATIC void start_mp(supervisor_allocation* heap) {
     }
 
 
-#if MICROPY_MAX_STACK_USAGE
+    #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
     if (stack_get_bottom() != NULL) {
         mp_stack_set_bottom(stack_get_bottom());
         mp_stack_fill_with_sentinel();
     }
-#endif
+    #endif
 
     // Sync the file systems in case any used RAM from the GC to cache. As soon
     // as we re-init the GC all bets are off on the cache.
@@ -201,8 +201,8 @@ STATIC void stop_mp(void) {
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
 // Return its index. If no file found, return -1.
-STATIC const char* first_existing_file_in_list(const char * const * filenames) {
-    for (int i = 0; filenames[i] != (char*)""; i++) {
+STATIC const char *first_existing_file_in_list(const char *const *filenames) {
+    for (int i = 0; filenames[i] != (char *)""; i++) {
         mp_import_stat_t stat = mp_import_stat(filenames[i]);
         if (stat == MP_IMPORT_STAT_FILE) {
             return filenames[i];
@@ -211,8 +211,8 @@ STATIC const char* first_existing_file_in_list(const char * const * filenames) {
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec_result) {
-    const char* filename = first_existing_file_in_list(filenames);
+STATIC bool maybe_run_list(const char *const *filenames, pyexec_result_t *exec_result) {
+    const char *filename = first_existing_file_in_list(filenames);
     if (filename == NULL) {
         return false;
     }
@@ -226,10 +226,10 @@ STATIC bool maybe_run_list(const char * const * filenames, pyexec_result_t* exec
 }
 
 STATIC void count_strn(void *data, const char *str, size_t len) {
-    *(size_t*)data += len;
+    *(size_t *)data += len;
 }
 
-STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
+STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     // Get the traceback of any exception from this run off the heap.
     // MP_OBJ_SENTINEL means "this run does not contribute to traceback storage, don't touch it"
     // MP_OBJ_NULL (=0) means "this run completed successfully, clear any stored traceback"
@@ -249,13 +249,12 @@ STATIC void cleanup_after_vm(supervisor_allocation* heap, mp_obj_t exception) {
             // making it fail, but at this point I believe they are not worth spending code on.
             if (prev_traceback_allocation != NULL) {
                 vstr_t vstr;
-                vstr_init_fixed_buf(&vstr, traceback_len, (char*)prev_traceback_allocation->ptr);
+                vstr_init_fixed_buf(&vstr, traceback_len, (char *)prev_traceback_allocation->ptr);
                 mp_print_t print = {&vstr, (mp_print_strn_t)vstr_add_strn};
                 mp_obj_print_exception(&print, exception);
-                ((char*)prev_traceback_allocation->ptr)[traceback_len] = '\0';
+                ((char *)prev_traceback_allocation->ptr)[traceback_len] = '\0';
             }
-        }
-        else {
+        } else {
             prev_traceback_allocation = NULL;
         }
     }
@@ -335,17 +334,17 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
     if (safe_mode == NO_SAFE_MODE) {
-        static const char * const supported_filenames[] = STRING_LIST(
+        static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
-        static const char * const double_extension_filenames[] = STRING_LIST(
+        static const char *const double_extension_filenames[] = STRING_LIST(
             "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
             "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
         stack_resize();
         filesystem_flush();
-        supervisor_allocation* heap = allocate_remaining_memory();
+        supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state. Includes an alarm check/reset for sleep.
         start_mp(heap);
@@ -356,14 +355,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
 
         // Check if a different run file has been allocated
         if (next_code_allocation) {
-            ((next_code_info_t*)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
-            next_code_options = ((next_code_info_t*)next_code_allocation->ptr)->options;
-            if (((next_code_info_t*)next_code_allocation->ptr)->filename[0] != '\0') {
-                const char* next_list[] = {((next_code_info_t*)next_code_allocation->ptr)->filename, ""};
+            ((next_code_info_t *)next_code_allocation->ptr)->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+            next_code_options = ((next_code_info_t *)next_code_allocation->ptr)->options;
+            if (((next_code_info_t *)next_code_allocation->ptr)->filename[0] != '\0') {
+                const char *next_list[] = {((next_code_info_t *)next_code_allocation->ptr)->filename, ""};
                 // This is where the user's python code is actually executed:
                 found_main = maybe_run_list(next_list, &result);
                 if (!found_main) {
-                    serial_write(((next_code_info_t*)next_code_allocation->ptr)->filename);
+                    serial_write(((next_code_info_t *)next_code_allocation->ptr)->filename);
                     serial_write_compressed(translate(" not found.\n"));
                 }
             }
@@ -374,14 +373,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             found_main = maybe_run_list(supported_filenames, &result);
             // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
-            if (!found_main){
+            if (!found_main) {
                 found_main = maybe_run_list(double_extension_filenames, &result);
                 if (found_main) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
             }
             #else
-            (void) found_main;
+            (void)found_main;
             #endif
         }
 
@@ -400,7 +399,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         // the options because it can be treated like any other reason-for-stickiness bit. The
         // source is different though: it comes from the options that will apply to the next run,
         // while the rest of next_code_options is what applied to this run.
-        if (next_code_allocation != NULL && (((next_code_info_t*)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
+        if (next_code_allocation != NULL && (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
@@ -562,7 +561,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
             }
 
             #if !CIRCUITPY_STATUS_LED
-                port_interrupt_after_ticks(time_to_epaper_refresh);
+            port_interrupt_after_ticks(time_to_epaper_refresh);
             #endif
             #endif
 
@@ -645,17 +644,17 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         && safe_mode == NO_SAFE_MODE
         && MP_STATE_VM(vfs_mount_table) != NULL;
 
-    static const char * const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
+    static const char *const boot_py_filenames[] = STRING_LIST("boot.py", "boot.txt");
 
     // Do USB setup even if boot.py is not run.
 
-    supervisor_allocation* heap = allocate_remaining_memory();
+    supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap);
 
-#if CIRCUITPY_USB
+    #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
     usb_set_defaults();
-#endif
+    #endif
 
     pyexec_result_t result = {0, MP_OBJ_NULL, 0};
 
@@ -670,12 +669,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
 
         bool found_boot = maybe_run_list(boot_py_filenames, &result);
-        (void) found_boot;
+        (void)found_boot;
 
 
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         // Get the base filesystem.
-        fs_user_mount_t *vfs = (fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj;
+        fs_user_mount_t *vfs = (fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj;
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
@@ -684,7 +683,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
             char *file_contents = m_new(char, boot_text.alloc);
             UINT chars_read;
-            if (f_read(&boot_output_file, file_contents, 1+boot_text.len, &chars_read) == FR_OK) {
+            if (f_read(&boot_output_file, file_contents, 1 + boot_text.len, &chars_read) == FR_OK) {
                 write_boot_output =
                     (chars_read != boot_text.len) || (memcmp(boot_text.buf, file_contents, chars_read) != 0);
             }
@@ -708,7 +707,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #endif
     }
 
-#if CIRCUITPY_USB
+    #if CIRCUITPY_USB
     // Some data needs to be carried over from the USB settings in boot.py
     // to the next VM, while the heap is still available.
     // Its size can vary, so save it temporarily on the stack,
@@ -717,21 +716,21 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     size_t size = usb_boot_py_data_size();
     uint8_t usb_boot_py_data[size];
     usb_get_boot_py_data(usb_boot_py_data, size);
-#endif
+    #endif
 
     cleanup_after_vm(heap, result.exception);
 
-#if CIRCUITPY_USB
+    #if CIRCUITPY_USB
     // Now give back the data we saved from the heap going away.
     usb_return_boot_py_data(usb_boot_py_data, size);
-#endif
+    #endif
 }
 
 STATIC int run_repl(void) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
-    supervisor_allocation* heap = allocate_remaining_memory();
+    supervisor_allocation *heap = allocate_remaining_memory();
     start_mp(heap);
 
     #if CIRCUITPY_USB
@@ -876,7 +875,7 @@ void gc_collect(void) {
 
     // This collects root pointers from the VFS mount table. Some of them may
     // have lost their references in the VM even though they are mounted.
-    gc_collect_root((void**)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
+    gc_collect_root((void **)&MP_STATE_VM(vfs_mount_table), sizeof(mp_vfs_mount_t) / sizeof(mp_uint_t));
 
     background_callback_gc_collect();
 
@@ -906,18 +905,20 @@ void gc_collect(void) {
 
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void**)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
     gc_collect_end();
 }
 
 void NORETURN nlr_jump_fail(void *val) {
     reset_into_safe_mode(MICROPY_NLR_JUMP_FAIL);
-    while (true) {}
+    while (true) {
+    }
 }
 
 void NORETURN __fatal_error(const char *msg) {
     reset_into_safe_mode(MICROPY_FATAL_ERROR);
-    while (true) {}
+    while (true) {
+    }
 }
 
 #ifndef NDEBUG
