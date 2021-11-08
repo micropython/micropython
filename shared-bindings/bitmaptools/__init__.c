@@ -650,10 +650,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 //| class DitherAlgorithm:
 //|     """Identifies the algorith for dither to use"""
 //|
-//|     Atkinson: object
+//|     Atkinson: "DitherAlgorithm"
 //|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""
 //|
-//|     FloydStenberg: object
+//|     FloydStenberg: "DitherAlgorithm"
 //|     """The Floyd-Stenberg dither"""
 //|
 MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, Atkinson, DITHER_ALGORITHM_ATKINSON);
@@ -675,7 +675,7 @@ MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
 //|     :param bitmap dest_bitmap: Destination bitmap.  It must have a value_count of 2 or 65536.  The stored values are 0 and the maximum pixel value.
 //|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be dithered.  It must have a value_count of 65536.
 //|     :param colorspace: The colorspace of the image.  The supported colorspaces are ``RGB565``, ``BGR565``, ``RGB565_SWAPPED``, and ``BGR565_SWAPPED``
-//|     :param algorithm: The dither algorithm to use, one of the `DitherAlgorithm `values.
+//|     :param algorithm: The dither algorithm to use, one of the `DitherAlgorithm` values.
 //|     """
 //|     ...
 //|
