@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H
 
 #include "shared-module/displayio/Bitmap.h"
+#include "shared-bindings/displayio/__init__.h"
 #include "py/obj.h"
 #include "extmod/vfs_fat.h"
 
@@ -57,5 +58,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
 
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_index);
+
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *destination, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, float factor1, float factor2);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H

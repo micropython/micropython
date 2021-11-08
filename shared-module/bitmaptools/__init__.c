@@ -602,3 +602,64 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
         }
     }
 }
+
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, float factor1, float factor2) {
+    displayio_area_t a = {0, 0, dest->width, dest->height};
+    displayio_bitmap_set_dirty_area(dest, &a);
+
+    int ifactor1 = (int)(factor1 * 256);
+    int ifactor2 = (int)(factor2 * 256);
+
+    if (colorspace == DISPLAYIO_COLORSPACE_L8) {
+        for (int y = 0; y < dest->height; y++) {
+            uint8_t *dptr = (uint8_t *)(dest->data + y * dest->stride);
+            uint8_t *sptr1 = (uint8_t *)(source1->data + y * source1->stride);
+            uint8_t *sptr2 = (uint8_t *)(source2->data + y * source2->stride);
+            for (int x = 0; x < dest->width; x++) {
+                // This is round(l1*f1 + l2*f2) & clip to range in fixed-point
+                int pixel = (*sptr1++ *ifactor1 + *sptr2++ *ifactor2 + 128) / 256;
+                *dptr++ = MIN(255, MAX(0, pixel));
+            }
+        }
+    } else {
+        bool swap = (colorspace == DISPLAYIO_COLORSPACE_RGB565_SWAPPED) || (colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
+        for (int y = 0; y < dest->height; y++) {
+            uint16_t *dptr = (uint16_t *)(dest->data + y * dest->stride);
+            uint16_t *sptr1 = (uint16_t *)(source1->data + y * source1->stride);
+            uint16_t *sptr2 = (uint16_t *)(source2->data + y * source2->stride);
+            for (int x = 0; x < dest->width; x++) {
+                int spix1 = *sptr1++;
+                int spix2 = *sptr2++;
+
+                if (swap) {
+                    spix1 = __builtin_bswap16(spix1);
+                    spix2 = __builtin_bswap16(spix2);
+                }
+                const int r_mask = 0xf800; // (or b mask, if BGR)
+                const int g_mask = 0x07e0;
+                const int b_mask = 0x001f; // (or r mask, if BGR)
+
+                // This is round(r1*f1 + r2*f2) & clip to range in fixed-point
+                // but avoiding shifting it down to start at bit 0
+                int r = ((spix1 & r_mask) * ifactor1
+                    + (spix2 & r_mask) * ifactor2 + r_mask / 2) / 256;
+                r = MIN(r_mask, MAX(0, r)) & r_mask;
+
+                // ditto
+                int g = ((spix1 & g_mask) * ifactor1
+                    + (spix2 & g_mask) * ifactor2 + g_mask / 2) / 256;
+                g = MIN(g_mask, MAX(0, g)) & g_mask;
+
+                int b = ((spix1 & b_mask) * ifactor1
+                    + (spix2 & b_mask) * ifactor2 + b_mask / 2) / 256;
+                b = MIN(b_mask, MAX(0, b)) & b_mask;
+
+                uint16_t pixel = r | g | b;
+                if (swap) {
+                    pixel = __builtin_bswap16(pixel);
+                }
+                *dptr++ = pixel;
+            }
+        }
+    }
+}
