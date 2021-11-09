@@ -570,6 +570,10 @@ msgstr "A profundidade dos bits deve ser de 1 até 6 inclusive, porém não %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "A profundidade de bits deve ser o múltiplo de 8."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Bitmap size and bits per value must match"
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
 msgstr ""
@@ -1097,6 +1101,14 @@ msgstr "Os filtros são muito complexos"
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "A imagem do firmware é invalida"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
+msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -2461,6 +2473,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Unsupported colorspace"
+msgstr ""
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
