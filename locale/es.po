@@ -2696,6 +2696,10 @@ msgstr "typecode erroneo"
 msgid "binary op %q not implemented"
 msgstr "operacion binaria %q no implementada"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr ""
+
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
 msgstr "los bits deben ser 32 o menos"
@@ -4203,6 +4207,18 @@ msgstr "sosfilt requiere argumentos iterables"
 msgid "source palette too large"
 msgstr "paleta fuente muy larga"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "índices inicio/final"
@@ -4450,6 +4466,10 @@ msgstr "instrucción Xtensa '%s' con %d argumentos no soportada"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
 msgstr ""
 
 #: py/objstr.c

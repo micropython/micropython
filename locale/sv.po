@@ -2679,6 +2679,10 @@ msgstr "Ogiltig typkod"
 msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr ""
+
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
 msgstr "bits måste vara 32 eller färre"
@@ -4181,6 +4185,18 @@ msgstr "sosfilt kräver iterable argument"
 msgid "source palette too large"
 msgstr "källpalett för stor"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start-/slutindex"
@@ -4428,6 +4444,10 @@ msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "färgrymd stöds inte för GifWriter"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr ""
 
 #: py/objstr.c
 #, c-format

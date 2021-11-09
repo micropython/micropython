@@ -1108,7 +1108,8 @@ msgstr "Para o espaço de cor L8, o bitmap da entrada deve ter 8 bits por pixel"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr "Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
+msgstr ""
+"Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -2710,6 +2711,10 @@ msgstr "typecode incorreto"
 msgid "binary op %q not implemented"
 msgstr "a operação binário %q não foi implementada"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr ""
+
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
 msgstr "bits deve ser 32 ou menos"
@@ -4223,6 +4228,18 @@ msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 msgid "source palette too large"
 msgstr "a paleta de origem é muito grande"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "os índices de início/fim"
@@ -4470,6 +4487,10 @@ msgstr "instrução Xtensa '%s' não compatível com argumentos %d"
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "espaço de cores não compatível com GifWriter"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
