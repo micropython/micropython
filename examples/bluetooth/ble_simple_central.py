@@ -2,14 +2,11 @@
 # UART service (e.g. ble_simple_peripheral.py).
 
 import bluetooth
-import random
-import struct
 import time
-import micropython
 
 from ble_advertising import decode_services, decode_name
 
-from micropython import const
+from src.micropython import const
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)

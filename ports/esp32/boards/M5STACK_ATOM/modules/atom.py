@@ -5,7 +5,7 @@
 #       ATOM Lite    https://docs.m5stack.com/en/core/atom_lite
 #       ATOM Matrix  https://docs.m5stack.com/en/core/atom_matrix
 
-from micropython import const
+from src.micropython import const
 from machine import Pin
 import neopixel
 

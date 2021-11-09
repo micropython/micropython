@@ -1,8 +1,8 @@
 # Test concurrency between filesystem access and BLE host. This is
 # particularly relevant on STM32WB where the second core is stalled while
 # flash operations are in progress.
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth, os
 
 TIMEOUT_MS = 10000
@@ -121,7 +121,7 @@ def instance0():
     write_log("start")
     ble.active(1)
     ble.irq(irq)
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     multitest.next()
     try:

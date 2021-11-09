@@ -7,9 +7,9 @@
 # 2021-Sep-04 - v0.1 - Initial implementation
 
 # Import required libraries
-from micropython import const
+from src.micropython import const
 from machine import Pin, ADC
-import machine, time
+import machine
 
 # FeatherS2 Neo Hardware Pin Assignments
 

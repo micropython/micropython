@@ -2,7 +2,7 @@
 # copy its content.
 try:
     import uio
-    import micropython
+    from src import micropython
 
     micropython.mem_total
 except (ImportError, AttributeError):

@@ -1,7 +1,7 @@
 import time, pyb
 
 
-@micropython.native
+# @micropython.native
 def f(led, n, d):
     led.off()
     i = 0

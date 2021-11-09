@@ -1,7 +1,7 @@
 # test for native for loops
 
 
-@micropython.native
+# @micropython.native
 def f1(n):
     for i in range(n):
         print(i)
@@ -10,7 +10,7 @@ def f1(n):
 f1(4)
 
 
-@micropython.native
+# @micropython.native
 def f2(r):
     for i in r:
         print(i)

@@ -1,6 +1,6 @@
 # LOLIN S2 MINI MicroPython Helper Library
 
-from micropython import const
+from src.micropython import const
 from machine import Pin
 
 # Pin Assignments

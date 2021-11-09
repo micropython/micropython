@@ -1,7 +1,7 @@
 # test loading constants in native functions
 
 
-@micropython.native
+# @micropython.native
 def f():
     return b"bytes"
 
@@ -9,9 +9,9 @@ def f():
 print(f())
 
 
-@micropython.native
+# @micropython.native
 def f():
-    @micropython.native
+    # @micropython.native
     def g():
         return 123
 

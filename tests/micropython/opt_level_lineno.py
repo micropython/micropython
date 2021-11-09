@@ -1,4 +1,4 @@
-import micropython as micropython
+from src import micropython as micropython
 
 # check that level 3 doesn't store line numbers
 # the expected output is that any line is printed as "line 1"

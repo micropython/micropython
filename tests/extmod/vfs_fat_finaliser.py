@@ -44,7 +44,7 @@ vfs = uos.VfsFat(bdev)
 # is a special case because file objects use a finaliser and allocating with a
 # finaliser is a different path to normal allocation.  It would be better to
 # test this in the core tests but there are no core objects that use finaliser.
-import micropython
+from src import micropython
 
 micropython.heap_lock()
 try:

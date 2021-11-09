@@ -1,6 +1,7 @@
 # Check that yield-from can work without heap allocation
 
-import micropython
+from src import micropython
+
 
 # Yielding from a function generator
 def sub_gen(a):

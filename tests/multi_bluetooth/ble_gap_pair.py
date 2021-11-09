@@ -1,7 +1,7 @@
 # Test BLE GAP connect/disconnect with pairing, and read an encrypted characteristic
 # TODO: add gap_passkey testing
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 if not hasattr(bluetooth.BLE, "gap_pair"):
@@ -72,7 +72,7 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_handle,),) = ble.gatts_register_services((SERVICE,))
     ble.gatts_write(char_handle, "encrypted")
     print("gap_advertise")
@@ -128,6 +128,6 @@ def instance1():
 
 
 ble = bluetooth.BLE()
-ble.config(mitm=True, le_secure=True, bond=False)
+util.config(mitm=True, le_secure=True, bond=False)
 ble.active(1)
 ble.irq(irq)

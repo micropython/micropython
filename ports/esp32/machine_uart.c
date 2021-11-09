@@ -51,6 +51,12 @@
 
 #define UART_INV_MASK (UART_INV_TX | UART_INV_RX | UART_INV_RTS | UART_INV_CTS)
 
+//#define UART_INTR_RXFIFO_FULL  (0x1<<0)
+//#define UART_INTR_RXFIFO_TOUT (0x01<<8)
+//#define UART_INTR_RXFIFO_OVF (0x01<<4)
+//#define UART_INTR_BRK_DET (0x01<<7)
+//#define UART_INTR_PARITY_ERR (0x01<<6)
+
 #define UART_INTR_CONFIG_FLAG ((UART_INTR_RXFIFO_FULL) \
                                     | (UART_INTR_RXFIFO_TOUT) \
                                     | (UART_INTR_RXFIFO_OVF) \

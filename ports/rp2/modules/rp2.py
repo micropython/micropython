@@ -2,7 +2,7 @@
 # MIT license; Copyright (c) 2020-2021 Damien P. George
 
 from _rp2 import *
-from micropython import const
+from src.micropython import const
 
 _PROG_DATA = const(0)
 _PROG_OFFSET_PIO0 = const(1)

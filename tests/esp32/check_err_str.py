@@ -1,6 +1,6 @@
 try:
     from esp32 import Partition as p
-    import micropython
+    from src import micropython
 except ImportError:
     print("SKIP")
     raise SystemExit

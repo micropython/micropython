@@ -1,14 +1,12 @@
 # This example finds and connects to a BLE temperature sensor (e.g. the one in ble_temperature.py).
 
 import bluetooth
-import random
 import struct
 import time
-import micropython
 
 from ble_advertising import decode_services, decode_name
 
-from micropython import const
+from src.micropython import const
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)

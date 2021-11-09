@@ -5,7 +5,7 @@ try:
 except:
     import socket, ssl, sys
 try:
-    from micropython import alloc_emergency_exception_buf, heap_lock, heap_unlock
+    from src.micropython import alloc_emergency_exception_buf, heap_lock, heap_unlock
 except:
     print("SKIP")
     raise SystemExit

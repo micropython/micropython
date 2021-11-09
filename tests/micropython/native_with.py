@@ -13,7 +13,7 @@ class C:
 
 
 # basic with
-@micropython.native
+# @micropython.native
 def f():
     with C():
         print(1)
@@ -22,7 +22,7 @@ def f():
 f()
 
 # nested with and try-except
-@micropython.native
+# @micropython.native
 def f():
     try:
         with C():

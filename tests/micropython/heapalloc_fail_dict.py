@@ -1,6 +1,6 @@
 # test handling of failed heap allocation with dict
 
-import micropython
+from src import micropython
 
 # create dict
 x = 1

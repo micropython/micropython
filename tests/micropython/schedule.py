@@ -1,6 +1,6 @@
 # test micropython.schedule() function
 
-import micropython
+from src import micropython
 
 try:
     micropython.schedule

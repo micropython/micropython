@@ -3,8 +3,8 @@
 # Sends a sequence of varying-sized payloads from central->peripheral, and
 # verifies that the other device sees the same data, then does the same thing
 # peripheral->central.
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth, random
 
 if not hasattr(bluetooth.BLE, "l2cap_connect"):
@@ -113,7 +113,7 @@ def recv_data(ble, conn_handle, cid):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     print("gap_advertise")
     ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
     multitest.next()

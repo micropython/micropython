@@ -1,7 +1,7 @@
 # Update Mboot or MicroPython from a .dfu.gz file on the board's filesystem
 # MIT license; Copyright (c) 2019-2020 Damien P. George
 
-from micropython import const
+from src.micropython import const
 import struct, time
 import uzlib, machine, stm
 

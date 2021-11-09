@@ -6,7 +6,7 @@
 import bluetooth
 import io
 import os
-import micropython
+from src import micropython
 import machine
 
 from ble_uart_peripheral import BLEUART

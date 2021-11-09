@@ -7,8 +7,8 @@
 # 2021-Mar-21 - v0.1 - Initial implementation
 
 # Import required libraries
-from micropython import const
-from machine import Pin, SPI, ADC
+from src.micropython import const
+from machine import Pin, ADC
 import machine, time
 
 # FeatherS2 Hardware Pin Assignments

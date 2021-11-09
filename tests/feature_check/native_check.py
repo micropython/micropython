@@ -1,5 +1,5 @@
 # this test for the availability of native emitter
-@micropython.native
+# @micropython.native
 def f():
     pass
 

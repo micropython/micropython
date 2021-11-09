@@ -1,6 +1,6 @@
 # Test GATTC/S data transfer between peripheral and central, and use of gatts_set_buffer()
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 TIMEOUT_MS = 5000
@@ -83,7 +83,7 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_ctrl_handle, char_rx_handle, char_tx_handle),) = ble.gatts_register_services(SERVICES)
 
     # Increase the size of the rx buffer and enable append mode.

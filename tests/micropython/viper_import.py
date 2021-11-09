@@ -3,11 +3,11 @@
 
 @micropython.viper
 def f():
-    import micropython
+    from src import micropython
 
     print(micropython.const(1))
 
-    from micropython import const
+    from src.micropython import const
 
     print(const(2))
 

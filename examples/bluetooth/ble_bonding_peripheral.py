@@ -11,9 +11,11 @@ import struct
 import time
 import json
 import binascii
+
+from src import util
 from ble_advertising import advertising_payload
 
-from micropython import const
+from src.micropython import const
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)
@@ -62,12 +64,12 @@ class BLETemperature:
         self._ble = ble
         self._load_secrets()
         self._ble.irq(self._irq)
-        self._ble.config(bond=True)
-        self._ble.config(le_secure=True)
-        self._ble.config(mitm=True)
-        self._ble.config(io=_IO_CAPABILITY_DISPLAY_YESNO)
+        util.config(bond=True)
+        util.config(le_secure=True)
+        util.config(mitm=True)
+        util.config(io=_IO_CAPABILITY_DISPLAY_YESNO)
         self._ble.active(True)
-        self._ble.config(addr_mode=2)
+        util.config(addr_mode=2)
         ((self._handle,),) = self._ble.gatts_register_services((_ENV_SENSE_SERVICE,))
         self._connections = set()
         self._payload = advertising_payload(
@@ -149,7 +151,7 @@ class BLETemperature:
                     self._ble.gatts_indicate(conn_handle, self._handle)
 
     def _advertise(self, interval_us=500000):
-        self._ble.config(addr_mode=2)
+        util.config(addr_mode=2)
         self._ble.gap_advertise(interval_us, adv_data=self._payload)
 
     def _load_secrets(self):

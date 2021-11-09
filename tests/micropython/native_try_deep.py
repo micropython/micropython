@@ -1,7 +1,7 @@
 # test native try handling
 
 # deeply nested try (9 deep)
-@micropython.native
+# @micropython.native
 def f():
     try:
         try:

@@ -63,7 +63,7 @@
 
 import struct, os
 import machine, stm
-from micropython import const
+from src.micropython import const
 
 _OGF_VENDOR = const(0x3F)
 

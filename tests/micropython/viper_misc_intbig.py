@@ -1,4 +1,5 @@
-import micropython
+from src import micropython
+
 
 # unsigned ints
 @micropython.viper

@@ -1,13 +1,13 @@
 # check that consts are not replaced in anything except standalone identifiers
 
-from micropython import const
+from src.micropython import const
 
 X = const(1)
 Y = const(2)
 Z = const(3)
 
 # import that uses a constant
-import micropython as X
+from src import micropython as X
 
 print(globals()["X"])
 

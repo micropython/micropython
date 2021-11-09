@@ -14,7 +14,7 @@ except ImportError:
         raise SystemExit
 
 try:
-    from micropython import heap_lock, heap_unlock
+    from src.micropython import heap_lock, heap_unlock
 except (ImportError, AttributeError):
     heap_lock = heap_unlock = lambda: 0
 

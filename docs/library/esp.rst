@@ -67,7 +67,7 @@ Functions
     **Note**: ESP8266 only
 
     Set the location that native code will be placed for execution after it is
-    compiled.  Native code is emitted when the ``@micropython.native``,
+    compiled.  Native code is emitted when the ``# @micropython.native``,
     ``@micropython.viper`` and ``@micropython.asm_xtensa`` decorators are applied
     to a function.  The ESP8266 must execute code from either iRAM or the lower
     1MByte of flash (which is memory mapped), and this function controls the

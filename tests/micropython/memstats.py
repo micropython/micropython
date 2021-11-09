@@ -1,6 +1,6 @@
 # tests meminfo functions in micropython module
 
-import micropython
+from src import micropython
 
 # these functions are not always available
 if not hasattr(micropython, "mem_total"):

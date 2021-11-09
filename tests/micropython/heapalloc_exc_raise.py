@@ -1,6 +1,6 @@
 # Test that we can raise and catch (preallocated) exception
 # without memory allocation.
-import micropython
+from src import micropython
 
 e = ValueError("error")
 

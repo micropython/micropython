@@ -1,6 +1,6 @@
 # check that heap_lock/heap_unlock work as expected
 
-import micropython
+from src import micropython
 
 l = []
 l2 = list(range(100))

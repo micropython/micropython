@@ -3,7 +3,7 @@
 import bluetooth
 from ble_advertising import advertising_payload
 
-from micropython import const
+from src.micropython import const
 
 _IRQ_CENTRAL_CONNECT = const(1)
 _IRQ_CENTRAL_DISCONNECT = const(2)

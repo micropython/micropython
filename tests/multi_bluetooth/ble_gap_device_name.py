@@ -1,6 +1,6 @@
 # Test BLE GAP device name get/set
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 TIMEOUT_MS = 5000
@@ -56,11 +56,11 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
 
     # Test setting and getting the GAP device name before registering services.
-    ble.config(gap_name="GAP_NAME")
-    print(ble.config("gap_name"))
+    util.config(gap_name="GAP_NAME")
+    print(util.config("gap_name"))
 
     # Create an empty service and start advertising.
     ble.gatts_register_services([])
@@ -71,8 +71,8 @@ def instance0():
         # Do multiple iterations to test changing the name.
         for iteration in range(2):
             # Set the GAP device name and start advertising.
-            ble.config(gap_name="GAP_NAME{}".format(iteration))
-            print(ble.config("gap_name"))
+            util.config(gap_name="GAP_NAME{}".format(iteration))
+            print(util.config("gap_name"))
             ble.gap_advertise(20_000)
 
             # Wait for central to connect, then wait for it to disconnect.

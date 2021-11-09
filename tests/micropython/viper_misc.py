@@ -1,4 +1,5 @@
-import micropython
+from src import micropython
+
 
 # viper function taking and returning ints
 @micropython.viper

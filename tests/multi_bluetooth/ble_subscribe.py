@@ -1,6 +1,6 @@
 # Test for sending notifications to subscribed clients.
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 TIMEOUT_MS = 5000
@@ -94,7 +94,7 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     print("gap_advertise")
     ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")  # \x04\x09MPY

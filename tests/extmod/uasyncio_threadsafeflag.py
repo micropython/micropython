@@ -6,8 +6,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-
-import micropython
+from src import micropython
 
 try:
     micropython.schedule

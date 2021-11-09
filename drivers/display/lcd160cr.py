@@ -1,7 +1,7 @@
 # Driver for official MicroPython LCD160CR display
 # MIT license; Copyright (c) 2017 Damien P. George
 
-from micropython import const
+from src.micropython import const
 from utime import sleep_ms
 from ustruct import calcsize, pack_into
 import uerrno, machine

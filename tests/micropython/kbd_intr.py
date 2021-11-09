@@ -1,6 +1,6 @@
 # test the micropython.kbd_intr() function
 
-import micropython
+from src import micropython
 
 try:
     micropython.kbd_intr

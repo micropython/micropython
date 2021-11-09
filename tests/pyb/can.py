@@ -5,7 +5,7 @@ except ImportError:
     raise SystemExit
 
 from array import array
-import micropython
+from src import micropython
 import pyb
 
 # test we can correctly create by id (2 handled in can2.py test)

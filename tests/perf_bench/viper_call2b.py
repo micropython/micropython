@@ -3,7 +3,7 @@ def f2b(x: int, y: int) -> int:
     return x + y
 
 
-@micropython.native
+# @micropython.native
 def call(r):
     f = f2b
     for _ in r:

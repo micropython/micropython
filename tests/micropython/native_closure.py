@@ -1,11 +1,11 @@
 # test native emitter can handle closures correctly
 
 # basic closure
-@micropython.native
+# @micropython.native
 def f():
     x = 1
 
-    @micropython.native
+    # @micropython.native
     def g():
         nonlocal x
         return x
@@ -16,9 +16,9 @@ def f():
 print(f()())
 
 # closing over an argument
-@micropython.native
+# @micropython.native
 def f(x):
-    @micropython.native
+    # @micropython.native
     def g():
         nonlocal x
         return x
@@ -29,11 +29,11 @@ def f(x):
 print(f(2)())
 
 # closing over an argument and a normal local
-@micropython.native
+# @micropython.native
 def f(x):
     y = 2 * x
 
-    @micropython.native
+    # @micropython.native
     def g(z):
         return x + y + z
 

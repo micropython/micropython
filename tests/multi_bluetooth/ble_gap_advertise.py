@@ -1,6 +1,6 @@
 # Test BLE GAP advertising and scanning
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 _IRQ_SCAN_RESULT = const(5)
@@ -10,7 +10,7 @@ ADV_TIME_S = 3
 
 
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     multitest.next()
 
     print("gap_advertise(100_000, connectable=False)")
@@ -47,7 +47,7 @@ def instance1():
             finished = True
 
     try:
-        ble.config(rxbuf=2000)
+        util.config(rxbuf=2000)
     except:
         pass
     ble.irq(irq)

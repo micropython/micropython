@@ -3,7 +3,7 @@ def f1a(x):
     return x
 
 
-@micropython.native
+# @micropython.native
 def call(r):
     f = f1a
     for _ in r:

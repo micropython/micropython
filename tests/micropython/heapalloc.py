@@ -1,6 +1,6 @@
 # check that we can do certain things without allocating heap memory
 
-import micropython
+from src import micropython
 
 # Check for stackless build, which can't call functions without
 # allocating a frame on heap.

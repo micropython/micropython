@@ -1,6 +1,6 @@
 # Write characteristic from central to peripheral and time data rate.
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 TIMEOUT_MS = 2000
@@ -70,7 +70,7 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     ble.gatts_set_buffer(char_handle, _CHAR_SIZE)
     print("gap_advertise")
@@ -94,7 +94,7 @@ def instance1():
     try:
         # Connect to peripheral and then disconnect.
         print("gap_connect")
-        ble.config(mtu=_MTU_SIZE)
+        util.config(mtu=_MTU_SIZE)
         ble.gap_connect(*BDADDR)
         conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
         ble.gattc_exchange_mtu(conn_handle)

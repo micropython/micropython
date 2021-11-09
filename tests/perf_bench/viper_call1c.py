@@ -3,7 +3,7 @@ def f1c(x: int) -> int:
     return x
 
 
-@micropython.native
+# @micropython.native
 def call(r):
     f = f1c
     for _ in r:

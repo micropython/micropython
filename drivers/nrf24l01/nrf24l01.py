@@ -1,7 +1,7 @@
 """NRF24L01 driver for MicroPython
 """
 
-from micropython import const
+from src.micropython import const
 import utime
 
 # nRF24L01+ registers

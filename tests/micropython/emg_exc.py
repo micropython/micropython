@@ -1,6 +1,6 @@
 # test that emergency exceptions work
 
-import micropython
+from src import micropython
 import usys
 
 try:

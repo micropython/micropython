@@ -1,6 +1,6 @@
 # test handling of failed heap allocation with tuple
 
-import micropython
+from src import micropython
 
 # create tuple
 x = 1

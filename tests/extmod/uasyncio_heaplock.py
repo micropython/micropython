@@ -1,6 +1,6 @@
 # test that basic scheduling of tasks, and uasyncio.sleep_ms, does not use the heap
 
-import micropython
+from src import micropython
 
 # strict stackless builds can't call functions without allocating a frame on the heap
 try:

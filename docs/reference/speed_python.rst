@@ -205,7 +205,7 @@ no adaptation (but see below). It is invoked by means of a function decorator:
 
 .. code:: python
 
-    @micropython.native
+    # @micropython.native
     def foo(self, arg):
         buf = self.linebuf # Cached object
         # code

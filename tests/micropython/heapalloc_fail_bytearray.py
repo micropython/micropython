@@ -1,6 +1,6 @@
 # test handling of failed heap allocation with bytearray
 
-import micropython
+from src import micropython
 
 
 class GetSlice:

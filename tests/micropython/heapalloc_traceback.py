@@ -1,6 +1,6 @@
 # test that we can generate a traceback without allocating
 
-import micropython
+from src import micropython
 import usys
 
 try:

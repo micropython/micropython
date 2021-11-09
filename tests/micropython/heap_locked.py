@@ -1,6 +1,6 @@
 # test micropython.heap_locked()
 
-import micropython
+from src import micropython
 
 if not hasattr(micropython, "heap_locked"):
     print("SKIP")

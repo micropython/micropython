@@ -1,6 +1,6 @@
 # test constant optimisation, with consts that are bignums
 
-from micropython import const
+from src.micropython import const
 
 # check we can make consts from bignums
 Z1 = const(0xFFFFFFFF)

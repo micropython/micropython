@@ -1,6 +1,7 @@
 # test interaction of micropython.heap_lock with threads
 
-import _thread, micropython
+import _thread
+from src import micropython
 
 lock1 = _thread.allocate_lock()
 lock2 = _thread.allocate_lock()

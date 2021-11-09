@@ -4,7 +4,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
-import micropython
+from src import micropython
 
 data = b"1234" * 16
 buf = uio.BytesIO(64)

@@ -1,5 +1,5 @@
 # String operations which don't require allocation
-import micropython
+from src import micropython
 
 micropython.heap_lock()
 

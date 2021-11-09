@@ -3,7 +3,7 @@ def f0():
     pass
 
 
-@micropython.native
+# @micropython.native
 def call(r):
     f = f0
     for _ in r:

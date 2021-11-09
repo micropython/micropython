@@ -1,6 +1,6 @@
 # test handling of failed heap allocation with set
 
-import micropython
+from src import micropython
 
 # create set
 x = 1

@@ -18,8 +18,8 @@
 # Note: This currently fails on btstack for two reasons:
 # - btstack doesn't truncate writes to the MTU (it fails instead)
 # - btstack (in central mode) doesn't handle the peripheral initiating the MTU exchange
-
-from micropython import const
+from src import util
+from src.micropython import const
 import time, machine, bluetooth
 
 TIMEOUT_MS = 5000
@@ -94,7 +94,7 @@ def wait_for_event(event, timeout_ms):
 
 # Acting in peripheral role.
 def instance0():
-    multitest.globals(BDADDR=ble.config("mac"))
+    multitest.globals(BDADDR=util.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     ble.gatts_set_buffer(char_handle, 500, False)
     print("gap_advertise")
@@ -103,16 +103,16 @@ def instance0():
     try:
         for i in range(7):
             if i == 1:
-                ble.config(mtu=200)
+                util.config(mtu=200)
             elif i == 2:
-                ble.config(mtu=400)
+                util.config(mtu=400)
             elif i == 3:
-                ble.config(mtu=50)
+                util.config(mtu=50)
             elif i >= 4:
-                ble.config(mtu=290)
+                util.config(mtu=290)
             else:
                 # This is the NimBLE default.
-                ble.config(mtu=256)
+                util.config(mtu=256)
 
             # Wait for central to connect to us.
             conn_handle = wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
@@ -149,13 +149,13 @@ def instance1():
     try:
         for i in range(7):
             if i < 4:
-                ble.config(mtu=300)
+                util.config(mtu=300)
             elif i == 5:
-                ble.config(mtu=190)
+                util.config(mtu=190)
             elif i == 6:
-                ble.config(mtu=350)
+                util.config(mtu=350)
             else:
-                ble.config(mtu=256)
+                util.config(mtu=256)
 
             # Connect to peripheral and then disconnect.
             # Extra scan timeout allows for the peripheral to receive the previous disconnect

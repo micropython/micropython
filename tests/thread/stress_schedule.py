@@ -3,7 +3,7 @@
 
 import _thread
 import utime
-import micropython
+from src import micropython
 import gc
 
 try:

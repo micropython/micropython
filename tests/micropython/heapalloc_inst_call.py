@@ -1,6 +1,6 @@
 # Test that calling clazz.__call__() with up to at least 3 arguments
 # doesn't require heap allocation.
-import micropython
+from src import micropython
 
 
 class Foo0:

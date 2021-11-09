@@ -1,4 +1,4 @@
-import micropython
+from src import micropython
 
 # Does the full test from heapalloc_exc_compressed.py but while the heap is
 # locked (this can only work when the emergency exception buf is enabled).
