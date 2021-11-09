@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-07 16:53+0000\n"
+"PO-Revision-Date: 2021-11-09 17:54+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -572,7 +572,7 @@ msgstr "A profundidade de bits deve ser o múltiplo de 8."
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "O tamanho do bitmap e os bits por valor devem coincidir"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
@@ -1104,11 +1104,11 @@ msgstr "A imagem do firmware é invalida"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
-msgstr ""
+msgstr "Para o espaço de cor L8, o bitmap da entrada deve ter 8 bits por pixel"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr ""
+msgstr "Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -2476,7 +2476,7 @@ msgstr "Taxa de transmissão não suportada"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
-msgstr ""
+msgstr "Espaço de cor não compatível"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
