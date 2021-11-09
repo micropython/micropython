@@ -285,10 +285,7 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
     enet_config.miiDuplex = (enet_mii_duplex_t)duplex;
     enet_config.miiMode = kENET_RmiiMode;
     // Enable checksum generation by the ENET controller
-    // Note: Disabled due to problems with the checksum on ICMP requests
-    // Maybe caused by LWIP inserting 0xffff instead of 0x0000
-    // Keep the code for now until it may be fixed.
-    // enet_config.txAccelerConfig = kENET_TxAccelIpCheckEnabled | kENET_TxAccelProtoCheckEnabled;
+    enet_config.txAccelerConfig = kENET_TxAccelIpCheckEnabled | kENET_TxAccelProtoCheckEnabled;
     // Set interrupt
     enet_config.interrupt |= ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
 
@@ -351,11 +348,6 @@ STATIC err_t eth_netif_init(struct netif *netif) {
         | NETIF_CHECKSUM_CHECK_TCP
         | NETIF_CHECKSUM_CHECK_ICMP
         | NETIF_CHECKSUM_CHECK_ICMP6
-        | NETIF_CHECKSUM_GEN_IP
-        | NETIF_CHECKSUM_GEN_UDP
-        | NETIF_CHECKSUM_GEN_TCP
-        | NETIF_CHECKSUM_GEN_ICMP
-        | NETIF_CHECKSUM_GEN_ICMP6
         );
     return ERR_OK;
 }

@@ -13,11 +13,8 @@
 #define MEM_ALIGNMENT                   4
 
 #define LWIP_CHKSUM_ALGORITHM           3
-// Chksum generaration by HW fails for ICMP
-// Maybe caused by LWIP inserting ffff instead of 0000
 // The checksum flags are set in eth.c
-#define LWIP_CHECKSUM_CTRL_PER_NETIF    0
-#define LWIP_CHECKSUM_ON_COPY           0
+#define LWIP_CHECKSUM_CTRL_PER_NETIF    1
 
 #define LWIP_ARP                        1
 #define LWIP_ETHERNET                   1
