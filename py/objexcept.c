@@ -166,15 +166,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // Populate the exception object
     o_exc->base.type = type;
-
-    // Try to allocate memory for the traceback, with fallback to emergency traceback object
-    o_exc->traceback = m_new_obj_maybe(mp_obj_traceback_t);
-    if (o_exc->traceback == NULL) {
-        o_exc->traceback = &MP_STATE_VM(mp_emergency_traceback_obj);
-    }
-
-    // Populate the traceback object
-    *o_exc->traceback = mp_const_empty_traceback_obj;
+    o_exc->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
 
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
@@ -228,7 +220,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // store/delete attribute
         if (attr == MP_QSTR___traceback__) {
             if (dest[1] == mp_const_none) {
-                self->traceback->data = NULL;
+                self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
             } else {
                 if (!mp_obj_is_type(dest[1], &mp_type_traceback)) {
                     mp_raise_TypeError(MP_ERROR_TEXT("invalid traceback"));
@@ -244,7 +236,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else if (attr == MP_QSTR_value && self->base.type == &mp_type_StopIteration) {
         dest[0] = mp_obj_exception_get_value(self_in);
     } else if (attr == MP_QSTR___traceback__) {
-        dest[0] = (self->traceback->data) ? MP_OBJ_FROM_PTR(self->traceback) : mp_const_none;
+        dest[0] = (self->traceback) ? MP_OBJ_FROM_PTR(self->traceback) : mp_const_none;
     #if MICROPY_CPYTHON_COMPAT
     } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(self->base.type), MP_OBJ_FROM_PTR(&mp_type_OSError))) {
         if (attr == MP_QSTR_errno) {
@@ -552,13 +544,22 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
     mp_obj_exception_t *self = get_native_exception(self_in);
-    // just set the traceback to the null object
+    // just set the traceback to the empty traceback object
     // we don't want to call any memory management functions here
-    self->traceback->data = NULL;
+    self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     mp_obj_exception_t *self = get_native_exception(self_in);
+
+    // Try to allocate memory for the traceback, with fallback to emergency traceback object
+
+    if (self->traceback == NULL || self->traceback == (mp_obj_traceback_t *)&mp_const_empty_traceback_obj) {
+        self->traceback = m_new_obj_maybe(mp_obj_traceback_t);
+        if (self->traceback == NULL) {
+            self->traceback = &MP_STATE_VM(mp_emergency_traceback_obj);
+        }
+    }
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
@@ -613,7 +614,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values) {
     mp_obj_exception_t *self = get_native_exception(self_in);
 
-    if (self->traceback->data == NULL) {
+    if (self->traceback == NULL) {
         *n = 0;
         *values = NULL;
     } else {
