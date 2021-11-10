@@ -102,8 +102,7 @@ void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self, uint8_t channel
 
 bool common_hal_wifi_monitor_deinited(void) {
     bool enabled;
-    esp_wifi_get_promiscuous(&enabled);
-    return !enabled;
+    return (esp_wifi_get_promiscuous(&enabled) == ESP_ERR_WIFI_NOT_INIT) ? true : !enabled;
 }
 
 void common_hal_wifi_monitor_deinit(wifi_monitor_obj_t *self) {

@@ -174,6 +174,7 @@ void wifi_reset(void) {
     radio->netif = NULL;
     esp_netif_destroy(radio->ap_netif);
     radio->ap_netif = NULL;
+    wifi_inited = false;
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
