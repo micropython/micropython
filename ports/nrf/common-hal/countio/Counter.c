@@ -1,5 +1,6 @@
 
 #include "common-hal/countio/Counter.h"
+#include "shared-bindings/countio/Counter.h"
 
 #include "py/runtime.h"
 

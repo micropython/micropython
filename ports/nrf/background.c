@@ -26,8 +26,9 @@
 
 #include "py/runtime.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/usb.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/usb.h"
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"

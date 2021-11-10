@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/audiobusio/PDMIn.h"
+#include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include "py/runtime.h"

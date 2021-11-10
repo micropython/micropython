@@ -44,6 +44,7 @@
 
 #include "supervisor/fatfs_port.h"
 #include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/bluetooth/file_transfer.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/usb.h"
@@ -136,7 +137,7 @@ void supervisor_start_bluetooth_file_transfer(void) {
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
 // FATFS encoded version into fattime.
-uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     timeutils_struct_time_t tm;
     uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
     timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);

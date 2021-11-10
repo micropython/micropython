@@ -25,6 +25,7 @@
  */
 
 #include "nrfx.h"
+#include "peripherals/nrf/cache.h"
 
 // Turn off cache and invalidate all data in it.
 void nrf_peripherals_disable_and_clear_cache(void) {

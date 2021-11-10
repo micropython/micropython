@@ -29,6 +29,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
+#include "supervisor/fatfs_port.h"
 
 DWORD _time_override = 0;
 DWORD get_fattime(void) {

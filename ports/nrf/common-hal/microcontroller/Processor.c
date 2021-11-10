@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/Processor.h"
 
 #include "common-hal/alarm/__init__.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
