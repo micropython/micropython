@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"

@@ -27,13 +27,14 @@
 #include <string.h>
 
 #include "common-hal/nvm/ByteArray.h"
+#include "shared-bindings/nvm/ByteArray.h"
 #include "bindings/espidf/__init__.h"
 
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "nvs_flash.h"
 
-uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
+uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
@@ -75,7 +76,7 @@ static esp_err_t get_bytes(nvs_handle_t handle, uint8_t **buf_out) {
     return result;
 }
 
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
+bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
 
     // start nvs
@@ -122,7 +123,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
     return true;
 }
 
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
+void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint32_t len, uint8_t *values) {
 
     // start nvs

@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/wifi/__init__.h"
+#include "shared-bindings/wifi/__init__.h"
 
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/Radio.h"

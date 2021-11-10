@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/countio/Counter.h"
+#include "shared-bindings/countio/Counter.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"

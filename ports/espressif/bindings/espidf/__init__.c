@@ -82,15 +82,7 @@ STATIC mp_obj_t espidf_erase_nvs(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_erase_nvs_obj, espidf_erase_nvs);
 
 
-//| class IDFError(OSError):
-//|     """Raised for certain generic ESP IDF errors."""
-//|     ...
-//|
-NORETURN void mp_raise_espidf_IDFError(void) {
-    nlr_raise(mp_obj_new_exception(&mp_type_espidf_IDFError));
-}
-
-void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+STATIC void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
     bool is_subclass = kind & PRINT_EXC_SUBCLASS;
     if (!is_subclass && (k == PRINT_EXC)) {

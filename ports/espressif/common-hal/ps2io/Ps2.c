@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/ps2io/Ps2.h"
+#include "shared-bindings/ps2io/Ps2.h"
 
 #include "supervisor/port.h"
 #include "shared-bindings/microcontroller/__init__.h"

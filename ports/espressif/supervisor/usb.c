@@ -62,7 +62,7 @@ StaticTask_t usb_device_taskdef;
 
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
-void usb_device_task(void *param) {
+STATIC void usb_device_task(void *param) {
     (void)param;
 
     // RTOS forever loop

@@ -25,6 +25,7 @@
  */
 
 #include "shared-module/canio/Match.h"
+#include "shared-bindings/canio/Match.h"
 
 void common_hal_canio_match_construct(canio_match_obj_t *self, int id, int mask, bool extended) {
     self->id = id;

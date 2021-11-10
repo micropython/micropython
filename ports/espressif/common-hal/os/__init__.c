@@ -30,6 +30,8 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #include "esp_system.h"
 
 STATIC const qstr os_uname_info_fields[] = {
