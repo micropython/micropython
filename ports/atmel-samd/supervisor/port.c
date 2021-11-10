@@ -109,6 +109,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared_timers.h"
 #include "reset.h"
+#include "common-hal/pulseio/PulseIn.h"
 
 #include "supervisor/background_callback.h"
 #include "supervisor/shared/safe_mode.h"
