@@ -40,7 +40,6 @@
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_ENABLE_MMCARD    (1)
 #define MICROPY_HW_ENABLE_RF_SWITCH (1)
-#define MICROPY_HW_ENABLE_I2S       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);

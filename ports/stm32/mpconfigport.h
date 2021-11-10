@@ -342,6 +342,9 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     /* pointers to all CAN objects (if they have been created) */ \
     struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]; \
     \
+    /* pointers to all I2S objects (if they have been created) */ \
+    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_MAX_I2S]; \
+    \
     /* USB_VCP IRQ callbacks (if they have been set) */ \
     mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]; \
     \
