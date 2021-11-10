@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-05 18:37+0000\n"
+"PO-Revision-Date: 2021-11-09 17:54+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -564,7 +564,7 @@ msgstr "Bitdjup måste vara multipel av 8."
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "Bitmappstorlek och bitar per värde måste överensstämma"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
@@ -1092,11 +1092,11 @@ msgstr "Firmware-avbilden är ogiltig"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
-msgstr ""
+msgstr "För L8-färgrymden måste indatabitmappen ha 8 bitar per pixel"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr ""
+msgstr "För RGB-färgrymder måste indatabitmappen ha 16 bitar per pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -2448,7 +2448,7 @@ msgstr "Baudrate stöd inte"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
-msgstr ""
+msgstr "Färgrymd stöds inte"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
@@ -2678,6 +2678,10 @@ msgstr "Ogiltig typkod"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr ""
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -4181,6 +4185,18 @@ msgstr "sosfilt kräver iterable argument"
 msgid "source palette too large"
 msgstr "källpalett för stor"
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr ""
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start-/slutindex"
@@ -4428,6 +4444,10 @@ msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "färgrymd stöds inte för GifWriter"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr ""
 
 #: py/objstr.c
 #, c-format
