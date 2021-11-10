@@ -328,6 +328,8 @@ SRC_C += \
 	timer_handler.c \
 	$(SRC_PERIPHERALS) \
 
+$(BUILD)/lib/tinyusb/src/portable/microchip/samd/dcd_samd.o: CFLAGS += -Wno-missing-prototypes
+
 # This is an OR because it filters to any 1s and then checks to see if it is not
 # empty.
 ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX)))
