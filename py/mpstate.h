@@ -140,14 +140,10 @@ typedef struct _mp_state_vm_t {
     #if MICROPY_KBD_EXCEPTION
     // exception object of type KeyboardInterrupt
     mp_obj_exception_t mp_kbd_exception;
-    // traceback object to store traceback
-    mp_obj_traceback_t mp_kbd_traceback;
     #endif
 
     // exception object of type ReloadException
     mp_obj_exception_t mp_reload_exception;
-    // traceback object to store traceback
-    mp_obj_traceback_t mp_reload_traceback;
 
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
