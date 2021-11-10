@@ -490,6 +490,15 @@
 #define MICROPY_HW_MAX_CAN (1)
 #endif
 
+// Enable I2S if there are any peripherals defined
+#if defined(MICROPY_HW_I2S1) || defined(MICROPY_HW_I2S2)
+#define MICROPY_HW_ENABLE_I2S (1)
+#define MICROPY_HW_MAX_I2S (2)
+#else
+#define MICROPY_HW_ENABLE_I2S (0)
+#define MICROPY_HW_MAX_I2S (0)
+#endif
+
 // Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py
 // generates the relevant AF constants.
 #if MICROPY_HW_SDCARD_SDMMC == 1 || MICROPY_HW_SDIO_SDMMC == 1

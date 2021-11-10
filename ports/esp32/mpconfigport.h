@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <alloca.h>
 #include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "driver/i2s.h"
 
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
@@ -249,6 +251,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
+    struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
