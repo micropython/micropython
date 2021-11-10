@@ -26,6 +26,8 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
+#include "supervisor/workflow.h"
+#include "supervisor/shared/workflow.h"
 #include "tusb.h"
 
 void supervisor_workflow_reset(void) {

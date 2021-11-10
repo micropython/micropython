@@ -26,6 +26,7 @@
 // Zephyr include files to define HCI communication values and structs.
 // #include "hci_include/hci.h"
 // #include "hci_include/hci_err.h"
+#include "hci_include/att_internal.h"
 #include "hci_include/l2cap_internal.h"
 
 #include "py/obj.h"

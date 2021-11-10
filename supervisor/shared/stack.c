@@ -43,7 +43,7 @@ static size_t stack_length = 0;
 
 #define EXCEPTION_STACK_SIZE 1024
 
-void allocate_stack(void) {
+static void allocate_stack(void) {
 
     if (port_has_fixed_stack()) {
         stack_limit = port_stack_get_limit();

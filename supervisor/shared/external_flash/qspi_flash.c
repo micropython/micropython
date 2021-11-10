@@ -27,6 +27,7 @@
 #include "supervisor/spi_flash_api.h"
 
 #include "supervisor/shared/external_flash/common_commands.h"
+#include "supervisor/shared/external_flash/qspi_flash.h"
 
 void check_quad_enable(const external_flash_device *device) {
     if (device->quad_enable_bit_mask == 0x00) {

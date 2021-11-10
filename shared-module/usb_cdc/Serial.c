@@ -25,6 +25,7 @@
  */
 
 #include "shared/runtime/interrupt_char.h"
+#include "shared-bindings/usb_cdc/Serial.h"
 #include "shared-module/usb_cdc/Serial.h"
 #include "supervisor/shared/tick.h"
 
