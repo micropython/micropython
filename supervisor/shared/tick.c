@@ -27,6 +27,7 @@
 #include "supervisor/shared/tick.h"
 
 #include "shared/runtime/interrupt_char.h"
+#include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
 #include "supervisor/linker.h"
@@ -63,7 +64,7 @@ static background_callback_t tick_callback;
 
 volatile uint64_t last_finished_tick = 0;
 
-void supervisor_background_tasks(void *unused) {
+static void supervisor_background_tasks(void *unused) {
     port_start_background_task();
 
     assert_heap_ok();

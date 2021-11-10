@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-module/usb_midi/PortIn.h"
 #include "supervisor/shared/translate.h"
 #include "tusb.h"

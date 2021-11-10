@@ -158,7 +158,7 @@ else
   endif
 endif
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
 
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
@@ -291,19 +291,9 @@ $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno
 endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
+$(patsubst $(SRC_ASF),%.c,%.o): CFLAGS += -Wno-missing-prototypes
 
-SRC_C += \
-	audio_dma.c \
-	background.c \
-	bindings/samd/Clock.c \
-	bindings/samd/__init__.c \
-	boards/$(BOARD)/board.c \
-	boards/$(BOARD)/pins.c \
-	eic_handler.c \
-	fatfs_port.c \
-	freetouch/adafruit_ptc.c \
-	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
-	mphalport.c \
+SRC_PERIPHERALS := \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/adc.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/cache.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/clocks.c \
@@ -319,8 +309,24 @@ SRC_C += \
 	peripherals/samd/external_interrupts.c \
 	peripherals/samd/sercom.c \
 	peripherals/samd/timers.c \
+
+$(patsubst $(SRC_PERIPHERALS),%.c,%.o): CFLAGS += -Wno-missing-prototypes
+
+SRC_C += \
+	audio_dma.c \
+	background.c \
+	bindings/samd/Clock.c \
+	bindings/samd/__init__.c \
+	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
+	eic_handler.c \
+	fatfs_port.c \
+	freetouch/adafruit_ptc.c \
+	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
+	mphalport.c \
 	reset.c \
 	timer_handler.c \
+	$(SRC_PERIPHERALS) \
 
 # This is an OR because it filters to any 1s and then checks to see if it is not
 # empty.

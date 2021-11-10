@@ -915,13 +915,13 @@ void NORETURN nlr_jump_fail(void *val) {
     }
 }
 
-void NORETURN __fatal_error(const char *msg) {
+#ifndef NDEBUG
+static void NORETURN __fatal_error(const char *msg) {
     reset_into_safe_mode(MICROPY_FATAL_ERROR);
     while (true) {
     }
 }
 
-#ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     mp_printf(&mp_plat_print, "Assertion '%s' failed, at file %s:%d\n", expr, file, line);
     __fatal_error("Assertion failed");

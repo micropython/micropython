@@ -29,6 +29,7 @@
 #include "supervisor/serial.h"
 #include "lib/oofatfs/ff.h"
 #include "py/mpconfig.h"
+#include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
 #include "py/stream.h"

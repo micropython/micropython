@@ -556,7 +556,7 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return overflow_count + current_ticks / 16;
 }
 
-void evsyshandler_common(void) {
+static void evsyshandler_common(void) {
     #ifdef SAMD21
     if (_tick_event_channel < EVSYS_SYNCH_NUM && event_interrupt_active(_tick_event_channel)) {
         supervisor_tick();
