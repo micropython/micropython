@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "shared-bindings/nvm/ByteArray.h"
 
 void alarm_sleep_memory_reset(void) {

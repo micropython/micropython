@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/board.h"
 
 void board_init(void) {
     // USB
@@ -54,5 +55,7 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
 }
 
+#if CIRCUITPY_ALARM
 void board_deinit(void) {
 }
+#endif

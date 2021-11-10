@@ -26,6 +26,7 @@
  */
 
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/board.h"
 
 void board_init(void) {
 
