@@ -66,7 +66,7 @@ displayio_buffer_transform_t null_transform = {
 };
 
 
-#if CIRCUITPY_RGBMATRIX
+#if CIRCUITPY_RGBMATRIX || CIRCUITPY_IS31FL3741
 STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display_base.type == &framebufferio_framebufferdisplay_type) {
@@ -143,6 +143,10 @@ void common_hal_displayio_release_displays(void) {
         } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
         #endif
+        #if CIRCUITPY_IS31FL3741
+        } else if (bus_type == &is31fl3741_is31fl3741_type) {
+            common_hal_is31fl3741_is31fl3741_deinit(&displays[i].is31fl3741);
+        #endif
         #if CIRCUITPY_SHARPDISPLAY
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             common_hal_sharpdisplay_framebuffer_deinit(&displays[i].sharpdisplay);
@@ -217,6 +221,15 @@ void reset_displays(void) {
                 common_hal_rgbmatrix_rgbmatrix_set_paused(pm, true);
             }
         #endif
+        #if CIRCUITPY_IS31FL3741
+        } else if (displays[i].is31fl3741.base.type == &is31fl3741_is31fl3741_type) {
+            is31fl3741_is31fl3741_obj_t *pm = &displays[i].is31fl3741;
+            if (!any_display_uses_this_framebuffer(&pm->base)) {
+                common_hal_is31fl3741_is31fl3741_deinit(pm);
+            } else {
+                common_hal_is31fl3741_is31fl3741_set_paused(pm, true);
+            }
+        #endif
         #if CIRCUITPY_SHARPDISPLAY
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             sharpdisplay_framebuffer_obj_t *sharp = &displays[i].sharpdisplay;
@@ -249,6 +262,11 @@ void displayio_gc_collect(void) {
         #if CIRCUITPY_RGBMATRIX
         if (displays[i].rgbmatrix.base.type == &rgbmatrix_RGBMatrix_type) {
             rgbmatrix_rgbmatrix_collect_ptrs(&displays[i].rgbmatrix);
+        }
+        #endif
+        #if CIRCUITPY_IS31FL3741
+        if (displays[i].is31fl3741.base.type == &is31fl3741_is31fl3741_type) {
+            is31fl3741_is31fl3741_collect_ptrs(&displays[i].is31fl3741);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
