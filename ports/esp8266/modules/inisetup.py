@@ -8,7 +8,7 @@ from flashbdev import bdev
 def wifi():
     import ubinascii
 
-    ap_if = network.WLAN(network.AP_IF)
+    ap_if = network.nic_wlan_sta(network.AP_IF)
     essid = b"MicroPython-%s" % ubinascii.hexlify(util.config("mac")[-3:])
     util.config(essid=essid, authmode=network.AUTH_WPA_WPA2_PSK, password=b"micropythoN")
 

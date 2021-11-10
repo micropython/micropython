@@ -184,17 +184,18 @@ for a tutorial.
 The following function can be used to connect to a WiFi access point (you can
 either pass in your own SSID and password, or change the defaults so you can
 quickly call `wlan_connect()` and it just works):
+
 ```python
 def wlan_connect(ssid='MYSSID', password='MYPASS'):
-    import network
-    wlan = network.WLAN(network.STA_IF)
-    if not wlan.active() or not wlan.isconnected():
-        wlan.active(True)
-        print('connecting to:', ssid)
-        wlan.connect(ssid, password)
-        while not wlan.isconnected():
-            pass
-    print('network config:', wlan.ifconfig())
+  import network
+  wlan = network.nic_wlan_sta(network.STA_IF)
+  if not wlan.active() or not wlan.isconnected():
+    wlan.active(True)
+    print('connecting to:', ssid)
+    wlan.connect(ssid, password)
+    while not wlan.isconnected():
+      pass
+  print('network config:', wlan.ifconfig())
 ```
 
 Note that some boards require you to configure the WiFi antenna before using
