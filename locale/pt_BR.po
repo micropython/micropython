@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-09 17:54+0000\n"
+"PO-Revision-Date: 2021-11-10 09:53+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2713,7 +2713,7 @@ msgstr "a operação binário %q não foi implementada"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
-msgstr ""
+msgstr "os tamanhos do bitmap devem coincidir"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -4230,15 +4230,15 @@ msgstr "a paleta de origem é muito grande"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 2 or 65536"
-msgstr ""
+msgstr "o source_bitmap deve ter o value_count de 2 ou 65536"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 65536"
-msgstr ""
+msgstr "o source_bitmap deve ter o value_count de 65536"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
-msgstr ""
+msgstr "o source_bitmap deve ter o value_count de 8"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4490,7 +4490,7 @@ msgstr "espaço de cores não compatível com GifWriter"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "unsupported colorspace for dither"
-msgstr ""
+msgstr "espaço de cor não compatível para dither"
 
 #: py/objstr.c
 #, c-format
