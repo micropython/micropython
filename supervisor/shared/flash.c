@@ -28,6 +28,7 @@
 #include "extmod/vfs_fat.h"
 #include "py/runtime.h"
 #include "lib/oofatfs/ff.h"
+#include "supervisor/flash.h"
 #include "supervisor/shared/tick.h"
 
 #define VFS_INDEX 0
@@ -46,7 +47,7 @@ STATIC mp_obj_t supervisor_flash_obj_make_new(const mp_obj_type_t *type, size_t 
     return (mp_obj_t)&supervisor_flash_obj;
 }
 
-uint32_t flash_get_block_count(void) {
+static uint32_t flash_get_block_count(void) {
     return PART1_START_BLOCK + supervisor_flash_get_block_count();
 }
 
@@ -86,7 +87,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
-mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -114,7 +115,7 @@ mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_bloc
 
 volatile bool filesystem_dirty = false;
 
-mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         if (num_blocks > 1) {
             return 1; // error
@@ -160,7 +161,7 @@ STATIC mp_obj_t supervisor_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_n
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, supervisor_flash_obj_writeblocks);
 
-bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
+static bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
     *out_value = 0;
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:

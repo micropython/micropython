@@ -495,7 +495,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-bool external_flash_read_block(uint8_t *dest, uint32_t block) {
+static bool external_flash_read_block(uint8_t *dest, uint32_t block) {
     int32_t address = convert_block_to_flash_addr(block);
     if (address == -1) {
         // bad block number
@@ -524,7 +524,7 @@ bool external_flash_read_block(uint8_t *dest, uint32_t block) {
     return read_flash(address, dest, FILESYSTEM_BLOCK_SIZE);
 }
 
-bool external_flash_write_block(const uint8_t *data, uint32_t block) {
+static bool external_flash_write_block(const uint8_t *data, uint32_t block) {
     // Non-MBR block, copy to cache
     int32_t address = convert_block_to_flash_addr(block);
     if (address == -1) {
