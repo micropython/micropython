@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
+#include "shared-bindings/random/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
 // Yasmarang random number generator

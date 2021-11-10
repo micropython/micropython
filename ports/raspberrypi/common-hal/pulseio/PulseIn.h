@@ -48,6 +48,6 @@ typedef struct {
 } pulseio_pulsein_obj_t;
 
 void pulsein_reset(void);
-void common_hal_pulseio_pulsein_interrupt();
+void common_hal_pulseio_pulsein_interrupt(void *);
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H

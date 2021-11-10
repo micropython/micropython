@@ -25,6 +25,7 @@
  */
 
 #include "samd/sercom.h"
+#include "common-hal/busio/__init__.h"
 
 static bool never_reset_sercoms[SERCOM_INST_NUM];
 

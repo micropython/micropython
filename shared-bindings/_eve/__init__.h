@@ -27,6 +27,8 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS__EVE___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS__EVE___INIT___H
 
+#include "shared-module/_eve/__init__.h"
+
 void common_hal__eve_flush(common_hal__eve_t *eve);
 void common_hal__eve_add(common_hal__eve_t *eve, size_t len, void *buf);
 void common_hal__eve_Vertex2f(common_hal__eve_t *eve, mp_float_t x, mp_float_t y);

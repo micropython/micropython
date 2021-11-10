@@ -140,7 +140,7 @@ void common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_f
     }
 }
 
-uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
+STATIC uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
         return MP_OBJ_SMALL_INT_VALUE(obj);
     } else if (mp_obj_is_int(obj)) {
@@ -152,7 +152,7 @@ uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
         translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
 }
 
-void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
+STATIC void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {
     pixelbuf_byteorder_details_t *byteorder = &self->byteorder;
     // w is shared between white in NeoPixels and brightness in dotstars (so that DotStars can have
     // per-pixel brightness). Set the defaults here in case it isn't set below.
@@ -197,7 +197,7 @@ void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_
     }
 }
 
-void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+STATIC void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
     // DotStars don't have white, instead they have 5 bit brightness so pack it into w. Shift right
     // by three to leave the top five bits.
     if (self->bytes_per_pixel == 4 && self->byteorder.is_dotstar) {
@@ -235,7 +235,7 @@ void _pixelbuf_set_pixel_color(pixelbuf_pixelbuf_obj_t *self, size_t index, uint
     }
 }
 
-void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
+STATIC void _pixelbuf_set_pixel(pixelbuf_pixelbuf_obj_t *self, size_t index, mp_obj_t value) {
     uint8_t r;
     uint8_t g;
     uint8_t b;

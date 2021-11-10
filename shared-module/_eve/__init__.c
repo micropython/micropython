@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "py/runtime.h"
+#include "shared-bindings/_eve/__init__.h"
 #include "shared-module/_eve/__init__.h"
 
 STATIC void write(common_hal__eve_t *eve, size_t len, void *buf) {

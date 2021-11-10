@@ -857,20 +857,6 @@ STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     }
 }
 
-int att_find_info_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint8_t response_buffer[]) {
-    struct __packed req {
-        struct bt_att_hdr h;
-        struct bt_att_find_info_req r;
-    } req = { {
-                  .code = BT_ATT_OP_FIND_INFO_REQ,
-              }, {
-                  .start_handle = start_handle,
-                  .end_handle = end_handle,
-              }};
-
-    return send_req_wait_for_rsp(conn_handle, sizeof(req), (uint8_t *)&req, response_buffer);
-}
-
 STATIC void process_find_info_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
     if (dlen < 2) {
         return; // invalid, drop
@@ -925,7 +911,7 @@ STATIC void process_find_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     }
 }
 
-void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
+STATIC void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
     struct bt_att_read_group_req *req = (struct bt_att_read_group_req *)data;
     uint16_t type_uuid = req->uuid[0] | (req->uuid[1] << 8);
 
@@ -1007,25 +993,6 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
     } else {
         hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, rsp_length, rsp_bytes);
     }
-}
-
-int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t uuid, uint8_t response_buffer[]) {
-
-    typedef struct __packed {
-        struct bt_att_hdr h;
-        struct bt_att_read_group_req r;
-    } req_t;
-
-    uint8_t req_bytes[sizeof(req_t) + sizeof(uuid)];
-    req_t *req = (req_t *)req_bytes;
-
-    req->h.code = BT_ATT_OP_READ_GROUP_REQ;
-    req->r.start_handle = start_handle;
-    req->r.end_handle = end_handle;
-    req->r.uuid[0] = uuid & 0xff;
-    req->r.uuid[1] = uuid >> 8;
-
-    return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req_bytes, response_buffer);
 }
 
 STATIC void process_read_group_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
@@ -1303,24 +1270,6 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     } else {
         hci_send_acl_pkt(conn_handle, BT_L2CAP_CID_ATT, rsp_length, rsp_bytes);
     }
-}
-
-int att_read_type_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t type, uint8_t response_buffer[]) {
-    typedef struct __packed {
-        struct bt_att_hdr h;
-        struct bt_att_read_type_req r;
-    } req_t;
-
-    uint8_t req_bytes[sizeof(req_t) + sizeof(type)];
-    req_t *req = (req_t *)req_bytes;
-
-    req->h.code = BT_ATT_OP_READ_TYPE_REQ;
-    req->r.start_handle = start_handle;
-    req->r.end_handle = end_handle;
-    req->r.uuid[0] = type & 0xff;
-    req->r.uuid[1] = type >> 8;
-
-    return send_req_wait_for_rsp(conn_handle, sizeof(req_bytes), req_bytes, response_buffer);
 }
 
 STATIC void process_read_type_rsp(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
@@ -1712,78 +1661,4 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
             send_error(conn_handle, opcode, 0x00, BT_ATT_ERR_NOT_SUPPORTED);
             break;
     }
-}
-
-// FIX Do we need all of these?
-void check_att_err(uint8_t err) {
-    const compressed_string_t *msg = NULL;
-    switch (err) {
-        case 0:
-            return;
-        case BT_ATT_ERR_INVALID_HANDLE:
-            msg = translate("Invalid handle");
-            break;
-        case BT_ATT_ERR_READ_NOT_PERMITTED:
-            msg = translate("Read not permitted");
-            break;
-        case BT_ATT_ERR_WRITE_NOT_PERMITTED:
-            msg = translate("Write not permitted");
-            break;
-        case BT_ATT_ERR_INVALID_PDU:
-            msg = translate("Invalid PDU");
-            break;
-        case BT_ATT_ERR_NOT_SUPPORTED:
-            msg = translate("Not supported");
-            break;
-        case BT_ATT_ERR_INVALID_OFFSET:
-            msg = translate("Invalid offset");
-            break;
-        case BT_ATT_ERR_PREPARE_QUEUE_FULL:
-            msg = translate("Prepare queue full");
-            break;
-        case BT_ATT_ERR_ATTRIBUTE_NOT_FOUND:
-            msg = translate("Attribute not found");
-            break;
-        case BT_ATT_ERR_ATTRIBUTE_NOT_LONG:
-            msg = translate("Attribute not long");
-            break;
-        case BT_ATT_ERR_ENCRYPTION_KEY_SIZE:
-            msg = translate("Encryption key size");
-            break;
-        case BT_ATT_ERR_INVALID_ATTRIBUTE_LEN:
-            msg = translate("Invalid attribute length");
-            break;
-        case BT_ATT_ERR_UNLIKELY:
-            msg = translate("Unlikely");
-            break;
-        case BT_ATT_ERR_UNSUPPORTED_GROUP_TYPE:
-            msg = translate("Unsupported group type");
-            break;
-        case BT_ATT_ERR_INSUFFICIENT_RESOURCES:
-            msg = translate("Insufficient resources");
-            break;
-        case BT_ATT_ERR_DB_OUT_OF_SYNC:
-            msg = translate("DB out of sync");
-            break;
-        case BT_ATT_ERR_VALUE_NOT_ALLOWED:
-            msg = translate("Value not allowed");
-            break;
-    }
-    if (msg) {
-        mp_raise_bleio_BluetoothError(msg);
-    }
-
-    switch (err) {
-        case BT_ATT_ERR_AUTHENTICATION:
-            msg = translate("Insufficient authentication");
-            break;
-        case BT_ATT_ERR_INSUFFICIENT_ENCRYPTION:
-            msg = translate("Insufficient encryption");
-            break;
-    }
-    if (msg) {
-        mp_raise_bleio_SecurityError(msg);
-    }
-
-    mp_raise_bleio_BluetoothError(translate("Unknown ATT error: 0x%02x"), err);
 }

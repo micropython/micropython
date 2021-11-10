@@ -30,6 +30,8 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #ifdef SAM_D5X_E5X
 #include "hal/include/hal_rand_sync.h"
 #endif
@@ -66,7 +68,7 @@ mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
     #ifdef SAM_D5X_E5X
     hri_mclk_set_APBCMASK_TRNG_bit(MCLK);
     struct rand_sync_desc random;

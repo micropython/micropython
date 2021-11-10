@@ -219,17 +219,6 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     }
 }
 
-int16_t constrain(int16_t input, int16_t min, int16_t max) {
-    // constrain the input between the min and max values
-    if (input < min) {
-        return min;
-    }
-    if (input > max) {
-        return max;
-    }
-    return input;
-}
-
 void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
     int16_t x1, int16_t y1,
     int16_t x2, int16_t y2,

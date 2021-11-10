@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/keypad/Event.h"
+#include "shared-bindings/keypad/EventQueue.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-module/keypad/EventQueue.h"
 

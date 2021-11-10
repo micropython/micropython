@@ -291,7 +291,7 @@ $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno
 endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
-$(patsubst $(SRC_ASF),%.c,%.o): CFLAGS += -Wno-missing-prototypes
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_ASF)): CFLAGS += -Wno-missing-prototypes
 
 SRC_PERIPHERALS := \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/adc.c \
@@ -310,7 +310,7 @@ SRC_PERIPHERALS := \
 	peripherals/samd/sercom.c \
 	peripherals/samd/timers.c \
 
-$(patsubst $(SRC_PERIPHERALS),%.c,%.o): CFLAGS += -Wno-missing-prototypes
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototypes
 
 SRC_C += \
 	audio_dma.c \

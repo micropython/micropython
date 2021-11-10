@@ -14,7 +14,7 @@ typedef struct {
 } countio_counter_obj_t;
 
 
-void counter_interrupt_handler();
+void counter_interrupt_handler(void);
 
 void reset_countio(void);
 

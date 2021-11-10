@@ -41,7 +41,7 @@
 
 volatile alarm_id_t cur_alarm = 0;
 
-void pulse_finish(pulseio_pulseout_obj_t *self) {
+static void pulse_finish(pulseio_pulseout_obj_t *self) {
     self->pulse_index++;
     // Turn pwm pin off by switching the GPIO mux to SIO (the cpu manual
     // control).

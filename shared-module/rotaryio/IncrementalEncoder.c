@@ -25,6 +25,7 @@
  */
 
 #if CIRCUITPY_ROTARYIO && CIRCUITPY_ROTARYIO_SOFTENCODER
+#include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "shared-module/rotaryio/IncrementalEncoder.h"
 #include "common-hal/rotaryio/IncrementalEncoder.h"
 

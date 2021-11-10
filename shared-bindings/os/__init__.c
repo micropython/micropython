@@ -68,7 +68,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 //|     """Change current directory."""
 //|     ...
 //|
-mp_obj_t os_chdir(mp_obj_t path_in) {
+STATIC mp_obj_t os_chdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_chdir(path);
     return mp_const_none;
@@ -79,7 +79,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_chdir_obj, os_chdir);
 //|     """Get the current directory."""
 //|     ...
 //|
-mp_obj_t os_getcwd(void) {
+STATIC mp_obj_t os_getcwd(void) {
     return common_hal_os_getcwd();
 }
 MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
@@ -88,7 +88,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //|     """With no argument, list the current directory.  Otherwise list the given directory."""
 //|     ...
 //|
-mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t os_listdir(size_t n_args, const mp_obj_t *args) {
     const char *path;
     if (n_args == 1) {
         path = mp_obj_str_get_str(args[0]);
@@ -103,7 +103,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_listdir_obj, 0, 1, os_listdir);
 //|     """Create a new directory."""
 //|     ...
 //|
-mp_obj_t os_mkdir(mp_obj_t path_in) {
+STATIC mp_obj_t os_mkdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_mkdir(path);
     return mp_const_none;
@@ -114,7 +114,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_mkdir_obj, os_mkdir);
 //|     """Remove a file."""
 //|     ...
 //|
-mp_obj_t os_remove(mp_obj_t path_in) {
+STATIC mp_obj_t os_remove(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_remove(path);
     return mp_const_none;
@@ -125,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_remove_obj, os_remove);
 //|     """Remove a directory."""
 //|     ...
 //|
-mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
+STATIC mp_obj_t os_rename(mp_obj_t old_path_in, mp_obj_t new_path_in) {
     const char *old_path = mp_obj_str_get_str(old_path_in);
     const char *new_path = mp_obj_str_get_str(new_path_in);
     common_hal_os_rename(old_path, new_path);
@@ -137,7 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(os_rename_obj, os_rename);
 //|     """Rename a file."""
 //|     ...
 //|
-mp_obj_t os_rmdir(mp_obj_t path_in) {
+STATIC mp_obj_t os_rmdir(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     common_hal_os_rmdir(path);
     return mp_const_none;
@@ -153,7 +153,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_rmdir_obj, os_rmdir);
 //|        which is the number of seconds corresponding to 1999-12-31."""
 //|     ...
 //|
-mp_obj_t os_stat(mp_obj_t path_in) {
+STATIC mp_obj_t os_stat(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_stat(path);
 }
@@ -180,7 +180,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(os_stat_obj, os_stat);
 //|     in a port-specific implementation."""
 //|     ...
 //|
-mp_obj_t os_statvfs(mp_obj_t path_in) {
+STATIC mp_obj_t os_statvfs(mp_obj_t path_in) {
     const char *path = mp_obj_str_get_str(path_in);
     return common_hal_os_statvfs(path);
 }

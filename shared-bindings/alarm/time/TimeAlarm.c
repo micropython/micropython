@@ -29,8 +29,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/time/__init__.h"
 #include "shared-bindings/alarm/time/TimeAlarm.h"
+#include "shared-bindings/rtc/__init__.h"
+#include "shared-bindings/time/__init__.h"
 
 #include "supervisor/shared/translate.h"
 

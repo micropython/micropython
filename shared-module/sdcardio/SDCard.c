@@ -28,6 +28,7 @@
 
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/sdcardio/SDCard.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-bindings/util.h"
 #include "shared-module/sdcardio/SDCard.h"
@@ -325,7 +326,7 @@ void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self) {
     common_hal_digitalio_digitalinout_deinit(&self->cs);
 }
 
-void common_hal_sdcardio_check_for_deinit(sdcardio_sdcard_obj_t *self) {
+STATIC void common_hal_sdcardio_check_for_deinit(sdcardio_sdcard_obj_t *self) {
     if (!self->bus) {
         raise_deinited_error();
     }
@@ -336,7 +337,7 @@ int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self) {
     return self->sectors;
 }
 
-int readinto(sdcardio_sdcard_obj_t *self, void *buf, size_t size) {
+STATIC int readinto(sdcardio_sdcard_obj_t *self, void *buf, size_t size) {
     uint8_t aux[2] = {0, 0};
     while (aux[0] != 0xfe) {
         common_hal_busio_spi_read(self->bus, aux, 1, 0xff);
@@ -349,7 +350,7 @@ int readinto(sdcardio_sdcard_obj_t *self, void *buf, size_t size) {
     return 0;
 }
 
-int readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
+STATIC int readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf) {
     uint32_t nblocks = buf->len / 512;
     if (nblocks == 1) {
         //  Use CMD17 to read a single block

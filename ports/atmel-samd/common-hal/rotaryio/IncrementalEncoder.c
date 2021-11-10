@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "shared-module/rotaryio/IncrementalEncoder.h"
 
 #include "atmel_start_pins.h"

@@ -26,6 +26,7 @@
  */
 
 #include "common-hal/ps2io/Ps2.h"
+#include "shared-bindings/ps2io/Ps2.h"
 
 #include <stdint.h>
 
@@ -300,11 +301,6 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
 
 uint16_t common_hal_ps2io_ps2_get_len(ps2io_ps2_obj_t *self) {
     return self->bufcount;
-}
-
-bool common_hal_ps2io_ps2_get_paused(ps2io_ps2_obj_t *self) {
-    uint32_t mask = 1 << self->channel;
-    return (EIC->INTENSET.reg & (mask << EIC_INTENSET_EXTINT_Pos)) == 0;
 }
 
 int16_t common_hal_ps2io_ps2_popleft(ps2io_ps2_obj_t *self) {
