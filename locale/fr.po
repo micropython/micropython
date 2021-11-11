@@ -159,6 +159,10 @@ msgstr ""
 msgid "%q must be power of 2"
 msgstr "%q doit être une puissance de 2"
 
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -3657,6 +3661,10 @@ msgstr ""
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "module introuvable"
+
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"

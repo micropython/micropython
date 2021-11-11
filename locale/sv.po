@@ -156,6 +156,10 @@ msgstr "%q måste vara av typen %q"
 msgid "%q must be power of 2"
 msgstr "%q måste vara en potens av 2"
 
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -3629,6 +3633,10 @@ msgstr "mode måste vara complete, eller reduced"
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "modulen hittades inte"
+
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
