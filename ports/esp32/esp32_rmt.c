@@ -29,6 +29,8 @@
 #include "mphalport.h"
 #include "driver/rmt.h"
 
+#include "modesp32.h"
+
 // This exposes the ESP32's RMT module to MicroPython. RMT is provided by the Espressif ESP-IDF:
 //
 //    https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html
@@ -72,6 +74,10 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t clock_div = args[2].u_int;
     mp_uint_t idle_level = args[3].u_bool;
     mp_obj_t tx_carrier_obj = args[4].u_obj;
+
+    if (channel_id == MICROPY_HW_ESP32_RMT_CHANNEL_BITSTREAM) {
+        mp_raise_ValueError(MP_ERROR_TEXT("reserved channel id"));
+    }
 
     if (clock_div < 1 || clock_div > 255) {
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
