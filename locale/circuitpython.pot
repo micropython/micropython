@@ -1354,7 +1354,7 @@ msgid "Invalid format chunk size"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid ""Invalid MAC address""
+msgid "Invalid MAC address"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
