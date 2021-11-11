@@ -120,6 +120,16 @@ mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
     return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
 }
 
+void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac) {
+    if (self->sta_mode) {
+        mp_raise_RuntimeError(translate("Can't change MAC address while station is started"));
+    }
+    if ((mac[0] & 0b1) == 0b1) {
+        mp_raise_RuntimeError(translate("MAC address can't be a multicast address"));
+    }
+    esp_wifi_set_mac(ESP_IF_WIFI_STA, mac);
+}
+
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
