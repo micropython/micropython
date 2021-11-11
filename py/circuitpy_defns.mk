@@ -436,6 +436,7 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+	wifi/Monitor.c \
 	wifi/Network.c \
 	wifi/Radio.c \
 	wifi/ScannedNetworks.c \
@@ -480,6 +481,7 @@ $(filter $(SRC_PATTERNS), \
 	paralleldisplay/ParallelBus.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
+	wifi/Packet.c \
 )
 
 SRC_BINDINGS_ENUMS += \

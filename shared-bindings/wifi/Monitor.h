@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
 
-#include "shared-bindings/wifi/Radio.h"
+#include "common-hal/wifi/Monitor.h"
 
-extern wifi_radio_obj_t common_hal_wifi_radio_obj;
+const mp_obj_type_t wifi_monitor_type;
 
-void common_hal_wifi_init(void);
-void common_hal_wifi_gc_collect(void);
+void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self,
+    uint8_t channel, size_t queue);
+void common_hal_wifi_monitor_deinit(wifi_monitor_obj_t *self);
+bool common_hal_wifi_monitor_deinited(void);
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
+void common_hal_wifi_monitor_set_channel(wifi_monitor_obj_t *self, uint8_t channel);
+mp_obj_t common_hal_wifi_monitor_get_channel(wifi_monitor_obj_t *self);
+
+mp_obj_t common_hal_wifi_monitor_get_queue(wifi_monitor_obj_t *self);
+
+mp_obj_t common_hal_wifi_monitor_get_lost(wifi_monitor_obj_t *self);
+
+mp_obj_t common_hal_wifi_monitor_get_queued(wifi_monitor_obj_t *self);
+
+mp_obj_t common_hal_wifi_monitor_get_packet(wifi_monitor_obj_t *self);
+
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_MONITOR_H
