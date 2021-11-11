@@ -158,6 +158,10 @@ msgstr "%q bì xū shì lèi xíng %q"
 msgid "%q must be power of 2"
 msgstr "%q bì xū shì 2 de gōng lǜ"
 
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
@@ -3629,6 +3633,10 @@ msgstr "mó shì bì xū wán chéng huò jiǎn shǎo"
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "zhǎo bù dào mókuài"
+
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
