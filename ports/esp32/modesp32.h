@@ -31,4 +31,7 @@ extern const mp_obj_type_t esp32_partition_type;
 extern const mp_obj_type_t esp32_rmt_type;
 extern const mp_obj_type_t esp32_ulp_type;
 
+// Reserve the last channel for machine.bitstream.
+#define MICROPY_HW_ESP32_RMT_CHANNEL_BITSTREAM (RMT_CHANNEL_MAX - 1)
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
