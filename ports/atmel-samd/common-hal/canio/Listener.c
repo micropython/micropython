@@ -195,7 +195,7 @@ STATIC void install_extended_filter(CanMramXidfe *extended, int id1, int id2, in
 
 
 #define NO_ID (-1)
-void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
+STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     int fifo = self->fifo_idx;
 
     if (!nmatch) {

@@ -50,7 +50,7 @@ typedef struct {
 
 #define DELAY 0x80
 
-uint32_t lookupCfg(uint32_t key, uint32_t defl) {
+STATIC uint32_t lookupCfg(uint32_t key, uint32_t defl) {
     const uint32_t *ptr = UF2_BINFO->config_data;
     if (!ptr || (((uint32_t)ptr) & 3) || *ptr != CFG_MAGIC0) {
         // no config data!
