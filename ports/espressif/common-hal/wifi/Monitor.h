@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H
 
-#include "shared-bindings/wifi/Radio.h"
+#include "py/obj.h"
+#include "components/esp_wifi/include/esp_wifi.h"
 
-extern wifi_radio_obj_t common_hal_wifi_radio_obj;
+typedef struct {
+    mp_obj_base_t base;
+    uint8_t channel;
+    size_t lost;
+    size_t queue_length;
+    QueueHandle_t queue;
+} wifi_monitor_obj_t;
 
-void common_hal_wifi_init(void);
-void common_hal_wifi_gc_collect(void);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WIFI_MONITOR_H

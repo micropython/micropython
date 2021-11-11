@@ -328,6 +328,12 @@ extern const struct _mp_obj_module_t nvm_module;
 #endif
 #endif
 
+#if CIRCUITPY_WIFI
+#define WIFI_MONITOR_ROOT_POINTERS mp_obj_t wifi_monitor_singleton;
+#else
+#define WIFI_MONITOR_ROOT_POINTERS
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 
@@ -451,6 +457,7 @@ struct _supervisor_allocation_node;
     KEYPAD_ROOT_POINTERS \
     GAMEPAD_ROOT_POINTERS \
     BOARD_UART_ROOT_POINTER \
+    WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     vstr_t *repl_line; \
     mp_obj_t pew_singleton; \
