@@ -37,7 +37,7 @@
 STATIC bool woke_up = false;
 STATIC bool _timealarm_set = false;
 
-void timer_callback(void) {
+STATIC void timer_callback(void) {
     woke_up = true;
 }
 

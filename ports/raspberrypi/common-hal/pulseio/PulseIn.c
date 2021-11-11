@@ -121,7 +121,8 @@ void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     self->level_count = 0;
     self->buf_index = 0;
 }
-void common_hal_pulseio_pulsein_interrupt(pulseio_pulsein_obj_t *self) {
+void common_hal_pulseio_pulsein_interrupt(void *self_in) {
+    pulseio_pulsein_obj_t *self = self_in;
 
     uint32_t rxfifo = 0;
 

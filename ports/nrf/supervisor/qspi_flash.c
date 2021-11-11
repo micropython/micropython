@@ -26,6 +26,7 @@
  */
 
 #include "supervisor/spi_flash_api.h"
+#include "supervisor/qspi_flash.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -69,7 +70,7 @@ void qspi_disable(void) {
     }
 }
 
-void qspi_enable(void) {
+STATIC void qspi_enable(void) {
     if (NRF_QSPI->ENABLE) {
         return;
     }

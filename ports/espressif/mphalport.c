@@ -39,6 +39,8 @@
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
 #endif
 
+#include "supervisor/cpu.h"
+
 void mp_hal_delay_us(mp_uint_t delay) {
     ets_delay_us(delay);
 }
@@ -48,7 +50,7 @@ void mp_hal_delay_us(mp_uint_t delay) {
 extern void xthal_window_spill(void);
 #endif
 
-mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs, uint8_t reg_count) {
+mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs) {
     // xtensa has more registers than an instruction can address. The 16 that
     // can be addressed are called the "window". When a function is called or
     // returns the window rotates. This allows for more efficient function calls

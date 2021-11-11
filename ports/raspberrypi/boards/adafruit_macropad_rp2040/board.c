@@ -31,6 +31,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+#include "supervisor/board.h"
 #include "supervisor/shared/board.h"
 
 displayio_fourwire_obj_t board_display_obj;

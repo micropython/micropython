@@ -35,6 +35,7 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 #include "shared-module/storage/__init__.h"
+#include "supervisor/shared/bluetooth/serial.h"
 
 #include "common-hal/_bleio/__init__.h"
 

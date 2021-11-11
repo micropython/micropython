@@ -95,7 +95,7 @@ void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
     self->count = 0;
 }
 
-void counter_interrupt_handler() {
+void counter_interrupt_handler(void) {
     uint32_t mask = pwm_get_irq_status_mask();
 
     uint8_t i = 1, pos = 1;

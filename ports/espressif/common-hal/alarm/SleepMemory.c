@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "common-hal/alarm/SleepMemory.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 
 #include "esp_log.h"
 #include "esp_sleep.h"

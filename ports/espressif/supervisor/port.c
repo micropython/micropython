@@ -93,7 +93,7 @@ TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-void tick_timer_cb(void *arg) {
+STATIC void tick_timer_cb(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
@@ -360,6 +360,7 @@ void port_idle_until_interrupt(void) {
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
+extern void app_main(void);
 void app_main(void) {
     main();
 }

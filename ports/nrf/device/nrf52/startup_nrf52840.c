@@ -40,12 +40,14 @@ typedef void (*func)(void);
 extern void  _start(void) __attribute__((noreturn));
 extern void SystemInit(void);
 
+extern void Default_Handler(void);
 void Default_Handler(void) {
     while (1) {
         ;
     }
 }
 
+extern void Reset_Handler(void);
 void Reset_Handler(void) {
     uint32_t *p_src = &_sidata;
     uint32_t *p_dest = &_sdata;

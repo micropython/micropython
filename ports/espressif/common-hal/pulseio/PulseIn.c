@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/pulseio/PulseIn.h"
+#include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "py/runtime.h"
 

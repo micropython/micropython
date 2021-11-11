@@ -104,7 +104,7 @@ bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_
     return true;
 }
 
-void _update_current_x(displayio_tilegrid_t *self) {
+STATIC void _update_current_x(displayio_tilegrid_t *self) {
     uint16_t width;
     if (self->transpose_xy) {
         width = self->pixel_height;
@@ -137,7 +137,7 @@ void _update_current_x(displayio_tilegrid_t *self) {
     }
 }
 
-void _update_current_y(displayio_tilegrid_t *self) {
+STATIC void _update_current_y(displayio_tilegrid_t *self) {
     uint16_t height;
     if (self->transpose_xy) {
         height = self->pixel_width;

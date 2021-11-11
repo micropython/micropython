@@ -70,7 +70,7 @@
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
 
-void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
+STATIC void validate_objs_are_alarms(size_t n_args, const mp_obj_t *objs) {
     for (size_t i = 0; i < n_args; i++) {
         if (mp_obj_is_type(objs[i], &alarm_pin_pinalarm_type) ||
             mp_obj_is_type(objs[i], &alarm_time_timealarm_type) ||

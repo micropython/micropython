@@ -39,6 +39,7 @@
 
 #include "components/spi_flash/include/esp_partition.h"
 
+#include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
 STATIC const esp_partition_t *_partition;

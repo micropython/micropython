@@ -132,7 +132,7 @@ endif
 # Remove -Wno-stringop-overflow after we can test with CI's GCC 10. Mac's looks weird.
 DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-unused-function -Wno-unused-variable -Wno-strict-overflow -Wno-cast-align -Wno-strict-prototypes -Wno-nested-externs -Wno-double-promotion -Wno-sign-compare
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS)
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
 
 CFLAGS += \
   -march=armv6-m \
@@ -187,6 +187,7 @@ SRC_SDK := \
 	src/rp2_common/pico_unique_id/unique_id.c \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes
 
 SRC_C += \
 	boards/$(BOARD)/board.c \

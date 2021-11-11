@@ -39,6 +39,8 @@ typedef void (*func)(void);
 
 extern void  _start(void) __attribute__((noreturn));
 extern void SystemInit(void);
+extern void Default_Handler(void);
+extern void Reset_Handler(void);
 
 void Default_Handler(void) {
     while (1) {

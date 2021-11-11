@@ -29,6 +29,8 @@
 #include "py/objstr.h"
 #include "py/objtuple.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
 #endif
@@ -61,7 +63,7 @@ mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
     #ifdef BLUETOOTH_SD
     uint8_t sd_en = 0;
     (void)sd_softdevice_is_enabled(&sd_en);

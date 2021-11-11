@@ -85,4 +85,9 @@ const ble_gap_enc_key_t *bonding_load_peer_encryption_key(bool is_central, const
 size_t bonding_load_identities(bool is_central, const ble_gap_id_key_t **keys, size_t max_length);
 size_t bonding_peripheral_bond_count(void);
 
+#if BONDING_DEBUG
+void bonding_print_block(bonding_block_t *);
+void bonding_print_keys(bonding_keys_t *);
+#endif
+
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_BLEIO_BONDING_H

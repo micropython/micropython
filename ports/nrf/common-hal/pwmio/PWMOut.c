@@ -86,7 +86,7 @@ void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
     }
 }
 
-void reset_single_pwmout(uint8_t i) {
+STATIC void reset_single_pwmout(uint8_t i) {
     NRF_PWM_Type *pwm = pwms[i];
 
     pwm->ENABLE = 0;
@@ -122,7 +122,7 @@ void pwmout_reset(void) {
 
 // Find the smallest prescaler value that will allow the divisor to be in range.
 // This allows the most accuracy.
-bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *base_clock) {
+STATIC bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *base_clock) {
     uint32_t divisor = 1;
     // Use a 32-bit number so we don't overflow the uint16_t;
     uint32_t tentative_countertop;

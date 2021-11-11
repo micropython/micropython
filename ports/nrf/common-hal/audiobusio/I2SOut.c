@@ -91,7 +91,7 @@ static void calculate_ratio_info(uint32_t target_sample_rate, struct frequency_i
         / target_sample_rate;
 }
 
-void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
+STATIC void choose_i2s_clocking(audiobusio_i2sout_obj_t *self, uint32_t sample_rate) {
     struct frequency_info best = {0, 0, 0, 1.0};
     for (size_t ri = 0; ri < sizeof(ratios) / sizeof(ratios[0]); ri++) {
         if (NRF_I2S->CONFIG.SWIDTH == I2S_CONFIG_SWIDTH_SWIDTH_16Bit

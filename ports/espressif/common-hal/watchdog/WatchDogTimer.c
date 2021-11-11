@@ -32,6 +32,7 @@
 
 #include "esp_task_wdt.h"
 
+extern void esp_task_wdt_isr_user_handler(void);
 void esp_task_wdt_isr_user_handler(void) {
     mp_obj_exception_clear_traceback(MP_OBJ_FROM_PTR(&mp_watchdog_timeout_exception));
     MP_STATE_THREAD(mp_pending_exception) = &mp_watchdog_timeout_exception;

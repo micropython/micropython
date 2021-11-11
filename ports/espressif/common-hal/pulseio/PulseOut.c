@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/pulseio/PulseOut.h"
+#include "shared-bindings/pulseio/PulseOut.h"
 
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"

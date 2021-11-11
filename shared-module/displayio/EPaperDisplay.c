@@ -103,7 +103,7 @@ bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self
     return displayio_display_core_show(&self->core, root_group);
 }
 
-const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
+STATIC const displayio_area_t *displayio_epaperdisplay_get_refresh_areas(displayio_epaperdisplay_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;
         return &self->core.area;
@@ -172,7 +172,7 @@ void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisp
     self->milliseconds_per_frame = seconds_per_frame * 1000;
 }
 
-void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t *self) {
+STATIC void displayio_epaperdisplay_start_refresh(displayio_epaperdisplay_obj_t *self) {
     // run start sequence
     self->core.bus_reset(self->core.bus);
 
@@ -192,7 +192,7 @@ uint32_t common_hal_displayio_epaperdisplay_get_time_to_refresh(displayio_epaper
     return self->milliseconds_per_frame - elapsed_time;
 }
 
-void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t *self) {
+STATIC void displayio_epaperdisplay_finish_refresh(displayio_epaperdisplay_obj_t *self) {
     // Actually refresh the display now that all pixel RAM has been updated.
     displayio_display_core_begin_transaction(&self->core);
     self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, &self->refresh_display_command, 1);
@@ -230,7 +230,7 @@ uint16_t common_hal_displayio_epaperdisplay_get_rotation(displayio_epaperdisplay
 }
 
 
-bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *self, const displayio_area_t *area) {
+STATIC bool displayio_epaperdisplay_refresh_area(displayio_epaperdisplay_obj_t *self, const displayio_area_t *area) {
     uint16_t buffer_size = 128; // In uint32_ts
 
     displayio_area_t clipped;

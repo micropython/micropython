@@ -38,7 +38,7 @@
 
 STATIC bool reserved_can;
 
-twai_timing_config_t get_t_config(int baudrate) {
+STATIC twai_timing_config_t get_t_config(int baudrate) {
     switch (baudrate) {
         case 1000000: {
             // TWAI_TIMING_CONFIG_abc expands to a C designated initializer list
@@ -204,7 +204,7 @@ static void can_restart(void) {
     } while (port_get_raw_ticks(NULL) < deadline && (info.state == TWAI_STATE_BUS_OFF || info.state == TWAI_STATE_RECOVERING));
 }
 
-void canio_maybe_auto_restart(canio_can_obj_t *self) {
+STATIC void canio_maybe_auto_restart(canio_can_obj_t *self) {
     if (self->auto_restart) {
         can_restart();
     }

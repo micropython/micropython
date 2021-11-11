@@ -70,7 +70,7 @@ static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin
     }
 }
 
-void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
+STATIC void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
     uint32_t program_id = _current_program_id[pio_index][sm];
     if (program_id == 0) {
@@ -587,7 +587,7 @@ bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self) {
     return self->state_machine == NUM_PIO_STATE_MACHINES;
 }
 
-enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
+STATIC enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
     switch (stride) {
         case 4:
             return DMA_SIZE_32;

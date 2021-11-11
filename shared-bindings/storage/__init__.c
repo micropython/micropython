@@ -54,7 +54,7 @@
 //|     """
 //|     ...
 //|
-mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_filesystem, ARG_mount_path, ARG_readonly };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_filesystem, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -91,7 +91,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_mount_obj, 0, storage_mount);
 //|     This is the CircuitPython analog to the UNIX ``umount`` command."""
 //|     ...
 //|
-mp_obj_t storage_umount(mp_obj_t mnt_in) {
+STATIC mp_obj_t storage_umount(mp_obj_t mnt_in) {
     if (mp_obj_is_str(mnt_in)) {
         common_hal_storage_umount_path(mp_obj_str_get_str(mnt_in));
     } else {
@@ -113,7 +113,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_umount_obj, storage_umount);
 //|         filesystem will be corrupted."""
 //|     ...
 //|
-mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t storage_remount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mount_path, ARG_readonly, ARG_disable_concurrent_write_protection };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mount_path, MP_ARG_OBJ | MP_ARG_REQUIRED },
@@ -136,7 +136,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(storage_remount_obj, 0, storage_remount);
 //|     """Retrieves the mount object associated with the mount path"""
 //|     ...
 //|
-mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
+STATIC mp_obj_t storage_getmount(const mp_obj_t mnt_in) {
     return common_hal_storage_getmount(mp_obj_str_get_str(mnt_in));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
@@ -156,7 +156,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(storage_getmount_obj, storage_getmount);
 //|     ...
 //|
 
-mp_obj_t storage_erase_filesystem(void) {
+STATIC mp_obj_t storage_erase_filesystem(void) {
     common_hal_storage_erase_filesystem();
     return mp_const_none;
 }

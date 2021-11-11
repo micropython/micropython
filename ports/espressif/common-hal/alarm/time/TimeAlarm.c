@@ -63,7 +63,7 @@ esp_timer_handle_t pretend_sleep_timer;
 STATIC bool woke_up = false;
 
 // This is run in the timer task. We use it to wake the main CircuitPython task.
-void timer_callback(void *arg) {
+STATIC void timer_callback(void *arg) {
     (void)arg;
     woke_up = true;
     xTaskNotifyGive(circuitpython_task);

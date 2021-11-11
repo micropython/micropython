@@ -30,6 +30,8 @@
 #include "py/objtuple.h"
 #include "py/qstr.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #include "lib/crypto-algorithms/sha256.h"
 
 #include "hardware/structs/rosc.h"
@@ -104,7 +106,7 @@ static void get_random_bits(BYTE out[SHA256_BLOCK_SIZE]) {
     sha256_final(&context, out);
 }
 
-bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
 #define ROSC_POWER_SAVE (1) // assume ROSC is not necessarily active all the time
     #if ROSC_POWER_SAVE
     uint32_t old_rosc_ctrl = rosc_hw->ctrl;

@@ -24,5 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "modules/module.h"
+
 void never_reset_module_internal_pins(void) {
 }

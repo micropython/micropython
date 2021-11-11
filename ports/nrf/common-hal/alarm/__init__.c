@@ -147,7 +147,7 @@ STATIC void _setup_sleep_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t
 // TODO: this handles all possible types of wakeup, which is redundant with main.
 // revise to extract all parts essential to enabling sleep wakeup, but leave the
 // alarm/non-alarm sorting to the existing main loop.
-void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
+STATIC void system_on_idle_until_alarm(int64_t timediff_ms, bool wake_from_serial, uint32_t prescaler) {
     bool have_timeout = false;
     uint64_t start_tick = 0, end_tick = 0;
     int64_t tickdiff;

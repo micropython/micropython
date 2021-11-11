@@ -1,6 +1,12 @@
 // Derived from ArduinoBLE.
 // Copyright 2020 Dan Halbert for Adafruit Industries
 
+// Some functions here are unused now, but may be used in the future.
+// Don't warn or error about this, and depend on the compiler & linker to
+// eliminate the associated code.
+#pragma GCC diagnostic ignored "-Wunused"
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 /*
   This file is part of the ArduinoBLE library.
   Copyright (c) 2018 Arduino SA. All rights reserved.
@@ -857,7 +863,7 @@ STATIC void process_find_info_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     }
 }
 
-int att_find_info_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint8_t response_buffer[]) {
+static int att_find_info_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint8_t response_buffer[]) {
     struct __packed req {
         struct bt_att_hdr h;
         struct bt_att_find_info_req r;
@@ -925,7 +931,7 @@ STATIC void process_find_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     }
 }
 
-void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
+static void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, uint8_t data[]) {
     struct bt_att_read_group_req *req = (struct bt_att_read_group_req *)data;
     uint16_t type_uuid = req->uuid[0] | (req->uuid[1] << 8);
 
@@ -1009,7 +1015,7 @@ void process_read_group_req(uint16_t conn_handle, uint16_t mtu, uint8_t dlen, ui
     }
 }
 
-int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t uuid, uint8_t response_buffer[]) {
+static int att_read_group_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t uuid, uint8_t response_buffer[]) {
 
     typedef struct __packed {
         struct bt_att_hdr h;
@@ -1305,7 +1311,7 @@ STATIC void process_read_type_req(uint16_t conn_handle, uint16_t mtu, uint8_t dl
     }
 }
 
-int att_read_type_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t type, uint8_t response_buffer[]) {
+static int att_read_type_req(uint16_t conn_handle, uint16_t start_handle, uint16_t end_handle, uint16_t type, uint8_t response_buffer[]) {
     typedef struct __packed {
         struct bt_att_hdr h;
         struct bt_att_read_type_req r;
@@ -1715,7 +1721,7 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
 }
 
 // FIX Do we need all of these?
-void check_att_err(uint8_t err) {
+static void check_att_err(uint8_t err) {
     const compressed_string_t *msg = NULL;
     switch (err) {
         case 0:

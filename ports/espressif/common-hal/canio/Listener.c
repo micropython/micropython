@@ -78,7 +78,7 @@ STATIC void install_all_match_filter(canio_listener_obj_t *self) {
 }
 
 __attribute__((noinline,optimize("O0")))
-void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
+STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     twai_ll_enter_reset_mode(&TWAI);
 
     if (!nmatch) {

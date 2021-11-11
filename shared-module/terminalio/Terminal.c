@@ -28,6 +28,7 @@
 
 #include "shared-module/fontio/BuiltinFont.h"
 #include "shared-bindings/displayio/TileGrid.h"
+#include "shared-bindings/terminalio/Terminal.h"
 
 void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t *tilegrid, const fontio_builtinfont_t *font) {
     self->cursor_x = 0;

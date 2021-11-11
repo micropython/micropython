@@ -68,7 +68,7 @@
         /* .wrap */ \
     }
 
-mcu_pin_obj_t *pin_from_number(uint8_t number) {
+STATIC mcu_pin_obj_t *pin_from_number(uint8_t number) {
     const mp_map_t *mcu_map = &mcu_pin_globals.map;
     for (uint8_t i = 0; i < mcu_map->alloc; i++) {
         mp_obj_t val = mcu_map->table[i].value;

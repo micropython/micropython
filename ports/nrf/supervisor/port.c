@@ -46,6 +46,7 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/_bleio/__init__.h"
+#include "common-hal/alarm/time/TimeAlarm.h"
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
@@ -97,7 +98,7 @@ static volatile struct {
     uint32_t suffix;
 } overflow_tracker __attribute__((section(".uninitialized")));
 
-void rtc_handler(nrfx_rtc_int_type_t int_type) {
+STATIC void rtc_handler(nrfx_rtc_int_type_t int_type) {
     if (int_type == NRFX_RTC_INT_OVERFLOW) {
         // Our RTC is 24 bits and we're clocking it at 32.768khz which is 32 (2 ** 5) subticks per
         // tick.
@@ -116,7 +117,7 @@ void rtc_handler(nrfx_rtc_int_type_t int_type) {
     }
 }
 
-void tick_init(void) {
+STATIC void tick_init(void) {
     if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
         nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
     }
@@ -137,7 +138,7 @@ void tick_init(void) {
     }
 }
 
-void tick_uninit(void) {
+STATIC void tick_uninit(void) {
     nrfx_rtc_counter_clear(&rtc_instance);
     nrfx_rtc_disable(&rtc_instance);
     nrfx_rtc_uninit(&rtc_instance);
@@ -400,6 +401,7 @@ void port_idle_until_interrupt(void) {
 }
 
 
+extern void HardFault_Handler(void);
 void HardFault_Handler(void) {
     reset_into_safe_mode(HARD_CRASH);
     while (true) {

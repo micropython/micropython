@@ -91,6 +91,7 @@ void init_usb_hardware(void) {
     }
 }
 
+extern void USBD_IRQHandler(void);
 void USBD_IRQHandler(void) {
     usb_irq_handler();
 }

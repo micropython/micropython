@@ -101,7 +101,7 @@ endif
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
 
 # Nordic Softdevice SDK header files contains inline assembler that has
 # broken constraints. As a result the IPA-modref pass, introduced in gcc-11,
@@ -173,25 +173,32 @@ SRC_C += \
 	bluetooth/ble_drv.c \
 	common-hal/_bleio/bonding.c \
 	nrfx/mdk/system_$(MCU_SUB_VARIANT).c \
+	sd_mutex.c \
+
+SRC_PERIPHERALS := \
 	peripherals/nrf/cache.c \
 	peripherals/nrf/clocks.c \
 	peripherals/nrf/$(MCU_CHIP)/pins.c \
 	peripherals/nrf/$(MCU_CHIP)/power.c \
         peripherals/nrf/nvm.c \
 	peripherals/nrf/timers.c \
-	sd_mutex.c
 
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototypes
+
+SRC_C += $(SRC_PERIPHERALS)
 ifneq ($(CIRCUITPY_USB),0)
 # USB source files for nrf52840
 ifeq ($(MCU_SUB_VARIANT),nrf52840)
-SRC_C += \
+SRC_DCD = \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
 
 ifeq ($(MCU_SUB_VARIANT),nrf52833)
-SRC_C += \
+SRC_DCD += \
 	lib/tinyusb/src/portable/nordic/nrf5x/dcd_nrf5x.c
 endif
+SRC_C += $(SRC_DCD)
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_DCD)): CFLAGS += -Wno-missing-prototypes
 endif # CIRCUITPY_USB
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \

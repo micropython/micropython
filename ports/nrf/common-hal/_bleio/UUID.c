@@ -30,6 +30,7 @@
 
 #include "py/runtime.h"
 #include "common-hal/_bleio/UUID.h"
+#include "shared-bindings/_bleio/UUID.h"
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Adapter.h"
 

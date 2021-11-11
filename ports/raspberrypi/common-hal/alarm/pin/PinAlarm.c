@@ -42,7 +42,7 @@ STATIC bool _pinalarm_set = false;
 
 #define GPIO_IRQ_ALL_EVENTS 0x15u
 
-void gpio_callback(uint gpio, uint32_t events) {
+STATIC void gpio_callback(uint gpio, uint32_t events) {
     alarm_triggered_pins |= (1 << gpio);
     woke_up = true;
 

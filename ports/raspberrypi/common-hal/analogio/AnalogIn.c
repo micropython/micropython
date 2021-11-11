@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/analogio/AnalogIn.h"
+#include "shared-bindings/analogio/AnalogIn.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
 

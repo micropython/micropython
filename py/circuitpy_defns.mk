@@ -635,7 +635,7 @@ ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
@@ -685,6 +685,7 @@ $(addprefix lib/,\
 	libm/wf_tgamma.c \
 	)
 endif
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_LIBM)): CFLAGS += -Wno-missing-prototypes
 endif
 
 SRC_CIRCUITPY_COMMON = \

@@ -25,6 +25,7 @@
  */
 
 #include "common-hal/nvm/ByteArray.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
 #include <string.h>
 
@@ -36,7 +37,7 @@ static const uint32_t flash_binary_start = (uint32_t)&__flash_binary_start;
 
 #define RMV_OFFSET(addr) addr - flash_binary_start
 
-uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
+uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
@@ -63,12 +64,12 @@ static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t *byte
     flash_range_program(RMV_OFFSET(CIRCUITPY_INTERNAL_NVM_START_ADDR), buffer, FLASH_SECTOR_SIZE);
 }
 
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
+void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint32_t len, uint8_t *values) {
     memcpy(values, self->start_address + start_index, len);
 }
 
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
+bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
     uint8_t values_in[len];
     common_hal_nvm_bytearray_get_bytes(self, start_index, len, values_in);

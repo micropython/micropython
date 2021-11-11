@@ -27,6 +27,7 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "shared-bindings/neopixel_write/__init__.h"
+#include "common-hal/neopixel_write/__init__.h"
 #include "supervisor/port.h"
 #include "nrf_pwm.h"
 

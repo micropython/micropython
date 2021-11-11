@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 #include "shared-bindings/rtc/RTC.h"
+#include "common-hal/rtc/RTC.h"
 
 #include <sys/time.h>
 
