@@ -201,7 +201,7 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
 
     #endif
 
-    #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_ESP32S3_EXTENDED_IO
+    #if CONFIG_IDF_TARGET_ESP32S3
 
     {{&machine_pin_type}, GPIO_NUM_47},
     {{&machine_pin_type}, GPIO_NUM_48},

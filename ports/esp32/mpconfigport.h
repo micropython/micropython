@@ -196,6 +196,11 @@
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
+// ESP32-S3 extended IO for 47 & 48
+#ifndef MICROPY_HW_ESP32S3_EXTENDED_IO
+#define MICROPY_HW_ESP32S3_EXTENDED_IO      (1)
+#endif
+
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
