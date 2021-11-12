@@ -683,7 +683,7 @@ msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Can't change MAC address while station is started"
+msgid "Can't change MAC address while station is connected"
 msgstr ""
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
@@ -4458,7 +4458,7 @@ msgid "wifi is not enabled"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "wifi ssid must be between 1 and 32 characters"
+msgid "wifi ssid can't be more than 32 bytes"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
