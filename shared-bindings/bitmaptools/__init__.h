@@ -46,8 +46,8 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     displayio_bitmap_t *source, int16_t px, int16_t py,
     int16_t source_clip0_x, int16_t source_clip0_y,
     int16_t source_clip1_x, int16_t source_clip1_y,
-    float angle,
-    float scale,
+    mp_float_t angle,
+    mp_float_t scale,
     uint32_t skip_index, bool skip_index_none);
 
 void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
@@ -68,6 +68,6 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_index);
 void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bitmap_t *source_bitmap, displayio_colorspace_t colorspace, bitmaptools_dither_algorithm_t algorithm);
 
-void common_hal_bitmaptools_alphablend(displayio_bitmap_t *destination, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, float factor1, float factor2);
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *destination, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H

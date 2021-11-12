@@ -35,12 +35,14 @@ SRC_BITMAP := \
 	shared-module/displayio/area.c \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
+	shared-bindings/bitmaptools/__init__.c \
+	shared-module/bitmaptools/__init__.c \
 	shared-bindings/util.c \
 
 $(info $(SRC_BITMAP))
 SRC_C += $(SRC_BITMAP)
 
-CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_UNIX=1
+CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_UNIX=1 -DCIRCUITPY_BITMAPTOOLS=1
 
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp
