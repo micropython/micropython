@@ -26,7 +26,7 @@
 
 #include "shared-bindings/rainbowio/__init__.h"
 
-const int32_t colorwheel(float pos) {
+int32_t colorwheel(mp_float_t pos) {
     if (pos > 255) {
         pos = pos - ((uint32_t)(pos / 256) * 256);
     }
