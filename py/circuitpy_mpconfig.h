@@ -176,6 +176,10 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
+#if __GNUC__ >= 10 // on recent gcc versions we can check that this is so
+_Static_assert(sizeof(mp_int_t) == sizeof(void *));
+_Static_assert(sizeof(mp_uint_t) == sizeof(void *));
+#endif
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
