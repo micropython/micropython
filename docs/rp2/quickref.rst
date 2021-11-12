@@ -95,7 +95,8 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 PIO Assembly Instructions
 -------------------------
 
-See `the PIO module
+PIO comes into play when we want to build an interfaces from scratch or when trying to communicate 
+with a hardware where there are no supporting librariesavailable. See `the PIO module
 <https://docs.micropython.org/en/latest/library/rp2.html#pio-assembly-language-instructions>`_
 detailed explaination of the assembly instructions.    
 
