@@ -121,8 +121,8 @@ mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac) {
-    if (self->sta_mode) {
-        mp_raise_RuntimeError(translate("Can't set MAC address while connected"));
+    if (!self->sta_mode) {
+        mp_raise_RuntimeError(translate("Station must be started"));
     }
     if ((mac[0] & 0b1) == 0b1) {
         mp_raise_RuntimeError(translate("Invalid multicast MAC address"));

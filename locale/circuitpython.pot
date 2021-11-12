@@ -683,7 +683,7 @@ msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Can't set MAC address while connected"
+msgid "Station must be started"
 msgstr ""
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c

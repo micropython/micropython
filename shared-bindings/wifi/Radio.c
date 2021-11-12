@@ -118,8 +118,8 @@ const mp_obj_property_t wifi_radio_hostname_obj = {
 };
 
 //|     mac_address: ReadableBuffer
-//|     """MAC address of the wifi radio station.
-//|        Can only be set while the Station is not started."""
+//|     """MAC address for the station. When the address is altered after interface is connected
+//|        the changes would only be reflected once the interface reconnects."""
 //|
 STATIC mp_obj_t wifi_radio_get_mac_address(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
