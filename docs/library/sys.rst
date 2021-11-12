@@ -115,6 +115,12 @@ Constants
    If you need to check whether your program runs on MicroPython (vs other
    Python implementation), use `sys.implementation` instead.
 
+.. data:: settrace
+
+   Requires custom MicroPython compilation as it is ,ostly not present in
+   pre-built  firmware (due to its affecting performance). The relevant build
+   flag is *MICROPY_PY_SYS_SETTRACE*. 
+
 .. data:: stderr
 
    Standard error `stream`.
