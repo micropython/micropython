@@ -683,7 +683,7 @@ msgid "Can't set CCCD on local Characteristic"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Can't change MAC address while station is connected"
+msgid "Can't set MAC address while connected"
 msgstr ""
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
@@ -1470,7 +1470,7 @@ msgid "Layer must be a Group or TileGrid subclass."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "MAC address can't be a multicast address"
+msgid "Invalid multicast MAC address"
 msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
@@ -4458,7 +4458,7 @@ msgid "wifi is not enabled"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
-msgid "wifi ssid can't be more than 32 bytes"
+msgid "ssid can't be more than 32 bytes"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c

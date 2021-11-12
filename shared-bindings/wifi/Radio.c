@@ -327,7 +327,7 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     ssid.len = 0;
     mp_get_buffer_raise(args[ARG_ssid].u_obj, &ssid, MP_BUFFER_READ);
     if (ssid.len > 32) {
-        mp_raise_ValueError(translate("wifi ssid can't be more than 32 bytes"));
+        mp_raise_ValueError(translate("ssid can't be more than 32 bytes"));
     }
 
     mp_buffer_info_t password;
