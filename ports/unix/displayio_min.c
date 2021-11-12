@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/displayio/__init__.h"
+#include "shared-bindings/displayio/Bitmap.h"
 
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB888, DISPLAYIO_COLORSPACE_RGB888);
 MAKE_ENUM_VALUE(displayio_colorspace_type, displayio_colorspace, RGB565, DISPLAYIO_COLORSPACE_RGB565);
@@ -78,6 +79,7 @@ MAKE_ENUM_TYPE(displayio, ColorSpace, displayio_colorspace);
 
 STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_displayio) },
+    { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Colorspace), MP_ROM_PTR(&displayio_colorspace_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_module_globals, displayio_module_globals_table);
@@ -87,4 +89,4 @@ const mp_obj_module_t displayio_module = {
     .globals = (mp_obj_dict_t *)&displayio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module, CIRCUITPY_DISPLAYIO_COLORSPACE_ONLY);
+MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module, CIRCUITPY_DISPLAYIO_UNIX);

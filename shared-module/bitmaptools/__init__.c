@@ -44,8 +44,8 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     displayio_bitmap_t *source, int16_t px, int16_t py,
     int16_t source_clip0_x, int16_t source_clip0_y,
     int16_t source_clip1_x, int16_t source_clip1_y,
-    float angle,
-    float scale,
+    mp_float_t angle,
+    mp_float_t scale,
     uint32_t skip_index, bool skip_index_none) {
 
     // Copies region from source to the destination bitmap, including rotation,
@@ -105,10 +105,10 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     int16_t maxx = dest_clip0_x;
     int16_t maxy = dest_clip0_y;
 
-    float sinAngle = sinf(angle);
-    float cosAngle = cosf(angle);
+    mp_float_t sinAngle = MICROPY_FLOAT_C_FUN(sin)(angle);
+    mp_float_t cosAngle = MICROPY_FLOAT_C_FUN(cos)(angle);
 
-    float dx, dy;
+    mp_float_t dx, dy;
 
     /* Compute the position of where each corner on the source bitmap
     will be on the destination to get a bounding box for scanning */
@@ -186,27 +186,27 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
         maxy = dest_clip1_y - 1;
     }
 
-    float dvCol = cosAngle / scale;
-    float duCol = sinAngle / scale;
+    mp_float_t dvCol = cosAngle / scale;
+    mp_float_t duCol = sinAngle / scale;
 
-    float duRow = dvCol;
-    float dvRow = -duCol;
+    mp_float_t duRow = dvCol;
+    mp_float_t dvRow = -duCol;
 
-    float startu = px - (ox * dvCol + oy * duCol);
-    float startv = py - (ox * dvRow + oy * duRow);
+    mp_float_t startu = px - (ox * dvCol + oy * duCol);
+    mp_float_t startv = py - (ox * dvRow + oy * duRow);
 
-    float rowu = startu + miny * duCol;
-    float rowv = startv + miny * dvCol;
+    mp_float_t rowu = startu + miny * duCol;
+    mp_float_t rowv = startv + miny * dvCol;
 
-    displayio_area_t dirty_area = {minx, miny, maxx + 1, maxy + 1};
+    displayio_area_t dirty_area = {minx, miny, maxx + 1, maxy + 1, NULL};
     displayio_bitmap_set_dirty_area(self, &dirty_area);
 
     for (y = miny; y <= maxy; y++) {
-        float u = rowu + minx * duRow;
-        float v = rowv + minx * dvRow;
+        mp_float_t u = rowu + minx * duRow;
+        mp_float_t v = rowv + minx * dvRow;
         for (x = minx; x <= maxx; x++) {
             if (u >= source_clip0_x && u < source_clip1_x && v >= source_clip0_y && v < source_clip1_y) {
-                uint32_t c = common_hal_displayio_bitmap_get_pixel(source, u, v);
+                uint32_t c = common_hal_displayio_bitmap_get_pixel(source, (int)u, (int)v);
                 if ((skip_index_none) || (c != skip_index)) {
                     displayio_bitmap_write_pixel(self, x, y, c);
                 }
@@ -227,10 +227,10 @@ void common_hal_bitmaptools_fill_region(displayio_bitmap_t *destination,
     //
     // input checks should ensure that x1 < x2 and y1 < y2 and are within the bitmap region
 
-    displayio_area_t area = { x1, y1, x2, y2 };
+    displayio_area_t area = { x1, y1, x2, y2, NULL };
     displayio_area_canon(&area);
 
-    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
     displayio_area_compute_overlap(&area, &bitmap_area, &area);
 
     // update the dirty rectangle
@@ -378,7 +378,7 @@ void common_hal_bitmaptools_boundary_fill(displayio_bitmap_t *destination,
     }
 
     // set dirty the area so displayio will draw
-    displayio_area_t area = { minx, miny, maxx + 1, maxy + 1};
+    displayio_area_t area = { minx, miny, maxx + 1, maxy + 1, NULL};
     displayio_bitmap_set_dirty_area(destination, &area);
 
 }
@@ -408,8 +408,8 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
         ybb0 = y1;
         ybb1 = y0 + 1;
     }
-    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1 };
-    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height };
+    displayio_area_t area = { xbb0, ybb0, xbb1, ybb1, NULL };
+    displayio_area_t bitmap_area = { 0, 0, destination->width, destination->height, NULL };
     displayio_area_compute_overlap(&area, &bitmap_area, &area);
 
     displayio_bitmap_set_dirty_area(destination, &area);
@@ -460,7 +460,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
         dx = x1 - x0;
         dy = abs(y1 - y0);
 
-        float err = dx / 2;
+        mp_float_t err = dx / 2;
 
         if (y0 < y1) {
             ystep = 1;
@@ -509,14 +509,14 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
             }
         }
     }
-    displayio_area_t area = { x1, y1, x2, y2 };
+    displayio_area_t area = { x1, y1, x2, y2, NULL };
     displayio_bitmap_set_dirty_area(self, &area);
 }
 
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes, bool reverse_rows) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
 
-    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 
     size_t elements_per_row = (self->width * bits_per_pixel + element_size * 8 - 1) / (element_size * 8);
@@ -785,12 +785,12 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
         fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
     }
 
-    displayio_area_t a = { 0, 0, width, height };
+    displayio_area_t a = { 0, 0, width, height, NULL };
     displayio_bitmap_set_dirty_area(dest_bitmap, &a);
 }
 
-void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, float factor1, float factor2) {
-    displayio_area_t a = {0, 0, dest->width, dest->height};
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2) {
+    displayio_area_t a = {0, 0, dest->width, dest->height, NULL};
     displayio_bitmap_set_dirty_area(dest, &a);
 
     int ifactor1 = (int)(factor1 * 256);

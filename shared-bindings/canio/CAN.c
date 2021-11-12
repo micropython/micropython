@@ -240,8 +240,8 @@ STATIC mp_obj_t canio_can_listen(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     enum { ARG_matches, ARG_timeout, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_matches, MP_ARG_OBJ, {.u_obj = 0} },
-        { MP_QSTR_timeout, MP_ARG_OBJ, {.u_obj = 0} },
+        { MP_QSTR_matches, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_timeout, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
