@@ -32,7 +32,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-// #include "common-hal/is31fl3741/Is31fl3741.h"
 #include "shared-module/is31fl3741/allocator.h"
 #include "shared-bindings/is31fl3741/is31fl3741.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -41,95 +40,11 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/busio/I2C.h"
 
-extern Protomatter_core *_PM_protoPtr;
-
-uint8_t cur_page = 99;
-
-void send_unlock(busio_i2c_obj_t *i2c, uint8_t addr) {
-    uint8_t unlock[2] = { 0xFE, 0xC5 }; // unlock command
-    common_hal_busio_i2c_write(i2c, addr, unlock, 2, true);
-}
-
-void set_page(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t p) {
-    if (p == cur_page) {
-        return;
-    }
-
-    cur_page = p;
-    send_unlock(i2c, addr);
-
-    uint8_t page[2] = { 0xFD, 0x00 }; // page command
-    page[1] = p;
-    common_hal_busio_i2c_write(i2c, addr, page, 2, true);
-}
-
-void send_enable(busio_i2c_obj_t *i2c, uint8_t addr) {
-    set_page(i2c, addr, 4);
-    uint8_t enable[2] = { 0x00, 0x01 }; // enable command
-    common_hal_busio_i2c_write(i2c, addr, enable, 2, true);
-}
-
-void send_reset(busio_i2c_obj_t *i2c, uint8_t addr) {
-    set_page(i2c, addr, 4);
-    uint8_t rst[2] = { 0x3F, 0xAE }; // reset command
-    common_hal_busio_i2c_write(i2c, addr, rst, 2, true);
-}
-
-void set_current(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t current) {
-    set_page(i2c, addr, 4);
-    uint8_t gcur[2] = { 0x01, 0x00 }; // global current command
-    gcur[1] = current;
-    common_hal_busio_i2c_write(i2c, addr, gcur, 2, true);
-}
-
-uint8_t get_current(busio_i2c_obj_t *i2c, uint8_t addr) {
-    set_page(i2c, addr, 4);
-    uint8_t gcur = 0x01; // global current command
-    common_hal_busio_i2c_write(i2c, addr, &gcur, 1, true);
-
-    uint8_t data = 0;
-    common_hal_busio_i2c_read(i2c, addr, &data, 1);
-    return data;
-}
-
-
-void set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_t level, uint8_t page) {
-    uint8_t cmd[2] = { 0x00, 0x00 };
-
-    if (led < 180) {
-        set_page(i2c, addr, page);
-        cmd[0] = (uint8_t)led;
-    } else {
-        set_page(i2c, addr, page + 1);
-        cmd[0] = (uint8_t)(led - 180);
-    }
-
-    cmd[1] = level;
-
-    common_hal_busio_i2c_write(i2c, addr, cmd, 2, true);
-}
-
-void drawPixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color) {
-    uint8_t r = color >> 16 & 0xFF;
-    uint8_t g = color >> 8 & 0xFF;
-    uint8_t b = color & 0xFF;
-
-    int16_t x1 = (x * 5 + y) * 3;
-    uint16_t ridx = glassesmatrix_ledmap[x1 + 2];
-    if (ridx != 65535) {
-        uint16_t gidx = glassesmatrix_ledmap[x1 + 1];
-        uint16_t bidx = glassesmatrix_ledmap[x1 + 0];
-        set_led(i2c, addr, ridx, r, 0);
-        set_led(i2c, addr, gidx, g, 0);
-        set_led(i2c, addr, bidx, b, 0);
-    }
-}
-
 void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr) {
     self->width = width;
     self->height = height;
 
-    self->bufsize = 4 * width * height;
+    self->bufsize = sizeof(uint32_t) * width * height;
 
     // Probe the bus to see if a device acknowledges the given address.
     if (!common_hal_busio_i2c_probe(i2c, addr)) {
@@ -141,24 +56,6 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
     self->device_address = addr;
 
     common_hal_is31fl3741_is31fl3741_reconstruct(self, framebuffer);
-
-    common_hal_displayio_is31fl3741_begin_transaction(self);
-
-    uint8_t command = 0xFC;
-    common_hal_busio_i2c_write(i2c, addr, &command, 1, false);
-    uint8_t data = 0;
-    common_hal_busio_i2c_read(i2c, addr, &data, 1);
-
-    send_reset(i2c, addr);
-    send_enable(i2c, addr);
-    set_current(i2c, addr, 0x08);
-
-    // set scale to max for all
-    for (int i; i < 351; i++) {
-        set_led(i2c, addr, i, 0xFF, 2);
-    }
-
-    common_hal_displayio_is31fl3741_end_transaction(self);
 }
 
 void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *self, mp_obj_t framebuffer) {
@@ -184,7 +81,23 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
 
-    // initialize LEDs here
+    common_hal_displayio_is31fl3741_begin_transaction(self);
+
+    uint8_t command = 0xFC;
+    common_hal_busio_i2c_write(self->i2c, self->device_address, &command, 1, false);
+    uint8_t data = 0;
+    common_hal_busio_i2c_read(self->i2c, self->device_address, &data, 1);
+
+    is31fl3741_send_reset(self->i2c, self->device_address);
+    is31fl3741_send_enable(self->i2c, self->device_address);
+    is31fl3741_set_current(self->i2c, self->device_address, 0x08);
+
+    // set scale to max for all
+    for (int i; i < 351; i++) {
+        is31fl3741_set_led(self->i2c, self->device_address, i, 0xFF, 2);
+    }
+
+    common_hal_displayio_is31fl3741_end_transaction(self);
 
     self->paused = 0;
 }
@@ -207,13 +120,13 @@ bool common_hal_is31fl3741_is31fl3741_get_paused(is31fl3741_is31fl3741_obj_t *se
 
 void common_hal_is31fl3741_is31fl3741_set_global_current(is31fl3741_is31fl3741_obj_t *self, uint8_t current) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
-    set_current(self->i2c, self->device_address, current);
+    is31fl3741_set_current(self->i2c, self->device_address, current);
     common_hal_displayio_is31fl3741_end_transaction(self);
 }
 
 uint8_t common_hal_is31fl3741_is31fl3741_get_global_current(is31fl3741_is31fl3741_obj_t *self) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
-    uint8_t current = get_current(self->i2c, self->device_address);
+    uint8_t current = is31fl3741_get_current(self->i2c, self->device_address);
     common_hal_displayio_is31fl3741_end_transaction(self);
     return current;
 }
@@ -230,9 +143,9 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
         if (self->scale) {
             uint32_t *buffer = self->bufinfo.buf;
 
-            for (int x = 0; x < 18; x++) {
+            for (int x = 0; x < self->scale_width; x++) {
                 uint32_t *ptr = &buffer[x * 3]; // Entry along top scan line w/x offset
-                for (int y = 0; y < 5; y++) {
+                for (int y = 0; y < self->scale_height; y++) {
                     uint16_t rsum = 0, gsum = 0, bsum = 0;
                     // Inner x/y loops are row-major on purpose (less pointer math)
                     for (uint8_t yy = 0; yy < 3; yy++) {
@@ -242,23 +155,37 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
                             gsum += (rgb >> 8) & 0xFF;
                             bsum += rgb & 0xFF;
                         }
-                        ptr += 54; // canvas->width(); // Advance one scan line
+                        ptr += self->width; // canvas->width(); // Advance one scan line
                     }
                     rsum = rsum / 9;
                     gsum = gsum / 9;
                     bsum = bsum / 9;
-                    uint32_t color = (IS31GammaTable[rsum] << 16) +
-                        (IS31GammaTable[gsum] << 8) +
-                        (IS31GammaTable[bsum] / 9);
-                    drawPixel(self->i2c, self->device_address, x, y, color);
+                    uint32_t color = 0;
+                    if (self->auto_gamma) {
+                        color = (IS31GammaTable[rsum] << 16) +
+                            (IS31GammaTable[gsum] << 8) +
+                            IS31GammaTable[bsum];
+                    } else {
+                        color = (rsum << 16) + (gsum << 8) + bsum;
+                    }
+                    is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color);
                 }
             }
         } else {
             uint32_t *buffer = self->bufinfo.buf;
             for (int y = 0; y < self->height; y++) {
                 if ((dirty_row_flags >> y) & 0x1) {
+                    uint32_t color = 0;
+                    if (self->auto_gamma) {
+                        color = IS31GammaTable[((*buffer) >> 16 & 0xFF)] +
+                            IS31GammaTable[((*buffer) >> 8 & 0xFF)] +
+                            IS31GammaTable[((*buffer) & 0xFF)];
+                    } else {
+                        color = *buffer;
+                    }
+
                     for (int x = 0; x < self->width; x++) {
-                        drawPixel(self->i2c, self->device_address, x, y, *buffer);
+                        is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color);
                         buffer++;
                     }
                 }
@@ -298,4 +225,85 @@ void common_hal_is31fl3741_free_impl(void *ptr_in) {
 
 void is31fl3741_is31fl3741_collect_ptrs(is31fl3741_is31fl3741_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
+}
+
+uint8_t cur_page = 99; // set to invalid page to start
+
+void is31fl3741_send_unlock(busio_i2c_obj_t *i2c, uint8_t addr) {
+    uint8_t unlock[2] = { 0xFE, 0xC5 }; // unlock command
+    common_hal_busio_i2c_write(i2c, addr, unlock, 2, true);
+}
+
+void is31fl3741_set_page(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t p) {
+    if (p == cur_page) {
+        return;
+    }
+
+    cur_page = p;
+    is31fl3741_send_unlock(i2c, addr);
+
+    uint8_t page[2] = { 0xFD, 0x00 }; // page command
+    page[1] = p;
+    common_hal_busio_i2c_write(i2c, addr, page, 2, true);
+}
+
+void is31fl3741_send_enable(busio_i2c_obj_t *i2c, uint8_t addr) {
+    is31fl3741_set_page(i2c, addr, 4);
+    uint8_t enable[2] = { 0x00, 0x01 }; // enable command
+    common_hal_busio_i2c_write(i2c, addr, enable, 2, true);
+}
+
+void is31fl3741_send_reset(busio_i2c_obj_t *i2c, uint8_t addr) {
+    is31fl3741_set_page(i2c, addr, 4);
+    uint8_t rst[2] = { 0x3F, 0xAE }; // reset command
+    common_hal_busio_i2c_write(i2c, addr, rst, 2, true);
+}
+
+void is31fl3741_set_current(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t current) {
+    is31fl3741_set_page(i2c, addr, 4);
+    uint8_t gcur[2] = { 0x01, 0x00 }; // global current command
+    gcur[1] = current;
+    common_hal_busio_i2c_write(i2c, addr, gcur, 2, true);
+}
+
+uint8_t is31fl3741_get_current(busio_i2c_obj_t *i2c, uint8_t addr) {
+    is31fl3741_set_page(i2c, addr, 4);
+    uint8_t gcur = 0x01; // global current command
+    common_hal_busio_i2c_write(i2c, addr, &gcur, 1, true);
+
+    uint8_t data = 0;
+    common_hal_busio_i2c_read(i2c, addr, &data, 1);
+    return data;
+}
+
+void is31fl3741_set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_t level, uint8_t page) {
+    uint8_t cmd[2] = { 0x00, 0x00 };
+
+    if (led < 180) {
+        is31fl3741_set_page(i2c, addr, page);
+        cmd[0] = (uint8_t)led;
+    } else {
+        is31fl3741_set_page(i2c, addr, page + 1);
+        cmd[0] = (uint8_t)(led - 180);
+    }
+
+    cmd[1] = level;
+
+    common_hal_busio_i2c_write(i2c, addr, cmd, 2, true);
+}
+
+void is31fl3741_draw_pixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color) {
+    uint8_t r = color >> 16 & 0xFF;
+    uint8_t g = color >> 8 & 0xFF;
+    uint8_t b = color & 0xFF;
+
+    int16_t x1 = (x * 5 + y) * 3;
+    uint16_t ridx = glassesmatrix_ledmap[x1 + 2];
+    if (ridx != 65535) {
+        uint16_t gidx = glassesmatrix_ledmap[x1 + 1];
+        uint16_t bidx = glassesmatrix_ledmap[x1 + 0];
+        is31fl3741_set_led(i2c, addr, ridx, r, 0);
+        is31fl3741_set_led(i2c, addr, gidx, g, 0);
+        is31fl3741_set_led(i2c, addr, bidx, b, 0);
+    }
 }

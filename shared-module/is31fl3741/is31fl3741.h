@@ -35,13 +35,13 @@ typedef struct {
     mp_obj_base_t base;
     mp_obj_t framebuffer;
     mp_buffer_info_t bufinfo;
-    uint16_t bufsize, width, height;
+    uint16_t bufsize, width, height, scale_width, scale_height;
     busio_i2c_obj_t *i2c;
     uint8_t device_address;
     uint8_t bit_depth;
     bool paused;
-    bool doublebuffer;
     bool scale;
+    bool auto_gamma;
 } is31fl3741_is31fl3741_obj_t;
 
 static const uint16_t glassesmatrix_ledmap[18 * 5 * 3] = {
@@ -137,6 +137,7 @@ static const uint16_t glassesmatrix_ledmap[18 * 5 * 3] = {
     276,   22,    277,   // (17,4) / 7
 };
 
+// Gamma correction table
 static const uint8_t IS31GammaTable[256] = {
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,
