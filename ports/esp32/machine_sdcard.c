@@ -45,6 +45,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+
 //
 // There are three layers of abstraction: host, slot and card.
 // Creating an SD Card object will initialise the host and slot.
@@ -188,7 +189,11 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     if (is_spi) {
+        #if CONFIG_IDF_TARGET_ESP32S3
+        self->host.slot = slot_num ? SPI3_HOST : SPI2_HOST;
+        #else
         self->host.slot = slot_num ? HSPI_HOST : VSPI_HOST;
+        #endif
     }
 
     DEBUG_printf("  Calling host.init()");
@@ -198,6 +203,20 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     if (is_spi) {
         // SPI interface
+        #if CONFIG_IDF_TARGET_ESP32S3
+        STATIC const sdspi_slot_config_t slot_defaults[2] = {
+            {
+                .gpio_miso = GPIO_NUM_36,
+                .gpio_mosi = GPIO_NUM_35,
+                .gpio_sck = GPIO_NUM_37,
+                .gpio_cs = GPIO_NUM_34,
+                .gpio_cd = SDSPI_SLOT_NO_CD,
+                .gpio_wp = SDSPI_SLOT_NO_WP,
+                .dma_channel = 2
+            },
+            SDSPI_SLOT_CONFIG_DEFAULT()
+        };
+        #else
         STATIC const sdspi_slot_config_t slot_defaults[2] = {
             {
                 .gpio_miso = GPIO_NUM_19,
@@ -210,6 +229,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
             },
             SDSPI_SLOT_CONFIG_DEFAULT()
         };
+        #endif
 
         DEBUG_printf("  Setting up SPI slot configuration");
         sdspi_slot_config_t slot_config = slot_defaults[slot_num];
