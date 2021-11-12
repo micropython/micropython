@@ -77,8 +77,6 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
     return clock_get_hz(clk_sys);
 }
 
-#define MP_HAL_BITSTREAM_NS_OVERHEAD  (9)
-
 // C-level pin HAL
 
 #include "py/obj.h"
