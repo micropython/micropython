@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-12 18:46+0000\n"
+"PO-Revision-Date: 2021-11-15 18:21+0000\n"
 "Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -66,10 +66,10 @@ msgstr " shūchū:\n"
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr "%%c xūyào zhěngshù huò char"
+msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
@@ -90,7 +90,7 @@ msgstr "%q Shībài: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr "%q zhèngzài shǐyòng"
+msgstr "%q zhèngzài bèi shǐyòng"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -135,7 +135,7 @@ msgstr "%q Bìxū > = 0"
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr "%q bìxū dàyú huò děngyú 1"
+msgstr "%q bìxū >= 1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
@@ -143,7 +143,7 @@ msgstr "%q bì xū shì yí gè zì fú chuàn"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr "%q bìxū shì chángdù wèi 2 de yuán zǔ"
+msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 #: shared-module/vectorio/VectorShape.c
@@ -152,11 +152,11 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
-msgstr "%q bì xū shì lèi xíng %q"
+msgstr "%q bì xū shì %q lèi xíng"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr "%q bì xū shì 2 de gōng lǜ"
+msgstr "%q bì xū shì 2 de zhěng shù cì fāng"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
@@ -173,15 +173,15 @@ msgstr "%q yǐn jiǎo wúxiào"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr "%q yīnggāi shì yīgè int"
+msgstr "%q yīnggāi shì yīgè zhěngshù (int)"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
-msgstr "%q yǔ bào gào ID 0 bì xū shì cháng dù 1"
+msgstr "bào gào ID shì 0 de %q bì xū cháng dù wéi 1"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "%q() cǎiyòng %d wèizhì cānshù, dàn gěi chū %d"
+msgstr "%q() yāoqiú shūrù %d gè wèizhì cānshù, dàn mùqián shūrù le %d gè"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -194,7 +194,7 @@ msgstr "%s cuò wù 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr "xūyào '%q' cānshù"
+msgstr "xūyào cānshù '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
@@ -202,25 +202,25 @@ msgstr "'%q' duì xiàng bù zhī chí '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr "%q' duì xiàng bù shì yí gè liú lǎn qì"
+msgstr "%q' duìxiàng bùshì yígè diédàiqì"
 
 #: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
-msgstr "%q' duì xiàng bù kě diào yòng"
+msgstr "%q' duìxiàng bù kě bèi diàoyòng"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr "%q' duì xiàng bù kě yí dòng"
+msgstr "%q' duìxiàng bù kě yòngyú diédài"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr "'%s' qīwàng biāoqiān"
+msgstr "'%s' xūyào yígè biāoqiān"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr "'%s' qīwàng yīgè zhùcè"
+msgstr "'%s' xūyào yígè jìcúnqì"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -235,42 +235,42 @@ msgstr "'%s' xūyào FPU jìcúnqì"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr "'%s' qīwàng chuāng tǐ [a, b] dì dìzhǐ"
+msgstr "'%s' xūyào yīgè géshì wéi [a, b] de dìzhǐ"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr "'%s' qídài yīgè zhěngshù"
+msgstr "'%s' xūyào yīgè zhěngshù"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr "'%s' qīwàng zuìduō de shì %d"
+msgstr "'%s' xūyào zuìduō shì r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr "'%s' yùqí {r0, r1, ...}"
+msgstr "'%s' xūyào {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr "'%s' zhěng shù %d bú zài %d fàn wéi nèi %d"
+msgstr "'%s' zhěngshù %d bú zài %d dào %d de fànwéi nèi"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr "'%s' zhěng shù 0x%x bú shì hé zài miàn mó 0x%x"
+msgstr "'%s' zhěngshù 0x%x yǔ méngbǎn (mask) 0x%x bù pǐpèi"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr "'%s' duì xiàng bù zhī chí xiàng mù fēn pèi"
+msgstr "'%s' duìxiàng bù zhīchí yuánsù fùzhí"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr "'%s' duì xiàng bù zhī chí xiàng mù shān chú"
+msgstr "'%s' duìxiàng bù zhīchí yuánsù shānchú"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
@@ -279,15 +279,15 @@ msgstr "'%s' duìxiàng méiyǒu shǔxìng '%q'"
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr "'%s' duì xiàng bù kě miáo shù"
+msgstr "'%s' duìxiàng bù kě miáoshù"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr "zìfú chuàn géshì shuōmíng fú zhōng bù yǔnxǔ '=' duìqí"
+msgstr "zìfúchuàn géshì shuōmíngfú zhōng bù yǔnxǔ shǐyòng '=' duìqí"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr "'S' hé 'O' bù zhīchí géshì lèixíng"
+msgstr "'S' hé 'O' bùshì bèi zhīchí de géshì lèixíng"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
@@ -295,23 +295,23 @@ msgstr "'align' xūyào 1 gè cānshù"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr "'await' wàibù gōngnéng"
+msgstr "'await' wèiyú hánshù zhīwài"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr "'await', 'async for' huò 'async with' wài bù yì bù hán shù"
+msgstr "'await', 'async for' huò 'async with' wèiyú yìbù (async) hánshù zhīwài"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr "'break' wàibù xúnhuán"
+msgstr "'break' wèiyú xúnhuán zhīwài"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr "'continue' wàibù xúnhuán"
+msgstr "'continue' wèiyú xúnhuán zhīwài"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' duì xiàng bù shì yí gè liú lǎn qì"
+msgstr "'coroutine' duìxiàng búshì yígè diédàiqì"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -323,27 +323,27 @@ msgstr "'data' xūyào zhěngshù cānshù"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr "'label' xūyào 1 cānshù"
+msgstr "'label' xūyào 1 gè cānshù"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr "'return' wàibù gōngnéng"
+msgstr "'return' wèiyú hánshù zhīwài"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr "Yì bù hán shù zhōng de 'yield from'"
+msgstr "Yìbù hánshù zhōng cúnzài 'yield from'"
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr "'yield' wàibù gōngnéng"
+msgstr "'yield' wèiyú hánshù zhīwài"
 
 #: shared-module/vectorio/VectorShape.c
 msgid "(x,y) integers required"
-msgstr "(x,y) suǒ xū de zhěng shù"
+msgstr "xūyào zhěngshù (x,y)"
 
 #: py/compile.c
 msgid "*x must be assignment target"
-msgstr "*x bìxū shì rènwù mùbiāo"
+msgstr "*x bìxū shì bèi fùzhí de duìxiàng"
 
 #: py/obj.c
 msgid ", in %q\n"
@@ -351,15 +351,16 @@ msgstr ", zài %q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
-msgstr "0.0 dào fùzá diànyuán"
+msgstr "0.0 de fùshù cì mì"
 
 #: py/modbuiltins.c
+#, fuzzy
 msgid "3-arg pow() not supported"
 msgstr "bù zhīchí 3-arg pow()"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr "64 wèi lèi xíng"
+msgstr "64 wèi lèixíng"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -369,12 +370,12 @@ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 zhèng yóu WiFi shǐ yòng"
+msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr "Dìzhǐ bìxū shì %d zì jié zhǎng"
+msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
@@ -382,58 +383,58 @@ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr "suǒ yǒu CAN wài shè dōu zài shǐ yòng zhōng"
+msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr "Suǒyǒu I2C wàiwéi qì zhèngzài shǐyòng"
+msgstr "suǒyǒu I2C wàishè dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr "suǒ yǒu zhèng zài shǐ yòng zhōng de PCNT dān yuán"
+msgstr "suǒyǒu PCNT dānyuán dōu zài shǐyòng zhōng"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr "Suǒyǒu shǐyòng zhōng de RX FIFO"
+msgstr "suǒyǒu RX FIFO dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr "Suǒyǒu SPI wàiwéi qì zhèngzài shǐyòng"
+msgstr "suǒyǒu SPI wàishè dōu zài shǐyòng zhōng"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr "Suǒyǒu UART wàiwéi zhèngzài shǐyòng"
+msgstr "suǒyǒu UART wàishè dōu zài shǐyòng zhōng"
 
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr "suǒ yǒu shǐ yòng de tōng dào"
+msgstr "suǒyǒu píndào dōu zài shǐyòng zhōng"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr "Suǒyǒu shǐyòng de shìjiàn píndào"
+msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr "suǒ yǒu zhèng zài shǐ yòng de zhuàng tài jī"
+msgstr "suǒyǒu zhuàngtàijī dōu zài shǐyòng zhōng"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
-msgstr "Suǒyǒu tóngbù shìjiàn píndào shǐyòng"
+msgstr "suǒyǒu tóngbù shìjiàn píndào dōu zài shǐyòng zhōng"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
+msgstr "cǐ yǐnjiǎo de suǒyǒu jìshíqì dōu zài shǐyòng zhōng"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -450,28 +451,29 @@ msgstr "Cǐ yǐn jiǎo de suǒyǒu jìshí qì zhèngzài shǐyòng"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr "Suǒyǒu jìshí qì shǐyòng"
+msgstr "suǒyǒu jìshí qì dōu zài shǐyòng zhōng"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
-msgstr "Mùqián zhèngzài guǎngbò."
+msgstr "Mùqián zhèngzài guǎngbō."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#, fuzzy
 msgid "Already have all-matches listener"
-msgstr "yǐ jù yǒu quán pǐ pèi zhēn tīng qì"
+msgstr "yǐjīng yǒu all-matches jiāntīngqì"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr "yǐ zài yùn xíng"
+msgstr "yǐjīng zài yùnxíng"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr "yǐ jīng sǎo miáo WIFI wǎng luò"
+msgstr "yǐjīng zài sǎomiáo WIFI wǎngluò"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr "Gěi dìng de yǐn jiǎo bù zhīchí AnalogIn"
+msgstr "gěidìng de yǐnjiǎo bù zhīchí AnalogIn"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -486,20 +488,20 @@ msgstr "AnalogOut jǐn wèi 16 wèi. Zhí bìxū xiǎoyú 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "Wèi zhīchí zhǐdìng de yǐn jiǎo AnalogOut"
+msgstr "zhǐdìng de yǐn jiǎo bù zhīchí AnalogOut"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr "lìng yí gè PWMAudioOut yǐ jīng chǔ yú huó dòng zhuàng tài"
+msgstr "lìng yí gè PWMAudioOut yǐ jīng zài gōngzuò"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr "Lìng yīgè fāsòng yǐjīng jīhuó"
+msgstr "Lìng yīgè fāsòng (send) yǐjīng zài gōngzuò"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "Shùzǔ bìxū bāohán bàn zìshù (type 'H')"
+msgstr "Shùzǔ bìxū bāohán halfwords (type 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
@@ -2553,7 +2555,7 @@ msgstr "Tèzhēng bù zhīchí xiě rù"
 
 #: supervisor/shared/safe_mode.c
 msgid "You are in safe mode because:\n"
-msgstr "nín chǔ yú ān quán mó shì shì yīn wéi:\n"
+msgstr "nín chǔ yú ān quán mó shì, yīn wéi:\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
