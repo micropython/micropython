@@ -39,7 +39,7 @@
 #if MICROPY_VFS
 #include "extmod/vfs.h"
 #endif
-#if MICROPY_VFS_POSIX
+#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
 #include "extmod/vfs_posix.h"
 #endif
 
