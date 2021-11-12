@@ -534,6 +534,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Palette.c \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
+	displayio/area.c \
 	displayio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \

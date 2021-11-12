@@ -113,7 +113,7 @@ void displayio_bitmap_set_dirty_area(displayio_bitmap_t *self, const displayio_a
     displayio_area_t area = *dirty_area;
     displayio_area_canon(&area);
     displayio_area_union(&area, &self->dirty_area, &area);
-    displayio_area_t bitmap_area = {0, 0, self->width, self->height};
+    displayio_area_t bitmap_area = {0, 0, self->width, self->height, NULL};
     displayio_area_compute_overlap(&area, &bitmap_area, &self->dirty_area);
 }
 
@@ -160,7 +160,7 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
         dirty_y_max = self->height;
     }
 
-    displayio_area_t a = { x, y, dirty_x_max, dirty_y_max};
+    displayio_area_t a = { x, y, dirty_x_max, dirty_y_max, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 
     bool x_reverse = false;
@@ -199,7 +199,7 @@ void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16
 
 void common_hal_displayio_bitmap_set_pixel(displayio_bitmap_t *self, int16_t x, int16_t y, uint32_t value) {
     // update the dirty region
-    displayio_area_t a = {x, y, x + 1, y + 1};
+    displayio_area_t a = {x, y, x + 1, y + 1, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 
     // write the pixel
@@ -221,7 +221,7 @@ void displayio_bitmap_finish_refresh(displayio_bitmap_t *self) {
 }
 
 void common_hal_displayio_bitmap_fill(displayio_bitmap_t *self, uint32_t value) {
-    displayio_area_t a = {0, 0, self->width, self->height};
+    displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
 
     // build the packed word
