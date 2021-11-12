@@ -553,7 +553,6 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
     mp_obj_exception_t *self = get_native_exception(self_in);
 
     // Try to allocate memory for the traceback, with fallback to emergency traceback object
-
     if (self->traceback == NULL || self->traceback == (mp_obj_traceback_t *)&mp_const_empty_traceback_obj) {
         self->traceback = m_new_obj_maybe(mp_obj_traceback_t);
         if (self->traceback == NULL) {
@@ -561,9 +560,11 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         }
     }
 
-    // append this traceback info to traceback data
-    // if memory allocation fails (eg because gc is locked), just return
+    // populate traceback object
+    *self->traceback = mp_const_empty_traceback_obj;
 
+    // append the provided traceback info to traceback data
+    // if memory allocation fails (eg because gc is locked), just return
     if (self->traceback->data == NULL) {
         self->traceback->data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);
         if (self->traceback->data == NULL) {
