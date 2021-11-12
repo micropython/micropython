@@ -119,7 +119,8 @@ Constants
 
    Requires custom MicroPython compilation as it is ,ostly not present in
    pre-built  firmware (due to its affecting performance). The relevant build
-   flag is *MICROPY_PY_SYS_SETTRACE*. 
+   flag is *MICROPY_PY_SYS_SETTRACE*. For details see `documentaion 
+   <https://docs.python.org/3/library/sys.html#sys.settrace>`_
 
 .. data:: stderr
 
