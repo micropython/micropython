@@ -76,7 +76,8 @@ def set_boards_to_build(build_all):
             port_matches = port_pattern.search(p)
             if port_matches:
                 port = port_matches.group(1)
-                boards_to_build.update(port_to_boards[port])
+                if port != "unix":
+                    boards_to_build.update(port_to_boards[port])
                 continue
 
             # Otherwise build it all
