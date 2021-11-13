@@ -88,7 +88,9 @@ Methods
 | If the divider is set to 266, then the PWM frequency
 | will be 80000000 / 266 = 300751.9 Hz, but again not 300kHz.
 
-Note 2) The duty cycle has the same discrete nature and its absolute accuracy is not achievable.
+| Note 2) The duty cycle has the same discrete nature and its absolute accuracy is not achievable.
+| On most hardware platforms the duty will be applied at the next frequency period.
+| Therefore, you should wait more than "1/frequency" of a second before measuring the duty.
 
 | Note 3) The frequency and the duty cycle resolution are interdependent.
 | The higher the PWM frequency, the lower the duty resolution which is available,
