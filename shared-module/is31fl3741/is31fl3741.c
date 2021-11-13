@@ -54,6 +54,10 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
 
     self->i2c = i2c;
     self->device_address = addr;
+    common_hal_busio_i2c_never_reset(self->i2c);
+    // Our object is statically allocated off the heap so make sure the bus object lives to the end
+    // of the heap as well.
+    gc_never_free(self->i2c);
 
     common_hal_is31fl3741_is31fl3741_reconstruct(self, framebuffer);
 }
@@ -83,14 +87,14 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
 
     common_hal_displayio_is31fl3741_begin_transaction(self);
 
-    uint8_t command = 0xFC;
+    uint8_t command = 0xFC; // device ID
     common_hal_busio_i2c_write(self->i2c, self->device_address, &command, 1, false);
     uint8_t data = 0;
     common_hal_busio_i2c_read(self->i2c, self->device_address, &data, 1);
 
     is31fl3741_send_reset(self->i2c, self->device_address);
     is31fl3741_send_enable(self->i2c, self->device_address);
-    is31fl3741_set_current(self->i2c, self->device_address, 0x08);
+    is31fl3741_set_current(self->i2c, self->device_address, 0xFF);
 
     // set scale to max for all
     for (int i; i < 351; i++) {
@@ -103,6 +107,12 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
 }
 
 void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) {
+    common_hal_displayio_is31fl3741_end_transaction(self); // in case we still had a lock
+
+    if (self->i2c == &self->inline_i2c) {
+        common_hal_busio_i2c_deinit(self->i2c);
+    }
+
     self->base.type = NULL;
 
     // If a framebuffer was passed in to the constructor, NULL the reference

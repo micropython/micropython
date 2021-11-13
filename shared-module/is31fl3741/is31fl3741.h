@@ -37,6 +37,7 @@ typedef struct {
     mp_buffer_info_t bufinfo;
     uint16_t bufsize, width, height, scale_width, scale_height;
     busio_i2c_obj_t *i2c;
+    busio_i2c_obj_t inline_i2c;
     uint8_t device_address;
     uint8_t bit_depth;
     bool paused;

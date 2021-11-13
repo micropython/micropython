@@ -223,11 +223,33 @@ void reset_displays(void) {
         #endif
         #if CIRCUITPY_IS31FL3741
         } else if (displays[i].is31fl3741.base.type == &is31fl3741_is31fl3741_type) {
-            is31fl3741_is31fl3741_obj_t *pm = &displays[i].is31fl3741;
-            if (!any_display_uses_this_framebuffer(&pm->base)) {
-                common_hal_is31fl3741_is31fl3741_deinit(pm);
+            is31fl3741_is31fl3741_obj_t *is31 = &displays[i].is31fl3741;
+            if (((uint32_t)is31->i2c) < ((uint32_t)&displays) ||
+                ((uint32_t)is31->i2c) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
+                busio_i2c_obj_t *original_i2c = is31->i2c;
+                #if BOARD_I2C
+                // We don't need to move original_i2c if it is the board.I2C object because it is
+                // statically allocated already. (Doing so would also make it impossible to reference in
+                // a subsequent VM run.)
+                if (original_i2c == common_hal_board_get_i2c()) {
+                    continue;
+                }
+                #endif
+                memcpy(&is31->inline_i2c, original_i2c, sizeof(busio_i2c_obj_t));
+                is31->i2c = &is31->inline_i2c;
+                // Check for other displays that use the same i2c bus and swap them too.
+                /*for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
+                    if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
+                        displays[i].i2cdisplay_bus.bus == original_i2c) {
+                        displays[i].i2cdisplay_bus.bus = &i2c->inline_bus;
+                    }
+                }*/
+            }
+
+            if (!any_display_uses_this_framebuffer(&is31->base)) {
+                common_hal_is31fl3741_is31fl3741_deinit(is31);
             } else {
-                common_hal_is31fl3741_is31fl3741_set_paused(pm, true);
+                common_hal_is31fl3741_is31fl3741_set_paused(is31, true);
             }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
