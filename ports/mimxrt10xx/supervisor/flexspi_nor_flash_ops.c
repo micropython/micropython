@@ -10,9 +10,10 @@
 #include "fsl_flexspi.h"
 #include "internal_flash.h"
 #include "boards/flash_config.h"
+#include "supervisor/internal_flash.h"
 #include "supervisor/linker.h"
 
-status_t PLACE_IN_ITCM(flexspi_nor_write_enable)(FLEXSPI_Type * base, uint32_t baseAddr)
+STATIC status_t PLACE_IN_ITCM(flexspi_nor_write_enable)(FLEXSPI_Type * base, uint32_t baseAddr)
 {
     flexspi_transfer_t flashXfer;
     status_t status;
@@ -29,7 +30,7 @@ status_t PLACE_IN_ITCM(flexspi_nor_write_enable)(FLEXSPI_Type * base, uint32_t b
     return status;
 }
 
-status_t PLACE_IN_ITCM(flexspi_nor_wait_bus_busy)(FLEXSPI_Type * base)
+STATIC status_t PLACE_IN_ITCM(flexspi_nor_wait_bus_busy)(FLEXSPI_Type * base)
 {
     /* Wait status ready. */
     bool isBusy;

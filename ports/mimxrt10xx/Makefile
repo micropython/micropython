@@ -92,7 +92,7 @@ else
   #CFLAGS += -flto -flto-partition=none
 endif
 
-CFLAGS += $(INC) -ggdb -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -ggdb -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
 
 # TODO: add these when -Werror is applied
 # Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
@@ -148,7 +148,7 @@ SRC_SDK := \
 	system_$(CHIP_FAMILY).c \
 
 SRC_SDK := $(addprefix sdk/devices/$(CHIP_FAMILY)/, $(SRC_SDK))
-$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-undef
+$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-undef -Wno-missing-prototypes
 
 SRC_C += \
 	background.c \

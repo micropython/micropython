@@ -30,6 +30,7 @@
 #include <stdint.h>
 
 #include "py/mpconfig.h"
+#include "fsl_common.h"
 
 #define INTERNAL_FLASH_SYSTICK_MASK     (0x1ff) // 512ms
 #define INTERNAL_FLASH_IDLE_TICK(tick)  (((tick) & INTERNAL_FLASH_SYSTICK_MASK) == 2)
@@ -40,5 +41,10 @@
 #define ROM_INDEX_ERASESECTOR 5
 #define ROM_INDEX_PAGEPROGRAM 9
 #define ROM_INDEX_READSTATUSREG 1
+
+extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
+extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
+extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
+
 
 #endif  // MICROPY_INCLUDED_MIMXRT10XX_INTERNAL_FLASH_H
