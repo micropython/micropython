@@ -92,7 +92,7 @@ else
   #CFLAGS += -flto -flto-partition=none
 endif
 
-CFLAGS += $(INC) -ggdb -Wall -Wno-cast-align -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -ggdb -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
 
 # TODO: add these when -Werror is applied
 # Disable some warnings, as do most ports. NXP SDK causes undef, tinyusb causes cast-align
