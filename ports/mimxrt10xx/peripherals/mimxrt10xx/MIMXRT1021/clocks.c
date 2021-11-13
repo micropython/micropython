@@ -36,6 +36,8 @@
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
 
+#include "clocks.h"
+
 // These values are pulled from the SDK's devices/MIMXRT1021/project_template/clock_config.* files.
 
 #define BOARD_XTAL0_CLK_HZ 24000000U /*!< Board xtal0 frequency in Hz */
