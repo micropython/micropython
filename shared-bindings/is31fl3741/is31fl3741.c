@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
-// #include "common-hal/is31fl3741/is31fl3741.h"
 #include "shared-bindings/is31fl3741/is31fl3741.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/microcontroller/__init__.h"
+// #include "shared-bindings/microcontroller/Pin.h"
+// #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/framebufferio/__init__.h"
@@ -40,45 +39,18 @@
 #include "shared-bindings/busio/I2C.h"
 
 //| class is31fl3741:
-//|     """Displays an in-memory framebuffer to a HUB75-style RGB LED matrix."""
+//|     """Displays an in-memory framebuffer to a IS31FL3741 drive display."""
 //|
-
-// extern Protomatter_core *_PM_protoPtr;
-
 
 //|     def __init__(self, *, width: int) -> None:
-//|         """Create a Is31fl3741 object with the given attributes.  The height of
-//|         the display is determined by the number of rgb and address pins and the number of tiles:
-//|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4
-//|         address lines, and a single matrix, the display will be 32 pixels tall.  If the optional height
-//|         parameter is specified and is not 0, it is checked against the calculated
-//|         height.
+//|         """Create a Is31fl3741 object with the given attributes.
 //|
-//|         Up to 30 RGB pins and 8 address pins are supported.
-//|
-//|         The RGB pins must be within a single "port" and performance and memory
-//|         usage are best when they are all within "close by" bits of the port.
-//|         The clock pin must also be on the same port as the RGB pins.  See the
-//|         documentation of the underlying protomatter C library for more
-//|         information.  Generally, Adafruit's interface boards are designed so
-//|         that these requirements are met when matched with the intended
-//|         microcontroller board.  For instance, the Feather M4 Express works
-//|         together with the RGB Matrix Feather.
-//|
-//|         The framebuffer is in "RGB565" format.
-//|
-//|         "RGB565" means that it is organized as a series of 16-bit numbers
-//|         where the highest 5 bits are interpreted as red, the next 6 as
-//|         green, and the final 5 as blue.  The object can be any buffer, but
-//|         `array.array` and ``ulab.ndarray`` objects are most often useful.
-//|         To update the content, modify the framebuffer and call refresh.
+//|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
+//|         Bits 24-31 are ignored. The format is in RGB order.
 //|
 //|         If a framebuffer is not passed in, one is allocated and initialized
 //|         to all black.  In any case, the framebuffer can be retrieved
 //|         by passing the Is31fl3741 object to memoryview().
-//|
-//|         If doublebuffer is False, some memory is saved, but the display may
-//|         flicker during updates.
 //|
 //|         A Is31fl3741 is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`."""
@@ -136,7 +108,7 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
 }
 
 //|     def deinit(self) -> None:
-//|         """Free the resources (pins, timers, etc.) associated with this
+//|         """Free the resources associated with this
 //|         is31fl3741 instance.  After deinitialization, no further operations
 //|         may be performed."""
 //|         ...
@@ -150,9 +122,9 @@ STATIC mp_obj_t is31fl3741_is31fl3741_deinit(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_is31fl3741_deinit_obj, is31fl3741_is31fl3741_deinit);
 
 static void check_for_deinit(is31fl3741_is31fl3741_obj_t *self) {
-    // if (!self->protomatter.rgbPins) {
-    // raise_deinited_error();
-    // }
+    if (self->framebuffer == NULL) {
+        raise_deinited_error();
+    }
 }
 
 //|     brightness: float
@@ -252,8 +224,6 @@ STATIC void is31fl3741_is31fl3741_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t
     *bufinfo = self->bufinfo;
 }
 
-// These version exists so that the prototype matches the protocol,
-// avoiding a type cast that can hide errors
 STATIC void is31fl3741_is31fl3741_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     common_hal_is31fl3741_is31fl3741_refresh(self_in, dirty_row_bitmap);
 }
@@ -291,9 +261,8 @@ STATIC int is31fl3741_is31fl3741_get_bytes_per_cell_proto(mp_obj_t self_in) {
 }
 
 STATIC int is31fl3741_is31fl3741_get_native_frames_per_second_proto(mp_obj_t self_in) {
-    return 60;
+    return 60; // This was just chosen may vary based on LEDs used?
 }
-
 
 STATIC const framebuffer_p_t is31fl3741_is31fl3741_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)

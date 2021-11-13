@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 #pragma once
 
 #include "shared-module/is31fl3741/is31fl3741.h"
-// #include "lib/protomatter/src/core.h"
 
 extern const mp_obj_type_t is31fl3741_is31fl3741_type;
 

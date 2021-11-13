@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2021 Mark Komus
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,7 +96,7 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
     is31fl3741_send_enable(self->i2c, self->device_address);
     is31fl3741_set_current(self->i2c, self->device_address, 0xFF);
 
-    // set scale to max for all
+    // set scale (brightness) to max for all LEDs
     for (int i; i < 351; i++) {
         is31fl3741_set_led(self->i2c, self->device_address, i, 0xFF, 2);
     }
@@ -111,6 +111,7 @@ void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) 
 
     if (self->i2c == &self->inline_i2c) {
         common_hal_busio_i2c_deinit(self->i2c);
+        self->i2c = NULL;
     }
 
     self->base.type = NULL;
@@ -151,6 +152,7 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
 
     if (!self->paused) {
         if (self->scale) {
+            // Based on the Arduino IS31FL3741 driver code
             uint32_t *buffer = self->bufinfo.buf;
 
             for (int x = 0; x < self->scale_width; x++) {
@@ -165,7 +167,7 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
                             gsum += (rgb >> 8) & 0xFF;
                             bsum += rgb & 0xFF;
                         }
-                        ptr += self->width; // canvas->width(); // Advance one scan line
+                        ptr += self->width; // Advance one scan line
                     }
                     rsum = rsum / 9;
                     gsum = gsum / 9;
@@ -217,6 +219,9 @@ int common_hal_is31fl3741_is31fl3741_get_height(is31fl3741_is31fl3741_obj_t *sel
 void common_hal_displayio_is31fl3741_begin_transaction(is31fl3741_is31fl3741_obj_t *self) {
     while (!common_hal_busio_i2c_try_lock(self->i2c)) {
         RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
     }
 }
 
@@ -236,6 +241,10 @@ void common_hal_is31fl3741_free_impl(void *ptr_in) {
 void is31fl3741_is31fl3741_collect_ptrs(is31fl3741_is31fl3741_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
 }
+
+// The following are routines to manipulate the IS31FL3741 chip
+// They are not meant to be called by user code but only used
+// internally.
 
 uint8_t cur_page = 99; // set to invalid page to start
 
