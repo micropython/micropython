@@ -231,6 +231,33 @@ STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
+#if !CONFIG_IDF_TARGET_ESP32C3
+STATIC mp_obj_t machine_wake_ext1_pins(void) {
+    uint64_t status = esp_sleep_get_ext1_wakeup_status();
+    int len, index;
+    mp_obj_t *tuple = NULL;
+
+    // Only a few (~8) GPIOs might cause EXT1 wakeup.
+    // Therefore, we don't allocate 64*4 = 256 bytes on the stack and calculate the
+    // required space in a first pass.
+    for (index = 0, len = 0; index < 64; index++) {
+        len += (status & ((uint64_t)1 << index)) ? 1 : 0;
+    }
+    if (len) {
+        tuple = alloca(len * sizeof(*tuple));
+
+        for (index = 0, len = 0; index < 64; index++) {
+            if (status & ((uint64_t)1 << index)) {
+                tuple[len++] = MP_OBJ_NEW_SMALL_INT(index);
+            }
+        }
+    }
+    return mp_obj_new_tuple(len, tuple);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_ext1_pins_obj, machine_wake_ext1_pins);
+#endif
+
 STATIC mp_obj_t machine_reset(void) {
     esp_restart();
     return mp_const_none;
@@ -344,6 +371,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TIMER_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TIMER) },
     { MP_ROM_QSTR(MP_QSTR_TOUCHPAD_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_TOUCHPAD) },
     { MP_ROM_QSTR(MP_QSTR_ULP_WAKE), MP_ROM_INT(ESP_SLEEP_WAKEUP_ULP) },
+    #if !CONFIG_IDF_TARGET_ESP32C3
+    // ext1 wakeup pins
+    { MP_ROM_QSTR(MP_QSTR_wake_ext1_pins), MP_ROM_PTR(&machine_wake_ext1_pins_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
