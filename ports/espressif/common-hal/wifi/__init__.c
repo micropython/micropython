@@ -25,10 +25,13 @@
  */
 
 #include "common-hal/wifi/__init__.h"
+#include "shared-bindings/wifi/__init__.h"
 
 #include "shared-bindings/ipaddress/IPv4Address.h"
+#include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Radio.h"
 
+#include "py/mpstate.h"
 #include "py/runtime.h"
 
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -158,6 +161,7 @@ void wifi_reset(void) {
     if (!wifi_inited) {
         return;
     }
+    common_hal_wifi_monitor_deinit(MP_STATE_VM(wifi_monitor_singleton));
     wifi_radio_obj_t *radio = &common_hal_wifi_radio_obj;
     common_hal_wifi_radio_set_enabled(radio, false);
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
@@ -171,6 +175,7 @@ void wifi_reset(void) {
     radio->netif = NULL;
     esp_netif_destroy(radio->ap_netif);
     radio->ap_netif = NULL;
+    wifi_inited = false;
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {

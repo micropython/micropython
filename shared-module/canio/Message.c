@@ -25,6 +25,7 @@
  */
 
 #include "shared-module/canio/Message.h"
+#include "shared-bindings/canio/Message.h"
 
 #include <string.h>
 

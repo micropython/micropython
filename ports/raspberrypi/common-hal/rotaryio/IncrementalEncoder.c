@@ -28,6 +28,7 @@
 
 #include <hardware/regs/pio.h>
 #include "common-hal/rotaryio/IncrementalEncoder.h"
+#include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "shared-module/rotaryio/IncrementalEncoder.h"
 #include "bindings/rp2pio/__init__.h"
 #include "bindings/rp2pio/StateMachine.h"

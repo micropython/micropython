@@ -68,7 +68,7 @@
         /* .wrap */ \
     }
 
-mcu_pin_obj_t *pin_from_number(uint8_t number) {
+STATIC mcu_pin_obj_t *pin_from_number(uint8_t number) {
     const mp_map_t *mcu_map = &mcu_pin_globals.map;
     for (uint8_t i = 0; i < mcu_map->alloc; i++) {
         mp_obj_t val = mcu_map->table[i].value;
@@ -137,7 +137,10 @@ bool common_hal_imagecapture_parallelimagecapture_deinited(imagecapture_parallel
     return common_hal_rp2pio_statemachine_deinited(&self->state_machine);
 }
 
-void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_parallelimagecapture_obj_t *self, void *buffer, size_t bufsize) {
+void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecapture_parallelimagecapture_obj_t *self, mp_obj_t buffer) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_RW);
+
     PIO pio = self->state_machine.pio;
     uint sm = self->state_machine.state_machine;
     uint8_t offset = rp2pio_statemachine_program_offset(&self->state_machine);
@@ -149,7 +152,7 @@ void common_hal_imagecapture_parallelimagecapture_capture(imagecapture_paralleli
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, buffer, bufsize, 4);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4);
 
     pio_sm_set_enabled(pio, sm, false);
 }

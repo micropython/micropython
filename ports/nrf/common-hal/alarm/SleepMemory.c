@@ -28,6 +28,7 @@
 #include "py/runtime.h"
 #include "common-hal/alarm/__init__.h"
 #include "common-hal/alarm/SleepMemory.h"
+#include "shared-bindings/alarm/SleepMemory.h"
 #include "nrf_power.h"
 
 __attribute__((section(".uninitialized"))) static uint8_t _sleepmem[SLEEP_MEMORY_LENGTH];

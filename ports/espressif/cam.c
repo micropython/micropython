@@ -69,7 +69,7 @@ typedef struct {
 
 static cam_obj_t *cam_obj = NULL;
 
-void IRAM_ATTR cam_isr(void *arg) {
+static void IRAM_ATTR cam_isr(void *arg) {
     cam_event_t cam_event = {0};
     BaseType_t HPTaskAwoken = pdFALSE;
     typeof(I2S0.int_st) int_st = I2S0.int_st;
@@ -85,7 +85,7 @@ void IRAM_ATTR cam_isr(void *arg) {
     }
 }
 
-void IRAM_ATTR cam_vsync_isr(void *arg) {
+static void IRAM_ATTR cam_vsync_isr(void *arg) {
     cam_event_t cam_event = {0};
     BaseType_t HPTaskAwoken = pdFALSE;
     /*!< filter */
@@ -392,7 +392,7 @@ void cam_give(uint8_t *buffer) {
     }
 }
 
-void cam_dma_config(const cam_config_t *config) {
+static void cam_dma_config(const cam_config_t *config) {
     int cnt = 0;
 
     if (config->mode.jpeg) {

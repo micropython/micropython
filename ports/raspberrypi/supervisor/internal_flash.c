@@ -39,6 +39,7 @@
 #include "lib/oofatfs/ff.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
 #include "src/rp2040/hardware_structs/include/hardware/structs/sio.h"

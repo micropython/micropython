@@ -137,6 +137,9 @@ else
   endif
 endif
 
+SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_TINYUSB)): CFLAGS += -Wno-missing-prototypes
+
 SUPERVISOR_O = $(addprefix $(BUILD)/, $(SRC_SUPERVISOR:.c=.o))
 
 ifeq ($(CIRCUITPY_DISPLAYIO), 1)

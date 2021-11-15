@@ -30,6 +30,7 @@
 #include "py/mpconfig.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/linker.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 

@@ -78,10 +78,6 @@ void port_internal_flash_flush(void) {
 void supervisor_flash_release_cache(void) {
 }
 
-void flash_flush(void) {
-    supervisor_flash_flush();
-}
-
 static int32_t convert_block_to_flash_addr(uint32_t block) {
     if (0 <= block && block < INTERNAL_FLASH_PART1_NUM_BLOCKS) {
         // a block in partition 1
@@ -91,7 +87,7 @@ static int32_t convert_block_to_flash_addr(uint32_t block) {
     return -1;
 }
 
-bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
+STATIC bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
     // non-MBR block, get data from flash memory
     int32_t src = convert_block_to_flash_addr(block);
     if (src == -1) {
@@ -102,7 +98,7 @@ bool supervisor_flash_read_block(uint8_t *dest, uint32_t block) {
     return error_code == ERR_NONE;
 }
 
-bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
+STATIC bool supervisor_flash_write_block(const uint8_t *src, uint32_t block) {
     // non-MBR block, copy to cache
     int32_t dest = convert_block_to_flash_addr(block);
     if (dest == -1) {

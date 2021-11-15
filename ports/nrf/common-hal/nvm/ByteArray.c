@@ -26,13 +26,14 @@
 
 #include "py/runtime.h"
 #include "common-hal/nvm/ByteArray.h"
+#include "shared-bindings/nvm/ByteArray.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #include "peripherals/nrf/nvm.h"
 
-uint32_t common_hal_nvm_bytearray_get_length(nvm_bytearray_obj_t *self) {
+uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self) {
     return self->len;
 }
 
@@ -50,7 +51,7 @@ static bool write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
     }
 }
 
-bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
+bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
 
     uint32_t address = (uint32_t)self->start_address + start_index;
@@ -70,7 +71,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
     return true;
 }
 
-void common_hal_nvm_bytearray_get_bytes(nvm_bytearray_obj_t *self,
+void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint32_t len, uint8_t *values) {
     memcpy(values, self->start_address + start_index, len);
 }

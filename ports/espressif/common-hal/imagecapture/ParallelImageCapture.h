@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include "py/obj.h"
 #include "shared-bindings/imagecapture/ParallelImageCapture.h"
 #include "cam.h"
 
@@ -36,4 +37,6 @@ struct imagecapture_parallelimagecapture_obj {
     gpio_num_t vertical_sync;
     gpio_num_t horizontal_reference;
     uint8_t data_count;
+    mp_obj_t buffer1, buffer2;
+    uint8_t *buffer_to_give;
 };

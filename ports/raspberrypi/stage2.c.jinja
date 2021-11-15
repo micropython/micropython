@@ -46,6 +46,7 @@ static uint8_t read_flash_sreg(uint8_t status_command);
 
 // This must be the first defined function so that it is placed at the start of
 // memory where the bootloader jumps to!
+extern void _stage2_boot(void);
 void __attribute__((section(".entry._stage2_boot"), used)) _stage2_boot(void) {
     uint32_t lr;
     asm ("MOV %0, LR\n" : "=r" (lr) );

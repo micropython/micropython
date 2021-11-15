@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "shared-bindings/_bleio/Address.h"
+#include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-module/_bleio/Address.h"
 #include "shared-module/_bleio/ScanEntry.h"
 

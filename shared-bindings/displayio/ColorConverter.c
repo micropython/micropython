@@ -33,14 +33,13 @@
 #include "py/enum.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
 //| class ColorConverter:
 //|     """Converts one color format to another."""
 //|
-//|     def __init__(self, *, colorspace: Colorspace=Colorspace.RGB888, dither: bool = False) -> None:
+//|     def __init__(self, *, input_colorspace: Colorspace=Colorspace.RGB888, dither: bool = False) -> None:
 //|         """Create a ColorConverter object to convert color formats.
 //|
 //|         :param Colorspace colorspace: The source colorspace, one of the Colorspace constants

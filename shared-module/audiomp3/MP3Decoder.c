@@ -290,10 +290,6 @@ uint8_t common_hal_audiomp3_mp3file_get_channel_count(audiomp3_mp3file_obj_t *se
     return self->channel_count;
 }
 
-bool audiomp3_mp3file_samples_signed(audiomp3_mp3file_obj_t *self) {
-    return true;
-}
-
 void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     bool single_channel_output,
     uint8_t channel) {

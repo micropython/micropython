@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-23 07:37+0000\n"
+"PO-Revision-Date: 2021-11-10 09:53+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -113,12 +113,12 @@ msgid "%q length must be >= 1"
 msgstr "o comprimento %q deve ser >=1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "o %q deve ser <= %d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "o %q deve ser %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr "%q deve ser <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -156,6 +156,10 @@ msgstr "%q deve ser do tipo %q"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q deve ser a potência de 2"
+
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -360,6 +364,7 @@ msgstr "3-arg pow() não compatível"
 msgid "64 bit types"
 msgstr "Tipos 64 bit"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -569,6 +574,10 @@ msgstr "A profundidade dos bits deve ser de 1 até 6 inclusive, porém não %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "A profundidade de bits deve ser o múltiplo de 8."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Bitmap size and bits per value must match"
+msgstr "O tamanho do bitmap e os bits por valor devem coincidir"
+
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
 msgstr ""
@@ -644,6 +653,10 @@ msgstr "O comprimento do buffer deve ter pelo menos 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "O buffer é muito curto em %d bytes"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr "Os buffers devem ter o mesmo tamanho"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1092,6 +1105,15 @@ msgstr "Os filtros são muito complexos"
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "A imagem do firmware é invalida"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
+msgstr "Para o espaço de cor L8, o bitmap da entrada deve ter 8 bits por pixel"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
+msgstr ""
+"Para espaços de cor RGB, o bitmap da entrada deve ter 16 bits por pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1623,6 +1645,10 @@ msgstr "Nenhum pino TX"
 msgid "No available clocks"
 msgstr "Nenhum clock disponível"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr "Não há nenhuma captura em andamento"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Sem conexão: o comprimento não pode ser determinado"
@@ -1643,6 +1669,7 @@ msgstr "Nenhum hardware aleatório está disponível"
 msgid "No hardware support on clk pin"
 msgstr "Sem suporte de hardware no pino de clock"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1768,7 +1795,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Somente anúncios conectáveis podem ser direcionados"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Apenas a detecção de borda está disponível neste hardware"
@@ -1869,6 +1895,7 @@ msgstr "O periférico está em uso"
 msgid "Permission denied"
 msgstr "Permissão negada"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "O pinto não pode acordar do deep sleep"
@@ -2240,6 +2267,10 @@ msgstr "A taxa de amostragem da amostra não coincide com a do mixer"
 msgid "The sample's signedness does not match the mixer's"
 msgstr "A amostragem \"signedness\" não coincide com a do mixer"
 
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr "Este microcontrolador não tem suporte para captura contínua."
+
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
@@ -2447,6 +2478,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Taxa de transmissão não suportada"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Unsupported colorspace"
+msgstr "Espaço de cor não compatível"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
@@ -2679,6 +2714,10 @@ msgstr "typecode incorreto"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "a operação binário %q não foi implementada"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr "os tamanhos do bitmap devem coincidir"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -3165,6 +3204,7 @@ msgstr "argumentos extra posicionais passados"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "o arquivo deve ser um arquivo aberto no modo byte"
 
@@ -3633,6 +3673,10 @@ msgstr "o modo deve ser completo ou reduzido"
 msgid "module not found"
 msgstr "o módulo não foi encontrado"
 
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr ""
+
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "mais graus de liberdade do que pontos de dados"
@@ -3983,6 +4027,7 @@ msgstr "O terceiro argumento pow() não pode ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
@@ -4190,6 +4235,18 @@ msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "a paleta de origem é muito grande"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr "o source_bitmap deve ter o value_count de 2 ou 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr "o source_bitmap deve ter o value_count de 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr "o source_bitmap deve ter o value_count de 8"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4435,6 +4492,14 @@ msgstr "instrução Thumb '%s' não compatível com argumentos %d"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "instrução Xtensa '%s' não compatível com argumentos %d"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr "espaço de cores não compatível com GifWriter"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr "espaço de cor não compatível para dither"
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4545,6 +4610,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "o %q deve ser <= %d"
 
 #, c-format
 #~ msgid ""

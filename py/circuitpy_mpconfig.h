@@ -45,6 +45,13 @@
 // free bytes.
 // #define MICROPY_ALLOC_PARSE_RULE_INIT (64)
 
+// These critical-section macros are used only a few places in MicroPython, but
+// we need to provide actual implementations.
+extern void common_hal_mcu_disable_interrupts(void);
+extern void common_hal_mcu_enable_interrupts(void);
+#define MICROPY_BEGIN_ATOMIC_SECTION() (common_hal_mcu_disable_interrupts(), 0)
+#define MICROPY_END_ATOMIC_SECTION(state) ((void)state, common_hal_mcu_enable_interrupts())
+
 // Sorted alphabetically for easy finding.
 //
 // default is 128; consider raising to reduce fragmentation.
@@ -169,6 +176,10 @@
 #define INT_FMT "%d"
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
+#if __GNUC__ >= 10 // on recent gcc versions we can check that this is so
+_Static_assert(sizeof(mp_int_t) == sizeof(void *));
+_Static_assert(sizeof(mp_uint_t) == sizeof(void *));
+#endif
 typedef long mp_off_t;
 
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
@@ -321,6 +332,12 @@ extern const struct _mp_obj_module_t nvm_module;
 #endif
 #endif
 
+#if CIRCUITPY_WIFI
+#define WIFI_MONITOR_ROOT_POINTERS mp_obj_t wifi_monitor_singleton;
+#else
+#define WIFI_MONITOR_ROOT_POINTERS
+#endif
+
 // Define certain native modules with weak links so they can be replaced with Python
 // implementations. This list may grow over time.
 
@@ -444,6 +461,7 @@ struct _supervisor_allocation_node;
     KEYPAD_ROOT_POINTERS \
     GAMEPAD_ROOT_POINTERS \
     BOARD_UART_ROOT_POINTER \
+    WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     vstr_t *repl_line; \
     mp_obj_t pew_singleton; \

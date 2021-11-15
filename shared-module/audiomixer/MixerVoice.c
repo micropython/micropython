@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 #include "shared-bindings/audiomixer/Mixer.h"
+#include "shared-bindings/audiomixer/MixerVoice.h"
 #include "shared-module/audiomixer/MixerVoice.h"
 
 #include <stdint.h>

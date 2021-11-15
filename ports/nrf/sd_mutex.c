@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #include "py/runtime.h"
 #include "nrf_soc.h"
+#include "sd_mutex.h"
 
 void sd_mutex_acquire_check(nrf_mutex_t *p_mutex) {
     uint32_t err_code = sd_mutex_acquire(p_mutex);

@@ -72,7 +72,7 @@ gpio_isr_handle_t gpio_interrupt_handle;
 // Low and high are relative to pin number. 32+ is high. <32 is low.
 static volatile uint32_t pin_31_0_status = 0;
 static volatile uint32_t pin_63_32_status = 0;
-void gpio_interrupt(void *arg) {
+STATIC void gpio_interrupt(void *arg) {
     (void)arg;
 
     gpio_ll_get_intr_status(&GPIO, xPortGetCoreID(), (uint32_t *)&pin_31_0_status);

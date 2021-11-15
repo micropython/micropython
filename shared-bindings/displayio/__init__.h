@@ -40,7 +40,7 @@ typedef enum {
     CHIP_SELECT_TOGGLE_EVERY_BYTE
 } display_chip_select_behavior_t;
 
-typedef enum {
+typedef enum displayio_colorspace {
     DISPLAYIO_COLORSPACE_RGB888,
     DISPLAYIO_COLORSPACE_RGB565,
     DISPLAYIO_COLORSPACE_RGB555,
@@ -50,6 +50,7 @@ typedef enum {
     DISPLAYIO_COLORSPACE_BGR555,
     DISPLAYIO_COLORSPACE_BGR565_SWAPPED,
     DISPLAYIO_COLORSPACE_BGR555_SWAPPED,
+    DISPLAYIO_COLORSPACE_L8,
 } displayio_colorspace_t;
 
 typedef bool (*display_bus_bus_reset)(mp_obj_t bus);

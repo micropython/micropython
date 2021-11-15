@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,18 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H
 
-#define MICROPY_HW_BOARD_NAME       "Feather ESP32S2 without PSRAM"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#include "py/enum.h"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO21)
+typedef enum {
+    PACKET_CH,
+    PACKET_LEN,
+    PACKET_RAW,
+    PACKET_RSSI,
+} wifi_packet_t;
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+extern const mp_obj_type_t wifi_packet_type;
 
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
-
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO4)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO3)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_WIFI_PACKET_H

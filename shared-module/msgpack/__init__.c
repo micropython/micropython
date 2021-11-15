@@ -38,6 +38,8 @@
 
 #include "supervisor/shared/translate.h"
 #include "shared-bindings/msgpack/ExtType.h"
+#include "shared-bindings/msgpack/__init__.h"
+#include "shared-module/msgpack/__init__.h"
 
 ////////////////////////////////////////////////////////////////
 // stream management

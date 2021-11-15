@@ -32,8 +32,9 @@
 #include "py/binary.h"
 #include "py/parsenum.h"
 #include "supervisor/shared/translate.h"
+#include "shared-bindings/struct/__init__.h"
 
-void struct_validate_format(char fmt) {
+STATIC void struct_validate_format(char fmt) {
     #if MICROPY_NONSTANDARD_TYPECODES
     if (fmt == 'S' || fmt == 'O') {
         mp_raise_RuntimeError(translate("'S' and 'O' are not supported format types"));
@@ -41,7 +42,7 @@ void struct_validate_format(char fmt) {
     #endif
 }
 
-char get_fmt_type(const char **fmt) {
+STATIC char get_fmt_type(const char **fmt) {
     char t = **fmt;
     switch (t) {
         case '!':
@@ -60,7 +61,7 @@ char get_fmt_type(const char **fmt) {
     return t;
 }
 
-mp_uint_t get_fmt_num(const char **p) {
+STATIC mp_uint_t get_fmt_num(const char **p) {
     const char *num = *p;
     uint len = 1;
     while (unichar_isdigit(*++num)) {
@@ -71,7 +72,7 @@ mp_uint_t get_fmt_num(const char **p) {
     return val;
 }
 
-mp_uint_t calcsize_items(const char *fmt) {
+STATIC mp_uint_t calcsize_items(const char *fmt) {
     mp_uint_t cnt = 0;
     while (*fmt) {
         int num = 1;

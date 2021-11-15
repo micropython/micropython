@@ -50,7 +50,7 @@ mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
     return self->timeout;
 }
 
-void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
+STATIC void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
     OSC32KCTRL->OSCULP32K.bit.EN1K = 1;  // Enable out 1K (for WDT)
 
     // disable watchdog for config
@@ -70,7 +70,7 @@ void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
 }
 
 void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t new_timeout) {
-    int wdt_cycles = (int)(new_timeout * 1000);
+    int wdt_cycles = (int)(new_timeout * 1024);
     if (wdt_cycles < 8) {
         wdt_cycles = 8;
     }

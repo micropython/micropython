@@ -93,7 +93,7 @@ TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-void tick_timer_cb(void *arg) {
+STATIC void tick_timer_cb(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
@@ -127,7 +127,11 @@ safe_mode_t port_init(void) {
     heap = NULL;
     never_reset_module_internal_pins();
 
-    #if defined(DEBUG)
+    #ifndef DEBUG
+    #define DEBUG (0)
+    #endif
+
+    #if DEBUG
     // debug UART
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO20);
@@ -138,7 +142,11 @@ safe_mode_t port_init(void) {
     #endif
     #endif
 
-    #if defined(DEBUG) || defined(ENABLE_JTAG)
+    #ifndef ENABLE_JTAG
+    #define ENABLE_JTAG (defined(DEBUG) && DEBUG)
+    #endif
+
+    #if ENABLE_JTAG
     // JTAG
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO4);
@@ -352,6 +360,7 @@ void port_idle_until_interrupt(void) {
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);
+extern void app_main(void);
 void app_main(void) {
     main();
 }

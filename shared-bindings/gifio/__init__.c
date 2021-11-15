@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "py/obj.h"
+#include "py/runtime.h"
+#include "py/mphal.h"
+#include "shared-bindings/gifio/GifWriter.h"
+#include "shared-bindings/util.h"
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
+//| """Access GIF-format images
+//| """
+//|
+STATIC const mp_rom_map_elem_t gifio_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gifio) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_GifWriter),  MP_ROM_PTR(&gifio_gifwriter_type)},
+};
 
-void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
+STATIC MP_DEFINE_CONST_DICT(gifio_module_globals, gifio_module_globals_table);
 
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif /* DEBUG */
-}
+const mp_obj_module_t gifio_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&gifio_module_globals,
+};
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
-
-void reset_board(void) {
-
-}
-
-void board_deinit(void) {
-}
+MP_REGISTER_MODULE(MP_QSTR_gifio, gifio_module, CIRCUITPY_GIFIO);

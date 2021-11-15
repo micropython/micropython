@@ -160,14 +160,6 @@ uint8_t common_hal_audioio_wavefile_get_channel_count(audioio_wavefile_obj_t *se
     return self->channel_count;
 }
 
-bool audioio_wavefile_samples_signed(audioio_wavefile_obj_t *self) {
-    return self->bits_per_sample > 8;
-}
-
-uint32_t audioio_wavefile_max_buffer_length(audioio_wavefile_obj_t *self) {
-    return 512;
-}
-
 void audioio_wavefile_reset_buffer(audioio_wavefile_obj_t *self,
     bool single_channel_output,
     uint8_t channel) {

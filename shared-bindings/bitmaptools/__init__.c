@@ -25,13 +25,23 @@
  */
 
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
+#include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/bitmaptools/__init__.h"
 
 #include <stdint.h>
 
 #include "py/binary.h"
+#include "py/enum.h"
 #include "py/obj.h"
 #include "py/runtime.h"
+
+#if MICROPY_VFS
+#include "extmod/vfs.h"
+#endif
+#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
+#include "extmod/vfs_posix.h"
+#endif
 
 //| """Collection of bitmap manipulation tools"""
 //|
@@ -151,8 +161,8 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
           ARG_angle, ARG_scale, ARG_skip_index};
 
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 
         {MP_QSTR_ox, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to destination->width  / 2
         {MP_QSTR_oy, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to destination->height / 2
@@ -204,13 +214,13 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
         args[ARG_source_clip1].u_obj, &source_clip1_x, &source_clip1_y);
 
     // Confirm the angle value
-    float angle = 0.0;
+    mp_float_t angle = 0.0;
     if (args[ARG_angle].u_obj != mp_const_none) {
         angle = mp_obj_get_float(args[ARG_angle].u_obj);
     }
 
     // Confirm the scale value
-    float scale = 1.0;
+    mp_float_t scale = 1.0;
     if (args[ARG_scale].u_obj != mp_const_none) {
         scale = mp_obj_get_float(args[ARG_scale].u_obj);
     }
@@ -245,6 +255,83 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //|
+//| def alphablend(dest_bitmap, source_bitmap_1, source_bitmap_2, colorspace: displayio.Colorspace, factor1: float=.5, factor2: float=None):
+//|     """Alpha blend the two source bitmaps into the destination.
+//|
+//|     It is permitted for the destination bitmap to be one of the two
+//|     source bitmaps.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that will be written into
+//|     :param bitmap source_bitmap_1: The first source bitmap
+//|     :param bitmap source_bitmap_2: The second source bitmap
+//|     :param float factor1: The proportion of bitmap 1 to mix in
+//|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
+//|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
+//|
+//|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
+//|     For the RGB colorspaces, they must have a bits-per-value of 16."""
+//|
+
+STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2};
+
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
+        {MP_QSTR_source_bitmap_1, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
+        {MP_QSTR_source_bitmap_2, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
+        {MP_QSTR_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
+        {MP_QSTR_factor_1, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        {MP_QSTR_factor_2, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
+    displayio_bitmap_t *source1 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_1].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_1)); // the first source bitmap
+    displayio_bitmap_t *source2 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_2].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_2)); // the second source bitmap
+
+    mp_float_t factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? MICROPY_FLOAT_CONST(.5) : mp_obj_float_get(args[ARG_factor_1].u_obj);
+    mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_float_get(args[ARG_factor_2].u_obj);
+
+    displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj);
+
+    if (destination->width != source1->width
+        || destination->height != source1->height
+        || destination->bits_per_value != source1->bits_per_value
+        || destination->width != source2->width
+        || destination->height != source2->height
+        || destination->bits_per_value != source2->bits_per_value
+        ) {
+        mp_raise_ValueError(translate("Bitmap size and bits per value must match"));
+    }
+
+    switch (colorspace) {
+        case DISPLAYIO_COLORSPACE_L8:
+            if (destination->bits_per_value != 8) {
+                mp_raise_ValueError(translate("For L8 colorspace, input bitmap must have 8 bits per pixel"));
+            }
+            break;
+
+        case DISPLAYIO_COLORSPACE_RGB565:
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_BGR565:
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+            if (destination->bits_per_value != 16) {
+                mp_raise_ValueError(translate("For RGB colorspaces, input bitmap must have 16 bits per pixel"));
+            }
+            break;
+
+        default:
+            mp_raise_ValueError(translate("Unsupported colorspace"));
+    }
+
+    common_hal_bitmaptools_alphablend(destination, source1, source2, colorspace, factor1, factor2);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend);
+
+//|
 //| def fill_region(
 //|        dest_bitmap: displayio.Bitmap,
 //|        x1: int, y1: int,
@@ -266,17 +353,17 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
@@ -318,16 +405,16 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
     enum {ARG_dest_bitmap, ARG_x, ARG_y, ARG_fill_color_value, ARG_replaced_color_value};
 
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_fill_color_value, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_fill_color_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
         {MP_QSTR_replaced_color_value, MP_ARG_INT, {.u_int = INT_MAX} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap)); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap));     // the destination bitmap
 
     uint32_t fill_color_value, color_depth;
     fill_color_value = args[ARG_fill_color_value].u_int;
@@ -381,17 +468,17 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ},
-        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT},
-        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT},
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj); // the destination bitmap
+    displayio_bitmap_t *destination = MP_OBJ_TO_PTR(args[ARG_dest_bitmap].u_obj);     // the destination bitmap
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
@@ -452,8 +539,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_line_obj, 0, bitmaptools_obj_draw_li
 STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_data, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_x1, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_y1, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_x2, MP_ARG_INT, {.u_int = -1} },
@@ -518,9 +605,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_arrayblit_obj, 0, bitmaptools_arrayblit);
 STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_file, ARG_bits_per_pixel, ARG_element_size, ARG_reverse_pixels_in_element, ARG_swap_bytes_in_element, ARG_reverse_rows };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_file, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_bits_per_pixel, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_file, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_bits_per_pixel, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_element_size, MP_ARG_INT, { .u_int = 1 } },
         { MP_QSTR_reverse_pixels_in_element, MP_ARG_BOOL, { .u_bool = false } },
         { MP_QSTR_swap_bytes_in_element,  MP_ARG_BOOL, { .u_bool = false } },
@@ -565,17 +652,103 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
+
+//| class DitherAlgorithm:
+//|     """Identifies the algorith for dither to use"""
+//|
+//|     Atkinson: "DitherAlgorithm"
+//|     """The classic Atkinson dither, often associated with the Hypercard esthetic"""
+//|
+//|     FloydStenberg: "DitherAlgorithm"
+//|     """The Floyd-Stenberg dither"""
+//|
+MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, Atkinson, DITHER_ALGORITHM_ATKINSON);
+MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, FloydStenberg, DITHER_ALGORITHM_ATKINSON);
+
+MAKE_ENUM_MAP(bitmaptools_dither_algorithm) {
+    MAKE_ENUM_MAP_ENTRY(dither_algorithm, Atkinson),
+    MAKE_ENUM_MAP_ENTRY(dither_algorithm, FloydStenberg),
+};
+STATIC MP_DEFINE_CONST_DICT(bitmaptools_dither_algorithm_locals_dict, bitmaptools_dither_algorithm_locals_table);
+
+MAKE_PRINTER(bitmaptools, bitmaptools_dither_algorithm);
+
+MAKE_ENUM_TYPE(bitmaptools, DitherAlgorithm, bitmaptools_dither_algorithm);
+
+//| def dither(dest_bitmap: displayio.Bitmap, source_bitmapp: displayio.Bitmap, source_colorspace: displayio.Colorspace, algorithm: DitherAlgorithm=DitherAlgorithm.Atkinson) -> None:
+//|     """Convert the input image into a 2-level output image using the given dither algorithm.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap.  It must have a value_count of 2 or 65536.  The stored values are 0 and the maximum pixel value.
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be dithered.  It must have a value_count of 65536.
+//|     :param colorspace: The colorspace of the image.  The supported colorspaces are ``RGB565``, ``BGR565``, ``RGB565_SWAPPED``, and ``BGR565_SWAPPED``
+//|     :param algorithm: The dither algorithm to use, one of the `DitherAlgorithm` values.
+//|     """
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_dest_bitmap, ARG_source_bitmap, ARG_source_colorspace, ARG_algorithm };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_source_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_algorithm, MP_ARG_OBJ, { .u_obj = MP_ROM_PTR((void *)&dither_algorithm_Atkinson_obj) } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    displayio_bitmap_t *source_bitmap = mp_arg_validate_type(args[ARG_source_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
+    displayio_bitmap_t *dest_bitmap = mp_arg_validate_type(args[ARG_dest_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
+    bitmaptools_dither_algorithm_t algorithm = cp_enum_value(&bitmaptools_dither_algorithm_type, args[ARG_algorithm].u_obj);
+    displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj);
+
+    if (source_bitmap->width != dest_bitmap->width || source_bitmap->height != dest_bitmap->height) {
+        mp_raise_TypeError(translate("bitmap sizes must match"));
+    }
+
+    if (dest_bitmap->bits_per_value != 16 && dest_bitmap->bits_per_value != 1) {
+        mp_raise_TypeError(translate("source_bitmap must have value_count of 2 or 65536"));
+    }
+
+
+    switch (colorspace) {
+        case DISPLAYIO_COLORSPACE_RGB565:
+        case DISPLAYIO_COLORSPACE_RGB565_SWAPPED:
+        case DISPLAYIO_COLORSPACE_BGR565:
+        case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
+            if (source_bitmap->bits_per_value != 16) {
+                mp_raise_TypeError(translate("source_bitmap must have value_count of 65536"));
+            }
+            break;
+
+        case DISPLAYIO_COLORSPACE_L8:
+            if (source_bitmap->bits_per_value != 8) {
+                mp_raise_TypeError(translate("source_bitmap must have value_count of 8"));
+            }
+            break;
+
+        default:
+            mp_raise_TypeError(translate("unsupported colorspace for dither"));
+    }
+
+
+    common_hal_bitmaptools_dither(dest_bitmap, source_bitmap, colorspace, algorithm);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_dither_obj, 0, bitmaptools_dither);
+
 
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_alphablend), MP_ROM_PTR(&bitmaptools_alphablend_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
+    { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
 

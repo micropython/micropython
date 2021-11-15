@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-23 07:37+0000\n"
+"PO-Revision-Date: 2021-11-11 18:10+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: main.c
 msgid ""
@@ -112,12 +112,12 @@ msgid "%q length must be >= 1"
 msgstr "längden på %q måste vara >= 1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "%q måste vara <=%d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr "%q måste vara <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -155,6 +155,10 @@ msgstr "%q måste vara av typen %q"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q måste vara en potens av 2"
+
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -355,6 +359,7 @@ msgstr "3-arguments pow() stöds inte"
 msgid "64 bit types"
 msgstr "64-bitars typer"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -561,6 +566,10 @@ msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "Bitdjup måste vara multipel av 8."
 
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Bitmap size and bits per value must match"
+msgstr "Bitmappstorlek och bitar per värde måste överensstämma"
+
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
 msgstr "Startenheten måste vara den första enheten (gränssnitt #0)."
@@ -634,6 +643,10 @@ msgstr "Bufferten måste ha minst längd 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffert är %d bytes för kort"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr "Buffertarna måste ha samma storlek"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -1080,6 +1093,14 @@ msgstr "Filter för komplexa"
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "Firmware-avbilden är ogiltig"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
+msgstr "För L8-färgrymden måste indatabitmappen ha 8 bitar per pixel"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
+msgstr "För RGB-färgrymder måste indatabitmappen ha 16 bitar per pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1607,6 +1628,10 @@ msgstr "Ingen TX-pinne"
 msgid "No available clocks"
 msgstr "Inga tillgängliga klockor"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr "Ingen insamling pågår"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Ingen anslutning: längden kan inte bestämmas"
@@ -1627,6 +1652,7 @@ msgstr "Ingen hårdvaru-random tillgänglig"
 msgid "No hardware support on clk pin"
 msgstr "Inget hårdvarustöd på clk-pinne"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1750,7 +1776,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "Endast anslutningsbara annonseringar kan dirigeras"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "Endast kantdetektering är tillgänglig för denna hårdvara"
@@ -1849,6 +1874,7 @@ msgstr "Periferi i bruk"
 msgid "Permission denied"
 msgstr "Åtkomst nekad"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "Pinnen kan inte väcka från djup sömn"
@@ -2215,6 +2241,10 @@ msgstr "Samplingens frekvens matchar inte mixerns"
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Samplingens signerad/osignerad stämmer inte med mixern"
 
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr "Den här mikrokontrollern stöder inte kontinuerlig insamling."
+
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
@@ -2419,6 +2449,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Baudrate stöd inte"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Unsupported colorspace"
+msgstr "Färgrymd stöds inte"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
@@ -2648,6 +2682,10 @@ msgstr "Ogiltig typkod"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr "bitmappsstorlekar måste matcha"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -3130,6 +3168,7 @@ msgstr "extra positions-argument angivna"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "filen måste vara en fil som öppnats i byte-läge"
 
@@ -3595,6 +3634,10 @@ msgstr "mode måste vara complete, eller reduced"
 msgid "module not found"
 msgstr "modulen hittades inte"
 
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr ""
+
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
 msgstr "fler frihetsgrader än datapunkter"
@@ -3941,6 +3984,7 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
@@ -4148,6 +4192,18 @@ msgstr "sosfilt kräver iterable argument"
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "källpalett för stor"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr "source_bitmap måste ha value_count av 2 eller 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr "source_bitmap måste ha value_count av 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr "source_bitmap måste ha value_count av 8"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4393,6 +4449,14 @@ msgstr "Thumb-instruktion '%s' med %d argument stöd inte"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr "färgrymd stöds inte för GifWriter"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr "färgrymd stöds inte för dither"
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4503,6 +4567,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q måste vara <=%d"
 
 #, c-format
 #~ msgid ""

@@ -94,14 +94,14 @@ endif
 
 ifeq ($(CHIP_FAMILY), samd51)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+OPTIMIZATION_FLAGS ?= -Os
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD51 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
 
 ifeq ($(CHIP_FAMILY), same51)
 PERIPHERALS_CHIP_FAMILY=sam_d5x_e5x
-OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
+OPTIMIZATION_FLAGS ?= -Os
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAME5X -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=256 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=256 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
@@ -158,7 +158,7 @@ else
   endif
 endif
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT)
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
 
 ifeq ($(CHIP_FAMILY), samd21)
 CFLAGS += \
@@ -291,19 +291,9 @@ $(BUILD)/asf4/$(CHIP_FAMILY)/hpl/sdhc/hpl_sdhc.o: CFLAGS += -Wno-cast-align -Wno
 endif
 
 SRC_ASF := $(addprefix asf4/$(CHIP_FAMILY)/, $(SRC_ASF))
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_ASF)): CFLAGS += -Wno-missing-prototypes
 
-SRC_C += \
-	audio_dma.c \
-	background.c \
-	bindings/samd/Clock.c \
-	bindings/samd/__init__.c \
-	boards/$(BOARD)/board.c \
-	boards/$(BOARD)/pins.c \
-	eic_handler.c \
-	fatfs_port.c \
-	freetouch/adafruit_ptc.c \
-	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
-	mphalport.c \
+SRC_PERIPHERALS := \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/adc.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/cache.c \
 	peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/clocks.c \
@@ -319,8 +309,26 @@ SRC_C += \
 	peripherals/samd/external_interrupts.c \
 	peripherals/samd/sercom.c \
 	peripherals/samd/timers.c \
+
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototypes
+
+SRC_C += \
+	audio_dma.c \
+	background.c \
+	bindings/samd/Clock.c \
+	bindings/samd/__init__.c \
+	boards/$(BOARD)/board.c \
+	boards/$(BOARD)/pins.c \
+	eic_handler.c \
+	fatfs_port.c \
+	freetouch/adafruit_ptc.c \
+	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
+	mphalport.c \
 	reset.c \
 	timer_handler.c \
+	$(SRC_PERIPHERALS) \
+
+$(BUILD)/lib/tinyusb/src/portable/microchip/samd/dcd_samd.o: CFLAGS += -Wno-missing-prototypes
 
 # This is an OR because it filters to any 1s and then checks to see if it is not
 # empty.

@@ -59,7 +59,7 @@ static void turn_off(__IO PORT_PINCFG_Type *pincfg) {
     pincfg->reg = PORT_PINCFG_RESETVALUE;
 }
 
-void pulse_finish(void) {
+STATIC void pulse_finish(void) {
     pulse_index++;
 
     if (active_pincfg == NULL) {

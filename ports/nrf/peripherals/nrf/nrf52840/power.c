@@ -26,6 +26,7 @@
 
 #include "nrfx.h"
 #include "hal/nrf_nvmc.h"
+#include "peripherals/nrf/power.h"
 
 void nrf_peripherals_power_init(void) {
     // Set GPIO reference voltage to 3.3V if it isn't already. REGOUT0 will get reset to 0xfffffff

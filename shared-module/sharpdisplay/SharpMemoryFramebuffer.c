@@ -53,19 +53,19 @@ int common_hal_sharpdisplay_framebuffer_get_height(sharpdisplay_framebuffer_obj_
     return self->height;
 }
 
-int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_framebuffer_obj_t *self) {
+STATIC int common_hal_sharpdisplay_framebuffer_get_row_stride(sharpdisplay_framebuffer_obj_t *self) {
     return (self->width + 7) / 8 + 2;
 }
 
-int common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(sharpdisplay_framebuffer_obj_t *self) {
+STATIC int common_hal_sharpdisplay_framebuffer_get_first_pixel_offset(sharpdisplay_framebuffer_obj_t *self) {
     return 2;
 }
 
-bool common_hal_sharpdisplay_framebuffer_get_reverse_pixels_in_byte(sharpdisplay_framebuffer_obj_t *self) {
+STATIC bool common_hal_sharpdisplay_framebuffer_get_reverse_pixels_in_byte(sharpdisplay_framebuffer_obj_t *self) {
     return true;
 }
 
-bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdisplay_framebuffer_obj_t *self) {
+STATIC bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sharpdisplay_framebuffer_obj_t *self) {
     return true;
 }
 
@@ -143,7 +143,7 @@ void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_
     common_hal_sharpdisplay_framebuffer_get_bufinfo(self, NULL);
 }
 
-void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_obj_t *self, uint8_t *dirty_row_bitmask) {
+STATIC void common_hal_sharpdisplay_framebuffer_swapbuffers(sharpdisplay_framebuffer_obj_t *self, uint8_t *dirty_row_bitmask) {
     // claim SPI bus
     if (!common_hal_busio_spi_try_lock(self->bus)) {
         return;

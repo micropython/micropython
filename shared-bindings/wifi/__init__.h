@@ -27,8 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_WIFI___INIT___H
 
-#include "py/objlist.h"
-
 #include "shared-bindings/wifi/Radio.h"
 
 extern wifi_radio_obj_t common_hal_wifi_radio_obj;

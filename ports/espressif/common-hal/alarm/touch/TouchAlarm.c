@@ -75,7 +75,7 @@ mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
 }
 
 // This is used to wake the main CircuitPython task.
-void touch_interrupt(void *arg) {
+STATIC void touch_interrupt(void *arg) {
     (void)arg;
     woke_up = true;
     BaseType_t task_wakeup;

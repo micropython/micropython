@@ -33,6 +33,7 @@
 
 #include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/_bleio/Connection.h"
+#include "shared-bindings/_bleio/CharacteristicBuffer.h"
 #include "supervisor/shared/tick.h"
 #include "common-hal/_bleio/CharacteristicBuffer.h"
 

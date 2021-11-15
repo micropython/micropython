@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/stack.h"
 
 #include "freertos/FreeRTOS.h"

@@ -26,6 +26,7 @@
 
 #include "py/mpstate.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/gamepadshift/GamePadShift.h"
 #include "shared-module/gamepadshift/GamePadShift.h"
 #include "supervisor/shared/tick.h"
 

@@ -197,6 +197,9 @@ endif
 ifeq ($(CIRCUITPY_GETPASS),1)
 SRC_PATTERNS += getpass/%
 endif
+ifeq ($(CIRCUITPY_GIFIO),1)
+SRC_PATTERNS += gifio/%
+endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
 endif
@@ -433,6 +436,7 @@ SRC_COMMON_HAL_ALL = \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
+	wifi/Monitor.c \
 	wifi/Network.c \
 	wifi/Radio.c \
 	wifi/ScannedNetworks.c \
@@ -465,7 +469,9 @@ $(filter $(SRC_PATTERNS), \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
+	displayio/Colorspace.c \
 	fontio/Glyph.c \
+	imagecapture/ParallelImageCapture.c \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
@@ -475,6 +481,7 @@ $(filter $(SRC_PATTERNS), \
 	paralleldisplay/ParallelBus.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
+	wifi/Packet.c \
 )
 
 SRC_BINDINGS_ENUMS += \
@@ -527,6 +534,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/Palette.c \
 	displayio/Shape.c \
 	displayio/TileGrid.c \
+	displayio/area.c \
 	displayio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
@@ -535,6 +543,9 @@ SRC_SHARED_MODULE_ALL = \
 	gamepadshift/GamePadShift.c \
 	gamepadshift/__init__.c \
 	getpass/__init__.c \
+	gifio/__init__.c \
+	gifio/GifWriter.c \
+	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	keypad/__init__.c \
@@ -627,7 +638,7 @@ ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
-$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
@@ -677,6 +688,7 @@ $(addprefix lib/,\
 	libm/wf_tgamma.c \
 	)
 endif
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_LIBM)): CFLAGS += -Wno-missing-prototypes
 endif
 
 SRC_CIRCUITPY_COMMON = \

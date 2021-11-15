@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/ssl/__init__.h"
 #include "shared-bindings/ssl/SSLContext.h"
 
 #include "components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"

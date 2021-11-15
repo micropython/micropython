@@ -29,6 +29,7 @@
 
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"

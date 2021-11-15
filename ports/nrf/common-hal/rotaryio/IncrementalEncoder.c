@@ -26,6 +26,7 @@
 
 #include "common-hal/rotaryio/IncrementalEncoder.h"
 #include "shared-module/rotaryio/IncrementalEncoder.h"
+#include "shared-bindings/rotaryio/IncrementalEncoder.h"
 #include "nrfx_gpiote.h"
 
 #include "py/runtime.h"

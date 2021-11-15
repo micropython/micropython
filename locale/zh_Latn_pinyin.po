@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-10-31 11:37+0000\n"
-"Last-Translator: hexthat <hexthat@gmail.com>\n"
+"PO-Revision-Date: 2021-11-12 18:46+0000\n"
+"Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9-dev\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: main.c
 msgid ""
@@ -31,7 +31,7 @@ msgid ""
 "Code stopped by auto-reload.\n"
 msgstr ""
 "\n"
-"zì dòng chóng xīn jiā zǎi tíng zhǐ de dài mǎ.\n"
+"dàimǎ de yùnxíng yīnwéi zìdòng chóngxīn jiāzǎi ér tíngzhǐ.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -49,7 +49,7 @@ msgstr "  Wénjiàn \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr "  Wénjiàn \"%q\", dì %d xíng"
+msgstr "  Wénjiàn \"%q\", dì %d háng"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
@@ -114,12 +114,12 @@ msgid "%q length must be >= 1"
 msgstr "%q cháng dù bì xū >= 1"
 
 #: py/argcheck.c
-msgid "%q must <= %d"
-msgstr "%q bì xū <= %d"
-
-#: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q bì xū wéi %d-%d"
+
+#: py/argcheck.c shared-bindings/gifio/GifWriter.c
+msgid "%q must be <= %d"
+msgstr "%q bì xū <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -157,6 +157,10 @@ msgstr "%q bì xū shì lèi xíng %q"
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q bì xū shì 2 de gōng lǜ"
+
+#: shared-bindings/wifi/Monitor.c
+msgid "%q out of bounds"
+msgstr "%q chāo chū jiè xiàn"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -357,6 +361,7 @@ msgstr "bù zhīchí 3-arg pow()"
 msgid "64 bit types"
 msgstr "64 wèi lèi xíng"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
@@ -563,6 +568,11 @@ msgstr "wèi shēn dù bì xū bāo hán 1 dào 6, ér bù shì %d"
 msgid "Bit depth must be multiple of 8."
 msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
 
+#: shared-bindings/bitmaptools/__init__.c
+#, fuzzy
+msgid "Bitmap size and bits per value must match"
+msgstr "wèi tú dà xiǎo hé měi gè zhí de bǐ tè wèi bì xū pǐ pèi"
+
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
 msgstr "yǐn dǎo shè bèi bì xū shì dì yī tái shè bèi (jiē kǒu #0)."
@@ -636,6 +646,10 @@ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
+
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "Buffers must be same size"
+msgstr "huǎn chōng qì bì xū dà xiǎo xiāng tóng"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -995,7 +1009,7 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr "FFT jǐn shì yòng yú xiàn xìng zhèn liè"
+msgstr "FFT jǐn shì yòng yú yī wéi shù zǔ"
 
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
@@ -1080,6 +1094,17 @@ msgstr "guò lǜ qì tài fù zá"
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
 msgstr "gù jiàn yìng xiàng wú xiào"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
+msgstr ""
+"zài L8 sè yù zhōng, měi gè shū rù de xiàng sù bì xū shì 8 wèi (8 bit) shù jù"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
+msgstr ""
+"zài GRB sè yù zhōng, měi gè shū rù de xiàng sù bì xū shì 16 wèi (16 bit) shù "
+"jù"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1610,6 +1635,10 @@ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 msgid "No available clocks"
 msgstr "Méiyǒu kěyòng de shízhōng"
 
+#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
+msgid "No capture in progress"
+msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
@@ -1630,6 +1659,7 @@ msgstr "Méiyǒu kěyòng de yìngjiàn suíjī"
 msgid "No hardware support on clk pin"
 msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
@@ -1753,7 +1783,6 @@ msgstr ""
 msgid "Only connectable advertisements can be directed"
 msgstr "zhǐ yǒu kě lián jiē de guǎng gào cái néng bèi yǐn dǎo"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
 msgstr "cǐ yìng jiàn shàng jǐn tí gòng biān yuán jiǎn cè"
@@ -1851,6 +1880,7 @@ msgstr "shǐ yòng zhōng de wài shè"
 msgid "Permission denied"
 msgstr "Quánxiàn bèi jùjué"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "yǐn jiǎo wú fǎ cóng shēn dù shuì mián zhōng huàn xǐng"
@@ -2216,6 +2246,10 @@ msgstr "Yàngběn de yàngběn sùdù yǔ hǔn yīn qì de xiāngchà bù pǐpè
 msgid "The sample's signedness does not match the mixer's"
 msgstr "Yàngběn de qiānmíng yǔ hǔn yīn qì de qiānmíng bù pǐpèi"
 
+#: shared-module/imagecapture/ParallelImageCapture.c
+msgid "This microcontroller does not support continuous capture."
+msgstr "cǐ wēi kòng zhì qì bù zhī chí lián xù bǔ huò."
+
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
@@ -2278,7 +2312,7 @@ msgstr "bù kě yòng chù mō bào jǐng qì"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
-msgstr "Traceback (Zuìjìn yīcì dǎ diànhuà):\n"
+msgstr "Traceback (Zuìjìn yīcì diàoyòng zhǐlìng):\n"
 
 #: shared-bindings/time/__init__.c
 msgid "Tuple or struct_time argument required"
@@ -2322,7 +2356,7 @@ msgstr "USB cuò wù"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr "UUID zhěngshù zhí bìxū wèi 0-0xffff"
+msgstr "UUID de zhí bì xū shì 0-0xffff fàn wéi nèi de zhěng shù"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
@@ -2355,11 +2389,11 @@ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
-msgstr "Wúfǎ chūshǐ jiěxī qì"
+msgstr "Wúfǎ chūshǐhuà jiěxī qì"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr "Wúfǎ dòu qǔ sè tiáo shùjù"
+msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2420,6 +2454,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
 msgid "Unsupported baudrate"
 msgstr "Bù zhīchí de baudrate"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "Unsupported colorspace"
+msgstr "bú zhī chí de sè cǎi kōng jiān"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
@@ -2649,6 +2687,10 @@ msgstr "cuòwù de dàimǎ lèixíng"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "bitmap sizes must match"
+msgstr "wèi tú dà xiǎo bì xū pǐ pèi"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
@@ -3132,6 +3174,7 @@ msgstr "gěi chūle éwài de wèizhì cānshù"
 
 #: shared-bindings/audiocore/WaveFile.c shared-bindings/audiomp3/MP3Decoder.c
 #: shared-bindings/displayio/OnDiskBitmap.c shared-bindings/synthio/__init__.c
+#: shared-module/gifio/GifWriter.c
 msgid "file must be a file opened in byte mode"
 msgstr "wénjiàn bìxū shì zài zì jié móshì xià dǎkāi de wénjiàn"
 
@@ -3548,7 +3591,7 @@ msgstr "jǔzhèn bùshì zhèngdìng de"
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr "Dāng gùdìng chángdù wèi %s shí, zuìdà chángdù bìxū wèi 0-%d"
+msgstr "dāng fixed_length de zhí wéi %s shí, max_length bì xū wéi 0-%d"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be >= 0"
@@ -3594,6 +3637,10 @@ msgstr "mó shì bì xū wán chéng huò jiǎn shǎo"
 #: py/builtinimport.c
 msgid "module not found"
 msgstr "zhǎo bù dào mókuài"
+
+#: ports/espressif/common-hal/wifi/Monitor.c
+msgid "monitor init failed"
+msgstr "jiān shì qì chū shǐ huà shī bài"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
@@ -3940,6 +3987,7 @@ msgstr "pow() 3 cān shǔ bùnéng wéi 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
+#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
@@ -4147,6 +4195,21 @@ msgstr "sosfilt xūyào diédài cānshù"
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
 msgstr "yuán miànbǎn tài dà"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 2 or 65536"
+msgstr ""
+"yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 2 huò "
+"zhě 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 65536"
+msgstr ""
+"yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 65536"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "source_bitmap must have value_count of 8"
+msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4392,6 +4455,14 @@ msgstr "bù zhīchí de Thumb zhǐshì '%s', shǐyòng %d cānshù"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
 
+#: shared-module/gifio/GifWriter.c
+msgid "unsupported colorspace for GifWriter"
+msgstr "GifWriter bú zhī chí cǐ sè cǎi kōng jiān"
+
+#: shared-bindings/bitmaptools/__init__.c
+msgid "unsupported colorspace for dither"
+msgstr "dither bú zhī chí cǐ sè cǎi kōng jiān"
+
 #: py/objstr.c
 #, c-format
 msgid "unsupported format character '%c' (0x%x) at index %d"
@@ -4502,6 +4573,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q bì xū <= %d"
 
 #, c-format
 #~ msgid ""

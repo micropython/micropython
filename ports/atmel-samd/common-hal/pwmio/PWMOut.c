@@ -91,7 +91,7 @@ static uint8_t tcc_channel(const pin_timer_t *t) {
     return t->wave_output % tcc_cc_num[t->index];
 }
 
-bool channel_ok(const pin_timer_t *t) {
+STATIC bool channel_ok(const pin_timer_t *t) {
     uint8_t channel_bit = 1 << tcc_channel(t);
     return (!t->is_tc && ((tcc_channels[t->index] & channel_bit) == 0)) ||
            t->is_tc;

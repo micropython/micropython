@@ -39,6 +39,7 @@
 #include "shared-bindings/_bleio/Connection.h"
 #include "supervisor/shared/tick.h"
 #include "common-hal/_bleio/CharacteristicBuffer.h"
+#include "shared-bindings/_bleio/CharacteristicBuffer.h"
 
 // Push all the data onto the ring buffer. When the buffer is full, new bytes will be dropped.
 STATIC void write_to_ringbuf(bleio_characteristic_buffer_obj_t *self, uint8_t *data, uint16_t len) {

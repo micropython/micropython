@@ -38,6 +38,7 @@ import subprocess
 # Relative to top-level repo dir.
 PATHS = [
     # C
+    "main.c",
     "devices/**/*.[ch]",
     "drivers/bus/*.[ch]",
     "extmod/*.[ch]",
