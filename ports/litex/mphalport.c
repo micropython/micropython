@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/gc.h"
+#include "supervisor/cpu.h"
 #include "supervisor/usb.h"
 
 #include "csr.h"
@@ -54,6 +55,7 @@ extern void SysTick_Handler(void);
 // be prematurely enabled by interrupt handlers that enable and disable interrupts.
 extern volatile uint32_t nesting_count;
 
+void isr(void);
 __attribute__((section(".ramtext")))
 void isr(void) {
     uint8_t irqs = irq_pending() & irq_getmask();
