@@ -38,6 +38,7 @@
 // crystals.
 volatile uint64_t raw_ticks = 0;
 volatile int subsecond = 0;
+void SysTick_Handler(void);
 __attribute__((section(".ramtext")))
 void SysTick_Handler(void) {
     timer0_ev_pending_write(1);
