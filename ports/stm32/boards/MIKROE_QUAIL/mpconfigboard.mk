@@ -1,6 +1,6 @@
 MCU_SERIES = f4
 CMSIS_MCU = STM32F427xx
-AF_FILE = boards/stm32f427_af.csv
+AF_FILE = boards/stm32f429_af.csv
 ifeq ($(USE_MBOOT),1)
 # When using Mboot all the text goes together after the filesystem
 LD_FILES = boards/stm32f427xi.ld boards/common_blifs.ld
