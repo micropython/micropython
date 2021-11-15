@@ -104,6 +104,7 @@ extern uint32_t _ld_itcm_flash_copy;
 extern void main(void);
 
 // This replaces the Reset_Handler in startup_*.S and SystemInit in system_*.c.
+void Reset_Handler(void);
 __attribute__((used, naked)) void Reset_Handler(void) {
     __disable_irq();
     SCB->VTOR = (uint32_t)&__isr_vector;
@@ -358,6 +359,8 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return ticks / 32;
 }
 
+void SNVS_HP_WRAPPER_IRQHandler(void);
+__attribute__((used))
 void SNVS_HP_WRAPPER_IRQHandler(void) {
     if ((SNVS->HPSR & SNVS_HPSR_PI_MASK) != 0) {
         supervisor_tick();
@@ -415,6 +418,7 @@ void port_idle_until_interrupt(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+void MemManage_Handler(void);
 __attribute__((used)) void MemManage_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
@@ -425,6 +429,7 @@ __attribute__((used)) void MemManage_Handler(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+void BusFault_Handler(void);
 __attribute__((used)) void BusFault_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
@@ -435,6 +440,7 @@ __attribute__((used)) void BusFault_Handler(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+void UsageFault_Handler(void);
 __attribute__((used)) void UsageFault_Handler(void) {
     reset_into_safe_mode(MEM_MANAGE);
     while (true) {
@@ -445,6 +451,7 @@ __attribute__((used)) void UsageFault_Handler(void) {
 /**
  * \brief Default interrupt handler for unused IRQs.
  */
+void HardFault_Handler(void);
 __attribute__((used)) void HardFault_Handler(void) {
     reset_into_safe_mode(HARD_CRASH);
     while (true) {
