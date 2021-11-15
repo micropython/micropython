@@ -27,7 +27,8 @@
 #ifndef CP_SHARED_BINDINGS_RAINBOWIO_INIT_H
 #define CP_SHARED_BINDINGS_RAINBOWIO_INIT_H
 #include <stdint.h>
+#include "py/misc.h"
 
-const int32_t colorwheel(float pos);
+int32_t colorwheel(mp_float_t pos);
 
 #endif // CP_SHARED_BINDINGS_RAINBOWIO_INIT_H

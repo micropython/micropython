@@ -52,6 +52,7 @@ void init_usb_hardware(void) {
     usb_phy->TX = phytx;
 }
 
+void USB_OTG1_IRQHandler(void);
 void USB_OTG1_IRQHandler(void) {
     usb_irq_handler();
 }

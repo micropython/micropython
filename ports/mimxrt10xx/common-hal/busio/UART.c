@@ -65,7 +65,7 @@ static void config_periph_pin(const mcu_periph_obj_t *periph) {
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
 
-void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *user_data) {
+STATIC void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *user_data) {
     busio_uart_obj_t *self = (busio_uart_obj_t *)user_data;
 
     if (status == kStatus_LPUART_RxIdle) {
