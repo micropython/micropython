@@ -26,17 +26,21 @@
 
 #include "shared-bindings/rainbowio/__init__.h"
 
-const int32_t colorwheel(float pos) {
-    if (pos > 255) {
-        pos = pos - ((uint32_t)(pos / 256) * 256);
-    }
+int32_t colorwheel(mp_float_t pos) {
+    pos = pos - ((uint32_t)(pos / 256) * 256);
+    int shift1, shift2;
     if (pos < 85) {
-        return (uint8_t)(255 - (pos * 3)) << 16 | (uint8_t)(pos * 3) << 8;
+        shift1 = 8;
+        shift2 = 16;
     } else if (pos < 170) {
         pos -= 85;
-        return (uint8_t)(255 - (pos * 3)) << 8 | (uint8_t)(pos * 3);
+        shift1 = 0;
+        shift2 = 8;
     } else {
         pos -= 170;
-        return (uint8_t)(pos * 3) << 16 | (uint8_t)(255 - (pos * 3));
+        shift1 = 16;
+        shift2 = 0;
     }
+    int p = (int)(pos * 3);
+    return (p << shift1) | ((255 - p) << shift2);
 }

@@ -59,6 +59,7 @@
 #define MICROPY_PY_URE_SUB             (1)
 #define MICROPY_VFS_POSIX              (1)
 #define MICROPY_FATFS_USE_LABEL        (1)
+#define MICROPY_FF_MKFS_FAT32          (1)
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
