@@ -8,10 +8,7 @@
     ],
     "id": "MIKROE-QUAIL",
     "images": [
-            "quail_hand.jpg",
-            "quail_top.jpg",
-            "quail_bot.jpg",
-            "quail_bus.jpg"
+            "quail_top.jpg"
     ],
     "mcu": "stm32f4",
     "product": "MikroE Quail",
