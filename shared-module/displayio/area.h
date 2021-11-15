@@ -27,7 +27,10 @@
 #ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
 #define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_AREA_H
 
-// Implementations are in __init__.c
+#include <stdint.h>
+#include <stdbool.h>
+
+// Implementations are in area.c
 typedef struct _displayio_area_t displayio_area_t;
 
 struct _displayio_area_t {

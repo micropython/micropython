@@ -27,10 +27,22 @@ SRC_C += $(SRC_QRIO)
 CFLAGS += -DCIRCUITPY_QRIO=1
 $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
 
-SRC_GIFIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) shared/runtime/context_manager_helpers.c displayio_colorspace_only.c shared-module/displayio/ColorConverter.c shared-bindings/util.c
-SRC_C += $(SRC_GIFIO)
+SRC_BITMAP := \
+	$(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) \
+	shared/runtime/context_manager_helpers.c \
+	displayio_min.c \
+	shared-bindings/displayio/Bitmap.c \
+	shared-module/displayio/area.c \
+	shared-module/displayio/Bitmap.c \
+	shared-module/displayio/ColorConverter.c \
+	shared-bindings/bitmaptools/__init__.c \
+	shared-module/bitmaptools/__init__.c \
+	shared-bindings/util.c \
 
-CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_COLORSPACE_ONLY=1
+$(info $(SRC_BITMAP))
+SRC_C += $(SRC_BITMAP)
+
+CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_UNIX=1 -DCIRCUITPY_BITMAPTOOLS=1
 
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp

@@ -54,7 +54,7 @@
 //|           Pin used to latch parallel data going into the shift register.
 //|         :param bool value_to_latch: Pin state to latch data being read.
 //|           ``True`` if the data is latched when ``latch`` goes high
-//|           ``False`` if the data is latched when ``latch goes low.
+//|           ``False`` if the data is latched when ``latch`` goes low.
 //|           The default is ``True``, which is how the 74HC165 operates. The CD4021 latch is the opposite.
 //|           Once the data is latched, it will be shifted out by toggling the clock pin.
 //|         :param int key_count: number of data lines to clock in
