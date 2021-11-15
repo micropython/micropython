@@ -28,6 +28,7 @@
 #include <math.h>
 
 #include "common-hal/microcontroller/Processor.h"
+#include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
 
 #include "fsl_tempmon.h"

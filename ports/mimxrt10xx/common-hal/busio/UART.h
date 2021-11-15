@@ -51,4 +51,5 @@ typedef struct {
     const mcu_periph_obj_t *rts;
 } busio_uart_obj_t;
 
+void uart_reset(void);
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H

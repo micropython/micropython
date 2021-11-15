@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/smallint.h"
 
