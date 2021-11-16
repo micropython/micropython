@@ -5,10 +5,12 @@
 BOARD ?= PICO
  
 BUILD ?= build-$(BOARD)
+#MICROPY_PY_WIZNET5K ?= 5500
 
 $(VERBOSE)MAKESILENT = -s
 
 CMAKE_ARGS = -DMICROPY_BOARD=$(BOARD)
+#CMAKE_ARGS += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K)
 
 ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}
@@ -20,6 +22,7 @@ all:
 
 clean:
 	$(RM) -rf $(BUILD)
+	$(RM) -rf out.log
 
 GIT_SUBMODULES += lib/pico-sdk lib/tinyusb
 

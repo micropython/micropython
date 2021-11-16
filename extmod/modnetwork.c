@@ -89,10 +89,14 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
 
     // Defined per port in mpconfigport.h
     MICROPY_PORT_NETWORK_INTERFACES
-
+#if MICROPY_PY_WIZNET5K
+    { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#endif
     // Constants
+#if MICROPY_PY_NETWORK_CYW43
     { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(MOD_NETWORK_STA_IF) },
     { MP_ROM_QSTR(MP_QSTR_AP_IF), MP_ROM_INT(MOD_NETWORK_AP_IF) },
+#endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_network_globals, mp_module_network_globals_table);
