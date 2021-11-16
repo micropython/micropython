@@ -219,7 +219,7 @@ range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
 `LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
 for more details.
 
-Use the ``machine.PWM`` class::
+Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
@@ -254,6 +254,22 @@ A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels
 but only 8 different PWM frequencies are available, the remaining 8 channels must
 have the same frequency.  On the other hand, 16 independent PWM duty cycles are
 possible at the same frequency.
+
+Note:
+
+* The Pin.OUT mode does not need to be specified. The channel is initialized to PWM mode internally once per certain Pin().
+
+  This code is wrong::
+
+    pwm=PWM(Pin(5, Pin.OUT), freq=1000, duty=512)  # Pin(5) in PWM mode here
+    pwm=PWM(Pin(5, Pin.OUT), freq=500, duty=256)  # Pin(5) in OUT mode here, PWM is off
+
+  Use this code instead of upper fragment::
+
+    pwm=PWM(Pin(5), freq=1000, duty=512)
+    pwm.init(freq=500, duty=256)
+
+See more examples :ref:`esp32.PWM <esp32.PWM>`
 
 ADC (analog to digital conversion)
 ----------------------------------
