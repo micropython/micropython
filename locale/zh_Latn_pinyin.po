@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-15 18:21+0000\n"
+"PO-Revision-Date: 2021-11-16 01:34+0000\n"
 "Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -69,7 +69,7 @@ msgid "%%c requires int or char"
 msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
@@ -505,32 +505,32 @@ msgstr "Shùzǔ bìxū bāohán halfwords (type 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Shùzǔ zhí yīnggāi shì dāngè zì jié."
+msgstr "shùzǔ de zhí yīnggāi shì dān'gè zìjié."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr "zuì duō kě yǐ zhǐ dìng %d %q (bù shì %d)"
+msgstr "zuìduō kěyǐ zhǐdìng %d gè %q (érbúshì %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr "cháng shì fēn pèi %d kuài"
+msgstr "shìtú fēnpèi %d blocks"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
-msgstr "dāng VM bú yùn xíng shí, cháng shì duī fēn pèi."
+msgstr "shìtú zài xūnǐjī (VM) yùn xíng shí fēnpèi duī (heap)."
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr "wèi shí xiàn yīn pín zhuǎn huàn"
+msgstr "yīnpín zhuǎnhuàn wèi bèi shíxiàn"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr "AuthMode.OPEN wèi shǐ yòng mì mǎ"
+msgstr "AuthMode.OPEN wèi shǐyòng mìmǎ"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr "shēn fèn yàn zhèng shī bài"
+msgstr "shēnfèn ren4zheng4 shībài"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -546,46 +546,48 @@ msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr "wài shè bù zhī chí de bō tè lā tè"
+msgstr "bōtèlǜ bú bèi wàishè zhīchí"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
-msgstr "Dī yú zuìdī zhèng sùlǜ"
+msgstr "dīyú zuìdī zhēnlǜ"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
+#, fuzzy
 msgid "Bit clock and word select must be sequential pins"
 msgstr "wèi shí zhōng hé dān cí xuǎn zé bì xū shì shùn xù yǐn jiǎo"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+#, fuzzy
 msgid "Bit clock and word select must share a clock unit"
 msgstr "Bǐtè shízhōng hé dānzì xuǎnzé bìxū gòngxiǎng shízhōng dānwèi"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "wèi shēn dù bì xū bāo hán 1 dào 6, ér bù shì %d"
+msgstr "wèi shēndù bìxū shì 1 dào 6, ér búshì %d"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr "Bǐtè shēndù bìxū shì 8 bèi yǐshàng."
+msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
 
 #: shared-bindings/bitmaptools/__init__.c
 #, fuzzy
 msgid "Bitmap size and bits per value must match"
-msgstr "wèi tú dà xiǎo hé měi gè zhí de bǐ tè wèi bì xū pǐ pèi"
+msgstr "wèitú dàxiǎo hé měigè zhí de wèi bìxū pǐpèi"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
-msgstr "yǐn dǎo shè bèi bì xū shì dì yī tái shè bèi (jiē kǒu #0)."
+msgstr "yǐndǎo shèbèi bìxū shì dìyī tái shèbèi (interface #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr "liú liàng kòng zhì suǒ xū de RX hé TX"
+msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr "Liǎng gè yǐn jiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
+msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -595,21 +597,21 @@ msgstr "Liàngdù bìxū wèi 0-1.0"
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Brightness must be between 0 and 255"
-msgstr "Liàngdù bìxū jiè yú 0 dào 255 zhī jiān"
+msgstr "liàngdù bìxū jièyú 0 dào 255 zhījiān"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
-msgstr "Liàngdù wúfǎ tiáozhěng"
+msgstr "liàngdù wúfǎ tiáozhěng"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr "Huǎnchōng qū hé piān yí liàng tài xiǎo %d %d %d"
+msgstr "huǎnchōngqū yǔ piānyíliàng de hé tài xiǎo %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr "huǎn chōng yuán jiàn bì xū wéi 4 zì jié cháng huò gèng shǎo"
+msgstr "huǎnchōngqū de yuánsù bìxū wéi 4 zìjié cháng huò gèngshǎo"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -634,7 +636,7 @@ msgstr "Huǎnchōng qū chángdù%d tài dà. Tā bìxū xiǎoyú%d"
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr "Huǎn chōng qū cháng dù bì xū wéi 512 de bèi shù"
+msgstr "Huǎnchōngqū chángdù bìxū wéi 512 de bèishù"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
@@ -1308,6 +1310,10 @@ msgstr "Wúxiào de BSSID"
 msgid "Invalid DAC pin supplied"
 msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid MAC address"
+msgstr ""
+
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
 msgstr "wú xiào de MIDI wén jiàn"
@@ -1380,6 +1386,10 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Invalid multicast MAC address"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2173,6 +2183,10 @@ msgstr "Yǔ zi bǔhuò fēnliè"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Station must be started"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -3990,7 +4004,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
@@ -4212,6 +4226,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
 msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
+
+#: shared-bindings/wifi/Radio.c
+msgid "ssid can't be more than 32 bytes"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"

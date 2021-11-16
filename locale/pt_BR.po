@@ -1317,6 +1317,10 @@ msgstr "BSSID Inválido"
 msgid "Invalid DAC pin supplied"
 msgstr "O pino DAC informado é inválido"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid MAC address"
+msgstr ""
+
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
 msgstr "O arquivo MIDI é inválido"
@@ -1389,6 +1393,10 @@ msgstr "Tamanho do pedaço de formato inválido"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "O acesso da memória é inválido."
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Invalid multicast MAC address"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2190,6 +2198,10 @@ msgstr "Divisão com sub-capturas"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "O tamanho da pilha deve ser pelo menos 256"
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Station must be started"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -4028,7 +4040,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
@@ -4247,6 +4259,10 @@ msgstr "o source_bitmap deve ter o value_count de 65536"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
 msgstr "o source_bitmap deve ter o value_count de 8"
+
+#: shared-bindings/wifi/Radio.c
+msgid "ssid can't be more than 32 bytes"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"

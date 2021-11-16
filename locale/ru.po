@@ -7,25 +7,32 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
+"PO-Revision-Date: 2021-11-16 13:32+0000\n"
+"Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.9.1-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Программа закончила выполнение.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"Программа остановлена автоматической перезагрузкой.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -33,53 +40,58 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Пожалуйста, сообщите о проблеме, приложив содержимое вашего диска CIRCUITPY "
+"на\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  Файл \"%q\""
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  Файл \"%q\", строка %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " имеет тип %q\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " не найден.\n"
 
 #: main.c
 msgid " output:\n"
-msgstr ""
+msgstr " вывод:\n"
 
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c требует int или char"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d адресные выводы, %d rgb выводы и %d плитки указывают высоту %d а не %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q и %q содержат повторяющиеся выводы"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q содержит повторяющиеся выводы"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q сбой: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr ""
+msgstr "%q используется"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -88,35 +100,35 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
-msgstr ""
+msgstr "Индекс %q вне диапазона"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "Индексы %q должны быть целыми числами, а не %s"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "Длинна %q должна быть %d-%d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
-msgstr ""
+msgstr "Длинна %q должна быть >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q должен быть %d-%d"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
-msgstr ""
+msgstr "%q должен быть <= %d"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q должен быть >= %d"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q должен быть >= 0"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -124,305 +136,305 @@ msgstr ""
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr ""
+msgstr "%q должен быть >= 1"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q должен быть строкой"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr ""
+msgstr "%q должен быть кортежем длинной 2"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 #: shared-module/vectorio/VectorShape.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q должен быть между %d и %d"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
-msgstr ""
+msgstr "%q должен быть типа %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q должен быть во 2-й степени"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
-msgstr ""
+msgstr "%q за пределом"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q вне диапазона"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "Вывод %q не допустим"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr ""
+msgstr "%q должен быть int"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
-msgstr ""
+msgstr "%q с идентификатором отчёта 0 должен иметь длину 1"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "%q() принимает %d позиционных аргументов, но было передано %d"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "%q, %q, и %q должны быть одной длинны"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s ошибка 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr ""
+msgstr "Требуется аргумент '%q'"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "Объект '%q' не поддерживает '%q'"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "Объект '%q' не является итератором"
 
 #: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "Объект '%q' не является вызываемым"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "Объект '%q'не является итерируемым"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr ""
+msgstr "'%s' ожидает метку"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s' ожидает регистр"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s' ожидает специальный регистр"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' ожидает регистр FPU"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s' ожидает адрес в формате [a, b]"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' ожидает целое число"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' ожидает не более r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' ожидает {r0, r1, ...}"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' целое число %d не находится в пределах диапазона %d..%d"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' целое число 0x%x не помещается в маску 0x%x"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "Объект '%s' не поддерживает присвоение элементов"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "Объект '%s' не поддерживает удаление элементов"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "Объект '%s' не имеет атрибута '%q'"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "Объект '%s' не может быть подписан"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "Выравнивание '=' недопустимо в спецификаторе формата строки"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' и 'O' не являются поддерживаемыми типами форматов"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr ""
+msgstr "'align' требует 1 аргумент"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr ""
+msgstr "'await' вне функции"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' или 'async with' вне асинхронной функции"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr ""
+msgstr "'break' вне цикла"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr ""
+msgstr "'continue' вне цикла"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "Объект 'coroutine' не является итератором"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr ""
+msgstr "'data' требует как минимум 2 аргумента"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
-msgstr ""
+msgstr "'data' требует целочисленных аргументов"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label' требует 1 аргумент"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr ""
+msgstr "'return' вне функции"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' внутри асинхронной функции"
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr ""
+msgstr "'yield' вне функции"
 
 #: shared-module/vectorio/VectorShape.c
 msgid "(x,y) integers required"
-msgstr ""
+msgstr "Требуются целые числа (x,y)"
 
 #: py/compile.c
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "*x должно быть целью назначения"
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr ", в %q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
-msgstr ""
+msgstr "0.0 в комплексную степень"
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
-msgstr ""
+msgstr "3-аргументный pow() не поддерживается"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "64-битные типы"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "Канал аппаратного прерывания уже используется"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "ADC2 используется WiFi"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr ""
+msgstr "Адрес должен быть длиной %d байт"
 
 #: shared-bindings/_bleio/Address.c
 msgid "Address type out of range"
-msgstr ""
+msgstr "Тип адреса вне диапазона"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Все периферийные устройства CAN уже используются"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr ""
+msgstr "Все периферийные устройства I2C уже используются"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Все блоки PCNT уже используются"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Все RX FIFO уже используются"
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr ""
+msgstr "Все периферийные устройства SPI уже используются"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr ""
+msgstr "Все периферийные устройства UART уже используются"
 
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "Все каналы уже используются"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr ""
+msgstr "Все каналы событий уже используются"
 
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Все машины состояний уже используются"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
-msgstr ""
+msgstr "Все каналы событий синхронизации уже используются"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr ""
+msgstr "Все таймеры для этого вывода уже используются"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -439,104 +451,123 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr ""
+msgstr "Все таймеры уже используются"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
+#, fuzzy
 msgid "Already advertising."
-msgstr ""
+msgstr "Уже рекламируется (advertising)."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
+#, fuzzy
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Уже есть универсальный слушатель"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Уже запущен"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#, fuzzy
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Поиск сетей wifi уже происходит"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
+#, fuzzy
 msgid "AnalogIn not supported on given pin"
-msgstr ""
+msgstr "AnalogIn не поддерживается на данном выводе"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#, fuzzy
 msgid "AnalogOut functionality not supported"
-msgstr ""
+msgstr "Функциональность AnalogOut не поддерживается"
 
 #: shared-bindings/analogio/AnalogOut.c
+#, fuzzy
 msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr ""
+msgstr "AnalogOut имеет только 16 бит. Значение должно быть меньше 65536."
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
+#, fuzzy
 msgid "AnalogOut not supported on given pin"
-msgstr ""
+msgstr "AnalogOut не поддерживается на данном выводе"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+#, fuzzy
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "Другой PWMAudioOut уже активен"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
+#, fuzzy
 msgid "Another send is already active"
-msgstr ""
+msgstr "Другая передача уже активна"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Массив должен содержать полуслова (тип 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
+#, fuzzy
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Значения массива должны быть однобайтовыми."
 
 #: shared-bindings/microcontroller/Pin.c
+#, fuzzy
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "Может быть указано не более %d %q (не %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
-#, c-format
+#, c-format, fuzzy
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Попытка выделения %d блоков"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Attempted heap allocation when VM not running."
-msgstr ""
+msgstr "Попытка выделения heap пока виртуальная машина не запущена."
 
 #: ports/raspberrypi/audio_dma.c
+#, fuzzy
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "Преобразование звука не реализовано"
 
 #: shared-bindings/wifi/Radio.c
+#, fuzzy
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN не используется с паролем"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Ошибка аутентификации"
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "Автоматическая перезагрузка отключена.\n"
 
 #: main.c
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
+"Автоматическая перезагрузка включена. Просто сохрани файл по USB или зайди в "
+"REPL чтобы отключить.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
+#, fuzzy
 msgid "Baudrate not supported by peripheral"
 msgstr ""
+"Скорость обмена данными (Baudrate) не поддерживается периферийным устройством"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid "Below minimum frame rate"
-msgstr ""
+msgstr "Ниже минимальной частоты кадров"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
@@ -547,95 +578,104 @@ msgid "Bit clock and word select must share a clock unit"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
+#, c-format, fuzzy
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "Битовая глубина должна быть от 1 до 6 включительно, а не %d."
 
 #: shared-bindings/audiobusio/PDMIn.c
+#, fuzzy
 msgid "Bit depth must be multiple of 8."
-msgstr ""
+msgstr "Битовая глубина должна быть кратна 8."
 
 #: shared-bindings/bitmaptools/__init__.c
+#, fuzzy
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "Размер bitmap и количество бит-на-значение должны совпадать"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Boot device must be first device (interface #0)."
-msgstr ""
+msgstr "Загрузочное устройство должно быть первым устройством (интерфейс #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
+#, fuzzy
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Для управления потоком требуется как RX, так и TX"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#, fuzzy
 msgid "Both pins must support hardware interrupts"
-msgstr ""
+msgstr "Оба вывода должны поддерживать аппаратные прерывания"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "Яркость должна быть в диапазоне от 0 до 1.0"
 
 #: shared-bindings/supervisor/__init__.c
+#, fuzzy
 msgid "Brightness must be between 0 and 255"
-msgstr ""
+msgstr "Яркость должна быть в диапазоне от 0 до 255"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Яркость не регулируется"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr ""
+msgstr "Буфер + сдвиг слишком малы %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Элементы буфера должны иметь длину не более 4 байт"
 
 #: shared-module/usb_hid/Device.c
-#, c-format
+#, c-format, fuzzy
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr ""
+msgstr "Неправильный размер буфера. Должен быть %d байт."
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "Буфер не является байтовым массивом (bytearray)."
 
 #: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid "Buffer is too small"
-msgstr ""
+msgstr "Буфер слишком мал"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "Размер буфера %d слишком большой. Он должен быть меньше чем %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Размер буфера должен быть кратен 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Буфер должен быть кратен 512"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr ""
+msgstr "Буфер должен быть размером не менее 1"
 
 #: shared-bindings/_bleio/PacketBuffer.c
-#, c-format
+#, c-format, fuzzy
 msgid "Buffer too short by %d bytes"
-msgstr ""
+msgstr "Буфер слишком короткий на %d байт"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "Буферы должны быть одинакового размера"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -643,27 +683,28 @@ msgstr ""
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
-msgstr ""
+msgstr "Вывод шины %d уже используется"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
-msgstr ""
+msgstr "Буфер байтов должен быть размером 16 байтам."
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
-msgstr ""
+msgstr "Bytes должен быть в диапазоне от 0 до 255."
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
-msgstr ""
+msgstr "Блоки CBC должны быть кратны 16 байтам"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC или контрольная сумма неправильная"
 
 #: py/objtype.c
+#, fuzzy
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
+msgstr "Вызовите super().__init__() перед обращением к родному объекту."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
@@ -1279,6 +1320,10 @@ msgstr ""
 msgid "Invalid DAC pin supplied"
 msgstr ""
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid MAC address"
+msgstr ""
+
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
 msgstr ""
@@ -1350,6 +1395,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
+msgstr ""
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Invalid multicast MAC address"
 msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
@@ -1922,10 +1971,12 @@ msgstr ""
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"Нажмите любую клавишу чтобы зайти в REPL. Используйте CTRL-D для "
+"перезагрузки.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
-msgstr ""
+msgstr "Притворяюсь глубоко спать до сигнала, CTRL-C или запись в файл.\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
@@ -2131,6 +2182,10 @@ msgstr ""
 
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
+msgstr ""
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Station must be started"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -3923,7 +3978,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr ""
 
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
@@ -4139,6 +4194,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "ssid can't be more than 32 bytes"
 msgstr ""
 
 #: py/objstr.c
