@@ -69,7 +69,7 @@ msgid "%%c requires int or char"
 msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
@@ -1310,6 +1310,10 @@ msgstr "Wúxiào de BSSID"
 msgid "Invalid DAC pin supplied"
 msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid MAC address"
+msgstr ""
+
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
 msgstr "wú xiào de MIDI wén jiàn"
@@ -1382,6 +1386,10 @@ msgstr "Géshì kuài dàxiǎo wúxiào"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Wúxiào de nèicún fǎngwèn."
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Invalid multicast MAC address"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2175,6 +2183,10 @@ msgstr "Yǔ zi bǔhuò fēnliè"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Station must be started"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -3992,7 +4004,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
@@ -4214,6 +4226,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
 msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
+
+#: shared-bindings/wifi/Radio.c
+msgid "ssid can't be more than 32 bytes"
+msgstr ""
 
 #: py/objstr.c
 msgid "start/end indices"
