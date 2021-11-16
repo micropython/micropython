@@ -193,6 +193,8 @@ soft_reset_exit:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
+    machine_pwms_deinit();
+    // TODO: machine_rmts_deinit();
     machine_pins_deinit();
     machine_deinit();
     usocket_events_deinit();

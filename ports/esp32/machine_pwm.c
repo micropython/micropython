@@ -373,7 +373,7 @@ STATIC int find_channel(int pin, int mode) {
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM(pin=%u", self->pin);
+    mp_printf(print, "PWM(Pin(%u)", self->pin);
     if (self->active) {
         mp_printf(print, ", freq=%u", ledc_get_freq(self->mode, self->timer));
 
@@ -462,11 +462,9 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     self->channel = CHANNEL_IDX_TO_CHANNEL(channel_idx);
 
     // New PWM assignment
-    // if ((chans[channel_idx].pin == -1) || (chans[channel_idx].timer_idx != timer_idx)) {
-    // Always reconfigure the channel to remap Pin.OUT mode as PWM output mode
     // p=PWM(Pin(5, Pin.OUT), 1000, duty_ns=5000)  # works here
     // p=PWM(Pin(5, Pin.OUT), 1000, duty_ns=5000)  # locks up
-    {
+    if ((chans[channel_idx].pin == -1) || (chans[channel_idx].timer_idx != timer_idx)) {
         configure_channel(self);
         chans[channel_idx].pin = self->pin;
     }
@@ -518,42 +516,60 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    int chan = CHANNEL_IDX(self->mode, self->channel);
-
+STATIC void pwm_deinit(int channel_idx) {
     // Valid channel?
-    if ((chan >= 0) && (chan < PWM_CHANNEL_MAX)) {
+    if ((channel_idx >= 0) && (channel_idx < PWM_CHANNEL_MAX)) {
         // Clean up timer if necessary
-        if (!is_timer_in_use(chan, chans[chan].timer_idx)) {
-            check_esp_err(ledc_timer_rst(self->mode, self->timer));
-            DBG("ledc_timer_rst unused")
-            // Flag it unused
-            timers[chans[chan].timer_idx].freq_hz = -1;
+        int timer_idx = chans[channel_idx].timer_idx;
+        if (timer_idx != -1) {
+            if (!is_timer_in_use(channel_idx, timer_idx)) {
+                check_esp_err(ledc_timer_rst(TIMER_IDX_TO_MODE(timer_idx), TIMER_IDX_TO_TIMER(timer_idx)));
+                // Flag it unused
+                timers[chans[channel_idx].timer_idx].freq_hz = -1;
+            }
         }
 
-        DBG("ledc_stop")
-        // Mark it unused, and tell the hardware to stop routing
-        check_esp_err(ledc_stop(self->mode, self->channel, 0));
-        // Disable ledc signal for the pin
-        // gpio_matrix_out(self->pin, SIG_GPIO_OUT_IDX, false, false);
-        if (self->mode == LEDC_LOW_SPEED_MODE) {
-            gpio_matrix_out(self->pin, LEDC_LS_SIG_OUT0_IDX + self->channel, false, true);
-        } else {
-            #if LEDC_SPEED_MODE_MAX > 1
-            #if CONFIG_IDF_TARGET_ESP32
-            gpio_matrix_out(self->pin, LEDC_HS_SIG_OUT0_IDX + self->channel, false, true);
-            #else
-            #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
-            #endif
-            #endif
+        int pin = chans[channel_idx].pin;
+        if (pin != -1) {
+            int mode = CHANNEL_IDX_TO_MODE(channel_idx);
+            int channel = CHANNEL_IDX_TO_CHANNEL(channel_idx);
+            // Mark it unused, and tell the hardware to stop routing
+            check_esp_err(ledc_stop(mode, channel, 0));
+            // Disable ledc signal for the pin
+            // gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
+            if (mode == LEDC_LOW_SPEED_MODE) {
+                gpio_matrix_out(pin, LEDC_LS_SIG_OUT0_IDX + channel, false, true);
+            } else {
+                #if LEDC_SPEED_MODE_MAX > 1
+                #if CONFIG_IDF_TARGET_ESP32
+                gpio_matrix_out(pin, LEDC_HS_SIG_OUT0_IDX + channel, false, true);
+                #else
+                #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
+                #endif
+                #endif
+            }
         }
-        chans[chan].pin = -1;
-        chans[chan].timer_idx = -1;
-        self->active = false;
-        self->mode = -1;
-        self->channel = -1;
-        self->timer = -1;
-        self->duty_x = 0;
+        chans[channel_idx].pin = -1;
+        chans[channel_idx].timer_idx = -1;
+    }
+}
+
+STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+    int channel_idx = CHANNEL_IDX(self->mode, self->channel);
+    pwm_deinit(channel_idx);
+    self->active = false;
+    self->mode = -1;
+    self->channel = -1;
+    self->timer = -1;
+    self->duty_x = 0;
+}
+
+void machine_pwms_deinit(void) {
+    if (pwm_inited) {
+        for (int channel_idx = 0; channel_idx < PWM_CHANNEL_MAX; ++channel_idx) {
+            pwm_deinit(channel_idx);
+        }
+        pwm_inited = false;
     }
 }
 
