@@ -112,6 +112,7 @@ mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_hostname(wifi_radio_obj_t *self, const char *hostname) {
     esp_netif_set_hostname(self->netif, hostname);
+    esp_netif_set_hostname(self->ap_netif, hostname);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
@@ -122,7 +123,7 @@ mp_obj_t common_hal_wifi_radio_get_mac_address(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t *mac) {
     if (!self->sta_mode) {
-        mp_raise_RuntimeError(translate("Station must be started"));
+        mp_raise_RuntimeError(translate("Interface must be started"));
     }
     if ((mac[0] & 0b1) == 0b1) {
         mp_raise_RuntimeError(translate("Invalid multicast MAC address"));
@@ -134,6 +135,16 @@ mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
     return mp_obj_new_bytes(mac, MAC_ADDRESS_LENGTH);
+}
+
+void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint8_t *mac) {
+    if (!self->ap_mode) {
+        mp_raise_RuntimeError(translate("Interface must be started"));
+    }
+    if ((mac[0] & 0b1) == 0b1) {
+        mp_raise_RuntimeError(translate("Invalid multicast MAC address"));
+    }
+    esp_wifi_set_mac(ESP_IF_WIFI_AP, mac);
 }
 
 mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self) {
