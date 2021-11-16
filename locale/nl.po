@@ -1292,6 +1292,10 @@ msgstr "Ongeldig BSSID"
 msgid "Invalid DAC pin supplied"
 msgstr "Ongeldige DAC pin opgegeven"
 
+#: shared-bindings/wifi/Radio.c
+msgid "Invalid MAC address"
+msgstr ""
+
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
 msgstr ""
@@ -1364,6 +1368,10 @@ msgstr "Ongeldig formaat stuk grootte"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ongeldig geheugen adres."
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Invalid multicast MAC address"
+msgstr ""
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2159,6 +2167,10 @@ msgstr "Splitting met sub-captures"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Stack grootte moet op zijn minst 256 zijn"
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Station must be started"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -3965,7 +3977,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "pow() met 3 argumenten vereist integers"
 
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
@@ -4183,6 +4195,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "ssid can't be more than 32 bytes"
 msgstr ""
 
 #: py/objstr.c
