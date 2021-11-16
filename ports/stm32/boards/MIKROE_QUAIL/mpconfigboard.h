@@ -1,6 +1,5 @@
 #define MICROPY_HW_BOARD_NAME       "MikroE Quail"
 #define MICROPY_HW_MCU_NAME         "STM32F427VI"
-#define MICROPY_PY_SYS_PLATFORM     "MikroE Quail"
 
 // 1 = use STM32 internal flash (1 MByte)
 // 0 = use onboard external SPI flash (8 MByte)
