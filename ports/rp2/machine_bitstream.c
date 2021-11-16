@@ -49,7 +49,7 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
     }
     mp_hal_pin_output(pin);
     // Enable the systick counter, source CPU clock.
-    mp_hal_ticks_cpu_init();
+    systick_hw->csr = 5;
 
     uint32_t irq_state = mp_hal_quiet_timing_enter();
 
@@ -57,7 +57,7 @@ void __time_critical_func(machine_bitstream_high_low)(mp_hal_pin_obj_t pin, uint
         uint8_t b = buf[i];
         for (size_t j = 0; j < 8; ++j) {
             uint32_t *t = &timing_ns[b >> 6 & 2];
-            uint32_t start_ticks = (systick_hw->cvr = SYSTICK_MAX);
+            uint32_t start_ticks = systick_hw->cvr = SYSTICK_MAX;
             mp_hal_pin_high(pin);
             while ((start_ticks - systick_hw->cvr) < t[0]) {
             }
