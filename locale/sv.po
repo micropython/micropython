@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-11 18:10+0000\n"
+"PO-Revision-Date: 2021-11-16 13:32+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -158,7 +158,7 @@ msgstr "%q måste vara en potens av 2"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
-msgstr ""
+msgstr "%q är utanför gränserna"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
@@ -1301,7 +1301,7 @@ msgstr "Ogiltig DAC-pinne angiven"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Ogiltig MAC-adress"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
@@ -1378,7 +1378,7 @@ msgstr "Ogiltig minnesåtkomst."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
-msgstr ""
+msgstr "Ogiltig MAC-adress för multicast"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2176,7 +2176,7 @@ msgstr "Stackstorleken måste vara minst 256"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Station must be started"
-msgstr ""
+msgstr "Stationen måste startas"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -3648,7 +3648,7 @@ msgstr "modulen hittades inte"
 
 #: ports/espressif/common-hal/wifi/Monitor.c
 msgid "monitor init failed"
-msgstr ""
+msgstr "monitor init misslyckades"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
@@ -4219,7 +4219,7 @@ msgstr "source_bitmap måste ha value_count av 8"
 
 #: shared-bindings/wifi/Radio.c
 msgid "ssid can't be more than 32 bytes"
-msgstr ""
+msgstr "ssid kan vara max 32 bytes"
 
 #: py/objstr.c
 msgid "start/end indices"
