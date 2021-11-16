@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-15 18:21+0000\n"
+"PO-Revision-Date: 2021-11-17 18:26+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1319,7 +1319,7 @@ msgstr "O pino DAC informado é inválido"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Endereço MAC inválido"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
@@ -1396,7 +1396,7 @@ msgstr "O acesso da memória é inválido."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
-msgstr ""
+msgstr "Endereço MAC multicast inválido"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -2201,7 +2201,7 @@ msgstr "O tamanho da pilha deve ser pelo menos 256"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Station must be started"
-msgstr ""
+msgstr "A estação deve ser iniciada"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -4262,7 +4262,7 @@ msgstr "o source_bitmap deve ter o value_count de 8"
 
 #: shared-bindings/wifi/Radio.c
 msgid "ssid can't be more than 32 bytes"
-msgstr ""
+msgstr "O ssid não pode ter mais do que 32 bytes"
 
 #: py/objstr.c
 msgid "start/end indices"
