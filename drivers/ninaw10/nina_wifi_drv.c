@@ -344,6 +344,14 @@ static int nina_send_command_read_vals(uint32_t cmd, uint32_t nargs,
     return 0;
 }
 
+static void nina_fix_mac_addr(uint8_t *mac) {
+    for (int i = 0; i < 3; i++) {
+        uint8_t b = mac[i];
+        mac[i] = mac[5 - i];
+        mac[5 - i] = b;
+    }
+}
+
 int nina_init(void) {
     // Initialize the BSP.
     nina_bsp_init();
@@ -541,11 +549,17 @@ int nina_netinfo(nina_netinfo_t *netinfo) {
         return -1;
     }
 
+    // Null terminate SSID.
+    netinfo->ssid[MIN((NINA_MAX_SSID_LEN - 1), ssid_len)] = 0;
+
     if (nina_send_command_read_vals(NINA_CMD_GET_BSSID,
         1, ARG_8BITS, NINA_ARGS(ARG_BYTE(0xFF)),
         1, ARG_8BITS, NINA_VALS({&bssid_len, &netinfo->bssid})) != 0) {
         return -1;
     }
+
+    // The MAC address is read in reverse from the firmware.
+    nina_fix_mac_addr(netinfo->bssid);
 
     return 0;
 }
@@ -629,6 +643,9 @@ int nina_scan(nina_scan_callback_t scan_callback, void *arg, uint32_t timeout) {
             1, ARG_8BITS, NINA_VALS({&bssid_len, scan_result.bssid})) != 0) {
             return -1;
         }
+
+        // The MAC address is read in reverse from the firmware.
+        nina_fix_mac_addr(scan_result.bssid);
 
         scan_callback(&scan_result, arg);
     }
