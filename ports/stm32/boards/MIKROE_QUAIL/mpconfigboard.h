@@ -78,9 +78,6 @@
 #define MICROPY_HW_SPIFLASH_MISO (MICROPY_HW_SPI3_MISO)
 #define MICROPY_HW_SPIFLASH_MOSI (MICROPY_HW_SPI3_MOSI)
 
-#define MICROPY_BOARD_EARLY_INIT board_early_init
-void board_early_init(void);
-
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
