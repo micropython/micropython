@@ -119,23 +119,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_active_obj, 1, 2, net
 
 STATIC int nina_scan_callback(nina_scan_result_t *scan_result, void *arg) {
     mp_obj_t scan_list = (mp_obj_t)arg;
-
-    // Format MAC address
-    VSTR_FIXED(bssid_vstr, 18);
-    vstr_printf(&bssid_vstr, "%02X:%02X:%02X:%02X:%02X:%02X",
-        scan_result->bssid[0], scan_result->bssid[1], scan_result->bssid[2],
-        scan_result->bssid[3], scan_result->bssid[4], scan_result->bssid[5]);
-
-    mp_obj_t ap[5] = {
+    mp_obj_t ap[6] = {
+        mp_obj_new_bytes((uint8_t *)scan_result->ssid, strlen(scan_result->ssid)),
+        mp_obj_new_bytes(scan_result->bssid, sizeof(scan_result->bssid)),
         mp_obj_new_int(scan_result->channel),
         mp_obj_new_int(scan_result->rssi),
         mp_obj_new_int(scan_result->security),
-        mp_obj_new_str(bssid_vstr.buf, bssid_vstr.len),
-        mp_obj_new_str(scan_result->ssid, strlen(scan_result->ssid)),
+        MP_OBJ_NEW_SMALL_INT(1), // N
     };
-
     mp_obj_list_append(scan_list, mp_obj_new_tuple(MP_ARRAY_SIZE(ap), ap));
-
     return 0;
 }
 
