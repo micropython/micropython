@@ -2175,8 +2175,8 @@ msgid "Stack size must be at least 256"
 msgstr "Stackstorleken måste vara minst 256"
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Station must be started"
-msgstr "Stationen måste startas"
+msgid "Interface must be started"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -4583,6 +4583,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Station must be started"
+#~ msgstr "Stationen måste startas"
 
 #~ msgid "%q must <= %d"
 #~ msgstr "%q måste vara <=%d"

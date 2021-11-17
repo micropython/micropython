@@ -1191,8 +1191,8 @@ msgid ""
 "Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
 "mpy-update for more info."
 msgstr ""
-"Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. "
-"http://adafru.it/mpy-update для получения дополнительной информации."
+"Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
+"adafru.it/mpy-update для получения дополнительной информации."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -2186,7 +2186,7 @@ msgid "Stack size must be at least 256"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Station must be started"
+msgid "Interface must be started"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
