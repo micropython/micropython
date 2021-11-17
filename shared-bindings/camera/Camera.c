@@ -61,11 +61,11 @@
 //|         """Initialize camera."""
 //|         ...
 //|
-STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
+STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     camera_obj_t *self = m_new_obj(camera_obj_t);
     self->base.type = &camera_type;
     // No arguments
-    mp_arg_check_num(n_args, kw_args, 0, 0, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     common_hal_camera_construct(self);
     return MP_OBJ_FROM_PTR(self);
