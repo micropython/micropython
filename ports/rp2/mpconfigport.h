@@ -112,7 +112,7 @@
 #define MICROPY_PY_THREAD_GIL                   (0)
 
 #define MICROPY_PY_NETWORK                      (1)
-
+#define MICROPY_PY_USOCKET                      (1)
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_UASYNCIO                     (1)

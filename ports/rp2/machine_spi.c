@@ -165,7 +165,8 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+ void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+//STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
     const size_t dma_min_size_threshold = 32;
@@ -225,11 +226,11 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
 }
 
-const spi_inst_t *spi_from_mp_obj(mp_obj_t o) {
+machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o) {
  if (mp_obj_is_type(o, &machine_spi_type)) {
         machine_spi_obj_t *self = MP_OBJ_TO_PTR(o);
         //return self->spi_inst;
-        return self->spi_inst;
+        return self;
     } else {
         mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }

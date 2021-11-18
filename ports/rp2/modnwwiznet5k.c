@@ -61,8 +61,8 @@ typedef struct _wiznet5k_obj_t {
     mp_obj_base_t base;
     mp_uint_t cris_state;
     machine_spi_obj_t *spi;
-    machine_pin_obj_t *cs;
-    machine_pin_obj_t *rst;
+    machine_pin_obj_t cs;
+    machine_pin_obj_t rst;
     uint8_t socket_used;
 } wiznet5k_obj_t;
 
@@ -77,21 +77,21 @@ STATIC void wiz_cris_exit(void) {
 }
 
 STATIC void wiz_cs_select(void) {
-//    mp_hal_pin_low(wiznet5k_obj.cs);
-//   machine_pin_low(wiznet5k_obj.cs);
-	machine_pin_high(wiznet5k_obj.cs);
+
+	mp_hal_pin_write(wiznet5k_obj.cs.id,0);
 }
 
 STATIC void wiz_cs_deselect(void) {
-//    mp_hal_pin_high(wiznet5k_obj.cs);
-    machine_pin_high(wiznet5k_obj.cs);
+
+   mp_hal_pin_write(wiznet5k_obj.cs.id,1);
 
 }
 
 STATIC void wiz_spi_read(uint8_t *buf, uint32_t len) {
 //    HAL_StatusTypeDef status = HAL_SPI_Receive(wiznet5k_obj.spi->spi, buf, len, 5000);
 //    (void)status;
-    machine_spi_transfer((mp_obj_base_t *)wiznet5k_obj.spi ,len, buf,buf);
+    uint8_t tx_buf[100];
+    machine_spi_transfer((mp_obj_base_t*)wiznet5k_obj.spi ,len, tx_buf ,buf);
 }
 
 STATIC void wiz_spi_write(const uint8_t *buf, uint32_t len) {
@@ -367,13 +367,18 @@ STATIC mp_obj_t wiznet5k_socket_disconnect(mp_obj_t self_in) {
 STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
+	
+    machine_spi_obj_t *spi = spi_from_mp_obj(args[0]);
+    mp_hal_pin_obj_t cs = mp_hal_get_pin_obj(args[1]);
+    mp_hal_pin_obj_t rst = mp_hal_get_pin_obj(args[2]);
 
     // init the wiznet5k object
     wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
-    wiznet5k_obj.spi = (machine_spi_obj_t*)spi_from_mp_obj(args[0]);
-    wiznet5k_obj.cs->id = mp_hal_get_pin_obj(args[1]);
-    wiznet5k_obj.rst->id = mp_hal_get_pin_obj(args[2]);
+    wiznet5k_obj.spi = spi;
+    wiznet5k_obj.cs.id= cs;
+    wiznet5k_obj.rst.id = rst;
+
     wiznet5k_obj.socket_used = 0;
 
     /*!< SPI configuration */
@@ -403,14 +408,14 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     init->CRCCalculation = SPI_CRCCALCULATION_DISABLED;
     init->CRCPolynomial = 7; // unused
 */
-    spi_init((spi_inst_t*)wiznet5k_obj.spi, 48000);
+    spi_init(wiznet5k_obj.spi->spi_inst, 48000);
 	
-    mp_hal_pin_output(wiznet5k_obj.cs->id);
-    mp_hal_pin_output(wiznet5k_obj.rst->id);
+    mp_hal_pin_output(wiznet5k_obj.cs.id);
+    mp_hal_pin_output(wiznet5k_obj.rst.id);
 
-    machine_pin_low((mp_obj_t*)wiznet5k_obj.rst);
+    mp_hal_pin_write(wiznet5k_obj.rst.id,0);
     mp_hal_delay_ms(1); // datasheet says 2us
-    machine_pin_high((mp_obj_t*)wiznet5k_obj.rst);
+    mp_hal_pin_write(wiznet5k_obj.rst.id,1);
     mp_hal_delay_ms(160); // datasheet says 150ms
 
     reg_wizchip_cris_cbfunc(wiz_cris_enter, wiz_cris_exit);

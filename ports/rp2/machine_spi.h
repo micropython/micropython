@@ -93,8 +93,8 @@ void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src
 const spi_inst_t *spi_from_mp_obj(mp_obj_t o);
 */
 
-
-
+machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o);
+void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest);
 
 
 

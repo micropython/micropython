@@ -43,12 +43,12 @@ typedef struct _machine_pin_irq_obj_t {
     uint32_t flags;
     uint32_t trigger;
 } machine_pin_irq_obj_t;
+mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
+
 
 void machine_pin_init(void);
 void machine_pin_deinit(void);
-mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
-// machine_pin_obj_t *pin_find(mp_obj_t user_obj);
 
 
 

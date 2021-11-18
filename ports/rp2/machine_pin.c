@@ -395,12 +395,6 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     }
     return 0;
 }
-
-STATIC const mp_irq_methods_t machine_pin_irq_methods = {
-    .trigger = machine_pin_irq_trigger,
-    .info = machine_pin_irq_info,
-};
-
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &machine_pin_type)) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a Pin"));
@@ -408,19 +402,9 @@ mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     machine_pin_obj_t *pin = MP_OBJ_TO_PTR(obj);
     return pin->id;
 }
-/*
+STATIC const mp_irq_methods_t machine_pin_irq_methods = {
+    .trigger = machine_pin_irq_trigger,
+    .info = machine_pin_irq_info,
+};
 
-machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
-     machine_pin_obj_t *pin_obj;
 
-    // If a pin was provided, then use it
-    if (mp_obj_is_type(user_obj, &machine_pin_type)) {
-         pin_obj = user_obj;
-        return pin_obj;
-    }
-
-   
-    mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't exist"));
-}
-
-*/

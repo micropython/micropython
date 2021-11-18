@@ -69,7 +69,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 
 extern uint32_t machine_pin_open_drain_mask;
 
-mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
 static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;
