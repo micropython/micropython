@@ -49,8 +49,15 @@
 #include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
 
+#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+extern bool tud_msc_device_ejected();
+#endif
+
 extern uint8_t __StackTop, __StackBottom;
 static char gc_heap[192 * 1024];
+static volatile bool mp_initialized = false;
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -60,6 +67,50 @@ bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
 bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BINARY_INFO_ID_MP_FROZEN, "frozen modules",
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
+
+#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+#define debug_printf(...) mp_printf(&mp_plat_print, "main.c: " __VA_ARGS__)
+
+int tud_msc_device_ejected_cb(bool ejected) {
+    if (mp_initialized == false) {
+        // Make sure this is not called before MP is initialized.
+        return 0;
+    }
+
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    int ret = 0;
+    const char *mount_point_str = "/flash";
+    mp_obj_t mount_point = mp_obj_new_str(mount_point_str, strlen(mount_point_str));
+    nlr_buf_t nlr;
+    if (nlr_push(&nlr) == 0) {
+        if (ejected) {
+            // Mount filesystem to allow device access.
+            mp_obj_t bdev = rp2_flash_type.make_new(&rp2_flash_type, 0, 0, NULL);
+            mp_obj_t args[] = { bdev, mount_point, MP_OBJ_NEW_QSTR(MP_QSTR_mkfs), mp_const_true };
+            mp_map_t kw_args;
+            mp_map_init_fixed_table(&kw_args, 1, args + 2);
+            mp_vfs_mount(2, args, &kw_args);
+            mp_vfs_chdir(mount_point);
+        } else {
+            // Unmount filesystem to allow host access.
+            mp_vfs_umount(mount_point);
+        }
+        nlr_pop();
+    } else {
+        ret = -1;
+    }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    return ret;
+}
+
+void tud_mount_cb(void) {
+    tud_msc_device_ejected_cb(false);
+}
+
+void tud_umount_cb(void) {
+    tud_msc_device_ejected_cb(true);
+}
+#endif
 
 int main(int argc, char **argv) {
     #if MICROPY_HW_ENABLE_UART_REPL
@@ -101,6 +152,7 @@ int main(int argc, char **argv) {
         // Initialise MicroPython runtime.
         mp_init();
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
+        mp_initialized = true;
 
         // Initialise sub-systems.
         readline_init0();
@@ -115,10 +167,11 @@ int main(int argc, char **argv) {
         mod_network_init();
         #endif
 
-        // Execute _boot.py to set up the filesystem.
         #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
-        pyexec_frozen_module("_boot_fat.py");
+        // Mount flash filesystem for device if not connected to a host.
+        tud_msc_device_ejected_cb(!tud_connected() || tud_msc_device_ejected());
         #else
+        // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
         #endif
 
@@ -147,6 +200,7 @@ int main(int argc, char **argv) {
         }
 
     soft_reset_exit:
+        mp_initialized = false;
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         #if MICROPY_PY_NETWORK
         mod_network_deinit();

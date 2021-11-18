@@ -28,6 +28,7 @@
 #include "hardware/flash.h"
 #include "hardware/sync.h"
 #include "pico/stdlib.h"
+#include "py/mphal.h"
 
 // This implementation does Not support Flash sector caching.
 #if MICROPY_FATFS_MAX_SS != FLASH_SECTOR_SIZE
@@ -40,6 +41,15 @@
 #define FLASH_MMAP_ADDR     (XIP_BASE + FLASH_BASE_ADDR)
 
 static bool ejected = false;
+
+bool tud_msc_device_ejected() {
+    return ejected;
+}
+
+MP_WEAK int tud_msc_device_ejected_cb(bool ejected) {
+    (void)ejected;
+    return 0;
+}
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
@@ -82,6 +92,7 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
             // unload disk storage
             ejected = true;
         }
+        tud_msc_device_ejected_cb(ejected);
     }
     return true;
 }
