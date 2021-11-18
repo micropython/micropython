@@ -660,7 +660,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
             // Set base dir of the script as first entry in sys.path
             char *p = strrchr(basedir, '/');
-            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
+            mp_obj_list_insert(mp_sys_path, 0, mp_obj_new_str_via_qstr(basedir, p - basedir));
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);
