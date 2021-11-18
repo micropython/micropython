@@ -376,7 +376,7 @@ STATIC mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
-STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
+mp_obj_t mp_obj_list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     // insert has its own strange index logic
@@ -430,7 +430,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, mp_obj_list_insert);
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, mp_obj_list_remove);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);

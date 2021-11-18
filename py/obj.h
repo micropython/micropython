@@ -899,6 +899,7 @@ mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
+mp_obj_t mp_obj_list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
 void mp_obj_list_set_len(mp_obj_t self_in, size_t len);
