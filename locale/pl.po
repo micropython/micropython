@@ -2154,7 +2154,7 @@ msgid "Stack size must be at least 256"
 msgstr "Stos musi mieć co najmniej 256 bajtów"
 
 #: ports/espressif/common-hal/wifi/Radio.c
-msgid "Station must be started"
+msgid "Interface must be started"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
