@@ -23,6 +23,7 @@
 [submodule "lib/asf4"]
 	path = lib/asf4
 	url = https://github.com/adafruit/asf4
+	branch = circuitpython
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
