@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-11-17 18:26+0000\n"
+"PO-Revision-Date: 2021-11-19 12:53+0000\n"
 "Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -963,8 +963,9 @@ msgid "Display rotation must be in 90 degree increments"
 msgstr "Поворот дисплея должен осуществляться с шагом 90 градусов"
 
 #: shared-bindings/digitalio/DigitalInOut.c
+#, fuzzy
 msgid "Drive mode not used when direction is input."
-msgstr ""
+msgstr "Drive mode не используется, когда направление является входным."
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -1500,7 +1501,7 @@ msgstr "Ключ должен быть длинной 16, 24 или 32 байт�
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
-msgstr ""
+msgstr "LHS ключевого слова arg должен быть идентификатором(id)"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group."
@@ -1548,6 +1549,7 @@ msgstr "Отсутствует first_in_pin. Инструкция %d читае�
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
 msgstr ""
+"Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1558,67 +1560,69 @@ msgstr ""
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
 msgstr ""
+"Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
+#, c-format, fuzzy
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr ""
+msgstr "Отсутствует first_out_pin. Инструкция %d записывает вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr ""
+msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
+msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на вывод"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "More than %d report ids not supported"
-msgstr ""
+msgstr "Не поддерживается более %d идентификаторов отчетов (report ids)"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
+msgstr "Должен быть субклассом %q."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
-msgstr ""
+msgstr "Вывод MISO или MOSI должен быть предоставлен"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
+#, c-format, fuzzy
 msgid "Must use a multiple of 6 rgb pins, not %d"
-msgstr ""
+msgstr "Должно использоваться кратное 6 rgb-контактов, а не %d."
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "Не удалось выполнить NLR jump. Вероятно, повреждение памяти."
 
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "Ошибка NVS"
 
 #: py/qstr.c
 msgid "Name too long"
-msgstr ""
+msgstr "Имя слишком длинное"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
-msgstr ""
+msgstr "Нет CCCD для этой Characteristic"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "No DAC on chip"
-msgstr ""
+msgstr "ЦАП отсутствует на чипе"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
+#, fuzzy
 msgid "No DMA channel found"
-msgstr ""
+msgstr "Канал DMA не найден"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "No DMA pacing timer found"
@@ -1627,31 +1631,31 @@ msgstr ""
 #: shared-module/adafruit_bus_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
-msgstr ""
+msgstr "Нет устройства I2C по адресу: %x"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
-msgstr ""
+msgstr "Нет вывода MISO"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr ""
+msgstr "Нет вывода MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
-msgstr ""
+msgstr "Нет вывода RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
-msgstr ""
+msgstr "Нет вывода TX"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -1659,19 +1663,19 @@ msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
-msgstr ""
+msgstr "Захват не ведется"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
-msgstr ""
+msgstr "Нет соединения: длина не может быть определена"
 
 #: shared-bindings/board/__init__.c
 msgid "No default %q bus"
-msgstr ""
+msgstr "Нет шины %q по умолчанию"
 
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
-msgstr ""
+msgstr "Свободные GCLK отсутствуют"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1679,17 +1683,18 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr ""
+msgstr "Отсутствует аппаратная поддержка вывода clk"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
-msgstr ""
+msgstr "Отсутствует аппаратная поддержка на выводе"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, fuzzy
 msgid "No in in program"
-msgstr ""
+msgstr "Нет in в программе"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
@@ -1697,11 +1702,11 @@ msgstr ""
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
-msgstr ""
+msgstr "Ключ не был указан"
 
 #: shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
+msgstr "Нет поддержки длинных целых чисел (long integer)"
 
 #: shared-module/usb_hid/__init__.c
 #, c-format
@@ -1710,7 +1715,7 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Нет сети с этим ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
@@ -1720,24 +1725,27 @@ msgstr ""
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
+#, fuzzy
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr ""
+msgstr "Подтяжка на выводах SDA или SCL; проверь свою схему"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
-msgstr ""
+msgstr "Отсутствует подтяжка к земле на выводе; Рекомендуется 1 Мегаом"
 
 #: py/moduerrno.c
 msgid "No space left on device"
-msgstr ""
+msgstr "На устройстве не осталось свободного места"
 
 #: py/moduerrno.c
+#, fuzzy
 msgid "No such file/directory"
-msgstr ""
+msgstr "Нет такого файла/директории"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
+#, fuzzy
 msgid "No timer available"
-msgstr ""
+msgstr "Таймер недоступен"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
@@ -1749,12 +1757,12 @@ msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Недействительная строка IP"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
-msgstr ""
+msgstr "Не подключено"
 
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
@@ -1768,12 +1776,14 @@ msgstr ""
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
-msgstr ""
+msgstr "Количество data_pins должно быть 8 или 16, а не %d"
 
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
+"Объект был деинициализирован и больше не может быть использован. Создайте "
+"новый объект."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1786,17 +1796,19 @@ msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Поддерживаются только адреса IPv4"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Поддерживаются только сокеты IPv4"
 
 #: shared-module/displayio/OnDiskBitmap.c
-#, c-format
+#, c-format, fuzzy
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
+"Поддерживается только формат Windows, несжатый BMP: заданный размер "
+"заголовка - %d."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
