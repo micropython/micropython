@@ -438,7 +438,15 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         mp_raise_ValueError(MP_ERROR_TEXT("freqency must be from 1Hz to 40MHz"));
     }
 
-    int timer_idx = find_timer(freq, SAME_FREQ_OR_FREE, CHANNEL_IDX_TO_MODE(channel_idx));
+    int timer_idx;
+    int current_timer_idx = chans[channel_idx].timer_idx;
+    bool current_in_use = is_timer_in_use(channel_idx, current_timer_idx);
+    if (current_in_use) {
+        timer_idx = find_timer(freq, SAME_FREQ_OR_FREE, CHANNEL_IDX_TO_MODE(channel_idx));
+    } else {
+        timer_idx = chans[channel_idx].timer_idx;
+    }
+
     if (timer_idx == -1) {
         timer_idx = find_timer(freq, SAME_FREQ_OR_FREE, ANY_MODE);
     }
