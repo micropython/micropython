@@ -333,7 +333,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     // Collects stickiness bits that apply in the current situation.
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
-    if (safe_mode == NO_SAFE_MODE) {
+    if (safe_mode == NO_SAFE_MODE && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
