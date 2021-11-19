@@ -519,7 +519,8 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
             } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
                 mp_printf(print, "STORE_FAST " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_STORE_FAST_MULTI);
             } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
-                mp_printf(print, "UNARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_UNARY_OP_MULTI);
+                mp_uint_t op = ip[-1] - MP_BC_UNARY_OP_MULTI;
+                mp_printf(print, "UNARY_OP " UINT_FMT " %s", op, qstr_str(mp_unary_op_method_name[op]));
             } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
                 mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
                 mp_printf(print, "BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));
