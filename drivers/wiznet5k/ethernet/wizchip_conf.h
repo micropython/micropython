@@ -57,7 +57,7 @@
  *       ex> <code> #define \_WIZCHIP_      5500 </code>
  */
 #ifndef _WIZCHIP_
-#define _WIZCHIP_                      5200   // 5100, 5200, 5500
+#define _WIZCHIP_                      5200   // 5100, 5200, 5500,5105(w5100s)
 #endif
 
 #define _WIZCHIP_IO_MODE_NONE_         0x0000
@@ -73,7 +73,7 @@
 
 #define _WIZCHIP_IO_MODE_SPI_VDM_      (_WIZCHIP_IO_MODE_SPI_ + 1) /**< SPI interface mode for variable length data*/
 #define _WIZCHIP_IO_MODE_SPI_FDM_      (_WIZCHIP_IO_MODE_SPI_ + 2) /**< SPI interface mode for fixed length data mode*/
-
+#define _WIZCHIP_IO_MODE_SPI_5500_     (_WIZCHIP_IO_MODE_SPI_ + 3) /**< SPI interface mode for fixed length data mode*/
 
 #if   (_WIZCHIP_ == 5100)
    #define _WIZCHIP_ID_                "W5100\0"
@@ -81,11 +81,20 @@
  * @brief Define interface mode.
  * @todo you should select interface mode as chip. Select one of @ref \_WIZCHIP_IO_MODE_SPI_ , @ref \_WIZCHIP_IO_MODE_BUS_DIR_ or @ref \_WIZCHIP_IO_MODE_BUS_INDIR_
  */
+// 	#define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_DIR_
+//	#define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_INDIR_
+   	   #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_
 
+//A20150401 : Indclude W5100.h file
+   #include "w5100/w5100.h"
+
+#elif (_WIZCHIP_ == 5105)
+#define _WIZCHIP_ID_                "W5100S\0"
 // #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_DIR_
 // #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_BUS_INDIR_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_
 
+	#include "w5105/w5105.h"
 #elif (_WIZCHIP_ == 5200)
    #define _WIZCHIP_ID_                "W5200\0"
 /**
@@ -111,8 +120,10 @@
  *        ex> <code> #define \_WIZCHIP_IO_MODE_ \_WIZCHIP_IO_MODE_SPI_VDM_ </code>
  *       
  */
+#ifndef _WIZCHIP_IO_MODE_
    //#define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_FDM_
    #define _WIZCHIP_IO_MODE_           _WIZCHIP_IO_MODE_SPI_VDM_
+#endif
    #include "w5500/w5500.h"
 #else 
    #error "Unknown defined _WIZCHIP_. You should define one of 5100, 5200, and 5500 !!!"
@@ -128,8 +139,16 @@
  *       @ref \_WIZCHIP_IO_MODE_BUS_DIR_, @ref \_WIZCHIP_IO_MODE_BUS_INDIR_). \n\n
  *       ex> <code> #define \_WIZCHIP_IO_BASE_      0x00008000 </code>
  */
-#define _WIZCHIP_IO_BASE_              0x00000000  // 
+#if _WIZCHIP_IO_MODE_ & _WIZCHIP_IO_MODE_BUS_
+//	#define _WIZCHIP_IO_BASE_				0x60000000	// for 5100S IND
+	#define _WIZCHIP_IO_BASE_				0x68000000	// for W5300
+#elif _WIZCHIP_IO_MODE_ & _WIZCHIP_IO_MODE_SPI_
+	#define _WIZCHIP_IO_BASE_				0x00000000	// for 5100S SPI
+#endif
 
+#ifndef _WIZCHIP_IO_BASE_
+#define _WIZCHIP_IO_BASE_              0x00000000  // 0x8000
+#endif
 #if _WIZCHIP_IO_MODE_ & _WIZCHIP_IO_MODE_BUS
    #ifndef _WIZCHIP_IO_BASE_
       #error "You should be define _WIZCHIP_IO_BASE to fit your system memory map."
@@ -153,7 +172,7 @@
 typedef struct __WIZCHIP
 {
    uint16_t  if_mode;               ///< host interface mode
-   uint8_t   id[6];                 ///< @b WIZCHIP ID such as @b 5100, @b 5200, @b 5500, and so on.
+   uint8_t   id[8];                 ///< @b WIZCHIP ID such as @b 5100, @b 5100S, @b 5200, @b 5500, and so on.
    /**
     * The set of critical section callback func.
     */
@@ -214,13 +233,13 @@ typedef enum
    CW_GET_INTRTIME,    ///< Set interval time between the current and next interrupt. 
    CW_GET_ID,          ///< Gets WIZCHIP name.
 
-#if _WIZCHIP_ ==  5500
+//#if _WIZCHIP_ ==  5500
    CW_RESET_PHY,       ///< Resets internal PHY. Valid Only W5000
    CW_SET_PHYCONF,     ///< When PHY configured by interal register, PHY operation mode (Manual/Auto, 10/100, Half/Full). Valid Only W5000 
    CW_GET_PHYCONF,     ///< Get PHY operation mode in interal register. Valid Only W5000
    CW_GET_PHYSTATUS,   ///< Get real PHY status on operating. Valid Only W5000
    CW_SET_PHYPOWMODE,  ///< Set PHY power mode as noraml and down when PHYSTATUS.OPMD == 1. Valid Only W5000
-#endif
+//#endif
    CW_GET_PHYPOWMODE,  ///< Get PHY Power mode as down or normal
    CW_GET_PHYLINK      ///< Get PHY Link status
 }ctlwizchip_type;
@@ -263,14 +282,14 @@ typedef enum
    IK_SOCK_1            = (1 << 9),   ///< Socket 1 interrupt
    IK_SOCK_2            = (1 << 10),  ///< Socket 2 interrupt
    IK_SOCK_3            = (1 << 11),  ///< Socket 3 interrupt
-#if _WIZCHIP_ > 5100   
+#if _WIZCHIP_ > 5105   
    IK_SOCK_4            = (1 << 12),  ///< Socket 4 interrupt, No use in 5100
    IK_SOCK_5            = (1 << 13),  ///< Socket 5 interrupt, No use in 5100
    IK_SOCK_6            = (1 << 14),  ///< Socket 6 interrupt, No use in 5100
    IK_SOCK_7            = (1 << 15),  ///< Socket 7 interrupt, No use in 5100
 #endif   
 
-#if _WIZCHIP_ > 5100
+#if _WIZCHIP_ > 5105
    IK_SOCK_ALL          = (0xFF << 8) ///< All Socket interrpt
 #else
    IK_SOCK_ALL          = (0x0F << 8) ///< All Socket interrpt 
@@ -291,7 +310,7 @@ typedef enum
 #define PHY_POWER_DOWN           1     ///< PHY power down mode 
 
 
-#if _WIZCHIP_ == 5500 
+#if _WIZCHIP_ == 5500 || _WIZCHIP_ == 5105
 /**
  * @ingroup DATA_TYPE
  *  It configures PHY configuration when CW_SET PHYCONF or CW_GET_PHYCONF in W5500,  
@@ -475,7 +494,7 @@ intr_kind wizchip_getinterruptmask(void);
    int8_t wizphy_getphypmode(void);             ///< get the power mode of PHY in WIZCHIP. No use in W5100
 #endif
 
-#if _WIZCHIP_ == 5500
+#if _WIZCHIP_ == 5105 || _WIZCHIP_ == 5500 
    void   wizphy_reset(void);                   ///< Reset phy. Vailid only in W5500
 /**
  * @ingroup extra_functions

@@ -455,10 +455,10 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
-        #if MICROPY_PY_WIZNET5K == 5200
+        #if MICROPY_PY_WIZNET5K <= 5200 
         uint32_t reg = i;
         #else
-        uint32_t reg = _W5500_IO_BASE_ | i << 8;
+        uint32_t reg = _WIZCHIP_IO_BASE_ | i << 8;
         #endif
         printf(" %02x", WIZCHIP_READ(reg));
     }
@@ -468,10 +468,10 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            #if MICROPY_PY_WIZNET5K == 5200
+            #if MICROPY_PY_WIZNET5K <= 5200
             uint32_t reg = WIZCHIP_SREG_ADDR(sn, i);
             #else
-            uint32_t reg = _W5500_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
+            uint32_t reg = _WIZCHIP_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
             #endif
             printf(" %02x", WIZCHIP_READ(reg));
         }

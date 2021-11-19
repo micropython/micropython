@@ -191,7 +191,9 @@ void reg_wizchip_spi_cbfunc(void (*spi_rb)(uint8_t *, uint32_t), void (*spi_wb)(
 
 int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
 {
+#if	_WIZCHIP_ == 5105 || _WIZCHIP_ == 5200 || _WIZCHIP_ == 5500
    uint8_t tmp = 0;
+#endif
    uint8_t* ptmp[2] = {0,0};
    switch(cwtype)
    {
@@ -217,7 +219,8 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
       case CW_GET_INTRMASK:
          *((intr_kind*)arg) = wizchip_getinterruptmask();
          break;
-   #if _WIZCHIP_ > 5100
+   //#if _WIZCHIP_ > W5100
+   #if (_WIZCHIP_ == 5200 || _WIZCHIP_ == 5500)
       case CW_SET_INTRTIME:
          setINTLEVEL(*(uint16_t*)arg);
          break;
@@ -231,9 +234,10 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
          ((uint8_t*)arg)[2] = WIZCHIP.id[2];
          ((uint8_t*)arg)[3] = WIZCHIP.id[3];
          ((uint8_t*)arg)[4] = WIZCHIP.id[4];
-         ((uint8_t*)arg)[5] = 0;
+         ((uint8_t*)arg)[5] = WIZCHIP.id[5];
+         ((uint8_t*)arg)[6] = 0;
          break;
-   #if _WIZCHIP_ ==  5500
+   #if _WIZCHIP_ == 5105 || _WIZCHIP_ == 5500
       case CW_RESET_PHY:
          wizphy_reset();
          break;
@@ -248,6 +252,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
       case CW_SET_PHYPOWMODE:
          return wizphy_setphypmode(*(uint8_t*)arg);
    #endif
+   #if _WIZCHIP_ == 5105 || _WIZCHIP_ == 5200 || _WIZCHIP_ == 5500
       case CW_GET_PHYPOWMODE:
          tmp = wizphy_getphypmode();
          if((int8_t)tmp == -1) return -1;
@@ -258,6 +263,7 @@ int8_t ctlwizchip(ctlwizchip_type cwtype, void* arg)
          if((int8_t)tmp == -1) return -1;
          *(uint8_t*)arg = tmp;
          break;
+   #endif      
       default:
          return -1;
    }
@@ -351,7 +357,7 @@ void wizchip_clrinterrupt(intr_kind intr)
    sir &= 0x0F;
 #endif
 
-#if _WIZCHIP_ == 5100
+#if _WIZCHIP_ <= 5105
    ir |= sir;
    setIR(ir);
 #else
@@ -365,9 +371,9 @@ intr_kind wizchip_getinterrupt(void)
    uint8_t ir  = 0;
    uint8_t sir = 0;
    uint16_t ret = 0;
-#if _WIZCHIP_ == 5100
+#if _WIZCHIP_ <= 5105
    ir = getIR();
-   sir = ir 0x0F;
+   sir = ir & 0x0F;
 #else
    ir  = getIR();
    sir = getSIR();
@@ -397,9 +403,7 @@ void wizchip_setinterruptmask(intr_kind intr)
    
 #if _WIZCHIP_ < 5200
    simr &= 0x0F;
-#endif
 
-#if _WIZCHIP_ == 5100
    imr |= simr;
    setIMR(imr);
 #else
@@ -413,9 +417,9 @@ intr_kind wizchip_getinterruptmask(void)
    uint8_t imr  = 0;
    uint8_t simr = 0;
    uint16_t ret = 0;
-#if _WIZCHIP_ == 5100
+#if _WIZCHIP_ < 5200
    imr  = getIMR();
-   simr = imr 0x0F;
+   simr = imr & 0x0F;
 #else
    imr  = getIMR();
    simr = getSIMR();
@@ -434,8 +438,11 @@ intr_kind wizchip_getinterruptmask(void)
 
 int8_t wizphy_getphylink(void)
 {
-   int8_t tmp;
-#if   _WIZCHIP_ == 5200
+   int8_t tmp = PHY_LINK_OFF;
+#if _WIZCHIP_ == 5105
+   if(getPHYSR() & PHYSR_LNK)
+	   tmp = PHY_LINK_ON;
+#elif	_WIZCHIP_ == 5200
    if(getPHYSTATUS() & PHYSTATUS_LINK)
       tmp = PHY_LINK_ON;
    else
@@ -462,7 +469,7 @@ int8_t wizphy_getphypmode(void)
       else          
          tmp = PHY_POWER_NORM;
    #elif _WIZCHIP_ == 5500
-      if(getPHYCFGR() & PHYCFGR_OPMDC_PDOWN)
+      if((getPHYCFGR() & PHYCFGR_OPMDC_ALLA) == PHYCFGR_OPMDC_PDOWN)
          tmp = PHY_POWER_DOWN;
       else 
          tmp = PHY_POWER_NORM;
@@ -473,6 +480,88 @@ int8_t wizphy_getphypmode(void)
 }
 #endif
 
+#if _WIZCHIP_ == 5105
+void wizphy_reset(void)
+{
+	uint16_t tmp = wiz_mdio_read(PHYMDIO_BMCR);
+	tmp |= BMCR_RESET;
+	wiz_mdio_write(PHYMDIO_BMCR, tmp);
+	while(wiz_mdio_read(PHYMDIO_BMCR)&BMCR_RESET){}
+}
+
+void wizphy_setphyconf(wiz_PhyConf* phyconf)
+{
+   uint16_t tmp = wiz_mdio_read(PHYMDIO_BMCR);
+   if(phyconf->mode == PHY_MODE_AUTONEGO)
+      tmp |= BMCR_AUTONEGO;
+   else
+   {
+	  tmp &= ~BMCR_AUTONEGO;
+      if(phyconf->duplex == PHY_DUPLEX_FULL)
+      {
+    	  tmp |= BMCR_DUP;
+      }
+      else
+      {
+    	  tmp &= ~BMCR_DUP;
+      }
+      if(phyconf->speed == PHY_SPEED_100)
+      {
+    	  tmp |= BMCR_SPEED;
+      }
+      else
+      {
+    	  tmp &= ~BMCR_SPEED;
+      }
+   }
+   wiz_mdio_write(PHYMDIO_BMCR, tmp);
+}
+
+void wizphy_getphyconf(wiz_PhyConf* phyconf)
+{
+   uint16_t tmp = 0;
+   tmp = wiz_mdio_read(PHYMDIO_BMCR);
+   phyconf->by   = PHY_CONFBY_SW;
+   if(tmp & BMCR_AUTONEGO)
+   {
+	   phyconf->mode = PHY_MODE_AUTONEGO;
+   }
+   else
+   {
+	   phyconf->mode = PHY_MODE_MANUAL;
+	   if(tmp&BMCR_DUP) phyconf->duplex = PHY_DUPLEX_FULL;
+	   else phyconf->duplex = PHY_DUPLEX_HALF;
+	   if(tmp&BMCR_SPEED) phyconf->speed = PHY_SPEED_100;
+	   else phyconf->speed = PHY_SPEED_10;
+   }
+}
+
+int8_t wizphy_setphypmode(uint8_t pmode)
+{
+   uint16_t tmp = 0;
+   tmp = wiz_mdio_read(PHYMDIO_BMCR);
+   if( pmode == PHY_POWER_DOWN)
+   {
+      tmp |= BMCR_PWDN;
+   }
+   else
+   {
+	   tmp &= ~BMCR_PWDN;
+   }
+   wiz_mdio_write(PHYMDIO_BMCR, tmp);
+   tmp = wiz_mdio_read(PHYMDIO_BMCR);
+   if( pmode == PHY_POWER_DOWN)
+   {
+      if(tmp & BMCR_PWDN) return 0;
+   }
+   else
+   {
+      if((tmp & BMCR_PWDN) != BMCR_PWDN) return 0;
+   }
+   return -1;
+}
+
+#endif
 #if _WIZCHIP_ == 5500
 void wizphy_reset(void)
 {
