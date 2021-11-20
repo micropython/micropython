@@ -35,6 +35,7 @@ import subprocess
 # Relative to top-level repo dir.
 PATHS = [
     # C
+    "drivers/ninaw10/*.[ch]",
     "extmod/*.[ch]",
     "extmod/btstack/*.[ch]",
     "extmod/nimble/*.[ch]",

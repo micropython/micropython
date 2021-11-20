@@ -51,8 +51,15 @@ void board_init(void) {
     // Enable IOCON clock
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
-    // ------------- USB0 ------------- //
+    // ------------- SDRAM ------------ //
+    #ifdef MICROPY_HW_SDRAM_AVAIL
+    mimxrt_sdram_init();
+    #endif
 
+    // 1ms tick timer
+    SysTick_Config(SystemCoreClock / 1000);
+
+    // ------------- USB0 ------------- //
     // Clock
     CLOCK_EnableUsbhs0PhyPllClock(kCLOCK_Usbphy480M, 480000000U);
     CLOCK_EnableUsbhs0Clock(kCLOCK_Usb480M, 480000000U);

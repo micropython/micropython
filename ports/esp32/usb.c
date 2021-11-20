@@ -87,20 +87,12 @@ void usb_init(void) {
 }
 
 void usb_tx_strn(const char *str, size_t len) {
-    // If no HOST is connected, we can exit this early.
-    if (usb_cdc_connected == 0) {
-        return;
-    }
-
-    while (len) {
-        size_t l = len;
-        if (l > CONFIG_USB_CDC_TX_BUFSIZE) {
-            l = CONFIG_USB_CDC_TX_BUFSIZE;
-        }
-        tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, l);
-        tinyusb_cdcacm_write_flush(CDC_ITF, pdMS_TO_TICKS(1000));
+    // Write out the data to the CDC interface, but only while the USB host is connected.
+    while (usb_cdc_connected && len) {
+        size_t l = tinyusb_cdcacm_write_queue(CDC_ITF, (uint8_t *)str, len);
         str += l;
         len -= l;
+        tud_cdc_n_write_flush(CDC_ITF);
     }
 }
 

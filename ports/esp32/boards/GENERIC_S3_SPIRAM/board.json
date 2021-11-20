@@ -1,0 +1,16 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "images": [],
+    "mcu": "esp32s3",
+    "product": "Generic ESP32-S3 (SPIRAM)",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}

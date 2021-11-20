@@ -19,11 +19,11 @@ For example::
     import framebuf
 
     # FrameBuffer needs 2 bytes for every RGB565 pixel
-    fbuf = framebuf.FrameBuffer(bytearray(10 * 100 * 2), 10, 100, framebuf.RGB565)
+    fbuf = framebuf.FrameBuffer(bytearray(100 * 10 * 2), 100, 10, framebuf.RGB565)
 
     fbuf.fill(0)
     fbuf.text('MicroPython!', 0, 0, 0xffff)
-    fbuf.hline(0, 10, 96, 0xffff)
+    fbuf.hline(0, 9, 96, 0xffff)
 
 Constructors
 ------------

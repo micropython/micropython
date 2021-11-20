@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Feather",
+        "MicroSD",
+        "RGB LED",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
+    "images": [
+        "17745-SparkFun_Thing_Plus_-_RP2040-01a.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Thing Plus RP2040",
+    "thumbnail": "",
+    "url": "https://www.sparkfun.com/products/17745",
+    "vendor": "Sparkfun"
+}

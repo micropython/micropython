@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "WiFi Nina-W102",
+        "Bluetooth Nina-W102",
+        "IMU LSM6DSOXTR",
+        "Crypto IC ATECC608A-MAHDA-T",
+        "Microphone MP34DT05",
+        "SPI Flash 16MB",
+        "USB-MICRO"
+    ],
+    "images": [
+        "ABX00052_01.iso_999x750.jpg"
+    ],
+    "mcu": "RP2040",
+    "product": "Arduino Nano RP2040 Connect",
+    "thumbnail": "",
+    "url": "https://store-usa.arduino.cc/products/arduino-nano-rp2040-connect",
+    "vendor": "Arduino"
+}

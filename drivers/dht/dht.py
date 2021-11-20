@@ -1,9 +1,13 @@
 # DHT11/DHT22 driver for MicroPython on ESP8266
 # MIT license; Copyright (c) 2016 Damien P. George
 
-try:
+import sys
+
+if sys.platform.startswith("esp"):
     from esp import dht_readinto
-except:
+elif sys.platform == "mimxrt":
+    from mimxrt import dht_readinto
+else:
     from pyb import dht_readinto
 
 

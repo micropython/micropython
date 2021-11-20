@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "../deploy_mimxrt.md"
+    ],
+    "docs": "",
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "Camera",
+        "OpenSDA",
+        "JLink"
+    ],
+    "images": [
+        "X-MIMXRT1060-EVK-BOARD-BOTTOM.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "MIMXRT1060_EVK",
+    "thumbnail": "",
+    "url": "https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1060-evaluation-kit:MIMXRT1060-EVK",
+    "vendor": "NXP"
+}

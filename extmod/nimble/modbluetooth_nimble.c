@@ -138,9 +138,9 @@ STATIC int ble_gattc_attr_write_cb(uint16_t conn_handle, const struct ble_gatt_e
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 // Bonding store.
-STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, union ble_store_value *value);
-STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val);
-STATIC int ble_store_ram_delete(int obj_type, const union ble_store_key *key);
+STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value);
+STATIC int ble_secret_store_write(int obj_type, const union ble_store_value *val);
+STATIC int ble_secret_store_delete(int obj_type, const union ble_store_key *key);
 #endif
 
 STATIC int ble_hs_err_to_errno(int err) {
@@ -603,6 +603,12 @@ int mp_bluetooth_init(void) {
     ble_hs_cfg.sync_cb = sync_cb;
     ble_hs_cfg.gatts_register_cb = gatts_register_cb;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    ble_hs_cfg.store_read_cb = ble_secret_store_read;
+    ble_hs_cfg.store_write_cb = ble_secret_store_write;
+    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
@@ -1202,7 +1208,7 @@ STATIC int peripheral_gap_event_cb(struct ble_gap_event *event, void *arg) {
     return commmon_gap_event_cb(event, arg);
 }
 
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms) {
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us) {
     DEBUG_printf("mp_bluetooth_gap_peripheral_connect\n");
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
@@ -1211,12 +1217,14 @@ int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, 
         mp_bluetooth_gap_scan_stop();
     }
 
-    // TODO: This is the same as ble_gap_conn_params_dflt (i.e. passing NULL).
-    STATIC const struct ble_gap_conn_params params = {
+    uint16_t conn_interval_min = min_conn_interval_us ? min_conn_interval_us / BLE_HCI_CONN_ITVL : BLE_GAP_INITIAL_CONN_ITVL_MIN;
+    uint16_t conn_interval_max = max_conn_interval_us ? max_conn_interval_us / BLE_HCI_CONN_ITVL : BLE_GAP_INITIAL_CONN_ITVL_MAX;
+
+    const struct ble_gap_conn_params params = {
         .scan_itvl = 0x0010,
         .scan_window = 0x0010,
-        .itvl_min = BLE_GAP_INITIAL_CONN_ITVL_MIN,
-        .itvl_max = BLE_GAP_INITIAL_CONN_ITVL_MAX,
+        .itvl_min = conn_interval_min,
+        .itvl_max = conn_interval_max,
         .latency = BLE_GAP_INITIAL_CONN_LATENCY,
         .supervision_timeout = BLE_GAP_INITIAL_SUPERVISION_TIMEOUT,
         .min_ce_len = BLE_GAP_INITIAL_CONN_MIN_CE_LEN,
@@ -1739,12 +1747,6 @@ int mp_bluetooth_l2cap_send(uint16_t conn_handle, uint16_t cid, const uint8_t *b
         *stalled = true;
     }
 
-    // Sometimes we see what looks like BLE_HS_EAGAIN (but it's actually
-    // OS_ENOMEM in disguise). Fixed in NimBLE v1.4.
-    if (err == OS_ENOMEM) {
-        err = BLE_HS_ENOMEM;
-    }
-
     // Other error codes such as BLE_HS_EBUSY (we're stalled) or BLE_HS_EBADDATA (bigger than MTU).
     return ble_hs_err_to_errno(err);
 }
@@ -1824,8 +1826,8 @@ int mp_bluetooth_hci_cmd(uint16_t ogf, uint16_t ocf, const uint8_t *req, size_t 
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
-STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, union ble_store_value *value) {
-    DEBUG_printf("ble_store_ram_read: %d\n", obj_type);
+STATIC int ble_secret_store_read(int obj_type, const union ble_store_key *key, union ble_store_value *value) {
+    DEBUG_printf("ble_secret_store_read: %d\n", obj_type);
     const uint8_t *key_data;
     size_t key_data_len;
 
@@ -1859,7 +1861,7 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
             // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_store_ram_read: CCCD not supported.\n");
+            DEBUG_printf("ble_secret_store_read: CCCD not supported.\n");
             return -1;
         }
         default:
@@ -1869,18 +1871,18 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
     const uint8_t *value_data;
     size_t value_data_len;
     if (!mp_bluetooth_gap_on_get_secret(obj_type, key->sec.idx, key_data, key_data_len, &value_data, &value_data_len)) {
-        DEBUG_printf("ble_store_ram_read: Key not found: type=%d, index=%u, key=0x%p, len=" UINT_FMT "\n", obj_type, key->sec.idx, key_data, key_data_len);
+        DEBUG_printf("ble_secret_store_read: Key not found: type=%d, index=%u, key=0x%p, len=" UINT_FMT "\n", obj_type, key->sec.idx, key_data, key_data_len);
         return BLE_HS_ENOENT;
     }
 
     if (value_data_len != sizeof(struct ble_store_value_sec)) {
-        DEBUG_printf("ble_store_ram_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
+        DEBUG_printf("ble_secret_store_read: Invalid key data: actual=" UINT_FMT " expected=" UINT_FMT "\n", value_data_len, sizeof(struct ble_store_value_sec));
         return BLE_HS_ENOENT;
     }
 
     memcpy((uint8_t *)&value->sec, value_data, sizeof(struct ble_store_value_sec));
 
-    DEBUG_printf("ble_store_ram_read: found secret\n");
+    DEBUG_printf("ble_secret_store_read: found secret\n");
 
     if (obj_type == BLE_STORE_OBJ_TYPE_OUR_SEC) {
         // TODO: Verify ediv_rand matches.
@@ -1889,8 +1891,8 @@ STATIC int ble_store_ram_read(int obj_type, const union ble_store_key *key, unio
     return 0;
 }
 
-STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val) {
-    DEBUG_printf("ble_store_ram_write: %d\n", obj_type);
+STATIC int ble_secret_store_write(int obj_type, const union ble_store_value *val) {
+    DEBUG_printf("ble_secret_store_write: %d\n", obj_type);
     switch (obj_type) {
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
@@ -1908,13 +1910,13 @@ STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val) {
                 return BLE_HS_ESTORE_CAP;
             }
 
-            DEBUG_printf("ble_store_ram_write: wrote secret\n");
+            DEBUG_printf("ble_secret_store_write: wrote secret\n");
 
             return 0;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
             // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_store_ram_write: CCCD not supported.\n");
+            DEBUG_printf("ble_secret_store_write: CCCD not supported.\n");
             // Just pretend we wrote it.
             return 0;
         }
@@ -1923,8 +1925,8 @@ STATIC int ble_store_ram_write(int obj_type, const union ble_store_value *val) {
     }
 }
 
-STATIC int ble_store_ram_delete(int obj_type, const union ble_store_key *key) {
-    DEBUG_printf("ble_store_ram_delete: %d\n", obj_type);
+STATIC int ble_secret_store_delete(int obj_type, const union ble_store_key *key) {
+    DEBUG_printf("ble_secret_store_delete: %d\n", obj_type);
     switch (obj_type) {
         case BLE_STORE_OBJ_TYPE_PEER_SEC:
         case BLE_STORE_OBJ_TYPE_OUR_SEC: {
@@ -1938,28 +1940,19 @@ STATIC int ble_store_ram_delete(int obj_type, const union ble_store_key *key) {
                 return BLE_HS_ENOENT;
             }
 
-            DEBUG_printf("ble_store_ram_delete: deleted secret\n");
+            DEBUG_printf("ble_secret_store_delete: deleted secret\n");
 
             return 0;
         }
         case BLE_STORE_OBJ_TYPE_CCCD: {
             // TODO: Implement CCCD persistence.
-            DEBUG_printf("ble_store_ram_delete: CCCD not supported.\n");
+            DEBUG_printf("ble_secret_store_delete: CCCD not supported.\n");
             // Just pretend it wasn't there.
             return BLE_HS_ENOENT;
         }
         default:
             return BLE_HS_ENOTSUP;
     }
-}
-
-// nimble_port_init always calls ble_store_ram_init. We provide this alternative
-// implementation rather than the one in nimble/store/ram/src/ble_store_ram.c.
-// TODO: Consider re-implementing nimble_port_init instead.
-void ble_store_ram_init(void) {
-    ble_hs_cfg.store_read_cb = ble_store_ram_read;
-    ble_hs_cfg.store_write_cb = ble_store_ram_write;
-    ble_hs_cfg.store_delete_cb = ble_store_ram_delete;
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING

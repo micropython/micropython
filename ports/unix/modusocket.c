@@ -46,6 +46,7 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
+#include <poll.h>
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -143,6 +144,29 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
 
         case MP_STREAM_GET_FILENO:
             return self->fd;
+
+        #if MICROPY_PY_USELECT
+        case MP_STREAM_POLL: {
+            mp_uint_t ret = 0;
+            uint8_t pollevents = 0;
+            if (arg & MP_STREAM_POLL_RD) {
+                pollevents |= POLLIN;
+            }
+            if (arg & MP_STREAM_POLL_WR) {
+                pollevents |= POLLOUT;
+            }
+            struct pollfd pfd = { .fd = self->fd, .events = pollevents };
+            if (poll(&pfd, 1, 0) > 0) {
+                if (pfd.revents & POLLIN) {
+                    ret |= MP_STREAM_POLL_RD;
+                }
+                if (pfd.revents & POLLOUT) {
+                    ret |= MP_STREAM_POLL_WR;
+                }
+            }
+            return ret;
+        }
+        #endif
 
         default:
             *errcode = MP_EINVAL;

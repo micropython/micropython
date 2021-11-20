@@ -430,19 +430,19 @@ else ifeq ($(FLASHER), bmp)
 BMP_PORT ?= /dev/ttyACM0
 
 deploy: $(BUILD)/$(OUTPUT_FILENAME).elf
-	$(Q)$(GDB) \
+	$(Q)$(GDB) -nx --batch \
 	    -ex 'target extended-remote $(BMP_PORT)' \
 	    -ex 'monitor tpwr enable' \
 	    -ex 'monitor swdp_scan' \
 	    -ex 'attach 1' \
 	    -ex 'set mem inaccessible-by-default off' \
 	    -ex 'load' \
+	    -ex 'compare-sections' \
 	    -ex 'kill' \
-	    -ex 'quit' \
 	    $<
 
 sd: $(BUILD)/$(OUTPUT_FILENAME).elf
-	$(Q)$(GDB) \
+	$(Q)$(GDB) -nx --batch \
 	    -ex 'target extended-remote $(BMP_PORT)' \
 	    -ex 'monitor tpwr enable' \
 	    -ex 'monitor swdp_scan' \
@@ -450,10 +450,11 @@ sd: $(BUILD)/$(OUTPUT_FILENAME).elf
 	    -ex 'set mem inaccessible-by-default off' \
 	    -ex 'monitor erase_mass' \
 	    -ex 'load' \
+	    -ex 'compare-sections' \
 	    -ex 'file $(SOFTDEV_HEX)' \
 	    -ex 'load' \
+	    -ex 'compare-sections' \
 	    -ex 'kill' \
-	    -ex 'quit' \
 	    $<
 
 else ifeq ($(FLASHER), openocd)

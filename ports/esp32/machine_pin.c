@@ -200,6 +200,13 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, GPIO_NUM_46},
 
     #endif
+
+    #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_ESP32S3_EXTENDED_IO
+
+    {{&machine_pin_type}, GPIO_NUM_47},
+    {{&machine_pin_type}, GPIO_NUM_48},
+
+    #endif
 };
 
 // forward declaration
@@ -631,6 +638,14 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{&machine_pin_irq_type}, GPIO_NUM_43},
     {{&machine_pin_irq_type}, GPIO_NUM_44},
     {{&machine_pin_irq_type}, GPIO_NUM_45},
+    {{&machine_pin_irq_type}, GPIO_NUM_46},
+
+    #endif
+
+    #if CONFIG_IDF_TARGET_ESP32S3 && MICROPY_HW_ESP32S3_EXTENDED_IO
+
+    {{&machine_pin_irq_type}, GPIO_NUM_47},
+    {{&machine_pin_irq_type}, GPIO_NUM_48},
 
     #endif
 };

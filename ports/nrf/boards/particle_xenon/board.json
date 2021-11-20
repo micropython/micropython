@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "xenon-top.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "Xenon",
+    "thumbnail": "",
+    "url": "https://docs.particle.io/xenon/",
+    "vendor": "Particle"
+}

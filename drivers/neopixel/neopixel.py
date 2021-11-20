@@ -36,10 +36,14 @@ class NeoPixel:
 
     def fill(self, v):
         b = self.buf
-        for i in range(self.bpp):
+        l = len(self.buf)
+        bpp = self.bpp
+        for i in range(bpp):
             c = v[i]
-            for j in range(self.ORDER[i], len(self.buf), self.bpp):
+            j = self.ORDER[i]
+            while j < l:
                 b[j] = c
+                j += bpp
 
     def write(self):
         # BITSTREAM_TYPE_HIGH_LOW = 0

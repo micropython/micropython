@@ -370,7 +370,7 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
 int mp_bluetooth_gap_scan_stop(void);
 
 // Connect to a found peripheral.
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms);
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us);
 #endif
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT

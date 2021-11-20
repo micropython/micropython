@@ -26,12 +26,24 @@
 #ifndef MICROPY_INCLUDED_STM32_MPBTHCIPORT_H
 #define MICROPY_INCLUDED_STM32_MPBTHCIPORT_H
 
+#include "boardctrl.h"
+
 // Initialise the HCI subsystem (should be called once, early on).
 void mp_bluetooth_hci_init(void);
 
-// Poll the HCI now, or after a certain timeout.
-void mp_bluetooth_hci_poll_now(void);
-void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
+// Default implementations of poll functions (a board can override them).
+void mp_bluetooth_hci_poll_now_default(void);
+void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms);
+
+// Call this to poll the HCI now.
+static inline void mp_bluetooth_hci_poll_now(void) {
+    MICROPY_BOARD_BT_HCI_POLL_NOW();
+}
+
+// Call this to poll the HCI after a certain timeout.
+static inline void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
+    MICROPY_BOARD_BT_HCI_POLL_IN_MS(ms);
+}
 
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
 // Request new data from the uart and pass to the stack, and run pending events/callouts.

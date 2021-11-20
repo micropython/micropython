@@ -84,7 +84,9 @@ set(MICROPY_SOURCE_DRIVERS
 set(MICROPY_SOURCE_PORT
     fatfs_port.c
     machine_adc.c
+    machine_bitstream.c
     machine_i2c.c
+    machine_i2s.c
     machine_pin.c
     machine_rtc.c
     machine_spi.c
@@ -112,6 +114,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
+    ${PROJECT_SOURCE_DIR}/machine_i2s.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
     ${PROJECT_SOURCE_DIR}/machine_rtc.c
     ${PROJECT_SOURCE_DIR}/machine_spi.c
@@ -164,6 +167,7 @@ if(MICROPY_PY_BLUETOOTH)
     list(APPEND MICROPY_SOURCE_PORT mpbthciport.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_BLUETOOTH=1
+        MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
         MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
         MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
         MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
@@ -184,6 +188,31 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     target_link_libraries(${MICROPY_TARGET} micropy_extmod_nimble)
     get_target_property(NIMBLE_INCLUDE micropy_extmod_nimble INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
+endif()
+
+if (MICROPY_PY_NETWORK_NINAW10)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_NETWORK_NINAW10=1
+    )
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/drivers/ninaw10/
+    )
+
+    # Enable NINA-W10 WiFi and Bluetooth drivers.
+    list(APPEND MICROPY_SOURCE_DRIVERS
+        ${MICROPY_DIR}/drivers/ninaw10/nina_bt_hci.c
+        ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_drv.c
+        ${MICROPY_DIR}/drivers/ninaw10/nina_wifi_bsp.c
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/extmod/network_ninaw10.c
+    )
+
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_DIR}/extmod/network_ninaw10.c
+    )
 endif()
 
 # Define mpy-cross flags and frozen manifest

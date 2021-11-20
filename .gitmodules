@@ -23,12 +23,13 @@
 [submodule "lib/asf4"]
 	path = lib/asf4
 	url = https://github.com/adafruit/asf4
+	branch = circuitpython
 [submodule "lib/tinyusb"]
 	path = lib/tinyusb
 	url = https://github.com/hathach/tinyusb
 [submodule "lib/mynewt-nimble"]
 	path = lib/mynewt-nimble
-	url = https://github.com/apache/mynewt-nimble.git
+	url = https://github.com/micropython/mynewt-nimble.git
 [submodule "lib/btstack"]
 	path = lib/btstack
 	url = https://github.com/bluekitchen/btstack.git

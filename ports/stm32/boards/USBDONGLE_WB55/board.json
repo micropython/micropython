@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32wb",
+    "product": "USBDONGLE_WB55",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

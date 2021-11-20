@@ -1,0 +1,17 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "id": "esp32c3-usb",
+    "images": [],
+    "mcu": "esp32c3",
+    "product": "ESP32-C3 with USB",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}

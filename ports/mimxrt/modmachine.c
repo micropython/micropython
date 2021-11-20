@@ -32,18 +32,58 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
+#include "shared/runtime/pyexec.h"
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
 #include "fsl_clock.h"
+#include "fsl_ocotp.h"
+#include "fsl_wdog.h"
 
 #include CPU_HEADER_H
 
+typedef enum {
+    MP_PWRON_RESET = 1,
+    MP_HARD_RESET,
+    MP_WDT_RESET,
+    MP_DEEPSLEEP_RESET,
+    MP_SOFT_RESET
+} reset_reason_t;
+
+STATIC mp_obj_t machine_unique_id(void) {
+    unsigned char id[8];
+    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
+    *(uint32_t *)&id[0] = OCOTP->CFG0;
+    *(uint32_t *)&id[4] = OCOTP->CFG1;
+    return mp_obj_new_bytes(id, sizeof(id));
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+
+STATIC mp_obj_t machine_soft_reset(void) {
+    pyexec_system_exit = PYEXEC_FORCED_EXIT;
+    mp_raise_type(&mp_type_SystemExit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
+
 STATIC mp_obj_t machine_reset(void) {
-    NVIC_SystemReset();
+    WDOG_TriggerSystemSoftwareReset(WDOG1);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_reset_cause(void) {
+    uint16_t reset_cause =
+        WDOG_GetStatusFlags(WDOG1) & (kWDOG_PowerOnResetFlag | kWDOG_TimeoutResetFlag | kWDOG_SoftwareResetFlag);
+    if (reset_cause == kWDOG_PowerOnResetFlag) {
+        reset_cause = MP_PWRON_RESET;
+    } else if (reset_cause == kWDOG_TimeoutResetFlag) {
+        reset_cause = MP_WDT_RESET;
+    } else {
+        reset_cause = MP_SOFT_RESET;
+    }
+    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 STATIC mp_obj_t machine_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
@@ -71,7 +111,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
+    { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
@@ -92,6 +135,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+    { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
 
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
 
@@ -102,6 +146,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+
+    // Reset reasons
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MP_PWRON_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MP_WDT_RESET) },
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(MP_SOFT_RESET) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32l4",
+    "product": "Nucleo L476RG",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

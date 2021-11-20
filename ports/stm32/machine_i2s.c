@@ -81,8 +81,6 @@
 //   32 byte address boundary.  Not all STM32 devices have a D-Cache.  Buffer alignment
 //   will still happen on these devices to keep this code simple.
 
-#define MAX_I2S_STM32 (2)
-
 // DMA ping-pong buffer size was empirically determined.  It is a tradeoff between:
 // 1. memory use (smaller buffer size desirable to reduce memory footprint)
 // 2. interrupt frequency (larger buffer size desirable to reduce interrupt frequency)
@@ -164,11 +162,9 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
     { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
-STATIC machine_i2s_obj_t *machine_i2s_obj[MAX_I2S_STM32];
-
 void machine_i2s_init0() {
-    for (uint8_t i = 0; i < MAX_I2S_STM32; i++) {
-        machine_i2s_obj[i] = NULL;
+    for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
+        MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
     }
 }
 
@@ -509,6 +505,9 @@ STATIC void feed_dma(machine_i2s_obj_t *self, ping_pong_t dma_ping_pong) {
         if (self->bits == 32) {
             reformat_32_bit_samples((int32_t *)dma_buffer_p, SIZEOF_HALF_DMA_BUFFER_IN_BYTES / (sizeof(uint32_t)));
         }
+    } else {
+        // underflow.  clear buffer to transmit "silence" on the I2S bus
+        memset(dma_buffer_p, 0, SIZEOF_HALF_DMA_BUFFER_IN_BYTES);
     }
 
     // flush cache to RAM so DMA can read the sample data
@@ -598,9 +597,9 @@ void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = machine_i2s_obj[0];
+        self = MP_STATE_PORT(machine_i2s_obj)[0];
     } else {
-        self = machine_i2s_obj[1];
+        self = MP_STATE_PORT(machine_i2s_obj)[1];
     }
 
     // bottom half of buffer now filled,
@@ -617,9 +616,9 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = machine_i2s_obj[0];
+        self = MP_STATE_PORT(machine_i2s_obj)[0];
     } else {
-        self = machine_i2s_obj[1];
+        self = MP_STATE_PORT(machine_i2s_obj)[1];
     }
 
     // top half of buffer now filled,
@@ -637,9 +636,9 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
 
     if (hi2s->Instance == I2S1) {
-        self = machine_i2s_obj[0];
+        self = MP_STATE_PORT(machine_i2s_obj)[0];
     } else {
-        self = machine_i2s_obj[1];
+        self = MP_STATE_PORT(machine_i2s_obj)[1];
     }
 
     // for non-blocking operation, this IRQ-based callback handles
@@ -656,9 +655,9 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = machine_i2s_obj[0];
+        self = MP_STATE_PORT(machine_i2s_obj)[0];
     } else {
-        self = machine_i2s_obj[1];
+        self = MP_STATE_PORT(machine_i2s_obj)[1];
     }
 
     // for non-blocking operation, this IRQ-based callback handles
@@ -856,13 +855,13 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     }
 
     machine_i2s_obj_t *self;
-    if (machine_i2s_obj[i2s_id_zero_base] == NULL) {
+    if (MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
         self = m_new_obj(machine_i2s_obj_t);
-        machine_i2s_obj[i2s_id_zero_base] = self;
+        MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] = self;
         self->base.type = &machine_i2s_type;
         self->i2s_id = i2s_id;
     } else {
-        self = machine_i2s_obj[i2s_id_zero_base];
+        self = MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base];
         machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
     }
 

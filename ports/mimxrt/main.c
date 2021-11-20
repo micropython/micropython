@@ -36,7 +36,15 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "led.h"
+#include "pendsv.h"
 #include "modmachine.h"
+
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
+#include "systick.h"
+#include "extmod/modnetwork.h"
 
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
@@ -47,9 +55,21 @@ int main(void) {
     ticks_init();
     tusb_init();
     led_init();
+    pendsv_init();
 
     mp_stack_set_top(&_estack);
     mp_stack_set_limit(&_estack - &_sstack - 1024);
+
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
 
     for (;;) {
         gc_init(&_gc_heap_start, &_gc_heap_end);
@@ -58,6 +78,9 @@ int main(void) {
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+        #if MICROPY_PY_NETWORK
+        mod_network_init();
+        #endif
 
         // Initialise sub-systems.
         readline_init0();
@@ -93,6 +116,9 @@ int main(void) {
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         machine_pin_irq_deinit();
+        #if MICROPY_PY_NETWORK
+        mod_network_deinit();
+        #endif
         gc_sweep_all();
         mp_deinit();
     }
@@ -137,17 +163,25 @@ const char mimxrt_help_text[] =
     "    Pin pull modes are: Pin.PULL_UP, Pin.PULL_UP_47K, Pin.PULL_UP_22K, Pin.PULL_DOWN, Pin.PULL_HOLD\n"
     "  machine.ADC(pin) -- make an analog object from a pin\n"
     "    methods: read_u16()\n"
-    "  machine.UART(id, baudrate=115200) -- create an UART object (id=1 - 8)\n"
+    "  machine.UART(id, baudrate=115200) -- create an UART object (id=1 - 8, board-specific)\n"
     "    methods: init(), write(buf), any()\n"
     "             buf=read(n), readinto(buf), buf=readline()\n"
     "    The RX and TX pins are fixed and board-specific.\n"
-    "  machine.SoftI2C() -- create an Soft I2C object\n"
+    "  machine.SoftI2C() -- create a Soft I2C object\n"
+    "  machine.I2C(id) -- create a HW I2C object\n"
     "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
     "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
-    "  machine.SoftSPI(baudrate=1000000) -- create an SPI object ()\n"
+    "    SoftI2C allows to use any pin for sda and scl, HW I2C id's and pins are fixed\n"
+    "  machine.SoftSPI(baudrate=1000000) -- create a Soft SPI object\n"
+    "  machine.SPI(id, baudrate=1000000) -- create a HW SPI object\n"
     "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
+    "    SoftSPI allows to use any pin for SPI, HW SPI id's and pins are fixed\n"
     "  machine.Timer(id, freq, callback) -- create a hardware timer object (id=0,1,2)\n"
     "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
+    "  machine.RTC() -- create a Real Time Clock object\n"
+    "    methods: init(), datetime([dateime_tuple]), now()\n"
+    "  machine.PWM(pin, freq, duty_u16[, kw_opts]) -- create a PWM object\n"
+    "    methods: init(), duty_u16([value]), duty_ns([value]), freq([value])\n"
     "\n"
     "Useful control commands:\n"
     "  CTRL-C -- interrupt a running program\n"
