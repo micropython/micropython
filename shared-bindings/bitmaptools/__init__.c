@@ -619,7 +619,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     displayio_bitmap_t *bitmap = mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
 
-    pyb_file_obj_t *file = mp_arg_validate_type(args[ARG_file].u_obj, &mp_type_fileio, MP_QSTR_file);
+    mp_obj_t *file = args[ARG_file].u_obj;
 
     int element_size = args[ARG_element_size].u_int;
     if (element_size != 1 && element_size != 2 && element_size != 4) {
