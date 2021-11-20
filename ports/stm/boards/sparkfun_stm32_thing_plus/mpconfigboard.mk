@@ -1,5 +1,8 @@
-USB_VID = 0x0483
-USB_PID = 0x5740
+USB_VID = 0X1B4F
+
+# TODO: Replace the Product ID below with the official value once known.
+USB_PID = 0x0027  # Same PID as the SparkFun MicroMod STM32
+
 USB_PRODUCT = "SparkFun Thing Plus - STM32"
 USB_MANUFACTURER = "SparkFun Electronics"
 
