@@ -39,12 +39,14 @@ typedef struct {
     busio_i2c_obj_t *i2c;
     busio_i2c_obj_t inline_i2c;
     uint8_t device_address;
+    uint16_t *mapping;
     uint8_t bit_depth;
     bool paused;
     bool scale;
     bool auto_gamma;
 } is31fl3741_is31fl3741_obj_t;
 
+/*
 static const uint16_t glassesmatrix_ledmap[18 * 5 * 3] = {
     65535, 65535, 65535, // (0,0) (clipped, corner)
     10,    8,     9,     // (0,1) / right ring pixel 20
@@ -137,6 +139,7 @@ static const uint16_t glassesmatrix_ledmap[18 * 5 * 3] = {
     23,    25,    24,    // (17,3) / 6
     276,   22,    277,   // (17,4) / 7
 };
+*/
 
 // Gamma correction table
 static const uint8_t IS31GammaTable[256] = {

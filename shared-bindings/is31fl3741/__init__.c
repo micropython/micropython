@@ -31,9 +31,6 @@
 
 #include "shared-bindings/is31fl3741/is31fl3741.h"
 
-//| """Low-level routines for bitbanged LED matrices"""
-//|
-
 STATIC const mp_rom_map_elem_t is31fl3741_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_is31fl3741) },
     { MP_ROM_QSTR(MP_QSTR_is31fl3741), MP_ROM_PTR(&is31fl3741_is31fl3741_type) },

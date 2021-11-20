@@ -40,7 +40,7 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/busio/I2C.h"
 
-void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr) {
+void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr, mp_obj_t mapping) {
     self->width = width;
     self->height = height;
 
@@ -58,6 +58,21 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
     // Our object is statically allocated off the heap so make sure the bus object lives to the end
     // of the heap as well.
     gc_never_free(self->i2c);
+
+    // TODO mapping should be equal to height * width * 3
+    mp_obj_t *items;
+    size_t len;
+    mp_obj_list_get(mapping, &len, &items);
+
+    self->mapping = common_hal_is31fl3741_allocator_impl(sizeof(uint16_t) * len);
+    for (size_t i = 0; i < len; i++) {
+        mp_int_t value = mp_obj_get_int(items[i]);
+        // We only store up to 16 bits
+        if (value > 0xFFFF) {
+            value = 0xFFFF;
+        }
+        self->mapping[i] = (uint16_t)value;
+    }
 
     common_hal_is31fl3741_is31fl3741_reconstruct(self, framebuffer);
 }
@@ -114,6 +129,11 @@ void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) 
         self->i2c = NULL;
     }
 
+    if (self->mapping != 0) {
+        common_hal_is31fl3741_free_impl(self->mapping);
+        self->mapping = 0;
+    }
+
     self->base.type = NULL;
 
     // If a framebuffer was passed in to the constructor, NULL the reference
@@ -144,15 +164,12 @@ uint8_t common_hal_is31fl3741_is31fl3741_get_global_current(is31fl3741_is31fl374
 
 void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self, uint8_t *dirtyrows) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
-
-    uint8_t dirty_row_flags = 0xFF; // only supports 8 rows gotta fix
-    if (dirtyrows != 0) {
-        dirty_row_flags = *dirtyrows;
-    }
-
     if (!self->paused) {
+        uint8_t dirty_row_flags = 0xFF; // only supports 8 rows gotta fix
+
         if (self->scale) {
             // Based on the Arduino IS31FL3741 driver code
+            // dirtyrows flag current not implemented for scaled displays
             uint32_t *buffer = self->bufinfo.buf;
 
             for (int x = 0; x < self->scale_width; x++) {
@@ -180,13 +197,17 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
                     } else {
                         color = (rsum << 16) + (gsum << 8) + bsum;
                     }
-                    is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color);
+                    is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color, self->mapping);
                 }
             }
         } else {
             uint32_t *buffer = self->bufinfo.buf;
             for (int y = 0; y < self->height; y++) {
-                if ((dirty_row_flags >> y) & 0x1) {
+                if ((dirtyrows != 0) && ((y % 8) == 0)) {
+                    dirty_row_flags = *dirtyrows++;
+                }
+
+                if ((dirty_row_flags >> (y % 8)) & 0x1) {
                     uint32_t color = 0;
                     if (self->auto_gamma) {
                         color = IS31GammaTable[((*buffer) >> 16 & 0xFF)] +
@@ -197,7 +218,7 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
                     }
 
                     for (int x = 0; x < self->width; x++) {
-                        is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color);
+                        is31fl3741_draw_pixel(self->i2c, self->device_address, x, y, color, self->mapping);
                         buffer++;
                     }
                 }
@@ -240,6 +261,7 @@ void common_hal_is31fl3741_free_impl(void *ptr_in) {
 
 void is31fl3741_is31fl3741_collect_ptrs(is31fl3741_is31fl3741_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
+    gc_collect_ptr(self->mapping);
 }
 
 // The following are routines to manipulate the IS31FL3741 chip
@@ -311,16 +333,16 @@ void is31fl3741_set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_
     common_hal_busio_i2c_write(i2c, addr, cmd, 2, true);
 }
 
-void is31fl3741_draw_pixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color) {
+void is31fl3741_draw_pixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color, uint16_t *mapping) {
     uint8_t r = color >> 16 & 0xFF;
     uint8_t g = color >> 8 & 0xFF;
     uint8_t b = color & 0xFF;
 
     int16_t x1 = (x * 5 + y) * 3;
-    uint16_t ridx = glassesmatrix_ledmap[x1 + 2];
+    uint16_t ridx = mapping[x1 + 2];
     if (ridx != 65535) {
-        uint16_t gidx = glassesmatrix_ledmap[x1 + 1];
-        uint16_t bidx = glassesmatrix_ledmap[x1 + 0];
+        uint16_t gidx = mapping[x1 + 1];
+        uint16_t bidx = mapping[x1 + 0];
         is31fl3741_set_led(i2c, addr, ridx, r, 0);
         is31fl3741_set_led(i2c, addr, gidx, g, 0);
         is31fl3741_set_led(i2c, addr, bidx, b, 0);

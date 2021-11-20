@@ -57,13 +57,14 @@
 //|
 
 STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_width, ARG_height, ARG_i2c, ARG_addr, ARG_framebuffer, ARG_scale, ARG_gamma };
+    enum { ARG_width, ARG_height, ARG_i2c, ARG_addr, ARG_framebuffer, ARG_mapping, ARG_scale, ARG_gamma };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_height, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_i2c, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
         { MP_QSTR_addr, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0x30 } },
         { MP_QSTR_framebuffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+        { MP_QSTR_mapping, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_scale, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
         { MP_QSTR_gamma, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
@@ -79,9 +80,12 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
         mp_raise_ValueError(translate("width must be greater than zero"));
     }
 
-    // TODO make sure height/width divisible by 3
     self->scale = args[ARG_scale].u_bool;
     if (self->scale) {
+        if (((args[ARG_height].u_int % 3) != 0) || ((args[ARG_width].u_int % 3) != 0)) {
+            mp_raise_ValueError(translate("Scale dimensions must divide by 3"));
+        }
+
         self->scale_width = args[ARG_width].u_int / 3;
         self->scale_height = args[ARG_height].u_int / 3;
     }
@@ -101,7 +105,8 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
         args[ARG_height].u_int,
         framebuffer,
         MP_OBJ_TO_PTR(i2c),
-        args[ARG_addr].u_int
+        args[ARG_addr].u_int,
+        args[ARG_mapping].u_obj
         );
 
     return MP_OBJ_FROM_PTR(self);

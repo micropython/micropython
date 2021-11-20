@@ -30,7 +30,7 @@
 
 extern const mp_obj_type_t is31fl3741_is31fl3741_type;
 
-void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr);
+void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr, mp_obj_t mapping);
 
 void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *);
 
@@ -58,4 +58,4 @@ void is31fl3741_send_reset(busio_i2c_obj_t *i2c, uint8_t addr);
 void is31fl3741_set_current(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t current);
 uint8_t is31fl3741_get_current(busio_i2c_obj_t *i2c, uint8_t addr);
 void is31fl3741_set_led(busio_i2c_obj_t *i2c, uint8_t addr, uint16_t led, uint8_t level, uint8_t page);
-void is31fl3741_draw_pixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color);
+void is31fl3741_draw_pixel(busio_i2c_obj_t *i2c, uint8_t addr, int16_t x, int16_t y, uint32_t color, uint16_t *mapping);
