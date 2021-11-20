@@ -1458,6 +1458,10 @@ msgstr ""
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr ""
 
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr ""

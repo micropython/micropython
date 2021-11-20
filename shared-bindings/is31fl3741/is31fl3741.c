@@ -88,6 +88,9 @@ STATIC mp_obj_t is31fl3741_is31fl3741_make_new(const mp_obj_type_t *type, size_t
 
         self->scale_width = args[ARG_width].u_int / 3;
         self->scale_height = args[ARG_height].u_int / 3;
+    } else {
+        self->scale_width = args[ARG_width].u_int;
+        self->scale_height = args[ARG_height].u_int;
     }
 
     self->auto_gamma = args[ARG_gamma].u_bool;

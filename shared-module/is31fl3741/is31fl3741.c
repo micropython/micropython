@@ -59,10 +59,13 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
     // of the heap as well.
     gc_never_free(self->i2c);
 
-    // TODO mapping should be equal to height * width * 3
     mp_obj_t *items;
     size_t len;
     mp_obj_list_get(mapping, &len, &items);
+
+    if (len != (size_t)(self->scale_width * self->scale_height * 3)) {
+        mp_raise_ValueError(translate("LED mappings must match display size"));
+    }
 
     self->mapping = common_hal_is31fl3741_allocator_impl(sizeof(uint16_t) * len);
     for (size_t i = 0; i < len; i++) {
