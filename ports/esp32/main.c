@@ -101,7 +101,7 @@ void mp_task(void *pvParameter) {
     #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
-    void *mp_task_heap = (void *)0x3f800000;
+    void *mp_task_heap = (void *)SOC_EXTRAM_DATA_LOW;
     switch (esp_spiram_get_chip_size()) {
         case ESP_SPIRAM_SIZE_16MBITS:
             mp_task_heap_size = 2 * 1024 * 1024;
@@ -120,7 +120,7 @@ void mp_task(void *pvParameter) {
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
     size_t esp_spiram_size = esp_spiram_get_size();
-    void *mp_task_heap = (void *)0x3ff80000 - esp_spiram_size;
+    void *mp_task_heap = (void *)SOC_EXTRAM_DATA_HIGH - esp_spiram_size;
     if (esp_spiram_size > 0) {
         mp_task_heap_size = esp_spiram_size;
     } else {

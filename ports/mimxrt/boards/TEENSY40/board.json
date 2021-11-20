@@ -1,9 +1,11 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_teensy.md"
     ],
     "docs": "",
-    "features": [],
+    "features": [
+        "Breadboard Friendly"
+    ],
     "images": [
         "teensy40_front.jpg"
     ],

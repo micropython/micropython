@@ -86,6 +86,7 @@
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
+#define MICROPY_PY_MACHINE_BITSTREAM            (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS      (1)
@@ -154,6 +155,20 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 #endif
 
+#if MICROPY_PY_NETWORK_NINAW10
+// This Network interface requires the extended socket state.
+#ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
+#define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
+#endif
+// It also requires an additional root pointer for the SPI object.
+#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi;
+extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
+#define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
+#else
+#define MICROPY_HW_NIC_NINAW10
+#define MICROPY_PORT_ROOT_POINTER_NINAW10
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
@@ -163,11 +178,12 @@ struct _mp_bluetooth_nimble_malloc_t;
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
 
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_NINAW10  \
+
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
 #endif
-
-#define MICROPY_PORT_NETWORK_INTERFACES \
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -176,8 +192,10 @@ struct _mp_bluetooth_nimble_malloc_t;
     void *rp2_state_machine_irq_obj[8]; \
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
+    void *machine_i2s_obj[2]; \
     NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
+    MICROPY_PORT_ROOT_POINTER_NINAW10 \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
         MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 

@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
+#include "extmod/machine_bitstream.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_pulse.h"
@@ -86,7 +87,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        return MP_OBJ_NEW_SMALL_INT(clock_get_hz(clk_sys));
+        return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
     } else {
         mp_int_t freq = mp_obj_get_int(args[0]);
         if (!set_sys_clock_khz(freq / 1000, false)) {
@@ -154,6 +155,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
+    #if MICROPY_PY_MACHINE_BITSTREAM
+    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
@@ -163,6 +167,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_hw_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
+    { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },

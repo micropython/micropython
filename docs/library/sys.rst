@@ -43,6 +43,15 @@ Functions
       positional; further arguments are not supported. CPython-compatible
       ``traceback`` module can be found in `micropython-lib`.
 
+.. function:: settrace(tracefunc)
+
+   Enable tracing of bytecode execution.  For details see the `CPython
+   documentaion <https://docs.python.org/3/library/sys.html#sys.settrace>`_.
+
+   This function requires a custom MicroPython build as it is typically not
+   present in pre-built firmware (due to it affecting performance).  The relevant
+   configuration option is *MICROPY_PY_SYS_SETTRACE*.
+
 Constants
 ---------
 
