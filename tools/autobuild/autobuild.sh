@@ -39,6 +39,9 @@ fi
 # get directory of this script for access to other build scripts
 AUTODIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# source additional functions
+source ${AUTODIR}/build-boards.sh
+
 # make local directory to put firmware
 LOCAL_FIRMWARE=/tmp/autobuild-firmware-$$
 mkdir -p ${LOCAL_FIRMWARE}
@@ -71,10 +74,13 @@ ${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32
 ${AUTODIR}/build-esp32-latest.sh ${IDF_PATH_V42} ${FW_TAG} ${LOCAL_FIRMWARE}
 ${AUTODIR}/build-esp32-latest.sh ${IDF_PATH_V43} ${FW_TAG} ${LOCAL_FIRMWARE}
-cd ../rp2
-${AUTODIR}/build-rp2-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+
 cd ../mimxrt
-${AUTODIR}/build-mimxrt-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_mimxrt_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../rp2
+build_rp2_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../samd
+build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 
