@@ -65,9 +65,7 @@ FW_GIT="$(git describe --dirty || echo unknown)"
 FW_TAG="-$FW_DATE-unstable-$FW_GIT"
 
 # build new firmware
-cd ports/stm32
-${AUTODIR}/build-stm32-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
-cd ../cc3200
+cd ports/cc3200
 ${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 ${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
@@ -81,6 +79,9 @@ cd ../rp2
 build_rp2_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../samd
 build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../stm32
+build_stm32_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+${AUTODIR}/build-stm32-extra.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 
