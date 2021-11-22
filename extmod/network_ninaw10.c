@@ -140,9 +140,10 @@ STATIC mp_obj_t network_ninaw10_scan(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_scan_obj, network_ninaw10_scan);
 
 STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_essid, ARG_key, ARG_security, ARG_channel };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_essid, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_key, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_essid,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
@@ -153,7 +154,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get ssid
-    const char *ssid = mp_obj_str_get_str(args[0].u_obj);
+    const char *ssid = mp_obj_str_get_str(args[ARG_essid].u_obj);
 
     if (strlen(ssid) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
@@ -163,9 +164,9 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     const char *key = NULL;
     mp_uint_t security = NINA_SEC_OPEN;
 
-    if (args[1].u_obj != mp_const_none) {
-        key = mp_obj_str_get_str(args[1].u_obj);
-        security = args[2].u_int;
+    if (args[ARG_key].u_obj != mp_const_none) {
+        key = mp_obj_str_get_str(args[ARG_key].u_obj);
+        security = args[ARG_security].u_int;
     }
 
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
@@ -179,7 +180,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
                 MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
         }
     } else {
-        mp_uint_t channel = args[3].u_int;
+        mp_uint_t channel = args[ARG_channel].u_int;
 
         if (security != NINA_SEC_OPEN && security != NINA_SEC_WEP) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode supports WEP security only."));
@@ -271,9 +272,11 @@ STATIC mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_m
                 mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
         }
     } else {
-        // Set config value(s)
-        // Not supported.
-        mp_raise_ValueError(MP_ERROR_TEXT("setting config values is not supported"));
+        if (self->itf != MOD_NETWORK_AP_IF) {
+            mp_raise_ValueError(MP_ERROR_TEXT("AP required"));
+        }
+        // Call connect to set WiFi access point.
+        return network_ninaw10_connect(n_args, args, kwargs);
     }
 
     return mp_const_none;
