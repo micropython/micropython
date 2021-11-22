@@ -290,8 +290,8 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
     displayio_bitmap_t *source1 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_1].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_1)); // the first source bitmap
     displayio_bitmap_t *source2 = MP_OBJ_TO_PTR(mp_arg_validate_type(args[ARG_source_bitmap_2].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap_2)); // the second source bitmap
 
-    mp_float_t factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? MICROPY_FLOAT_CONST(.5) : mp_obj_float_get(args[ARG_factor_1].u_obj);
-    mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_float_get(args[ARG_factor_2].u_obj);
+    mp_float_t factor1 = (args[ARG_factor_1].u_obj == mp_const_none) ? MICROPY_FLOAT_CONST(.5) : mp_obj_get_float(args[ARG_factor_1].u_obj);
+    mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_get_float(args[ARG_factor_2].u_obj);
 
     displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj);
 
@@ -619,7 +619,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     displayio_bitmap_t *bitmap = mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
 
-    pyb_file_obj_t *file = mp_arg_validate_type(args[ARG_file].u_obj, &mp_type_fileio, MP_QSTR_file);
+    mp_obj_t *file = args[ARG_file].u_obj;
 
     int element_size = args[ARG_element_size].u_int;
     if (element_size != 1 && element_size != 2 && element_size != 4) {

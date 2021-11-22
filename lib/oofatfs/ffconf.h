@@ -72,6 +72,12 @@
 #define FF_USE_MKFS     1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
+#ifdef MICROPY_FF_MKFS_FAT32
+#define FF_MKFS_FAT32   MICROPY_FF_MKFS_FAT32
+#else
+#define FF_MKFS_FAT32   0
+#endif
+/* This option switches off FAT32 support in f_mkfs() */
 
 #define FF_USE_FASTSEEK   1
 /* This option switches fast seek function. (0:Disable or 1:Enable) */

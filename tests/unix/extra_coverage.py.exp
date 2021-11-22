@@ -34,11 +34,11 @@ binascii        bitmaptools     btree           cexample
 cmath           collections     cppexample      displayio
 errno           ffi             framebuf        gc
 gifio           hashlib         json            math
-qrio            re              sys             termios
-ubinascii       uctypes         uerrno          uheapq
-uio             ujson           ulab            uos
-urandom         ure             uselect         ustruct
-utime           utimeq          uzlib
+qrio            rainbowio       re              sys
+termios         ubinascii       uctypes         uerrno
+uheapq          uio             ujson           ulab
+uos             urandom         ure             uselect
+ustruct         utime           utimeq          uzlib
 ime
 
 utime           utimeq

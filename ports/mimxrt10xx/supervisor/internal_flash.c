@@ -52,10 +52,6 @@ extern uint32_t __fatfs_flash_length[];
 uint8_t _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
-extern status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address);
-extern status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src);
-extern status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base);
-
 void PLACE_IN_ITCM(supervisor_flash_init)(void) {
     // Update the LUT to make sure all entries are available.
     FLEXSPI_UpdateLUT(FLEXSPI, 0, (const uint32_t *)&qspiflash_config.memConfig.lookupTable, 64);

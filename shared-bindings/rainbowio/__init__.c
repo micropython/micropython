@@ -37,7 +37,8 @@
 //|     ...
 //|
 STATIC mp_obj_t rainbowio_colorwheel(mp_obj_t n) {
-    return MP_OBJ_NEW_SMALL_INT(colorwheel(mp_obj_is_small_int(n) ? MP_OBJ_SMALL_INT_VALUE(n) : mp_obj_get_float(n)));
+    mp_float_t f = mp_obj_get_float(n);
+    return MP_OBJ_NEW_SMALL_INT(colorwheel(f));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rainbowio_colorwheel_obj, rainbowio_colorwheel);
 

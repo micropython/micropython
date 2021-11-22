@@ -28,6 +28,7 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/usb.h"
 #include "supervisor/shared/stack.h"
+#include "supervisor/port.h"
 
 void port_background_task(void) {
 }

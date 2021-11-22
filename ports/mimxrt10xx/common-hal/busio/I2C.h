@@ -41,4 +41,6 @@ typedef struct {
     const mcu_periph_obj_t *sda;
 } busio_i2c_obj_t;
 
+void i2c_reset(void);
+
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_I2C_H

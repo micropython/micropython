@@ -26,6 +26,7 @@
  */
 
 #include "common-hal/analogio/AnalogIn.h"
+#include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 #include <string.h>
