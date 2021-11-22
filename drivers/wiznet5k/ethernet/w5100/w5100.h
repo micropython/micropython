@@ -46,7 +46,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "wizchip_conf.h"
+#include "../wizchip_conf.h"
 
 /// \cond DOXY_APPLY_CODE
 #if   (_WIZCHIP_ == 5100)
@@ -636,6 +636,10 @@ extern "C" {
 #define IR_PPPoE			0x20 ///< get the PPPoE close message 
 
 #define IR_SOCK(sn)		(0x01 << sn)	///< check socket interrupt
+
+//----------------------------- W5100S Socket Registers -----------------------------
+#define WIZCHIP_SREG_ADDR(sn, addr) (WIZCHIP_SREG_BLOCK(sn) + (addr))
+//--------------------------- For Backward Compatibility ---------------------------
 
 
 // Sn_MR values 

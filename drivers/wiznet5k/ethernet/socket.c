@@ -608,13 +608,15 @@ int8_t  WIZCHIP_EXPORT(ctlsocket)(uint8_t sn, ctlsock_type cstype, void* arg)
       case CS_GET_INTERRUPT:
          *((uint8_t*)arg) = getSn_IR(sn);
          break;
-      case CS_SET_INTMASK:  
+    #if _WIZCHIP_ !=5100
+     case CS_SET_INTMASK:  
          if( (*(uint8_t*)arg) > SIK_ALL) return SOCKERR_ARG;
          setSn_IMR(sn,*(uint8_t*)arg);
          break;
       case CS_GET_INTMASK:   
          *((uint8_t*)arg) = getSn_IMR(sn);
-      default:
+    #endif
+  default:
          return SOCKERR_ARG;
    }
    return SOCK_OK;
