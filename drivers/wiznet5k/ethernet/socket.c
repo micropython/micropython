@@ -549,7 +549,7 @@ int32_t WIZCHIP_EXPORT(recvfrom)(uint8_t sn, uint8_t * buf, uint16_t len, uint8_
    			addr[2] = head[2];
    			addr[3] = head[3];
    			sock_remained_size[sn] = head[4];
-   			sock_remaiend_size[sn] = (sock_remained_size[sn] << 8) + head[5];
+   			sock_remained_size[sn] = (sock_remained_size[sn] << 8) + head[5];
    			sock_pack_info[sn] = PACK_FIRST;
          }
 			//

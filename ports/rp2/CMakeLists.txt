@@ -5,6 +5,11 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE MinSizeRel)
 endif()
 
+#network
+#if(NOT MICROPY_PY_WIZNET5K)
+#    SET(MICROPY_PY_WIZNET5K 5500)
+#endif()
+
 # Set main target and component locations
 set(MICROPY_TARGET firmware)
 get_filename_component(MICROPY_DIR "../.." ABSOLUTE)
@@ -39,7 +44,7 @@ if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 endif()
 
 # Include board config
-include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake) 
+include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
@@ -52,6 +57,10 @@ project(${MICROPY_TARGET})
 pico_sdk_init()
 
 include(${MICROPY_DIR}/py/usermod.cmake)
+
+if (MICROPY_PY_WIZNET5K)
+   INCLUDE_DIRECTORIES(${MICROPY_DIR}/drivers/wiznet5k/ ${MICROPY_DIR}/drivers/wiznet5k/ethernet/w${MICROPY_PY_WIZNET5K}) 
+endif()
 
 add_executable(${MICROPY_TARGET})
 
@@ -77,10 +86,24 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/timeutils/timeutils.c
 )
 
-set(MICROPY_SOURCE_DRIVERS
-    ${MICROPY_DIR}/drivers/bus/softspi.c
-)
 
+if (MICROPY_PY_WIZNET5K)
+    set(MICROPY_SOURCE_DRIVERS
+        ${MICROPY_DIR}/drivers/bus/softspi.c
+    	${MICROPY_DIR}/drivers/wiznet5k/ethernet/w${MICROPY_PY_WIZNET5K}/w${MICROPY_PY_WIZNET5K}.c
+        ${MICROPY_DIR}/drivers/wiznet5k/ethernet/socket.c
+        ${MICROPY_DIR}/drivers/wiznet5k/ethernet/wizchip_conf.c
+        ${MICROPY_DIR}/drivers/wiznet5k/internet/dns/dns.c
+        ${MICROPY_DIR}/extmod/modnetwork.c
+        ${MICROPY_DIR}/extmod/modusocket.c
+        ${PROJECT_SOURCE_DIR}/modnwwiznet5k.c
+      )
+else()
+    set(MICROPY_SOURCE_DRIVERS
+        ${MICROPY_DIR}/drivers/bus/softspi.c
+       )
+	
+endif()
 set(MICROPY_SOURCE_PORT
     fatfs_port.c
     machine_adc.c
@@ -110,6 +133,8 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_USERMOD}
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/extmod/modnetwork.c
+    ${MICROPY_DIR}/extmod/modusocket.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
     ${PROJECT_SOURCE_DIR}/machine_i2c.c
     ${PROJECT_SOURCE_DIR}/machine_pin.c
@@ -119,11 +144,13 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/machine_uart.c
     ${PROJECT_SOURCE_DIR}/machine_wdt.c
     ${PROJECT_SOURCE_DIR}/modmachine.c
+    ${PROJECT_SOURCE_DIR}/modnwwiznet5k.c
     ${PROJECT_SOURCE_DIR}/modrp2.c
     ${PROJECT_SOURCE_DIR}/moduos.c
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
+    
 )
 
 set(PICO_SDK_COMPONENTS
@@ -201,14 +228,25 @@ target_sources(${MICROPY_TARGET} PRIVATE
 )
 
 target_link_libraries(${MICROPY_TARGET} usermod)
+if (MICROPY_PY_WIZNET5K) 
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+       ${MICROPY_INC_CORE}
+       ${MICROPY_INC_USERMOD}
+       ${MICROPY_BOARD_DIR}
+       "${PROJECT_SOURCE_DIR}"
+       "${CMAKE_BINARY_DIR}"
+       "${MICROPY_DIR}/driver/wiznet5k"
+    )
+else()
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_INC_CORE}
+        ${MICROPY_INC_USERMOD}
+        ${MICROPY_BOARD_DIR}
+        "${PROJECT_SOURCE_DIR}"
+        "${CMAKE_BINARY_DIR}"
+    )  
+endif()
 
-target_include_directories(${MICROPY_TARGET} PRIVATE
-    ${MICROPY_INC_CORE}
-    ${MICROPY_INC_USERMOD}
-    ${MICROPY_BOARD_DIR}
-    "${PROJECT_SOURCE_DIR}"
-    "${CMAKE_BINARY_DIR}"
-)
 
 target_compile_options(${MICROPY_TARGET} PRIVATE
     -Wall
@@ -228,20 +266,39 @@ set_source_files_properties(
     PROPERTIES
     COMPILE_OPTIONS "-Wno-error=array-bounds;-Wno-error=unused-but-set-variable"
 )
+if (MICROPY_PY_WIZNET5K)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
+        LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
+        LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
+        PICO_FLOAT_PROPAGATE_NANS=1
+        PICO_STACK_SIZE=0x2000
+        PICO_CORE1_STACK_SIZE=0
+        PICO_PROGRAM_NAME="MicroPython"
+        PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
+        MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
+        PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
+        PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
+        -D_WIZCHIP_=${MICROPY_PY_WIZNET5K}
+        -DMICROPY_PY_WIZNET5K=${MICROPY_PY_WIZNET5K}
+   )
+else()
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
+        LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
+        LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
+        PICO_FLOAT_PROPAGATE_NANS=1
+        PICO_STACK_SIZE=0x2000
+        PICO_CORE1_STACK_SIZE=0
+        PICO_PROGRAM_NAME="MicroPython"
+        PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
+        MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
+        PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
+        PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
+   )
+endif()
 
-target_compile_definitions(${MICROPY_TARGET} PRIVATE
-    FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
-    LFS1_NO_MALLOC LFS1_NO_DEBUG LFS1_NO_WARN LFS1_NO_ERROR LFS1_NO_ASSERT
-    LFS2_NO_MALLOC LFS2_NO_DEBUG LFS2_NO_WARN LFS2_NO_ERROR LFS2_NO_ASSERT
-    PICO_FLOAT_PROPAGATE_NANS=1
-    PICO_STACK_SIZE=0x2000
-    PICO_CORE1_STACK_SIZE=0
-    PICO_PROGRAM_NAME="MicroPython"
-    PICO_NO_PROGRAM_VERSION_STRING=1 # do it ourselves in main.c
-    MICROPY_BUILD_TYPE="${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} ${CMAKE_BUILD_TYPE}"
-    PICO_NO_BI_STDIO_UART=1 # we call it UART REPL
-    PICO_RP2040_USB_DEVICE_ENUMERATION_FIX=1
-)
+
 
 target_link_libraries(${MICROPY_TARGET}
     ${PICO_SDK_COMPONENTS}

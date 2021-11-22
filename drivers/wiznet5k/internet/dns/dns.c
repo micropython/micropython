@@ -483,8 +483,10 @@ int16_t dns_makequery(uint16_t op, char * name, uint8_t * buf, uint16_t len)
 int8_t check_DNS_timeout(void)
 {
 	static uint8_t retry_count;
+    // TEST
+//uint32_t tick = HAL_GetTick();
+	uint32_t tick = 0;
 
-    uint32_t tick = HAL_GetTick();
 	if(tick - hal_sys_tick >= DNS_WAIT_TIME * 1000)
 	{
 		hal_sys_tick = tick;
@@ -517,8 +519,9 @@ int8_t DNS_run(uint8_t * dns_ip, uint8_t * name, uint8_t * ip_from_dns)
 	uint8_t ip[4];
 	uint16_t len, port;
 	int8_t ret_check_timeout;
-
-        hal_sys_tick = HAL_GetTick();
+    // TEST
+       // hal_sys_tick = HAL_GetTick();
+        hal_sys_tick = 0;
    
    // Socket open
    WIZCHIP_EXPORT(socket)(DNS_SOCKET, Sn_MR_UDP, 0, 0);

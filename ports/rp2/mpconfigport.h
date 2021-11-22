@@ -75,9 +75,12 @@
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
+#define MICROPY_PY_UERRNO                       (1)
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
 
+#define MICROPY_PY_NETWORK                      (1)
+#define MICROPY_PY_USOCKET                      (1)
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
@@ -140,6 +143,14 @@ extern const struct _mp_obj_module_t mp_module_utime;
 #define NETWORK_ROOT_POINTERS
 #endif
 
+#if MICROPY_PY_WIZNET5K
+extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
+#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#else
+#define MICROPY_HW_NIC_WIZNET5K
+#endif
+
+
 #if MICROPY_PY_BLUETOOTH
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
 #else
@@ -168,6 +179,7 @@ struct _mp_bluetooth_nimble_malloc_t;
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_WIZNET5K \
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -203,6 +215,7 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_HW_USBDEV_TASK_HOOK
 #endif
 
+
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         extern void mp_handle_pending(bool); \
@@ -211,6 +224,7 @@ struct _mp_bluetooth_nimble_malloc_t;
         MICROPY_HW_USBDEV_TASK_HOOK \
     } while (0);
 
+#define MICROPY_THREAD_YIELD()
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
 
 #define MP_SSIZE_MAX (0x7fffffff)

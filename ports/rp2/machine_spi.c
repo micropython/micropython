@@ -24,51 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "py/mperrno.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "machine_spi.h"
 
-#include "hardware/spi.h"
-#include "hardware/dma.h"
-
-#define DEFAULT_SPI_BAUDRATE    (1000000)
-#define DEFAULT_SPI_POLARITY    (0)
-#define DEFAULT_SPI_PHASE       (0)
-#define DEFAULT_SPI_BITS        (8)
-#define DEFAULT_SPI_FIRSTBIT    (SPI_MSB_FIRST)
-
-#ifndef MICROPY_HW_SPI0_SCK
-#define MICROPY_HW_SPI0_SCK     (6)
-#define MICROPY_HW_SPI0_MOSI    (7)
-#define MICROPY_HW_SPI0_MISO    (4)
-#endif
-
-#ifndef MICROPY_HW_SPI1_SCK
-#define MICROPY_HW_SPI1_SCK     (10)
-#define MICROPY_HW_SPI1_MOSI    (11)
-#define MICROPY_HW_SPI1_MISO    (8)
-#endif
-
-#define IS_VALID_PERIPH(spi, pin)   ((((pin) & 8) >> 3) == (spi))
-#define IS_VALID_SCK(spi, pin)      (((pin) & 3) == 2 && IS_VALID_PERIPH(spi, pin))
-#define IS_VALID_MOSI(spi, pin)     (((pin) & 3) == 3 && IS_VALID_PERIPH(spi, pin))
-#define IS_VALID_MISO(spi, pin)     (((pin) & 3) == 0 && IS_VALID_PERIPH(spi, pin))
-
-typedef struct _machine_spi_obj_t {
-    mp_obj_base_t base;
-    spi_inst_t *const spi_inst;
-    uint8_t spi_id;
-    uint8_t polarity;
-    uint8_t phase;
-    uint8_t bits;
-    uint8_t firstbit;
-    uint8_t sck;
-    uint8_t mosi;
-    uint8_t miso;
-    uint32_t baudrate;
-} machine_spi_obj_t;
 
 STATIC machine_spi_obj_t machine_spi_obj[] = {
     {
@@ -84,7 +41,6 @@ STATIC machine_spi_obj_t machine_spi_obj[] = {
         0,
     },
 };
-
 STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, sck=%u, mosi=%u, miso=%u)",
@@ -209,7 +165,8 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+ void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+//STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
     const size_t dma_min_size_threshold = 32;
@@ -268,6 +225,17 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         }
     }
 }
+
+machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o) {
+ if (mp_obj_is_type(o, &machine_spi_type)) {
+        machine_spi_obj_t *self = MP_OBJ_TO_PTR(o);
+        //return self->spi_inst;
+        return self;
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
+    }
+}
+
 
 STATIC const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,

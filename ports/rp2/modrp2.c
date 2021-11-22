@@ -32,6 +32,7 @@ STATIC const mp_rom_map_elem_t rp2_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&rp2_flash_type) },
     { MP_ROM_QSTR(MP_QSTR_PIO),                 MP_ROM_PTR(&rp2_pio_type) },
     { MP_ROM_QSTR(MP_QSTR_StateMachine),        MP_ROM_PTR(&rp2_state_machine_type) },
+    { MP_ROM_QSTR(MP_QSTR_SPI),					MP_ROM_PTR(&machine_spi_type)},
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_module_globals, rp2_module_globals_table);
 

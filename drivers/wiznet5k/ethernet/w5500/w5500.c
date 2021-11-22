@@ -86,7 +86,6 @@ uint8_t  WIZCHIP_READ(uint32_t AddrSel)
    spi_data[2] = (AddrSel & 0x000000FF) >> 0;
    Chip_SSP_WriteFrames_Blocking(LPC_SSP0, spi_data, 3);
    Chip_SSP_ReadFrames_Blocking(LPC_SSP0, &ret, 1);
-
    WIZCHIP.CS._deselect();
    WIZCHIP_CRITICAL_EXIT();
    return ret;
