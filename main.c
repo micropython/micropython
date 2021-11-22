@@ -333,7 +333,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     // Collects stickiness bits that apply in the current situation.
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
-    if (safe_mode == NO_SAFE_MODE && pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    if (safe_mode == NO_SAFE_MODE) {
         static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -858,7 +858,11 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
-            skip_repl = run_code_py(safe_mode);
+            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+            	skip_repl = run_code_py(safe_mode);
+            } else {
+            	skip_repl = false;
+            }
         } else if (exit_code != 0) {
             break;
         }
