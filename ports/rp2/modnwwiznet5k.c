@@ -442,7 +442,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_regs_obj, wiznet5k_regs);
 
 STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
     (void)self_in;
-    return mp_obj_new_bool(wizphy_getphylink() == PHY_LINK_ON);
+    #if MICROPY_PY_WIZNET5K == 5100
+     return mp_obj_new_bool( PHY_LINK_ON);
+    #else
+     return mp_obj_new_bool(wizphy_getphylink() == PHY_LINK_ON);
+    #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wiznet5k_isconnected_obj, wiznet5k_isconnected);
 
