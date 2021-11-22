@@ -149,22 +149,37 @@ const mp_obj_property_t wifi_radio_mac_address_obj = {
                MP_ROM_NONE },
 };
 
-//|     mac_address_ap: bytes
-//|     """MAC address of the wifi radio access point. (read-only)"""
+//|     mac_address_ap: ReadableBuffer
+//|     """MAC address for the AP. When the address is altered after interface is started
+//|        the changes would only be reflected once the interface restarts."""
 //|
-STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self) {
+STATIC mp_obj_t wifi_radio_get_mac_address_ap(mp_obj_t self_in) {
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(common_hal_wifi_radio_get_mac_address_ap(self));
-
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_mac_address_ap_obj, wifi_radio_get_mac_address_ap);
+
+STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_address_in) {
+    mp_buffer_info_t mac_address;
+    mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
+
+    if (mac_address.len != MAC_ADDRESS_LENGTH) {
+        mp_raise_ValueError(translate("Invalid MAC address"));
+    }
+
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_wifi_radio_set_mac_address_ap(self, mac_address.buf);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_ap_obj, wifi_radio_set_mac_address_ap);
 
 const mp_obj_property_t wifi_radio_mac_address_ap_obj = {
     .base.type = &mp_type_property,
     .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
-               MP_ROM_NONE,
+               (mp_obj_t)&wifi_radio_set_mac_address_ap_obj,
                MP_ROM_NONE },
 };
-
 
 //|     def start_scanning_networks(self, *, start_channel: int = 1, stop_channel: int = 11) -> Iterable[Network]:
 //|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""

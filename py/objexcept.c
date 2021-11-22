@@ -558,10 +558,9 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
         if (self->traceback == NULL) {
             self->traceback = &MP_STATE_VM(mp_emergency_traceback_obj);
         }
+        // populate traceback object
+        *self->traceback = mp_const_empty_traceback_obj;
     }
-
-    // populate traceback object
-    *self->traceback = mp_const_empty_traceback_obj;
 
     // append the provided traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return

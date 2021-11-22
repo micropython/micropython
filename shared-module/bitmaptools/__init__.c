@@ -30,8 +30,9 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-module/displayio/Bitmap.h"
 
-#include "py/runtime.h"
 #include "py/mperrno.h"
+#include "py/runtime.h"
+#include "py/stream.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -513,8 +514,10 @@ void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int 
     displayio_bitmap_set_dirty_area(self, &area);
 }
 
-void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes, bool reverse_rows) {
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, mp_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_element, bool swap_bytes, bool reverse_rows) {
     uint32_t mask = (1 << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1;
+
+    const mp_stream_p_t *file_proto = mp_get_stream_raise(file, MP_STREAM_OP_READ);
 
     displayio_area_t a = {0, 0, self->width, self->height, NULL};
     displayio_bitmap_set_dirty_area(self, &a);
@@ -530,9 +533,14 @@ void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *f
         uint8_t *rowdata8 = (uint8_t *)rowdata32;
         const int y_draw = reverse_rows ? (self->height) - 1 - y : y;
 
-        UINT bytes_read = 0;
-        if (f_read(&file->fp, rowdata32, rowsize, &bytes_read) != FR_OK || bytes_read != rowsize) {
-            mp_raise_OSError(MP_EIO);
+
+        int error = 0;
+        mp_uint_t bytes_read = file_proto->read(file, rowdata32, rowsize, &error);
+        if (error) {
+            mp_raise_OSError(error);
+        }
+        if (bytes_read != rowsize) {
+            mp_raise_msg(&mp_type_EOFError, NULL);
         }
 
         if (swap_bytes) {
