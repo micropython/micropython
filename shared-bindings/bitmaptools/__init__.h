@@ -64,7 +64,7 @@ void common_hal_bitmaptools_draw_line(displayio_bitmap_t *destination,
     int16_t x1, int16_t y1,
     uint32_t value);
 
-void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, pyb_file_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
+void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, mp_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_index);
 void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bitmap_t *source_bitmap, displayio_colorspace_t colorspace, bitmaptools_dither_algorithm_t algorithm);
 

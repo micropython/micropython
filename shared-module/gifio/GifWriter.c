@@ -78,7 +78,7 @@ static void write_word(gifio_gifwriter_t *self, uint16_t value) {
 
 void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *file, int width, int height, displayio_colorspace_t colorspace, bool loop, bool dither, bool own_file) {
     self->file = file;
-    self->file_proto = mp_proto_get_or_throw(MP_QSTR_protocol_stream, file);
+    self->file_proto = mp_get_stream_raise(file, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     if (self->file_proto->is_text) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
