@@ -4,7 +4,7 @@ import micropython
 # mp_obj_new_exception_msg_varg (exception requires decompression at raise-time to format)
 # mp_obj_new_exception_msg (decompression can be deferred)
 
-# NameError uses mp_obj_new_exception_msg_varg for NameError("name '%q' isn't defined")
+# NameError uses mp_obj_new_exception_msg_varg for NameError("name '%q' is not defined")
 # set.pop uses mp_obj_new_exception_msg for KeyError("pop from an empty set")
 
 # Tests that deferred decompression works both via print(e) and accessing the message directly via e.args.
