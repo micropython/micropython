@@ -144,8 +144,8 @@ void common_hal_displayio_release_displays(void) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (bus_type == &is31fl3741_is31fl3741_type) {
-            common_hal_is31fl3741_is31fl3741_deinit(&displays[i].is31fl3741);
+        } else if (bus_type == &is31fl3741_IS31FL3741_type) {
+            common_hal_is31fl3741_IS31FL3741_deinit(&displays[i].is31fl3741);
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
@@ -222,8 +222,8 @@ void reset_displays(void) {
             }
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (displays[i].is31fl3741.base.type == &is31fl3741_is31fl3741_type) {
-            is31fl3741_is31fl3741_obj_t *is31 = &displays[i].is31fl3741;
+        } else if (displays[i].is31fl3741.base.type == &is31fl3741_IS31FL3741_type) {
+            is31fl3741_IS31FL3741_obj_t *is31 = &displays[i].is31fl3741;
             if (((uint32_t)is31->i2c) < ((uint32_t)&displays) ||
                 ((uint32_t)is31->i2c) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_i2c_obj_t *original_i2c = is31->i2c;
@@ -247,9 +247,9 @@ void reset_displays(void) {
             }
 
             if (!any_display_uses_this_framebuffer(&is31->base)) {
-                common_hal_is31fl3741_is31fl3741_deinit(is31);
+                common_hal_is31fl3741_IS31FL3741_deinit(is31);
             } else {
-                common_hal_is31fl3741_is31fl3741_set_paused(is31, true);
+                common_hal_is31fl3741_IS31FL3741_set_paused(is31, true);
             }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
@@ -287,8 +287,8 @@ void displayio_gc_collect(void) {
         }
         #endif
         #if CIRCUITPY_IS31FL3741
-        if (displays[i].is31fl3741.base.type == &is31fl3741_is31fl3741_type) {
-            is31fl3741_is31fl3741_collect_ptrs(&displays[i].is31fl3741);
+        if (displays[i].is31fl3741.base.type == &is31fl3741_IS31FL3741_type) {
+            is31fl3741_IS31FL3741_collect_ptrs(&displays[i].is31fl3741);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY

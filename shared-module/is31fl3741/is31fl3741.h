@@ -44,7 +44,7 @@ typedef struct {
     bool paused;
     bool scale;
     bool auto_gamma;
-} is31fl3741_is31fl3741_obj_t;
+} is31fl3741_IS31FL3741_obj_t;
 
 // Gamma correction table
 static const uint8_t IS31GammaTable[256] = {

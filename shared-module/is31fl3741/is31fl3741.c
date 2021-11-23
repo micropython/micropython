@@ -40,7 +40,7 @@
 #include "shared-module/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/busio/I2C.h"
 
-void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr, mp_obj_t mapping) {
+void common_hal_is31fl3741_IS31FL3741_construct(is31fl3741_IS31FL3741_obj_t *self, int width, int height, mp_obj_t framebuffer, busio_i2c_obj_t *i2c, uint8_t addr, mp_obj_t mapping) {
     self->width = width;
     self->height = height;
 
@@ -77,10 +77,10 @@ void common_hal_is31fl3741_is31fl3741_construct(is31fl3741_is31fl3741_obj_t *sel
         self->mapping[i] = (uint16_t)value;
     }
 
-    common_hal_is31fl3741_is31fl3741_reconstruct(self, framebuffer);
+    common_hal_is31fl3741_IS31FL3741_reconstruct(self, framebuffer);
 }
 
-void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *self, mp_obj_t framebuffer) {
+void common_hal_is31fl3741_IS31FL3741_reconstruct(is31fl3741_IS31FL3741_obj_t *self, mp_obj_t framebuffer) {
     self->paused = 1;
 
     if (framebuffer) {
@@ -124,7 +124,7 @@ void common_hal_is31fl3741_is31fl3741_reconstruct(is31fl3741_is31fl3741_obj_t *s
     self->paused = 0;
 }
 
-void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) {
+void common_hal_is31fl3741_IS31FL3741_deinit(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_displayio_is31fl3741_end_transaction(self); // in case we still had a lock
 
     if (self->i2c == &self->inline_i2c) {
@@ -144,28 +144,28 @@ void common_hal_is31fl3741_is31fl3741_deinit(is31fl3741_is31fl3741_obj_t *self) 
     self->framebuffer = NULL;
 }
 
-void common_hal_is31fl3741_is31fl3741_set_paused(is31fl3741_is31fl3741_obj_t *self, bool paused) {
+void common_hal_is31fl3741_IS31FL3741_set_paused(is31fl3741_IS31FL3741_obj_t *self, bool paused) {
     self->paused = paused;
 }
 
-bool common_hal_is31fl3741_is31fl3741_get_paused(is31fl3741_is31fl3741_obj_t *self) {
+bool common_hal_is31fl3741_IS31FL3741_get_paused(is31fl3741_IS31FL3741_obj_t *self) {
     return self->paused;
 }
 
-void common_hal_is31fl3741_is31fl3741_set_global_current(is31fl3741_is31fl3741_obj_t *self, uint8_t current) {
+void common_hal_is31fl3741_IS31FL3741_set_global_current(is31fl3741_IS31FL3741_obj_t *self, uint8_t current) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
     is31fl3741_set_current(self->i2c, self->device_address, current);
     common_hal_displayio_is31fl3741_end_transaction(self);
 }
 
-uint8_t common_hal_is31fl3741_is31fl3741_get_global_current(is31fl3741_is31fl3741_obj_t *self) {
+uint8_t common_hal_is31fl3741_IS31FL3741_get_global_current(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
     uint8_t current = is31fl3741_get_current(self->i2c, self->device_address);
     common_hal_displayio_is31fl3741_end_transaction(self);
     return current;
 }
 
-void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self, uint8_t *dirtyrows) {
+void common_hal_is31fl3741_IS31FL3741_refresh(is31fl3741_IS31FL3741_obj_t *self, uint8_t *dirtyrows) {
     common_hal_displayio_is31fl3741_begin_transaction(self);
     if (!self->paused) {
         uint8_t dirty_row_flags = 0xFF; // only supports 8 rows gotta fix
@@ -232,15 +232,15 @@ void common_hal_is31fl3741_is31fl3741_refresh(is31fl3741_is31fl3741_obj_t *self,
     common_hal_displayio_is31fl3741_end_transaction(self);
 }
 
-int common_hal_is31fl3741_is31fl3741_get_width(is31fl3741_is31fl3741_obj_t *self) {
+int common_hal_is31fl3741_IS31FL3741_get_width(is31fl3741_IS31FL3741_obj_t *self) {
     return self->width;
 }
 
-int common_hal_is31fl3741_is31fl3741_get_height(is31fl3741_is31fl3741_obj_t *self) {
+int common_hal_is31fl3741_IS31FL3741_get_height(is31fl3741_IS31FL3741_obj_t *self) {
     return self->height;
 }
 
-void common_hal_displayio_is31fl3741_begin_transaction(is31fl3741_is31fl3741_obj_t *self) {
+void common_hal_displayio_is31fl3741_begin_transaction(is31fl3741_IS31FL3741_obj_t *self) {
     while (!common_hal_busio_i2c_try_lock(self->i2c)) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
@@ -249,7 +249,7 @@ void common_hal_displayio_is31fl3741_begin_transaction(is31fl3741_is31fl3741_obj
     }
 }
 
-void common_hal_displayio_is31fl3741_end_transaction(is31fl3741_is31fl3741_obj_t *self) {
+void common_hal_displayio_is31fl3741_end_transaction(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_busio_i2c_unlock(self->i2c);
 }
 
@@ -262,7 +262,7 @@ void common_hal_is31fl3741_free_impl(void *ptr_in) {
     free_memory(allocation_from_ptr(ptr_in));
 }
 
-void is31fl3741_is31fl3741_collect_ptrs(is31fl3741_is31fl3741_obj_t *self) {
+void is31fl3741_IS31FL3741_collect_ptrs(is31fl3741_IS31FL3741_obj_t *self) {
     gc_collect_ptr(self->framebuffer);
     gc_collect_ptr(self->mapping);
 }

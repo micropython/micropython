@@ -33,7 +33,7 @@
 
 STATIC const mp_rom_map_elem_t is31fl3741_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_is31fl3741) },
-    { MP_ROM_QSTR(MP_QSTR_IS31FL3741), MP_ROM_PTR(&is31fl3741_is31fl3741_type) },
+    { MP_ROM_QSTR(MP_QSTR_IS31FL3741), MP_ROM_PTR(&is31fl3741_IS31FL3741_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(is31fl3741_module_globals, is31fl3741_module_globals_table);
