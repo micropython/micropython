@@ -149,7 +149,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/espressif/esp-idf.git
-	branch = release/v4.3
+	branch = release/v4.4
 [submodule "ports/espressif/certificates/nina-fw"]
 	path = ports/espressif/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git

@@ -59,12 +59,12 @@ include $(TOP)/supervisor/supervisor.mk
 # Include make rules and variables common across CircuitPython builds.
 include $(TOP)/py/circuitpy_defns.mk
 
-ifeq ($(IDF_TARGET),esp32s2)
-IDF_TARGET_ARCH = xtensa
-CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
-else ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
 CROSS_COMPILE = riscv32-esp-elf-
+else
+IDF_TARGET_ARCH = xtensa
+CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
 endif
 
 #######################################
@@ -92,6 +92,7 @@ INC += -I.\
 	   -isystem esp-idf/components/esp_common/include \
 	   -isystem esp-idf/components/esp_event/include \
 	   -isystem esp-idf/components/esp_hw_support/include \
+	   -isystem esp-idf/components/esp_hw_support/include/soc \
 	   -isystem esp-idf/components/esp_netif/include \
 	   -isystem esp-idf/components/esp_pm/include \
 	   -isystem esp-idf/components/esp_ringbuf/include \
@@ -101,6 +102,8 @@ INC += -I.\
 	   -isystem esp-idf/components/esp_wifi/include \
 	   -isystem esp-idf/components/freertos/include \
 	   -isystem esp-idf/components/freertos/include/freertos \
+	   -isystem esp-idf/components/freertos/include/esp_additions \
+	   -isystem esp-idf/components/freertos/include/esp_additions/freertos \
 	   -isystem esp-idf/components/freertos/port/$(IDF_TARGET_ARCH)/include \
 	   -isystem esp-idf/components/hal/include \
 	   -isystem esp-idf/components/hal/$(IDF_TARGET)/include \
@@ -158,12 +161,11 @@ endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
 
-LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/$(IDF_TARGET) \
-		   -L$(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/ld \
-		   -Lesp-idf/components/$(IDF_TARGET)/ld \
+LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/esp_system/ld \
 		   -Lesp-idf/components/esp_rom/$(IDF_TARGET)/ld \
-		   -T$(IDF_TARGET)_out.ld \
-		   -T$(IDF_TARGET).project.ld \
+		   -Lesp-idf/components/soc/$(IDF_TARGET)/ld \
+		   -Tmemory.ld \
+		   -Tsections.ld \
 		   -T$(IDF_TARGET).peripherals.ld \
 		   -T$(IDF_TARGET).rom.ld \
 		   -T$(IDF_TARGET).rom.api.ld \
@@ -174,10 +176,13 @@ ifeq ($(IDF_TARGET),esp32c3)
 LDFLAGS += -Tesp32c3.rom.newlib.ld \
 		   -Tesp32c3.rom.version.ld \
 		   -Tesp32c3.rom.eco3.ld
-else
+else ifeq ($(IDF_TARGET),esp32s2)
 LDFLAGS += -T$(IDF_TARGET).rom.newlib-data.ld \
 		   -T$(IDF_TARGET).rom.newlib-funcs.ld \
 		   -T$(IDF_TARGET).rom.spiflash.ld
+else ifeq ($(IDF_TARGET),esp32s3)
+LDFLAGS += -Tesp32s3.rom.newlib.ld \
+		   -Tesp32s3.rom.version.ld
 endif
 
 LDFLAGS += -Wl,-Bstatic \
@@ -224,10 +229,14 @@ SRC_C += \
 	peripherals/timer.c \
 	peripherals/$(IDF_TARGET)/pins.c
 
-ifneq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32s2)
 SRC_C += \
 	cam.c \
-	i2s_lcd_esp32s2_driver.c \
+	i2s_lcd_esp32s2_driver.c
+endif
+
+ifneq ($(IDF_TARGET),esp32c3)
+SRC_C += \
 	peripherals/pcnt.c \
 	peripherals/touch.c
 endif
@@ -315,19 +324,14 @@ menuconfig: $(BUILD)/esp-idf/config
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET) $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_netif esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
+BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
-ESP_IDF_WIFI_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_WIFI_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
 MBEDTLS_COMPONENTS_LINK = crypto tls x509
 MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/mbedtls/mbedtls/library/libmbed$(component).a)
-
-BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libphy.a
-ifneq ($(IDF_TARGET),esp32c3)
-BINARY_WIFI_BLOBS += librtc.a
-endif
-BINARY_BLOBS = $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
@@ -360,17 +364,18 @@ endif
 esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf \
 		bootloader/bootloader.bin \
+		esp-idf/esp_system/__ldgen_output_sections.ld \
 		esp-idf/app_update/libapp_update.a \
 		esp-idf/bootloader_support/libbootloader_support.a \
 		esp-idf/driver/libdriver.a \
 		esp-idf/efuse/libefuse.a \
-		esp-idf/$(IDF_TARGET)/lib$(IDF_TARGET).a \
-		esp-idf/$(IDF_TARGET)/ld/$(IDF_TARGET).project.ld \
 		esp-idf/esp_adc_cal/libesp_adc_cal.a \
 		esp-idf/esp_common/libesp_common.a \
 		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_hw_support/libesp_hw_support.a \
+		esp-idf/esp_ipc/libesp_ipc.a \
 		esp-idf/esp_netif/libesp_netif.a \
+		esp-idf/esp_phy/libesp_phy.a \
 		esp-idf/esp_pm/libesp_pm.a \
 		esp-idf/esp_ringbuf/libesp_ringbuf.a \
 		esp-idf/esp_rom/libesp_rom.a \
