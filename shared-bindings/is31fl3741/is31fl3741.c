@@ -30,8 +30,6 @@
 #include "py/objarray.h"
 
 #include "shared-bindings/is31fl3741/is31fl3741.h"
-// #include "shared-bindings/microcontroller/Pin.h"
-// #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/framebufferio/__init__.h"
