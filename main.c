@@ -678,7 +678,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
-        bool write_boot_output = (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON);
+        bool write_boot_output = true;
         FIL boot_output_file;
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
             char *file_contents = m_new(char, boot_text.alloc);
