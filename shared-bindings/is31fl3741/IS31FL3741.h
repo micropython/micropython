@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "shared-module/is31fl3741/is31fl3741.h"
+#include "shared-module/is31fl3741/IS31FL3741.h"
 
 extern const mp_obj_type_t is31fl3741_IS31FL3741_type;
 

@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "shared-bindings/is31fl3741/is31fl3741.h"
+#include "shared-bindings/is31fl3741/IS31FL3741.h"
 
 STATIC const mp_rom_map_elem_t is31fl3741_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_is31fl3741) },

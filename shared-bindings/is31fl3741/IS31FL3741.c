@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "py/objarray.h"
 
-#include "shared-bindings/is31fl3741/is31fl3741.h"
+#include "shared-bindings/is31fl3741/IS31FL3741.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/framebufferio/__init__.h"

@@ -551,7 +551,7 @@ SRC_SHARED_MODULE_ALL = \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
-	is31fl3741/is31fl3741.c \
+	is31fl3741/IS31FL3741.c \
 	is31fl3741/__init__.c \
 	keypad/__init__.c \
 	keypad/Event.c \

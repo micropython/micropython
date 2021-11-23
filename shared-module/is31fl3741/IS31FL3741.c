@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 
 #include "shared-module/is31fl3741/allocator.h"
-#include "shared-bindings/is31fl3741/is31fl3741.h"
+#include "shared-bindings/is31fl3741/IS31FL3741.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
