@@ -858,7 +858,11 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
-            skip_repl = run_code_py(safe_mode);
+            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+                skip_repl = run_code_py(safe_mode);
+            } else {
+                skip_repl = false;
+            }
         } else if (exit_code != 0) {
             break;
         }
