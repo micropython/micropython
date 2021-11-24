@@ -8,7 +8,7 @@
 #include "peripherals/broadcom/vcmailbox.h"
 
 void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *self,
-    uint16_t width, uint16_t height) {
+    mp_uint_t width, mp_uint_t height) {
     // These will be modified on success to indicate actual values.
     uint32_t virtual_width = width;
     uint32_t virtual_height = height;
@@ -27,7 +27,6 @@ void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *sel
         self->height = 0;
         return;
     }
-    mp_printf(&mp_plat_print, "%dx%d pitch %d\n", virtual_width, virtual_height, pitch);
     self->width = virtual_width;
     self->height = virtual_height;
     self->pitch = pitch;

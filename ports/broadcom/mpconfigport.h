@@ -36,7 +36,7 @@
 #define MICROPY_PY_SYS_PLATFORM                     "BROADCOM"
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
-#define MICROPY_OBJ_REPR            (0)
+#define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_A)
 #define CIRCUITPY_DEFAULT_STACK_SIZE            (0x10000)
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (1920)
 #define CIRCUITPY_PROCESSOR_COUNT (4)

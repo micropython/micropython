@@ -49,6 +49,11 @@ typedef enum {
     STATUS_NEVER_RESET
 } uart_status_t;
 
+// The Broadcom chips have two different types of UARTs. UART1 is the "mini-UART"
+// that is most available so we've implemented it first. The ARM PL011 UART
+// support will be added later. We set NUM_UARTS to 2 here so that we can match
+// the indexing even though UART0 isn't supported yet. We currently use this
+// UART for debugging so we don't support user use of UART yet.
 #define NUM_UARTS 2
 
 static uart_status_t uart_status[NUM_UARTS];

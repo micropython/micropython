@@ -43,6 +43,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define DELAY 0x80
+
 void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     mp_obj_t bus, uint16_t width, uint16_t height, int16_t colstart, int16_t rowstart,
     uint16_t rotation, uint16_t color_depth, bool grayscale, bool pixels_in_byte_share_row,

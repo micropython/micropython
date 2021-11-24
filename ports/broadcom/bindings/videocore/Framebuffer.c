@@ -60,13 +60,9 @@ STATIC mp_obj_t videocore_framebuffer_make_new(const mp_obj_type_t *type, size_t
     videocore_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->videocore;
     self->base.type = &videocore_framebuffer_type;
 
-    if (args[ARG_width].u_int <= 0) {
-        mp_raise_ValueError(translate("width must be greater than zero"));
-    }
-
-    common_hal_videocore_framebuffer_construct(self,
-        args[ARG_width].u_int,
-        args[ARG_height].u_int);
+    mp_uint_t width = (mp_uint_t)mp_arg_validate_int_min(args[ARG_width].u_int, 0, MP_QSTR_width);
+    mp_uint_t height = (mp_uint_t)mp_arg_validate_int_min(args[ARG_height].u_int, 0, MP_QSTR_height);
+    common_hal_videocore_framebuffer_construct(self, width, height);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -136,7 +132,7 @@ STATIC void videocore_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t
     common_hal_videocore_framebuffer_get_buffer(self_in, bufinfo, 0);
 }
 
-// These version exists so that the prototype matches the protocol,
+// These versions exist so that the prototype matches the protocol,
 // avoiding a type cast that can hide errors
 STATIC void videocore_framebuffer_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
     (void)dirty_row_bitmap;

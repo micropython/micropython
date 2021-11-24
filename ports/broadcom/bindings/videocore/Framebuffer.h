@@ -30,7 +30,7 @@
 
 extern const mp_obj_type_t videocore_framebuffer_type;
 
-void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *self, uint16_t width, uint16_t height);
+void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *self, mp_uint_t width, mp_uint_t height);
 void common_hal_videocore_framebuffer_deinit(videocore_framebuffer_obj_t *self);
 bool common_hal_videocore_framebuffer_deinited(videocore_framebuffer_obj_t *self);
 void common_hal_videocore_framebuffer_refresh(videocore_framebuffer_obj_t *self);

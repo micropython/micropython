@@ -31,8 +31,8 @@
 typedef struct {
     mp_obj_base_t base;
     uint32_t *framebuffer;
-    uint16_t width;
-    uint16_t height;
-    uint16_t pitch;
+    mp_uint_t width;
+    mp_uint_t height;
+    uint32_t pitch;
     bool doublebuffer;
 } videocore_framebuffer_obj_t;

@@ -26,6 +26,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "common-hal/microcontroller/__init__.h"
 #include "peripherals/broadcom/interrupts.h"
@@ -127,6 +128,68 @@ watchdog_watchdogtimer_obj_t common_hal_mcu_watchdogtimer_obj = {
 #endif
 
 // This maps MCU pin names to pin objects.
+#define PIN(num) { MP_ROM_QSTR(MP_QSTR_GPIO##num), MP_ROM_PTR(&pin_GPIO##num) },
 const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
+    PIN(0)
+    PIN(1)
+    PIN(2)
+    PIN(3)
+    PIN(4)
+    PIN(5)
+    PIN(6)
+    PIN(7)
+    PIN(8)
+    PIN(9)
+    PIN(10)
+    PIN(11)
+    PIN(12)
+    PIN(13)
+    PIN(14)
+    PIN(15)
+    PIN(16)
+    PIN(17)
+    PIN(18)
+    PIN(19)
+    PIN(20)
+    PIN(21)
+    PIN(22)
+    PIN(23)
+    PIN(24)
+    PIN(25)
+    PIN(26)
+    PIN(27)
+    PIN(28)
+    PIN(29)
+
+    PIN(30)
+    PIN(31)
+    PIN(32)
+    PIN(33)
+    PIN(34)
+    PIN(35)
+    PIN(36)
+    PIN(37)
+    PIN(38)
+    PIN(39)
+
+    PIN(40)
+    PIN(41)
+    PIN(42)
+    PIN(43)
+    PIN(44)
+    PIN(45)
+    PIN(46)
+    PIN(47)
+    PIN(48)
+    PIN(49)
+
+    PIN(50)
+    PIN(51)
+    PIN(52)
+    PIN(53)
+    PIN(54)
+    PIN(55)
+    PIN(56)
+    PIN(57)
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);

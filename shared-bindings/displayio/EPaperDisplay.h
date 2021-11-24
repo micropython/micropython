@@ -34,8 +34,6 @@
 
 extern const mp_obj_type_t displayio_epaperdisplay_type;
 
-#define DELAY 0x80
-
 #define NO_COMMAND 0x100
 
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t *self,
