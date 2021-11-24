@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-19 12:53+0000\n"
+"PO-Revision-Date: 2021-11-25 00:02+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: main.c
 msgid ""
@@ -1479,7 +1479,7 @@ msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
 
 #: shared-module/is31fl3741/is31fl3741.c
 msgid "LED mappings must match display size"
-msgstr ""
+msgstr "LED-mappning måste matcha displaystorlek"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2120,7 +2120,7 @@ msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 
 #: shared-bindings/is31fl3741/is31fl3741.c
 msgid "Scale dimensions must divide by 3"
-msgstr ""
+msgstr "Skaldimension måste vara delbar med 3"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
