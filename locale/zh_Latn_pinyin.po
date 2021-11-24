@@ -591,6 +591,7 @@ msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Liàngdù bìxū wèi 0-1.0"
@@ -1487,6 +1488,10 @@ msgstr "Wúxiào de zì/wèi chángdù"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "mì yào bì xū wéi 16, 24 huò 32 zì jié cháng"
 
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "Guānjiàn zì arg de LHS bìxū shì id"
@@ -2123,6 +2128,10 @@ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
@@ -2393,7 +2402,7 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
@@ -4526,6 +4535,7 @@ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "kuāndù bìxū dàyú líng"

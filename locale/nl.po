@@ -579,6 +579,7 @@ msgstr "Beide pinnen moeten hardware interrupts ondersteunen"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Helderheid moet tussen de 0 en 1.0 liggen"
@@ -1469,6 +1470,10 @@ msgstr "Ongeldig woord/bit lengte"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Sleutel moet 16, 24, of 32 bytes lang zijn"
 
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS van sleutelwoord arg moet een id zijn"
@@ -2107,6 +2112,10 @@ msgstr "Sample rate moet positief zijn"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate is te hoog. Moet minder dan %d zijn"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan wordt al uitvoerd. Stop met stop_scan."
@@ -2368,7 +2377,7 @@ msgstr "Niet in staat buffers voor gesigneerde conversie te alloceren"
 msgid "Unable to create lock"
 msgstr "Kan vergrendeling niet maken"
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Geen I2C beeldscherm gevonden bij %x"
@@ -4496,6 +4505,7 @@ msgstr "watchdog time-out moet groter zijn dan 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "breedte moet groter dan nul zijn"

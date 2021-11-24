@@ -584,6 +584,7 @@ msgstr "Kedua pin harus mendukung hardware interrut"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Kecerahan harus di antara 0-1.0"
@@ -1478,6 +1479,10 @@ msgstr "Panjang kata/bit tidak valid"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Panjang kunci harus 16, 24, atau 32 byte"
 
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS dari keyword arg harus menjadi sebuah id"
@@ -2116,6 +2121,10 @@ msgstr "Tingkat sampel harus positif"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Pindai sudah dalam proses. Hentikan dengan stop_scan."
@@ -2377,7 +2386,7 @@ msgstr "Tidak dapat mengalokasikan buffer untuk signed conversion"
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Tidak dapat menemukan Tampilan I2C di %x"
@@ -4491,6 +4500,7 @@ msgstr ""
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""

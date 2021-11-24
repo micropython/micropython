@@ -592,6 +592,7 @@ msgstr "Оба вывода должны поддерживать аппарат
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Яркость должна быть в диапазоне от 0 до 1.0"
@@ -1499,6 +1500,10 @@ msgstr "Недопустимая длина слова/бита"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Ключ должен быть длинной 16, 24 или 32 байта"
 
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "LHS ключевого слова arg должен быть идентификатором(id)"
@@ -1563,7 +1568,7 @@ msgstr ""
 "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
 msgstr "Отсутствует first_out_pin. Инструкция %d записывает вывод(ы)"
 
@@ -1591,7 +1596,7 @@ msgid "Must provide MISO or MOSI pin"
 msgstr "Вывод MISO или MOSI должен быть предоставлен"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
 msgstr "Должно использоваться кратное 6 rgb-контактов, а не %d."
 
@@ -1803,7 +1808,7 @@ msgid "Only IPv4 sockets supported"
 msgstr "Поддерживаются только сокеты IPv4"
 
 #: shared-module/displayio/OnDiskBitmap.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
@@ -2136,6 +2141,10 @@ msgstr ""
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr ""
@@ -2397,7 +2406,7 @@ msgstr ""
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr ""
@@ -4508,6 +4517,7 @@ msgstr ""
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
