@@ -96,7 +96,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
             mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
             mp_printf(MP_PYTHON_PRINTER, "\n"); \
         } \
-    } while(0);
+    } while (0);
 /*
 // How to use:
 // Set DBG_LEVEL in developed *.C or *.CPP file
