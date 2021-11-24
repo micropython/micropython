@@ -474,7 +474,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
                 if (colorspace->depth == 16) {
                     *(((uint16_t *)buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth == 32) {
-                    buffer[offset] = output_pixel.pixel;
+                    *(((uint32_t *)buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth == 8) {
                     *(((uint8_t *)buffer) + offset) = output_pixel.pixel;
                 } else if (colorspace->depth < 8) {

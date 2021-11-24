@@ -98,6 +98,8 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
         *color = packed;
     } else if (colorspace->depth == 32) {
         *color = self->colors[palette_index].rgb888;
+    } else {
+        return false;
     }
 
     return true;

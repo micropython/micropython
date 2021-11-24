@@ -212,6 +212,9 @@ endif
 ifeq ($(CIRCUITPY_IPADDRESS),1)
 SRC_PATTERNS += ipaddress/%
 endif
+ifeq ($(CIRCUITPY_IS31FL3741),1)
+SRC_PATTERNS += is31fl3741/%
+endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
 endif
@@ -551,6 +554,8 @@ SRC_SHARED_MODULE_ALL = \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
+	is31fl3741/IS31FL3741.c \
+	is31fl3741/__init__.c \
 	keypad/__init__.c \
 	keypad/Event.c \
 	keypad/EventQueue.c \
