@@ -38,7 +38,7 @@ jobs:
       run: python tools/ci_fetch_deps.py test ${{ github.ref }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
+        git describe --dirty --tags || git log --parents HEAD~4..
         echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Install dependencies
       run: |
