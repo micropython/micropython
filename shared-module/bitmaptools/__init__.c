@@ -761,12 +761,12 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
         rows[1] = rows[2];
         rows[2] = tmp;
 
-        fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
-
         y++;
         if (y == height) {
             break;
         }
+
+        fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
 
         // Serpentine dither.   Going right-to-left...
         for (int x = width; x--;) {
@@ -790,7 +790,7 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
         rows[1] = rows[2];
         rows[2] = tmp;
 
-        fill_row(source_bitmap, swap, rows[2], y + 2, info->mx);
+        fill_row(source_bitmap, swap, rows[2], y + 3, info->mx);
     }
 
     displayio_area_t a = { 0, 0, width, height, NULL };
