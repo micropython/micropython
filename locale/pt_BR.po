@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-19 12:53+0000\n"
+"PO-Revision-Date: 2021-11-24 23:51+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: main.c
 msgid ""
@@ -1497,7 +1497,7 @@ msgstr "A chave deve ter 16, 24 ou 32 bytes de comprimento"
 
 #: shared-module/is31fl3741/is31fl3741.c
 msgid "LED mappings must match display size"
-msgstr ""
+msgstr "Os mapeamentos do led devem corresponder ao tamanho do display"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2144,7 +2144,7 @@ msgstr "Taxa de amostragem muito alta. Deve ser menor que %d"
 
 #: shared-bindings/is31fl3741/is31fl3741.c
 msgid "Scale dimensions must divide by 3"
-msgstr ""
+msgstr "As dimensões da escala devem ser poder ser divididas por 3"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
