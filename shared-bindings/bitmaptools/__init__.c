@@ -664,7 +664,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_readinto_obj, 0, bitmaptools_readinto);
 //|     """The Floyd-Stenberg dither"""
 //|
 MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, Atkinson, DITHER_ALGORITHM_ATKINSON);
-MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, FloydStenberg, DITHER_ALGORITHM_ATKINSON);
+MAKE_ENUM_VALUE(bitmaptools_dither_algorithm_type, dither_algorithm, FloydStenberg, DITHER_ALGORITHM_FLOYD_STENBERG);
 
 MAKE_ENUM_MAP(bitmaptools_dither_algorithm) {
     MAKE_ENUM_MAP_ENTRY(dither_algorithm, Atkinson),
