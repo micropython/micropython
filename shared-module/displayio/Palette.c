@@ -89,6 +89,9 @@ bool displayio_palette_get_color(displayio_palette_t *self, const _displayio_col
     } else if (colorspace->grayscale) {
         size_t bitmask = (1 << colorspace->depth) - 1;
         *color = (self->colors[palette_index].luma >> colorspace->grayscale_bit) & bitmask;
+    } else if (colorspace->depth == 32) {
+        uint32_t c = self->colors[palette_index].rgb888;
+        *color = c;
     } else {
         uint16_t packed = self->colors[palette_index].rgb565;
         if (colorspace->reverse_bytes_in_word) {
