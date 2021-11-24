@@ -749,9 +749,9 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
                 int x1 = x + info->terms[i].dx;
                 int dy = info->terms[i].dy;
 
-                rows[dy][x1] = ((info->terms[i].dl * err) >> 8) + rows[dy][x1];
+                rows[dy][x1] = ((info->terms[i].dl * err) / 256) + rows[dy][x1];
             }
-            err = err * info->dl >> 8;
+            err = (err * info->dl) / 256;
         }
         write_pixels(dest_bitmap, y, out);
 
@@ -779,9 +779,9 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
                 int x1 = x - info->terms[i].dx;
                 int dy = info->terms[i].dy;
 
-                rows[dy][x1] = ((info->terms[i].dl * err) >> 8) + rows[dy][x1];
+                rows[dy][x1] = ((info->terms[i].dl * err) / 256) + rows[dy][x1];
             }
-            err = err * info->dl >> 8;
+            err = (err * info->dl) / 256;
         }
         write_pixels(dest_bitmap, y, out);
 
