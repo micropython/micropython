@@ -42,6 +42,11 @@
     <QstrDependencies Include="$(PyVariantDir)mpconfigvariant.h"/>
   </ItemGroup>
 
+  <!-- Helper for getting resulting executable path since it depends on other properties. -->
+  <Target Name="ShowTargetPath">
+    <Message Text="$(TargetPath)" Importance="high"/>
+  </Target>
+
   <!-- Copy PyOutputFiles to their target destination.
        To force this when switching between platforms/configurations which are already up-to-date (and as such,
        for which a build wouldn't even start because all outputs are effectively newer than the inputs)
