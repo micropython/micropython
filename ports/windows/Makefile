@@ -61,7 +61,18 @@ SRC_C = \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
+SHARED_SRC_C += $(addprefix shared/,\
+	$(SHARED_SRC_C_EXTRA) \
+	)
+
+SRC_CXX += \
+	$(SRC_MOD_CXX)
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
@@ -71,7 +82,7 @@ endif
 LIB += -lws2_32
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
