@@ -14,6 +14,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modujson.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modurandom.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modure.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduselect.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modutimeq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />
