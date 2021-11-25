@@ -938,8 +938,8 @@ uint16_t bleio_adapter_max_attribute_handle(bleio_adapter_obj_t *adapter) {
 
 
 void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter) {
-    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / sizeof(size_t));
-    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / sizeof(size_t));
+    gc_collect_root((void **)adapter, sizeof(bleio_adapter_obj_t) / (sizeof(size_t)));
+    gc_collect_root((void **)bleio_connections, sizeof(bleio_connections) / (sizeof(size_t)));
 }
 
 void bleio_adapter_reset(bleio_adapter_obj_t *adapter) {

@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_PYSTACK_H
 #define MICROPY_INCLUDED_PY_PYSTACK_H
 
+#include "py/mpconfig.h"
 #include "py/mpstate.h"
 
 // Enable this debugging option to check that the amount of memory freed is

@@ -55,7 +55,7 @@ extern const mp_rom_obj_tuple_t common_hal_multi_processor_obj;
 #endif
 
 
-#if CIRCUITPY_INTERNAL_NVM_SIZE > 0
+#if CIRCUITPY_NVM && CIRCUITPY_INTERNAL_NVM_SIZE > 0
 #include "common-hal/nvm/ByteArray.h"
 extern const nvm_bytearray_obj_t common_hal_mcu_nvm_obj;
 #endif

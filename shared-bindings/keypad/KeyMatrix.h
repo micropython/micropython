@@ -32,7 +32,7 @@
 
 extern const mp_obj_type_t keypad_keymatrix_type;
 
-void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events);
+void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint_t num_row_pins, const mcu_pin_obj_t *row_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], bool columns_to_anodes, mp_float_t interval, size_t max_events);
 
 void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self);
 bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self);

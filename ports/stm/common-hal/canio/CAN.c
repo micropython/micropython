@@ -50,7 +50,7 @@ STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, 
 }
 
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
+void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent) {
 #define DIV_ROUND(a, b) (((a) + (b) / 2) / (b))
 #define DIV_ROUND_UP(a, b) (((a) + (b) - 1) / (b))
 

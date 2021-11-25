@@ -133,7 +133,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_deinit_obj, busio_spi_obj_deinit);
 //|
 STATIC mp_obj_t busio_spi_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_busio_spi_deinit(args[0]);
+    common_hal_busio_spi_deinit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, busio_spi_obj___exit__);

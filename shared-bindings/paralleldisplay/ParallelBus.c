@@ -76,11 +76,11 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
-    mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
-    mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
-    mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
-    mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
+    const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
+    const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
+    const mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
+    const mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
+    const mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
 
     paralleldisplay_parallelbus_obj_t *self = &allocate_display_bus_or_raise()->parallel_bus;
     self->base.type = &paralleldisplay_parallelbus_type;
@@ -93,11 +93,11 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
     }
 
     if (specified_data0) {
-        mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
+        const mcu_pin_obj_t *data0 = validate_obj_is_free_pin(args[ARG_data0].u_obj);
         common_hal_paralleldisplay_parallelbus_construct(self, data0, command, chip_select, write, read, reset, args[ARG_frequency].u_int);
     } else {
         uint8_t num_pins;
-        mcu_pin_obj_t *data_pins[16];
+        const mcu_pin_obj_t *data_pins[16];
         validate_list_is_free_pins(MP_QSTR_data_pins, data_pins, (mp_int_t)MP_ARRAY_SIZE(data_pins), args[ARG_data_pins].u_obj, &num_pins);
         common_hal_paralleldisplay_parallelbus_construct_nonsequential(self, num_pins, data_pins, command, chip_select, write, read, reset, args[ARG_frequency].u_int);
     }

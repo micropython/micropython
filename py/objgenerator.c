@@ -136,22 +136,21 @@ STATIC mp_obj_t bc_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
 }
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-
     #if MICROPY_EMIT_NATIVE
+    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
     if (self_fun->base.type == &mp_type_fun_native) {
         return native_gen_wrap_call(self, n_args, n_kw, args);
     }
     #endif
-    return bc_gen_wrap_call(self, n_args, n_kw, args);
+    return bc_gen_wrap_call(self_in, n_args, n_kw, args);
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
 static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
-    mp_obj_fun_bc_attr(self_fun, attr, dest);
+    mp_obj_fun_bc_attr(MP_OBJ_FROM_PTR(self_fun), attr, dest);
 }
 #endif
 

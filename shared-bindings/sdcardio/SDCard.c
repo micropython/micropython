@@ -88,7 +88,7 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi].u_obj);
-    mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj);
+    const mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj);
 
     sdcardio_sdcard_obj_t *self = m_new_obj(sdcardio_sdcard_obj_t);
     self->base.type = &sdcardio_SDCard_type;

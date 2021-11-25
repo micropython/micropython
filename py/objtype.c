@@ -1232,7 +1232,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    o->locals_dict = make_dict_long_lived(locals_dict, 10);
+    o->locals_dict = make_dict_long_lived(MP_OBJ_TO_PTR(locals_dict), 10);
 
     #if ENABLE_SPECIAL_ACCESSORS
     // Check if the class has any special accessor methods

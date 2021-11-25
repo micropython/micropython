@@ -201,22 +201,22 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     mp_get_buffer(args[ARG_init].u_obj, &init_bufinfo, MP_BUFFER_READ);
 
     // We don't validate pin in use here because we may be ok sharing them within a PIO.
-    mcu_pin_obj_t *first_out_pin = validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj);
+    const mcu_pin_obj_t *first_out_pin = validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj);
     if (args[ARG_out_pin_count].u_int < 1) {
         mp_raise_ValueError(translate("Pin count must be at least 1"));
     }
-    mcu_pin_obj_t *first_in_pin = validate_obj_is_pin_or_none(args[ARG_first_in_pin].u_obj);
+    const mcu_pin_obj_t *first_in_pin = validate_obj_is_pin_or_none(args[ARG_first_in_pin].u_obj);
     if (args[ARG_in_pin_count].u_int < 1) {
         mp_raise_ValueError(translate("Pin count must be at least 1"));
     }
-    mcu_pin_obj_t *first_set_pin = validate_obj_is_pin_or_none(args[ARG_first_set_pin].u_obj);
+    const mcu_pin_obj_t *first_set_pin = validate_obj_is_pin_or_none(args[ARG_first_set_pin].u_obj);
     if (args[ARG_set_pin_count].u_int < 1) {
         mp_raise_ValueError(translate("Pin count must be at least 1"));
     }
     if (args[ARG_set_pin_count].u_int > 5) {
         mp_raise_ValueError(translate("Set pin count must be between 1 and 5"));
     }
-    mcu_pin_obj_t *first_sideset_pin = validate_obj_is_pin_or_none(args[ARG_first_sideset_pin].u_obj);
+    const mcu_pin_obj_t *first_sideset_pin = validate_obj_is_pin_or_none(args[ARG_first_sideset_pin].u_obj);
     if (args[ARG_sideset_pin_count].u_int < 1) {
         mp_raise_ValueError(translate("Pin count must be at least 1"));
     }
