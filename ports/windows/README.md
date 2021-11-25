@@ -71,6 +71,26 @@ To build from the command line:
     msbuild ../../mpy-cross/mpy-cross.vcxproj
     msbuild micropython.vcxproj
 
+__Variants__
+
+The msvc port supports variants (like the unix and windows mingw ports) and the one which gets built is
+controlled by the `PyVariant` msbuild property. It defaults to `standard`.
+The other variants can be built like:
+
+    msbuild micropython.vcxproj /p:PyVariant=dev
+
+Or by adding a file [Directory.build.props](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build#directorybuildprops-and-directorybuildtargets) in this directory or a parent directory:
+
+```xml
+<Project>
+  <PropertyGroup>
+    <PyVariant>dev</PyVariant>
+  </PropertyGroup>
+</Project>
+```
+
+See [paths.props](msvc/paths.props) for other related variables like build and variant directories.
+
 __Stack usage__
 
 The msvc compiler is quite stack-hungry which might result in a "maximum recursion depth exceeded"

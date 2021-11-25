@@ -64,6 +64,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
     <CustomPropsFile Condition="'$(CustomPropsFile)'==''">msvc/user.props</CustomPropsFile>
+    <TargetName>$(PyProg)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile />
@@ -95,6 +96,7 @@
     <ClCompile Include="$(PyBaseDir)ports\unix\modos.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modtime.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
+    <ClCompile Include="$(PyVariantDir)*.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="@(PyCoreInclude)" />
