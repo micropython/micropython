@@ -1259,6 +1259,10 @@ msgstr "Autenticação insuficiente"
 msgid "Insufficient encryption"
 msgstr "Criptografia insuficiente"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr "A interface deve ser iniciada"
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr "O buffer interno de áudio é muito pequeno"
@@ -2207,10 +2211,6 @@ msgstr "Divisão com sub-capturas"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "O tamanho da pilha deve ser pelo menos 256"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr "A interface deve ser iniciada"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"

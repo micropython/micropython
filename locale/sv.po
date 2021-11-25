@@ -1241,6 +1241,10 @@ msgstr "Otillräcklig autentisering"
 msgid "Insufficient encryption"
 msgstr "Otillräcklig kryptering"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr "Gränssnittet måste vara startat"
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr "Intern ljudbuffert för liten"
@@ -2182,10 +2186,6 @@ msgstr "Splitting med sub-captures"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Stackstorleken måste vara minst 256"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr "Gränssnittet måste vara startat"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
