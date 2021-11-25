@@ -128,7 +128,7 @@ void common_hal_sharpdisplay_framebuffer_deinit(sharpdisplay_framebuffer_obj_t *
     memset(self, 0, sizeof(*self));
 }
 
-void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_t *self, busio_spi_obj_t *spi, mcu_pin_obj_t *chip_select, int baudrate, int width, int height) {
+void common_hal_sharpdisplay_framebuffer_construct(sharpdisplay_framebuffer_obj_t *self, busio_spi_obj_t *spi, const mcu_pin_obj_t *chip_select, int baudrate, int width, int height) {
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
     common_hal_never_reset_pin(chip_select);

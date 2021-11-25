@@ -331,7 +331,9 @@ void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint
     self->full_change = true;
 }
 
-bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
+bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self,
+    const _displayio_colorspace_t *colorspace, const displayio_area_t *area,
+    uint32_t *mask, uint32_t *buffer) {
     // If no tiles are present we have no impact.
     uint8_t *tiles = self->tiles;
     if (self->inline_tiles) {
@@ -443,7 +445,6 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
             input_pixel.tile_x = (input_pixel.tile % self->bitmap_width_in_tiles) * self->tile_width + local_x % self->tile_width;
             input_pixel.tile_y = (input_pixel.tile / self->bitmap_width_in_tiles) * self->tile_height + local_y % self->tile_height;
 
-            // uint32_t value = 0;
             output_pixel.pixel = 0;
             input_pixel.pixel = 0;
 
@@ -497,6 +498,7 @@ bool displayio_tilegrid_fill_area(displayio_tilegrid_t *self, const _displayio_c
                     ((uint8_t *)buffer)[offset / pixels_per_byte] |= output_pixel.pixel << shift;
                 }
             }
+            (void)input_pixel;
         }
     }
     return full_coverage;

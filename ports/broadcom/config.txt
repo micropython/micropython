@@ -1,0 +1,9 @@
+
+# dtparam=audio=on
+# dtoverlay=dwc2
+# core_freq_min=500
+gpio=22-27=np
+enable_jtag_gpio=1
+# hdmi_group=1
+# hdmi_mode=16
+gpu_mem=16

@@ -120,9 +120,9 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     uint8_t bits = args[ARG_bits].u_int;
 
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
-    if (args[ARG_parity].u_obj == &busio_uart_parity_even_obj) {
+    if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
         parity = BUSIO_UART_PARITY_EVEN;
-    } else if (args[ARG_parity].u_obj == &busio_uart_parity_odd_obj) {
+    } else if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_odd_obj)) {
         parity = BUSIO_UART_PARITY_ODD;
     }
 
@@ -153,7 +153,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
 // Helper to ensure we have the native super class instead of a subclass.
 STATIC busio_uart_obj_t *native_uart(mp_obj_t uart_obj) {
-    mp_obj_t native_uart = mp_obj_cast_to_native_base(uart_obj, &busio_uart_type);
+    mp_obj_t native_uart = mp_obj_cast_to_native_base(uart_obj, MP_OBJ_FROM_PTR(&busio_uart_type));
     if (native_uart == MP_OBJ_NULL) {
         mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_UART);
     }
@@ -192,7 +192,7 @@ STATIC void check_for_deinit(busio_uart_obj_t *self) {
 //|
 STATIC mp_obj_t busio_uart_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_busio_uart_deinit(args[0]);
+    common_hal_busio_uart_deinit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_uart___exit___obj, 4, 4, busio_uart_obj___exit__);
@@ -394,7 +394,7 @@ STATIC MP_DEFINE_CONST_DICT(busio_uart_parity_locals_dict, busio_uart_parity_loc
 
 STATIC void busio_uart_parity_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr parity = MP_QSTR_ODD;
-    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&busio_uart_parity_even_obj)) {
+    if (self_in == MP_ROM_PTR(&busio_uart_parity_even_obj)) {
         parity = MP_QSTR_EVEN;
     }
     mp_printf(print, "%q.%q.%q.%q", MP_QSTR_busio, MP_QSTR_UART, MP_QSTR_Parity, parity);
@@ -404,7 +404,7 @@ const mp_obj_type_t busio_uart_parity_type = {
     { &mp_type_type },
     .name = MP_QSTR_Parity,
     .print = busio_uart_parity_print,
-    .locals_dict = (mp_obj_t)&busio_uart_parity_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&busio_uart_parity_locals_dict,
 };
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {

@@ -20,6 +20,7 @@ jobs:
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
       boards-espressif: ${{ steps.set-matrix.outputs.boards-espressif }}
+      boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
     steps:
     - name: Dump GitHub context
       env:
@@ -28,19 +29,17 @@ jobs:
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
-        fetch-depth: 0
-    - name: Populate selected submodules
-      run: git submodule update --init extmod/ lib/ tools/
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: CircuitPython version
-      run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        fetch-depth: 1
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py test ${{ github.ref }}
+    - name: CircuitPython version
+      run: |
+        git describe --dirty --tags || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -136,19 +135,17 @@ jobs:
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
-        fetch-depth: 0
-    - name: Populate selected submodules
-      run: git submodule update --init extmod/ lib/ tools/
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
-    - name: CircuitPython version
-      run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        fetch-depth: 1
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.ref }}
+    - name: CircuitPython version
+      run: |
+        git describe --dirty --tags
+        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
     - name: Install dependencies
       run: |
         brew install gettext
@@ -198,11 +195,9 @@ jobs:
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
-        fetch-depth: 0
-    - name: Populate selected submodules
-      run: git submodule update --init extmod/
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py docs ${{ github.ref }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -271,10 +266,10 @@ jobs:
         python-version: 3.8
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+        submodules: false
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -323,10 +318,10 @@ jobs:
         python-version: 3.8
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+        submodules: false
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -375,10 +370,10 @@ jobs:
         python-version: 3.8
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
-        fetch-depth: 0
-    - name: Fetch tags
-      run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+        submodules: false
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
     - name: CircuitPython version
       run: git describe --dirty --tags
     - uses: actions/cache@v2
@@ -434,6 +429,70 @@ jobs:
       env:
         IDF_PATH: ${{ github.workspace }}/ports/espressif/esp-idf
         IDF_TOOLS_PATH: ${{ github.workspace }}/.idf_tools
+        BOARDS: ${{ matrix.board }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.board }}
+        path: bin/${{ matrix.board }}
+    - name: Upload to S3
+      run: "[ -z \"$AWS_ACCESS_KEY_ID\" ] || aws s3 cp bin/ s3://adafruit-circuit-python/bin/ --recursive --no-progress --region us-east-1"
+      env:
+        AWS_PAGER: ''
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+
+  build-aarch:
+    runs-on: ubuntu-20.04
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        board: ${{ fromJSON(needs.test.outputs.boards-aarch) }}
+    if: ${{ needs.test.outputs.boards-aarch != '[]' }}
+    steps:
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - uses: actions/checkout@v2.2.0
+      with:
+        submodules: false
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y gettext mtools
+        pip install -r requirements-ci.txt -r requirements-dev.txt
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
+        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+    - name: Install mkfs.fat
+      run: |
+        wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
+        tar -xaf dosfstools-4.2.tar.gz
+        cd dosfstools-4.2
+        ./configure
+        make -j 2
+        cd src
+        echo >>$GITHUB_PATH $(pwd)
+    - name: Versions
+      run: |
+        gcc --version
+        aarch64-none-elf-gcc --version
+        arm-none-eabi-gcc --version
+        python3 --version
+        mkfs.fat --version || true
+    - name: mpy-cross
+      run: make -C mpy-cross -j2
+    - name: Setup build failure matcher
+      run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
+    - name: build
+      run: python3 -u build_release_files.py
+      working-directory: tools
+      env:
         BOARDS: ${{ matrix.board }}
     - uses: actions/upload-artifact@v2
       with:

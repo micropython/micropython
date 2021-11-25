@@ -196,7 +196,6 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modutimeq.o \
 	extmod/moduhashlib.o \
 	extmod/modubinascii.o \
-	extmod/virtpin.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
 	extmod/modframebuf.o \

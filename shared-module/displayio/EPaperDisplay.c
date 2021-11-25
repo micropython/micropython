@@ -44,6 +44,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#define DELAY 0x80
+
 void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t *self,
     mp_obj_t bus, const uint8_t *start_sequence, uint16_t start_sequence_len,
     const uint8_t *stop_sequence, uint16_t stop_sequence_len,

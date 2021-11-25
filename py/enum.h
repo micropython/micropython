@@ -55,11 +55,11 @@ typedef struct {
         { &mp_type_type }, \
         .name = MP_QSTR_##type, \
         .print = typename##_print, \
-        .locals_dict = (mp_obj_t)&typename##_locals_dict, \
+        .locals_dict = (mp_obj_dict_t *)&typename##_locals_dict, \
     }
 
 
 
 mp_obj_t cp_enum_find(const mp_obj_type_t *type, int value);
-int cp_enum_value(const mp_obj_type_t *type, mp_obj_t *obj);
+int cp_enum_value(const mp_obj_type_t *type, mp_obj_t obj);
 void cp_enum_obj_print_helper(uint16_t module, const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);

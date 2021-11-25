@@ -207,14 +207,14 @@ const mp_obj_type_t supervisor_flash_type = {
     { &mp_type_type },
     .name = MP_QSTR_Flash,
     .make_new = supervisor_flash_obj_make_new,
-    .locals_dict = (mp_obj_t)&supervisor_flash_obj_locals_dict,
+    .locals_dict = (struct _mp_obj_dict_t *)&supervisor_flash_obj_locals_dict,
 };
 
 void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;
     vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
     vfs->fatfs.drv = vfs;
-    vfs->fatfs.part = 1; // flash filesystem lives on first partition
+    vfs->fatfs.part = 1; // flash filesystem lives on first fake partition
     vfs->blockdev.readblocks[0] = (mp_obj_t)&supervisor_flash_obj_readblocks_obj;
     vfs->blockdev.readblocks[1] = (mp_obj_t)&supervisor_flash_obj;
     vfs->blockdev.readblocks[2] = (mp_obj_t)flash_read_blocks; // native version

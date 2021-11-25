@@ -29,7 +29,7 @@
 #include "supervisor/shared/cpu.h"
 
 bool cpu_interrupt_active(void) {
-    #if defined(__ARM_ARCH) && (__ARM_ARCH >= 6)
+    #if defined(__ARM_ARCH) && (__ARM_ARCH >= 6) && defined(__ARM_ARCH_PROFILE) && (__ARM_ARCH_PROFILE == 'M')
     // Check VECTACTIVE in ICSR. We don't need to disable interrupts because if
     // one occurs after we read, we won't continue until it is resolved.
     return (*((volatile uint32_t *)0xE000ED04) & 0x1ff) != 0;

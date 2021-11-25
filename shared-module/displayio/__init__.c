@@ -65,8 +65,7 @@ displayio_buffer_transform_t null_transform = {
     .transpose_xy = false
 };
 
-
-#if CIRCUITPY_RGBMATRIX || CIRCUITPY_IS31FL3741
+#if CIRCUITPY_RGBMATRIX || CIRCUITPY_IS31FL3741 || CIRCUITPY_VIDEOCORE
 STATIC bool any_display_uses_this_framebuffer(mp_obj_base_t *obj) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].display_base.type == &framebufferio_framebufferdisplay_type) {
@@ -151,6 +150,10 @@ void common_hal_displayio_release_displays(void) {
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             common_hal_sharpdisplay_framebuffer_deinit(&displays[i].sharpdisplay);
         #endif
+        #if CIRCUITPY_VIDEOCORE
+        } else if (displays[i].bus_base.type == &videocore_framebuffer_type) {
+            common_hal_videocore_framebuffer_deinit(&displays[i].videocore);
+        #endif
         }
         displays[i].fourwire_bus.base.type = &mp_type_NoneType;
     }
@@ -163,8 +166,8 @@ void reset_displays(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         if (displays[i].fourwire_bus.base.type == &displayio_fourwire_type) {
             displayio_fourwire_obj_t *fourwire = &displays[i].fourwire_bus;
-            if (((uint32_t)fourwire->bus) < ((uint32_t)&displays) ||
-                ((uint32_t)fourwire->bus) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
+            if (((size_t)fourwire->bus) < ((size_t)&displays) ||
+                ((size_t)fourwire->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_spi_obj_t *original_spi = fourwire->bus;
                 #if BOARD_SPI
                 // We don't need to move original_spi if it is the board.SPI object because it is
@@ -191,8 +194,8 @@ void reset_displays(void) {
             }
         } else if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type) {
             displayio_i2cdisplay_obj_t *i2c = &displays[i].i2cdisplay_bus;
-            if (((uint32_t)i2c->bus) < ((uint32_t)&displays) ||
-                ((uint32_t)i2c->bus) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
+            if (((size_t)i2c->bus) < ((size_t)&displays) ||
+                ((size_t)i2c->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_i2c_obj_t *original_i2c = i2c->bus;
                 #if BOARD_I2C
                 // We don't need to move original_i2c if it is the board.I2C object because it is
@@ -256,6 +259,15 @@ void reset_displays(void) {
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
             sharpdisplay_framebuffer_obj_t *sharp = &displays[i].sharpdisplay;
             common_hal_sharpdisplay_framebuffer_reset(sharp);
+        #endif
+        #if CIRCUITPY_VIDEOCORE
+        } else if (displays[i].bus_base.type == &videocore_framebuffer_type) {
+            videocore_framebuffer_obj_t *vc = &displays[i].videocore;
+            if (!any_display_uses_this_framebuffer(&vc->base)) {
+                common_hal_videocore_framebuffer_deinit(vc);
+            }
+            // The framebuffer is allocated outside of the heap so it doesn't
+            // need to be moved.
         #endif
         } else {
             // Not an active display bus.

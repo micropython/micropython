@@ -296,7 +296,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
     return NULL;
 }
 
-void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *bus, mcu_pin_obj_t *cs, int baudrate) {
+void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *bus, const mcu_pin_obj_t *cs, int baudrate) {
     self->bus = bus;
     common_hal_digitalio_digitalinout_construct(&self->cs, cs);
     common_hal_digitalio_digitalinout_switch_to_output(&self->cs, true, DRIVE_MODE_PUSH_PULL);

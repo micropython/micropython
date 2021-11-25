@@ -87,19 +87,19 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
     const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
 
-    mcu_pin_obj_t *row_pins_array[num_row_pins];
-    mcu_pin_obj_t *column_pins_array[num_column_pins];
+    const mcu_pin_obj_t *row_pins_array[num_row_pins];
+    const mcu_pin_obj_t *column_pins_array[num_column_pins];
 
     validate_no_duplicate_pins_2(row_pins, column_pins, MP_QSTR_row_pins, MP_QSTR_column_pins);
 
     for (size_t row = 0; row < num_row_pins; row++) {
-        mcu_pin_obj_t *pin =
+        const mcu_pin_obj_t *pin =
             validate_obj_is_free_pin(mp_obj_subscr(row_pins, MP_OBJ_NEW_SMALL_INT(row), MP_OBJ_SENTINEL));
         row_pins_array[row] = pin;
     }
 
     for (size_t column = 0; column < num_column_pins; column++) {
-        mcu_pin_obj_t *pin =
+        const mcu_pin_obj_t *pin =
             validate_obj_is_free_pin(mp_obj_subscr(column_pins, MP_OBJ_NEW_SMALL_INT(column), MP_OBJ_SENTINEL));
         column_pins_array[column] = pin;
     }

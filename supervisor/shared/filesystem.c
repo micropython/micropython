@@ -94,11 +94,14 @@ void filesystem_init(bool create_allowed, bool force_create) {
 
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
-
     if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
         // No filesystem so create a fresh one, or reformat has been requested.
         uint8_t working_buf[FF_MAX_SS];
-        res = f_mkfs(&vfs_fat->fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
+        BYTE formats = FM_FAT;
+        #if FF_FS_EXFAT
+        formats |= FM_EXFAT | FM_FAT32;
+        #endif
+        res = f_mkfs(&vfs_fat->fatfs, formats, 0, working_buf, sizeof(working_buf));
         // Flush the new file system to make sure it's repaired immediately.
         supervisor_flash_flush();
         if (res != FR_OK) {
