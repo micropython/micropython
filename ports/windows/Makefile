@@ -1,11 +1,27 @@
+# Select the variant to build for.
+VARIANT ?= standard
+
+# If the build directory is not given, make it reflect the variant name.
+BUILD ?= build-$(VARIANT)
+
+VARIANT_DIR ?= variants/$(VARIANT)
+ifeq ($(wildcard $(VARIANT_DIR)/.),)
+$(error Invalid VARIANT specified: $(VARIANT_DIR))
+endif
+
 include ../../py/mkenv.mk
 -include mpconfigport.mk
+include $(VARIANT_DIR)/mpconfigvariant.mk
 
-# define main target
-PROG = micropython
+FROZEN_MANIFEST ?= variants/manifest.py
+
+# Define main target
+# This should be configured by the mpconfigvariant.mk
+PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = ../unix/qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -13,6 +29,7 @@ include $(TOP)/py/py.mk
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(VARIANT_DIR)
 
 # compiler settings
 CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
@@ -41,7 +58,8 @@ SRC_C = \
 	init.c \
 	sleep.c \
 	fmode.c \
-	$(SRC_MOD)
+	$(SRC_MOD) \
+	$(wildcard $(VARIANT_DIR)/*.c)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
