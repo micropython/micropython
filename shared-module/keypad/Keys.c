@@ -36,7 +36,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, const mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
     mp_obj_t dios[num_pins];
 
     for (size_t i = 0; i < num_pins; i++) {

@@ -164,5 +164,5 @@ STATIC MP_DEFINE_CONST_DICT(mcu_processor_locals_dict, mcu_processor_locals_dict
 const mp_obj_type_t mcu_processor_type = {
     { &mp_type_type },
     .name = MP_QSTR_Processor,
-    .locals_dict = (mp_obj_t)&mcu_processor_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mcu_processor_locals_dict,
 };

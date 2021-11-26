@@ -71,9 +71,9 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     uint8_t pin_count;
     validate_pins(MP_QSTR_data, pins, MP_ARRAY_SIZE(pins), args[ARG_data_pins].u_obj, &pin_count);
 
-    mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
-    mcu_pin_obj_t *vsync = validate_obj_is_free_pin_or_none(args[ARG_vsync].u_obj);
-    mcu_pin_obj_t *href = validate_obj_is_free_pin_or_none(args[ARG_href].u_obj);
+    const mcu_pin_obj_t *clock = validate_obj_is_free_pin(args[ARG_clock].u_obj);
+    const mcu_pin_obj_t *vsync = validate_obj_is_free_pin_or_none(args[ARG_vsync].u_obj);
+    const mcu_pin_obj_t *href = validate_obj_is_free_pin_or_none(args[ARG_href].u_obj);
 
     imagecapture_parallelimagecapture_obj_t *self = m_new_obj(imagecapture_parallelimagecapture_obj_t);
     self->base.type = &imagecapture_parallelimagecapture_type;

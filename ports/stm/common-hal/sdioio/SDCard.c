@@ -51,7 +51,7 @@ STATIC const mcu_periph_obj_t *find_pin_function(const mcu_periph_obj_t *table, 
 // match pins to SDIO objects
 STATIC int check_pins(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
-    uint8_t num_data, mcu_pin_obj_t **data) {
+    uint8_t num_data, const mcu_pin_obj_t **data) {
     bool sdio_taken = false;
 
     const uint8_t sdio_clock_len = MP_ARRAY_SIZE(mcu_sdio_clock_list);
@@ -122,7 +122,7 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
 
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
-    uint8_t num_data, mcu_pin_obj_t **data, uint32_t frequency) {
+    uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
 
     int periph_index = check_pins(self, clock, command, num_data, data);
     SDIO_TypeDef *SDIOx = mcu_sdio_banks[periph_index - 1];

@@ -38,7 +38,7 @@ void mp_hal_set_interrupt_char(int c) {
 
 // Check to see if we've been CTRL-C'ed by autoreload or the user.
 bool mp_hal_is_interrupted(void) {
-    return MP_STATE_THREAD(mp_pending_exception) != NULL;
+    return MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_FROM_PTR(NULL);
 }
 
 #endif

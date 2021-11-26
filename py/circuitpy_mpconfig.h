@@ -38,7 +38,9 @@
 #define CIRCUITPY 1
 
 // REPR_C encodes qstrs, 31-bit ints, and 30-bit floats in a single 32-bit word.
+#ifndef MICROPY_OBJ_REPR
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
+#endif
 
 // options to control how MicroPython is built
 // TODO(tannewt): Reduce this number if we want the REPL to function under 512
@@ -168,14 +170,17 @@ extern void common_hal_mcu_enable_interrupts(void);
 // Track stack usage. Expose results via ustack module.
 #define MICROPY_MAX_STACK_USAGE       (0)
 
-// This port is intended to be 32-bit, but unfortunately, int32_t for
-// different targets may be defined in different ways - either as int
-// or as long. This requires different printf formatting specifiers
-// to print such value. So, we avoid int32_t and use int directly.
 #define UINT_FMT "%u"
 #define INT_FMT "%d"
+#ifdef __LP64__
+typedef long mp_int_t; // must be pointer size
+typedef unsigned long mp_uint_t; // must be pointer size
+#else
+// These are definitions for machines where sizeof(int) == sizeof(void*),
+// regardless of actual size.
 typedef int mp_int_t; // must be pointer size
-typedef unsigned mp_uint_t; // must be pointer size
+typedef unsigned int mp_uint_t; // must be pointer size
+#endif
 #if __GNUC__ >= 10 // on recent gcc versions we can check that this is so
 _Static_assert(sizeof(mp_int_t) == sizeof(void *));
 _Static_assert(sizeof(mp_uint_t) == sizeof(void *));
@@ -275,8 +280,15 @@ typedef long mp_off_t;
 #ifndef CIRCUITPY_DISPLAY_LIMIT
 #define CIRCUITPY_DISPLAY_LIMIT (1)
 #endif
+
+// Framebuffer area size in bytes. Rounded down to power of four for alignment.
+#ifndef CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE
+#define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (128)
+#endif
+
 #else
 #define CIRCUITPY_DISPLAY_LIMIT (0)
+#define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
 #endif
 
 #if CIRCUITPY_GAMEPADSHIFT
@@ -356,82 +368,6 @@ extern const struct _mp_obj_module_t nvm_module;
 // Some are omitted because they're in MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS above.
 
 #define MICROPY_PORT_BUILTIN_MODULES_STRONG_LINKS
-
-// The following modules are defined in their respective __init__.c file in the
-// shared-bindings directory using MP_REGISTER_MODULE.
-//
-// CIRCUITPY_AESIO
-// CIRCUITPY_ANALOGIO
-// CIRCUITPY_ATEXIT
-// CIRCUITPY_AUDIOBUSIO
-// CIRCUITPY_AUDIOCORE
-// CIRCUITPY_AUDIOIO
-// CIRCUITPY_AUDIOMIXER
-// CIRCUITPY_AUDIOMP3
-// CIRCUITPY_AUDIOPWMIO
-// CIRCUITPY_BITBANGIO
-// CIRCUITPY_BITMAPTOOLS
-// CIRCUITPY_BITOPS
-// CIRCUITPY_BLEIO
-// CIRCUITPY_BOARD
-// CIRCUITPY_BUSDEVICE
-// CIRCUITPY_BUSIO
-// CIRCUITPY_CAMERA
-// CIRCUITPY_CANIO
-// CIRCUITPY_COUNTIO
-// CIRCUITPY_DIGITALIO
-// CIRCUITPY_DISPLAYIO
-// CIRCUITPY_DUALBANK
-// CIRCUITPY__EVE
-// CIRCUITPY_FONTIO
-// CIRCUITPY_FRAMEBUFFERIO
-// CIRCUITPY_FREQUENCYIO
-// CIRCUITPY_GAMEPADSHIFT
-// CIRCUITPY_GETPASS
-// CIRCUITPY_GNSS
-// CIRCUITPY_I2CPERIPHERAL
-// CIRCUITPY_IMAGECAPTURE
-// CIRCUITPY_IPADDRESS
-// CIRCUITPY_KEYPAD
-// CIRCUITPY_MATH
-// CIRCUITPY_MEMORYMONITOR
-// CIRCUITPY_MICROCONTROLLER
-// CIRCUITPY_MSGPACK
-// CIRCUITPY_NEOPIXEL_WRITE
-// CIRCUITPY_ONEWIREIO_WRITE
-// CIRCUITPY_PARALLELDISPLAY
-// CIRCUITPY_PEW
-// CIRCUITPY_PIXELBUF
-// CIRCUITPY_PS2IO
-// CIRCUITPY_PULSEIO
-// CIRCUITPY_PWMIO
-// CIRCUITPY_QRIO
-// CIRCUITPY_RAINBOWIO
-// CIRCUITPY_RANDOM
-// CIRCUITPY_RGBMATRIX
-// CIRCUITPY_ROTARYIO
-// CIRCUITPY_RTC
-// CIRCUITPY_SDCARDIO
-// CIRCUITPY_SDIOIO
-// CIRCUITPY_SHARPDISPLAY
-// CIRCUITPY_SOCKETPOOL
-// CIRCUITPY_SSL
-// CIRCUITPY_STAGE
-// CIRCUITPY_STORAGE
-// CIRCUITPY_STRUCT
-// CIRCUITPY_SUPERVISOR
-// CIRCUITPY_SYNTHIO
-// CIRCUITPY_TERMINALIO
-// CIRCUITPY_TOUCHIO
-// CIRCUITPY_TRACEBACK
-// CIRCUITPY_UHEAP
-// CIRCUITPY_USB_CDC
-// CIRCUITPY_USB_HID
-// CIRCUITPY_USB_MIDI
-// CIRCUITPY_USTACK
-// CIRCUITPY_VECTORIO
-// CIRCUITPY_WATCHDOG
-// CIRCUITPY_WIFI
 
 // If weak links are enabled, just include strong links in the main list of modules,
 // and also include the underscore alternate names.

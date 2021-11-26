@@ -78,8 +78,8 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
-    mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
+    const mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj);
+    const mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj);
     if (!rx_pin && !tx_pin) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }

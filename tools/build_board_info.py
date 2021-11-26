@@ -31,17 +31,19 @@ SPK = ("spk",)
 DFU = ("dfu",)
 BIN_DFU = ("bin", "dfu")
 COMBINED_HEX = ("combined.hex",)
+KERNEL8_IMG = ("disk.img.zip", "kernel8.img")
 
 # Default extensions
 extension_by_port = {
-    "nrf": UF2,
     "atmel-samd": UF2,
-    "stm": BIN,
+    "broadcom": KERNEL8_IMG,
     "cxd56": SPK,
-    "mimxrt10xx": HEX_UF2,
-    "litex": DFU,
     "espressif": BIN_UF2,
+    "litex": DFU,
+    "mimxrt10xx": HEX_UF2,
+    "nrf": UF2,
     "raspberrypi": UF2,
+    "stm": BIN,
 }
 
 # Per board overrides

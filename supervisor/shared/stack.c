@@ -53,7 +53,7 @@ static void allocate_stack(void) {
         mp_uint_t regs[10];
         mp_uint_t sp = cpu_get_regs_and_sp(regs);
 
-        mp_uint_t c_size = (uint32_t)port_stack_get_top() - sp;
+        mp_uint_t c_size = (mp_uint_t)port_stack_get_top() - sp;
         supervisor_allocation *stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
         if (stack_alloc == NULL) {
             stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true, false);

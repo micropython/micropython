@@ -34,7 +34,9 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/UART.h"
+#if CIRCUITPY_ONEWIREIO
 #include "shared-bindings/onewireio/OneWire.h"
+#endif
 
 #include "py/runtime.h"
 

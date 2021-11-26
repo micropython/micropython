@@ -35,8 +35,6 @@
 
 extern const mp_obj_type_t framebufferio_framebufferdisplay_type;
 
-#define DELAY 0x80
-
 #define NO_BRIGHTNESS_COMMAND 0x100
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t *self,

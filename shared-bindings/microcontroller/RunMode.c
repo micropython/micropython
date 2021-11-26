@@ -82,11 +82,11 @@ STATIC MP_DEFINE_CONST_DICT(mcu_runmode_locals_dict, mcu_runmode_locals_dict_tab
 
 STATIC void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr runmode = MP_QSTR_NORMAL;
-    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&mcu_runmode_uf2_obj)) {
+    if (self_in == MP_ROM_PTR(&mcu_runmode_uf2_obj)) {
         runmode = MP_QSTR_UF2;
-    } else if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&mcu_runmode_safe_mode_obj)) {
+    } else if (self_in == MP_ROM_PTR(&mcu_runmode_safe_mode_obj)) {
         runmode = MP_QSTR_SAFE_MODE;
-    } else if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&mcu_runmode_bootloader_obj)) {
+    } else if (self_in == MP_ROM_PTR(&mcu_runmode_bootloader_obj)) {
         runmode = MP_QSTR_BOOTLOADER;
     }
     mp_printf(print, "%q.%q.%q", MP_QSTR_microcontroller, MP_QSTR_RunMode,
@@ -97,5 +97,5 @@ const mp_obj_type_t mcu_runmode_type = {
     { &mp_type_type },
     .name = MP_QSTR_RunMode,
     .print = mcu_runmode_print,
-    .locals_dict = (mp_obj_t)&mcu_runmode_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&mcu_runmode_locals_dict,
 };

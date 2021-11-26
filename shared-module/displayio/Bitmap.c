@@ -33,8 +33,8 @@
 void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t width,
     uint32_t height, uint32_t bits_per_value) {
     uint32_t row_width = width * bits_per_value;
-    // align to size_t
-    uint8_t align_bits = 8 * sizeof(size_t);
+    // align to uint32_t
+    uint8_t align_bits = 8 * sizeof(uint32_t);
     if (row_width % align_bits != 0) {
         self->stride = (row_width / align_bits + 1);
     } else {
@@ -42,7 +42,7 @@ void common_hal_displayio_bitmap_construct(displayio_bitmap_t *self, uint32_t wi
     }
     self->width = width;
     self->height = height;
-    self->data = m_malloc(self->stride * height * sizeof(size_t), false);
+    self->data = m_malloc(self->stride * height * sizeof(uint32_t), false);
     self->read_only = false;
     self->bits_per_value = bits_per_value;
 
@@ -89,11 +89,11 @@ uint32_t common_hal_displayio_bitmap_get_pixel(displayio_bitmap_t *self, int16_t
     int32_t row_start = y * self->stride;
     uint32_t bytes_per_value = self->bits_per_value / 8;
     if (bytes_per_value < 1) {
-        size_t word = self->data[row_start + (x >> self->x_shift)];
+        uint32_t word = self->data[row_start + (x >> self->x_shift)];
 
-        return (word >> (sizeof(size_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value)) & self->bitmask;
+        return (word >> (sizeof(uint32_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value)) & self->bitmask;
     } else {
-        size_t *row = self->data + row_start;
+        uint32_t *row = self->data + row_start;
         if (bytes_per_value == 1) {
             return ((uint8_t *)row)[x];
         } else if (bytes_per_value == 2) {
@@ -125,14 +125,14 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
     int32_t row_start = y * self->stride;
     uint32_t bytes_per_value = self->bits_per_value / 8;
     if (bytes_per_value < 1) {
-        uint32_t bit_position = (sizeof(size_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
+        uint32_t bit_position = (sizeof(uint32_t) * 8 - ((x & self->x_mask) + 1) * self->bits_per_value);
         uint32_t index = row_start + (x >> self->x_shift);
         uint32_t word = self->data[index];
         word &= ~(self->bitmask << bit_position);
         word |= (value & self->bitmask) << bit_position;
         self->data[index] = word;
     } else {
-        size_t *row = self->data + row_start;
+        uint32_t *row = self->data + row_start;
         if (bytes_per_value == 1) {
             ((uint8_t *)row)[x] = value;
         } else if (bytes_per_value == 2) {
@@ -239,7 +239,7 @@ int common_hal_displayio_bitmap_get_buffer(displayio_bitmap_t *self, mp_buffer_i
     if ((flags & MP_BUFFER_WRITE) && self->read_only) {
         return 1;
     }
-    bufinfo->len = self->stride * self->height * sizeof(size_t);
+    bufinfo->len = self->stride * self->height * sizeof(uint32_t);
     bufinfo->buf = self->data;
     switch (self->bits_per_value) {
         case 32:
