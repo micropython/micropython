@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-16 13:32+0000\n"
+"PO-Revision-Date: 2021-11-25 00:02+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: main.c
 msgid ""
@@ -584,6 +584,7 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
@@ -1240,6 +1241,10 @@ msgstr "Otillräcklig autentisering"
 msgid "Insufficient encryption"
 msgstr "Otillräcklig kryptering"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr "Gränssnittet måste vara startat"
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr "Intern ljudbuffert för liten"
@@ -1475,6 +1480,10 @@ msgstr "Ogiltig word-/bitlängd"
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
+
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr "LED-mappning måste matcha displaystorlek"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2113,6 +2122,10 @@ msgstr "Samplingsfrekvensen måste vara positiv"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr "Skaldimension måste vara delbar med 3"
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Skanning pågår redan. Avsluta med stop_scan."
@@ -2173,10 +2186,6 @@ msgstr "Splitting med sub-captures"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Stackstorleken måste vara minst 256"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -2384,7 +2393,7 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 msgid "Unable to create lock"
 msgstr "Kan inte skapa lås"
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Det gick inte att hitta I2C-display på %x"
@@ -4516,6 +4525,7 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width måste vara mellan 2 och 8, inte %d"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
