@@ -192,9 +192,13 @@ def fatal(msg, exc=None):
 
 
 def install_pkg(pkg_spec, install_path):
-    data = get_pkg_metadata(pkg_spec)
+    package = pkg_spec.split("==")
+    data = get_pkg_metadata(package[0])
 
-    latest_ver = data["info"]["version"]
+    if len(package) == 1:
+        latest_ver = data["info"]["version"]
+    else:
+        latest_ver = package[1]
     packages = data["releases"][latest_ver]
     del data
     gc.collect()
