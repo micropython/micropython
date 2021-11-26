@@ -581,6 +581,7 @@ msgstr "両方のピンにハードウェア割り込み対応が必要"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "brightnessは0から1.0まででなければなりません"
@@ -1232,6 +1233,10 @@ msgstr "認証が不十分"
 msgid "Insufficient encryption"
 msgstr "暗号化が不十分"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr ""
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr ""
@@ -1467,6 +1472,10 @@ msgstr "不正なワード/ビット長"
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Keyの長さは、16, 24, 32バイトのいずれかでなければなりません"
+
+#: shared-module/is31fl3741/is31fl3741.c
+msgid "LED mappings must match display size"
+msgstr ""
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2095,6 +2104,10 @@ msgstr "サンプルレートは正数でなければなりません"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "サンプルレートは%d以下でなければなりません"
 
+#: shared-bindings/is31fl3741/is31fl3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "既にスキャン進行中。stop_scanで停止してください"
@@ -2155,10 +2168,6 @@ msgstr ""
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "スタックサイズは少なくとも256以上でなければなりません"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -2357,7 +2366,7 @@ msgstr ""
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "I2Cディスプレイを %x に見つけられません"
@@ -4476,6 +4485,7 @@ msgstr "watchdogのtimeoutは0以上でなければなりません"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
+#: shared-bindings/is31fl3741/is31fl3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
