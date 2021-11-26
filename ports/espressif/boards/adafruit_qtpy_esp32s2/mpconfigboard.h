@@ -38,8 +38,8 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO7)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO6)
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO6)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO7)
 
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
