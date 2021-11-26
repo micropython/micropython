@@ -338,13 +338,14 @@ BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifeq ($(IDF_TARGET), esp32c3)
-ESPTOOL_BAUDRATE = 230400
-BOOTLOADER_OFFSET = 0x0000
+ifeq ($(IDF_TARGET),esp32c3)
+BOOTLOADER_OFFSET = 0x0
+else ifeq ($(IDF_TARGET),esp32s3)
+BOOTLOADER_OFFSET = 0x0
 else
-ESPTOOL_BAUDRATE = 460800
 BOOTLOADER_OFFSET = 0x1000
 endif
+
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
@@ -352,7 +353,7 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/$(IDF_TARGET)_out.ld $(B
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-ESPTOOL_FLAGS ?= -b $(ESPTOOL_BAUDRATE) --before=default_reset --after=no_reset
+ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset
 
 ifeq ($(IDF_TARGET),esp32c3)
 all: $(BUILD)/firmware.bin
