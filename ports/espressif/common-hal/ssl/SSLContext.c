@@ -29,6 +29,8 @@
 
 #include "bindings/espidf/__init__.h"
 
+#include "components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"
+
 #include "py/runtime.h"
 
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
@@ -61,4 +63,35 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     // TODO: do something with the original socket? Don't call a close on the internal LWIP.
 
     return sock;
+}
+
+void common_hal_ssl_sslcontext_load_verify_locations(ssl_sslcontext_obj_t *self,
+    const char *cadata) {
+    self->ssl_config.crt_bundle_attach = NULL;
+    self->ssl_config.use_global_ca_store = false;
+    self->ssl_config.cacert_buf = (const unsigned char *)cadata;
+    self->ssl_config.cacert_bytes = strlen(cadata) + 1;
+}
+
+void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *self) {
+    self->ssl_config.crt_bundle_attach = esp_crt_bundle_attach;
+    self->ssl_config.use_global_ca_store = true;
+    self->ssl_config.cacert_buf = NULL;
+    self->ssl_config.cacert_bytes = 0;
+}
+
+bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self) {
+    if (self->ssl_config.skip_common_name) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value) {
+    if (value) {
+        self->ssl_config.skip_common_name = 0;
+    } else {
+        self->ssl_config.skip_common_name = 1;
+    }
 }
