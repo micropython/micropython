@@ -51,10 +51,9 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(s);
 }
 
-//| def wrap_socket(sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
-//|     """Wraps the socket into a socket-compatible class that handles SSL negotiation.
-//|        The socket must be of type SOCK_STREAM."""
-//|     ...
+//|     def wrap_socket(self, sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
+//|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.
+//|            The socket must be of type SOCK_STREAM."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
