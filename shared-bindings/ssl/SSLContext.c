@@ -68,7 +68,10 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *server_hostname = mp_obj_str_get_str(args[ARG_server_hostname].u_obj);
+    const char *server_hostname = NULL;
+    if (args[ARG_server_hostname].u_obj != mp_const_none) {
+        server_hostname = mp_obj_str_get_str(args[ARG_server_hostname].u_obj);
+    }
     bool server_side = args[ARG_server_side].u_bool;
     if (server_side && server_hostname != NULL) {
         mp_raise_ValueError(translate("Server side context cannot have hostname"));
