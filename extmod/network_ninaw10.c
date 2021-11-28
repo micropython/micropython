@@ -140,11 +140,11 @@ STATIC mp_obj_t network_ninaw10_scan(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_scan_obj, network_ninaw10_scan);
 
 STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_essid, ARG_key, ARG_security, ARG_channel };
+    enum { ARG_essid, ARG_password, ARG_authmode, ARG_channel };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_essid,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
+        { MP_QSTR_password, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
@@ -160,34 +160,34 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
     }
 
-    // get key and sec
-    const char *key = NULL;
-    mp_uint_t security = NINA_SEC_OPEN;
+    // get password and authmode
+    const char *password = NULL;
+    mp_uint_t authmode = NINA_SEC_OPEN;
 
-    if (args[ARG_key].u_obj != mp_const_none) {
-        key = mp_obj_str_get_str(args[ARG_key].u_obj);
-        security = args[ARG_security].u_int;
+    if (args[ARG_password].u_obj != mp_const_none) {
+        password = mp_obj_str_get_str(args[ARG_password].u_obj);
+        authmode = args[ARG_authmode].u_int;
     }
 
-    if (security != NINA_SEC_OPEN && strlen(key) == 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
+    if (authmode != NINA_SEC_OPEN && strlen(password) == 0) {
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("password can't be empty!"));
     }
 
     if (self->itf == MOD_NETWORK_STA_IF) {
         // Initialize WiFi in Station mode.
-        if (nina_connect(ssid, security, key, 0) != 0) {
+        if (nina_connect(ssid, authmode, password, 0) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
+                MP_ERROR_TEXT("could not connect to ssid=%s, auth=%d, password=%s\n"), ssid, authmode, password);
         }
     } else {
         mp_uint_t channel = args[ARG_channel].u_int;
 
-        if (security != NINA_SEC_OPEN && security != NINA_SEC_WEP) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode supports WEP security only."));
+        if (authmode != NINA_SEC_OPEN && authmode != NINA_SEC_WEP) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode supports WEP authmode only."));
         }
 
         // Initialize WiFi in AP mode.
-        if (nina_start_ap(ssid, security, key, channel) != 0) {
+        if (nina_start_ap(ssid, authmode, password, channel) != 0) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("failed to start in AP mode"));
         }
     }
