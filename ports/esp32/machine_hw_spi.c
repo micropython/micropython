@@ -63,11 +63,20 @@
 #endif
 #endif
 
-// Default pins for SPI(2), can be overridden by a board
+// Default pins for SPI(id=2) aka IDF SPI3, can be overridden by a board
 #ifndef MICROPY_HW_SPI2_SCK
-#define MICROPY_HW_SPI2_SCK (18)
-#define MICROPY_HW_SPI2_MOSI (23)
-#define MICROPY_HW_SPI2_MISO (19)
+#if CONFIG_IDF_TARGET_ESP32
+// ESP32 has IO_MUX pins for VSPI/SPI3 lines, use them as defaults
+#define MICROPY_HW_SPI2_SCK VSPI_IOMUX_PIN_NUM_CLK      // pin 18
+#define MICROPY_HW_SPI2_MOSI VSPI_IOMUX_PIN_NUM_MOSI    // pin 23
+#define MICROPY_HW_SPI2_MISO VSPI_IOMUX_PIN_NUM_MISO    // pin 19
+#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+// ESP32S2 and S3 uses GPIO matrix for SPI3 pins, no IO_MUX possible
+// Set defaults to the pins used by SPI2 in Octal mode
+#define MICROPY_HW_SPI2_SCK (36)
+#define MICROPY_HW_SPI2_MOSI (35)
+#define MICROPY_HW_SPI2_MISO (37)
+#endif
 #endif
 
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
@@ -108,7 +117,9 @@ typedef struct _machine_hw_spi_obj_t {
 // Default pin mappings for the hardware SPI instances
 STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
     { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
+    #ifdef MICROPY_HW_SPI2_SCK
     { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
+    #endif
 };
 
 // Static objects mapping to HSPI and VSPI hardware peripherals
