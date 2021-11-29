@@ -89,7 +89,8 @@ _HCI_KIND_VENDOR_RESPONSE = const(0x11)
 _OBFUSCATION_KEY = const(0x0573B55AA)
 
 # On boards using the internal flash filesystem, this must match the
-# `_flash_fs_end` symbol defined by the linker script (boards/stm32wb55xg.ld).
+# `_micropy_hw_internal_flash_storage_end` symbol defined by the linker script
+# (see eg boards/stm32wb55xg.ld).
 # We erase everything from here until the start of the secure area (defined by
 # SFSA) just to ensure that no other fragments of firmware files are left
 # behind. On boards with external flash, this just needs to ensure that it
