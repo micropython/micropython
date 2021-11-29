@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-11-19 12:53+0000\n"
+"PO-Revision-Date: 2021-11-29 12:53+0000\n"
 "Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: main.c
 msgid ""
@@ -1600,9 +1600,9 @@ msgid "Must provide MISO or MOSI pin"
 msgstr "Вывод MISO или MOSI должен быть предоставлен"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
-#, fuzzy, c-format
+#, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
-msgstr "Должно использоваться кратное 6 rgb-контактов, а не %d."
+msgstr "Количество используемых rgb-контактов должно быть кратно 6, а не %d."
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
@@ -1629,7 +1629,6 @@ msgstr "ЦАП отсутствует на чипе"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#, fuzzy
 msgid "No DMA channel found"
 msgstr "Канал DMA не найден"
 
@@ -1701,7 +1700,6 @@ msgid "No hardware support on pin"
 msgstr "Отсутствует аппаратная поддержка на выводе"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, fuzzy
 msgid "No in in program"
 msgstr "Нет in в программе"
 
@@ -1736,7 +1734,8 @@ msgstr ""
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #, fuzzy
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr "Подтяжка на выводах SDA или SCL; проверь свою схему"
+msgstr ""
+"Подтяжка на выводах SDA или SCL не обнаружена; проверь схему подключения"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1747,14 +1746,12 @@ msgid "No space left on device"
 msgstr "На устройстве не осталось свободного места"
 
 #: py/moduerrno.c
-#, fuzzy
 msgid "No such file/directory"
-msgstr "Нет такого файла/директории"
+msgstr "Файл/директория не существует"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
-#, fuzzy
 msgid "No timer available"
-msgstr "Таймер недоступен"
+msgstr "Нет доступного таймера"
 
 #: supervisor/shared/safe_mode.c
 msgid "Nordic system firmware failure assertion."
