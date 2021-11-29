@@ -36,11 +36,31 @@
 
 #include "driver/spi_master.h"
 
-// Default pins for SPI(1), can be overridden by a board
+// SPI mappings by device, naming used by IDF old/new
+// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3
+// ----------+-----------+-----------+---------+---------
+// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2
+// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err
+
+// Default pins for SPI(id=1) aka IDF SPI2, can be overridden by a board
 #ifndef MICROPY_HW_SPI1_SCK
-#define MICROPY_HW_SPI1_SCK (14)
-#define MICROPY_HW_SPI1_MOSI (13)
-#define MICROPY_HW_SPI1_MISO (12)
+#ifdef SPI2_IOMUX_PIN_NUM_CLK
+// Use IO_MUX pins by default.
+// If SPI lines are routed to other pins through GPIO matrix
+// routing adds some delay and lower limit applies to SPI clk freq
+#define MICROPY_HW_SPI1_SCK SPI2_IOMUX_PIN_NUM_CLK      // pin 14 on ESP32
+#define MICROPY_HW_SPI1_MOSI SPI2_IOMUX_PIN_NUM_MOSI    // pin 13 on ESP32
+#define MICROPY_HW_SPI1_MISO SPI2_IOMUX_PIN_NUM_MISO    // pin 12 on ESP32
+// Only for compatibility with IDF 4.2 and older
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define MICROPY_HW_SPI1_SCK FSPI_IOMUX_PIN_NUM_CLK
+#define MICROPY_HW_SPI1_MOSI FSPI_IOMUX_PIN_NUM_MOSI
+#define MICROPY_HW_SPI1_MISO FSPI_IOMUX_PIN_NUM_MISO
+#else
+#define MICROPY_HW_SPI1_SCK HSPI_IOMUX_PIN_NUM_CLK
+#define MICROPY_HW_SPI1_MOSI HSPI_IOMUX_PIN_NUM_MOSI
+#define MICROPY_HW_SPI1_MISO HSPI_IOMUX_PIN_NUM_MISO
+#endif
 #endif
 
 // Default pins for SPI(2), can be overridden by a board
