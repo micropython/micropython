@@ -504,7 +504,7 @@ class Pins(object):
         with open(af_defs_filename, "wt") as af_defs_file:
 
             STATIC_AF_TOKENS = {}
-            for named_pin in self.board_pins:
+            for named_pin in self.cpu_pins:
                 for af in named_pin.pin().alt_fn:
                     func = "%s%d" % (af.func, af.fn_num) if af.fn_num else af.func
                     pin_type = (af.pin_type or "NULL").split("(")[0]
