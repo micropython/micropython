@@ -822,7 +822,7 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
         .command = &command,
     };
 
-    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 500);
+    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];

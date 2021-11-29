@@ -171,7 +171,7 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't exist"));
+    mp_raise_ValueError(MP_ERROR_TEXT("Pin does not exist"));
 }
 
 const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {

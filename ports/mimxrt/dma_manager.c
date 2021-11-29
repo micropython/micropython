@@ -24,7 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "dma_channel.h"
+#include <stdbool.h>
+#include "py/mpconfig.h"
+#include "fsl_edma.h"
+#include "dma_manager.h"
 
 // List of channel flags: true: channel used, false: channel available
 static bool channel_list[FSL_FEATURE_DMAMUX_MODULE_CHANNEL] = {
@@ -38,6 +41,8 @@ static bool channel_list[FSL_FEATURE_DMAMUX_MODULE_CHANNEL] = {
 
     #endif
 };
+
+STATIC bool dma_initialized = false;
 
 // allocate_channel(): retrieve an available channel. Return the number or -1
 int allocate_dma_channel(void) {
@@ -54,5 +59,14 @@ int allocate_dma_channel(void) {
 void free_dma_channel(int n) {
     if (n >= 0 && n <= ARRAY_SIZE(channel_list)) {
         channel_list[n] = false;
+    }
+}
+
+void dma_init(void) {
+    if (!dma_initialized) {
+        edma_config_t dmaConfig;
+        EDMA_GetDefaultConfig(&dmaConfig);
+        EDMA_Init(DMA0, &dmaConfig);
+        dma_initialized = true;
     }
 }
