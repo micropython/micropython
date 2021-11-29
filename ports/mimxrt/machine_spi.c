@@ -30,7 +30,7 @@
 #include "py/mperrno.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
-#include "dma_channel.h"
+#include "dma_manager.h"
 
 #include "fsl_cache.h"
 #include "fsl_dmamux.h"
@@ -256,8 +256,6 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     bool use_dma = chan_rx >= 0 && chan_tx >= 0;
 
     if (use_dma) {
-        edma_config_t userConfig;
-
         /* DMA MUX init*/
         DMAMUX_Init(DMAMUX);
 
@@ -267,8 +265,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         DMAMUX_SetSource(DMAMUX, chan_tx, dma_req_src_tx[self->spi_hw_id]);
         DMAMUX_EnableChannel(DMAMUX, chan_tx);
 
-        EDMA_GetDefaultConfig(&userConfig);
-        EDMA_Init(DMA0, &userConfig);
+        dma_init();
 
         lpspi_master_edma_handle_t g_master_edma_handle;
         edma_handle_t lpspiEdmaMasterRxRegToRxDataHandle;

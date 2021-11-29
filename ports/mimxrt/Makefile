@@ -77,7 +77,7 @@ INC += -I$(TOP)/lib/tinyusb/hw
 INC += -I$(TOP)/lib/tinyusb/hw/bsp/teensy_40
 INC += -I$(TOP)/lib/tinyusb/src
 
-CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16
+CFLAGS_MCU = -mtune=cortex-m7 -mcpu=cortex-m7
 CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 -nostdlib -mthumb $(CFLAGS_MCU)
 CFLAGS += -DCPU_$(MCU_SERIES) -DCPU_$(MCU_VARIANT) -DBOARD_$(BOARD)
 CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
@@ -100,12 +100,14 @@ CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 # Configure floating point support
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
+CFLAGS_MCU += -mfloat-abi=hard  -mfpu=fpv5-d16
 else
 ifeq ($(MICROPY_FLOAT_IMPL),none)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
 else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant
+CFLAGS_MCU += -mfloat-abi=softfp -mfpu=fpv5-sp-d16
 endif
 endif
 
@@ -188,6 +190,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
+	$(MCU_DIR)/drivers/fsl_sai.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
@@ -210,7 +213,7 @@ endif
 
 SRC_C += \
 	board_init.c \
-	dma_channel.c \
+	dma_manager.c \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \
 	eth.c \
@@ -224,6 +227,7 @@ SRC_C += \
 	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
+	machine_i2s.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_rtc.c \
@@ -396,6 +400,7 @@ SRC_QSTR += \
 	extmod/modonewire.c \
 	extmod/uos_dupterm.c \
 	machine_adc.c \
+	machine_i2s.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_pwm.c \

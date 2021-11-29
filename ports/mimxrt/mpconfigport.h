@@ -140,6 +140,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#ifndef MICROPY_PY_MACHINE_I2S
+#define MICROPY_PY_MACHINE_I2S              (0)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
@@ -277,6 +280,10 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]; \
@@ -285,6 +292,8 @@ extern const struct _mp_obj_type_t network_lan_type;
     mp_obj_list_t mod_network_nic_list; \
     /* root pointers for sub-systems */ \
     MICROPY_PORT_ROOT_POINTER_MBEDTLS \
+    /* root pointers defined by a board */ \
+        MICROPY_BOARD_ROOT_POINTERS \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -297,6 +306,10 @@ extern const struct _mp_obj_type_t network_lan_type;
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 
 #define MP_HAL_CLEAN_DCACHE(addr, size) \
     (SCB_CleanDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \

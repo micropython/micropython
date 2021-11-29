@@ -65,6 +65,36 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPI2C4_SCL }, { IOMUXC_GPIO_SD_B1_03_LPI2C4_SDA },
 
+#define MICROPY_PY_MACHINE_I2S (1)
+#define MICROPY_HW_I2S_NUM (1)
+#define I2S_CLOCK_MUX { 0, kCLOCK_Sai1Mux, kCLOCK_Sai2Mux }
+#define I2S_CLOCK_PRE_DIV { 0, kCLOCK_Sai1PreDiv, kCLOCK_Sai2PreDiv }
+#define I2S_CLOCK_DIV { 0, kCLOCK_Sai1Div, kCLOCK_Sai2Div }
+#define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir, kIOMUXC_GPR_SAI2MClkOutputDir }
+#define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx, kDmaRequestMuxSai2Rx }
+#define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx, kDmaRequestMuxSai2Tx }
+
+#define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
+    { \
+        .hw_id = _hwid, \
+        .fn = _fn, \
+        .mode = _mode, \
+        .name = MP_QSTR_##_pin, \
+        .iomux = {_iomux}, \
+    }
+
+#define I2S_GPIO_MAP \
+    { \
+        I2S_GPIO(1, MCK, TX, GPIO_AD_B1_00, IOMUXC_GPIO_AD_B1_00_SAI1_MCLK), \
+        I2S_GPIO(1, SCK, RX, GPIO_AD_B1_06, IOMUXC_GPIO_AD_B1_06_SAI1_RX_BCLK), \
+        I2S_GPIO(1, WS, RX, GPIO_AD_B1_04, IOMUXC_GPIO_AD_B1_04_SAI1_RX_SYNC), \
+        I2S_GPIO(1, SD, RX, GPIO_AD_B1_05, IOMUXC_GPIO_AD_B1_05_SAI1_RX_DATA00),  \
+        I2S_GPIO(1, SCK, TX, GPIO_AD_B1_01, IOMUXC_GPIO_AD_B1_01_SAI1_TX_BCLK), \
+        I2S_GPIO(1, WS, TX, GPIO_AD_B1_02, IOMUXC_GPIO_AD_B1_02_SAI1_TX_SYNC),  \
+        I2S_GPIO(1, SD, TX, GPIO_AD_B1_03, IOMUXC_GPIO_AD_B1_03_SAI1_TX_DATA00), \
+    }
+
+
 #define USDHC_DUMMY_PIN NULL, 0
 #define MICROPY_USDHC1 \
     { \
@@ -142,3 +172,6 @@
     { IOMUXC_GPIO_AD_B0_15_ENET_TDATA01, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_40_ENET_MDIO, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_41_ENET_MDC, 0, 0xB0E9u },
+
+#define MICROPY_BOARD_ROOT_POINTERS \
+    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];
