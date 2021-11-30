@@ -145,6 +145,7 @@ SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
 SRC_ETH_C += \
 	hal/phy/mdio/enet/fsl_enet_mdio.c \
 	hal/phy/device/phydp83825/fsl_phydp83825.c \
+	hal/phy/device/phydp83848/fsl_phydp83848.c \
 	hal/phy/device/phyksz8081/fsl_phyksz8081.c \
 	hal/phy/device/phylan8720/fsl_phylan8720.c \
 	lib/mbedtls_errors/mp_mbedtls_errors.c \

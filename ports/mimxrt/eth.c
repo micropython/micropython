@@ -113,9 +113,6 @@ static const iomux_table_t iomux_table_enet[] = {
 };
 
 #define IOTE (iomux_table_enet[i])
-#ifndef ENET_TX_CLK_OUTPUT
-#define ENET_TX_CLK_OUTPUT true
-#endif
 
 #define TRACE_ASYNC_EV (0x0001)
 #define TRACE_ETH_TX (0x0002)
@@ -182,7 +179,7 @@ void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, enet_event_t event,
 }
 
 // eth_init: Set up GPIO and the transceiver
-void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr) {
+void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy_addr, bool phy_clock) {
 
     self->netif.num = mac_idx; // Set the interface number
 
@@ -222,12 +219,12 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
     }
 
     const clock_enet_pll_config_t config = {
-        .enableClkOutput = true, .enableClkOutput25M = false, .loopDivider = 1
+        .enableClkOutput = phy_clock, .enableClkOutput25M = false, .loopDivider = 1
     };
     CLOCK_InitEnetPll(&config);
 
-    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1RefClkMode, false); // Drive ENET_REF_CLK from PAD
-    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, ENET_TX_CLK_OUTPUT);  // Enable output driver
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1RefClkMode, false); // Do not use the 25 MHz MII clock
+    IOMUXC_EnableMode(IOMUXC_GPR, kIOMUXC_GPR_ENET1TxClkOutputDir, phy_clock);  // Set the clock pad direction
 
     // Reset transceiver
     // pull up the ENET_INT before RESET.

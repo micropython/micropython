@@ -34,9 +34,14 @@
 #include "eth.h"
 #include "hal/phy/device/phyksz8081/fsl_phyksz8081.h"
 #include "hal/phy/device/phydp83825/fsl_phydp83825.h"
+#include "hal/phy/device/phydp83848/fsl_phydp83848.h"
 #include "hal/phy/device/phylan8720/fsl_phylan8720.h"
 
 #include "lwip/netif.h"
+
+#ifndef ENET_TX_CLK_OUTPUT
+#define ENET_TX_CLK_OUTPUT true
+#endif
 
 typedef struct _network_lan_obj_t {
     mp_obj_base_t base;
@@ -59,11 +64,12 @@ STATIC void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_id, ARG_phy_type, ARG_phy_addr};
+    enum { ARG_id, ARG_phy_type, ARG_phy_addr, ARG_phy_clock};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ENET_PHY_ADDRESS} },
+        { MP_QSTR_phy_clock, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ENET_TX_CLK_OUTPUT} },
     };
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -78,6 +84,8 @@ STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
             phy_ops = &phyksz8081_ops;
         } else if (phy_type == PHY_DP83825) {
             phy_ops = &phydp83825_ops;
+        } else if (phy_type == PHY_DP83848) {
+            phy_ops = &phydp83848_ops;
         } else if (phy_type == PHY_LAN8720) {
             phy_ops = &phylan8720_ops;
         } else {
@@ -85,6 +93,8 @@ STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
         }
     }
     int phy_addr = args[ARG_phy_addr].u_int;
+
+    bool phy_clock = args[ARG_phy_clock].u_int;
 
     // Prepare for two ETH interfaces.
     const network_lan_obj_t *self;
@@ -99,7 +109,7 @@ STATIC mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, s
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Invalid LAN interface %d"), mac_id);
     }
 
-    eth_init(self->eth, mac_id, phy_ops, phy_addr);
+    eth_init(self->eth, mac_id, phy_ops, phy_addr, phy_clock);
     // register with network module
     mod_network_register_nic((mp_obj_t *)self);
     return MP_OBJ_FROM_PTR(self);
@@ -203,7 +213,10 @@ STATIC const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8081), MP_ROM_INT(PHY_KSZ8081) },
     { MP_ROM_QSTR(MP_QSTR_PHY_DP83825), MP_ROM_INT(PHY_DP83825) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_DP83848), MP_ROM_INT(PHY_DP83848) },
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
+    { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(PHY_TX_CLK_IN) },
+    { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(PHY_TX_CLK_OUT) },
 };
 STATIC MP_DEFINE_CONST_DICT(network_lan_locals_dict, network_lan_locals_dict_table);
 

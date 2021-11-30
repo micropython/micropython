@@ -12,8 +12,8 @@
  ******************************************************************************/
 
 /*! @brief Defines the PHY LAN8720 vendor defined registers. */
-#define PHY_PHYSTS_REG   0x1FU // Phy status register
-#define PHY_MCSR_REG     0x11U // Mode Control/Status Register for loopback
+#define PHY_PHYSTS_REG   0x1FU /* Phy status register */
+#define PHY_MCSR_REG     0x11U /* Mode Control/Status Register for loopback */
 
 /*! @brief Defines the PHY LAN8720 ID number. */
 #define PHY_CONTROL_ID1 0x07U /*!< The PHY ID1 */
@@ -25,8 +25,8 @@
 #define PHY_PHYSTS_100M_FLAG          0x0008U /*!< The PHY 100M flag. */
 #define PHY_PHYSTS_LINK_MASK          0x0001U /*!< The PHY link up mask. */
 
-#define PHY_MCSR_REMOTELOOP_MASK     0x100U // !< The PHY remote loopback mask.
-#define PHY_MCSR_REMOTELOOP_MODE     0x100U // !< The PHY remote loopback mode.
+#define PHY_MCSR_REMOTELOOP_MASK     0x100U /* !< The PHY remote loopback mask. */
+#define PHY_MCSR_REMOTELOOP_MODE     0x100U /* !< The PHY remote loopback mode. */
 
 /*! @brief Defines the timeout macro. */
 #define PHY_READID_TIMEOUT_COUNT 1000U
