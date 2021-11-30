@@ -25,6 +25,7 @@
  */
 
 #include "tusb.h"
+#include "fsl_ocotp.h"
 
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID (0xf055)
@@ -79,7 +80,7 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 static const char *const usbd_desc_str[] = {
     [USBD_STR_MANUF] = "MicroPython",
     [USBD_STR_PRODUCT] = "Board in FS mode", // Todo: fix string to indicate that product is running in High Speed mode
-    [USBD_STR_SERIAL] = "000000000000", // TODO
+    [USBD_STR_SERIAL] = "0000000000000000000",
     [USBD_STR_CDC] = "Board CDC",
 };
 
@@ -91,7 +92,6 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     (void)index;
     return usbd_desc_cfg;
 }
-
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     #define DESC_STR_MAX (20)
     static uint16_t desc_str[DESC_STR_MAX];
@@ -104,10 +104,32 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
             return NULL;
         }
-        const char *str = usbd_desc_str[index];
+	
+	
+	if (index == USBD_STR_SERIAL)
+	{
+	uint8_t strs[DESC_STR_MAX];  
+	OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));  
+	      
+	      for (int i = 0; i < 4; ++i) {
+		    uint32_t wr = OCOTP_ReadFuseShadowRegister(OCOTP, i + 1);
+		    for (int j = 0; j < 8; j++) {
+			strs[i*4+j] = (wr & 0x0f) + 0x30;
+			if (strs[i*4+j] > 0x39) strs[i*4+j] += 8;
+		    wr >>= 4;
+		    }
+	      }
+    	OCOTP_Deinit(OCOTP);
+	    for (len = 0; len < DESC_STR_MAX - 1 && strs[len]; ++len) {
+            desc_str[1 + len] = strs[len];
+	}
+	} else {
+
+	const char *str = usbd_desc_str[index];
         for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
             desc_str[1 + len] = str[len];
         }
+	}
     }
 
     // first byte is length (including header), second byte is string type
