@@ -205,23 +205,36 @@ MP_DEFINE_CONST_FUN_OBJ_1(bitbangio_spi_unlock_obj, bitbangio_spi_obj_unlock);
 //|         If the buffer is empty, nothing happens."""
 //|         ...
 //|
-// TODO(tannewt): Add support for start and end kwargs.
-STATIC mp_obj_t bitbangio_spi_write(mp_obj_t self_in, mp_obj_t wr_buf) {
-    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t bitbangio_spi_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
-    mp_buffer_info_t src;
-    mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    if (src.len == 0) {
+    check_lock(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    int32_t start = args[ARG_start].u_int;
+    size_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+
+    if (length == 0) {
         return mp_const_none;
     }
-    check_lock(self);
-    bool ok = shared_module_bitbangio_spi_write(self, src.buf, src.len);
+
+    bool ok = shared_module_bitbangio_spi_write(self, ((uint8_t *)bufinfo.buf) + start, length);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(bitbangio_spi_write_obj, bitbangio_spi_write);
+MP_DEFINE_CONST_FUN_OBJ_KW(bitbangio_spi_write_obj, 1, bitbangio_spi_write);
 
 
 //|     import sys
