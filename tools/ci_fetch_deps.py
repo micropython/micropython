@@ -72,12 +72,15 @@ elif target == "mpy-cross-mac":
 elif target == "windows":
     # This builds one board from a number of ports so fill out a bunch of submodules
     submodules = ["extmod/", "lib/", "tools/", "ports/", "data/nvm.toml/"]
+elif target == "website":
+    # No submodules needed.
+    pass
 else:
-    p = pathlib.Path(".").glob(f"ports/*/boards/{target}/mpconfigboard.mk")
+    p = list(pathlib.Path(".").glob(f"ports/*/boards/{target}/mpconfigboard.mk"))
     if not p:
         raise RuntimeError(f"Unsupported target: {target}")
 
-    config = list(p)[0]
+    config = p[0]
     # Add the ports folder to init submodules
     port_folder = config.parents[2]
     port = port_folder.name
