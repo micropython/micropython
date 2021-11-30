@@ -198,3 +198,4 @@
 	path = ports/broadcom/firmware
 	url = https://github.com/raspberrypi/rpi-firmware.git
 	branch = master
+	shallow = true

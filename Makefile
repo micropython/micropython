@@ -321,3 +321,8 @@ clean-nrf:
 
 clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
+
+.PHONY: fetch-submodules
+fetch-submodules:
+	git submodule update --init -N --depth 1
+	git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1'
