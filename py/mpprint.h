@@ -79,4 +79,44 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
+// Debug messages during code developing.
+// An approximate hierarchy of debug levels is:
+// -1 - SUPPRES all messages in release version
+// 0 - the most CRITICAL errors, often requiring a system reset, use message with this level if possible raising an exception
+// 1 - ERROR requiring program restart, use message with this level before raising an exception
+// 2 - WARNING, something went wrong, but you can fix it with additional operations in code right now
+// 3 - INFO, it is interesting and useful for understanding a bug
+// 4 - DEBUG, more detaled info, dig deeper
+// 5 - TRACE, show algorithm flow
+// In real you may use own classification of debug levels.
+#define DBG(level, ...) \
+    do { \
+        if (level <= DBG_LEVEL) { \
+            mp_printf(MP_PYTHON_PRINTER, "%d:: ", level); \
+            mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
+            mp_printf(MP_PYTHON_PRINTER, "\n"); \
+        } \
+    } while (0);
+/*
+// How to use:
+// Set DBG_LEVEL in developed *.C or *.CPP file
+#define DBG_LEVEL 1000 // show all messages
+// Add DBG() macro in code, like
+void foo() {
+    DBG(5, "Enter foo()")
+    ...
+    int value;
+    ...
+    // calculate value
+    DBG(3, "See a value=%d", value)
+    ...
+    DBG(5, "Exit foo()")
+}
+// See usage in ports/esp32/machine_pwm.c
+// It is not a dogma. You may start debugging from level 3.
+#define DBG_LEVEL 3
+// Then add DBG(3, ...) and when gets too much messages then change some messages to the next level DBG(4, ...), or DBG(2, ...)
+// Then you may change DBG_LEVEL to 2, and finally to -1.
+*/
+
 #endif // MICROPY_INCLUDED_PY_MPPRINT_H
