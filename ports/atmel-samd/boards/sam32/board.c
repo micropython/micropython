@@ -50,3 +50,6 @@ void reset_board(void) {
     common_hal_neopixel_write(&neopixel, zeroes, 96);
     common_hal_digitalio_digitalinout_deinit(&neopixel);
 }
+
+void board_deinit(void) {
+}

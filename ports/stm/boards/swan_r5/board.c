@@ -62,3 +62,6 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
     initialize_discharge_pin();
 }
+
+void board_deinit(void) {
+}
