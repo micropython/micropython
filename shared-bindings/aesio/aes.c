@@ -9,6 +9,10 @@
 
 // Defined at the end of this file
 
+//| MODE_ECB: int
+//| MODE_CBC: int
+//| MODE_CTR: int
+//|
 //| class AES:
 //|     """Encrypt and decrypt AES streams"""
 //|
@@ -16,8 +20,8 @@
 //|         """Create a new AES state with the given key.
 //|
 //|            :param ~_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
-//|            :param int mode: AES mode to use.  One of: AES.MODE_ECB, AES.MODE_CBC, or
-//|                             AES.MODE_CTR
+//|            :param int mode: AES mode to use.  One of: `MODE_ECB`, `MODE_CBC`, or
+//|                             `MODE_CTR`
 //|            :param ~_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
 //|
 //|            Additional arguments are supported for legacy reasons.
@@ -30,7 +34,7 @@
 //|              key = b'Sixteen byte key'
 //|              inp = b'CircuitPython!!!' # Note: 16-bytes long
 //|              outp = bytearray(len(inp))
-//|              cipher = aesio.AES(key, aesio.mode.MODE_ECB)
+//|              cipher = aesio.AES(key, aesio.MODE_ECB)
 //|              cipher.encrypt_into(inp, outp)
 //|              hexlify(outp)"""
 //|         ...
