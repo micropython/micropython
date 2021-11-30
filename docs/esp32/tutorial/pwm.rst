@@ -98,3 +98,17 @@ low all of the time.
             delta_d = -delta_d
 
   See PWM wave at Pin(5) with an oscilloscope.
+
+Note:
+
+* The Pin.OUT mode does not need to be specified. The channel is initialized to PWM mode internally once per certain Pin().
+
+  This code is wrong::
+
+    pwm=PWM(Pin(5, Pin.OUT), freq=1000, duty=512)  # Pin(5) in PWM mode here
+    pwm=PWM(Pin(5, Pin.OUT), freq=500, duty=256)  # Pin(5) in OUT mode here, PWM is off
+
+  Use this code instead of upper fragment::
+
+    pwm=PWM(Pin(5), freq=1000, duty=512)
+    pwm.init(freq=500, duty=256)
