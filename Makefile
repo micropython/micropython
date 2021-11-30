@@ -324,5 +324,8 @@ clean-stm:
 
 .PHONY: fetch-submodules
 fetch-submodules:
-	git submodule update --init -N --depth 1
+	# This update will fail because the commits we need aren't the latest on the
+	# branch. We can ignore that though because we fix it with the second command.
+	# (Only works for git servers that allow sha fetches.)
+	git submodule update --init -N --depth 1 || true
 	git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1'
