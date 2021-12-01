@@ -65,7 +65,7 @@ class Lexer:
         (
             "#define typedef",
             re.compile(
-                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
+                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_(Global)?TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
             ),
         ),
         ("typedef struct", re.compile(r"typedef struct$")),
@@ -282,6 +282,7 @@ def main():
         #'CAN_FIFOMailBox',
         #'CAN_FilterRegister',
         #'CAN',
+        "FDCAN",
         "CRC",
         "DAC",
         "DBGMCU",
