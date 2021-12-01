@@ -537,6 +537,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 common_hal_alarm_pretending_deep_sleep();
             } else if (connecting_delay_ticks < 0) {
                 // Entering deep sleep (may be fake or real.)
+                status_led_deinit();
+                deinit_rxtx_leds();
                 board_deinit();
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the

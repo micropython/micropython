@@ -42,12 +42,10 @@ void board_init(void);
 // Reset the state of off MCU components such as neopixels.
 void reset_board(void);
 
-#if CIRCUITPY_ALARM
 // Deinit the board. This should put the board in deep sleep durable, low power
 // state. It should not prevent the user access method from working (such as
 // disabling USB, BLE or flash) because CircuitPython may continue to run.
 void board_deinit(void);
-#endif
 
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H
