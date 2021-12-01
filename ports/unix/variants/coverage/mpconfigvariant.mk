@@ -31,10 +31,14 @@ SRC_BITMAP := \
 	$(patsubst ../../%,%,$(wildcard ../../shared-bindings/gifio/*.c ../../shared-module/gifio/*.c)) \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
+	shared-bindings/aesio/aes.c \
+	shared-bindings/aesio/__init__.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/util.c \
+	shared-module/aesio/aes.c \
+	shared-module/aesio/__init__.c \
 	shared-module/bitmaptools/__init__.c \
 	shared-module/displayio/area.c \
 	shared-module/displayio/Bitmap.c \
@@ -45,7 +49,7 @@ SRC_BITMAP := \
 $(info $(SRC_BITMAP))
 SRC_C += $(SRC_BITMAP)
 
-CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_UNIX=1 -DCIRCUITPY_BITMAPTOOLS=1 -DCIRCUITPY_RAINBOWIO=1
+CFLAGS += -DCIRCUITPY_GIFIO=1 -DCIRCUITPY_DISPLAYIO_UNIX=1 -DCIRCUITPY_BITMAPTOOLS=1 -DCIRCUITPY_RAINBOWIO=1 -DCIRCUITPY_AESIO=1
 
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp
