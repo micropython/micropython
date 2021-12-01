@@ -198,8 +198,16 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (deep_sleep) {
                 // Tamper Pins: IN0:PB00; IN1:PB02; IN2:PA02; IN3:PC00; IN4:PC01; OUT:PB01
                 // Only these pins can do TAMPER
-                if (alarm->pin != &pin_PB00 && alarm->pin != &pin_PB02 &&
-                    alarm->pin != &pin_PA02) {
+                if (
+                    #ifdef PIN_PB00
+                    alarm->pin != &pin_PB00
+                    #else
+                    true
+                    #endif
+                    #ifdef PIN_PB02
+                    && alarm->pin != &pin_PB02
+                    #endif
+                    && alarm->pin != &pin_PA02) {
                     mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
                 }
                 pinalarm_on = true;
