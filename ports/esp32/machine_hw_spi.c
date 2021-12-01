@@ -458,7 +458,7 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     machine_hw_spi_obj_t *self;
     const machine_hw_spi_default_pins_t *default_pins;
-    if (args[ARG_id].u_int == HSPI_HOST) {
+    if (args[ARG_id].u_int == 1) { // SPI2_HOST which is FSPI_HOST on ESP32Sx, HSPI_HOST on others
         self = &machine_hw_spi_obj[0];
         default_pins = &machine_hw_spi_default_pins[0];
     } else {
