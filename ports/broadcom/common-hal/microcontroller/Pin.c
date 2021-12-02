@@ -28,14 +28,41 @@
 
 #include "peripherals/broadcom/gpio.h"
 
+STATIC bool pin_in_use[BCM_PIN_COUNT];
+STATIC bool never_reset_pin[BCM_PIN_COUNT];
+
 void reset_all_pins(void) {
+    for (size_t i = 0; i < BCM_PIN_COUNT; i++) {
+        if (never_reset_pin[i]) {
+            continue;
+        }
+        reset_pin_number(i);
+    }
 }
 
 void never_reset_pin_number(uint8_t pin_number) {
+    never_reset_pin[pin_number] = true;
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    gpio_set_function(pin_number, 0);
+    gpio_set_function(pin_number, GPIO_FUNCTION_INPUT);
+    pin_in_use[pin_number] = false;
+    never_reset_pin[pin_number] = false;
+    // Set the pull to match the datasheet.
+    BP_PULL_Enum pull = BP_PULL_NONE;
+    if (pin_number < 9 ||
+        (33 < pin_number && pin_number < 37) ||
+        pin_number > 45) {
+        pull = BP_PULL_UP;
+    } else if (pin_number != 28 &&
+               pin_number != 29 &&
+               pin_number != 44 &&
+               pin_number != 45) {
+        // Most pins are pulled low so we only exclude the four pins that aren't
+        // pulled at all.
+        pull = BP_PULL_DOWN;
+    }
+    gpio_set_pull(pin_number, pull);
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
@@ -47,11 +74,11 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 void claim_pin(const mcu_pin_obj_t *pin) {
-    // Nothing to do because all changes will set the GPIO settings.
+    pin_in_use[pin->number] = true;
 }
 
 bool pin_number_is_free(uint8_t pin_number) {
-    return true;
+    return !pin_in_use[pin_number];
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {
@@ -69,71 +96,3 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     reset_pin_number(pin_no);
 }
-
-#define PIN(num) \
-    const mcu_pin_obj_t pin_GPIO##num = { \
-        { &mcu_pin_type }, \
-        .number = num \
-    };
-
-PIN(0)
-PIN(1)
-PIN(2)
-PIN(3)
-PIN(4)
-PIN(5)
-PIN(6)
-PIN(7)
-PIN(8)
-PIN(9)
-PIN(10)
-PIN(11)
-PIN(12)
-PIN(13)
-PIN(14)
-PIN(15)
-PIN(16)
-PIN(17)
-PIN(18)
-PIN(19)
-PIN(20)
-PIN(21)
-PIN(22)
-PIN(23)
-PIN(24)
-PIN(25)
-PIN(26)
-PIN(27)
-PIN(28)
-PIN(29)
-
-PIN(30)
-PIN(31)
-PIN(32)
-PIN(33)
-PIN(34)
-PIN(35)
-PIN(36)
-PIN(37)
-PIN(38)
-PIN(39)
-
-PIN(40)
-PIN(41)
-PIN(42)
-PIN(43)
-PIN(44)
-PIN(45)
-PIN(46)
-PIN(47)
-PIN(48)
-PIN(49)
-
-PIN(50)
-PIN(51)
-PIN(52)
-PIN(53)
-PIN(54)
-PIN(55)
-PIN(56)
-PIN(57)

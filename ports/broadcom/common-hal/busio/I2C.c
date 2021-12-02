@@ -35,35 +35,63 @@
 #include "peripherals/broadcom/cpu.h"
 #include "peripherals/broadcom/vcmailbox.h"
 
-#define NUM_I2C (2)
+#if BCM_VERSION == 2711
+#define NUM_I2C (8)
+STATIC BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL, BSC3, BSC4, BSC5, BSC6, NULL};
+#else
+#define NUM_I2C (3)
+STATIC BSC0_Type *i2c[NUM_I2C] = {BSC0, BSC1, NULL};
+#endif
 
 STATIC bool never_reset_i2c[NUM_I2C];
-STATIC bool in_use_i2c[NUM_I2C];
-STATIC BSC0_Type *i2c[2] = {BSC0, BSC1};
+STATIC bool i2c_in_use[NUM_I2C];
 
 void reset_i2c(void) {
-    for (size_t i = 0; i < 2; i++) {
+    // BSC2 is dedicated to the first HDMI output.
+    never_reset_i2c[2] = true;
+    i2c_in_use[2] = true;
+    #if BCM_VERSION == 2711
+    // BSC7 is dedicated to the second HDMI output.
+    never_reset_i2c[7] = true;
+    i2c_in_use[7] = true;
+    #endif
+    for (size_t i = 0; i < NUM_I2C; i++) {
         if (never_reset_i2c[i]) {
             continue;
         }
-        in_use_i2c[i] = false;
+        i2c_in_use[i] = false;
+        i2c[i]->C_b.I2CEN = false;
+        COMPLETE_MEMORY_READS;
     }
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     size_t instance_index = NUM_I2C;
-    if ((scl == &pin_GPIO1 || scl == &pin_GPIO29 || scl == &pin_GPIO45) &&
-        (sda == &pin_GPIO0 || sda == &pin_GPIO28 || sda == &pin_GPIO44)) {
-        instance_index = 0;
-    } else if ((scl == &pin_GPIO44 || scl == &pin_GPIO3) &&
-               (sda == &pin_GPIO43 || sda == &pin_GPIO2)) {
-        instance_index = 1;
+    uint8_t scl_alt = 0;
+    uint8_t sda_alt = 0;
+    for (scl_alt = 0; scl_alt < 6; scl_alt++) {
+        if (scl->functions[scl_alt].type != PIN_FUNCTION_I2C ||
+            i2c_in_use[scl->functions[scl_alt].index]) {
+            continue;
+        }
+        for (sda_alt = 0; sda_alt < 6; sda_alt++) {
+            if (sda->functions[sda_alt].type != PIN_FUNCTION_I2C ||
+                scl->functions[scl_alt].index != sda->functions[sda_alt].index ||
+                sda->functions[sda_alt].function != I2C_FUNCTION_SDA) {
+                continue;
+            }
+            instance_index = scl->functions[scl_alt].index;
+            break;
+        }
+        if (instance_index != NUM_I2C) {
+            break;
+        }
     }
     if (instance_index == NUM_I2C) {
         mp_raise_ValueError(translate("Invalid pins"));
     }
-    in_use_i2c[instance_index] = true;
+    i2c_in_use[instance_index] = true;
     self->index = instance_index;
     self->peripheral = i2c[self->index];
     self->sda_pin = sda;
@@ -73,8 +101,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     uint16_t clock_divider = source_clock / frequency;
     self->peripheral->DIV_b.CDIV = clock_divider;
 
-    gpio_set_function(sda->number, GPIO_GPFSEL0_FSEL2_SDA1);
-    gpio_set_function(scl->number, GPIO_GPFSEL0_FSEL3_SCL1);
+    gpio_set_function(sda->number, FSEL_VALUES[sda_alt]);
+    gpio_set_function(scl->number, FSEL_VALUES[scl_alt]);
 }
 
 bool common_hal_busio_i2c_deinited(busio_i2c_obj_t *self) {
@@ -86,6 +114,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
         return;
     }
     never_reset_i2c[self->index] = false;
+    i2c_in_use[self->index] = false;
 
     common_hal_reset_pin(self->sda_pin);
     common_hal_reset_pin(self->scl_pin);
@@ -95,7 +124,6 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
     uint8_t result = common_hal_busio_i2c_write(self, addr, NULL, 0, true);
-    // mp_printf(&mp_plat_print, "result %d %d\n", addr, result);
     return result == 0;
 }
 

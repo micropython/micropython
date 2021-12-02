@@ -63,6 +63,7 @@ SRC_C += bindings/videocore/__init__.c \
 		 lib/tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c \
 		 peripherals/broadcom/caches.c \
 		 peripherals/broadcom/gen/interrupt_handlers.c \
+		 peripherals/broadcom/gen/pins.c \
 		 peripherals/broadcom/gpio.c \
 		 peripherals/broadcom/interrupts.c \
 		 peripherals/broadcom/mmu.c \
