@@ -119,6 +119,7 @@ int main(void) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        machine_pwm_deinit_all();
         gc_sweep_all();
         mp_deinit();
     }

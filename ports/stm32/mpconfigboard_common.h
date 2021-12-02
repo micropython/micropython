@@ -57,6 +57,11 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif
 
+// If internal flash storage is enabled, whether to use a second segment of flash.
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
+#endif
+
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
 #define MICROPY_HW_ENABLE_RTC (0)

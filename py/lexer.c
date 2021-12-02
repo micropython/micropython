@@ -363,9 +363,16 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     // (MicroPython limitation) note: this is completely unaware of
                     // Python syntax and will not handle any expression containing '}' or ':'.
                     // e.g. f'{"}"}' or f'{foo({})}'.
-                    while (!is_end(lex) && !is_char_or(lex, ':', '}')) {
+                    unsigned int nested_bracket_level = 0;
+                    while (!is_end(lex) && (nested_bracket_level != 0 || !is_char_or(lex, ':', '}'))) {
+                        unichar c = CUR_CHAR(lex);
+                        if (c == '[' || c == '{') {
+                            nested_bracket_level += 1;
+                        } else if (c == ']' || c == '}') {
+                            nested_bracket_level -= 1;
+                        }
                         // like the default case at the end of this function, stay 8-bit clean
-                        vstr_add_byte(&lex->fstring_args, CUR_CHAR(lex));
+                        vstr_add_byte(&lex->fstring_args, c);
                         next_char(lex);
                     }
                     if (lex->fstring_args.buf[lex->fstring_args.len - 1] == '=') {

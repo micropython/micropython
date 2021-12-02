@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "stm32f4",
+    "product": "GARATRONIC_NADHAT_F405",
+    "thumbnail": "",
+    "url": "https://shop.mchobby.be/product.php?id_product=1653",
+    "vendor": "McHobby"
+}

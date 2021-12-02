@@ -26,16 +26,17 @@ function build_boards {
         return 1
     fi
 
-    for board_json in $(find boards/ -name board.json); do
+    for board_json in $(find boards/ -name board.json | sort); do
         board=$(echo $board_json | awk -F '/' '{ print $2 }')
         descr=$(cat $board_json | python3 -c "import json,sys; print(json.load(sys.stdin).get('id', '$board'))")
         build_dir=/tmp/micropython-build-$board
 
         echo "building $descr $board"
-        $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir || return 1
-        for ext in $@; do
-            mv $build_dir/firmware.$ext $dest_dir/$descr$fw_tag.$ext
-        done
+        $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && (
+            for ext in $@; do
+                mv $build_dir/firmware.$ext $dest_dir/$descr$fw_tag.$ext
+            done
+        )
         rm -rf $build_dir
     done
 }
@@ -50,4 +51,8 @@ function build_rp2_boards {
 
 function build_samd_boards {
     build_boards $1 $2 samd_soc.c uf2
+}
+
+function build_stm32_boards {
+    build_boards $1 $2 modpyb.c dfu hex
 }

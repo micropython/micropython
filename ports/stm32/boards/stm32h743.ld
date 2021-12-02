@@ -29,12 +29,12 @@ _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
 /* Location of filesystem RAM cache */
-_ram_fs_cache_start = ORIGIN(DTCM);
-_ram_fs_cache_end = ORIGIN(DTCM) + LENGTH(DTCM);
+_micropy_hw_internal_flash_storage_ram_cache_start = ORIGIN(DTCM);
+_micropy_hw_internal_flash_storage_ram_cache_end = ORIGIN(DTCM) + LENGTH(DTCM);
 
 /* Location of filesystem flash storage */
-_flash_fs_start = ORIGIN(FLASH_FS);
-_flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+_micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
+_micropy_hw_internal_flash_storage_end = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
 /* Define output sections */
 SECTIONS
