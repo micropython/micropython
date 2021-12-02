@@ -55,7 +55,7 @@ void reset_i2c(void) {
     never_reset_i2c[7] = true;
     i2c_in_use[7] = true;
     #endif
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < NUM_I2C; i++) {
         if (never_reset_i2c[i]) {
             continue;
         }
