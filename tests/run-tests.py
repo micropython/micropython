@@ -511,6 +511,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
+        skip_tests.add(
+            "circuitpython/traceback_test.py"
+        )  # because native doesn't have proper traceback info
         skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
         skip_tests.add("extmod/uasyncio_lock.py")  # requires async with
         skip_tests.add("extmod/uasyncio_micropython.py")  # unknown issue
