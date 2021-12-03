@@ -26,6 +26,8 @@ void machine_init(void);
 void machine_deinit(void);
 void machine_pins_init(void);
 void machine_pins_deinit(void);
+void machine_pwm_deinit_all(void);
+// TODO: void machine_rmt_deinit_all(void);
 void machine_timer_deinit_all(void);
 void machine_i2s_init0();
 
