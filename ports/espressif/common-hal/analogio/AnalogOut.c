@@ -41,6 +41,7 @@
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
     if (pin == &pin_GPIO17) {
         self->channel = DAC_CHANNEL_1;
     } else if (pin == &pin_GPIO18) {
@@ -49,6 +50,9 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         mp_raise_ValueError(translate("Invalid DAC pin supplied"));
     }
     dac_output_enable(self->channel);
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
@@ -56,18 +60,24 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
     dac_output_disable(self->channel);
     self->channel = DAC_CHANNEL_MAX;
+    #endif
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     uint16_t value) {
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
     uint8_t dac_value = (value * 255) / 65535;
     dac_output_enable(self->channel);
     dac_output_voltage(self->channel, dac_value);
+    #endif
 }
 
 void analogout_reset(void) {
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
     dac_output_disable(DAC_CHANNEL_1);
     dac_output_disable(DAC_CHANNEL_2);
+    #endif
 }

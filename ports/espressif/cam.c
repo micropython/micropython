@@ -21,8 +21,13 @@
 #include "esp_log.h"
 #include "soc/i2s_struct.h"
 #include "soc/apb_ctrl_reg.h"
+#ifdef CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/lldesc.h"
 #include "esp32s2/rom/cache.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "esp32s3/rom/lldesc.h"
+#include "esp32s3/rom/cache.h"
+#endif
 #include "soc/dport_access.h"
 #include "soc/dport_reg.h"
 #include "driver/ledc.h"

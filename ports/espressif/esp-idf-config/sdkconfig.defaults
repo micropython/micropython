@@ -1,10 +1,4 @@
 #
-# Bootloader config
-#
-# CONFIG_BOOTLOADER_VDDSDIO_BOOST_1_8V is not set
-# end of Bootloader config
-
-#
 # Serial flasher config
 #
 # CONFIG_ESPTOOLPY_FLASHFREQ_80M is not set
@@ -49,6 +43,14 @@ CONFIG_ESP32S2_INSTRUCTION_CACHE_16KB=y
 CONFIG_ESP32S2_DATA_CACHE_16KB=y
 # end of Cache config
 # end of ESP32S2-specific
+
+#
+# ESP32S3-specific
+#
+# CONFIG_ESP32S3_DEFAULT_CPU_FREQ_160 is not set
+CONFIG_ESP32S3_DEFAULT_CPU_FREQ_240=y
+CONFIG_ESP32S3_DEFAULT_CPU_FREQ_MHZ=240
+# end of ESP32S3-specific
 
 #
 # Common ESP-related
