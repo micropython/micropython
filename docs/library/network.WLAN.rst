@@ -46,6 +46,8 @@ Methods
 .. method:: WLAN.scan()
 
     Scan for the available wireless networks.
+    Hidden networks -- where the SSID is not broadcast -- will also be scanned
+    if the WLAN interface allows it.
 
     Scanning is only possible on STA interface. Returns list of tuples with
     the information about WiFi access points:
@@ -53,7 +55,7 @@ Methods
         (ssid, bssid, channel, RSSI, authmode, hidden)
 
     *bssid* is hardware address of an access point, in binary form, returned as
-    bytes object. You can use `ubinascii.hexlify()` to convert it to ASCII form.
+    bytes object. You can use `binascii.hexlify()` to convert it to ASCII form.
 
     There are five values for authmode:
 
@@ -129,4 +131,5 @@ Methods
    authmode       Authentication mode supported (enumeration, see module constants)
    password       Access password (string)
    dhcp_hostname  The DHCP hostname to use
+   reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    =============  ===========

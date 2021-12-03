@@ -1,15 +1,24 @@
 /* Memory configuration */
+#if MICROPY_HW_FLASH_RESERVED
+reserved_size = MICROPY_HW_FLASH_RESERVED;
+#endif
+
+#if MICROPY_HW_FLASH_TYPE==qspi_nor
 flash_start         = 0x60000000;
+#else
+#error Unknown MICROPY_HW_FLASH_TYPE
+#endif
+flash_size          = MICROPY_HW_FLASH_SIZE;
 flash_end           = DEFINED(reserved_size) ? ((flash_start) + (flash_size - reserved_size)) : ((flash_start) + (flash_size));
-flash_config_start  = 0x60000400;
+flash_config_start  = flash_start + 0x00000400;
 flash_config_size   = 0x00000C00;
-ivt_start           = 0x60001000;
+ivt_start           = flash_start + 0x00001000;
 ivt_size            = 0x00001000;
-interrupts_start    = 0x60002000;
+interrupts_start    = flash_start + 0x00002000;
 interrupts_size     = 0x00000400;
-text_start          = 0x60002400;
-text_size           = ((((text_start) + 1M) + (4k - 1)) & ~(4k - 1)) - (text_start); /* reserve 1M for code but align on 4k boundary */
-vfs_start           = (text_start) + (text_size);
+text_start          = flash_start + 0x00002400;
+vfs_start           = flash_start + 0x00100000;
+text_size           = ((vfs_start) - (text_start));
 vfs_size            = ((flash_end) - (vfs_start));
 itcm_start          = 0x00000000;
 itcm_size           = 0x00008000;

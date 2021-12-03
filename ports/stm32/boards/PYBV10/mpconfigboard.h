@@ -64,6 +64,9 @@
 #define MICROPY_HW_SPI2_MISO (pin_B14) // Y7
 #define MICROPY_HW_SPI2_MOSI (pin_B15) // Y8
 
+// I2S buses
+#define MICROPY_HW_I2S2      (1)
+
 // CAN buses
 #define MICROPY_HW_CAN1_NAME "YA"
 #define MICROPY_HW_CAN1_TX   (pin_B9) // Y4

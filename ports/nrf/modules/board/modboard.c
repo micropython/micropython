@@ -25,7 +25,7 @@
  */
 
 #include "py/builtin.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "led.h"

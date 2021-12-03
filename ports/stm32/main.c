@@ -32,13 +32,14 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "lib/mp-readline/readline.h"
-#include "lib/utils/pyexec.h"
+#include "shared/readline/readline.h"
+#include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/littlefs/lfs1.h"
 #include "lib/littlefs/lfs1_util.h"
 #include "lib/littlefs/lfs2.h"
 #include "lib/littlefs/lfs2_util.h"
+#include "extmod/modnetwork.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
@@ -54,6 +55,7 @@
 #endif
 
 #include "boardctrl.h"
+#include "mpbthciport.h"
 #include "mpu.h"
 #include "rfcore.h"
 #include "systick.h"
@@ -82,7 +84,6 @@
 #include "servo.h"
 #include "dac.h"
 #include "can.h"
-#include "modnetwork.h"
 
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
@@ -368,14 +369,6 @@ void stm32_main(uint32_t reset_mode) {
     // set the system clock to be HSE
     SystemClock_Config();
 
-    // enable GPIO clocks
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    #if defined(GPIOD)
-    __HAL_RCC_GPIOD_CLK_ENABLE();
-    #endif
-
     #if defined(STM32F4) || defined(STM32F7)
     #if defined(__HAL_RCC_DTCMRAMEN_CLK_ENABLE)
     // The STM32F746 doesn't really have CCM memory, but it does have DTCM,
@@ -385,6 +378,9 @@ void stm32_main(uint32_t reset_mode) {
     // enable the CCM RAM
     __HAL_RCC_CCMDATARAMEN_CLK_ENABLE();
     #endif
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    // Enable SRAM clock.
+    __HAL_RCC_SRDSRAM_CLK_ENABLE();
     #elif defined(STM32H7)
     // Enable D2 SRAM1/2/3 clocks.
     __HAL_RCC_D2SRAM1_CLK_ENABLE();
@@ -403,7 +399,7 @@ void stm32_main(uint32_t reset_mode) {
     bool sdram_valid = true;
     UNUSED(sdram_valid);
     #if MICROPY_HW_SDRAM_STARTUP_TEST
-    sdram_valid = sdram_test(true);
+    sdram_valid = sdram_test(false);
     #endif
     #endif
     #if MICROPY_PY_THREAD
@@ -440,8 +436,7 @@ void stm32_main(uint32_t reset_mode) {
     systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
     #endif
     #if MICROPY_PY_BLUETOOTH
-    extern void mp_bluetooth_hci_systick(uint32_t ticks_ms);
-    systick_enable_dispatch(SYSTICK_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_systick);
+    mp_bluetooth_hci_init();
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
@@ -527,6 +522,10 @@ soft_reset:
     pyb_usb_init0();
     #endif
 
+    #if MICROPY_HW_ENABLE_I2S
+    machine_i2s_init0();
+    #endif
+
     // Initialise the local flash filesystem.
     // Create it if needed, mount in on /flash, and set it as current dir.
     bool mounted_flash = false;
@@ -565,6 +564,11 @@ soft_reset:
     // reset config variables; they should be set by boot.py
     MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
 
+    // Run optional frozen boot code.
+    #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE);
+    #endif
+
     // Run boot.py (or whatever else a board configures at this stage).
     if (MICROPY_BOARD_RUN_BOOT_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
         goto soft_reset_exit;
@@ -578,13 +582,13 @@ soft_reset:
     // init USB device to default setting if it was not already configured
     if (!(pyb_usb_flags & PYB_USB_FLAG_USB_MODE_CALLED)) {
         #if MICROPY_HW_USB_MSC
-        const uint16_t pid = USBD_PID_CDC_MSC;
+        const uint16_t pid = MICROPY_HW_USB_PID_CDC_MSC;
         const uint8_t mode = USBD_MODE_CDC_MSC;
         #else
-        const uint16_t pid = USBD_PID_CDC;
+        const uint16_t pid = MICROPY_HW_USB_PID_CDC;
         const uint8_t mode = USBD_MODE_CDC;
         #endif
-        pyb_usb_dev_init(pyb_usb_dev_detect(), USBD_VID, pid, mode, 0, NULL, NULL);
+        pyb_usb_dev_init(pyb_usb_dev_detect(), MICROPY_HW_USB_VID, pid, mode, 0, NULL, NULL);
     }
     #endif
 
@@ -662,6 +666,7 @@ soft_reset_exit:
     MICROPY_BOARD_END_SOFT_RESET(&state);
 
     gc_sweep_all();
+    mp_deinit();
 
     goto soft_reset;
 }

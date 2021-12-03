@@ -18,9 +18,9 @@ the REPL directly from your PC.  Otherwise you will need to have a way of
 communicating with the UART.
 
 To access the prompt over USB-serial you need to use a terminal emulator program.
-On Windows TeraTerm is a good choice, on Mac you can use the built-in screen
-program, and Linux has picocom and minicom.  Of course, there are many other
-terminal programs that will work, so pick your favourite!
+On Windows TeraTerm is a good choice, on Mac you can use the built-in ``screen``
+program, and Linux has ``picocom`` and ``minicom``.  Of course, there are many
+other terminal programs that will work, so pick your favourite!
 
 For example, on Linux you can try running::
 
@@ -37,9 +37,9 @@ WebREPL allows you to use the Python prompt over WiFi, connecting through a
 browser. The latest versions of Firefox and Chrome are supported.
 
 For your convenience, WebREPL client is hosted at
-`<http://micropython.org/webrepl>`__ . Alternatively, you can install it
+`<http://micropython.org/webrepl>`__. Alternatively, you can install it
 locally from the the GitHub repository
-`<https://github.com/micropython/webrepl>`__ .
+`<https://github.com/micropython/webrepl>`__.
 
 Before connecting to WebREPL, you should set a password and enable it via
 a normal serial connection. Initial versions of MicroPython for ESP8266

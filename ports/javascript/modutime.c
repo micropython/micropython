@@ -32,7 +32,7 @@
 #include "py/smallint.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "extmod/utime_mphal.h"
 
 STATIC const mp_rom_map_elem_t time_module_globals_table[] = {

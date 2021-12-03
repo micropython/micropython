@@ -1,0 +1,13 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [],
+    "mcu": "nrf52",
+    "product": "arduino_primo",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

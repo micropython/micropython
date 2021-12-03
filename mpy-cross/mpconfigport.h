@@ -57,12 +57,12 @@
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
 #define MICROPY_COMP_RETURN_IF_EXPR (1)
 
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
-
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_ENABLE_RUNTIME      (0)
 #define MICROPY_ENABLE_GC           (1)
+#ifndef __EMSCRIPTEN__
 #define MICROPY_STACK_CHECK         (1)
+#endif
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE  (1)
@@ -74,6 +74,7 @@
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
 
+#define MICROPY_PY_FSTRINGS         (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 
 #if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))

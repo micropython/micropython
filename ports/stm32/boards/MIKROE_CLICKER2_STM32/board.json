@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "mikroBUS"
+    ],
+    "images": [],
+    "mcu": "stm32f4",
+    "product": "MikroE Clicker 2 for STM32",
+    "thumbnail": "",
+    "url": "https://www.mikroe.com/clicker-2-stm32f4",
+    "vendor": "MikroElektronika"
+}

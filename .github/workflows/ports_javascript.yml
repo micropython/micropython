@@ -1,0 +1,24 @@
+name: javascript port
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - 'py/**'
+      - 'extmod/**'
+      - 'lib/**'
+      - 'ports/javascript/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_javascript_setup
+    - name: Build
+      run: source tools/ci.sh && ci_javascript_build
+    - name: Run tests
+      run: source tools/ci.sh && ci_javascript_run_tests

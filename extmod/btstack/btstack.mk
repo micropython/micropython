@@ -30,7 +30,6 @@ INC += -I$(BTSTACK_DIR)/3rd-party/yxml
 SRC_BTSTACK = \
 	$(addprefix lib/btstack/src/, $(SRC_FILES)) \
 	$(addprefix lib/btstack/src/ble/, $(filter-out %_tlv.c, $(SRC_BLE_FILES))) \
-	lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
@@ -68,7 +67,7 @@ endif
 LIB_SRC_C += $(SRC_BTSTACK)
 
 # Suppress some warnings.
-BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wimplicit-fallthrough=0
+BTSTACK_WARNING_CFLAGS = -Wno-old-style-definition -Wno-unused-variable -Wno-unused-parameter -Wno-implicit-fallthrough
 ifneq ($(CC),clang)
 BTSTACK_WARNING_CFLAGS += -Wno-format
 endif

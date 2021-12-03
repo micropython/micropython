@@ -8,3 +8,6 @@ Task B: factorial(3) = 6
 Task C: Compute factorial(4)...
 Task C: factorial(4) = 24
 [2, 6, 24]
+start 2
+end 2
+[CancelledError(), 2]

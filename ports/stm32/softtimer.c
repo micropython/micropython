@@ -122,6 +122,7 @@ void soft_timer_gc_mark_all(void) {
 }
 
 void soft_timer_static_init(soft_timer_entry_t *entry, uint16_t mode, uint32_t delta_ms, void (*cb)(soft_timer_entry_t *)) {
+    mp_pairheap_init_node(soft_timer_lt, &entry->pairheap);
     entry->flags = 0;
     entry->mode = mode;
     entry->delta_ms = delta_ms;

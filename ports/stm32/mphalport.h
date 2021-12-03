@@ -2,6 +2,23 @@
 #include STM32_HAL_H
 #include "pin.h"
 
+// F0-1.9.0+F4-1.16.0+F7-1.7.0+H7-1.6.0+L0-1.11.2+L4-1.8.1+WB-1.10.0
+#if defined(STM32F0)
+#define MICROPY_PLATFORM_VERSION "HAL1.9.0"
+#elif defined(STM32F4)
+#define MICROPY_PLATFORM_VERSION "HAL1.16.0"
+#elif defined(STM32F7)
+#define MICROPY_PLATFORM_VERSION "HAL1.7.0"
+#elif defined(STM32H7)
+#define MICROPY_PLATFORM_VERSION "HAL1.6.0"
+#elif defined(STM32L0)
+#define MICROPY_PLATFORM_VERSION "HAL1.11.2"
+#elif defined(STM32L4)
+#define MICROPY_PLATFORM_VERSION "HAL1.8.1"
+#elif defined(STM32WB)
+#define MICROPY_PLATFORM_VERSION "HAL1.10.0"
+#endif
+
 extern const unsigned char mp_hal_status_to_errno_table[4];
 
 static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {

@@ -3,7 +3,7 @@
 Quick reference for the RP2
 ===========================
 
-.. image:: img/rpipico.jpg
+.. image:: img/pico_pinout.png
     :alt: Raspberry Pi Pico
     :width: 640px
 
@@ -27,10 +27,9 @@ a troubleshooting subsection.
 General board control
 ---------------------
 
-The MicroPython REPL is on the USB serial port.
-Tab-completion is useful to find out what methods an object has.
-Paste mode (ctrl-E) is useful to paste a large slab of Python code into
-the REPL.
+The MicroPython REPL is accessed via the USB serial port. Tab-completion is useful to
+find out what methods an object has. Paste mode (ctrl-E) is useful to paste a
+large slab of Python code into the REPL.
 
 The :mod:`machine` module::
 
@@ -46,7 +45,7 @@ The :mod:`rp2` module::
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -59,7 +58,19 @@ Use the :mod:`time <utime>` module::
 Timers
 ------
 
-How do they work?
+RP2040's system timer peripheral provides a global microsecond timebase and
+generates interrupts for it.  The software timer is available currently,
+and there are unlimited number of them (memory permitting). There is no need
+to specify the timer id (id=-1 is supported at the moment) as it will default
+to this.
+
+Use the :mod:`machine.Timer` class::
+
+    from machine import Timer
+
+    tim = Timer(period=5000, mode=Timer.ONE_SHOT, callback=lambda t:print(1))
+    tim.init(period=2000, mode=Timer.PERIODIC, callback=lambda t:print(2))
+
 
 .. _rp2_Pins_and_GPIO:
 
@@ -81,22 +92,62 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
 
+Programmable IO (PIO)
+---------------------
+
+PIO is useful to build low-level IO interfaces from scratch.  See the :mod:`rp2` module
+for detailed explaination of the assembly instructions.
+
+Example using PIO to blink an LED at 1Hz::
+
+    from machine import Pin
+    import rp2
+
+    @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
+    def blink_1hz():
+        # Cycles: 1 + 7 + 32 * (30 + 1) = 1000
+        set(pins, 1)
+        set(x, 31)                  [6]
+        label("delay_high")
+        nop()                       [29]
+        jmp(x_dec, "delay_high")
+
+        # Cycles: 1 + 7 + 32 * (30 + 1) = 1000
+        set(pins, 0)
+        set(x, 31)                  [6]
+        label("delay_low")
+        nop()                       [29]
+        jmp(x_dec, "delay_low")
+
+    # Create and start a StateMachine with blink_1hz, outputting on Pin(25)
+    sm = rp2.StateMachine(0, blink_1hz, freq=2000, set_base=Pin(25))
+    sm.active(1)
+
 UART (serial bus)
 -----------------
 
+There are two UARTs, UART0 and UART1. UART0 can be mapped to GPIO 0/1, 12/13
+and 16/17, and UART1 to GPIO 4/5 and 8/9.
+
+
 See :ref:`machine.UART <machine.UART>`. ::
 
-    from machine import UART
-
-    uart1 = UART(1, baudrate=9600, tx=33, rx=32)
+    from machine import UART, Pin
+    uart1 = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
     uart1.write('hello')  # write 5 bytes
     uart1.read(5)         # read up to 5 bytes
+
+.. note::
+
+    REPL over UART is disabled by default. You can see the :ref:`rp2_intro` for
+    details on how to enable REPL over UART.
 
 
 PWM (pulse width modulation)
 ----------------------------
 
-How does PWM work on the RPi RP2xxx?
+There are 8 independent channels each of which have 2 outputs making it 16
+PWM channels in total which can be clocked from 7Hz to 125Mhz.
 
 Use the ``machine.PWM`` class::
 
@@ -112,14 +163,18 @@ Use the ``machine.PWM`` class::
 ADC (analog to digital conversion)
 ----------------------------------
 
-How does the ADC module work?
+RP2040 has five ADC channels in total, four of which are 12-bit SAR based
+ADCs: GP26, GP27, GP28 and GP29. The input signal for ADC0, ADC1, ADC2 and
+ADC3 can be connected with GP26, GP27, GP28, GP29 respectively (On Pico board,
+GP29 is connected to VSYS). The standard ADC range is 0-3.3V. The fifth
+channel is connected to the in-built temperature sensor and can be used for
+measuring the temperature.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
-    from machine import ADC
-
-    adc = ADC(Pin(32))          # create ADC object on ADC pin
-    adc.read_u16()              # read value, 0-65535 across voltage range 0.0v - 3.3v
+    from machine import ADC, Pin
+    adc = ADC(Pin(26))     # create ADC object on ADC pin
+    adc.read_u16()         # read value, 0-65535 across voltage range 0.0v - 3.3v
 
 Software SPI bus
 ----------------
@@ -132,7 +187,7 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
     # construct a SoftSPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100_000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -156,14 +211,15 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
 Hardware SPI bus
 ----------------
 
-Hardware SPI is accessed via the :ref:`machine.SPI <machine.SPI>` class and
-has the same methods as software SPI above::
+The RP2040 has 2 hardware SPI buses which is accessed via the
+:ref:`machine.SPI <machine.SPI>` class and has the same methods as software
+SPI above::
 
     from machine import Pin, SPI
 
-    spi = SPI(1, 10000000)
-    spi = SPI(1, 10000000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))
-    spi = SPI(2, baudrate=80000000, polarity=0, phase=0, bits=8, firstbit=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
+    spi = SPI(1, 10_000_000)  # Default assignment: sck=Pin(10), mosi=Pin(11), miso=Pin(8)
+    spi = SPI(1, 10_000_000, sck=Pin(14), mosi=Pin(15), miso=Pin(12))
+    spi = SPI(0, baudrate=80_000_000, polarity=0, phase=0, bits=8, sck=Pin(6), mosi=Pin(7), miso=Pin(4))
 
 Software I2C bus
 ----------------
@@ -173,7 +229,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
     from machine import Pin, SoftI2C
 
-    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100_000)
 
     i2c.scan()              # scan for devices
 
@@ -181,7 +237,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
     i2c.writeto(0x3a, '12') # write '12' to device with address 0x3a
 
     buf = bytearray(10)     # create a buffer with 10 bytes
-    i2c.writeto(0x3a, buf)  # write the given buffer to the slave
+    i2c.writeto(0x3a, buf)  # write the given buffer to the peripheral
 
 Hardware I2C bus
 ----------------
@@ -191,8 +247,28 @@ has the same methods as software I2C above::
 
     from machine import Pin, I2C
 
-    i2c = I2C(0)
-    i2c = I2C(1, scl=Pin(5), sda=Pin(4), freq=400000)
+    i2c = I2C(0)   # default assignment: scl=Pin(9), sda=Pin(8)
+    i2c = I2C(1, scl=Pin(3), sda=Pin(2), freq=400_000)
+
+I2S bus
+-------
+
+See :ref:`machine.I2S <machine.I2S>`. ::
+
+    from machine import I2S, Pin
+
+    i2s = I2S(0, sck=Pin(16), ws=Pin(17), sd=Pin(18), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
+    i2s.write(buf)             # write buffer of audio samples to I2S device
+
+    i2s = I2S(1, sck=Pin(0), ws=Pin(1), sd=Pin(2), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
+    i2s.readinto(buf)          # fill buffer with audio samples from I2S device
+
+The ``ws`` pin number must be one greater than the ``sck`` pin number.
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
+users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
+
+Two I2S buses are supported with id=0 and id=1.
 
 Real time clock (RTC)
 ---------------------
@@ -202,13 +278,15 @@ See :ref:`machine.RTC <machine.RTC>` ::
     from machine import RTC
 
     rtc = RTC()
-    rtc.datetime((2017, 8, 23, 1, 12, 48, 0, 0)) # set a specific date and time
+    rtc.datetime((2017, 8, 23, 2, 12, 48, 0, 0)) # set a specific date and
+                                                 # time, eg. 2017/8/23 1:12:48
     rtc.datetime() # get date and time
 
 WDT (Watchdog timer)
 --------------------
 
-Is there a watchdog timer?
+The RP2040 has a watchdog which is a countdown timer that can restart
+parts of the chip if it reaches zero.
 
 See :ref:`machine.WDT <machine.WDT>`. ::
 
@@ -218,21 +296,6 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
-Deep-sleep mode
----------------
-
-Is there deep-sleep support for the rp2?
-
-The following code can be used to sleep, wake and check the reset cause::
-
-    import machine
-
-    # check if the device woke from a deep sleep
-    if machine.reset_cause() == machine.DEEPSLEEP_RESET:
-        print('woke from a deep sleep')
-
-    # put the device to sleep for 10 seconds
-    machine.deepsleep(10000)
 
 OneWire driver
 --------------

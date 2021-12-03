@@ -137,6 +137,28 @@ Miscellaneous functions
    above. The timeout is the same for both cases and given by *timeout_us* (which
    is in microseconds).
 
+.. function:: bitstream(pin, encoding, timing, data, /)
+
+   Transmits *data* by bit-banging the specified *pin*. The *encoding* argument
+   specifies how the bits are encoded, and *timing* is an encoding-specific timing
+   specification.
+
+   The supported encodings are:
+
+     - ``0`` for "high low" pulse duration modulation. This will transmit 0 and
+       1 bits as timed pulses, starting with the most significant bit.
+       The *timing* must be a four-tuple of nanoseconds in the format
+       ``(high_time_0, low_time_0, high_time_1, low_time_1)``. For example,
+       ``(400, 850, 800, 450)`` is the timing specification for WS2812 RGB LEDs
+       at 800kHz.
+
+   The accuracy of the timing varies between ports. On Cortex M0 at 48MHz, it is
+   at best +/- 120ns, however on faster MCUs (ESP8266, ESP32, STM32, Pyboard), it
+   will be closer to +/-30ns.
+
+   .. note:: For controlling WS2812 / NeoPixel strips, see the :mod:`neopixel`
+      module for a higher-level API.
+
 .. function:: rng()
 
    Return a 24-bit software generated random number.
@@ -181,6 +203,7 @@ Classes
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
+   machine.I2S.rst   
    machine.RTC.rst
    machine.Timer.rst
    machine.WDT.rst

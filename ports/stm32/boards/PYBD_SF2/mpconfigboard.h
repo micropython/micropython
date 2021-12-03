@@ -146,6 +146,10 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SPI3_MISO        (pyb_pin_W50)
 #define MICROPY_HW_SPI3_MOSI        (pyb_pin_W46)
 
+// I2S buses
+#define MICROPY_HW_I2S1             (1)
+#define MICROPY_HW_I2S2             (1)
+
 // CAN buses
 #define MICROPY_HW_CAN1_NAME        "X"
 #define MICROPY_HW_CAN1_TX          (pyb_pin_X10)

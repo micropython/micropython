@@ -297,7 +297,7 @@ STATIC mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t 
 
     mp_prof_is_executing = false;
 
-    if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
         mp_handle_pending(true);
     }
     return top;
@@ -540,9 +540,6 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->qstr_opname = MP_QSTR_LOAD_NAME;
             instruction->arg = qst;
             instruction->argobj = MP_OBJ_NEW_QSTR(qst);
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
-            }
             break;
 
         case MP_BC_LOAD_GLOBAL:
@@ -550,9 +547,6 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->qstr_opname = MP_QSTR_LOAD_GLOBAL;
             instruction->arg = qst;
             instruction->argobj = MP_OBJ_NEW_QSTR(qst);
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
-            }
             break;
 
         case MP_BC_LOAD_ATTR:
@@ -560,9 +554,6 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->qstr_opname = MP_QSTR_LOAD_ATTR;
             instruction->arg = qst;
             instruction->argobj = MP_OBJ_NEW_QSTR(qst);
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
-            }
             break;
 
         case MP_BC_LOAD_METHOD:
@@ -618,9 +609,6 @@ STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_
             instruction->qstr_opname = MP_QSTR_STORE_ATTR;
             instruction->arg = qst;
             instruction->argobj = MP_OBJ_NEW_QSTR(qst);
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                instruction->argobjex_cache = MP_OBJ_NEW_SMALL_INT(*ip++);
-            }
             break;
 
         case MP_BC_STORE_SUBSCR:

@@ -31,12 +31,7 @@
   ******************************************************************************
   */
 
-#ifndef USBD_CDC_RX_DATA_SIZE
-#define USBD_CDC_RX_DATA_SIZE (1024) // this must be 2 or greater, and a power of 2
-#endif
-#ifndef USBD_CDC_TX_DATA_SIZE
-#define USBD_CDC_TX_DATA_SIZE (1024) // This must be a power of 2 and no greater than 16384
-#endif
+#include "py/mpconfig.h"
 
 // Values for connect_state
 #define USBD_CDC_CONNECT_STATE_DISCONNECTED (0)
@@ -52,17 +47,18 @@ typedef struct _usbd_cdc_itf_t {
     usbd_cdc_state_t base; // state for the base CDC layer
 
     uint8_t rx_packet_buf[CDC_DATA_MAX_PACKET_SIZE]; // received data from USB OUT endpoint is stored in this buffer
-    uint8_t rx_user_buf[USBD_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
+    uint8_t rx_user_buf[MICROPY_HW_USB_CDC_RX_DATA_SIZE]; // received data is buffered here until the user reads it
     volatile uint16_t rx_buf_put; // circular buffer index
     uint16_t rx_buf_get; // circular buffer index
     uint8_t rx_buf_full; // rx from host will be blocked while this is true
 
-    uint8_t tx_buf[USBD_CDC_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
-    uint16_t tx_buf_ptr_in; // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when new data is available
-    volatile uint16_t tx_buf_ptr_out; // increment this pointer modulo USBD_CDC_TX_DATA_SIZE when data is drained
+    uint8_t tx_buf[MICROPY_HW_USB_CDC_TX_DATA_SIZE]; // data for USB IN endpoind is stored in this buffer
+    uint16_t tx_buf_ptr_in; // increment this pointer modulo MICROPY_HW_USB_CDC_TX_DATA_SIZE when new data is available
+    volatile uint16_t tx_buf_ptr_out; // increment this pointer modulo MICROPY_HW_USB_CDC_TX_DATA_SIZE when data is drained
     uint16_t tx_buf_ptr_out_next; // next position of above once transmission finished
     uint8_t tx_need_empty_packet; // used to flush the USB IN endpoint if the last packet was exactly the endpoint packet size
 
+    uint8_t cdc_idx; // between 0 and MICROPY_HW_USB_CDC_NUM-1
     volatile uint8_t connect_state; // indicates if we are connected
     uint8_t attached_to_repl; // indicates if interface is connected to REPL
     uint8_t flow; // USBD_CDC_FLOWCONTROL_* setting flags
@@ -82,5 +78,6 @@ void usbd_cdc_tx_always(usbd_cdc_itf_t *cdc, const uint8_t *buf, uint32_t len);
 
 int usbd_cdc_rx_num(usbd_cdc_itf_t *cdc);
 int usbd_cdc_rx(usbd_cdc_itf_t *cdc, uint8_t *buf, uint32_t len, uint32_t timeout);
+void usbd_cdc_rx_event_callback(usbd_cdc_itf_t *cdc);
 
 #endif // MICROPY_INCLUDED_STM32_USBD_CDC_INTERFACE_H

@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi"
+    ],
+    "id": "esp8266",
+    "images": [],
+    "mcu": "esp8266",
+    "product": "ESP8266 with 2MiB+ flash",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "variants": {
+        "ota": "OTA compatible"
+    },
+    "vendor": "Espressif"
+}

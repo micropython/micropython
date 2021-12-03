@@ -18,4 +18,4 @@ compiled and executed when the firmware starts.  They produce output on the
 system's stdout.
 
 The size of the firmware (the machine code that is programmed to the
-microcontroller's flash/ROM) is currently around 57900 bytes.
+microcontroller's flash/ROM) is currently around 56500 bytes.

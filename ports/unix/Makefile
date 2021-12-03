@@ -117,9 +117,9 @@ endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
-INC +=  -I$(TOP)/lib/mp-readline
+INC += -I$(TOP)/shared/readline
 CFLAGS_MOD += -DMICROPY_USE_READLINE=1
-LIB_SRC_C_EXTRA += mp-readline/readline.c
+SHARED_SRC_C_EXTRA += readline/readline.c
 endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
 CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
@@ -177,6 +177,7 @@ endif
 # BTstack is enabled.
 GIT_SUBMODULES += lib/btstack
 include $(TOP)/extmod/btstack/btstack.mk
+SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 
 else
 
@@ -240,10 +241,10 @@ SRC_C += \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
-LIB_SRC_C += $(addprefix lib/,\
-	$(LIB_SRC_C_EXTRA) \
+SHARED_SRC_C += $(addprefix shared/,\
+	runtime/gchelper_generic.c \
 	timeutils/timeutils.c \
-	utils/gchelper_generic.c \
+	$(SHARED_SRC_C_EXTRA) \
 	)
 
 SRC_CXX += \
@@ -252,11 +253,12 @@ SRC_CXX += \
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(LIB_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -267,7 +269,6 @@ ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
 ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
@@ -283,9 +284,18 @@ endif
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
-else
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc'
+RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
+endif
+
+ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)
+# Force disable error text compression when compiling for ARM as the compiler
+# cannot optimise out the giant strcmp list generated for MP_MATCH_COMPRESSED.
+# Checked on:
+# arm-linux-gnueabi-gcc (Ubuntu/Linaro 7.5.0-3ubuntu1~18.04) 7.5.0
+# arm-linux-gnueabi-gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
+# See https://github.com/micropython/micropython/pull/7659 for details.
+$(info Detected arm-linux-gnueabi-gcc. Disabling error message compression.)
+MICROPY_ROM_TEXT_COMPRESSION = 0
 endif
 
 include $(TOP)/py/mkrules.mk

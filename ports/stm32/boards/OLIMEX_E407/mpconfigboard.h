@@ -27,7 +27,7 @@
 #define MICROPY_HW_UART3_RTS    (pin_D12)
 #define MICROPY_HW_UART3_CTS    (pin_D11)
 #if MICROPY_HW_HAS_SWITCH == 0
-// NOTE: A0 also connects to the user switch. To use UART4 you should 
+// NOTE: A0 also connects to the user switch. To use UART4 you should
 //       set MICROPY_HW_HAS_SWITCH to 0, and also remove SB20 (on the back
 //       of the board near the USER switch).
 #define MICROPY_HW_UART4_TX     (pin_A0)
@@ -78,3 +78,14 @@
 #define MICROPY_HW_USB_FS              (1)
 #define MICROPY_HW_USB_VBUS_DETECT_PIN (pin_A9)
 #define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
+
+// Ethernet via RMII
+#define MICROPY_HW_ETH_MDC          (pin_C1)
+#define MICROPY_HW_ETH_MDIO         (pin_A2)
+#define MICROPY_HW_ETH_RMII_REF_CLK (pin_A1)
+#define MICROPY_HW_ETH_RMII_CRS_DV  (pin_A7)
+#define MICROPY_HW_ETH_RMII_RXD0    (pin_C4)
+#define MICROPY_HW_ETH_RMII_RXD1    (pin_C5)
+#define MICROPY_HW_ETH_RMII_TX_EN   (pin_G11)
+#define MICROPY_HW_ETH_RMII_TXD0    (pin_G13)
+#define MICROPY_HW_ETH_RMII_TXD1    (pin_G14)

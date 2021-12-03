@@ -27,9 +27,9 @@
 #include <string.h>
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "lib/netutils/netutils.h"
+#include "shared/netutils/netutils.h"
 #include "pin_static_af.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "mpu.h"
 #include "eth.h"
 
@@ -46,6 +46,7 @@
 #define PHY_BCR                 (0x0000)
 #define PHY_BCR_SOFT_RESET      (0x8000)
 #define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR_POWER_DOWN      (0x0800U)
 
 #undef PHY_BSR
 #define PHY_BSR                 (0x0001)
@@ -188,17 +189,6 @@ STATIC uint32_t eth_phy_read(uint32_t reg) {
 void eth_init(eth_t *self, int mac_idx) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
-}
-
-void eth_set_trace(eth_t *self, uint32_t value) {
-    self->trace_flags = value;
-}
-
-STATIC int eth_mac_init(eth_t *self) {
-    // Configure MPU
-    uint32_t irq_state = mpu_config_start();
-    mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(MPU_REGION_SIZE_16KB));
-    mpu_config_end(irq_state);
 
     // Configure GPIO
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_MDC);
@@ -211,6 +201,27 @@ STATIC int eth_mac_init(eth_t *self) {
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD0, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_RMII_TXD0);
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_RMII_TXD1);
 
+    // Enable peripheral clock
+    #if defined(STM32H7)
+    __HAL_RCC_ETH1MAC_CLK_ENABLE();
+    __HAL_RCC_ETH1TX_CLK_ENABLE();
+    __HAL_RCC_ETH1RX_CLK_ENABLE();
+    #else
+    __HAL_RCC_ETH_CLK_ENABLE();
+    #endif
+}
+
+void eth_set_trace(eth_t *self, uint32_t value) {
+    self->trace_flags = value;
+}
+
+STATIC int eth_mac_init(eth_t *self) {
+    // Configure MPU
+    uint32_t irq_state = mpu_config_start();
+    mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(MPU_REGION_SIZE_16KB));
+    mpu_config_end(irq_state);
+
+    // Enable peripheral clock
     #if defined(STM32H7)
     __HAL_RCC_ETH1MAC_CLK_ENABLE();
     __HAL_RCC_ETH1TX_CLK_ENABLE();
@@ -780,17 +791,20 @@ int eth_link_status(eth_t *self) {
             return 2; // link no-ip;
         }
     } else {
-        int s = eth_phy_read(0) | eth_phy_read(0x10) << 16;
-        if (s == 0) {
-            return 0; // link down
+        if (eth_phy_read(PHY_BSR) & PHY_BSR_LINK_STATUS) {
+            return 1; // link up
         } else {
-            return 1; // link join
+            return 0; // link down
         }
     }
 }
 
 int eth_start(eth_t *self) {
     eth_lwip_deinit(self);
+
+    // Make sure Eth is Not in low power mode.
+    eth_low_power_mode(self, false);
+
     int ret = eth_mac_init(self);
     if (ret < 0) {
         return ret;
@@ -805,4 +819,29 @@ int eth_stop(eth_t *self) {
     return 0;
 }
 
+void eth_low_power_mode(eth_t *self, bool enable) {
+    (void)self;
+
+    // Enable eth clock
+    #if defined(STM32H7)
+    __HAL_RCC_ETH1MAC_CLK_ENABLE();
+    #else
+    __HAL_RCC_ETH_CLK_ENABLE();
+    #endif
+
+    uint16_t bcr = eth_phy_read(PHY_BCR);
+    if (enable) {
+        // Enable low-power mode.
+        eth_phy_write(PHY_BCR, bcr | PHY_BCR_POWER_DOWN);
+        // Disable eth clock.
+        #if defined(STM32H7)
+        __HAL_RCC_ETH1MAC_CLK_DISABLE();
+        #else
+        __HAL_RCC_ETH_CLK_DISABLE();
+        #endif
+    } else {
+        // Disable low-power mode.
+        eth_phy_write(PHY_BCR, bcr & (~PHY_BCR_POWER_DOWN));
+    }
+}
 #endif // defined(MICROPY_HW_ETH_MDC)

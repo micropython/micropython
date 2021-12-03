@@ -33,12 +33,13 @@
 #include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
-#include "lib/utils/pyexec.h"
+#include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
@@ -406,6 +407,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 
+    #if MICROPY_PY_MACHINE_BITSTREAM
+    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
+    #endif
     #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
     #endif
@@ -430,6 +434,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_SPI
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_hard_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    #endif
+    #if MICROPY_HW_ENABLE_I2S
+    { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
@@ -461,4 +468,3 @@ const mp_obj_module_t machine_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
-

@@ -29,7 +29,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "lib/timeutils/timeutils.h"
+#include "shared/timeutils/timeutils.h"
 #include "inc/hw_types.h"
 #include "inc/hw_ints.h"
 #include "inc/hw_memmap.h"

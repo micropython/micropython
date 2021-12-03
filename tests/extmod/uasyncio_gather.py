@@ -22,8 +22,9 @@ async def factorial(name, number):
 
 async def task(id):
     print("start", id)
-    await asyncio.sleep(0.2)
+    await asyncio.sleep(0.02)
     print("end", id)
+    return id
 
 
 async def gather_task():
@@ -36,12 +37,17 @@ async def main():
     # Simple gather with return values
     print(await asyncio.gather(factorial("A", 2), factorial("B", 3), factorial("C", 4)))
 
+    # Test return_exceptions, where one task is cancelled and the other finishes normally
+    tasks = [asyncio.create_task(task(1)), asyncio.create_task(task(2))]
+    tasks[0].cancel()
+    print(await asyncio.gather(*tasks, return_exceptions=True))
+
     # Cancel a multi gather
     # TODO doesn't work, Task should not forward cancellation from gather to sub-task
     # but rather CancelledError should cancel the gather directly, which will then cancel
     # all sub-tasks explicitly
     # t = asyncio.create_task(gather_task())
-    # await asyncio.sleep(0.1)
+    # await asyncio.sleep(0.01)
     # t.cancel()
     # await asyncio.sleep(0.01)
 

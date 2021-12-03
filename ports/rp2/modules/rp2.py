@@ -88,6 +88,10 @@ class PIOASMEmit:
     def side(self, value):
         self.num_sideset += 1
         if self.pass_ > 0:
+            if self.sideset_count == 0:
+                raise PIOASMError("no sideset")
+            elif value >= (1 << self.sideset_count):
+                raise PIOASMError("sideset too large")
             set_bit = 13 - self.sideset_count
             self.prog[_PROG_DATA][-1] |= self.sideset_opt << 12 | value << set_bit
         return self
@@ -269,17 +273,17 @@ def asm_pio(**kw):
 
 
 # sideset_count is inclusive of enable bit
-def asm_pio_encode(instr, sideset_count):
+def asm_pio_encode(instr, sideset_count, sideset_opt=False):
     emit = PIOASMEmit()
-    emit.delay_max = 31
     emit.sideset_count = sideset_count
-    if emit.sideset_count:
-        emit.delay_max >>= emit.sideset_count
+    emit.sideset_opt = sideset_opt != 0
+    emit.delay_max = 31 >> (emit.sideset_count + emit.sideset_opt)
     emit.pass_ = 1
     emit.num_instr = 0
     emit.num_sideset = 0
 
     gl = _pio_funcs
+    gl["word"] = emit.word
     gl["nop"] = emit.nop
     # gl["jmp"] = emit.jmp currently not supported
     gl["wait"] = emit.wait

@@ -30,7 +30,10 @@
 
 #include "py/objstr.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
+#include "extmod/misc.h"
 #include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
 #include "fsl_trng.h"
@@ -61,26 +64,54 @@ STATIC mp_obj_t os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 
-STATIC mp_obj_t os_urandom(mp_obj_t num) {
-    mp_int_t n = mp_obj_get_int(num);
-    static bool initialized = false;
-    vstr_t vstr;
-    vstr_init_len(&vstr, n);
+static bool initialized = false;
+
+STATIC void trng_start(void) {
+    trng_config_t trngConfig;
 
     if (!initialized) {
-        trng_config_t trngConfig;
-
         TRNG_GetDefaultConfig(&trngConfig);
         trngConfig.sampleMode = kTRNG_SampleModeVonNeumann;
 
         TRNG_Init(TRNG, &trngConfig);
         initialized = true;
     }
+}
+
+uint32_t trng_random_u32(void) {
+    uint32_t rngval;
+
+    trng_start();
+    TRNG_GetRandomData(TRNG, (uint8_t *)&rngval, 4);
+    return rngval;
+}
+
+STATIC mp_obj_t os_urandom(mp_obj_t num) {
+    mp_int_t n = mp_obj_get_int(num);
+    vstr_t vstr;
+    vstr_init_len(&vstr, n);
+
+    trng_start();
     TRNG_GetRandomData(TRNG, vstr.buf, n);
 
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
+
+#if MICROPY_PY_OS_DUPTERM
+STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
+    (void)obj_in;
+    for (;;) {
+        int c = mp_uos_dupterm_rx_chr();
+        if (c < 0) {
+            break;
+        }
+        ringbuf_put(&stdin_ringbuf, c);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
+#endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
@@ -104,6 +135,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     #if MICROPY_PY_OS_DUPTERM
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
     #endif
 
     #if MICROPY_VFS

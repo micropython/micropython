@@ -741,7 +741,7 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
     unsigned long long uval;
     if (is_signed && val < 0) {
         z->neg = 1;
-        uval = -val;
+        uval = -(unsigned long long)val;
     } else {
         z->neg = 0;
         uval = val;

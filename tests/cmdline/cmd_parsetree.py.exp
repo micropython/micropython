@@ -1,6 +1,6 @@
 ----------------
-[   4] \(rule\|file_input_2\)(1) (n=9)
-         tok(4)
+[   4] \(rule\|file_input_2\)(1) (n=10)
+         tok(6)
 [   4]   \(rule\|for_stmt\)(22) (n=4)
            id(i)
 [   4]     \(rule\|atom_paren\)(45) (n=1)
@@ -9,7 +9,7 @@
            NULL
 [   6]   \(rule\|expr_stmt\)(5) (n=2)
            id(a)
-           tok(14)
+           tok(16)
 [   7]   \(rule\|expr_stmt\)(5) (n=2)
            id(b)
            str(str)
@@ -28,6 +28,16 @@
 [  12]   \(rule\|expr_stmt\)(5) (n=2)
            id(g)
            int(123)
+[  13]   \(rule\|expr_stmt\)(5) (n=2)
+           id(h)
+[  13]     \(rule\|atom_expr_normal\)(44) (n=2)
+[  13]       literal const(\.\+)
+[  13]       \(rule\|atom_expr_trailers\)(142) (n=2)
+[  13]         \(rule\|trailer_period\)(50) (n=1)
+                 id(format)
+[  13]         \(rule\|trailer_paren\)(48) (n=1)
+[  13]           \(rule\|arglist\)(164) (n=1)
+                   id(b)
 ----------------
 File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
 Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
@@ -46,6 +56,7 @@ arg names:
   bc=32 line=10
   bc=37 line=11
   bc=42 line=12
+  bc=48 line=13
 00 BUILD_TUPLE 0
 02 GET_ITER_STACK
 03 FOR_ITER 12
@@ -65,8 +76,13 @@ arg names:
 39 STORE_NAME f
 42 LOAD_CONST_SMALL_INT 123
 45 STORE_NAME g
-48 LOAD_CONST_NONE
-49 RETURN_VALUE
+48 LOAD_CONST_OBJ \.\+
+50 LOAD_METHOD format
+53 LOAD_NAME b
+56 CALL_METHOD n=1 nkw=0
+58 STORE_NAME h
+61 LOAD_CONST_NONE
+62 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+

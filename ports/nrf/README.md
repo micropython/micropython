@@ -110,12 +110,56 @@ To use frozen modules, put them in a directory (e.g. `freeze/`) and supply
 
      make BOARD=pca10040 FROZEN_MPY_DIR=freeze
 
+## Compile with freeze manifest
+
+Freeze manifests can be used by definining `FROZEN_MANIFEST` pointing to a
+`manifest.py`. This can either be done by a `make` invocation or by defining
+it in the specific target board's `mpconfigboard.mk`.
+
+For example:
+
+    make BOARD=pca10040 FROZEN_MANIFEST=path/to/manifest.py
+
+In case of using the target board's makefile, add a line similar to this:
+
+    FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
+
+In these two examples, the manual `make` invocation will have precedence.
+
 ## Enable MICROPY_VFS_FAT
 As the `oofatfs` module is not having header guards that can exclude the implementation compile time, this port provides a flag to enable it explicitly. The MICROPY_VFS_FAT is by default set to 0 and has to be set to 1 if `oofatfs` files should be compiled. This will be in addition of setting `MICROPY_VFS` in mpconfigport.h.
 
 For example:
 
      make BOARD=pca10040 MICROPY_VFS_FAT=1
+
+## Enable MICROPY_VFS_LFS1 or MICROPY_VFS_LFS2
+
+In order to enable `littlefs` as device flash filesystem, `MICROPY_VFS_LFS1`
+or `MICROPY_VFS_LFS2` can be set. This will be in addition of setting
+`MICROPY_VFS` in mpconfigport.h or mpconfigboard.h.
+
+For example:
+
+    make BOARD=pca10056 MICROPY_VFS_LFS2=1
+
+## Set file system size
+
+The size of the file system on the internal flash is configured by the linker
+script parameter `_fs_size`. This can either be overriden by the linker script
+or dynamically through the makefile. By seting a value to the `FS_SIZE`.
+The number will be passed directly to the linker scripts in order to calculate
+the start and end of the file system. Note that the parameter value must be in
+linker script syntax as it is passed directly.
+
+For example, if we want to override the default file system size set by the
+linker scripts to use 256K:
+
+    make BOARD=pca10056 MICROPY_VFS_LFS2=1 FS_SIZE=256K
+
+Also note that changing this size between builds might cause loss of files
+present from a previous firmware as it will format the file system due to a new
+location.
 
 ## Target Boards and Make Flags
 

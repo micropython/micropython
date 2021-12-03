@@ -30,7 +30,7 @@
 #include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
-#include "lib/utils/gchelper.h"
+#include "shared/runtime/gchelper.h"
 #include "gccollect.h"
 #include "softtimer.h"
 #include "systick.h"

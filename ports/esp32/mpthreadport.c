@@ -59,14 +59,19 @@ STATIC thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
 void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_set_state(&mp_state_ctx.thread);
     // create the first entry in the linked list of all threads
-    thread = &thread_entry0;
-    thread->id = xTaskGetCurrentTaskHandle();
-    thread->ready = 1;
-    thread->arg = NULL;
-    thread->stack = stack;
-    thread->stack_len = stack_len;
-    thread->next = NULL;
+    thread_entry0.id = xTaskGetCurrentTaskHandle();
+    thread_entry0.ready = 1;
+    thread_entry0.arg = NULL;
+    thread_entry0.stack = stack;
+    thread_entry0.stack_len = stack_len;
+    thread_entry0.next = NULL;
     mp_thread_mutex_init(&thread_mutex);
+
+    // memory barrier to ensure above data is committed
+    __sync_synchronize();
+
+    // vPortCleanUpTCB needs the thread ready after thread_mutex is ready
+    thread = &thread_entry0;
 }
 
 void mp_thread_gc_others(void) {

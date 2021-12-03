@@ -1,7 +1,3 @@
-# By default this board is configured to use mboot with packing (signing and encryption)
-# enabled.  Mboot must be deployed first.
-USE_MBOOT ?= 1
-
 MCU_SERIES = wb
 CMSIS_MCU = STM32WB55xx
 AF_FILE = boards/stm32wb55_af.csv
@@ -21,6 +17,3 @@ endif
 MICROPY_PY_BLUETOOTH = 1
 MICROPY_BLUETOOTH_NIMBLE = 1
 MICROPY_VFS_LFS2 = 1
-
-# Mboot settings
-MBOOT_ENABLE_PACKING = 1

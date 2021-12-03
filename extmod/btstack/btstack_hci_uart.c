@@ -86,6 +86,7 @@ STATIC int btstack_uart_open(void) {
 
 STATIC int btstack_uart_close(void) {
     mp_bluetooth_hci_controller_deinit();
+    mp_bluetooth_hci_uart_deinit();
     return 0;
 }
 

@@ -43,7 +43,7 @@
 #define MICROPY_VFS                 (0)
 #endif
 #define MICROPY_ALLOC_PATH_MAX      (512)
-#define MICROPY_PERSISTENT_CODE_LOAD (0)
+#define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_COMP_MODULE_CONST   (0)
 #define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (0)
 #define MICROPY_READER_VFS          (MICROPY_VFS)
@@ -55,7 +55,6 @@
 #define MICROPY_REPL_EMACS_KEYS     (0)
 #define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (0)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #if NRF51
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
@@ -67,7 +66,6 @@
 #endif
 
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
 #define MICROPY_OPT_MPZ_BITWISE     (0)
 
 // fatfs configuration used in ffconf.h
@@ -75,7 +73,13 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_USE_LABEL        (1)
 #define MICROPY_FATFS_RPATH            (2)
-#define MICROPY_FATFS_MULTI_PARTITION  (1)
+#define MICROPY_FATFS_MULTI_PARTITION  (0)
+
+#if NRF51
+    #define MICROPY_FATFS_MAX_SS       (1024)
+#else
+    #define MICROPY_FATFS_MAX_SS       (4096)
+#endif
 
 // TODO these should be generic, not bound to fatfs
 #define mp_type_fileio fatfs_type_fileio
@@ -98,7 +102,7 @@
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (0)
+#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (0)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (0)
 #define MICROPY_PY_BUILTINS_STR_SPLITLINES (0)
@@ -120,7 +124,7 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (0)
 #define MICROPY_PY_CMATH            (0)
 #define MICROPY_PY_IO               (0)
-#define MICROPY_PY_IO_FILEIO        (0)
+#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_UCTYPES          (0)
@@ -131,6 +135,7 @@
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (0)
+#define MICROPY_PY_MACHINE_SOFTI2C  (MICROPY_PY_MACHINE_I2C)
 #define MICROPY_PY_MACHINE_SPI      (0)
 #define MICROPY_PY_MACHINE_SPI_MIN_DELAY (0)
 #define MICROPY_PY_FRAMEBUF         (0)
@@ -179,6 +184,10 @@
 #define MICROPY_PY_TIME_TICKS       (1)
 #endif
 
+#ifndef MICROPY_PY_NRF
+#define MICROPY_PY_NRF              (0)
+#endif
+
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
@@ -212,10 +221,17 @@ typedef long mp_off_t;
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t board_module;
 extern const struct _mp_obj_module_t machine_module;
+extern const struct _mp_obj_module_t nrf_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
+
+#if MICROPY_PY_NRF
+#define NRF_MODULE                          { MP_ROM_QSTR(MP_QSTR_nrf), MP_ROM_PTR(&nrf_module) },
+#else
+#define NRF_MODULE
+#endif
 
 #if MICROPY_PY_UBLUEPY
 #define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
@@ -255,6 +271,7 @@ extern const struct _mp_obj_module_t ble_module;
     MUSIC_MODULE \
     UBLUEPY_MODULE \
     MICROPY_BOARD_BUILTINS \
+    NRF_MODULE \
 
 
 #else
@@ -266,6 +283,7 @@ extern const struct _mp_obj_module_t ble_module;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
     MICROPY_BOARD_BUILTINS \
+    NRF_MODULE \
 
 
 #endif // BLUETOOTH_SD
@@ -330,3 +348,7 @@ extern const struct _mp_obj_module_t ble_module;
 #include <alloca.h>
 
 #define MICROPY_PIN_DEFS_PORT_H "pin_defs_nrf5.h"
+
+#ifndef MP_NEED_LOG2
+#define MP_NEED_LOG2                (1)
+#endif

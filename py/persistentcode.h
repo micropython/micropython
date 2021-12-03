@@ -41,16 +41,15 @@
 #define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
 #define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
 
-// The feature flag bits encode the compile-time config options that
-// affect the generate bytecode.
+// The feature flag bits encode the compile-time config options that affect
+// the generate bytecode. Note: position 0 is now unused
+// (formerly MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE).
 #define MPY_FEATURE_FLAGS ( \
-    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
+    ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
     )
 // This is a version of the flags that can be configured at runtime.
 #define MPY_FEATURE_FLAGS_DYNAMIC ( \
-    ((MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE_DYNAMIC) << 0) \
-    | ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
+    ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
     )
 
 // Define the host architecture

@@ -334,8 +334,8 @@ int mp_bluetooth_gatts_register_service_end(void);
 
 // Read the value from the local gatts db (likely this has been written by a central).
 int mp_bluetooth_gatts_read(uint16_t value_handle, uint8_t **value, size_t *value_len);
-// Write a value to the local gatts db (ready to be queried by a central).
-int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len);
+// Write a value to the local gatts db (ready to be queried by a central). Optionally send notifications/indications.
+int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len, bool send_update);
 // Notify the central that it should do a read.
 int mp_bluetooth_gatts_notify(uint16_t conn_handle, uint16_t value_handle);
 // Notify the central, including a data payload. (Note: does not set the gatts db value).
@@ -370,10 +370,14 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
 int mp_bluetooth_gap_scan_stop(void);
 
 // Connect to a found peripheral.
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms);
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us);
 #endif
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+
+// Cancel in-progress connection to a peripheral.
+int mp_bluetooth_gap_peripheral_connect_cancel(void);
+
 // Find all primary services on the connected peripheral.
 int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid);
 

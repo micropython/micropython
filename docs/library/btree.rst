@@ -22,7 +22,7 @@ Example::
 
     # First, we need to open a stream which holds a database
     # This is usually a file, but can be in-memory database
-    # using uio.BytesIO, a raw flash partition, etc.
+    # using io.BytesIO, a raw flash partition, etc.
     # Oftentimes, you want to create a database file if it doesn't
     # exist and open if it exists. Idiom below takes care of this.
     # DO NOT open database with "a+b" access mode.

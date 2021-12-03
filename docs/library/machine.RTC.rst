@@ -10,8 +10,8 @@ and time.
 Example usage::
 
     rtc = machine.RTC()
-    rtc.init((2014, 5, 1, 4, 13, 0, 0, 0))
-    print(rtc.now())
+    rtc.datetime((2020, 1, 21, 2, 10, 32, 36, 0))
+    print(rtc.datetime())
 
 
 Constructors
@@ -23,6 +23,20 @@ Constructors
 
 Methods
 -------
+
+.. method:: RTC.datetime([datetimetuple])
+
+   Get or set the date and time of the RTC.
+
+   With no arguments, this method returns an 8-tuple with the current
+   date and time.  With 1 argument (being an 8-tuple) it sets the date
+   and time.
+
+   The 8-tuple has the following format:
+
+       (year, month, day, weekday, hours, minutes, seconds, subseconds)
+
+   The meaning of the ``subseconds`` field is hardware dependent.
 
 .. method:: RTC.init(datetime)
 

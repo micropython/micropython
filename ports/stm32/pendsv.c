@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include "py/runtime.h"
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 #include "pendsv.h"
 #include "irq.h"
 
@@ -60,10 +60,10 @@ void pendsv_init(void) {
 // the given exception object using nlr_jump in the context of the top-level
 // thread.
 void pendsv_kbd_intr(void) {
-    if (MP_STATE_VM(mp_pending_exception) == MP_OBJ_NULL) {
+    if (MP_STATE_MAIN_THREAD(mp_pending_exception) == MP_OBJ_NULL) {
         mp_sched_keyboard_interrupt();
     } else {
-        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
+        MP_STATE_MAIN_THREAD(mp_pending_exception) = MP_OBJ_NULL;
         pendsv_object = &MP_STATE_VM(mp_kbd_exception);
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     }

@@ -22,11 +22,11 @@ jobs:
     - name: Build
       run: source tools/ci.sh && ci_esp32_build
 
-  build_idf43:
+  build_idf44:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - name: Install packages
-      run: source tools/ci.sh && ci_esp32_idf43_setup
+      run: source tools/ci.sh && ci_esp32_idf44_setup
     - name: Build
       run: source tools/ci.sh && ci_esp32_build

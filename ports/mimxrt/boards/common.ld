@@ -45,12 +45,19 @@ MEMORY
   m_itcm         (RX) : ORIGIN = itcm_start,            LENGTH = itcm_size
   m_dtcm         (RW) : ORIGIN = dtcm_start,            LENGTH = dtcm_size
   m_ocrm         (RW) : ORIGIN = ocrm_start,            LENGTH = ocrm_size
+
+  #ifdef MICROPY_HW_SDRAM_AVAIL
+  m_sdram        (RX) : ORIGIN = sdram_start,           LENGTH = sdram_size
+  #endif
 }
 
 /* Define output sections */
 SECTIONS
 {
   __flash_start = flash_start;
+  #ifdef MICROPY_HW_SDRAM_AVAIL
+  __sdram_start = sdram_start;
+  #endif
   __vfs_start = ORIGIN(m_vfs);
   __vfs_end = __vfs_start + LENGTH(m_vfs);  
   
@@ -89,7 +96,7 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    *(EXCLUDE_FILE(*fsl_flexspi.o) .text*) /* .text* sections (code) */
+    *(EXCLUDE_FILE(*fsl_flexspi.o *gc*.o *vm.o *parse.o *runtime*.o *mpirq.o *map.o) .text*) /* .text* sections (code) */
     *(.rodata)               /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)              /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)               /* glue arm to thumb code */
@@ -178,12 +185,14 @@ SECTIONS
     . = ALIGN(4);
     __DATA_RAM = .;
     __data_start__ = .;      /* create a global symbol at data start */
+    __data_section_table = .;
     *(m_usb_dma_init_data)
     *(.data)                 /* .data sections */
     *(.data*)                /* .data* sections */
     KEEP(*(.jcr*))
     . = ALIGN(4);
     __data_end__ = .;        /* define a global symbol at data end */
+    __data_section_table_end = .;
   } > m_dtcm
 
   __RAM_FUNCTIONS_ROM = __DATA_ROM + (__data_end__ - __data_start__);
@@ -191,8 +200,9 @@ SECTIONS
   {
     . = ALIGN(4);
     __ram_function_start__ = .;
-    *fsl_flexspi.o(.text*)
     *(.ram_functions*)
+    /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
+    *(.text*)
     . = ALIGN(4);
     __ram_function_end__ = .;
   } > m_itcm  
@@ -224,12 +234,14 @@ SECTIONS
     . = ALIGN(4);
     __START_BSS = .;
     __bss_start__ = .;
+    __bss_section_table = .;
     *(m_usb_dma_noninit_data)
     *(.bss)
     *(.bss*)
     *(COMMON)
     . = ALIGN(4);
     __bss_end__ = .;
+    __bss_section_table_end = .;
     __END_BSS = .;
   } > m_dtcm
 
@@ -253,6 +265,7 @@ SECTIONS
   /* Initializes stack on the end of block */
   __StackTop   = ORIGIN(m_dtcm) + LENGTH(m_dtcm);
   __StackLimit = __StackTop - STACK_SIZE;
+  _vStackTop = __StackTop;
   PROVIDE(__stack = __StackTop);
 
   .ARM.attributes 0 : { *(.ARM.attributes) }

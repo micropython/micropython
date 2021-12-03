@@ -1,19 +1,19 @@
 .. currentmodule:: pyb
 .. _pyb.SPI:
 
-class SPI -- a master-driven serial protocol
-============================================
+class SPI -- a controller-driven serial protocol
+================================================
 
-SPI is a serial protocol that is driven by a master.  At the physical level
+SPI is a serial protocol that is driven by a controller.  At the physical level
 there are 3 lines: SCK, MOSI, MISO.
 
 See usage model of I2C; SPI is very similar.  Main difference is
 parameters to init the SPI bus::
 
     from pyb import SPI
-    spi = SPI(1, SPI.MASTER, baudrate=600000, polarity=1, phase=0, crc=0x7)
+    spi = SPI(1, SPI.CONTROLLER, baudrate=600000, polarity=1, phase=0, crc=0x7)
 
-Only required parameter is mode, SPI.MASTER or SPI.SLAVE.  Polarity can be
+Only required parameter is mode, SPI.CONTROLLER or SPI.PERIPHERAL.  Polarity can be
 0 or 1, and is the level the idle clock line sits at.  Phase can be 0 or 1
 to sample data on the first or second clock edge respectively.  Crc can be
 None for no CRC, or a polynomial specifier.
@@ -55,8 +55,8 @@ Methods
 
    Initialise the SPI bus with the given parameters:
 
-     - ``mode`` must be either ``SPI.MASTER`` or ``SPI.SLAVE``.
-     - ``baudrate`` is the SCK clock rate (only sensible for a master).
+     - ``mode`` must be either ``SPI.CONTROLLER`` or ``SPI.PERIPHERAL``.
+     - ``baudrate`` is the SCK clock rate (only sensible for a controller).
      - ``prescaler`` is the prescaler to use to derive SCK from the APB bus frequency;
        use of ``prescaler`` overrides ``baudrate``.
      - ``polarity`` can be 0 or 1, and is the level the idle clock line sits at.
@@ -112,10 +112,10 @@ Methods
 Constants
 ---------
 
-.. data:: SPI.MASTER
-.. data:: SPI.SLAVE
+.. data:: SPI.CONTROLLER
+.. data:: SPI.PERIPHERAL
 
-   for initialising the SPI bus to master or slave mode
+   for initialising the SPI bus to controller or peripheral mode
 
 .. data:: SPI.LSB
 .. data:: SPI.MSB

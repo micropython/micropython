@@ -52,8 +52,6 @@ typedef struct _esp32_rmt_obj_t {
     uint8_t channel_id;
     gpio_num_t pin;
     uint8_t clock_div;
-    uint16_t carrier_duty_percent;
-    uint32_t carrier_freq;
     mp_uint_t num_items;
     rmt_item32_t *items;
     bool loop_en;
@@ -64,24 +62,16 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_id,        MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_pin,       MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_clock_div,                   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} }, // 100ns resolution
-        { MP_QSTR_carrier_duty_percent,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 50} },
-        { MP_QSTR_carrier_freq,                MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_idle_level,                  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} }, // low voltage
+        { MP_QSTR_tx_carrier,                  MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // no carrier
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     mp_uint_t channel_id = args[0].u_int;
     gpio_num_t pin_id = machine_pin_get_id(args[1].u_obj);
     mp_uint_t clock_div = args[2].u_int;
-
-    bool carrier_en = false;
-    mp_uint_t carrier_duty_percent = 0;
-    mp_uint_t carrier_freq = 0;
-
-    if (args[4].u_int > 0) {
-        carrier_en = true;
-        carrier_duty_percent = args[3].u_int;
-        carrier_freq = args[4].u_int;
-    }
+    mp_uint_t idle_level = args[3].u_bool;
+    mp_obj_t tx_carrier_obj = args[4].u_obj;
 
     if (clock_div < 1 || clock_div > 255) {
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
@@ -92,8 +82,6 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     self->channel_id = channel_id;
     self->pin = pin_id;
     self->clock_div = clock_div;
-    self->carrier_duty_percent = carrier_duty_percent;
-    self->carrier_freq = carrier_freq;
     self->loop_en = false;
 
     rmt_config_t config = {0};
@@ -103,12 +91,30 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.mem_block_num = 1;
     config.tx_config.loop_en = 0;
 
-    config.tx_config.carrier_en = carrier_en;
+    if (tx_carrier_obj != mp_const_none) {
+        mp_obj_t *tx_carrier_details = NULL;
+        mp_obj_get_array_fixed_n(tx_carrier_obj, 3, &tx_carrier_details);
+        mp_uint_t frequency = mp_obj_get_int(tx_carrier_details[0]);
+        mp_uint_t duty = mp_obj_get_int(tx_carrier_details[1]);
+        mp_uint_t level = mp_obj_is_true(tx_carrier_details[2]);
+
+        if (frequency == 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("tx_carrier frequency must be >0"));
+        }
+        if (duty > 100) {
+            mp_raise_ValueError(MP_ERROR_TEXT("tx_carrier duty must be 0..100"));
+        }
+
+        config.tx_config.carrier_en = 1;
+        config.tx_config.carrier_freq_hz = frequency;
+        config.tx_config.carrier_duty_percent = duty;
+        config.tx_config.carrier_level = level;
+    } else {
+        config.tx_config.carrier_en = 0;
+    }
+
     config.tx_config.idle_output_en = 1;
-    config.tx_config.idle_level = 0;
-    config.tx_config.carrier_duty_percent = self->carrier_duty_percent;
-    config.tx_config.carrier_freq_hz = self->carrier_freq;
-    config.tx_config.carrier_level = 1;
+    config.tx_config.idle_level = idle_level;
 
     config.clk_div = self->clock_div;
 
@@ -121,14 +127,11 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
 STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->pin != -1) {
-        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u",
-            self->channel_id, self->pin, APB_CLK_FREQ, self->clock_div);
-        if (self->carrier_freq > 0) {
-            mp_printf(print, ", carrier_freq=%u, carrier_duty_percent=%u)",
-                self->carrier_freq, self->carrier_duty_percent);
-        } else {
-            mp_printf(print, ")");
-        }
+        bool idle_output_en;
+        rmt_idle_level_t idle_level;
+        check_esp_err(rmt_get_idle_level(self->channel_id, &idle_output_en, &idle_level));
+        mp_printf(print, "RMT(channel=%u, pin=%u, source_freq=%u, clock_div=%u, idle_level=%u)",
+            self->channel_id, self->pin, APB_CLK_FREQ, self->clock_div, idle_level);
     } else {
         mp_printf(print, "RMT()");
     }
@@ -162,7 +165,7 @@ STATIC mp_obj_t esp32_rmt_clock_div(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_clock_div_obj, esp32_rmt_clock_div);
 
 // Query whether the channel has finished sending pulses. Takes an optional
-// timeout (in ticks of the 80MHz clock), returning true if the pulse stream has
+// timeout (in milliseconds), returning true if the pulse stream has
 // completed or false if they are still transmitting (or timeout is reached).
 STATIC mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
@@ -175,7 +178,7 @@ STATIC mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_
 
     esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
 
-    esp_err_t err = rmt_wait_tx_done(self->channel_id, args[1].u_int);
+    esp_err_t err = rmt_wait_tx_done(self->channel_id, args[1].u_int / portTICK_PERIOD_MS);
     return err == ESP_OK ? mp_const_true : mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_wait_done_obj, 1, esp32_rmt_wait_done);
@@ -195,41 +198,63 @@ STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_rmt_loop_obj, esp32_rmt_loop);
 
-STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_self,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_pulses, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_start,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
-    };
+STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
+    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t duration_obj = args[1];
+    mp_obj_t data_obj = n_args > 2 ? args[2] : mp_const_true;
 
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_uint_t duration = 0;
+    size_t duration_length = 0;
+    mp_obj_t *duration_ptr = NULL;
+    mp_uint_t data = 0;
+    size_t data_length = 0;
+    mp_obj_t *data_ptr = NULL;
+    mp_uint_t num_pulses = 0;
 
-    esp32_rmt_obj_t *self = MP_OBJ_TO_PTR(args[0].u_obj);
-    mp_obj_t pulses = args[1].u_obj;
-    mp_uint_t start = args[2].u_int;
-
-    if (start > 1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("start must be 0 or 1"));
+    if (!(mp_obj_is_type(data_obj, &mp_type_tuple) || mp_obj_is_type(data_obj, &mp_type_list))) {
+        // Mode 1: array of durations, toggle initial data value
+        mp_obj_get_array(duration_obj, &duration_length, &duration_ptr);
+        data = mp_obj_is_true(data_obj);
+        num_pulses = duration_length;
+    } else if (mp_obj_is_int(duration_obj)) {
+        // Mode 2: constant duration, array of data values
+        duration = mp_obj_get_int(duration_obj);
+        mp_obj_get_array(data_obj, &data_length, &data_ptr);
+        num_pulses = data_length;
+    } else {
+        // Mode 3: arrays of durations and data values
+        mp_obj_get_array(duration_obj, &duration_length, &duration_ptr);
+        mp_obj_get_array(data_obj, &data_length, &data_ptr);
+        if (duration_length != data_length) {
+            mp_raise_ValueError(MP_ERROR_TEXT("duration and data must have same length"));
+        }
+        num_pulses = duration_length;
     }
 
-    size_t pulses_length = 0;
-    mp_obj_t *pulses_ptr = NULL;
-    mp_obj_get_array(pulses, &pulses_length, &pulses_ptr);
+    if (num_pulses == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("No pulses"));
+    }
+    if (self->loop_en && num_pulses > 126) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Too many pulses for loop"));
+    }
 
-    mp_uint_t num_items = (pulses_length / 2) + (pulses_length % 2);
+    mp_uint_t num_items = (num_pulses / 2) + (num_pulses % 2);
     if (num_items > self->num_items) {
         self->items = (rmt_item32_t *)m_realloc(self->items, num_items * sizeof(rmt_item32_t *));
         self->num_items = num_items;
     }
 
-    for (mp_uint_t item_index = 0; item_index < num_items; item_index++) {
-        mp_uint_t pulse_index = item_index * 2;
-        self->items[item_index].duration0 = mp_obj_get_int(pulses_ptr[pulse_index++]);
-        self->items[item_index].level0 = start++; // Note that start _could_ wrap.
-        if (pulse_index < pulses_length) {
-            self->items[item_index].duration1 = mp_obj_get_int(pulses_ptr[pulse_index]);
-            self->items[item_index].level1 = start++;
+    for (mp_uint_t item_index = 0, pulse_index = 0; item_index < num_items; item_index++) {
+        self->items[item_index].duration0 = duration_length ? mp_obj_get_int(duration_ptr[pulse_index]) : duration;
+        self->items[item_index].level0 = data_length ? mp_obj_is_true(data_ptr[pulse_index]) : data++;
+        pulse_index++;
+        if (pulse_index < num_pulses) {
+            self->items[item_index].duration1 = duration_length ? mp_obj_get_int(duration_ptr[pulse_index]) : duration;
+            self->items[item_index].level1 = data_length ? mp_obj_is_true(data_ptr[pulse_index]) : data++;
+            pulse_index++;
+        } else {
+            self->items[item_index].duration1 = 0;
+            self->items[item_index].level1 = 0;
         }
     }
 
@@ -241,18 +266,18 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, 
             check_esp_err(rmt_set_tx_loop_mode(self->channel_id, false));
         }
         check_esp_err(rmt_wait_tx_done(self->channel_id, portMAX_DELAY));
-        check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
     }
 
-    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false /* non-blocking */));
+    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
 
     if (self->loop_en) {
+        check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
         check_esp_err(rmt_set_tx_loop_mode(self->channel_id, true));
     }
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_rmt_write_pulses_obj, 2, esp32_rmt_write_pulses);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_write_pulses_obj, 2, 3, esp32_rmt_write_pulses);
 
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },

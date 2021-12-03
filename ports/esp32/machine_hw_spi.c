@@ -53,6 +53,13 @@
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
+#if CONFIG_IDF_TARGET_ESP32C3
+#define HSPI_HOST SPI2_HOST
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define HSPI_HOST SPI3_HOST
+#define FSPI_HOST SPI2_HOST
+#endif
+
 typedef struct _machine_hw_spi_default_pins_t {
     int8_t sck;
     int8_t mosi;
@@ -144,9 +151,13 @@ STATIC void machine_hw_spi_init_internal(
         changed = true;
     }
 
-    if (baudrate != -1 && baudrate != self->baudrate) {
-        self->baudrate = baudrate;
-        changed = true;
+    if (baudrate != -1) {
+        // calculate the actual clock frequency that the SPI peripheral can produce
+        baudrate = spi_get_actual_clock(APB_CLK_FREQ, baudrate, 0);
+        if (baudrate != self->baudrate) {
+            self->baudrate = baudrate;
+            changed = true;
+        }
     }
 
     if (polarity != -1 && polarity != self->polarity) {
@@ -185,6 +196,9 @@ STATIC void machine_hw_spi_init_internal(
     }
 
     if (self->host != HSPI_HOST
+        #ifdef FSPI_HOST
+        && self->host != FSPI_HOST
+        #endif
         #ifdef VSPI_HOST
         && self->host != VSPI_HOST
         #endif
@@ -213,7 +227,7 @@ STATIC void machine_hw_spi_init_internal(
         .clock_speed_hz = self->baudrate,
         .mode = self->phase | (self->polarity << 1),
         .spics_io_num = -1, // No CS pin
-        .queue_size = 1,
+        .queue_size = 2,
         .flags = self->firstbit == MICROPY_PY_MACHINE_SPI_LSB ? SPI_DEVICE_TXBIT_LSBFIRST | SPI_DEVICE_RXBIT_LSBFIRST : 0,
         .pre_cb = NULL
     };
@@ -223,7 +237,15 @@ STATIC void machine_hw_spi_init_internal(
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
+        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+        dma_chan = 3;
+        #else
         dma_chan = 1;
+        #endif
+    #ifdef FSPI_HOST
+    } else if (self->host == FSPI_HOST) {
+        dma_chan = 1;
+    #endif
     #ifdef VSPI_HOST
     } else if (self->host == VSPI_HOST) {
         dma_chan = 2;
@@ -269,6 +291,17 @@ STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
     }
 }
 
+STATIC mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
+    while (x != y) {
+        if (x > y) {
+            x -= y;
+        } else {
+            y -= x;
+        }
+    }
+    return x;
+}
+
 STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -277,13 +310,16 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
         return;
     }
 
-    struct spi_transaction_t transaction = { 0 };
-
     // Round to nearest whole set of bits
     int bits_to_send = len * 8 / self->bits * self->bits;
 
+    if (!bits_to_send) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer too short"));
+    }
 
     if (len <= 4) {
+        spi_transaction_t transaction = { 0 };
+
         if (src != NULL) {
             memcpy(&transaction.tx_data, src, len);
         }
@@ -298,26 +334,46 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     } else {
         int offset = 0;
         int bits_remaining = bits_to_send;
+        int optimum_word_size = 8 * self->bits / gcd(8, self->bits);
+        int max_transaction_bits = MP_HW_SPI_MAX_XFER_BITS / optimum_word_size * optimum_word_size;
+        spi_transaction_t *transaction, *result, transactions[2];
+        int i = 0;
+
+        spi_device_acquire_bus(self->spi, portMAX_DELAY);
 
         while (bits_remaining) {
-            memset(&transaction, 0, sizeof(transaction));
+            transaction = transactions + i++ % 2;
+            memset(transaction, 0, sizeof(spi_transaction_t));
 
-            transaction.length =
-                bits_remaining > MP_HW_SPI_MAX_XFER_BITS ? MP_HW_SPI_MAX_XFER_BITS : bits_remaining;
+            transaction->length =
+                bits_remaining > max_transaction_bits ? max_transaction_bits : bits_remaining;
 
             if (src != NULL) {
-                transaction.tx_buffer = src + offset;
+                transaction->tx_buffer = src + offset;
             }
             if (dest != NULL) {
-                transaction.rx_buffer = dest + offset;
+                transaction->rx_buffer = dest + offset;
             }
 
-            spi_device_transmit(self->spi, &transaction);
-            bits_remaining -= transaction.length;
+            spi_device_queue_trans(self->spi, transaction, portMAX_DELAY);
+            bits_remaining -= transaction->length;
+
+            if (offset > 0) {
+                // wait for previously queued transaction
+                MP_THREAD_GIL_EXIT();
+                spi_device_get_trans_result(self->spi, &result, portMAX_DELAY);
+                MP_THREAD_GIL_ENTER();
+            }
 
             // doesn't need ceil(); loop ends when bits_remaining is 0
-            offset += transaction.length / 8;
+            offset += transaction->length / 8;
         }
+
+        // wait for last transaction
+        MP_THREAD_GIL_EXIT();
+        spi_device_get_trans_result(self->spi, &result, portMAX_DELAY);
+        MP_THREAD_GIL_ENTER();
+        spi_device_release_bus(self->spi);
     }
 }
 
@@ -411,6 +467,32 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     }
     self->base.type = &machine_hw_spi_type;
 
+    int8_t sck, mosi, miso;
+
+    if (args[ARG_sck].u_obj == MP_OBJ_NULL) {
+        sck = default_pins->sck;
+    } else if (args[ARG_sck].u_obj == mp_const_none) {
+        sck = -1;
+    } else {
+        sck = machine_pin_get_id(args[ARG_sck].u_obj);
+    }
+
+    if (args[ARG_mosi].u_obj == MP_OBJ_NULL) {
+        mosi = default_pins->mosi;
+    } else if (args[ARG_mosi].u_obj == mp_const_none) {
+        mosi = -1;
+    } else {
+        mosi = machine_pin_get_id(args[ARG_mosi].u_obj);
+    }
+
+    if (args[ARG_miso].u_obj == MP_OBJ_NULL) {
+        miso = default_pins->miso;
+    } else if (args[ARG_miso].u_obj == mp_const_none) {
+        miso = -1;
+    } else {
+        miso = machine_pin_get_id(args[ARG_miso].u_obj);
+    }
+
     machine_hw_spi_init_internal(
         self,
         args[ARG_id].u_int,
@@ -419,9 +501,9 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
         args[ARG_phase].u_int,
         args[ARG_bits].u_int,
         args[ARG_firstbit].u_int,
-        args[ARG_sck].u_obj == MP_OBJ_NULL ? default_pins->sck : machine_pin_get_id(args[ARG_sck].u_obj),
-        args[ARG_mosi].u_obj == MP_OBJ_NULL ? default_pins->mosi : machine_pin_get_id(args[ARG_mosi].u_obj),
-        args[ARG_miso].u_obj == MP_OBJ_NULL ? default_pins->miso : machine_pin_get_id(args[ARG_miso].u_obj));
+        sck,
+        mosi,
+        miso);
 
     return MP_OBJ_FROM_PTR(self);
 }

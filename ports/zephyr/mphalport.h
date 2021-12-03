@@ -1,5 +1,5 @@
 #include <zephyr.h>
-#include "lib/utils/interrupt_char.h"
+#include "shared/runtime/interrupt_char.h"
 
 void mp_hal_init(void);
 void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
@@ -33,10 +33,3 @@ static inline uint64_t mp_hal_time_ns(void) {
 }
 
 #define mp_hal_delay_us_fast(us)   (mp_hal_delay_us(us))
-
-// C-level pin API is not currently implemented
-#define MP_HAL_PIN_FMT             "%d"
-#define mp_hal_pin_name(p)         (0)
-#define mp_hal_pin_od_low(p)       (mp_raise_NotImplementedError("mp_hal_pin_od_low"))
-#define mp_hal_pin_od_high(p)      (mp_raise_NotImplementedError("mp_hal_pin_od_high"))
-#define mp_hal_pin_open_drain(p)   (mp_raise_NotImplementedError("mp_hal_pin_open_drain"))

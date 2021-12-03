@@ -34,6 +34,26 @@ print(MyStopIteration().value)
 print(MyStopIteration(1).value)
 
 
+class Iter:
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        # This exception will stop the "yield from", with a value of 3
+        raise MyStopIteration(3)
+
+
+def gen():
+    print((yield from Iter()))
+    return 4
+
+
+try:
+    next(gen())
+except StopIteration as er:
+    print(er.args)
+
+
 class MyOSError(OSError):
     pass
 
