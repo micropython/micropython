@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-11-29 12:53+0000\n"
+"PO-Revision-Date: 2021-12-04 12:51+0000\n"
 "Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -74,16 +74,17 @@ msgstr "%%c требует int или char"
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr ""
-"%d адресные выводы, %d rgb выводы и %d плитки указывают высоту %d а не %d"
+msgstr "%d адресные пины, %d rgb пины и %d плитки указывают высоту %d а не %d"
 
 #: shared-bindings/microcontroller/Pin.c
+#, fuzzy
 msgid "%q and %q contain duplicate pins"
-msgstr "%q и %q содержат повторяющиеся выводы"
+msgstr "%q и %q содержат пины-дупликаты"
 
 #: shared-bindings/microcontroller/Pin.c
+#, fuzzy
 msgid "%q contains duplicate pins"
-msgstr "%q содержит повторяющиеся выводы"
+msgstr "%q содержит пины-дупликаты"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -170,7 +171,7 @@ msgstr "%q вне диапазона"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr "Вывод %q не допустим"
+msgstr "Пин %q не допустим"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -434,7 +435,7 @@ msgstr "Все каналы событий синхронизации уже и�
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Все таймеры для этого вывода уже используются"
+msgstr "Все таймеры для этого Пина уже используются"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -472,7 +473,7 @@ msgstr "Поиск сетей wifi уже происходит"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr "AnalogIn не поддерживается на данном выводе"
+msgstr "AnalogIn не поддерживается на данном пине"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -487,7 +488,7 @@ msgstr "AnalogOut имеет только 16 бит. Значение должн
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut не поддерживается на данном выводе"
+msgstr "AnalogOut не поддерживается на данном пине"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -556,8 +557,7 @@ msgstr "Ниже минимальной частоты кадров"
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
 msgstr ""
-"Битовый тактовый генератор и выбор слова должны быть последовательными "
-"выводами"
+"Битовый тактовый генератор и выбор слова должны быть последовательными пинами"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -588,7 +588,7 @@ msgstr "Для управления потоком требуется как RX,
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr "Оба вывода должны поддерживать аппаратные прерывания"
+msgstr "Оба пина должны поддерживать аппаратные прерывания"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -663,7 +663,7 @@ msgstr "Буферы должны быть одинакового размера
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
-msgstr "Вывод шины %d уже используется"
+msgstr "Пин шины %d уже используется"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -687,7 +687,7 @@ msgstr "Вызовите super().__init__() перед обращением к �
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "Сигнал из глубокого сна может подаваться только на выводе RTC IO."
+msgstr "Сигнал из глубокого сна может подаваться только на пине RTC IO."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
@@ -1265,8 +1265,9 @@ msgid "Insufficient encryption"
 msgstr "Недостаточное шифрование"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#, fuzzy
 msgid "Interface must be started"
-msgstr ""
+msgstr "Интерфейс должен быть запущен"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
@@ -1561,9 +1562,9 @@ msgstr ""
 "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
+#, c-format, fuzzy
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе вывода"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1687,7 +1688,7 @@ msgstr "Свободные GCLK отсутствуют"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
-msgstr ""
+msgstr "Отсутствует аппаратный генератор случайных чисел"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
@@ -1705,7 +1706,7 @@ msgstr "Нет in в программе"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "В программе отсутствует ввод или вывод"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1718,7 +1719,7 @@ msgstr "Нет поддержки длинных целых чисел (long int
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "Допускается не более %d HID устройств"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -1726,7 +1727,7 @@ msgstr "Нет сети с этим ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "В программе отсутствует вывод"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/busio/I2C.c
@@ -1773,11 +1774,12 @@ msgstr "Не подключено"
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
-msgstr ""
+msgstr "Не играет"
 
 #: shared-bindings/_bleio/__init__.c
+#, fuzzy
 msgid "Not settable"
-msgstr ""
+msgstr "Не устанавливается"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
@@ -1797,8 +1799,9 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
+#, fuzzy
 msgid "Only 8 or 16 bit mono with "
-msgstr ""
+msgstr "Только 8- или 16-битное моно с "
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -4576,8 +4579,9 @@ msgid "zi must be an ndarray"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
+#, fuzzy
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi должно быть типа float"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
