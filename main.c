@@ -56,6 +56,7 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
