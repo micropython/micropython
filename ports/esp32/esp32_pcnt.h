@@ -11,12 +11,6 @@ enum edgeKind {
     FALL = 0x2
 };
 
-enum clockMultiplier {
-    X1 = 1,
-    X2 = 2,
-    X4 = 4
-};
-
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
     gpio_num_t aPinNumber;

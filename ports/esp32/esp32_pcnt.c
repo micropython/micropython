@@ -62,7 +62,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 // DBG(MP_ERROR_TEXT("ESP32 PCNT not supported on Pin(%d)"), self->pin);
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
-static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 // ***********************************
 /* Decode what PCNT's unit originated an interrupt
@@ -73,7 +73,7 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
     mp_pcnt_obj_t *self;
     uint32_t intr_status = PCNT.int_st.val;
 
-    for (int i = 0; i < PCNT_UNIT_MAX; ++i) {
+    for (int i = 0; i <= PCNT_UNIT_MAX; ++i) {
         if (intr_status & (1 << i)) {
             self = pcnts[i];
             // Save the PCNT event type that caused an interrupt to pass it to the main program
@@ -128,12 +128,12 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
     }
 
     int index = 0;
-    for (; index < PCNT_UNIT_MAX; index++) {
+    for (; index <= PCNT_UNIT_MAX; index++) {
         if (pcnts[index] == NULL) {
             break;
         }
     }
-    if (index >= PCNT_UNIT_MAX) {
+    if (index > PCNT_UNIT_MAX) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters"));
     }
 
@@ -736,7 +736,7 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     self->r_enc_config.unit = self->unit;
     self->r_enc_config.channel = PCNT_CHANNEL_0;
 
-    self->r_enc_config.pos_mode = (self->x124 != X1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges
+    self->r_enc_config.pos_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges // X1
     self->r_enc_config.neg_mode = PCNT_COUNT_INC;   // Discard Falling-Edge
 
     self->r_enc_config.lctrl_mode = PCNT_MODE_KEEP;    // Rising A on HIGH B = CW Step
@@ -748,7 +748,7 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
 
     check_esp_err(pcnt_unit_config(&self->r_enc_config));
 
-    if (self->x124 == X4) {
+    if (self->x124 == 4) { // X4
         // set up second channel for full quad
         self->r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
         self->r_enc_config.ctrl_gpio_num = self->aPinNumber;    // and prior signal into control

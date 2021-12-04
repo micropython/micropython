@@ -1,3 +1,6 @@
+PCNT
+====
+
 The Counter and Encoder uses the ESP32 Pulse Counter (PCNT) hardware peripheral,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
@@ -17,7 +20,7 @@ short conductors, twisted pair cable, differential signals, etc.).
 There is only one interrupt for the peripheral, and that is managed inside the module.
 The user has no interrupt interface, and no interrupts are generated on each pulse.
 Interrupts arrive when the 16 bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
-while providing support for up to 8 simultaneous counters.
+while providing support for up to 8 simultaneous counters (Encoder or Counter objects).
 
 .. _pcnt.Counter:
 
@@ -32,6 +35,8 @@ Constructor
 .. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RAISE, filter=12787, scale=1.0)
 
     Counter start to count immediately. Filtering is enabled.
+
+    - *pulse_pin* is the input :ref:`machine.Pin <machine.Pin>` to be monitored
 
     Keyword arguments:
 
@@ -86,6 +91,29 @@ Methods
     Set filter value. 0 disable filtering.
     Return current filter value.
 
+::
+
+    from machine import Counter, Pin
+
+    try:
+        cnt = Counter(Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+
+        flt = cnt.filter()  # return current filter value.
+        cnt.filter(10_000)  # filter delay is 10ms
+        cnt.pause()
+        cnt.resume()
+        cnt.set_value(12345)  # set the counter value
+
+        _c = None
+        while True:
+            c = cnt.count()  # get the counter value
+            if _c != c:
+                _c = c
+                print('Counter =', c)
+    finally:
+        cnt.deinit()  # free the input pins and counter.
+
+
 .. _pcnt.Encoder:
 
 Encoder
@@ -104,6 +132,8 @@ Constructor
 .. class:: Encoder(a_pin, b_pin, \*, x124=2, filter=12787, scale=1.0)
 
     Encoder start to count immediately. Filtering is enabled.
+
+    - *a_pin*, *b_pin* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses
 
     Keyword arguments:
 
@@ -134,22 +164,22 @@ in the constructor and internal hardware PCNT counter initialization.
 
 ::
 
-    from machine import Counter, Pin
+    from machine import Encoder, Pin
 
     try:
-        cnt = Counter(Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+        enc = Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
 
-        flt = cnt.filter()  # return current filter value.
-        cnt.filter(10_000)  # filter delay is 10ms
-        cnt.pause()
-        cnt.resume()
-        cnt.set_value(12345)          # set the counter value
+        flt = enc.filter()  # return current filter value.
+        enc.filter(10_000)  # filter delay is 10ms
+        enc.pause()
+        enc.resume()
+        enc.set_value(12345)  # set the encoder value
 
         _c = None
         while True:
-            c = cnt.count()  # get the counter value
+            c = enc.count()  # get the encoder value
             if _c != c:
                 _c = c
-                print('Counter =', c)
+                print('Encoder =', c)
     finally:
-        cnt.deinit()  # free the input pins and counter.
+        encoder.deinit()  # free the input pins and encoder.
