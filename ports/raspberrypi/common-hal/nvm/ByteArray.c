@@ -43,6 +43,9 @@ uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self) {
 }
 
 static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
+    // disable interrupts to prevent core hang on rp2040
+    common_hal_mcu_disable_interrupts();
+
     // Write a whole page to flash, buffering it first and then erasing and rewriting it
     // since we can only write a whole page at a time.
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
@@ -53,9 +56,13 @@ static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_
         memcpy(buffer + offset, bytes, len);
         flash_range_program(RMV_OFFSET(page_addr), buffer, FLASH_PAGE_SIZE);
     }
+    common_hal_mcu_enable_interrupts();
 }
 
 static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t *bytes) {
+    // disable interrupts to prevent core hang on rp2040
+    common_hal_mcu_disable_interrupts();
+
     // Write a whole sector to flash, buffering it first and then erasing and rewriting it
     // since we can only erase a whole sector at a time.
     uint8_t buffer[FLASH_SECTOR_SIZE];
@@ -63,6 +70,7 @@ static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t *byte
     memcpy(buffer + address, bytes, len);
     flash_range_erase(RMV_OFFSET(CIRCUITPY_INTERNAL_NVM_START_ADDR), FLASH_SECTOR_SIZE);
     flash_range_program(RMV_OFFSET(CIRCUITPY_INTERNAL_NVM_START_ADDR), buffer, FLASH_SECTOR_SIZE);
+    common_hal_mcu_enable_interrupts();
 }
 
 void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
@@ -72,8 +80,6 @@ void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
 
 bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
-    // disable interrupts to prevent core hang on rp2040
-    common_hal_mcu_disable_interrupts();
     uint8_t values_in[len];
     common_hal_nvm_bytearray_get_bytes(self, start_index, len, values_in);
 
@@ -102,6 +108,5 @@ bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
         erase_and_write_sector(start_index, len, values);
     }
 
-    common_hal_mcu_enable_interrupts();
     return true;
 }
