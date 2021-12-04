@@ -7,6 +7,8 @@ class Encoder -- Quadrature Incremental Encoder
 This class provides an Quadrature Incremental Encoder service.
 See `Incremental encoder <https://en.wikipedia.org/wiki/Incremental_encoder>`_.
 
+If your port does not support hardware encoder use `Interrupt-based MicroPython quadrature incremental encoder <https://github.com/IhorNehrutsa/MicroPython-quadrature-incremental-encoder>`_.
+
 Here is described a basics, commons for an Pin-IRQ-based encoders from Peter Hinch
 `Incremental encoders <https://github.com/peterhinch/micropython-samples/blob/master/encoders/ENCODERS.md>`_
 and hadware-counters-based encoders of MicroPython ports:
@@ -20,7 +22,7 @@ Example usage::
     from machine import Pin, Encoder
 
     enc = Encoder(Pin(0), Pin(1))  # create Quadrature Encoder object and start to encode input pulses
-    enc.value()                    # get current raw encoder value
+    value = enc.value()            # get current raw encoder value
     enc.set_value(0)               # set raw encoder value to 0
     enc.deinit()                   # turn off the Qudrature encoder
 
@@ -40,7 +42,9 @@ Constructor
 
     Keyword arguments:
 
-      - *scale*\=value. Sets the scale value. The default value is 1.
+      - *scale*\=value. Sets the scale value. The default value is 1. You may treat scale
+        factor as **revolution per count**, **angle per count** etc.
+
 
 Methods
 -------
@@ -92,4 +96,4 @@ The *scale* parameter allows to get *Encoder.position()* in different units.::
     ...
 
 Simple check of Encoder performance
-`encoders_test.py <https://github.com/peterhinch/micropython-samples/blob/encoders/encoders/encoders_test.py>`_
+`encoders_test.py <https://github.com/IhorNehrutsa/MicroPython-quadrature-incremental-encoder/blob/main/encoders_test.py>`_

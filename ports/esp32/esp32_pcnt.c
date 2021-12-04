@@ -57,9 +57,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #include "esp32_pcnt.h"
 
-#define DBG_LEVEL 0
-#define DBG(...) _DBG(1, __VA_ARGS__)
-// DBG(MP_ERROR_TEXT("ESP32 PCNT not supported on Pin(%d)"), self->pin);
+#define MP_PRN_LEVEL 1000
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
 static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -244,7 +242,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
 // def Counter.__init__(pulsePin: int, dirPin: int=PCNT_PIN_NOT_USED, edge:int, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    DBG("1 machine_Counter_make_new n_args=%u n_kw=%u", n_args, n_kw);
+    MP_PRN(3, "1 machine_Counter_make_new n_args=%u n_kw=%u", n_args, n_kw);
     mp_arg_check_num(n_args, n_kw, 1, 2, true);
 
     // create Counter object for the given unit
@@ -658,7 +656,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 // Counter stuff
 // Counter.init([kwargs])
 STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    DBG("30 machine_Counter_init n_args=%u", n_args);
+    MP_PRN(3, "30 machine_Counter_init n_args=%u", n_args);
     mp_machine_Counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -821,10 +819,10 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    DBG("10, n_args=%d", n_args);
+    MP_PRN(3, "10, n_args=%d", n_args);
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    DBG("11, args[ARG_x124].u_int=%d", args[ARG_x124].u_int);
-    DBG("11, args[ARG_filter].u_int=%d", args[ARG_filter].u_int);
+    MP_PRN(3, "11, args[ARG_x124].u_int=%d", args[ARG_x124].u_int);
+    MP_PRN(3, "11, args[ARG_filter].u_int=%d", args[ARG_filter].u_int);
 
     if (args[ARG_x124].u_int != -1) {
         if (!self->attached) {
@@ -854,7 +852,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
 // def Encoder.__init__(aPin: int, bPin: int, x124:int=2, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    DBG("1 machine_Encoder_make_new n_args=%u n_kw=%u", n_args, n_kw);
+    MP_PRN(3, "1 machine_Encoder_make_new n_args=%u n_kw=%u", n_args, n_kw);
     mp_arg_check_num(n_args, n_kw, 2, 2, true);
 
     // create Encoder object for the given unit
@@ -883,7 +881,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
 
 // Encoder.init([kwargs])
 STATIC mp_obj_t machine_Encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    DBG("30 machine_Encoder_init n_args=%u", n_args);
+    MP_PRN(3, "30 machine_Encoder_init n_args=%u", n_args);
     mp_machine_Encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }

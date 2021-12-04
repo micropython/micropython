@@ -1,3 +1,4 @@
+
 .. currentmodule:: machine
 .. _machine.Counter:
 
@@ -16,10 +17,10 @@ Example usage::
 
     from machine import Pin, Counter
 
-    counter = Counter(Pin(0))  # create Counter object and start to count input pulses
-    counter.value()            # get current counter value
-    counter.set_value(0)       # Set counter to 0
-    counter.deinit()           # turn off the Counter
+    counter = Counter(Pin(0, mode=Pin.INPUT))  # create Counter object and start to count input pulses
+    value = counter.value()                    # get current counter value
+    counter.set_value(0)                       # Set counter to 0
+    counter.deinit()                           # turn off the Counter
 
     print(counter)             # show the Counter object properties
 
@@ -46,7 +47,8 @@ Constructor
             - if Pin.value() == 0: count down
             - if Pin.value() == 1: count up
 
-      - *scale*\=value. Sets the scale value. The default value is 1.
+      - *scale*\=value. Sets the scale value. The default value is 1. You may treat scale
+        factor as **mm per count**, **inch per count** etc.
 
 Methods
 -------
