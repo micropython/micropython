@@ -46,18 +46,17 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-#include "py/obj.h"
-#include "py/runtime.h"
 #include "driver/pcnt.h"
+#include "soc/pcnt_struct.h"
+#include "esp_err.h"
+
+#include "py/runtime.h"
 #include "mphalport.h"
 #include "modmachine.h"
 
-#include "esp_err.h"
-#include "driver/rmt.h"
-
 #include "esp32_pcnt.h"
 
-#define MP_PRN_LEVEL 1000
+#define MP_PRN_LEVEL 0
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
 static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
@@ -308,93 +307,7 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
     mp_printf(print, ")");
 }
 
-// def PCNT.event_disable(self, evt_type: int)
-/*
-Disable PCNT event of PCNT unit
-
- @param evt_type Watch point event type.
-                 All enabled events share the same interrupt (one interrupt per pulse counter unit).
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_event_disable(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
-
-    check_esp_err(pcnt_event_disable(self->unit, evt_type));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_event_disable_obj, pcnt_PCNT_event_disable);
-*/
-
-// def PCNT.event_enable(self, evt_type: int)
-/*
-Enable PCNT event of PCNT unit
-
- @param evt_type Watch point event type.
-                 All enabled events share the same interrupt (one interrupt per pulse counter unit).
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_event_enable(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
-
-    check_esp_err(pcnt_event_enable(self->unit, evt_type));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_event_enable_obj, pcnt_PCNT_event_enable);
-*/
-
-// def PCNT.get_event_value(self, evt_type: int) -> int
-/*
-Get PCNT event value of PCNT unit
-
- @param evt_type Watch point event type.
-                 All enabled events share the same interrupt (one interrupt per pulse counter unit).
-
- @return Value for PCNT event
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_get_event_value(mp_obj_t self_obj, mp_obj_t evt_type_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
-
-    int16_t count;
-    check_esp_err(pcnt_get_event_value(self->unit, evt_type, &count));
-
-    return MP_OBJ_NEW_SMALL_INT(count);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_get_event_value_obj, pcnt_PCNT_get_event_value);
-*/
-
-// def PCNT.set_filter_value(self, filter_val: int)
-/*
-Set PCNT filter value
-
- @param filter_val PCNT signal filter value, counter in APB_CLK cycles.
-  Any pulses lasting shorter than this will be ignored when the filter is enabled.
-  @note
-   filter_val is a 10-bit value, so the maximum filter_val should be limited to 1023.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
+// Get/Set PCNT filter value
 STATIC mp_obj_t pcnt_PCNT_filter(size_t n_args, const mp_obj_t *args) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t val = get_filter_value(self->unit);
@@ -404,196 +317,6 @@ STATIC mp_obj_t pcnt_PCNT_filter(size_t n_args, const mp_obj_t *args) {
     return MP_OBJ_NEW_SMALL_INT(val);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_filter_obj, 1, 2, pcnt_PCNT_filter);
-
-// def PCNT.isr_handler_add(self, isr_handler: int, _args: int)
-/*
-Add ISR handler for specified unit.
-
- Call this function after using pcnt_isr_service_install() to
- install the PCNT driver's ISR handler service.
-
- The ISR handlers do not need to be declared with IRAM_ATTR,
- unless you pass the ESP_INTR_FLAG_IRAM flag when allocating the
- ISR in pcnt_isr_service_install().
-
- This ISR handler will be called from an ISR. So there is a stack
- size limit (configurable as "ISR stack size" in menuconfig). This
- limit is smaller compared to a global PCNT interrupt handler due
- to the additional level of indirection.
-
- @param isr_handler Interrupt handler function.
- @param args Parameter for handler function
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_isr_handler_add(mp_obj_t self_obj, mp_obj_t isr_handler_obj, mp_obj_t _args_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    void *isr_handler = MP_OBJ_TO_PTR(isr_handler_obj);
-    void *_args = MP_OBJ_TO_PTR(_args_obj);
-
-    check_esp_err(pcnt_isr_handler_add(self->unit, isr_handler, _args));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pcnt_PCNT_isr_handler_add_obj, pcnt_PCNT_isr_handler_add);
-*/
-
-// def PCNT.isr_handler_remove(self)
-/*
-Delete ISR handler for specified unit.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_isr_handler_remove(mp_obj_t self_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    check_esp_err(pcnt_isr_handler_remove(self->unit));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_isr_handler_remove_obj, pcnt_PCNT_isr_handler_remove);
-*/
-
-// def PCNT.isr_register(self, fn: int, arg: int, intr_alloc_flags: int, handle: int)
-/*
-Register PCNT interrupt handler, the handler is an ISR.
-        The handler will be attached to the same CPU core that this function is running on.
-        Please do not use pcnt_isr_service_install if this function was called.
-
- @param fn Interrupt handler function.
- @param arg Parameter for handler function
- @param intr_alloc_flags Flags used to allocate the interrupt. One or multiple (ORred)
-        ESP_INTR_FLAG_* values. See esp_intr_alloc.h for more info.
- @param handle Pointer to return handle. If non-NULL, a handle for the interrupt will
-        be returned here. Calling pcnt_isr_unregister to unregister this ISR service if needed,
-        but only if the handle is not NULL.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_NOT_FOUND Can not find the interrupt that matches the flags.
-     - ESP_ERR_INVALID_ARG Function pointer error.
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_isr_register(size_t n_args, const mp_obj_t *args) {
-    // mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    void *fn = MP_OBJ_TO_PTR(args[1]);
-    void *arg = MP_OBJ_TO_PTR(args[2]);
-    mp_int_t intr_alloc_flags = mp_obj_get_int(args[3]);
-    pcnt_isr_handle_t *handle = MP_OBJ_TO_PTR(args[4]);
-
-    check_esp_err(pcnt_isr_register(fn, arg, intr_alloc_flags, handle));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_isr_register_obj, 5, 5, pcnt_PCNT_isr_register);
-*/
-
-// def PCNT.isr_service_install(self, intr_alloc_flags: int)
-/*
-Install PCNT ISR service.
- @note
-  We can manage different interrupt service for each unit.
-  This function will use the default ISR handle service, Calling pcnt_isr_service_uninstall to
-  uninstall the default service if needed. Please do not use pcnt_isr_register if this function was called.
-
- @param intr_alloc_flags Flags used to allocate the interrupt. One or multiple (ORred)
-        ESP_INTR_FLAG_* values. See esp_intr_alloc.h for more info.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_NO_MEM No memory to install this service
-     - ESP_ERR_INVALID_STATE ISR service already installed
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_isr_service_install(mp_obj_t self_obj, mp_obj_t intr_alloc_flags_obj) {
-    // mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t intr_alloc_flags = mp_obj_get_int(intr_alloc_flags_obj);
-
-    check_esp_err(pcnt_isr_service_install(intr_alloc_flags));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_isr_service_install_obj, pcnt_PCNT_isr_service_install);
-*/
-
-// def PCNT.isr_unregister(self, handle: int)
-/*
-Unregister PCNT interrupt handler (registered by pcnt_isr_register), the handler is an ISR.
-The handler will be attached to the same CPU core that this function is running on.
-If the interrupt service is registered by pcnt_isr_service_install, please call pcnt_isr_service_uninstall instead
-
- @param handle handle to unregister the ISR service.
-
- @note
-     Can raise EspException:
-     - ESP_ERR_NOT_FOUND Can not find the interrupt that matches the flags.
-     - ESP_ERR_INVALID_ARG Function pointer error.
-*/
-/*
-// It does not present in pcnt.h !!!
-STATIC mp_obj_t pcnt_PCNT_isr_unregister(mp_obj_t self_obj, mp_obj_t handle_obj) {
-	mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-	mp_int_t handle = mp_obj_get_int(handle_obj);
-
-	check_esp_err(pcnt_isr_unregister(handle));
-    if (err != ESP_OK)
-       mp_raise_EspError(err);
-
-	return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_isr_unregister_obj, pcnt_PCNT_isr_unregister);
-*/
-
-// def PCNT.pcnt_isr_service_uninstall(self)
-/*
-Uninstall PCNT ISR service, freeing related resources.
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_pcnt_isr_service_uninstall(mp_obj_t self_obj) {
-    // pcnt_PC*selfNT_obj_t  = MP_OBJ_TO_PTR(self_obj);
-
-    pcnt_isr_service_uninstall();
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_pcnt_isr_service_uninstall_obj, pcnt_PCNT_pcnt_isr_service_uninstall);
-*/
-
-// def PCNT.set_event_value(self, evt_type: int, value: int)
-/*
-Set PCNT event value of PCNT unit
-
- @param evt_type Watch point event type.
-                 All enabled events share the same interrupt (one interrupt per pulse counter unit).
-
- @param value Counter value for PCNT event
-
- @note
-     Can raise EspException:
-     - ESP_ERR_INVALID_STATE pcnt driver has not been initialized
-     - ESP_ERR_INVALID_ARG Parameter error
-*/
-/*
-STATIC mp_obj_t pcnt_PCNT_set_event_value(mp_obj_t self_obj, mp_obj_t evt_type_obj, mp_obj_t value_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    mp_int_t evt_type = mp_obj_get_int(evt_type_obj);
-    mp_int_t value = mp_obj_get_int(value_obj);
-
-    check_esp_err(pcnt_set_event_value(self->unit, evt_type, value));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pcnt_PCNT_set_event_value_obj, pcnt_PCNT_set_event_value);
-*/
 
 // ====================================================================================
 STATIC mp_obj_t pcnt_PCNT_set_count(mp_obj_t self_obj, mp_obj_t value_obj) {
@@ -671,29 +394,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_position), MP_ROM_PTR(&pcnt_PCNT_position_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) },
-/*
-    { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isr_handler_add), MP_ROM_PTR(&pcnt_PCNT_isr_handler_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isr_handler_remove), MP_ROM_PTR(&pcnt_PCNT_isr_handler_remove_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isr_register), MP_ROM_PTR(&pcnt_PCNT_isr_register_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isr_unregister), MP_ROM_PTR(&pcnt_PCNT_isr_unregister_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isr_service_install), MP_ROM_PTR(&pcnt_PCNT_isr_service_install_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pcnt_isr_service_uninstall), MP_ROM_PTR(&pcnt_PCNT_pcnt_isr_service_uninstall_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_set_mode), MP_ROM_PTR(&pcnt_PCNT_set_mode_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_pin), MP_ROM_PTR(&pcnt_PCNT_set_pin_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_event_disable), MP_ROM_PTR(&pcnt_PCNT_event_disable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_event_enable), MP_ROM_PTR(&pcnt_PCNT_event_enable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_get_event_value), MP_ROM_PTR(&pcnt_PCNT_get_event_value_obj) },
-    { MP_ROM_QSTR(MP_QSTR_set_event_value), MP_ROM_PTR(&pcnt_PCNT_set_event_value_obj) },
-    */
+    { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) }
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
-    COMMON_METHODS
+    COMMON_METHODS,
     { MP_ROM_QSTR(MP_QSTR_RAISE), MP_ROM_INT(RAISE) },
     { MP_ROM_QSTR(MP_QSTR_FALL), MP_ROM_INT(FALL) },
 };
@@ -787,12 +492,12 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     // Filter out bounces and noise
     set_filter_value(self->unit, self->filter);  // Filter Runt Pulses
 
-    /* Enable events on maximum and minimum limit values */
+    // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
     check_esp_err(pcnt_counter_pause(self->unit)); // Initial PCNT init
-    /* Register ISR handler and enable interrupts for PCNT unit */
+    // Register ISR handler and enable interrupts for PCNT unit
     if (pcnt_isr_handle == NULL) {
         check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)NULL, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
         if (pcnt_isr_handle == NULL) {
