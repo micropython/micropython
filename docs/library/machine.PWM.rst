@@ -78,30 +78,33 @@ Methods
 
    With a single *value* argument the pulse width is set to that value.
 
-| Note 1) Not all frequencies can be generated with absolute accuracy due to
-| the discrete nature of the computing hardware. Typically the PWM frequency
-| is obtained by dividing some integer base frequency by an integer divider.
-| For example, if the base frequency is 80MHz and the required PWM frequency is
-| 300kHz the divider must be a non-integer number 80000000 / 300000 = 266.67!
-| In fact, after rounding, the divider is set to 267, and the PWM frequency
-| will be 80000000 / 267 = 299625.5 Hz, but not 300kHz.
-| If the divider is set to 266, then the PWM frequency
-| will be 80000000 / 266 = 300751.9 Hz, but again not 300kHz.
+Limitations of PWM
+------------------
 
-Note 2) The duty cycle has the same discrete nature and its absolute accuracy is not achievable.
+* Not all frequencies can be generated with absolute accuracy due to
+  the discrete nature of the computing hardware.  Typically the PWM frequency
+  is obtained by dividing some integer base frequency by an integer divider.
+  For example, if the base frequency is 80MHz and the required PWM frequency is
+  300kHz the divider must be a non-integer number 80000000 / 300000 = 266.67.
+  After rounding the divider is set to 267 and the PWM frequency will be
+  80000000 / 267 = 299625.5 Hz, not 300kHz.  If the divider is set to 266 then
+  the PWM frequency will be 80000000 / 266 = 300751.9 Hz, but again not 300kHz.
 
-| Note 3) The frequency and the duty cycle resolution are interdependent.
-| The higher the PWM frequency, the lower the duty resolution which is available,
-| and vice versa. For example, a 300kHz PWM frequency has the duty cycle resolution of 8 bit,
-| but not 16-bit as may be expected. In this case, the lowest 8 bits of *duty_u16*
-| are insignificant. So
+* The duty cycle has the same discrete nature and its absolute accuracy is not
+  achievable.  On most hardware platforms the duty will be applied at the next
+  frequency period.  Therefore, you should wait more than "1/frequency" before
+  measuring the duty.
 
-::
+* The frequency and the duty cycle resolution are usually interdependent.
+  The higher the PWM frequency the lower the duty resolution which is available,
+  and vice versa. For example, a 300kHz PWM frequency can have a duty cycle
+  resolution of 8 bit, not 16-bit as may be expected.  In this case, the lowest
+  8 bits of *duty_u16* are insignificant. So::
 
     pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2)
 
-and ::
+  and::
 
     pwm=PWM(Pin(13), freq=300_000, duty_u16=2**16//2 + 255)
 
-will generate PWM with the same 50% duty cycle.
+  will generate PWM with the same 50% duty cycle.

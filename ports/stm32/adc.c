@@ -133,7 +133,8 @@
 #elif defined(STM32F411xE) || defined(STM32F412Zx) || \
     defined(STM32F413xx) || defined(STM32F427xx) || \
     defined(STM32F429xx) || defined(STM32F437xx) || \
-    defined(STM32F439xx) || defined(STM32F446xx)
+    defined(STM32F439xx) || defined(STM32F446xx) || \
+    defined(STM32F479xx)
 #define VBAT_DIV (4)
 #elif defined(STM32F722xx) || defined(STM32F723xx) || \
     defined(STM32F732xx) || defined(STM32F733xx) || \

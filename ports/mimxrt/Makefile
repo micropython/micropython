@@ -194,6 +194,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_ocotp.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
+	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
@@ -209,6 +210,11 @@ ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064))
+SRC_HAL_IMX_C += \
+	$(MCU_DIR)/drivers/fsl_qtmr.c
+endif
+
 SRC_C += \
 	board_init.c \
 	dma_channel.c \
@@ -220,6 +226,7 @@ SRC_C += \
 	extmod/modusocket.c \
 	extmod/uos_dupterm.c \
 	fatfs_port.c \
+	hal/pwm_backport.c \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \
@@ -384,6 +391,7 @@ SRC_QSTR += \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_pwm.c \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \

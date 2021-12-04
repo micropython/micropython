@@ -422,6 +422,11 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
 	hal_dcmi.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
+# HAL F4-1.16.0 has a bug with missing parentheses in HAL_MMC_Erase.
+# This function is unused so let the error go by as a warning.
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno-error=parentheses
+endif
 endif
 
 ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))

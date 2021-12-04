@@ -129,9 +129,7 @@ void ticks_delay_us64(uint64_t us) {
             dt = 0xffffffff;
         }
         ticks_wake_after_us32((uint32_t)dt);
-        if (dt < 50) {
-            __WFE();
-        } else {
+        if (dt > 50) {
             MICROPY_EVENT_POLL_HOOK
         }
     }

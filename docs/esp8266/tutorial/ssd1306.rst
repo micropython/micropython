@@ -66,8 +66,8 @@ Subclassing FrameBuffer provides support for graphics primitives::
     display.hline(0, 8, 4, 1)               # draw horizontal line x=0, y=8, width=4, colour=1
     display.vline(0, 8, 4, 1)               # draw vertical line x=0, y=8, height=4, colour=1
     display.line(0, 0, 127, 63, 1)          # draw a line from 0,0 to 127,63
-    display.rect(10, 10, 107, 43, 1)        # draw a rectangle outline 10,10 to 107,43, colour=1
-    display.fill_rect(10, 10, 107, 43, 1)   # draw a solid rectangle 10,10 to 107,43, colour=1
+    display.rect(10, 10, 107, 43, 1)        # draw a rectangle outline 10,10 to 117,53, colour=1
+    display.fill_rect(10, 10, 107, 43, 1)   # draw a solid rectangle 10,10 to 117,53, colour=1
     display.text('Hello World', 0, 0, 1)    # draw some text at x=0, y=0, colour=1
     display.scroll(20, 0)                   # scroll 20 pixels to the right
 
