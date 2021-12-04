@@ -43,31 +43,32 @@ uint32_t common_hal_nvm_bytearray_get_length(const nvm_bytearray_obj_t *self) {
 }
 
 static void write_page(uint32_t page_addr, uint32_t offset, uint32_t len, uint8_t *bytes) {
-    // disable interrupts to prevent core hang on rp2040
-    common_hal_mcu_disable_interrupts();
-
     // Write a whole page to flash, buffering it first and then erasing and rewriting it
     // since we can only write a whole page at a time.
     if (offset == 0 && len == FLASH_PAGE_SIZE) {
+        // disable interrupts to prevent core hang on rp2040
+        common_hal_mcu_disable_interrupts();
         flash_range_program(RMV_OFFSET(page_addr), bytes, FLASH_PAGE_SIZE);
+        common_hal_mcu_enable_interrupts();
     } else {
         uint8_t buffer[FLASH_PAGE_SIZE];
         memcpy(buffer, (uint8_t *)page_addr, FLASH_PAGE_SIZE);
         memcpy(buffer + offset, bytes, len);
+        common_hal_mcu_disable_interrupts();
         flash_range_program(RMV_OFFSET(page_addr), buffer, FLASH_PAGE_SIZE);
+        common_hal_mcu_enable_interrupts();
     }
-    common_hal_mcu_enable_interrupts();
+
 }
 
 static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t *bytes) {
-    // disable interrupts to prevent core hang on rp2040
-    common_hal_mcu_disable_interrupts();
-
     // Write a whole sector to flash, buffering it first and then erasing and rewriting it
     // since we can only erase a whole sector at a time.
     uint8_t buffer[FLASH_SECTOR_SIZE];
     memcpy(buffer, (uint8_t *)CIRCUITPY_INTERNAL_NVM_START_ADDR, FLASH_SECTOR_SIZE);
     memcpy(buffer + address, bytes, len);
+    // disable interrupts to prevent core hang on rp2040
+    common_hal_mcu_disable_interrupts();
     flash_range_erase(RMV_OFFSET(CIRCUITPY_INTERNAL_NVM_START_ADDR), FLASH_SECTOR_SIZE);
     flash_range_program(RMV_OFFSET(CIRCUITPY_INTERNAL_NVM_START_ADDR), buffer, FLASH_SECTOR_SIZE);
     common_hal_mcu_enable_interrupts();
