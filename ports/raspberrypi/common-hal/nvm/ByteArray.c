@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "src/rp2_common/hardware_flash/include/hardware/flash.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
 extern uint32_t __flash_binary_start;
 static const uint32_t flash_binary_start = (uint32_t)&__flash_binary_start;
@@ -71,6 +72,8 @@ void common_hal_nvm_bytearray_get_bytes(const nvm_bytearray_obj_t *self,
 
 bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
+    // disable interrupts to prevent core hang on rp2040
+    common_hal_mcu_disable_interrupts();
     uint8_t values_in[len];
     common_hal_nvm_bytearray_get_bytes(self, start_index, len, values_in);
 
@@ -99,5 +102,6 @@ bool common_hal_nvm_bytearray_set_bytes(const nvm_bytearray_obj_t *self,
         erase_and_write_sector(start_index, len, values);
     }
 
+    common_hal_mcu_enable_interrupts();
     return true;
 }
