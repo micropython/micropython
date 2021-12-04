@@ -142,7 +142,13 @@ class RemoteFile(uio.IOBase):
         self.close()
 
     def ioctl(self, request, arg):
-        if request == 4:  # CLOSE
+        if request == 1:  # FLUSH
+            self.flush()
+        elif request == 2:  # SEEK
+            # This assumes a 32-bit bare-metal machine.
+            import machine
+            machine.mem32[arg] = self.seek(machine.mem32[arg], machine.mem32[arg + 4])
+        elif request == 4:  # CLOSE
             self.close()
         return 0
 
