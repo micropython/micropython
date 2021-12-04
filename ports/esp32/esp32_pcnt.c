@@ -112,10 +112,11 @@ STATIC void set_filter_value(pcnt_unit_t unit, int16_t value) {
     }
 
     check_esp_err(pcnt_set_filter_value(unit, value));
-    if (value)
+    if (value) {
         check_esp_err(pcnt_filter_enable(unit));
-    else
+    } else {
         check_esp_err(pcnt_filter_disable(unit));
+    }
 }
 
 // ====================================================================================
@@ -671,7 +672,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) },
-    /*
+/*
     { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&pcnt_PCNT_intr_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&pcnt_PCNT_intr_enable_obj) },
     { MP_ROM_QSTR(MP_QSTR_isr_handler_add), MP_ROM_PTR(&pcnt_PCNT_isr_handler_add_obj) },
