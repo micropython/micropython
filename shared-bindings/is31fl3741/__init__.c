@@ -24,16 +24,96 @@
  * THE SOFTWARE.
  */
 
+#include "shared-bindings/is31fl3741/__init__.h"
+
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/is31fl3741/IS31FL3741.h"
+
+
+//| """Low-level neopixel implementation
+//|
+//| The `neopixel_write` module contains a helper method to write out bytes in
+//| the 800khz neopixel protocol.
+//|
+//| For example, to turn off a single neopixel (like the status pixel on Express
+//| boards.)
+//|
+//| .. code-block:: python
+//|
+//|   import board
+//|   import neopixel_write
+//|   import digitalio
+//|
+//|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
+//|   pin.direction = digitalio.Direction.OUTPUT
+//|   pixel_off = bytearray([0, 0, 0])
+//|   neopixel_write.neopixel_write(pin, pixel_off)"""
+//|
+//| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: ReadableBuffer) -> None:
+//|     """Write buf out on the given DigitalInOut.
+//|
+//|     :param ~digitalio.DigitalInOut digitalinout: the DigitalInOut to output with
+//|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
+//|     ...
+// STATIC mp_obj_t is31fl3741_is31fl3741_write(mp_obj_t i2c_obj, mp_obj_t device_addr_obj, mp_obj_t mapping, mp_obj_t buf) {
+STATIC mp_obj_t is31fl3741_is31fl3741_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_i2c, ARG_addr, ARG_mapping, ARG_buffer };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_i2c,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_addr,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x30 } },
+        { MP_QSTR_mapping, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_buffer,  MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
+
+    if (!mp_obj_is_tuple_compatible(args[ARG_mapping].u_obj)) {
+        mp_raise_ValueError(translate("Mapping must be a tuple"));
+    }
+
+    mp_obj_t *map_items;
+    size_t map_len;
+    mp_obj_tuple_get(args[ARG_mapping].u_obj, &map_len, &map_items);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+
+    common_hal_is31fl3741_write(i2c, args[ARG_addr].u_int, map_items, (uint8_t *)bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_write_obj, 0, is31fl3741_is31fl3741_write);
+
+STATIC mp_obj_t is31fl3741_is31fl3741_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_i2c, ARG_addr };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_i2c,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_addr,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x30 } },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
+
+    common_hal_is31fl3741_init(i2c, args[ARG_addr].u_int);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_init_obj, 0, is31fl3741_is31fl3741_init);
 
 STATIC const mp_rom_map_elem_t is31fl3741_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_is31fl3741) },
     { MP_ROM_QSTR(MP_QSTR_IS31FL3741), MP_ROM_PTR(&is31fl3741_IS31FL3741_type) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is31fl3741_init), (mp_obj_t)&is31fl3741_is31fl3741_init_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_is31fl3741_write), (mp_obj_t)&is31fl3741_is31fl3741_write_obj },
 };
 
 STATIC MP_DEFINE_CONST_DICT(is31fl3741_module_globals, is31fl3741_module_globals_table);

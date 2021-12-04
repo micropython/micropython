@@ -115,7 +115,7 @@ void common_hal_is31fl3741_IS31FL3741_reconstruct(is31fl3741_IS31FL3741_obj_t *s
     is31fl3741_set_current(self->i2c, self->device_address, 0xFF);
 
     // set scale (brightness) to max for all LEDs
-    for (int i; i < 351; i++) {
+    for (int i = 0; i < 351; i++) {
         is31fl3741_set_led(self->i2c, self->device_address, i, 0xFF, 2);
     }
 
@@ -267,11 +267,8 @@ void is31fl3741_IS31FL3741_collect_ptrs(is31fl3741_IS31FL3741_obj_t *self) {
     gc_collect_ptr(self->mapping);
 }
 
-// The following are routines to manipulate the IS31FL3741 chip
-// They are not meant to be called by user code but only used
-// internally.
 
-uint8_t cur_page = 99; // set to invalid page to start
+uint8_t is31fl3741_cur_page = 99; // set to invalid page to start
 
 void is31fl3741_send_unlock(busio_i2c_obj_t *i2c, uint8_t addr) {
     uint8_t unlock[2] = { 0xFE, 0xC5 }; // unlock command
@@ -279,11 +276,11 @@ void is31fl3741_send_unlock(busio_i2c_obj_t *i2c, uint8_t addr) {
 }
 
 void is31fl3741_set_page(busio_i2c_obj_t *i2c, uint8_t addr, uint8_t p) {
-    if (p == cur_page) {
+    if (p == is31fl3741_cur_page) {
         return;
     }
 
-    cur_page = p;
+    is31fl3741_cur_page = p;
     is31fl3741_send_unlock(i2c, addr);
 
     uint8_t page[2] = { 0xFD, 0x00 }; // page command
