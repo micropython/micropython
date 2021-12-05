@@ -25,8 +25,33 @@
  */
 
 #include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "py/obj.h"
+#include "peripherals/nrf/pins.h"
+#include "supervisor/shared/board.h"
+
+#include "nrf_gpio.h"
 
 void board_init(void) {
+    // Turn on power to sensors and neopixels.
+    nrf_gpio_cfg(POWER_SWITCH_PIN->number,
+        NRF_GPIO_PIN_DIR_OUTPUT,
+        NRF_GPIO_PIN_INPUT_DISCONNECT,
+        NRF_GPIO_PIN_NOPULL,
+        NRF_GPIO_PIN_S0S1,
+        NRF_GPIO_PIN_NOSENSE);
+    nrf_gpio_pin_write(POWER_SWITCH_PIN->number, true);
+}
+
+void board_deinit(void) {
+    // Turn off power to sensors and neopixels.
+    nrf_gpio_cfg(POWER_SWITCH_PIN->number,
+        NRF_GPIO_PIN_DIR_OUTPUT,
+        NRF_GPIO_PIN_INPUT_DISCONNECT,
+        NRF_GPIO_PIN_NOPULL,
+        NRF_GPIO_PIN_S0S1,
+        NRF_GPIO_PIN_NOSENSE);
+    nrf_gpio_pin_write(POWER_SWITCH_PIN->number, false);
 }
 
 bool board_requests_safe_mode(void) {
