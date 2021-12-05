@@ -77,6 +77,10 @@
 
 #include "esp_debug_helpers.h"
 
+#ifdef CONFIG_SPIRAM
+#include "esp32/spiram.h"
+#endif
+
 #define HEAP_SIZE (48 * 1024)
 
 uint32_t *heap;
@@ -158,8 +162,11 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-    heap = (uint32_t *)(DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
-    heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
+    if (esp_spiram_is_initialized()) {
+        size_t spiram_size = esp_spiram_get_size();
+        heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
+        heap_size = spiram_size / sizeof(uint32_t);
+    }
     #endif
 
     if (heap == NULL) {
