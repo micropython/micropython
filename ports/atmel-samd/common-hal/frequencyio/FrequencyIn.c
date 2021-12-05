@@ -54,12 +54,23 @@
 #endif
 
 static frequencyio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
-volatile uint8_t reference_tc = 0xff;
+volatile uint8_t reference_tc;
 #ifdef SAM_D5X_E5X
 static uint8_t dpll_gclk;
 #endif
 
-void frequencyin_emergency_cancel_capture(uint8_t index) {
+void frequencyin_reset(void) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
+        active_frequencyins[i] = NULL;
+    }
+
+    reference_tc = 0xff;
+    #ifdef SAM_D5X_E5X
+    dpll_gclk = 0xff;
+    #endif
+}
+
+static void frequencyin_emergency_cancel_capture(uint8_t index) {
     frequencyio_frequencyin_obj_t* self = active_frequencyins[index];
 
     NVIC_DisableIRQ(self->TC_IRQ);
@@ -93,7 +104,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
 
     uint64_t current_ns = common_hal_time_monotonic_ns();
 
-    for (uint8_t i = 0; i <= (TC_INST_NUM - 1); i++) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
         if (active_frequencyins[i] != NULL) {
             frequencyio_frequencyin_obj_t* self = active_frequencyins[i];
             Tc* tc = tc_insts[self->tc_index];
@@ -143,7 +154,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
     ref_tc->COUNT16.INTFLAG.reg |= TC_INTFLAG_OVF;
 }
 
-void frequencyin_reference_tc_init() {
+static void frequencyin_reference_tc_init(void) {
     if (reference_tc == 0xff) {
         return;
     }
@@ -154,9 +165,6 @@ void frequencyin_reference_tc_init() {
     // use the DPLL we setup so that the reference_tc and freqin_tc(s)
     // are using the same clock frequency.
     #ifdef SAM_D5X_E5X
-    if (dpll_gclk == 0xff) {
-        frequencyin_samd51_start_dpll();
-    }
     set_timer_handler(true, reference_tc, TC_HANDLER_FREQUENCYIN);
     turn_on_clocks(true, reference_tc, dpll_gclk);
     #endif
@@ -178,7 +186,7 @@ void frequencyin_reference_tc_init() {
     #endif
 }
 
-bool frequencyin_reference_tc_enabled() {
+static bool frequencyin_reference_tc_enabled(void) {
     if (reference_tc == 0xff) {
         return false;
     }
@@ -186,7 +194,7 @@ bool frequencyin_reference_tc_enabled() {
     return tc->COUNT16.CTRLA.bit.ENABLE;
 }
 
-void frequencyin_reference_tc_enable(bool enable) {
+static void frequencyin_reference_tc_enable(bool enable) {
     if (reference_tc == 0xff) {
         return;
     }
@@ -195,15 +203,15 @@ void frequencyin_reference_tc_enable(bool enable) {
 }
 
 #ifdef SAM_D5X_E5X
-void frequencyin_samd51_start_dpll() {
+static bool frequencyin_samd51_start_dpll(void) {
     if (clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
-        return;
+        return true;
     }
 
     uint8_t free_gclk = find_free_gclk(1);
     if (free_gclk == 0xff) {
         dpll_gclk = 0xff;
-        return;
+        return false;
     }
 
     GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(free_gclk);
@@ -228,23 +236,25 @@ void frequencyin_samd51_start_dpll() {
     while (!(OSCCTRL->Dpll[1].DPLLSTATUS.bit.LOCK || OSCCTRL->Dpll[1].DPLLSTATUS.bit.CLKRDY)) {}
     enable_clock_generator(free_gclk, GCLK_GENCTRL_SRC_DPLL1_Val, 1);
     dpll_gclk = free_gclk;
+    return true;
 }
 
-void frequencyin_samd51_stop_dpll() {
+static void frequencyin_samd51_stop_dpll(void) {
     if (!clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
         return;
     }
 
-    disable_clock_generator(dpll_gclk);
+    if (dpll_gclk != 0xff) {
+        disable_clock_generator(dpll_gclk);
+        dpll_gclk = 0xff;
+    }
 
     GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = 0;
     OSCCTRL->Dpll[1].DPLLCTRLA.reg = 0;
     OSCCTRL->Dpll[1].DPLLRATIO.reg = 0;
     OSCCTRL->Dpll[1].DPLLCTRLB.reg = 0;
-
     while (OSCCTRL->Dpll[1].DPLLSYNCBUSY.bit.ENABLE) {
     }
-    dpll_gclk = 0xff;
 }
 #endif
 
@@ -421,7 +431,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
     self->pin = NO_PIN;
 
     bool check_active = false;
-    for (uint8_t i = 0; i <= (TC_INST_NUM - 1); i++) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
         if (active_frequencyins[i] != NULL) {
             check_active = true;
         }
