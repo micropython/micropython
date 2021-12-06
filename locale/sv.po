@@ -584,7 +584,7 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
@@ -1481,7 +1481,7 @@ msgstr "Ogiltig word-/bitlängd"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr "LED-mappning måste matcha displaystorlek"
 
@@ -2122,7 +2122,7 @@ msgstr "Samplingsfrekvensen måste vara positiv"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr "Skaldimension måste vara delbar med 3"
 
@@ -2393,7 +2393,7 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 msgid "Unable to create lock"
 msgstr "Kan inte skapa lås"
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Det gick inte att hitta I2C-display på %x"
@@ -4011,12 +4011,14 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4031,6 +4033,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4525,7 +4528,7 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width måste vara mellan 2 och 8, inte %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
