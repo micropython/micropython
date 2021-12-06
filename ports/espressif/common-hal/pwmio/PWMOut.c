@@ -32,10 +32,9 @@
 
 #define INDEX_EMPTY 0xFF
 
-STATIC bool not_first_reset = false;
 STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
 STATIC bool varfreq_timers[LEDC_TIMER_MAX];
-STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX];
+STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
 STATIC bool never_reset_tim[LEDC_TIMER_MAX];
 STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
@@ -56,7 +55,7 @@ STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
 
 void pwmout_reset(void) {
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (reserved_channels[i] != INDEX_EMPTY && not_first_reset) {
+        if (reserved_channels[i] != INDEX_EMPTY) {
             ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
         }
         if (!never_reset_chan[i]) {
@@ -72,7 +71,6 @@ void pwmout_reset(void) {
             varfreq_timers[i] = false;
         }
     }
-    not_first_reset = true;
 }
 
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
