@@ -95,8 +95,8 @@ void reset_all_pins(void) {
         }
         floating_gpio_reset(i);
     }
-    in_use[0] = 0;
-    in_use[1] = 0;
+    in_use[0] = never_reset_pins[0];
+    in_use[1] = never_reset_pins[1];
 }
 
 void claim_pin_number(gpio_num_t pin_number) {
