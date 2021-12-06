@@ -42,7 +42,7 @@
 uint32_t target_slice_frequencies[NUM_PWM_SLICES];
 uint32_t slice_variable_frequency;
 
-#define CHANNELS_PER_SLICE 2
+#define AB_CHANNELS_PER_SLICE 2
 static uint32_t channel_use;
 static uint32_t never_reset_channel;
 
@@ -58,11 +58,11 @@ static uint32_t never_reset_channel;
 // So 65534 should be the maximum top value, and we'll set CC to be TOP+1 as appropriate.
 #define MAX_TOP 65534
 
-static uint32_t _mask(uint8_t slice, uint8_t channel) {
-    return 1 << (slice * CHANNELS_PER_SLICE + channel);
+static uint32_t _mask(uint8_t slice, uint8_t ab_channel) {
+    return 1 << (slice * AB_CHANNELS_PER_SLICE + ab_channel);
 }
 
-bool pwmio_claim_slice_channels(uint8_t slice) {
+bool pwmio_claim_slice_ab_channels(uint8_t slice) {
     uint32_t channel_use_mask_a = _mask(slice, 0);
     uint32_t channel_use_mask_b = _mask(slice, 1);
 
@@ -78,37 +78,37 @@ bool pwmio_claim_slice_channels(uint8_t slice) {
     return true;
 }
 
-void pwmio_release_slice_channels(uint8_t slice) {
+void pwmio_release_slice_ab_channels(uint8_t slice) {
     uint32_t channel_mask = _mask(slice, 0);
     channel_use &= ~channel_mask;
     channel_mask = _mask(slice, 1);
     channel_use &= ~channel_mask;
 }
 
-void pwmout_never_reset(uint8_t slice, uint8_t channel) {
-    never_reset_channel |= _mask(slice, channel);
+void pwmout_never_reset(uint8_t slice, uint8_t ab_channel) {
+    never_reset_channel |= _mask(slice, ab_channel);
 }
 
-void pwmout_reset_ok(uint8_t slice, uint8_t channel) {
-    never_reset_channel &= ~_mask(slice, channel);
+void pwmout_reset_ok(uint8_t slice, uint8_t ab_channel) {
+    never_reset_channel &= ~_mask(slice, ab_channel);
 }
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    pwmout_never_reset(self->slice, self->channel);
+    pwmout_never_reset(self->slice, self->ab_channel);
 
     never_reset_pin_number(self->pin->number);
 }
 
 void common_hal_pwmio_pwmout_reset_ok(pwmio_pwmout_obj_t *self) {
-    pwmout_reset_ok(self->slice, self->channel);
+    pwmout_reset_ok(self->slice, self->ab_channel);
 }
 
 void pwmout_reset(void) {
     // Reset all slices
     for (size_t slice = 0; slice < NUM_PWM_SLICES; slice++) {
         bool reset = true;
-        for (size_t channel = 0; channel < CHANNELS_PER_SLICE; channel++) {
-            uint32_t channel_use_mask = _mask(slice, channel);
+        for (size_t ab_channel = 0; ab_channel < AB_CHANNELS_PER_SLICE; ab_channel++) {
+            uint32_t channel_use_mask = _mask(slice, ab_channel);
             if ((never_reset_channel & channel_use_mask) != 0) {
                 reset = false;
                 continue;
@@ -124,8 +124,8 @@ void pwmout_reset(void) {
     }
 }
 
-pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency) {
-    uint32_t channel_use_mask = _mask(slice, channel);
+pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t ab_channel, bool variable_frequency, uint32_t frequency) {
+    uint32_t channel_use_mask = _mask(slice, ab_channel);
 
     // Check the channel first.
     if ((channel_use & channel_use_mask) != 0) {
@@ -171,15 +171,15 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
 
     uint8_t slice = pwm_gpio_to_slice_num(pin->number);
-    uint8_t channel = pwm_gpio_to_channel(pin->number);
+    uint8_t ab_channel = pwm_gpio_to_channel(pin->number);
 
-    int r = pwmout_allocate(slice, channel, variable_frequency, frequency);
+    int r = pwmout_allocate(slice, ab_channel, variable_frequency, frequency);
     if (r != PWMOUT_OK) {
         return r;
     }
 
     self->slice = slice;
-    self->channel = channel;
+    self->ab_channel = ab_channel;
 
     if (target_slice_frequencies[slice] != frequency) {
         // Reset the counter and compare values.
@@ -202,11 +202,11 @@ bool common_hal_pwmio_pwmout_deinited(pwmio_pwmout_obj_t *self) {
     return self->pin == NULL;
 }
 
-void pwmout_free(uint8_t slice, uint8_t channel) {
-    uint32_t channel_mask = _mask(slice, channel);
+void pwmout_free(uint8_t slice, uint8_t ab_channel) {
+    uint32_t channel_mask = _mask(slice, ab_channel);
     channel_use &= ~channel_mask;
     never_reset_channel &= ~channel_mask;
-    uint32_t slice_mask = ((1 << CHANNELS_PER_SLICE) - 1) << (slice * CHANNELS_PER_SLICE);
+    uint32_t slice_mask = ((1 << AB_CHANNELS_PER_SLICE) - 1) << (slice * AB_CHANNELS_PER_SLICE);
     if ((channel_use & slice_mask) == 0) {
         target_slice_frequencies[slice] = 0;
         slice_variable_frequency &= ~(1 << slice);
@@ -218,7 +218,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
-    pwmout_free(self->slice, self->channel);
+    pwmout_free(self->slice, self->ab_channel);
     reset_pin_number(self->pin->number);
     self->pin = NULL;
 }
@@ -235,13 +235,13 @@ extern void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uin
         compare_count = ((uint32_t)duty * self->top + MAX_TOP / 2) / MAX_TOP;
     }
     // compare_count is the CC register value, which should be TOP+1 for 100% duty cycle.
-    pwm_set_chan_level(self->slice, self->channel, compare_count);
+    pwm_set_chan_level(self->slice, self->ab_channel, compare_count);
     // Wait for wrap so that we know our new cc value has been applied. Clear
     // the internal interrupt and then wait for it to be set. Worst case, we
     // wait a full cycle.
-    pwm_hw->intr = 1 << self->channel;
-    while ((pwm_hw->en & (1 << self->channel)) != 0 &&
-           (pwm_hw->intr & (1 << self->channel)) == 0 &&
+    pwm_hw->intr = 1 << self->slice;
+    while ((pwm_hw->en & (1 << self->slice)) != 0 &&
+           (pwm_hw->intr & (1 << self->slice)) == 0 &&
            !mp_hal_is_interrupted()) {
     }
 }

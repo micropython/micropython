@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#ifndef MICROPY_INCLUDED_RASPBERRY_PI_COMMON_HAL_PWMIO_PWMOUT_H
+#define MICROPY_INCLUDED_RASPBERRY_PI_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -34,8 +34,8 @@
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
-    uint8_t slice;
-    uint8_t channel;
+    uint8_t slice;        // 0-7
+    uint8_t ab_channel;   // 0-1: A or B slice channel
     bool variable_frequency;
     uint16_t duty_cycle;
     uint32_t actual_frequency;
@@ -46,13 +46,13 @@ void pwmout_reset(void);
 // Private API for AudioPWMOut.
 void pwmio_pwmout_set_top(pwmio_pwmout_obj_t *self, uint16_t top);
 // Private APIs for RGBMatrix
-enum pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t channel, bool variable_frequency, uint32_t frequency);
-void pwmout_free(uint8_t slice, uint8_t channel);
-void pwmout_never_reset(uint8_t slice, uint8_t channel);
-void pwmout_reset_ok(uint8_t slice, uint8_t channel);
+enum pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t ab_channel, bool variable_frequency, uint32_t frequency);
+void pwmout_free(uint8_t slice, uint8_t ab_channel);
+void pwmout_never_reset(uint8_t slice, uint8_t ab_channel);
+void pwmout_reset_ok(uint8_t slice, uint8_t ab_channel);
 
-// Private API for countio to claim both channels on a slice
-bool pwmio_claim_slice_channels(uint8_t slice);
-void pwmio_release_slice_channels(uint8_t slice);
+// Private API for countio to claim both ab_channels on a slice
+bool pwmio_claim_slice_ab_channels(uint8_t slice);
+void pwmio_release_slice_ab_channels(uint8_t slice);
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#endif // MICROPY_INCLUDED_RASPBERRY_PI_COMMON_HAL_PWMIO_PWMOUT_H
