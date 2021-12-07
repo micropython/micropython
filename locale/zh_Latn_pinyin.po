@@ -591,7 +591,7 @@ msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Liàngdù bìxū wèi 0-1.0"
@@ -1492,7 +1492,7 @@ msgstr "Wúxiào de zì/wèi chángdù"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "mì yào bì xū wéi 16, 24 huò 32 zì jié cháng"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -2132,7 +2132,7 @@ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -2402,7 +2402,7 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
@@ -4018,12 +4018,14 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4038,6 +4040,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4535,7 +4538,7 @@ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "kuāndù bìxū dàyú líng"

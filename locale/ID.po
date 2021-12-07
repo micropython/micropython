@@ -584,7 +584,7 @@ msgstr "Kedua pin harus mendukung hardware interrut"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Kecerahan harus di antara 0-1.0"
@@ -1483,7 +1483,7 @@ msgstr "Panjang kata/bit tidak valid"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Panjang kunci harus 16, 24, atau 32 byte"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -2125,7 +2125,7 @@ msgstr "Tingkat sampel harus positif"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -2386,7 +2386,7 @@ msgstr "Tidak dapat mengalokasikan buffer untuk signed conversion"
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Tidak dapat menemukan Tampilan I2C di %x"
@@ -3988,12 +3988,14 @@ msgstr ""
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4008,6 +4010,7 @@ msgstr ""
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4500,7 +4503,7 @@ msgstr ""
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
