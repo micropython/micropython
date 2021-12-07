@@ -129,7 +129,7 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(a_pin, b_pin, \*, x124=2, filter=12787, scale=1.0)
+.. class:: Encoder(a_pin, b_pin, \*, x124=4, filter=12787, scale=1.0)
 
     Encoder start to count immediately. Filtering is enabled.
 

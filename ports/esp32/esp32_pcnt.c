@@ -556,7 +556,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 }
 
-// def Encoder.__init__(aPin: int, bPin: int, x124:int=2, filter:int=12787, scale:float=1.0)
+// def Encoder.__init__(aPin: int, bPin: int, x124:int=4, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_PRN(3, "1 machine_Encoder_make_new n_args=%u n_kw=%u", n_args, n_kw);
     mp_arg_check_num(n_args, n_kw, 2, 2, true);
@@ -566,7 +566,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     self->base.type = &machine_Encoder_type;
 
     self->attached = false;
-    self->x124 = 2;
+    self->x124 = 4;
     self->scale = 1.0;
     self->filter = 1023;
 
