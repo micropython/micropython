@@ -70,7 +70,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py windows ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
