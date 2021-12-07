@@ -7,8 +7,8 @@
 #define _INT16_MIN (-32766)
 
 enum edgeKind {
-    RAISE = 0x1,
-    FALL = 0x2
+    RISING = 0x1,
+    FALLING = 0x2
 };
 
 typedef struct _mp_pcnt_obj_t {

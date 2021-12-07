@@ -146,12 +146,12 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
     self->r_enc_config.channel = PCNT_CHANNEL_0;
 
     // What to do on the positive / negative edge of pulse input?
-    if (self->edge != FALL) {
+    if (self->edge != FALLING) {
         self->r_enc_config.pos_mode = PCNT_COUNT_INC; // Count up on the positive edge
     } else {
         self->r_enc_config.pos_mode = PCNT_COUNT_DIS; // Keep the counter value on the positive edge
     }
-    if (self->edge != RAISE) {
+    if (self->edge != RISING) {
         self->r_enc_config.neg_mode = PCNT_COUNT_INC; // Count up on the negative edge
     } else {
         self->r_enc_config.neg_mode = PCNT_COUNT_DIS; // Keep the counter value on the negative edge
@@ -255,7 +255,7 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     if (n_args >= 2) {
         self->bPinNumber = machine_pin_get_id(args[1]);
     }
-    self->edge = RAISE;
+    self->edge = RISING;
     self->scale = 1.0;
     self->filter = 1023;
 
@@ -302,7 +302,7 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
 
     mp_printf(print, "Counter(");
     common_print_pin(print, self);
-    mp_printf(print, ", edge=%s", self->edge == 1 ? "RAISE" : self->edge == 2 ? "FALL" : "RAISE | FALL");
+    mp_printf(print, ", edge=%s", self->edge == 1 ? "RISING" : self->edge == 2 ? "FALLING" : "RISING | FALLING");
     common_print_kw(print, self);
     mp_printf(print, ")");
 }
@@ -399,8 +399,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
     COMMON_METHODS,
-    { MP_ROM_QSTR(MP_QSTR_RAISE), MP_ROM_INT(RAISE) },
-    { MP_ROM_QSTR(MP_QSTR_FALL), MP_ROM_INT(FALL) },
+    { MP_ROM_QSTR(MP_QSTR_RISING), MP_ROM_INT(RISING) },
+    { MP_ROM_QSTR(MP_QSTR_FALLING), MP_ROM_INT(FALLING) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_Counter_locals_dict, machine_Counter_locals_dict_table);
 
