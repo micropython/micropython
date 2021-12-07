@@ -3,4 +3,4 @@ USB_PID = 0xF002
 USB_PRODUCT = "Raspberry Pi Zero 2W"
 USB_MANUFACTURER = "Raspberry Pi"
 
-CHIP_VARIANT = rp3a0
+CHIP_VARIANT = "bcm2837"
