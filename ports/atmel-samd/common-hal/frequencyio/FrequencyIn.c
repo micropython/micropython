@@ -57,6 +57,11 @@ static frequencyio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
 volatile uint8_t reference_tc;
 #ifdef SAM_D5X_E5X
 static uint8_t dpll_gclk;
+
+#if !BOARD_HAS_CRYSTAL
+static uint8_t osculp32k_gclk;
+#endif
+
 #endif
 
 void frequencyin_reset(void) {
@@ -67,6 +72,11 @@ void frequencyin_reset(void) {
     reference_tc = 0xff;
     #ifdef SAM_D5X_E5X
     dpll_gclk = 0xff;
+
+    #if !BOARD_HAS_CRYSTAL
+    osculp32k_gclk = 0xff;
+    #endif
+
     #endif
 }
 
@@ -208,34 +218,38 @@ static bool frequencyin_samd51_start_dpll(void) {
         return true;
     }
 
-    uint8_t free_gclk = find_free_gclk(1);
-    if (free_gclk == 0xff) {
-        dpll_gclk = 0xff;
+    dpll_gclk = find_free_gclk(1);
+    if (dpll_gclk == 0xff) {
         return false;
     }
 
-    GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(free_gclk);
     // TC4-7 can only have a max of 100MHz source
     // DPLL1 frequency equation with [X]OSC32K as source: 98.304MHz = 32768(2999 + 1 + 0/32)
     // Will also enable the Lock Bypass due to low-frequency sources causing DPLL unlocks
     // as outlined in the Errata (1.12.1)
     OSCCTRL->Dpll[1].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(0) | OSCCTRL_DPLLRATIO_LDR(2999);
-#if BOARD_HAS_CRYSTAL
-    // we can use XOSC32K directly as the source
-    OSC32KCTRL->XOSC32K.bit.EN32K = 1;
-    OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(1) | OSCCTRL_DPLLCTRLB_LBYPASS;
-#else
-    // can't use OSCULP32K directly; need to setup a GCLK as a reference,
-    // which must be done in samd/clocks.c to avoid waiting for sync
-    return;
-    //OSC32KCTRL->OSCULP32K.bit.EN32K = 1;
-    //OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0);
-#endif
-    OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
 
+#if BOARD_HAS_CRYSTAL
+    // we can use XOSC32K directly as the source. It has already been initialized in clocks.c
+    OSCCTRL->Dpll[1].DPLLCTRLB.reg =
+        OSCCTRL_DPLLCTRLB_REFCLK(OSCCTRL_DPLLCTRLB_REFCLK_XOSC32_Val) | OSCCTRL_DPLLCTRLB_LBYPASS;
+#else
+    // We can't use OSCULP32K directly. Set up a GCLK controlled by it
+    // Then use that GCLK as the reference oscillator for the DPLL.
+    osculp32k_gclk = find_free_gclk(1);
+    if (osculp32k_gclk == 0xff) {
+        return false;
+    }
+    enable_clock_generator(osculp32k_gclk, GCLK_GENCTRL_SRC_OSCULP32K_Val, 1);
+    GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(OSCCTRL_GCLK_ID_FDPLL1);
+    OSCCTRL->Dpll[1].DPLLCTRLB.reg =
+        OSCCTRL_DPLLCTRLB_REFCLK(OSCCTRL_DPLLCTRLB_REFCLK_GCLK_Val) | OSCCTRL_DPLLCTRLB_LBYPASS;
+#endif
+
+    OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
     while (!(OSCCTRL->Dpll[1].DPLLSTATUS.bit.LOCK || OSCCTRL->Dpll[1].DPLLSTATUS.bit.CLKRDY)) {}
-    enable_clock_generator(free_gclk, GCLK_GENCTRL_SRC_DPLL1_Val, 1);
-    dpll_gclk = free_gclk;
+
+    enable_clock_generator(dpll_gclk, GCLK_GENCTRL_SRC_DPLL1_Val, 1);
     return true;
 }
 
@@ -247,6 +261,11 @@ static void frequencyin_samd51_stop_dpll(void) {
     if (dpll_gclk != 0xff) {
         disable_clock_generator(dpll_gclk);
         dpll_gclk = 0xff;
+    }
+
+    if (osculp32k_gclk != 0xff) {
+        disable_clock_generator(osculp32k_gclk);
+        osculp32k_gclk = 0xff;
     }
 
     GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = 0;
