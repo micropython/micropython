@@ -263,10 +263,12 @@ static void frequencyin_samd51_stop_dpll(void) {
         dpll_gclk = 0xff;
     }
 
+    #if !BOARD_HAS_CRYSTAL
     if (osculp32k_gclk != 0xff) {
         disable_clock_generator(osculp32k_gclk);
         osculp32k_gclk = 0xff;
     }
+    #endif
 
     GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = 0;
     OSCCTRL->Dpll[1].DPLLCTRLA.reg = 0;
