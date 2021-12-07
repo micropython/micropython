@@ -56,7 +56,9 @@ void ticks_init(void) {
     NVIC_EnableIRQ(GPTx_IRQn);
 
     GPT_StartTimer(GPTx);
+    #ifdef NDEBUG
     mp_hal_ticks_cpu_enable();
+    #endif
 }
 
 void GPTx_IRQHandler(void) {
