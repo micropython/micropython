@@ -421,13 +421,13 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     }
 
     int index = 0;
-    for (; index < PCNT_UNIT_MAX; index++) {
+    for (; index <= PCNT_UNIT_MAX; index++) {
         if (pcnts[index] == NULL) {
             break;
         }
     }
-    if (index == PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters"));
+    if (index > PCNT_UNIT_MAX) {
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many encoders"));
     }
 
     // Set data now that pin attach checks are done
