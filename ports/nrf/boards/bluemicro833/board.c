@@ -33,6 +33,8 @@
 #include "nrf_gpio.h"
 
 void board_init(void) {
+    // "never_reset" the pin here because CircuitPython will try to reset pins after a VM run otherwise.
+    never_reset_pin_number(POWER_SWITCH_PIN->number);
     // Turn on power to sensors and neopixels.
     nrf_gpio_cfg(POWER_SWITCH_PIN->number,
         NRF_GPIO_PIN_DIR_OUTPUT,
