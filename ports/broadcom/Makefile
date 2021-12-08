@@ -63,6 +63,7 @@ SRC_C += bindings/videocore/__init__.c \
 		 lib/tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c \
 		 peripherals/broadcom/caches.c \
 		 peripherals/broadcom/gen/interrupt_handlers.c \
+		 peripherals/broadcom/gen/pins.c \
 		 peripherals/broadcom/gpio.c \
 		 peripherals/broadcom/interrupts.c \
 		 peripherals/broadcom/mmu.c \
@@ -165,7 +166,7 @@ $(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel8.img
 	$(Q)parted -s $(BUILD)/circuitpython-disk.img mkpart primary fat32 0% 100%
 	$(Q)mkfs.fat -F 32 -n BOOT --offset=2048 $(BUILD)/circuitpython-disk.img
 
-	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M config.txt firmware/bootcode.bin firmware/fixup* firmware/start* ::
+	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M config.txt firmware/bootcode.bin firmware/fixup* firmware/start* firmware/*.dtb ::
 	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M $(BUILD)/kernel8.img ::
 	$(Q)zip $@ $(BUILD)/circuitpython-disk.img
 	$(Q)rm $(BUILD)/circuitpython-disk.img

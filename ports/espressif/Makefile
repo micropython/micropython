@@ -59,76 +59,81 @@ include $(TOP)/supervisor/supervisor.mk
 # Include make rules and variables common across CircuitPython builds.
 include $(TOP)/py/circuitpy_defns.mk
 
-ifeq ($(IDF_TARGET),esp32s2)
-IDF_TARGET_ARCH = xtensa
-CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
-else ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
 CROSS_COMPILE = riscv32-esp-elf-
+else
+IDF_TARGET_ARCH = xtensa
+CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
 endif
 
 #######################################
 # CFLAGS
 #######################################
 
-INC += -I.\
-	   -I./boards \
-	   -I./boards/$(BOARD) \
-	   -I./peripherals \
-	   -I../.. \
-	   -I../../lib/mp-readline \
-	   -I../../lib/tinyusb/src \
-	   -I../../supervisor/shared/usb \
-	   -I$(BUILD) \
-	   -I$(BUILD)/genhdr \
-	   -I$(BUILD)/esp-idf/config \
-	   -isystem esp-idf \
-	   -isystem esp-idf/components/app_update/include \
-	   -isystem esp-idf/components/bootloader_support/include \
-	   -isystem esp-idf/components/driver/include \
-	   -isystem esp-idf/components/driver/$(IDF_TARGET)/include \
-	   -isystem esp-idf/components/$(IDF_TARGET)/include \
-	   -isystem esp-idf/components/esp_adc_cal/include \
-	   -isystem esp-idf/components/esp_common/include \
-	   -isystem esp-idf/components/esp_event/include \
-	   -isystem esp-idf/components/esp_hw_support/include \
-	   -isystem esp-idf/components/esp_netif/include \
-	   -isystem esp-idf/components/esp_pm/include \
-	   -isystem esp-idf/components/esp_ringbuf/include \
-	   -isystem esp-idf/components/esp_rom/include \
-	   -isystem esp-idf/components/esp_system/include \
-	   -isystem esp-idf/components/esp_timer/include \
-	   -isystem esp-idf/components/esp_wifi/include \
-	   -isystem esp-idf/components/freertos/include \
-	   -isystem esp-idf/components/freertos/include/freertos \
-	   -isystem esp-idf/components/freertos/port/$(IDF_TARGET_ARCH)/include \
-	   -isystem esp-idf/components/hal/include \
-	   -isystem esp-idf/components/hal/$(IDF_TARGET)/include \
-	   -isystem esp-idf/components/hal/platform_port/include \
-	   -isystem esp-idf/components/heap/include \
-	   -isystem esp-idf/components/log/include \
-	   -isystem esp-idf/components/lwip/include \
-	   -isystem esp-idf/components/lwip/lwip/src/include \
-	   -isystem esp-idf/components/lwip/port/esp32/include \
-	   -isystem esp-idf/components/mbedtls/esp_crt_bundle/include \
-	   -isystem esp-idf/components/mbedtls/mbedtls/include \
-	   -isystem esp-idf/components/mbedtls/port/include \
-	   -isystem esp-idf/components/newlib/platform_include \
-	   -isystem esp-idf/components/nvs_flash/include \
-	   -isystem esp-idf/components/soc/include \
-	   -isystem esp-idf/components/soc/$(IDF_TARGET)/include \
-	   -isystem esp-idf/components/spi_flash/include \
-	   -isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
-	   -isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
+INC += \
+	-I.\
+	-I./boards \
+	-I./boards/$(BOARD) \
+	-I./peripherals \
+	-I../.. \
+	-I../../lib/mp-readline \
+	-I../../lib/tinyusb/src \
+	-I../../supervisor/shared/usb \
+	-I$(BUILD) \
+	-I$(BUILD)/genhdr \
+	-I$(BUILD)/esp-idf/config \
+	-isystem esp-idf \
+	-isystem esp-idf/components/app_update/include \
+	-isystem esp-idf/components/bootloader_support/include \
+	-isystem esp-idf/components/driver/include \
+	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/esp_adc_cal/include \
+	-isystem esp-idf/components/esp_common/include \
+	-isystem esp-idf/components/esp_event/include \
+	-isystem esp-idf/components/esp_hw_support/include \
+	-isystem esp-idf/components/esp_hw_support/include/soc \
+	-isystem esp-idf/components/esp_netif/include \
+	-isystem esp-idf/components/esp_pm/include \
+	-isystem esp-idf/components/esp_ringbuf/include \
+	-isystem esp-idf/components/esp_rom/include \
+	-isystem esp-idf/components/esp_system/include \
+	-isystem esp-idf/components/esp_timer/include \
+	-isystem esp-idf/components/esp_wifi/include \
+	-isystem esp-idf/components/freertos/include \
+	-isystem esp-idf/components/freertos/include/freertos \
+	-isystem esp-idf/components/freertos/include/esp_additions \
+	-isystem esp-idf/components/freertos/include/esp_additions/freertos \
+	-isystem esp-idf/components/freertos/port/$(IDF_TARGET_ARCH)/include \
+	-isystem esp-idf/components/hal/include \
+	-isystem esp-idf/components/hal/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/hal/platform_port/include \
+	-isystem esp-idf/components/heap/include \
+	-isystem esp-idf/components/log/include \
+	-isystem esp-idf/components/lwip/include \
+	-isystem esp-idf/components/lwip/lwip/src/include \
+	-isystem esp-idf/components/lwip/port/esp32/include \
+	-isystem esp-idf/components/mbedtls/esp_crt_bundle/include \
+	-isystem esp-idf/components/mbedtls/mbedtls/include \
+	-isystem esp-idf/components/mbedtls/port/include \
+	-isystem esp-idf/components/newlib/platform_include \
+	-isystem esp-idf/components/nvs_flash/include \
+	-isystem esp-idf/components/soc/include \
+	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/spi_flash/include \
+	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
+	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
 
 # See https://github.com/espressif/esp-idf/issues/6906
 ifeq ($(IDF_TARGET),esp32c3)
 CFLAGS += -include "esp32c3_fix.h"
 endif
 
-CFLAGS += -DHAVE_CONFIG_H \
-          -DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
-          -DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
+CFLAGS += \
+	-DHAVE_CONFIG_H \
+	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
+	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
 # Make our canary value match FreeRTOS's
 # This define is in FreeRTOS as tskSTACK_FILL_BYTE 0xa5U which we expand out to a full word.
@@ -158,32 +163,37 @@ endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
 
-LDFLAGS += -L$(BUILD)/esp-idf/esp-idf/$(IDF_TARGET) \
-		   -L$(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/ld \
-		   -Lesp-idf/components/$(IDF_TARGET)/ld \
-		   -Lesp-idf/components/esp_rom/$(IDF_TARGET)/ld \
-		   -T$(IDF_TARGET)_out.ld \
-		   -T$(IDF_TARGET).project.ld \
-		   -T$(IDF_TARGET).peripherals.ld \
-		   -T$(IDF_TARGET).rom.ld \
-		   -T$(IDF_TARGET).rom.api.ld \
-		   -T$(IDF_TARGET).rom.libgcc.ld \
-		   -T$(IDF_TARGET).rom.newlib-nano.ld
+LDFLAGS += \
+	-L$(BUILD)/esp-idf/esp-idf/esp_system/ld \
+	-Lesp-idf/components/esp_rom/$(IDF_TARGET)/ld \
+	-Lesp-idf/components/soc/$(IDF_TARGET)/ld \
+	-Tmemory.ld \
+	-Tsections.ld \
+	-T$(IDF_TARGET).peripherals.ld \
+	-T$(IDF_TARGET).rom.ld \
+	-T$(IDF_TARGET).rom.api.ld \
+	-T$(IDF_TARGET).rom.libgcc.ld \
+	-T$(IDF_TARGET).rom.newlib-nano.ld \
+	-Wl,-Bstatic \
+	-Wl,--no-warn-mismatch \
+	-Wl,--build-id=none \
+	-fno-rtti
 
 ifeq ($(IDF_TARGET),esp32c3)
-LDFLAGS += -Tesp32c3.rom.newlib.ld \
-		   -Tesp32c3.rom.version.ld \
-		   -Tesp32c3.rom.eco3.ld
-else
-LDFLAGS += -T$(IDF_TARGET).rom.newlib-data.ld \
-		   -T$(IDF_TARGET).rom.newlib-funcs.ld \
-		   -T$(IDF_TARGET).rom.spiflash.ld
+LDFLAGS += \
+	-Tesp32c3.rom.newlib.ld \
+	-Tesp32c3.rom.version.ld \
+	-Tesp32c3.rom.eco3.ld
+else ifeq ($(IDF_TARGET),esp32s2)
+LDFLAGS += \
+	-T$(IDF_TARGET).rom.newlib-data.ld \
+	-T$(IDF_TARGET).rom.newlib-funcs.ld \
+	-T$(IDF_TARGET).rom.spiflash.ld
+else ifeq ($(IDF_TARGET),esp32s3)
+LDFLAGS += \
+	-Tesp32s3.rom.newlib.ld \
+	-Tesp32s3.rom.version.ld
 endif
-
-LDFLAGS += -Wl,-Bstatic \
-		   -Wl,--no-warn-mismatch \
-		   -Wl,--build-id=none \
-		   -fno-rtti
 
 LIBS := -lgcc -lc -lstdc++
 
@@ -226,10 +236,13 @@ SRC_C += \
 
 ifneq ($(IDF_TARGET),esp32c3)
 SRC_C += \
-	cam.c \
-	i2s_lcd_esp32s2_driver.c \
 	peripherals/pcnt.c \
 	peripherals/touch.c
+ifeq ($(IDF_TARGET),esp32s2)
+SRC_C += \
+	cam.c \
+	i2s_lcd_esp32s2_driver.c
+endif
 endif
 
 $(BUILD)/i2s_lcd_esp32s2_driver.o: CFLAGS += -Wno-sign-compare
@@ -238,16 +251,15 @@ ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
 endif
 
-SRC_S =
+SRC_COMMON_HAL_EXPANDED = \
+	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
+	$(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+	$(addprefix common-hal/, $(SRC_COMMON_HAL))
 
-SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-                          $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-                          $(addprefix common-hal/, $(SRC_COMMON_HAL))
-
-SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-                             $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
-
+SRC_SHARED_MODULE_EXPANDED = \
+	$(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
+	$(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+	$(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 ifneq ($(FROZEN_MPY_DIR),)
 FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
@@ -261,7 +273,6 @@ ifeq ($(INTERNAL_LIBM),1)
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIBM:.c=.o))
 endif
 OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
@@ -271,8 +282,6 @@ $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -DESP32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
-# Sources that only hold QSTRs after pre-processing.
-SRC_QSTR_PREPROCESSOR +=
 
 # IDF build commands
 IDF_PATH = $(realpath ./esp-idf)
@@ -315,32 +324,28 @@ menuconfig: $(BUILD)/esp-idf/config
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET) $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_netif esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
+BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
-ESP_IDF_WIFI_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_WIFI_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
 MBEDTLS_COMPONENTS_LINK = crypto tls x509
 MBEDTLS_COMPONENTS_LINK_EXPANDED = $(foreach component, $(MBEDTLS_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/mbedtls/mbedtls/library/libmbed$(component).a)
-
-BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libphy.a
-ifneq ($(IDF_TARGET),esp32c3)
-BINARY_WIFI_BLOBS += librtc.a
-endif
-BINARY_BLOBS = $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifeq ($(IDF_TARGET), esp32c3)
-ESPTOOL_BAUDRATE = 230400
-BOOTLOADER_OFFSET = 0x0000
+ifeq ($(IDF_TARGET),esp32c3)
+BOOTLOADER_OFFSET = 0x0
+else ifeq ($(IDF_TARGET),esp32s3)
+BOOTLOADER_OFFSET = 0x0
 else
-ESPTOOL_BAUDRATE = 460800
 BOOTLOADER_OFFSET = 0x1000
 endif
+
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
@@ -348,7 +353,7 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/$(IDF_TARGET)_out.ld $(B
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-ESPTOOL_FLAGS ?= -b $(ESPTOOL_BAUDRATE) --before=default_reset --after=no_reset
+ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset
 
 ifeq ($(IDF_TARGET),esp32c3)
 all: $(BUILD)/firmware.bin
@@ -360,17 +365,18 @@ endif
 esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf \
 		bootloader/bootloader.bin \
+		esp-idf/esp_system/__ldgen_output_sections.ld \
 		esp-idf/app_update/libapp_update.a \
 		esp-idf/bootloader_support/libbootloader_support.a \
 		esp-idf/driver/libdriver.a \
 		esp-idf/efuse/libefuse.a \
-		esp-idf/$(IDF_TARGET)/lib$(IDF_TARGET).a \
-		esp-idf/$(IDF_TARGET)/ld/$(IDF_TARGET).project.ld \
 		esp-idf/esp_adc_cal/libesp_adc_cal.a \
 		esp-idf/esp_common/libesp_common.a \
 		esp-idf/esp_event/libesp_event.a \
 		esp-idf/esp_hw_support/libesp_hw_support.a \
+		esp-idf/esp_ipc/libesp_ipc.a \
 		esp-idf/esp_netif/libesp_netif.a \
+		esp-idf/esp_phy/libesp_phy.a \
 		esp-idf/esp_pm/libesp_pm.a \
 		esp-idf/esp_ringbuf/libesp_ringbuf.a \
 		esp-idf/esp_rom/libesp_rom.a \

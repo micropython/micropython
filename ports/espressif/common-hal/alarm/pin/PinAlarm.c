@@ -32,11 +32,11 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "esp_sleep.h"
 #include "hal/gpio_ll.h"
 #include "esp_debug_helpers.h"
 
 #include "components/driver/include/driver/rtc_io.h"
-#include "components/esp_system/include/esp_sleep.h"
 #include "components/freertos/include/freertos/FreeRTOS.h"
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {

@@ -93,7 +93,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_ValueError(translate("All SPI peripherals are in use"));
     }
 
-    esp_err_t result = spi_bus_initialize(self->host_id, &bus_config, self->host_id /* dma channel */);
+    esp_err_t result = spi_bus_initialize(self->host_id, &bus_config, SPI_DMA_CH_AUTO);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {

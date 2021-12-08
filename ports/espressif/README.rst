@@ -11,6 +11,7 @@ Support Status:
 
     ESP32-C3, "beta"
     ESP32-S2, "stable"
+    ESP32-S3, "beta"
 
 How this port is organized:
 ---------------------------------------
@@ -31,9 +32,11 @@ Connecting to the ESP32-C3
 
 **USB Connetion:**
 
-On ESP32-C3 REV3 chips, a USB Serial/JTAG Controller is available. Note: The USB connection cannot be used for a ``CIRCUITPY`` drive.
+On ESP32-C3 REV3 chips, a USB Serial/JTAG Controller is available. Note: This USB connection cannot be used for a ``CIRCUITPY`` drive.
 
-Depending on the board you have the USB port may or may not be connected to native USB, if it isn't connected to native USB then following connections need to be made to get serial console, REPL interface, flashing CircuitPython and JTAG debugging.
+Depending on the board you have, the USB port may or may not be connected to native USB.
+
+Following connections need to be made if native USB isn't available on USB port:
 
 .. csv-table::
     :header: GPIO, USB
@@ -47,7 +50,9 @@ Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`
 
 **UART Connection:**
 
-A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-C3 to get serial console, REPL interface and flashing CircuitPython. Following connections need to be made in this case.
+A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-C3 to get serial console, REPL interface and flashing CircuitPython.
+
+Following connections need to be made in this case.
 
 .. csv-table::
     :header: GPIO, UART
@@ -66,7 +71,9 @@ Connecting to the ESP32-S2
 
 **USB Connetion:**
 
-Depending on the board you have the USB port may or may not be connected to native USB, if it isn't connected to native USB then following connections need to be made to get CircuitPython working.
+Depending on the board you have, the USB port may or may not be connected to native USB.
+
+Following connections need to be made if native USB isn't available on USB port:
 
 .. csv-table::
     :header: GPIO, USB
@@ -78,16 +85,79 @@ Depending on the board you have the USB port may or may not be connected to nati
 
 Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`_ or `breakout cable <https://www.adafruit.com/product/4448>`_ to access the CircuitPython drive.
 
+**UART Connection:**
+
+A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S2 to get serial console and flashing CircuitPython.
+
+Following connections need to be made in this case:
+
+.. csv-table::
+    :header: GPIO, UART
+
+    43, "RX"
+    44, "TX"
+    GND, "GND"
+    5V, "5V"
+
+**BLE Connection:**
+
+This feature isn't available on ESP32-S2.
+
+Connecting to the ESP32-S3
+---------------------------------------
+
+**USB Connetion:**
+
+Depending on the board you have, the USB port may or may not be connected to native USB.
+
+Following connections need to be made if native USB isn't available on USB port:
+
+.. csv-table::
+    :header: GPIO, USB
+
+    20, "D+ (green)"
+    19, "D- (white)"
+    GND, "GND (black)"
+    5V, "5V (red)"
+
+Connect these pins using a `USB adapter <https://www.adafruit.com/product/4090>`_ or `breakout cable <https://www.adafruit.com/product/4448>`_ to access the CircuitPython drive.
+
+**UART Connection:**
+
+A `USB to UART convertor <https://www.adafruit.com/product/3309>`_ can be used for connecting to ESP32-S3 to get serial console and flashing CircuitPython.
+
+Following connections need to be made in this case:
+
+.. csv-table::
+    :header: GPIO, UART
+
+    43, "RX"
+    44, "TX"
+    GND, "GND"
+    5V, "5V"
+
+**BLE Connection:**
+
+This feature is not yet available and currently under development.
+
 Building and flashing
 ---------------------------------------
 
-Before building or flashing the, you must `install the esp-idf <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html>`_. This must be re-done every time the esp-idf is updated, but not every time you build. Run ``cd ports/espressif`` from ``circuitpython/`` to move to the espressif port root, and run:
+Before building or flashing the, you must `install the esp-idf <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html>`_.
+
+Note: This must be re-done every time the esp-idf is updated, but not every time you build.
+
+Run ``cd ports/espressif`` from ``circuitpython/`` to move to the espressif port root, and run:
 
 .. code-block::
 
     ./esp-idf/install.sh
 
-After this initial installation, you must add the esp-idf tools to your path. You must also do this **any time you open a new bash environment for building or flashing**:
+After this initial installation, you must add the esp-idf tools to your path.
+
+Note: This must be re-done every time you open a new bash environment for building or flashing.
+
+Run ``cd ports/espressif`` from ``circuitpython/`` to move to the espressif port root, and run:
 
 .. code-block::
 
@@ -106,7 +176,7 @@ Building boards is typically done through ``make BOARD=board_id``. The default p
 Debugging
 ---------------------------------------
 
-TODO: Add documentation for ESP32-C3 JTAG feature.
+TODO: Add documentation for ESP32-C3/S3 JTAG feature.
 
 The ESP32-S2 supports JTAG debugging over OpenOCD using a JLink or other probe hardware. The official tutorials can be found on the Espressif website `here <https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/api-guides/jtag-debugging/index.html>`_, but they are mostly for the ESP32-S2 Kaluga, which has built-in debugging.
 

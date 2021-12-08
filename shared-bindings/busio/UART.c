@@ -82,12 +82,6 @@ STATIC void validate_timeout(mp_float_t timeout) {
 
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_UART
-    // Always initially allocate the UART object within the long-lived heap.
-    // This is needed to avoid crashes with certain UART implementations which
-    // cannot accomodate being moved after creation. (See
-    // https://github.com/adafruit/circuitpython/issues/1056)
-    busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
-    self->base.type = &busio_uart_type;
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
            ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
@@ -139,6 +133,13 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj);
 
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
+
+    // Always initially allocate the UART object within the long-lived heap.
+    // This is needed to avoid crashes with certain UART implementations which
+    // cannot accomodate being moved after creation. (See
+    // https://github.com/adafruit/circuitpython/issues/1056)
+    busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
+    self->base.type = &busio_uart_type;
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
         args[ARG_baudrate].u_int, bits, parity, stop, timeout,

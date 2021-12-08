@@ -1,0 +1,8 @@
+CONFIG_ESP32S3_SPIRAM_SUPPORT=n
+
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="espressif-esp32s3"
+# end of LWIP
+

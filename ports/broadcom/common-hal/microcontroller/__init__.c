@@ -187,9 +187,11 @@ const mp_rom_map_elem_t mcu_pin_global_dict_table[TOTAL_GPIO_COUNT] = {
     PIN(51)
     PIN(52)
     PIN(53)
+    #if BCM_VERSION == 2711
     PIN(54)
     PIN(55)
     PIN(56)
     PIN(57)
+    #endif
 };
 MP_DEFINE_CONST_DICT(mcu_pin_globals, mcu_pin_global_dict_table);
