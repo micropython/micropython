@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py website ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py website ${{ github.sha }}
     - name: Install deps
       run: |
         pip install -r requirements-dev.txt

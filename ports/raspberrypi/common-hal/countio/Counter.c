@@ -25,8 +25,8 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         mp_raise_RuntimeError(translate("PWM slice already in use"));
     }
 
-    uint8_t channel = pwm_gpio_to_channel(self->pin_a);
-    if (!pwmio_claim_slice_channels(self->slice_num)) {
+    uint8_t ab_channel = pwm_gpio_to_channel(self->pin_a);
+    if (!pwmio_claim_slice_ab_channels(self->slice_num)) {
         mp_raise_RuntimeError(translate("PWM slice channel A already in use"));
     }
 
@@ -69,7 +69,7 @@ void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     pwm_set_enabled(self->slice_num, false);
     pwm_set_irq_enabled(self->slice_num, false);
 
-    pwmio_release_slice_channels(self->slice_num);
+    pwmio_release_slice_ab_channels(self->slice_num);
 
     reset_pin_number(self->pin_a);
 
@@ -98,13 +98,14 @@ void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
 void counter_interrupt_handler(void) {
     uint32_t mask = pwm_get_irq_status_mask();
 
-    uint8_t i = 1, pos = 1;
+    uint8_t i = 1;
+    uint8_t pos = 0;
     while (!(i & mask)) {
         i = i << 1;
         ++pos;
     }
 
-    countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos - 1];
+    countio_counter_obj_t *self = MP_STATE_PORT(counting)[pos];
     if (self != NULL) {
         pwm_clear_irq(self->slice_num);
         self->count += 65536;

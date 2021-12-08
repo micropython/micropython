@@ -54,12 +54,33 @@
 #endif
 
 static frequencyio_frequencyin_obj_t *active_frequencyins[TC_INST_NUM];
-volatile uint8_t reference_tc = 0xff;
+volatile uint8_t reference_tc;
 #ifdef SAM_D5X_E5X
 static uint8_t dpll_gclk;
+
+#if !BOARD_HAS_CRYSTAL
+static uint8_t osculp32k_gclk;
 #endif
 
-void frequencyin_emergency_cancel_capture(uint8_t index) {
+#endif
+
+void frequencyin_reset(void) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
+        active_frequencyins[i] = NULL;
+    }
+
+    reference_tc = 0xff;
+    #ifdef SAM_D5X_E5X
+    dpll_gclk = 0xff;
+
+    #if !BOARD_HAS_CRYSTAL
+    osculp32k_gclk = 0xff;
+    #endif
+
+    #endif
+}
+
+static void frequencyin_emergency_cancel_capture(uint8_t index) {
     frequencyio_frequencyin_obj_t* self = active_frequencyins[index];
 
     NVIC_DisableIRQ(self->TC_IRQ);
@@ -93,7 +114,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
 
     uint64_t current_ns = common_hal_time_monotonic_ns();
 
-    for (uint8_t i = 0; i <= (TC_INST_NUM - 1); i++) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
         if (active_frequencyins[i] != NULL) {
             frequencyio_frequencyin_obj_t* self = active_frequencyins[i];
             Tc* tc = tc_insts[self->tc_index];
@@ -143,7 +164,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
     ref_tc->COUNT16.INTFLAG.reg |= TC_INTFLAG_OVF;
 }
 
-void frequencyin_reference_tc_init() {
+static void frequencyin_reference_tc_init(void) {
     if (reference_tc == 0xff) {
         return;
     }
@@ -154,9 +175,6 @@ void frequencyin_reference_tc_init() {
     // use the DPLL we setup so that the reference_tc and freqin_tc(s)
     // are using the same clock frequency.
     #ifdef SAM_D5X_E5X
-    if (dpll_gclk == 0xff) {
-        frequencyin_samd51_start_dpll();
-    }
     set_timer_handler(true, reference_tc, TC_HANDLER_FREQUENCYIN);
     turn_on_clocks(true, reference_tc, dpll_gclk);
     #endif
@@ -178,7 +196,7 @@ void frequencyin_reference_tc_init() {
     #endif
 }
 
-bool frequencyin_reference_tc_enabled() {
+static bool frequencyin_reference_tc_enabled(void) {
     if (reference_tc == 0xff) {
         return false;
     }
@@ -186,7 +204,7 @@ bool frequencyin_reference_tc_enabled() {
     return tc->COUNT16.CTRLA.bit.ENABLE;
 }
 
-void frequencyin_reference_tc_enable(bool enable) {
+static void frequencyin_reference_tc_enable(bool enable) {
     if (reference_tc == 0xff) {
         return;
     }
@@ -195,56 +213,69 @@ void frequencyin_reference_tc_enable(bool enable) {
 }
 
 #ifdef SAM_D5X_E5X
-void frequencyin_samd51_start_dpll() {
+static bool frequencyin_samd51_start_dpll(void) {
     if (clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
-        return;
+        return true;
     }
 
-    uint8_t free_gclk = find_free_gclk(1);
-    if (free_gclk == 0xff) {
-        dpll_gclk = 0xff;
-        return;
+    dpll_gclk = find_free_gclk(1);
+    if (dpll_gclk == 0xff) {
+        return false;
     }
 
-    GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(free_gclk);
     // TC4-7 can only have a max of 100MHz source
     // DPLL1 frequency equation with [X]OSC32K as source: 98.304MHz = 32768(2999 + 1 + 0/32)
     // Will also enable the Lock Bypass due to low-frequency sources causing DPLL unlocks
     // as outlined in the Errata (1.12.1)
     OSCCTRL->Dpll[1].DPLLRATIO.reg = OSCCTRL_DPLLRATIO_LDRFRAC(0) | OSCCTRL_DPLLRATIO_LDR(2999);
-#if BOARD_HAS_CRYSTAL
-    // we can use XOSC32K directly as the source
-    OSC32KCTRL->XOSC32K.bit.EN32K = 1;
-    OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(1) | OSCCTRL_DPLLCTRLB_LBYPASS;
-#else
-    // can't use OSCULP32K directly; need to setup a GCLK as a reference,
-    // which must be done in samd/clocks.c to avoid waiting for sync
-    return;
-    //OSC32KCTRL->OSCULP32K.bit.EN32K = 1;
-    //OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_REFCLK(0);
-#endif
-    OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
 
+#if BOARD_HAS_CRYSTAL
+    // we can use XOSC32K directly as the source. It has already been initialized in clocks.c
+    OSCCTRL->Dpll[1].DPLLCTRLB.reg =
+        OSCCTRL_DPLLCTRLB_REFCLK(OSCCTRL_DPLLCTRLB_REFCLK_XOSC32_Val) | OSCCTRL_DPLLCTRLB_LBYPASS;
+#else
+    // We can't use OSCULP32K directly. Set up a GCLK controlled by it
+    // Then use that GCLK as the reference oscillator for the DPLL.
+    osculp32k_gclk = find_free_gclk(1);
+    if (osculp32k_gclk == 0xff) {
+        return false;
+    }
+    enable_clock_generator(osculp32k_gclk, GCLK_GENCTRL_SRC_OSCULP32K_Val, 1);
+    GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(OSCCTRL_GCLK_ID_FDPLL1);
+    OSCCTRL->Dpll[1].DPLLCTRLB.reg =
+        OSCCTRL_DPLLCTRLB_REFCLK(OSCCTRL_DPLLCTRLB_REFCLK_GCLK_Val) | OSCCTRL_DPLLCTRLB_LBYPASS;
+#endif
+
+    OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE;
     while (!(OSCCTRL->Dpll[1].DPLLSTATUS.bit.LOCK || OSCCTRL->Dpll[1].DPLLSTATUS.bit.CLKRDY)) {}
-    enable_clock_generator(free_gclk, GCLK_GENCTRL_SRC_DPLL1_Val, 1);
-    dpll_gclk = free_gclk;
+
+    enable_clock_generator(dpll_gclk, GCLK_GENCTRL_SRC_DPLL1_Val, 1);
+    return true;
 }
 
-void frequencyin_samd51_stop_dpll() {
+static void frequencyin_samd51_stop_dpll(void) {
     if (!clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
         return;
     }
 
-    disable_clock_generator(dpll_gclk);
+    if (dpll_gclk != 0xff) {
+        disable_clock_generator(dpll_gclk);
+        dpll_gclk = 0xff;
+    }
+
+    #if !BOARD_HAS_CRYSTAL
+    if (osculp32k_gclk != 0xff) {
+        disable_clock_generator(osculp32k_gclk);
+        osculp32k_gclk = 0xff;
+    }
+    #endif
 
     GCLK->PCHCTRL[OSCCTRL_GCLK_ID_FDPLL1].reg = 0;
     OSCCTRL->Dpll[1].DPLLCTRLA.reg = 0;
     OSCCTRL->Dpll[1].DPLLRATIO.reg = 0;
     OSCCTRL->Dpll[1].DPLLCTRLB.reg = 0;
-
     while (OSCCTRL->Dpll[1].DPLLSYNCBUSY.bit.ENABLE) {
     }
-    dpll_gclk = 0xff;
 }
 #endif
 
@@ -421,7 +452,7 @@ void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t* se
     self->pin = NO_PIN;
 
     bool check_active = false;
-    for (uint8_t i = 0; i <= (TC_INST_NUM - 1); i++) {
+    for (uint8_t i = 0; i < TC_INST_NUM; i++) {
         if (active_frequencyins[i] != NULL) {
             check_active = true;
         }
