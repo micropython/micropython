@@ -201,8 +201,6 @@ def freeze_internal(kind, path, script, opt):
     if not os.path.isdir(path):
         raise FreezeError("freeze path must be a directory: {}".format(path))
     if script is None and kind == KIND_AS_STR:
-        if any(f[0] == KIND_AS_STR for f in manifest_list):
-            raise FreezeError("can only freeze one str directory")
         manifest_list.append((KIND_AS_STR, path, script, opt))
     elif script is None or isinstance(script, str) and script.find(".") == -1:
         # Recursively search `path` for files to freeze, optionally restricted
@@ -235,6 +233,70 @@ def freeze_internal(kind, path, script, opt):
         manifest_list.append((kind, path, script, opt))
 
 
+def generate_frozen_str_content(paths):
+    def module_name(f):
+        return f
+
+    modules = []
+    output = []
+
+    for path in paths:
+        root = path.rstrip("/")
+        root_len = len(root)
+
+        for dirpath, dirnames, filenames in os.walk(root):
+            for f in filenames:
+                fullpath = dirpath + "/" + f
+                st = os.stat(fullpath)
+                modules.append((path, fullpath[root_len + 1 :], st))
+
+    output.append("#include <stdint.h>\n")
+    output.append("const char mp_frozen_str_names[] = {\n")
+    for _path, f, st in modules:
+        m = module_name(f)
+        output.append('"%s\\0"\n' % m)
+    output.append('"\\0"};\n')
+
+    output.append("const uint32_t mp_frozen_str_sizes[] = {\n")
+
+    for _path, f, st in modules:
+        output.append("%d," % st.st_size)
+
+    output.append("0};\n")
+
+    output.append("const char mp_frozen_str_content[] = {\n")
+    for path, f, st in modules:
+        data = open(path + "/" + f, "rb").read()
+
+        # We need to properly escape the script data to create a C string.
+        # When C parses hex characters of the form \x00 it keeps parsing the hex
+        # data until it encounters a non-hex character.  Thus one must create
+        # strings of the form "data\x01" "abc" to properly encode this kind of
+        # data.  We could just encode all characters as hex digits but it's nice
+        # to be able to read the resulting C code as ASCII when possible.
+
+        data = bytearray(data)  # so Python2 extracts each byte as an integer
+        esc_dict = {ord("\n"): "\\n", ord("\r"): "\\r", ord('"'): '\\"', ord("\\"): "\\\\"}
+        output.append('"')
+        break_str = False
+        for c in data:
+            try:
+                output.append(esc_dict[c])
+            except KeyError:
+                if 32 <= c <= 126:
+                    if break_str:
+                        output.append('" "')
+                        break_str = False
+                    output.append(chr(c))
+                else:
+                    output.append("\\x%02x" % c)
+                    break_str = True
+        output.append('\\0"\n')
+
+    output.append('"\\0"};\n')
+    return "".join(output)
+
+
 def main():
     # Parse arguments
     import argparse
@@ -264,7 +326,6 @@ def main():
         sys.exit(1)
 
     # Get paths to tools
-    MAKE_FROZEN = VARS["MPY_DIR"] + "/tools/make-frozen.py"
     MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/mpy-cross"
     if sys.platform == "win32":
         MPY_CROSS += ".exe"
@@ -327,10 +388,7 @@ def main():
         return
 
     # Freeze paths as strings
-    res, output_str = system([sys.executable, MAKE_FROZEN] + str_paths)
-    if res != 0:
-        print("error freezing strings {}: {}".format(str_paths, output_str))
-        sys.exit(1)
+    output_str = generate_frozen_str_content(str_paths)
 
     # Freeze .mpy files
     if mpy_files:
@@ -365,7 +423,7 @@ def main():
     mkdir(args.output)
     with open(args.output, "wb") as f:
         f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n")
-        f.write(output_str)
+        f.write(output_str.encode())
         f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n")
         f.write(output_mpy)
 
