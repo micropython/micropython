@@ -34,7 +34,7 @@
 #include "att.h"
 #include "hci.h"
 
-void bleio_background(void);
+void bleio_hci_background(void);
 void bleio_reset(void);
 
 typedef struct {
