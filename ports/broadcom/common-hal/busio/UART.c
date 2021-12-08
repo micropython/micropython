@@ -148,6 +148,10 @@ void UART5_IRQHandler(void) {
 
 void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
     uart_status[self->uart_id] = STATUS_NEVER_RESET;
+    common_hal_never_reset_pin(self->tx_pin);
+    common_hal_never_reset_pin(self->rx_pin);
+    common_hal_never_reset_pin(self->cts_pin);
+    common_hal_never_reset_pin(self->rts_pin);
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
