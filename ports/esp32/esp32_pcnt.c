@@ -353,7 +353,7 @@ STATIC mp_obj_t pcnt_PCNT_position(size_t n_args, const mp_obj_t *args) {
     int16_t count;
     check_esp_err(pcnt_get_counter_value(self->unit, &count));
     if (n_args > 1) {
-        int64_t new_count = mp_obj_get_float_to_f((float)args[1]) / self->scale;
+        int64_t new_count = mp_obj_get_float_to_f(args[1]) / self->scale;
         self->count = new_count - count;
     }
     return mp_obj_new_float_from_f(self->scale * (value + count));
