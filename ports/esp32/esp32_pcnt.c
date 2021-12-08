@@ -319,20 +319,23 @@ STATIC mp_obj_t pcnt_PCNT_filter(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_filter_obj, 1, 2, pcnt_PCNT_filter);
 
 // ====================================================================================
-STATIC mp_obj_t pcnt_PCNT_set_count(mp_obj_t self_obj, mp_obj_t value_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    int64_t value = mp_obj_get_ll_int(value_obj);
+STATIC mp_obj_t pcnt_PCNT_count(size_t n_args, const mp_obj_t *args) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     int16_t count;
     check_esp_err(pcnt_get_counter_value(self->unit, &count));
-    self->count = value - count;
+    int64_t value = self->count;
 
-    return MP_ROM_NONE;
+    if (n_args > 1) {
+        uint64_t new_value = mp_obj_get_ll_int(args[1]);
+        self->count = new_value - count;
+    }
+    return mp_obj_new_int_from_ll(value + count);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pcnt_PCNT_set_count_obj, pcnt_PCNT_set_count);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_count_obj, 1, 2, pcnt_PCNT_count);
 
 // -----------------------------------------------------------------
-STATIC mp_obj_t pcnt_PCNT_count(mp_obj_t self_obj) {
+STATIC mp_obj_t pcnt_PCNT_get_count(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     int16_t count;
@@ -340,19 +343,20 @@ STATIC mp_obj_t pcnt_PCNT_count(mp_obj_t self_obj) {
 
     return mp_obj_new_int_from_ll(self->count + count);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_count_obj, pcnt_PCNT_count);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_get_count_obj, pcnt_PCNT_get_count);
 
 // -----------------------------------------------------------------
 STATIC mp_obj_t pcnt_PCNT_position(size_t n_args, const mp_obj_t *args) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    int64_t value = self->count;
     int16_t count;
     check_esp_err(pcnt_get_counter_value(self->unit, &count));
     if (n_args > 1) {
-        int64_t new_count = mp_obj_get_float_to_f(args[1]) / self->scale;
+        int64_t new_count = mp_obj_get_float_to_f((float)args[1]) / self->scale;
         self->count = new_count - count;
     }
-    return mp_obj_new_float_from_f((self->count + count) * self->scale);
+    return mp_obj_new_float_from_f(self->scale * (value + count));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_position_obj, 1, 2, pcnt_PCNT_position);
 
@@ -390,7 +394,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
 #define COMMON_METHODS \
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pcnt_PCNT_count_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_set_value), MP_ROM_PTR(&pcnt_PCNT_set_count_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_get_value), MP_ROM_PTR(&pcnt_PCNT_get_count_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_position), MP_ROM_PTR(&pcnt_PCNT_position_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
