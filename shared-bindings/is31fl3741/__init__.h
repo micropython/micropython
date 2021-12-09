@@ -34,7 +34,7 @@
 
 extern void common_hal_is31fl3741_init(busio_i2c_obj_t *i2c, uint8_t addr);
 extern void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_obj_t *mapping, const uint8_t *pixels, size_t numBytes);
-void begin_transaction(busio_i2c_obj_t *i2c);
-void end_transaction(busio_i2c_obj_t *i2c);
+void is31fl3741_begin_transaction(busio_i2c_obj_t *i2c);
+void is31fl3741_end_transaction(busio_i2c_obj_t *i2c);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H

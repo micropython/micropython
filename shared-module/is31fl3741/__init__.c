@@ -29,7 +29,7 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/is31fl3741/IS31FL3741.h"
 
-void begin_transaction(busio_i2c_obj_t *i2c) {
+void is31fl3741_begin_transaction(busio_i2c_obj_t *i2c) {
     while (!common_hal_busio_i2c_try_lock(i2c)) {
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
@@ -38,12 +38,12 @@ void begin_transaction(busio_i2c_obj_t *i2c) {
     }
 }
 
-void end_transaction(busio_i2c_obj_t *i2c) {
+void is31fl3741_end_transaction(busio_i2c_obj_t *i2c) {
     common_hal_busio_i2c_unlock(i2c);
 }
 
 void common_hal_is31fl3741_init(busio_i2c_obj_t *i2c, uint8_t addr) {
-    begin_transaction(i2c);
+    is31fl3741_begin_transaction(i2c);
 
     uint8_t command = 0xFC; // device ID
     common_hal_busio_i2c_write(i2c, addr, &command, 1, false);
@@ -59,10 +59,12 @@ void common_hal_is31fl3741_init(busio_i2c_obj_t *i2c, uint8_t addr) {
         is31fl3741_set_led(i2c, addr, i, 0xFF, 2);
     }
 
-    end_transaction(i2c);
+    is31fl3741_end_transaction(i2c);
 }
 
 void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_obj_t *mapping, const uint8_t *pixels, size_t numBytes) {
+    is31fl3741_begin_transaction(i2c);
+
     for (size_t i = 0; i < numBytes; i += 3) {
         uint16_t ridx = mp_obj_get_int(mapping[i]);
         if (ridx != 65535) {
@@ -71,4 +73,6 @@ void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_ob
             is31fl3741_set_led(i2c, addr, mp_obj_get_int(mapping[i + 2]), IS31GammaTable[pixels[i + 2]], 0); // blue
         }
     }
+
+    is31fl3741_end_transaction(i2c);
 }

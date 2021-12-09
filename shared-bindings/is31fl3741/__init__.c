@@ -36,32 +36,19 @@
 #include "shared-bindings/is31fl3741/IS31FL3741.h"
 
 
-//| """Low-level neopixel implementation
+//| """Low-level is31fl3741 implementation
 //|
-//| The `neopixel_write` module contains a helper method to write out bytes in
-//| the 800khz neopixel protocol.
+//| The `is31fl3741_write` module contains a helper method to write out bytes in
+//| over the I2C bus.
 //|
-//| For example, to turn off a single neopixel (like the status pixel on Express
-//| boards.)
+//| def is31fl3741_write(i2c: busio.I2c, addr: int, mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
+//|     """Write buf out on the given I2C bus.
 //|
-//| .. code-block:: python
-//|
-//|   import board
-//|   import neopixel_write
-//|   import digitalio
-//|
-//|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
-//|   pin.direction = digitalio.Direction.OUTPUT
-//|   pixel_off = bytearray([0, 0, 0])
-//|   neopixel_write.neopixel_write(pin, pixel_off)"""
-//|
-//| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: ReadableBuffer) -> None:
-//|     """Write buf out on the given DigitalInOut.
-//|
-//|     :param ~digitalio.DigitalInOut digitalinout: the DigitalInOut to output with
+//|     :param ~busio.I2C i2c: the I2C bus to output with
+//|     :param ~int addr: the I2C address of the IS31FL3741 device
+//|     :param ~Tuple[int, ...] mapping: map the pixels in the buffer to the order addressed by the driver chip
 //|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
 //|     ...
-// STATIC mp_obj_t is31fl3741_is31fl3741_write(mp_obj_t i2c_obj, mp_obj_t device_addr_obj, mp_obj_t mapping, mp_obj_t buf) {
 STATIC mp_obj_t is31fl3741_is31fl3741_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_i2c, ARG_addr, ARG_mapping, ARG_buffer };
     static const mp_arg_t allowed_args[] = {
@@ -92,6 +79,12 @@ STATIC mp_obj_t is31fl3741_is31fl3741_write(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_write_obj, 0, is31fl3741_is31fl3741_write);
 
+//| def is31fl3741_init(i2c: busio.I2c, addr: int) -> None:
+//|     """Initialize the IS31FL3741 device.
+//|
+//|     :param ~busio.I2C i2c: the I2C bus to output with
+//|     :param ~int addr: the I2C address of the IS31FL3741 device
+//|     ...
 STATIC mp_obj_t is31fl3741_is31fl3741_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_i2c, ARG_addr };
     static const mp_arg_t allowed_args[] = {
