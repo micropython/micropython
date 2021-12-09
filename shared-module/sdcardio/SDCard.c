@@ -266,6 +266,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
                 return result;
             }
         } else {
+            DEBUG_PRINT("Reading card version, response=0x%02x\n", response);
             return translate("couldn't determine SD card version");
         }
     }
