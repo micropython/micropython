@@ -32,7 +32,7 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RAISE, filter=12787, scale=1.0)
+.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1.0)
 
     Counter start to count immediately. Filtering is enabled.
 
@@ -52,9 +52,9 @@ Constructor
 
       - *edge*\=value.  Which edges of the input signal will be counted by Counter:
 
-        - Counter.RAISE : raise edges
-        - Counter.FALL : fall edges
-        - Counter.RAISE | Counter.FALL : both edges
+        - Counter.RISING : raise edges
+        - Counter.FALLING : fall edges
+        - Counter.RISING | Counter.FALLING : both edges
 
       - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
@@ -78,7 +78,7 @@ Methods
 
     Return current 64-bit signed counter value.
 
-.. method:: Counter.set_value(value)
+.. method:: Counter.value(value)
 
     Set the counter value, *value* is 64-bit signed integer.
 
@@ -102,11 +102,11 @@ Methods
         cnt.filter(10_000)  # filter delay is 10ms
         cnt.pause()
         cnt.resume()
-        cnt.set_value(12345)  # set the counter value
+        c = cnt.value(12345)  # get current counter value, set the counter value
 
         _c = None
         while True:
-            c = cnt.count()  # get the counter value
+            c = cnt.value()  # get the counter value
             if _c != c:
                 _c = c
                 print('Counter =', c)
@@ -138,7 +138,7 @@ Constructor
     Keyword arguments:
 
       - *x124*\=value. Possible values is 1, 2, 4.
-        When more Encoder resolution is needed, it is possible for the counter to count the leading
+        When more Encoder resolution is needed, it is possible for the encoder to count the leading
         and trailing edges of the quadrature encoder’s pulse train from one channel,
         which doubles (x2) the number of pulses. Counting both leading and trailing edges
         of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses:
@@ -160,7 +160,7 @@ Methods
    about the parameters.
 
 The Encoder has the same methods as the Counter and differs only
-in the constructor and internal hardware PCNT counter initialization.
+in the constructor and internal hardware PCNT initialization.
 
 ::
 
@@ -173,11 +173,11 @@ in the constructor and internal hardware PCNT counter initialization.
         enc.filter(10_000)  # filter delay is 10ms
         enc.pause()
         enc.resume()
-        enc.set_value(12345)  # set the encoder value
+        c = enc.value(12345)  # get current encoder value, set the encoder value
 
         _c = None
         while True:
-            c = enc.count()  # get the encoder value
+            c = enc.value()  # get the encoder value
             if _c != c:
                 _c = c
                 print('Encoder =', c)

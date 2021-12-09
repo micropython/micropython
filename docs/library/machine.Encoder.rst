@@ -22,8 +22,8 @@ Example usage::
     from machine import Pin, Encoder
 
     enc = Encoder(Pin(0), Pin(1))  # create Quadrature Encoder object and start to encode input pulses
-    value = enc.value()            # get current raw encoder value
-    enc.set_value(0)               # set raw encoder value to 0
+    value = enc.value()            # get current encoder value
+    enc.set_value(0)               # set encoder value to 0
     enc.deinit()                   # turn off the Qudrature encoder
 
     print(enc)                     # show the Encoder object properties
@@ -59,13 +59,17 @@ Methods
    Stops the Encoder, disables interrupts and releases the resources used by the encoder. On
    Soft Reset, all instances of Encoder are deinitialized.
 
-.. method:: Encoder.value()
+.. method:: Encoder.value([value])
 
-   Get the current raw Encoder value as a signed integer as fast as possible.
+   Get current Encoder value as a signed integer, set the Encoder value.
 
-.. method:: Encoder.set_value(value)
+   Pseudocode is::
 
-   Set the current raw Encoder value as signed integer.
+    def value(self, value=None):
+        _value = self._value
+        if value is not None:
+            self._value = value
+        return _value
 
 .. method:: Encoder.position([value])
 
@@ -73,12 +77,14 @@ Methods
    With no arguments the actual position are returned.
 
    With a single *value* argument the position of Encoder is set to that value.
+
    Pseudocode is::
 
-    def position(self, value=None):
-        if value is not None:
-            self._value = round(value / self.scale)
-        return self._value * self.scale
+    def position(self, position=None):
+        _position = self._value * self.scale
+        if position is not None:
+            self._value = round(position / self.scale)
+        return _position
 
 The *scale* parameter allows to get *Encoder.position()* in different units.::
 

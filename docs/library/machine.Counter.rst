@@ -19,10 +19,10 @@ Example usage::
 
     counter = Counter(Pin(0, mode=Pin.INPUT))  # create Counter object and start to count input pulses
     value = counter.value()                    # get current counter value
-    counter.set_value(0)                       # Set counter to 0
+    value = counter.value(0)                   # get current counter value, set counter to 0
     counter.deinit()                           # turn off the Counter
 
-    print(counter)             # show the Counter object properties
+    print(counter)                             # show the Counter object properties
 
 Constructor
 -----------
@@ -60,16 +60,20 @@ Methods
 
 .. method:: Counter.deinit()
 
-   Stops the Counter, disables interrupts and releases the resources used by the counter. On
-   Soft Reset, all instances of Counter are deinitialized.
+   Stops the Counter, disables interrupts and releases hardware resources used by the counter.
+   On Soft Reset, all instances of Counter are deinitialized.
 
-.. method:: Counter.value()
+.. method:: Counter.value([value])
 
-   Get the current raw Counter value as a signed integer as fast as possible.
+   Get current value, set the Counter value as signed integer.
 
-.. method:: Counter.set_value(value)
+   Pseudocode is::
 
-   Set the current raw Counter value as signed integer.
+    def value(self, value=None):
+        _value = self._value
+        if value is not None:
+            self._value = value
+        return _value
 
 .. method:: Counter.position([value])
 
@@ -80,7 +84,8 @@ Methods
 
    Pseudocode is::
 
-    def position(self, value=None):
-        if value is not None:
-            self._value = round(value / self.scale)
-        return self._value * self.scale
+    def position(self, position=None):
+        _position = self._value * self.scale
+        if position is not None:
+            self._value = round(position / self.scale)
+        return _position
