@@ -61,7 +61,7 @@ void common_hal_is31fl3741_IS31FL3741_construct(is31fl3741_IS31FL3741_obj_t *sel
 
     mp_obj_t *items;
     size_t len;
-    mp_obj_list_get(mapping, &len, &items);
+    mp_obj_tuple_get(mapping, &len, &items);
 
     if (len != (size_t)(self->scale_width * self->scale_height * 3)) {
         mp_raise_ValueError(translate("LED mappings must match display size"));
