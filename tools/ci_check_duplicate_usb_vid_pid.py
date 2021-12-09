@@ -51,6 +51,8 @@ DEFAULT_IGNORELIST = [
     "unexpectedmaker_feathers2_prerelease",
     "espressif_kaluga_1",
     "espressif_kaluga_1.3",
+    "espressif_esp32s3_devkitc_1",
+    "espressif_esp32s3_devkitc_1_nopsram",
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
