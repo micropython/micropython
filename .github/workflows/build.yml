@@ -35,7 +35,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py test ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py test ${{ github.sha }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags || git log --parents HEAD~4..
@@ -141,7 +141,7 @@ jobs:
       with:
         python-version: 3.8
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -197,7 +197,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py docs ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags
@@ -269,7 +269,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -321,7 +321,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -373,7 +373,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: CircuitPython version
       run: git describe --dirty --tags
     - uses: actions/cache@v2
@@ -460,7 +460,7 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext mtools

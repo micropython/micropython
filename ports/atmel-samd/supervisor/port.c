@@ -71,6 +71,10 @@
 #include "common-hal/busio/__init__.h"
 #endif
 
+#if CIRCUITPY_FREQUENCYIO
+#include "common-hal/frequencyio/FrequencyIn.h"
+#endif
+
 #include "common-hal/microcontroller/Pin.h"
 
 #if CIRCUITPY_PULSEIO
@@ -388,6 +392,10 @@ void reset_port(void) {
     i2sout_reset();
     #endif
 
+    #if CIRCUITPY_FREQUENCYIO
+    frequencyin_reset();
+    #endif
+
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
     #endif
@@ -399,7 +407,7 @@ void reset_port(void) {
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
-    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO
+    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO || CIRCUITPY_FREQUENCYIO
     reset_timers();
     #endif
 
