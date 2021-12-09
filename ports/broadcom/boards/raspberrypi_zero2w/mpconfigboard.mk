@@ -1,5 +1,5 @@
 USB_VID = 0x2E8A
-USB_PID = 0xF002
+USB_PID = 0x1015
 USB_PRODUCT = "Raspberry Pi Zero 2W"
 USB_MANUFACTURER = "Raspberry Pi"
 
