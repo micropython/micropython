@@ -25,7 +25,7 @@
 #define PHY_PHYSTS_LINK_MASK          0x0001U /*!< The PHY link up mask. */
 
 #define PHY_RMII_MODE                 0x20
-#define PHY_RMII_REV1_0               0x10   
+#define PHY_RMII_REV1_0               0x10
 
 /*! @brief Defines the timeout macro. */
 #define PHY_READID_TIMEOUT_COUNT 1000U
