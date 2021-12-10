@@ -4,6 +4,7 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 
 // HSE is 8MHz, HSI is 16MHz CPU freq set to 84MHz
 // Default source for the clock is HSI.

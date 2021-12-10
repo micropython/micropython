@@ -8,6 +8,7 @@
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 
 // HSE is 8MHz from ST-LINK, in bypass mode, run SYSCLK at 168MHz
 #define MICROPY_HW_CLK_USE_BYPASS   (1)
