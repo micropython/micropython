@@ -58,6 +58,8 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #define MP_PRN_LEVEL 0
 
+#define FILTER_MAX 1023
+
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
 static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
@@ -93,7 +95,7 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
 // -------------------------------------------------------------------------------------------------------------
 // Calculate the filter parameters based on an ns value
 // 1 / 80MHz = 12.5ns - min filter period
-// 12.5ns * 1023 = 12787.5ns - max filter period
+// 12.5ns * FILTER_MAX = 12.5ns * 1023 = 12787.5ns - max filter period
 //
 #define ns_to_filter(ns) ((ns * (APB_CLK_FREQ / 1000000) + 500) / 1000)
 #define filter_to_ns(filter) (filter * 1000 / (APB_CLK_FREQ / 1000000))
@@ -106,8 +108,8 @@ STATIC uint16_t get_filter_value(pcnt_unit_t unit) {
 }
 
 STATIC void set_filter_value(pcnt_unit_t unit, int16_t value) {
-    if ((value < 0) || (value > 1023)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("correct filter value is 0..%d ns"), filter_to_ns(1023));
+    if ((value < 0) || (value > FILTER_MAX)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("correct filter value is 0..%d ns"), filter_to_ns(FILTER_MAX));
     }
 
     check_esp_err(pcnt_set_filter_value(unit, value));
@@ -257,7 +259,7 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     }
     self->edge = RISING;
     self->scale = 1.0;
-    self->filter = 1023;
+    self->filter = FILTER_MAX;
 
     self->unit = (pcnt_unit_t)-1;
 
@@ -572,7 +574,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     self->attached = false;
     self->x124 = 4;
     self->scale = 1.0;
-    self->filter = 1023;
+    self->filter = FILTER_MAX;
 
     self->unit = (pcnt_unit_t)-1;
 
