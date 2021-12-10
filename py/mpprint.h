@@ -93,7 +93,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
     do { \
         if (MP_PRN_LEVEL > 0) { \
             if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
-                mp_printf(MP_PYTHON_PRINTER, "%d:: ", level); \
+                mp_printf(MP_PYTHON_PRINTER, "%d| ", level); \
                 mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
                 mp_printf(MP_PYTHON_PRINTER, "\n"); \
             } \
