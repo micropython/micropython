@@ -40,7 +40,9 @@
 #include "supervisor/shared/bluetooth/serial.h"
 #endif
 
+#if CIRCUITPY_USB
 #include "tusb.h"
+#endif
 
 /*
  * Note: DEBUG_UART currently only works on STM32 and nRF.

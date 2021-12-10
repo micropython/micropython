@@ -33,8 +33,9 @@
 
 #include "sched/sched.h"
 
-#include "supervisor/board.h"
+#include "shared-bindings/rtc/__init__.h"
 
+#include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/usb.h"
@@ -89,6 +90,9 @@ void reset_port(void) {
     #endif
     #if CIRCUITPY_BUSIO
     busio_uart_reset();
+    #endif
+    #if CIRCUITPY_RTC
+    rtc_reset();
     #endif
 
     reset_all_pins();

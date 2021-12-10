@@ -230,11 +230,18 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
 
     common_hal_digitalio_digitalinout_set_value(&self->cs, false);
 
+    assert(!self->in_cmd25);
+    self->in_cmd25 = false; // should be false already
+
     // CMD0: init card: should return _R1_IDLE_STATE (allow 5 attempts)
     {
         bool reached_idle_state = false;
         for (int i = 0; i < 5; i++) {
-            if (cmd(self, 0, 0, NULL, 0, true, true) == R1_IDLE_STATE) {
+            // do not call cmd with wait=true, because that will return
+            // prematurely if the idle state is not reached. we can't depend on
+            // this when the card is not yet in SPI mode
+            (void)wait_for_ready(self);
+            if (cmd(self, 0, 0, NULL, 0, true, false) == R1_IDLE_STATE) {
                 reached_idle_state = true;
                 break;
             }
@@ -259,6 +266,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
                 return result;
             }
         } else {
+            DEBUG_PRINT("Reading card version, response=0x%02x\n", response);
             return translate("couldn't determine SD card version");
         }
     }
@@ -296,7 +304,7 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
     return NULL;
 }
 
-void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *bus, mcu_pin_obj_t *cs, int baudrate) {
+void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *bus, const mcu_pin_obj_t *cs, int baudrate) {
     self->bus = bus;
     common_hal_digitalio_digitalinout_construct(&self->cs, cs);
     common_hal_digitalio_digitalinout_switch_to_output(&self->cs, true, DRIVE_MODE_PUSH_PULL);

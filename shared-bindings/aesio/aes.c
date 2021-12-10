@@ -9,6 +9,10 @@
 
 // Defined at the end of this file
 
+//| MODE_ECB: int
+//| MODE_CBC: int
+//| MODE_CTR: int
+//|
 //| class AES:
 //|     """Encrypt and decrypt AES streams"""
 //|
@@ -16,8 +20,8 @@
 //|         """Create a new AES state with the given key.
 //|
 //|            :param ~_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
-//|            :param int mode: AES mode to use.  One of: AES.MODE_ECB, AES.MODE_CBC, or
-//|                             AES.MODE_CTR
+//|            :param int mode: AES mode to use.  One of: `MODE_ECB`, `MODE_CBC`, or
+//|                             `MODE_CTR`
 //|            :param ~_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
 //|
 //|            Additional arguments are supported for legacy reasons.
@@ -30,7 +34,7 @@
 //|              key = b'Sixteen byte key'
 //|              inp = b'CircuitPython!!!' # Note: 16-bytes long
 //|              outp = bytearray(len(inp))
-//|              cipher = aesio.AES(key, aesio.mode.MODE_ECB)
+//|              cipher = aesio.AES(key, aesio.MODE_ECB)
 //|              cipher.encrypt_into(inp, outp)
 //|              hexlify(outp)"""
 //|         ...
@@ -41,10 +45,10 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
     (void)type;
     enum { ARG_key, ARG_mode, ARG_IV, ARG_counter, ARG_segment_size };
     static const mp_arg_t allowed_args[] = {
-        {MP_QSTR_key, MP_ARG_OBJ | MP_ARG_REQUIRED},
-        {MP_QSTR_mode, MP_ARG_INT, {.u_int = AES_MODE_ECB}},
-        {MP_QSTR_IV, MP_ARG_OBJ},
-        {MP_QSTR_counter, MP_ARG_OBJ},
+        {MP_QSTR_key, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_mode, MP_ARG_INT, {.u_int = AES_MODE_ECB} },
+        {MP_QSTR_IV, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_counter, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         {MP_QSTR_segment_size, MP_ARG_INT, {.u_int = 8}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

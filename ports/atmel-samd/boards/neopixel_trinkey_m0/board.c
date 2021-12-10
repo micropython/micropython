@@ -39,3 +39,6 @@ bool board_requests_safe_mode(void) {
 void reset_board(void) {
     board_reset_user_neopixels(&pin_PA05, 4);
 }
+
+void board_deinit(void) {
+}

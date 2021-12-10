@@ -38,7 +38,7 @@
 
 void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *command,
-    uint8_t num_data, mcu_pin_obj_t **data, uint32_t frequency) {
+    uint8_t num_data, const mcu_pin_obj_t **data, uint32_t frequency) {
     struct geometry geo;
 
     if (clock->number != PIN_SDIO_CLK || command->number != PIN_SDIO_CMD) {

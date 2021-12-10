@@ -18,12 +18,14 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
     - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
-        fetch-depth: 0
+        submodules: false
+        fetch-depth: 1
     - name: Set up Python 3.8
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py website ${{ github.sha }}
     - name: Install deps
       run: |
         pip install -r requirements-dev.txt
@@ -31,7 +33,6 @@ jobs:
       run: |
         gcc --version
         python3 --version
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
     - name: CircuitPython version
       run: git describe --dirty --tags
     - name: Website

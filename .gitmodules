@@ -109,7 +109,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Register.git
 [submodule "extmod/ulab"]
 	path = extmod/ulab
-	url = https://github.com/adafruit/circuitpython-ulab
+	url = https://github.com/v923z/micropython-ulab
 [submodule "frozen/Adafruit_CircuitPython_ESP32SPI"]
 	path = frozen/Adafruit_CircuitPython_ESP32SPI
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ESP32SPI
@@ -149,7 +149,7 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/espressif/esp-idf.git
-	branch = release/v4.3
+	branch = release/v4.4
 [submodule "ports/espressif/certificates/nina-fw"]
 	path = ports/espressif/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
@@ -190,3 +190,12 @@
 [submodule "frozen/Adafruit_CircuitPython_APDS9960"]
 	path = frozen/Adafruit_CircuitPython_APDS9960
 	url = https://github.com/adafruit/Adafruit_CircuitPython_APDS9960
+[submodule "ports/broadcom/peripherals"]
+	path = ports/broadcom/peripherals
+	url = https://github.com/adafruit/broadcom-peripherals.git
+	branch = main-build
+[submodule "rpi-firmware"]
+	path = ports/broadcom/firmware
+	url = https://github.com/raspberrypi/rpi-firmware.git
+	branch = master
+	shallow = true

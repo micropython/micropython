@@ -189,7 +189,7 @@ mp_obj_t mp_obj_tuple_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
         // when called with a native type (eg namedtuple) using mp_obj_tuple_subscr, get the native self
         if (mp_type_get_subscr_slot(self->base.type) != &mp_obj_tuple_subscr) {
-            self = mp_obj_cast_to_native_base(self_in, &mp_type_tuple);
+            self = MP_OBJ_TO_PTR(mp_obj_cast_to_native_base(self_in, MP_OBJ_FROM_PTR(&mp_type_tuple)));
         }
 
         #if MICROPY_PY_BUILTINS_SLICE

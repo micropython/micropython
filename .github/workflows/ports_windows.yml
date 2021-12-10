@@ -65,12 +65,12 @@ jobs:
         which python; python --version; python -c "import cascadetoml"
         which python3; python3 --version; python3 -c "import cascadetoml"
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.2.0
       with:
-        submodules: true
-        fetch-depth: 0
-
-    - run: git fetch --recurse-submodules=no https://github.com/adafruit/circuitpython refs/tags/*:refs/tags/*
+        submodules: false
+        fetch-depth: 1
+    - name: Get CP deps
+      run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
     - name: CircuitPython version
       run: |
         git describe --dirty --tags

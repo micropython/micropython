@@ -109,8 +109,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // set up as GPIO by the bitbangio.I2C object.
     //
     // Sets pins to open drain, high, and input.
+    //
+    // Do not use the default supplied clock stretching timeout here.
+    // It is too short for some devices. Use the busio timeout instead.
     shared_module_bitbangio_i2c_construct(&self->bitbangio_i2c, scl, sda,
-        frequency, timeout);
+        frequency, BUS_TIMEOUT_US);
 
     self->baudrate = i2c_init(self->peripheral, frequency);
 

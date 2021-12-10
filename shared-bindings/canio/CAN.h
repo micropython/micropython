@@ -35,7 +35,7 @@ extern const mp_obj_type_t canio_can_type;
 
 typedef struct canio_can_obj canio_can_obj_t;
 
-void common_hal_canio_can_construct(canio_can_obj_t *self, mcu_pin_obj_t *tx, mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent);
+void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *tx, const mcu_pin_obj_t *rx, int baudrate, bool loopback, bool silent);
 bool common_hal_canio_can_auto_restart_get(canio_can_obj_t *self);
 bool common_hal_canio_can_deinited(canio_can_obj_t *self);
 int common_hal_canio_can_baudrate_get(canio_can_obj_t *self);

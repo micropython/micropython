@@ -56,6 +56,7 @@
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -158,7 +159,7 @@ STATIC void start_mp(supervisor_allocation *heap) {
     gc_init(heap->ptr, heap->ptr + get_allocation_length(heap) / 4);
     #endif
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
+    mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
     // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
@@ -166,7 +167,7 @@ STATIC void start_mp(supervisor_allocation *heap) {
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
-    mp_obj_list_init(mp_sys_argv, 0);
+    mp_obj_list_init((mp_obj_list_t *)mp_sys_argv, 0);
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
@@ -537,6 +538,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
                 common_hal_alarm_pretending_deep_sleep();
             } else if (connecting_delay_ticks < 0) {
                 // Entering deep sleep (may be fake or real.)
+                status_led_deinit();
+                deinit_rxtx_leds();
                 board_deinit();
                 if (!supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
@@ -678,7 +681,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
-        bool write_boot_output = (common_hal_mcu_processor_get_reset_reason() == RESET_REASON_POWER_ON);
+        bool write_boot_output = true;
         FIL boot_output_file;
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
             char *file_contents = m_new(char, boot_text.alloc);
@@ -797,6 +800,9 @@ int __attribute__((used)) main(void) {
     supervisor_bluetooth_init();
     #endif
 
+    // Start the debug serial
+    serial_early_init();
+
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
@@ -804,9 +810,6 @@ int __attribute__((used)) main(void) {
 
     // displays init after filesystem, since they could share the flash SPI
     board_init();
-
-    // Start the debug serial
-    serial_early_init();
 
     // Reset everything and prep MicroPython to run boot.py.
     reset_port();
@@ -858,7 +861,11 @@ int __attribute__((used)) main(void) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
             first_run = false;
-            skip_repl = run_code_py(safe_mode);
+            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+                skip_repl = run_code_py(safe_mode);
+            } else {
+                skip_repl = false;
+            }
         } else if (exit_code != 0) {
             break;
         }
@@ -905,7 +912,7 @@ void gc_collect(void) {
 
     // This naively collects all object references from an approximate stack
     // range.
-    gc_collect_root((void **)sp, ((uint32_t)port_stack_get_top() - sp) / sizeof(uint32_t));
+    gc_collect_root((void **)sp, ((mp_uint_t)port_stack_get_top() - sp) / sizeof(mp_uint_t));
     gc_collect_end();
 }
 

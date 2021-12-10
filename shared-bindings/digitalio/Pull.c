@@ -60,7 +60,7 @@ STATIC MP_DEFINE_CONST_DICT(digitalio_pull_locals_dict, digitalio_pull_locals_di
 
 STATIC void digitalio_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     qstr pull = MP_QSTR_UP;
-    if (MP_OBJ_TO_PTR(self_in) == MP_ROM_PTR(&digitalio_pull_down_obj)) {
+    if (self_in == MP_ROM_PTR(&digitalio_pull_down_obj)) {
         pull = MP_QSTR_DOWN;
     }
     mp_printf(print, "%q.%q.%q", MP_QSTR_digitalio, MP_QSTR_Pull, pull);
@@ -70,5 +70,5 @@ const mp_obj_type_t digitalio_pull_type = {
     { &mp_type_type },
     .name = MP_QSTR_Pull,
     .print = digitalio_pull_print,
-    .locals_dict = (mp_obj_t)&digitalio_pull_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&digitalio_pull_locals_dict,
 };

@@ -65,7 +65,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
     self->base.type = &digitalio_digitalinout_type;
 
-    mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
+    const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);
@@ -95,7 +95,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_deinit_obj, digitalio_digitalin
 //|
 STATIC mp_obj_t digitalio_digitalinout_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_digitalio_digitalinout_deinit(args[0]);
+    common_hal_digitalio_digitalinout_deinit(MP_OBJ_TO_PTR(args[0]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(digitalio_digitalinout_obj___exit___obj, 4, 4, digitalio_digitalinout_obj___exit__);
@@ -119,7 +119,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
     enum { ARG_value, ARG_drive_mode };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_value,      MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_drive_mode, MP_ARG_OBJ, {.u_rom_obj = &digitalio_drive_mode_push_pull_obj} },
+        { MP_QSTR_drive_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_PTR(&digitalio_drive_mode_push_pull_obj)} },
     };
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -127,7 +127,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_output(size_t n_args, const mp_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     digitalio_drive_mode_t drive_mode = DRIVE_MODE_PUSH_PULL;
-    if (args[ARG_drive_mode].u_rom_obj == &digitalio_drive_mode_open_drain_obj) {
+    if (args[ARG_drive_mode].u_rom_obj == MP_ROM_PTR(&digitalio_drive_mode_open_drain_obj)) {
         drive_mode = DRIVE_MODE_OPEN_DRAIN;
     }
     // do the transfer
@@ -168,9 +168,9 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
 
 
     digitalio_pull_t pull = PULL_NONE;
-    if (args[ARG_pull].u_rom_obj == &digitalio_pull_up_obj) {
+    if (args[ARG_pull].u_rom_obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
         pull = PULL_UP;
-    } else if (args[ARG_pull].u_rom_obj == &digitalio_pull_down_obj) {
+    } else if (args[ARG_pull].u_rom_obj == MP_ROM_PTR(&digitalio_pull_down_obj)) {
         pull = PULL_DOWN;
     }
     // do the transfer
@@ -207,9 +207,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(digitalio_digitalinout_get_direction_obj, digitalio_di
 STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_obj_t value) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
-    if (value == &digitalio_direction_input_obj) {
+    if (value == MP_ROM_PTR(&digitalio_direction_input_obj)) {
         common_hal_digitalio_digitalinout_switch_to_input(self, PULL_NONE);
-    } else if (value == &digitalio_direction_output_obj) {
+    } else if (value == MP_ROM_PTR(&digitalio_direction_output_obj)) {
         digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(self, false, DRIVE_MODE_PUSH_PULL);
         if (result == DIGITALINOUT_INPUT_ONLY) {
             mp_raise_NotImplementedError(translate("Pin is input only"));
@@ -287,7 +287,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_o
         return mp_const_none;
     }
     digitalio_drive_mode_t c_drive_mode = DRIVE_MODE_PUSH_PULL;
-    if (drive_mode == &digitalio_drive_mode_open_drain_obj) {
+    if (drive_mode == MP_ROM_PTR(&digitalio_drive_mode_open_drain_obj)) {
         c_drive_mode = DRIVE_MODE_OPEN_DRAIN;
     }
     common_hal_digitalio_digitalinout_set_drive_mode(self, c_drive_mode);
@@ -336,9 +336,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
         return mp_const_none;
     }
     digitalio_pull_t pull = PULL_NONE;
-    if (pull_obj == &digitalio_pull_up_obj) {
+    if (pull_obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
         pull = PULL_UP;
-    } else if (pull_obj == &digitalio_pull_down_obj) {
+    } else if (pull_obj == MP_ROM_PTR(&digitalio_pull_down_obj)) {
         pull = PULL_DOWN;
     } else if (pull_obj != mp_const_none) {
         mp_raise_ValueError(translate("Unsupported pull value."));
@@ -376,7 +376,7 @@ const mp_obj_type_t digitalio_digitalinout_type = {
     { &mp_type_type },
     .name = MP_QSTR_DigitalInOut,
     .make_new = digitalio_digitalinout_make_new,
-    .locals_dict = (mp_obj_t)&digitalio_digitalinout_locals_dict,
+    .locals_dict = (mp_obj_dict_t *)&digitalio_digitalinout_locals_dict,
 };
 
 // Helper for validating digitalio.DigitalInOut arguments

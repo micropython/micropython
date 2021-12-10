@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-15 18:21+0000\n"
+"PO-Revision-Date: 2021-11-26 13:46+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10-dev\n"
 
 #: main.c
 msgid ""
@@ -591,6 +591,7 @@ msgstr "Les deux broches doivent supporter les interruptions matérielles"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "La luminosité doit être de 0 à 1.0"
@@ -1267,6 +1268,10 @@ msgstr "Authentification insuffisante"
 msgid "Insufficient encryption"
 msgstr "Chiffrement insuffisant"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr "L'interface doit être lancée"
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr "Le tampon interne pour l'audio est trop petit"
@@ -1328,7 +1333,7 @@ msgstr "Broche DAC non valide fournie"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Adresse MAC invalide"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
@@ -1405,7 +1410,7 @@ msgstr "Accès à la mémoire invalide."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
-msgstr ""
+msgstr "Adresse MAC multicast invalide"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1503,6 +1508,10 @@ msgstr "Longueur de mot / bit invalide"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "La clé doit comporter 16, 24 ou 32 octets"
 
+#: shared-module/is31fl3741/IS31FL3741.c
+msgid "LED mappings must match display size"
+msgstr "La disposition des LED doit correspondre à la taille de l'écran"
+
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
 msgstr "La partie gauche de l'argument nommé doit être un identifiant"
@@ -1584,7 +1593,7 @@ msgstr "jmp_pin manquant. L'instruction %d va passer à la broche"
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "More than %d report ids not supported"
-msgstr ""
+msgstr "Plus de %d identifiants de rapport ne sont pas supportés"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1811,11 +1820,11 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
-msgstr ""
+msgstr "Seuls les avertissements connectables peuvent être dirigés"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "Seule la détection des bords est disponible sur ce matériel"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only int or string supported for ip"
@@ -2145,6 +2154,10 @@ msgstr "Le taux d'échantillonage doit être positif"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Taux d'échantillonage trop élevé. Doit être inférieur à %d"
 
+#: shared-bindings/is31fl3741/IS31FL3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr "La dimension d'échelle doit être un multiple de 3"
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan déjà en cours. Arrêtez avec stop_scan."
@@ -2206,10 +2219,6 @@ msgstr "Fractionnement avec des sous-captures"
 msgid "Stack size must be at least 256"
 msgstr "La pile doit être au moins de 256"
 
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
 msgstr "Canal stéréo gauche doit être sur le canal PWM A"
@@ -2264,6 +2273,10 @@ msgid ""
 "enough power for the whole circuit and press reset (after ejecting "
 "CIRCUITPY)."
 msgstr ""
+"L'alimentation du microcontrôleur a diminué. Veillez à ce que votre "
+"alimentation fournisse\n"
+"assez de puissance pour tout le circuit, puis appuyez sur 'reset' (après "
+"avoir éjecté CIRCUITPY)."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2344,7 +2357,7 @@ msgstr "Quantité de données à écrire est plus que %q"
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "Les touches d'alarme ne sont pas disponibles"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2416,7 +2429,7 @@ msgstr "Impossible d'allouer des tampons pour une conversion signée"
 msgid "Unable to create lock"
 msgstr "Impossible de créer un verrou ('lock')"
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Impossible de trouver l'affichage I2C à %x"
@@ -2643,7 +2656,7 @@ msgstr "l'argument est une séquence vide"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr ""
+msgstr "L'argument doit être du type utilisateur"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort argument must be an ndarray"
@@ -2709,7 +2722,7 @@ msgstr "axis trop long"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
-msgstr ""
+msgstr "La valeur du fond est hors de portée de la cible"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2824,7 +2837,7 @@ msgstr "ne peut pas assigner à une expression"
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "ne peut pas s'annuler soi-même"
 
 #: py/obj.c py/objint.c shared-bindings/i2cperipheral/I2CPeripheral.c
 #: shared-module/adafruit_pixelbuf/PixelBuf.c
@@ -3553,8 +3566,9 @@ msgid "invalid syntax for number"
 msgstr "syntaxe invalide pour un nombre"
 
 #: py/objexcept.c
+#, fuzzy
 msgid "invalid traceback"
-msgstr ""
+msgstr "traceback invalide"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3791,7 +3805,7 @@ msgstr "pas de tel attribut"
 
 #: shared-bindings/usb_hid/__init__.c
 msgid "non-Device in %q"
-msgstr ""
+msgstr "aucun appareil dans %q"
 
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
@@ -3850,7 +3864,7 @@ msgstr "l'objet '%s' n'est pas un tuple ou une liste"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
-msgstr ""
+msgstr "les objets ne supportent pas l'assignation des éléments"
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
@@ -3862,7 +3876,7 @@ msgstr "l'objet n'a pas de 'len'"
 
 #: py/obj.c
 msgid "object isn't subscriptable"
-msgstr ""
+msgstr "l'objet n'est pas indexable"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -4051,12 +4065,14 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4071,6 +4087,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4268,7 +4285,7 @@ msgstr "source_bitmap doit avoir une value_count de 8"
 
 #: shared-bindings/wifi/Radio.c
 msgid "ssid can't be more than 32 bytes"
-msgstr ""
+msgstr "un ssid ne peut pas faire plus de 32 octets"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4566,6 +4583,7 @@ msgstr "watchdog timeout doit être supérieur à 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width doit être entre 2 et 8 (inclusivement), non %d"
 
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width doit être plus que zero"

@@ -58,6 +58,9 @@
 
 #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
 #include "peripherals/pcnt.h"
+#endif
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "peripherals/touch.h"
 #endif
 
@@ -69,16 +72,13 @@
 #include "cam.h"
 #endif
 
-#include "esp_heap_caps.h"
-#include "esp_debug_helpers.h"
-
 #include "soc/cache_memory.h"
 #include "soc/rtc_cntl_reg.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
+#include "esp_debug_helpers.h"
+
+#ifdef CONFIG_SPIRAM
+#include "esp32/spiram.h"
 #endif
 
 #define HEAP_SIZE (48 * 1024)
@@ -136,7 +136,7 @@ safe_mode_t port_init(void) {
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO20);
     common_hal_never_reset_pin(&pin_GPIO21);
-    #elif CONFIG_IDF_TARGET_ESP32S2
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif
@@ -153,7 +153,7 @@ safe_mode_t port_init(void) {
     common_hal_never_reset_pin(&pin_GPIO5);
     common_hal_never_reset_pin(&pin_GPIO6);
     common_hal_never_reset_pin(&pin_GPIO7);
-    #elif CONFIG_IDF_TARGET_ESP32S2
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     common_hal_never_reset_pin(&pin_GPIO39);
     common_hal_never_reset_pin(&pin_GPIO40);
     common_hal_never_reset_pin(&pin_GPIO41);
@@ -162,8 +162,11 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-    heap = (uint32_t *)(DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
-    heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
+    if (esp_spiram_is_initialized()) {
+        size_t spiram_size = esp_spiram_get_size();
+        heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
+        heap_size = spiram_size / sizeof(uint32_t);
+    }
     #endif
 
     if (heap == NULL) {

@@ -206,8 +206,14 @@ endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
 endif
+ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
+SRC_PATTERNS += imagecapture/%
+endif
 ifeq ($(CIRCUITPY_IPADDRESS),1)
 SRC_PATTERNS += ipaddress/%
+endif
+ifeq ($(CIRCUITPY_IS31FL3741),1)
+SRC_PATTERNS += is31fl3741/%
 endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
@@ -332,6 +338,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_VIDEOCORE),1)
+SRC_PATTERNS += videocore/%
+endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
@@ -340,9 +349,6 @@ SRC_PATTERNS += wifi/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
-endif
-ifeq ($(CIRCUITPY_IMAGECAPTURE),1)
-SRC_PATTERNS += imagecapture/%
 endif
 ifeq ($(CIRCUITPY_MSGPACK),1)
 SRC_PATTERNS += msgpack/%
@@ -548,6 +554,8 @@ SRC_SHARED_MODULE_ALL = \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
+	is31fl3741/IS31FL3741.c \
+	is31fl3741/__init__.c \
 	keypad/__init__.c \
 	keypad/Event.c \
 	keypad/EventQueue.c \

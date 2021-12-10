@@ -29,16 +29,17 @@ RuntimeError:
 ame__
 mport 
 
-builtins        micropython     _thread         array
-binascii        bitmaptools     btree           cexample
-cmath           collections     cppexample      displayio
-errno           ffi             framebuf        gc
-gifio           hashlib         json            math
-qrio            rainbowio       re              sys
-termios         ubinascii       uctypes         uerrno
-uheapq          uio             ujson           ulab
-uos             urandom         ure             uselect
-ustruct         utime           utimeq          uzlib
+builtins        micropython     _thread         aesio
+array           binascii        bitmaptools     btree
+cexample        cmath           collections     cppexample
+displayio       errno           ffi             framebuf
+gc              gifio           hashlib         json
+math            qrio            rainbowio       re
+sys             termios         traceback       ubinascii
+uctypes         uerrno          uheapq          uio
+ujson           ulab            uos             urandom
+ure             uselect         ustruct         utime
+utimeq          uzlib
 ime
 
 utime           utimeq

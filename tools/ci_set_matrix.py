@@ -24,6 +24,7 @@ import build_board_info
 
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
+    "broadcom": "aarch",
     "cxd56": "arm",
     "espressif": "espressif",
     "litex": "riscv",
@@ -86,7 +87,7 @@ def set_boards_to_build(build_all):
 
     # Split boards by architecture.
     print("Building boards:")
-    arch_to_boards = {"arm": [], "riscv": [], "espressif": []}
+    arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
     for board in boards_to_build:
         print(" ", board)
         port = board_to_port.get(board)

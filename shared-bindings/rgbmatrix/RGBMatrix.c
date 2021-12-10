@@ -45,7 +45,7 @@
 extern Protomatter_core *_PM_protoPtr;
 
 STATIC uint8_t validate_pin(mp_obj_t obj) {
-    mcu_pin_obj_t *result = validate_obj_is_free_pin(obj);
+    const mcu_pin_obj_t *result = validate_obj_is_free_pin(obj);
     return common_hal_mcu_pin_number(result);
 }
 
@@ -132,7 +132,15 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
     }
 }
 
-//|     def __init__(self, *, width: int, bit_depth: int, rgb_pins: Sequence[digitalio.DigitalInOut], addr_pins: Sequence[digitalio.DigitalInOut], clock_pin: digitalio.DigitalInOut, latch_pin: digitalio.DigitalInOut, output_enable_pin: digitalio.DigitalInOut, doublebuffer: bool = True, framebuffer: Optional[WriteableBuffer] = None, height: int = 0, tile: int = 1, serpentine: bool = True) -> None:
+//|     def __init__(self, *, width: int, bit_depth: int,
+//|                  rgb_pins: Sequence[digitalio.DigitalInOut],
+//|                  addr_pins: Sequence[digitalio.DigitalInOut],
+//|                  clock_pin: digitalio.DigitalInOut,
+//|                  latch_pin: digitalio.DigitalInOut,
+//|                  output_enable_pin: digitalio.DigitalInOut,
+//|                  doublebuffer: bool = True,
+//|                  framebuffer: Optional[WriteableBuffer] = None,
+//|                  height: int = 0, tile: int = 1, serpentine: bool = True) -> None:
 //|         """Create a RGBMatrix object with the given attributes.  The height of
 //|         the display is determined by the number of rgb and address pins and the number of tiles:
 //|         ``len(rgb_pins) // 3 * 2 ** len(address_pins) * abs(tile)``.  With 6 RGB pins, 4

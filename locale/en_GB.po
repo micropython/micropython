@@ -585,6 +585,7 @@ msgstr "Both pins must support hardware interrupts"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Brightness must be 0-1.0"
@@ -1236,6 +1237,10 @@ msgstr "Insufficient authentication"
 msgid "Insufficient encryption"
 msgstr "Insufficient encryption"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "Interface must be started"
+msgstr ""
+
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
 msgstr "Internal audio buffer too small"
@@ -1471,6 +1476,10 @@ msgstr "Invalid word/bit length"
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Key must be 16, 24, or 32 bytes long"
+
+#: shared-module/is31fl3741/IS31FL3741.c
+msgid "LED mappings must match display size"
+msgstr ""
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2105,6 +2114,10 @@ msgstr "Sample rate must be positive"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate too high. It must be less than %d"
 
+#: shared-bindings/is31fl3741/IS31FL3741.c
+msgid "Scale dimensions must divide by 3"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan already in progess. Stop with stop_scan."
@@ -2165,10 +2178,6 @@ msgstr "Splitting with sub-captures"
 #: shared-bindings/supervisor/__init__.c
 msgid "Stack size must be at least 256"
 msgstr "Stack size must be at least 256"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Interface must be started"
-msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
@@ -2373,7 +2382,7 @@ msgstr "Unable to allocate buffers for signed conversion"
 msgid "Unable to create lock"
 msgstr "Unable to create lock"
 
-#: shared-module/displayio/I2CDisplay.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Unable to find I2C display at %x"
@@ -3978,12 +3987,14 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -3998,6 +4009,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
+#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4492,6 +4504,7 @@ msgstr "WatchDog timeout must be greater than 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width must be from 2 to 8 (inclusive), not %d"
 
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width must be greater than zero"

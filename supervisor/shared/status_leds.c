@@ -340,6 +340,15 @@ void init_rxtx_leds(void) {
     #endif
 }
 
+void deinit_rxtx_leds(void) {
+    #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_RX)
+    common_hal_digitalio_digitalinout_deinit(&rx_led);
+    #endif
+    #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_TX)
+    common_hal_digitalio_digitalinout_deinit(&tx_led);
+    #endif
+}
+
 void toggle_rx_led(void) {
     #if CIRCUITPY_DIGITALIO && defined(MICROPY_HW_LED_RX)
     common_hal_digitalio_digitalinout_set_value(&rx_led, !common_hal_digitalio_digitalinout_get_value(&rx_led));

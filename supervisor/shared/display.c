@@ -45,7 +45,7 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
-extern size_t blinka_bitmap_data[];
+extern uint32_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;
 extern displayio_group_t circuitpython_splash;
 
@@ -155,7 +155,7 @@ void supervisor_display_move_memory(void) {
     #endif
 }
 
-size_t blinka_bitmap_data[32] = {
+uint32_t blinka_bitmap_data[32] = {
     0x00000011, 0x11000000,
     0x00000111, 0x53100000,
     0x00000111, 0x56110000,

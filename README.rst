@@ -213,7 +213,7 @@ Supported         Support status
 ================  ============================================================
 atmel-samd        ``SAMD21`` stable | ``SAMD51`` stable
 cxd56             stable
-espressif         ``ESP32-C3`` beta | ``ESP32-S2`` stable
+espressif         ``ESP32-C3`` beta | ``ESP32-S2`` stable | ``ESP32-S3`` beta
 litex             alpha
 mimxrt10xx        alpha
 nrf               stable
@@ -229,7 +229,7 @@ unix              alpha
 Boards
 ~~~~~~
 
--  Each ``port`` has a ``boards`` directory containing variations of boards
+-  Each ``port`` has a ``boards`` directory containing boards
    which belong to a specific microcontroller line.
 -  A list of native modules supported by a particular board can be found
    `here <https://circuitpython.readthedocs.io/en/latest/shared-bindings/support_matrix.html>`__.

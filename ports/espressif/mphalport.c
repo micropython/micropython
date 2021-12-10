@@ -25,21 +25,16 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-
 #include "py/mphal.h"
-#include "py/mpstate.h"
-#include "py/gc.h"
-
-#include "esp_debug_helpers.h"
+#include "supervisor/cpu.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "components/esp_rom/include/esp32s3/rom/ets_sys.h"
 #endif
-
-#include "supervisor/cpu.h"
 
 void mp_hal_delay_us(mp_uint_t delay) {
     ets_delay_us(delay);

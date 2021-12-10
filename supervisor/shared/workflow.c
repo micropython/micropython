@@ -28,7 +28,10 @@
 #include "py/mpconfig.h"
 #include "supervisor/workflow.h"
 #include "supervisor/shared/workflow.h"
+
+#if CIRCUITPY_USB
 #include "tusb.h"
+#endif
 
 void supervisor_workflow_reset(void) {
 }
@@ -38,12 +41,20 @@ void supervisor_workflow_reset(void) {
 // Not that some chips don't notice when USB is unplugged after first being plugged in,
 // so this is not perfect, but tud_suspended() check helps.
 bool supervisor_workflow_connecting(void) {
+    #if CIRCUITPY_USB
     return tud_connected() && !tud_suspended();
+    #else
+    return false;
+    #endif
 }
 
 // Return true if host has completed connection to us (such as USB enumeration).
 bool supervisor_workflow_active(void) {
+    #if CIRCUITPY_USB
     // Eventually there might be other non-USB workflows, such as BLE.
     // tud_ready() checks for usb mounted and not suspended.
     return tud_ready();
+    #else
+    return false;
+    #endif
 }

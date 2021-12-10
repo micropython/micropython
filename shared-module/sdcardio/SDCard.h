@@ -45,7 +45,7 @@ typedef struct {
     bool in_cmd25;
 } sdcardio_sdcard_obj_t;
 
-void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *spi, mcu_pin_obj_t *cs, int baudrate);
+void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *spi, const mcu_pin_obj_t *cs, int baudrate);
 void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self);
 void common_hal_sdcardio_sdcard_check_for_deinit(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self);
