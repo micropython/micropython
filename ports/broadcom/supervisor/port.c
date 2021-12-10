@@ -106,7 +106,7 @@ void reset_port(void) {
     audio_dma_reset();
     #endif
 
-    // reset_all_pins();
+    reset_all_pins();
 }
 
 void reset_to_bootloader(void) {

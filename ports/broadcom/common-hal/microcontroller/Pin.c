@@ -45,9 +45,15 @@ void never_reset_pin_number(uint8_t pin_number) {
 }
 
 void reset_pin_number(uint8_t pin_number) {
-    gpio_set_function(pin_number, GPIO_FUNCTION_INPUT);
     pin_in_use[pin_number] = false;
     never_reset_pin[pin_number] = false;
+    // Reset JTAG pins back to JTAG.
+    if (22 <= pin_number && pin_number <= 27) {
+        gpio_set_function(pin_number, GPIO_FUNCTION_ALT4);
+        return;
+    } else {
+        gpio_set_function(pin_number, GPIO_FUNCTION_INPUT);
+    }
     // Set the pull to match the datasheet.
     BP_PULL_Enum pull = BP_PULL_NONE;
     if (pin_number < 9 ||
@@ -66,10 +72,16 @@ void reset_pin_number(uint8_t pin_number) {
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
+    if (pin == NULL) {
+        return;
+    }
     never_reset_pin_number(pin->number);
 }
 
 void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
+    if (pin == NULL) {
+        return;
+    }
     reset_pin_number(pin->number);
 }
 

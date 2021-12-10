@@ -24,27 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_SPI_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
 
-#include "common-hal/microcontroller/Pin.h"
+#include "bindings/videocore/Framebuffer.h"
+#include "shared-module/displayio/__init__.h"
+#include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
-#include "py/obj.h"
+void board_init(void) {
+    videocore_framebuffer_obj_t *fb = &allocate_display_bus()->videocore;
+    fb->base.type = &videocore_framebuffer_type;
+    common_hal_videocore_framebuffer_construct(fb, 640, 480);
 
-typedef struct {
-    mp_obj_base_t base;
-    bool has_lock;
-    const mcu_pin_obj_t *clock;
-    const mcu_pin_obj_t *MOSI;
-    const mcu_pin_obj_t *MISO;
-    uint32_t target_frequency;
-    int32_t real_frequency;
-    uint8_t polarity;
-    uint8_t phase;
-    uint8_t bits;
-    uint8_t index;
-} busio_spi_obj_t;
+    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
+    display->base.type = &framebufferio_framebufferdisplay_type;
+    common_hal_framebufferio_framebufferdisplay_construct(
+        display,
+        MP_OBJ_FROM_PTR(fb),
+        0,
+        true);
+}
 
-void reset_spi(void);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_BROADCOM_COMMON_HAL_BUSIO_SPI_H
+void reset_board(void) {
+}
+
+void board_deinit(void) {
+}
