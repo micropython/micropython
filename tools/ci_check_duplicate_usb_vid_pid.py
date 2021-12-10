@@ -51,6 +51,10 @@ DEFAULT_IGNORELIST = [
     "unexpectedmaker_feathers2_prerelease",
     "espressif_kaluga_1",
     "espressif_kaluga_1.3",
+    "jpconstantineau_pykey18",
+    "jpconstantineau_pykey44",
+    "jpconstantineau_pykey60",
+    "jpconstantineau_pykey87",
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")

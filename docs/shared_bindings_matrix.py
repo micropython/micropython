@@ -41,11 +41,6 @@ aliases_by_board = {
     "pyportal": ["pyportal_pynt"],
     "gemma_m0": ["gemma_m0_pycon2018"],
     "pewpew10": ["pewpew13"],
-    "jpconstantineau_pykey60": [
-        "jpconstantineau_pykey18",
-        "jpconstantineau_pykey44",
-        "jpconstantineau_pykey87",
-    ],
 }
 
 aliases_brand_names = {
@@ -61,12 +56,6 @@ aliases_brand_names = {
         "Adafruit Gemma M0 PyCon 2018",
     "pewpew13":
         "PewPew 13",
-    "jpconstantineau_pykey18":
-        "PyKey 18 Numpad",
-    "jpconstantineau_pykey44":
-        "PyKey 44",
-    "jpconstantineau_pykey87":
-        "PyKey 87 TKL",
 }
 
 additional_modules = {
