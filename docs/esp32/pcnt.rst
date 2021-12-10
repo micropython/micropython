@@ -32,11 +32,15 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(pulse_pin, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1.0)
+.. class:: Counter(id, input, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1)
 
     Counter start to count immediately. Filtering is enabled.
+    Construct and return a new Counter object using the following parameters:
 
-    - *pulse_pin* is the input :ref:`machine.Pin <machine.Pin>` to be monitored
+      - *id*. Values of *id* depend on a particular port and its hardware.
+        Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
+
+      - *input* is the pulse input :ref:`machine.Pin <machine.Pin>` to be monitored
 
     Keyword arguments:
 
@@ -129,11 +133,15 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(a_pin, b_pin, \*, x124=4, filter=12787, scale=1.0)
+.. class:: Encoder(id, phase_a, b_pin, \*, x124=4, filter=12787, scale=1)
 
     Encoder start to count immediately. Filtering is enabled.
+    Construct and return a new quadrature encoder object using the following parameters:
 
-    - *a_pin*, *b_pin* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses
+      - *id*. Values of *id* depend on a particular port and its hardware.
+        Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
+
+      - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses
 
     Keyword arguments:
 
