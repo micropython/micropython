@@ -31,12 +31,12 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mpprint.h"
 
 #include "driver/ledc.h"
 #include "esp_err.h"
 
-#define PWM_DBG(...)
-// #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");
+#define MP_PRN_LEVEL 0
 
 // Total number of channels
 #define PWM_CHANNEL_MAX (LEDC_SPEED_MODE_MAX * LEDC_CHANNEL_MAX)
@@ -222,10 +222,8 @@ STATIC void configure_channel(machine_pwm_obj_t *self) {
 }
 
 STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer) {
-    // Even if the timer frequency is already set,
-    // the set_duty_x() is required to reconfigure the channel duty anyway
     if (freq != timer->freq_hz) {
-        PWM_DBG("set_freq(%d)", freq)
+        MP_PRN(6, "set_freq(%d)", freq)
 
         // Find the highest bit resolution for the requested frequency
         unsigned int i = LEDC_APB_CLK_HZ; // 80 MHz
@@ -233,7 +231,7 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
             i = LEDC_REF_CLK_HZ; // 1 MHz
         }
 
-        #if 1
+        #if 0
         // original code
         i /= freq;
         #else
@@ -262,6 +260,7 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         }
 
         // Configure the new resolution and frequency
+        unsigned int save_duty_resolution = timer->duty_resolution;
         timer->duty_resolution = res;
         timer->freq_hz = freq;
         timer->clk_cfg = LEDC_USE_APB_CLK;
@@ -273,7 +272,7 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         esp_err_t err = ledc_timer_config(timer);
         if (err != ESP_OK) {
             if (err == ESP_FAIL) {
-                PWM_DBG(" (timer timer->speed_mode %d, timer->timer_num %d, timer->clk_cfg %d, timer->freq_hz  %d, timer->duty_resolution %d) ", timer->speed_mode, timer->timer_num, timer->clk_cfg, timer->freq_hz, timer->duty_resolution);
+                MP_PRN(2, "timer timer->speed_mode:%d, timer->timer_num:%d, timer->clk_cfg:%d, timer->freq_hz:%d, timer->duty_resolution:%d", timer->speed_mode, timer->timer_num, timer->clk_cfg, timer->freq_hz, timer->duty_resolution);
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unreachable frequency %d"), freq);
             } else {
                 check_esp_err(err);
@@ -283,15 +282,17 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         if (self->mode == LEDC_LOW_SPEED_MODE) {
             check_esp_err(ledc_timer_rst(self->mode, self->timer));
         }
-    }
 
-    // Save the same duty cycle when frequency or channel are changed
-    if (self->duty_x == HIGHEST_PWM_RES) {
-        set_duty_u16(self, self->duty_u16);
-    } else if (self->duty_x == PWRES) {
-        set_duty_u10(self, self->duty_u10);
-    } else if (self->duty_x == -HIGHEST_PWM_RES) {
-        set_duty_ns(self, self->duty_ns);
+        // Save the same duty cycle when frequency is changed
+        if (save_duty_resolution != timer->duty_resolution) {
+            if (self->duty_x == HIGHEST_PWM_RES) {
+                set_duty_u16(self, self->duty_u16);
+            } else if (self->duty_x == PWRES) {
+                set_duty_u10(self, self->duty_u10);
+            } else if (self->duty_x == -HIGHEST_PWM_RES) {
+                set_duty_ns(self, self->duty_ns);
+            }
+        }
     }
 }
 
@@ -304,14 +305,12 @@ STATIC int ns_to_duty(machine_pwm_obj_t *self, int ns) {
     } else if (duty > UI_MAX_DUTY) {
         duty = UI_MAX_DUTY;
     }
-    // PWM_DBG(" ns_to_duty(UI_MAX_DUTY=%d freq_hz=%d duty=%d=%f <- ns=%d) ", UI_MAX_DUTY, timer.freq_hz, duty, (float)ns * UI_MAX_DUTY * timer.freq_hz / 1000000000.0, ns);
     return duty;
 }
 
 STATIC int duty_to_ns(machine_pwm_obj_t *self, int duty) {
     ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
     int64_t ns = ((int64_t)duty * 1000000000LL + (int64_t)timer.freq_hz * UI_MAX_DUTY / 2) / ((int64_t)timer.freq_hz * UI_MAX_DUTY);
-    // PWM_DBG(" duty_to_ns(UI_MAX_DUTY=%d freq_hz=%d duty=%d -> ns=%f=%d) ", UI_MAX_DUTY, timer.freq_hz, duty, (float)duty * 1000000000.0 / ((float)timer.freq_hz * UI_MAX_DUTY), ns);
     return ns;
 }
 
@@ -333,23 +332,28 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > UI_MAX_DUTY)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), UI_MAX_DUTY);
     }
-    duty >>= HIGHEST_PWM_RES + UI_RES_SHIFT - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution;
-    int max_duty = (1 << timers[TIMER_IDX(self->mode, self->timer)].duty_resolution) - 1;
-    if (duty < 0) {
-        duty = 0;
-    } else if (duty > max_duty) {
-        duty = max_duty;
+    ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
+    int _duty = duty >> (HIGHEST_PWM_RES + UI_RES_SHIFT - timer.duty_resolution);
+    int max_duty = (1 << timer.duty_resolution) - 1;
+    if (_duty < 0) {
+        _duty = 0;
+    } else if (_duty > max_duty) {
+        _duty = max_duty;
     }
-    check_esp_err(ledc_set_duty(self->mode, self->channel, duty));
+    MP_PRN(5, "3| duty:%d, _duty:%d, max_duty:%d", duty, _duty, max_duty)
+    check_esp_err(ledc_set_duty(self->mode, self->channel, _duty));
     check_esp_err(ledc_update_duty(self->mode, self->channel));
 
     /*
     // Bug: Sometimes duty is not set right now.
+    // Not a bug. It's a feature. The duty is applied at the beginning of the next signal period.
+    // Bug: It has been experimentally established that the duty is setted during 2 signal periods, but 1 period is expected.
     // See https://github.com/espressif/esp-idf/issues/7288
     if (duty != get_duty_u16(self)) {
-        ets_delay_us(100);
+        MP_PRN(4, "set_duty_u16(%u), get_duty_u16():%u, _duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), _duty, timer.duty_resolution, timer.freq_hz);
+        ets_delay_us(2 * 1000000 / timer.freq_hz);
         if (duty != get_duty_u16(self)) {
-            PWM_DBG(" (set_duty_u16(%u) get_duty_u16()=%u duty_resolution=%d) ", duty, get_duty_u16(self), timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
+            MP_PRN(3, "set_duty_u16(%u), get_duty_u16():%u, _duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), _duty, timer.duty_resolution, timer.freq_hz);
         }
     }
     */
