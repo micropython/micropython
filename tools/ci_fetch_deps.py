@@ -73,8 +73,7 @@ elif target == "windows":
     # This builds one board from a number of ports so fill out a bunch of submodules
     submodules = ["extmod/", "lib/", "tools/", "ports/", "data/nvm.toml/"]
 elif target == "website":
-    # No submodules needed.
-    pass
+    submodules = ["tools/adabot/"]
 else:
     p = list(pathlib.Path(".").glob(f"ports/*/boards/{target}/mpconfigboard.mk"))
     if not p:
