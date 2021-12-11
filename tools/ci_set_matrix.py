@@ -85,11 +85,11 @@ def set_boards_to_build(build_all):
                 if port != "unix":
                     boards_to_build.update(port_to_boards[port])
                 continue
-            
+
             # Check the ignore list to see if the file isn't used on board builds.
             if p in IGNORE:
                 continue
-                
+
             # Boards don't run tests so ignore those as well.
             if p.startswith("tests"):
                 continue
