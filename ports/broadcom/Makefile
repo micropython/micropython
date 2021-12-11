@@ -82,7 +82,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 # because a few modules have files both in common-hal/ and shared-modules/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-SRC_S = peripherals/broadcom/boot.s
+SRC_S = peripherals/broadcom/boot8.s
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
@@ -134,7 +134,7 @@ CFLAGS += $(INC) -Wall -Werror -std=gnu11 $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
-LDFLAGS += $(CFLAGS) -T peripherals/broadcom/link.ld -Wl,--gc-sections -Wl,-Map=$@.map # -Wl,--cref
+LDFLAGS += $(CFLAGS) -T peripherals/broadcom/link8.ld -Wl,--gc-sections -Wl,-Map=$@.map # -Wl,--cref
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
