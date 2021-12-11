@@ -289,10 +289,10 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     keypad_reset();
     #endif
 
-    // reset_board_busses() first because it may release pins from the never_reset state, so that
+    // reset_board_buses() first because it may release pins from the never_reset state, so that
     // reset_port() can reset them.
     #if CIRCUITPY_BOARD
-    reset_board_busses();
+    reset_board_buses();
     #endif
     reset_port();
     reset_board();
