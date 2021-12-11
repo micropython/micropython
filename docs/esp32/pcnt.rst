@@ -1,12 +1,12 @@
-PCNT
-====
+PCNT - Counter and Encoder
+==========================
 
-The Counter and Encoder uses the ESP32 Pulse Counter (PCNT) hardware peripheral,
+The Counter and Encoder use the ESP32 Pulse Counter (PCNT) hardware peripheral,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
 
 For the counter not to miss any pulses, the pulse duration should be longer than one ESP32 APB_CLK cycle (1 / 80 MHz = 12.5 ns).
-The pulses are sampled on the edges of the APB_CLK clock and may be missed, if fall between the edges.
+The pulses are sampled on the edges of the APB_CLK clock and may be missed if fall between the edges.
 With ideal input signal maximum frequency of measured pulses is APB_CLK / 2 = 80 MHz / 2 = 40 MHz.
 
 The inputs have optional filters that can be used to discard unwanted glitches in the signal.
@@ -19,10 +19,10 @@ short conductors, twisted pair cable, differential signals, etc.).
 
 There is only one interrupt for the peripheral, and that is managed inside the module.
 The user has no interrupt interface, and no interrupts are generated on each pulse.
-Interrupts arrive when the 16 bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
+Interrupts arrive when the 16-bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
 while providing support for up to 8 simultaneous counters (Encoder or Counter objects).
 
-.. _pcnt.Counter:
+.. _esp32_machine.Counter:
 
 Counter
 =======
@@ -32,81 +32,140 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(id, input, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1)
+.. class:: Counter(id, src=None, \*, edge=Counter.RISING, direction=Counter.UP, filter_ns=0, scale=1)
 
-    Counter start to count immediately. Filtering is enabled.
-    Construct and return a new Counter object using the following parameters:
+    The Counter starts to count immediately. Filtering is disabled.
 
       - *id*. Values of *id* depend on a particular port and its hardware.
         Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
 
-      - *input* is the pulse input :ref:`machine.Pin <machine.Pin>` to be monitored
+      - *src* is the pulse input :ref:`machine.Pin <machine.Pin>` to be monitored.
+        *src* is required in the constructor.
 
-    Keyword arguments:
+      - *direction* specifies the direction to count. Values for this include the constants
 
-      - *direction*\=value. Specifying the direction of counting. Suitable values are:
+        - Counter.UP - (default value) and
+        - Counter.DOWN to control the direction by software or
+        - :ref:`machine.Pin <machine.Pin>` object to control the direction externally. If ``Pin.value()``:
+           - 0 - count down,
+           - 1 - count up.
 
-        - if value == 0 or False: count down
-        - if value != 0 or True: count up
-        - a :ref:`machine.Pin <machine.Pin>` object. The level at that pin controls
-          the counting direction:
+      - *edge* specifies which edges of the input signal will be counted by Counter:
 
-            - if Pin.value() == 0: count down
-            - if Pin.value() == 1: count up
+        - Counter.RISING : raise edges,
+        - Counter.FALLING : fall edges,
+        - Counter.RISING | Counter.FALLING : both edges.
 
-      - *edge*\=value.  Which edges of the input signal will be counted by Counter:
-
-        - Counter.RISING : raise edges
-        - Counter.FALLING : fall edges
-        - Counter.RISING | Counter.FALLING : both edges
-
-      - *filter*\=value. Specifies a ns-value for the minimal time a signal has to be stable
+      - *filter_ns* specifies a ns-value for the minimal time a signal has to be stable
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
-        A value of 0 sets the filter is switched off.
+        The default is 0 – no filter.
 
-      - *scale*\=value. Sets the scale value. The default value is 1.
+      - *scale* sets the scale value. The default value is 1. You may treat the scale
+        factor as **click per count**, **mm per count**, **inch per count** etc.
 
 Methods
 -------
 
-.. method:: Counter.init(keyword_arguments)
+.. method:: Counter.init(*, src, ...)
 
-   Modify settings for the Counter object.  See the above constructor for details
-   about the parameters.
+   Modify the settings of the Counter object. See the **Constructor** for details about the parameters.
 
 .. method:: Counter.deinit()
 
-    Free the input pins and counter.
+   Stops the Counter, disables interrupts and releases hardware resources used by the counter.
+   A Soft Reset involve deinitializing all Encoder objects.
 
-.. method:: Counter.value()
+.. method:: Counter.filter([value])
 
-    Return current 64-bit signed counter value.
+   Get, and optionally set, the filter value. 0 disable filtering.
 
-.. method:: Counter.value(value)
+.. method:: Counter.value([value])
 
-    Set the counter value, *value* is 64-bit signed integer.
+   Get, and optionally set, the counter *value* as a signed 64-bit integer.
+
+.. method:: Counter.scaled([value])
+
+   Get, and optionally set, the current scaled value of the Counter as a float.
+
+   Pseudocode is::
+
+    def scaled(self, scaled=None):
+        _scaled = self._value * self.scale
+        if scaled is not None:
+            self._value = round(scaled / self.scale)
+        return _scaled
+
+.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO, value=0)
+
+   -*handler* specifies a function is called when the respective *trigger* event happens.
+    The callback function *handler* receives a single argument, which is the Counter object.
+    All events may share the same callback or have separate callbacks.
+    The callback will be disabled, when called with handler=None. Counter.irq() disable all callbacks.
+    The event which triggers the callback can be identified with the ``Counter.status()`` method.
+    The Counter object which triggers the callback can be identified with the ``Counter.id()`` method.
+
+   -*trigger* events may be:
+
+    - Counter.IRQ_MATCH1 triggered when the counter matches the match1 value.
+    - Counter.IRQ_MATCH2 triggered when the counter matches the match2 value.
+    - Counter.IRQ_ZERO triggered when the counter matches the 0.
+
+    The default is - trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO.
+    The events are triggered when the counter value and match value are identical, but
+    callbacks have always a latency.
+
+   - *value* sets a counter match1/match2 value. When the counter matches these values,
+     a callback function can be called. They are 0 by default.
+
+Attention: ``Counter.irq()`` resets counter to 0.
+
+.. method:: Counter.status()
+
+   Returns the event status flags of the recent handled Counter interrupt as a bitmap.
+
+.. method:: Counter.id()
+
+   Returns id number.
 
 .. method:: Counter.pause()
 
 .. method:: Counter.resume()
 
-.. method:: Counter.filter([value])
+Constants
+---------
 
-    Set filter value. 0 disable filtering.
-    Return current filter value.
+.. data:: Counter.UP
+          Counter.DOWN
+
+   Selects the counter direction.
+
+.. data:: Counter.RISING
+          Counter.FALLING
+
+   Selects the counted edges.
+
+.. data:: Counter.IRQ_MATCH1
+          Counter.IRQ_MATCH2
+          Counter.IRQ_ZERO
+
+   Selects callback triggers.
 
 ::
 
     from machine import Counter, Pin
 
     try:
-        cnt = Counter(Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+        def irq_handler(self):
+            print('irq_handler()', self.id(), self.status(), self.value())
 
+        cnt = Counter(0, src=Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+
+        cnt.pause()
         flt = cnt.filter()  # return current filter value.
         cnt.filter(10_000)  # filter delay is 10ms
-        cnt.pause()
+        c = cnt.value(0)  # get current counter value, set the counter value to 0
+        cnt.irq(irq_handler, Counter.IRQ_ZERO)  # set irq handler
         cnt.resume()
-        c = cnt.value(12345)  # get current counter value, set the counter value
 
         _c = None
         while True:
@@ -118,12 +177,12 @@ Methods
         cnt.deinit()  # free the input pins and counter.
 
 
-.. _pcnt.Encoder:
+.. _esp32_machine.Encoder:
 
 Encoder
 =======
 
-This class provides an Quadrature Incremental Encoder service.
+This class provides a Quadrature Incremental Encoder service.
 See `Quadrature encoder outputs.
 <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_outputs>`_
 
@@ -133,55 +192,78 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(id, phase_a, b_pin, \*, x124=4, filter=12787, scale=1)
+.. class:: Encoder(id, phase_a=None, phase_b=None, \*, x124=4, filter_ns=0, scale=1, match1=0, match2=0)
 
-    Encoder start to count immediately. Filtering is enabled.
-    Construct and return a new quadrature encoder object using the following parameters:
+    The Encoder starts to count immediately. Filtering is disabled.
 
       - *id*. Values of *id* depend on a particular port and its hardware.
         Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
 
-      - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses
+      - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses.
+        They are required in the constructor.
 
-    Keyword arguments:
-
-      - *x124*\=value. Possible values is 1, 2, 4.
+      - *x124* is a hardware multiplier, possible values is 1, 2, 4. The default value is 4.
+        More info in `Quadrature decoder state table <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_decoder>`_.
         When more Encoder resolution is needed, it is possible for the encoder to count the leading
         and trailing edges of the quadrature encoder’s pulse train from one channel,
         which doubles (x2) the number of pulses. Counting both leading and trailing edges
         of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses:
 
-          - 1 - count the leading(or trailing) edges from one channel.
-          - 2 - count the leading and trailing edges from one channel.
-          - 4 - count both leading and trailing edges of both channels.
+          - 1 - count the leading(or trailing) edges from one phase channel.
+          - 2 - count the leading and trailing edges from one phase channel.
+          - 4 - count both leading and trailing edges of both phase channels.
+
+      - *scale* sets the scale value. The default value is 1. You may treat the scale
+        factor as **click per impulse**, **revolution per impulse**, **angle per impulse** etc.
+        Hint: Set scale factor to 1/4 to balance the multiplier x124=4.
 
     These keywords are the same as the Counter keywords, see above:
-      - *filter*\=value
-      - *scale*\=value
+      - *filter_ns*
+      - *match1*
+      - *match2*
 
 Methods
 -------
 
-.. method:: Encoder.init(keyword_arguments)
+.. method:: Encoder.init(*, phase_a, ...)
 
-   Modify settings for the Encoder object.  See the above constructor for details
-   about the parameters.
+   Modify the settings of the Encoder object. See the **Constructor** for details about the parameters.
 
 The Encoder has the same methods as the Counter and differs only
 in the constructor and internal hardware PCNT initialization.
+
+Constants
+---------
+
+.. data:: Encoder.IRQ_MATCH1
+          Encoder.IRQ_MATCH2
+          Encoder.IRQ_ZERO
+
+   Selects callback triggers.
 
 ::
 
     from machine import Encoder, Pin
 
     try:
-        enc = Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
+        n = 0
+        def irq_handler1(self):
+            n -= 1
+            print('irq_handler1()', self.id(), self.value(), n)
 
+        def irq_handler2(self):
+            n += 1
+            print('irq_handler2()', self.id(), self.value(), n)
+
+        enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN), match1=-1000, match2=1000)
+
+        enc.pause()
         flt = enc.filter()  # return current filter value.
         enc.filter(10_000)  # filter delay is 10ms
-        enc.pause()
+        c = enc.value(0)  # get current encoder value, set the encoder value to 0
+        cnt.irq(irq_handler1, Counter.IRQ_MATCH1)  # set irq handler
+        cnt.irq(irq_handler2, Counter.IRQ_MATCH2)  # set irq handler
         enc.resume()
-        c = enc.value(12345)  # get current encoder value, set the encoder value
 
         _c = None
         while True:

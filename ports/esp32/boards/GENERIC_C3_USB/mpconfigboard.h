@@ -6,3 +6,4 @@
 #define MICROPY_HW_ENABLE_SDCARD            (0)
 #define MICROPY_PY_MACHINE_DAC              (0)
 #define MICROPY_PY_MACHINE_I2S              (0)
+#define MICROPY_PY_MACHINE_PCNT             (0)

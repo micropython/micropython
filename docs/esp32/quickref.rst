@@ -507,48 +507,44 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
-Counter
--------
+Counter (Pulse/Edge Counter)
+----------------------------
 
-The Counter (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
+The Counter counts the number of rising and/or falling edges on any input pin.
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`machine.Counter <pcnt.Counter>` for details.  Simplest usage is::
+See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage is::
 
     from machine import Pin, Counter
 
-    cnt = Counter(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
-    #                  pulse input pin, direction input pin(optional)
-
-    _c = None
+    cnt = Counter(0, src=Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+    _v = None
     while True:
-        c = cnt.value()  # get 64-bit signed counter value
-        if _c != c:
-            _c = c
-            print('Counter =', c)
+        v = cnt.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Counter value:', v)
 
-Encoder
--------
+Encoder (Quadrature Incremental Encoder)
+----------------------------------------
 
-The Encoder (Quadrature Incremental Encoder) counts quadrature-encoded pulses
-(two square wave signals A and B with ~50% duty cycle and ~90-degree phase difference between them).
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
+The Encoder counts the quadrature-encoded pulses on pair of input pins (two square wave signals A and B with
+~50% duty cycle and ~90-degree phase difference between them).
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`machine.Encoder <pcnt.Encoder>` for details.  Simplest usage is::
+See :ref:`machine.Encoder <esp32_machine.Encoder>` for details.  Simplest usage is::
 
     from machine import Pin, Encoder
 
-    cnt = Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
-    #                pulse input A pin, pulse input B pin
-
-    _c = None
+    enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN))
+    _v = None
     while True:
-        c = cnt.value()  # get 64-bit signed counter value
-        if _c != c:
-            _c = c
-            print('Encoder =', c)
+        v = enc.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Encoder value:', v)
 
 OneWire driver
 --------------

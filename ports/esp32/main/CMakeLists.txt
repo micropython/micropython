@@ -60,6 +60,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_touchpad.c
     ${PROJECT_DIR}/machine_adc.c
     ${PROJECT_DIR}/machine_dac.c
+    ${PROJECT_DIR}/machine_encoder.c
     ${PROJECT_DIR}/machine_i2c.c
     ${PROJECT_DIR}/machine_i2s.c
     ${PROJECT_DIR}/machine_uart.c
@@ -74,7 +75,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/esp32_nvs.c
     ${PROJECT_DIR}/esp32_partition.c
     ${PROJECT_DIR}/esp32_rmt.c
-    ${PROJECT_DIR}/esp32_pcnt.c
     ${PROJECT_DIR}/esp32_ulp.c
     ${PROJECT_DIR}/modesp32.c
     ${PROJECT_DIR}/machine_hw_spi.c
