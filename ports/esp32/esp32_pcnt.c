@@ -100,7 +100,7 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
 #define ns_to_filter(ns) ((ns * (APB_CLK_FREQ / 1000000) + 500) / 1000)
 #define filter_to_ns(filter) (filter * 1000 / (APB_CLK_FREQ / 1000000))
 
-STATIC uint16_t get_filter_value(pcnt_unit_t unit) {
+STATIC uint16_t get_filter_value_ns(pcnt_unit_t unit) {
     uint16_t value;
     check_esp_err(pcnt_get_filter_value(unit, &value));
 
@@ -200,7 +200,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_edge, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_filter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
@@ -276,8 +276,12 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
 STATIC mp_obj_t pcnt_PCNT_deinit(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+    if (self->aPinNumber != PCNT_PIN_NOT_USED) {
+        check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+    }
+    if (self->bPinNumber != PCNT_PIN_NOT_USED) {
+        check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+    }
 
     pcnts[self->unit] = NULL;
 
@@ -295,7 +299,7 @@ STATIC void common_print_pin(const mp_print_t *print, mp_pcnt_obj_t *self) {
 }
 
 STATIC void common_print_kw(const mp_print_t *print, mp_pcnt_obj_t *self) {
-    mp_printf(print, ", filter=%u", get_filter_value(self->unit));
+    mp_printf(print, ", filter_ns=%u", get_filter_value_ns(self->unit));
     mp_printf(print, ", scale=%f", self->scale);
 }
 
@@ -312,7 +316,7 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
 // Get/Set PCNT filter value
 STATIC mp_obj_t pcnt_PCNT_filter(size_t n_args, const mp_obj_t *args) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t val = get_filter_value(self->unit);
+    mp_int_t val = get_filter_value_ns(self->unit);
     if (n_args > 1) {
         set_filter_value(self->unit, ns_to_filter(mp_obj_get_int(args[1])));
     }
@@ -348,7 +352,7 @@ STATIC mp_obj_t pcnt_PCNT_get_count(mp_obj_t self_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_get_count_obj, pcnt_PCNT_get_count);
 
 // -----------------------------------------------------------------
-STATIC mp_obj_t pcnt_PCNT_position(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t pcnt_PCNT_scaled(size_t n_args, const mp_obj_t *args) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     int64_t value = self->count;
@@ -360,7 +364,7 @@ STATIC mp_obj_t pcnt_PCNT_position(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_float_from_f(self->scale * (value + count));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_position_obj, 1, 2, pcnt_PCNT_position);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pcnt_PCNT_scaled_obj, 1, 2, pcnt_PCNT_scaled);
 
 // -----------------------------------------------------------------
 STATIC mp_obj_t pcnt_PCNT_pause(mp_obj_t self_obj) {
@@ -397,9 +401,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pcnt_PCNT_deinit_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pcnt_PCNT_count_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_get_value), MP_ROM_PTR(&pcnt_PCNT_get_count_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_position), MP_ROM_PTR(&pcnt_PCNT_position_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_filter), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_scaled), MP_ROM_PTR(&pcnt_PCNT_scaled_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_filter_ns), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_suspend), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) }
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
@@ -526,7 +530,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     enum { ARG_x124, ARG_filter, ARG_scale };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_filter, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
