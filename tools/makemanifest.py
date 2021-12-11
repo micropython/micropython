@@ -233,12 +233,17 @@ def freeze_internal(kind, path, script, opt):
         manifest_list.append((kind, path, script, opt))
 
 
+# Formerly make-frozen.py.
+# This generates:
+# - MP_FROZEN_STR_NAMES macro
+# - mp_frozen_str_sizes
+# - mp_frozen_str_content
 def generate_frozen_str_content(paths):
     def module_name(f):
         return f
 
     modules = []
-    output = []
+    output = [b"#include <stdint.h>\n"]
 
     for path in paths:
         root = path.rstrip("/")
@@ -250,21 +255,19 @@ def generate_frozen_str_content(paths):
                 st = os.stat(fullpath)
                 modules.append((path, fullpath[root_len + 1 :], st))
 
-    output.append("#include <stdint.h>\n")
-    output.append("const char mp_frozen_str_names[] = {\n")
+    output.append(b"#define MP_FROZEN_STR_NAMES \\\n")
     for _path, f, st in modules:
         m = module_name(f)
-        output.append('"%s\\0"\n' % m)
-    output.append('"\\0"};\n')
+        output.append(b'"%s\\0" \\\n' % m.encode())
+    output.append(b"\n")
 
-    output.append("const uint32_t mp_frozen_str_sizes[] = {\n")
+    output.append(b"const uint32_t mp_frozen_str_sizes[] = { ")
 
     for _path, f, st in modules:
-        output.append("%d," % st.st_size)
+        output.append(b"%d, " % st.st_size)
+    output.append(b"0 };\n")
 
-    output.append("0};\n")
-
-    output.append("const char mp_frozen_str_content[] = {\n")
+    output.append(b"const char mp_frozen_str_content[] = {\n")
     for path, f, st in modules:
         data = open(path + "/" + f, "rb").read()
 
@@ -276,8 +279,8 @@ def generate_frozen_str_content(paths):
         # to be able to read the resulting C code as ASCII when possible.
 
         data = bytearray(data)  # so Python2 extracts each byte as an integer
-        esc_dict = {ord("\n"): "\\n", ord("\r"): "\\r", ord('"'): '\\"', ord("\\"): "\\\\"}
-        output.append('"')
+        esc_dict = {ord("\n"): b"\\n", ord("\r"): b"\\r", ord('"'): b'\\"', ord("\\"): b"\\\\"}
+        output.append(b'"')
         break_str = False
         for c in data:
             try:
@@ -285,16 +288,16 @@ def generate_frozen_str_content(paths):
             except KeyError:
                 if 32 <= c <= 126:
                     if break_str:
-                        output.append('" "')
+                        output.append(b'" "')
                         break_str = False
-                    output.append(chr(c))
+                    output.append(chr(c).encode())
                 else:
-                    output.append("\\x%02x" % c)
+                    output.append(b"\\x%02x" % c)
                     break_str = True
-        output.append('\\0"\n')
+        output.append(b'\\0"\n')
 
-    output.append('"\\0"};\n')
-    return "".join(output)
+    output.append(b'"\\0"\n};\n\n')
+    return b"".join(output)
 
 
 def main():
@@ -414,8 +417,8 @@ def main():
             b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
             b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
             b"};\n"
-            b'const char mp_frozen_mpy_names[1] = {"\\0"};\n'
-            b"const mp_raw_code_t *const mp_frozen_mpy_content[1] = {NULL};\n"
+            b'const char mp_frozen_names[] = { MP_FROZEN_STR_NAMES "\\0"};\n'
+            b"const mp_raw_code_t *const mp_frozen_mpy_content[] = {NULL};\n"
         )
 
     # Generate output
@@ -423,7 +426,7 @@ def main():
     mkdir(args.output)
     with open(args.output, "wb") as f:
         f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n")
-        f.write(output_str.encode())
+        f.write(output_str)
         f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n")
         f.write(output_mpy)
 

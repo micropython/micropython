@@ -886,7 +886,11 @@ def freeze_mpy(base_qstrs, raw_codes):
         rc.freeze(rc.source_file.str.replace("/", "_")[:-3] + "_")
 
     print()
-    print("const char mp_frozen_mpy_names[] = {")
+    print("const char mp_frozen_names[] = {")
+    print("#ifdef MP_FROZEN_STR_NAMES")
+    # makemanifest.py might also include some frozen string content.
+    print("MP_FROZEN_STR_NAMES")
+    print("#endif")
     for rc in raw_codes:
         module_name = rc.source_file.str
         print('"%s\\0"' % module_name)
