@@ -115,6 +115,11 @@ Constants
 
    A mutable list of directories to search for imported modules.
 
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      On MicroPython, an entry with the value ``".frozen"`` will indicate that it should search :term:`frozen modules <frozen module>`.
+
 .. data:: platform
 
    The platform that MicroPython is running on. For OS/RTOS ports, this is
