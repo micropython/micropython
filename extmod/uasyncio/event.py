@@ -57,5 +57,6 @@ try:
                 yield core._io_queue.queue_read(self)
             self._flag = 0
 
+
 except ImportError:
     pass

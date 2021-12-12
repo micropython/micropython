@@ -44,7 +44,7 @@ CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DI
 
 # Debugging/Optimization
 ifdef DEBUG
-COPT ?= -Og
+COPT ?= -O0
 else
 COPT ?= -Os
 COPT += -DNDEBUG
