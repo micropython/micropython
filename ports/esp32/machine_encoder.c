@@ -54,7 +54,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 #include "mphalport.h"
 #include "modmachine.h"
 
-#include "esp32_pcnt.h"
+#include "machine_encoder.h"
 
 #define FILTER_MAX 1023
 
