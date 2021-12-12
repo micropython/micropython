@@ -1,12 +1,12 @@
-PCNT
-====
+PCNT - Counter and Encoder
+==========================
 
-The Counter and Encoder uses the ESP32 Pulse Counter (PCNT) hardware peripheral,
+The Counter and Encoder use the ESP32 Pulse Counter (PCNT) hardware peripheral,
 see Espressif's `ESP-IDF Pulse Counter documentation.
 <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/pcnt.html>`_
 
 For the counter not to miss any pulses, the pulse duration should be longer than one ESP32 APB_CLK cycle (1 / 80 MHz = 12.5 ns).
-The pulses are sampled on the edges of the APB_CLK clock and may be missed, if fall between the edges.
+The pulses are sampled on the edges of the APB_CLK clock and may be missed if fall between the edges.
 With ideal input signal maximum frequency of measured pulses is APB_CLK / 2 = 80 MHz / 2 = 40 MHz.
 
 The inputs have optional filters that can be used to discard unwanted glitches in the signal.
@@ -19,7 +19,7 @@ short conductors, twisted pair cable, differential signals, etc.).
 
 There is only one interrupt for the peripheral, and that is managed inside the module.
 The user has no interrupt interface, and no interrupts are generated on each pulse.
-Interrupts arrive when the 16 bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
+Interrupts arrive when the 16-bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
 while providing support for up to 8 simultaneous counters (Encoder or Counter objects).
 
 .. _pcnt.Counter:
@@ -32,15 +32,16 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(id, input, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1)
+.. class:: Counter(id, src=machine.Pin, \*, direction=1, edge=Counter.RISING, filter=12787, scale=1)
 
-    Counter start to count immediately. Filtering is enabled.
+    The Counter starts to count immediately. Filtering is enabled.
     Construct and return a new Counter object using the following parameters:
 
       - *id*. Values of *id* depend on a particular port and its hardware.
         Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
 
-      - *input* is the pulse input :ref:`machine.Pin <machine.Pin>` to be monitored
+      - *src* is the pulse input :ref:`machine.Pin <machine.Pin>` to be monitored
+        The keyword may be omitted.
 
     Keyword arguments:
 
@@ -64,7 +65,8 @@ Constructor
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
         A value of 0 sets the filter is switched off.
 
-      - *scale*\=value. Sets the scale value. The default value is 1.
+      - *scale*\=value. Sets the scale value. The default value is 1. You may treat the scale
+        factor as **click per count**, **mm per count**, **inch per count** etc.
 
 Methods
 -------
@@ -76,15 +78,29 @@ Methods
 
 .. method:: Counter.deinit()
 
-    Free the input pins and counter.
+   Free the input pins and counter.
 
-.. method:: Counter.value()
+.. method:: Counter.value([value])
 
-    Return current 64-bit signed counter value.
+   Get (and optional set) the Counter value as a signed integer.
+   With no argument, the actual Counter value is returned.
 
-.. method:: Counter.value(value)
+   With a single *value* argument the Counter is set to that value.
 
-    Set the counter value, *value* is 64-bit signed integer.
+-.. method:: Counter.scaled([value])
+
+   Get (and optional set) the current scaled value of the Counter as a signed integer.
+   With no argument, the actual scaled value is returned.
+
+   With a single *value* argument the scaled value of Counter is set to that value.
+
+   Pseudocode is::
+
+    def scaled(self, scaled=None):
+        _scaled = self._value * self.scale
+        if scaled is not None:
+            self._value = round(scaled / self.scale)
+        return _scaled
 
 .. method:: Counter.pause()
 
@@ -92,15 +108,15 @@ Methods
 
 .. method:: Counter.filter([value])
 
-    Set filter value. 0 disable filtering.
-    Return current filter value.
+   Set filter value. 0 disable filtering.
+   Return current filter value.
 
 ::
 
     from machine import Counter, Pin
 
     try:
-        cnt = Counter(Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+        cnt = Counter(0, Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
 
         flt = cnt.filter()  # return current filter value.
         cnt.filter(10_000)  # filter delay is 10ms
@@ -123,7 +139,7 @@ Methods
 Encoder
 =======
 
-This class provides an Quadrature Incremental Encoder service.
+This class provides a Quadrature Incremental Encoder service.
 See `Quadrature encoder outputs.
 <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_outputs>`_
 
@@ -133,31 +149,36 @@ See `Quadrature encoder outputs.
 Constructor
 -----------
 
-.. class:: Encoder(id, phase_a, b_pin, \*, x124=4, filter=12787, scale=1)
+.. class:: Encoder(id, phase_a=machine.Pin, phase_b=machine.Pin, \*, x124=4, filter=12787, scale=1)
 
-    Encoder start to count immediately. Filtering is enabled.
+    The Encoder starts to count immediately. Filtering is enabled.
     Construct and return a new quadrature encoder object using the following parameters:
 
       - *id*. Values of *id* depend on a particular port and its hardware.
         Values 0, 1, etc. are commonly used to select hardware block #0, #1, etc.
 
-      - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses
+      - *phase_a*, *phase_b* are input pins :ref:`machine.Pin <machine.Pin>` for monitoring of quadrature encoder pulses.
+        The keywords may be omitted.
 
     Keyword arguments:
 
-      - *x124*\=value. Possible values is 1, 2, 4.
+      - *x124*\=value. Hardware multiplier, possible values is 1, 2, 4. The default value is 4.
+        More info in `Quadrature decoder state table <https://en.wikipedia.org/wiki/Incremental_encoder#Quadrature_decoder>`_.
         When more Encoder resolution is needed, it is possible for the encoder to count the leading
         and trailing edges of the quadrature encoder’s pulse train from one channel,
         which doubles (x2) the number of pulses. Counting both leading and trailing edges
         of both channels (A and B channels) of a quadrature encoder will quadruple (x4) the number of pulses:
 
-          - 1 - count the leading(or trailing) edges from one channel.
-          - 2 - count the leading and trailing edges from one channel.
-          - 4 - count both leading and trailing edges of both channels.
+          - 1 - count the leading(or trailing) edges from one phase channel.
+          - 2 - count the leading and trailing edges from one phase channel.
+          - 4 - count both leading and trailing edges of both phase channels.
 
-    These keywords are the same as the Counter keywords, see above:
+      - *scale*\=value. Sets the scale value. The default value is 1. You may treat the scale
+        factor as **click per impulse**, **revolution per impulse**, **angle per impulse** etc.
+        Hint: Set scale factor to 1/4 to balance the multiplier x124=4.
+
+    This keyword is the same as the Counter keyword, see above:
       - *filter*\=value
-      - *scale*\=value
 
 Methods
 -------
@@ -175,7 +196,7 @@ in the constructor and internal hardware PCNT initialization.
     from machine import Encoder, Pin
 
     try:
-        enc = Encoder(Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
+        enc = Encoder(0, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
 
         flt = enc.filter()  # return current filter value.
         enc.filter(10_000)  # filter delay is 10ms

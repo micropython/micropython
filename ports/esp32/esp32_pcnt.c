@@ -126,7 +126,7 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
     if (self->attached) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached"));
     }
-
+/*
     int index = 0;
     for (; index <= PCNT_UNIT_MAX; index++) {
         if (pcnts[index] == NULL) {
@@ -139,7 +139,7 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
 
     // Set data now that pin attach checks are done
     self->unit = (pcnt_unit_t)index;
-
+*/
     // Prepare configuration for the PCNT unit
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Direction
@@ -189,16 +189,18 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
     self->count = 0;
     check_esp_err(pcnt_counter_resume(self->unit));
 
-    pcnts[index] = self;
+    pcnts[self->unit] = self;
     self->attached = true;
 }
 
 // Defining Counter methods
 STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    MP_PRN(6, "mp_machine_Counter_init_helper() n_args:%u", n_args)
 
-    enum { ARG_direction, ARG_edge, ARG_filter, ARG_scale };
+    enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_direction, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_src, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_direction, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_edge, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -206,6 +208,11 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t src = args[ARG_src].u_obj;
+    if (src != MP_OBJ_NULL) {
+        self->aPinNumber = machine_pin_get_id(src);
+    }
 
     mp_obj_t direction = args[ARG_direction].u_obj;
     if (direction != MP_OBJ_NULL) {
@@ -242,31 +249,38 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 }
 
-// def Counter.__init__(pulsePin: int, dirPin: int=PCNT_PIN_NOT_USED, edge:int, filter:int=12787, scale:float=1.0)
+// def Counter.__init__(srcPin: int, dirPin: int=PCNT_PIN_NOT_USED, edge:int, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_PRN(3, "1 machine_Counter_make_new n_args=%u n_kw=%u", n_args, n_kw);
-    mp_arg_check_num(n_args, n_kw, 1, 2, true);
+    MP_PRN(6, "machine_Counter_make_new() n_args=%u n_kw=%u", n_args, n_kw);
+    mp_arg_check_num(n_args, n_kw, 1, 3, true);
 
     // create Counter object for the given unit
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
     self->base.type = &machine_Counter_type;
 
+    self->unit = (pcnt_unit_t)mp_obj_get_int(args[0]);
+
     self->attached = false;
-    self->aPinNumber = machine_pin_get_id(args[0]);
-    self->bPinNumber = PCNT_PIN_NOT_USED;
+    self->aPinNumber = PCNT_PIN_NOT_USED;
     if (n_args >= 2) {
-        self->bPinNumber = machine_pin_get_id(args[1]);
+        self->aPinNumber = machine_pin_get_id(args[1]);
+    }
+    self->bPinNumber = PCNT_PIN_NOT_USED;
+    if (n_args >= 3) {
+        self->bPinNumber = machine_pin_get_id(args[2]);
     }
     self->edge = RISING;
     self->scale = 1.0;
     self->filter = FILTER_MAX;
 
-    self->unit = (pcnt_unit_t)-1;
-
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Counter_init_helper(self, n_args - n_args, args + n_args, &kw_args);
+
+    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
+        mp_raise_TypeError(MP_ERROR_TEXT("'src' argument required, either pos or kw arg are allowed"));
+    }
 
     attach_Counter(self);
 
@@ -292,7 +306,7 @@ STATIC mp_obj_t pcnt_PCNT_deinit(mp_obj_t self_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_deinit_obj, pcnt_PCNT_deinit);
 
 STATIC void common_print_pin(const mp_print_t *print, mp_pcnt_obj_t *self) {
-    mp_printf(print, "Pin(%u)", self->aPinNumber);
+    mp_printf(print, "%u, Pin(%u)", self->unit, self->aPinNumber);
     if (self->bPinNumber != PCNT_PIN_NOT_USED) {
         mp_printf(print, ", Pin(%u)", self->bPinNumber);
     }
@@ -390,7 +404,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pcnt_PCNT_resume_obj, pcnt_PCNT_resume);
 // Counter stuff
 // Counter.init([kwargs])
 STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    MP_PRN(3, "30 machine_Counter_init n_args=%u", n_args);
+    MP_PRN(6, "machine_Counter_init() n_args=%u", n_args);
     mp_machine_Counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
@@ -403,7 +417,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_get_value), MP_ROM_PTR(&pcnt_PCNT_get_count_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_scaled), MP_ROM_PTR(&pcnt_PCNT_scaled_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_filter_ns), MP_ROM_PTR(&pcnt_PCNT_filter_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_suspend), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&pcnt_PCNT_pause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&pcnt_PCNT_resume_obj) }
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
@@ -429,7 +443,7 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     if (self->attached) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached"));
     }
-
+/*
     int index = 0;
     for (; index <= PCNT_UNIT_MAX; index++) {
         if (pcnts[index] == NULL) {
@@ -442,7 +456,7 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
 
     // Set data now that pin attach checks are done
     self->unit = (pcnt_unit_t)index;
-
+*/
     // Set up encoder PCNT configuration
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
@@ -519,7 +533,7 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     check_esp_err(pcnt_counter_resume(self->unit));
     check_esp_err(pcnt_intr_enable(self->unit));
 
-    pcnts[index] = self;
+    pcnts[self->unit] = self;
     self->attached = true;
 }
 
@@ -527,18 +541,20 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
 // Defining Encoder methods
 STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
-    enum { ARG_x124, ARG_filter, ARG_scale };
+    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_phase_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_phase_b, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    MP_PRN(3, "10, n_args=%d", n_args);
+    MP_PRN(5, "10, n_args=%d", n_args);
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    MP_PRN(3, "11, args[ARG_x124].u_int=%d", args[ARG_x124].u_int);
-    MP_PRN(3, "11, args[ARG_filter].u_int=%d", args[ARG_filter].u_int);
+    MP_PRN(5, "11, args[ARG_x124].u_int=%d", args[ARG_x124].u_int);
+    MP_PRN(5, "11, args[ARG_filter].u_int=%d", args[ARG_filter].u_int);
 
     if (args[ARG_x124].u_int != -1) {
         if (!self->attached) {
@@ -568,8 +584,8 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
 // def Encoder.__init__(aPin: int, bPin: int, x124:int=4, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_PRN(3, "1 machine_Encoder_make_new n_args=%u n_kw=%u", n_args, n_kw);
-    mp_arg_check_num(n_args, n_kw, 2, 2, true);
+    MP_PRN(6, "machine_Encoder_make_new() n_args=%u n_kw=%u", n_args, n_kw);
+    mp_arg_check_num(n_args, n_kw, 1, 3, true);
 
     // create Encoder object for the given unit
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
@@ -580,15 +596,28 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     self->scale = 1.0;
     self->filter = FILTER_MAX;
 
-    self->unit = (pcnt_unit_t)-1;
+    self->unit = (pcnt_unit_t)mp_obj_get_int(args[0]);
 
-    self->aPinNumber = machine_pin_get_id(args[1]);
-    self->bPinNumber = machine_pin_get_id(args[0]);  // a <--> b to compatible with IRQ-based encoders
+    self->aPinNumber = PCNT_PIN_NOT_USED;
+    if (n_args >= 2) {
+        self->aPinNumber = machine_pin_get_id(args[1]);
+    }
+    self->bPinNumber = PCNT_PIN_NOT_USED;
+    if (n_args >= 3) {
+        self->bPinNumber = machine_pin_get_id(args[2]);
+    }
 
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Encoder_init_helper(self, n_args - n_args, args + n_args, &kw_args);
+
+    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
+        mp_raise_TypeError(MP_ERROR_TEXT("'phase_a' argument required, either pos or kw arg are allowed"));
+    }
+    if (self->bPinNumber == PCNT_PIN_NOT_USED) {
+        mp_raise_TypeError(MP_ERROR_TEXT("'phase_b' argument required, either pos or kw arg are allowed"));
+    }
 
     attach_Encoder(self);
 
@@ -597,7 +626,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
 
 // Encoder.init([kwargs])
 STATIC mp_obj_t machine_Encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    MP_PRN(3, "30 machine_Encoder_init n_args=%u", n_args);
+    MP_PRN(6, "machine_Encoder_init() n_args=%u", n_args);
     mp_machine_Encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
