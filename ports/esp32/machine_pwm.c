@@ -77,23 +77,6 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 
 // 10-bit resolution (compatible with esp8266 PWM)
 #define PWRES (LEDC_TIMER_10_BIT)
-// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html#supported-range-of-frequency-and-duty-resolutions
-// duty() uses 10-bit resolution or less
-// duty_u16() and duty_ns() use 16-bit resolution or less
-
-// possible highest resolution in device
-#if CONFIG_IDF_TARGET_ESP32
-#define HIGHEST_PWM_RES (LEDC_TIMER_16_BIT) // 20 in fact, but 16 is used
-#else
-#define HIGHEST_PWM_RES (LEDC_TIMER_14_BIT)
-#endif
-// duty resolution of user interface in `duty_u16()` and `duty_u16` parameter in constructor/initializer
-#define UI_RES_16_BIT (16)
-// how much to shift from the HIGHEST_PWM_RES duty resolution to the user interface duty resolution UI_RES_16_BIT
-#define UI_RES_SHIFT (16 - HIGHEST_PWM_RES) // 0 for ESP32, 2 for S2, S3, C3
-
-// If the PWM frequency is less than EMPIRIC_FREQ, then LEDC_REF_CLK_HZ(1 MHz) is used, else LEDC_APB_CLK_HZ(80 MHz) is used
-#define EMPIRIC_FREQ (10) // Hz
 
 // Maximum duty value on 10-bit resolution
 #define MAX_DUTY_U10 ((1 << PWRES) - 1)
