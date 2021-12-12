@@ -31,12 +31,9 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "py/mpprint.h"
 
 #include "driver/ledc.h"
 #include "esp_err.h"
-
-#define MP_PRN_LEVEL 0
 
 // Total number of channels
 #define PWM_CHANNEL_MAX (LEDC_SPEED_MODE_MAX * LEDC_CHANNEL_MAX)
@@ -223,7 +220,6 @@ STATIC void configure_channel(machine_pwm_obj_t *self) {
 
 STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer) {
     if (freq != timer->freq_hz) {
-        MP_PRN(6, "set_freq(%d)", freq)
 
         // Find the highest bit resolution for the requested frequency
         unsigned int i = LEDC_APB_CLK_HZ; // 80 MHz
@@ -272,7 +268,6 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
         esp_err_t err = ledc_timer_config(timer);
         if (err != ESP_OK) {
             if (err == ESP_FAIL) {
-                MP_PRN(2, "timer timer->speed_mode:%d, timer->timer_num:%d, timer->clk_cfg:%d, timer->freq_hz:%d, timer->duty_resolution:%d", timer->speed_mode, timer->timer_num, timer->clk_cfg, timer->freq_hz, timer->duty_resolution);
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unreachable frequency %d"), freq);
             } else {
                 check_esp_err(err);
@@ -340,7 +335,6 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     } else if (_duty > max_duty) {
         _duty = max_duty;
     }
-    MP_PRN(5, "3| duty:%d, _duty:%d, max_duty:%d", duty, _duty, max_duty)
     check_esp_err(ledc_set_duty(self->mode, self->channel, _duty));
     check_esp_err(ledc_update_duty(self->mode, self->channel));
 
