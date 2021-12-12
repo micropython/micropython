@@ -22,7 +22,7 @@ The user has no interrupt interface, and no interrupts are generated on each pul
 Interrupts arrive when the 16-bit hardware counter buffer overflows, so this module has a tiny interrupt footprint
 while providing support for up to 8 simultaneous counters (Encoder or Counter objects).
 
-.. _pcnt.Counter:
+.. _esp32_machine.Counter:
 
 Counter
 =======
@@ -134,7 +134,7 @@ Methods
         cnt.deinit()  # free the input pins and counter.
 
 
-.. _pcnt.Encoder:
+.. _esp32_machine.Encoder:
 
 Encoder
 =======

@@ -514,7 +514,7 @@ The Counter (Pulse Counter) counts the number of rising and/or falling edges of 
 It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`machine.Counter <pcnt.Counter>` for details.  Simplest usage is::
+See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage is::
 
     from machine import Pin, Counter
 
@@ -536,7 +536,7 @@ The Encoder (Quadrature Incremental Encoder) counts quadrature-encoded pulses
 It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
-See :ref:`machine.Encoder <pcnt.Encoder>` for details.  Simplest usage is::
+See :ref:`machine.Encoder <esp32_machine.Encoder>` for details.  Simplest usage is::
 
     from machine import Pin, Encoder
 
