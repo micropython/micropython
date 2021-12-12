@@ -224,14 +224,18 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     from machine import Pin, PWM
 
     pwm0 = PWM(Pin(0))         # create PWM object from a pin
-    pwm0.freq()                # get current frequency (default 5kHz)
+    freq = pwm0.freq()         # get current frequency (default 5kHz)
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
-    pwm0.duty()                # get current duty cycle, range 0-1023 (default 512, 50%)
+
+    duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)
     pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
+
+    duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
     pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
-    pwm0.duty_u16()            # get current duty cycle, range 0-65535
+
+    duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
-    pwm0.duty_ns()             # get current pulse width in ns
+
     pwm0.deinit()              # turn off PWM on the pin
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
@@ -246,7 +250,7 @@ Number of groups (speed modes)                                2         1       
 Number of timers per group                                    4         4         4
 Number of channels per group                                  8         8         6
 -----------------------------------------------------  --------  --------  --------
-Different of PWM frequencies (groups * timers)                8         4         4
+Different PWM frequencies (groups * timers)                   8         4         4
 Total PWM channels (Pins, duties) (groups * channels)        16         8         6
 =====================================================  ========  ========  ========
 
@@ -415,14 +419,14 @@ I2S bus
 See :ref:`machine.I2S <machine.I2S>`. ::
 
     from machine import I2S, Pin
-    
+
     i2s = I2S(0, sck=Pin(13), ws=Pin(14), sd=Pin(34), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
     i2s.write(buf)             # write buffer of audio samples to I2S device
-    
+
     i2s = I2S(1, sck=Pin(33), ws=Pin(25), sd=Pin(32), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
-    
-The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
 
 ESP32 has two I2S buses with id=0 and id=1
