@@ -34,10 +34,12 @@
 #define ADC_V2 (0)
 #endif
 
-#if defined(STM32F4) || defined(STM32L4)
+#if defined(STM32F4)
 #define ADCx_COMMON ADC_COMMON_REGISTER(0)
 #elif defined(STM32F7)
 #define ADCx_COMMON ADC123_COMMON
+#elif defined(STM32L4)
+#define ADCx_COMMON __LL_ADC_COMMON_INSTANCE(0)
 #endif
 
 #if defined(STM32F0) || defined(STM32L0)
