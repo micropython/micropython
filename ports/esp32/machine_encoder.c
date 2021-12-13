@@ -525,11 +525,15 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     if (args[ARG_x124].u_int != -1) {
         if (!self->attached) {
-            self->x124 = args[ARG_x124].u_int;
+            if ((args[ARG_x124].u_int == 1) || (args[ARG_x124].u_int == 2) || (args[ARG_x124].u_int == 4)) {
+                self->x124 = args[ARG_x124].u_int;
+            } else {
+                mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("x124 can be 1, 2, 4"));
+            }
         } else {
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("use 'x124=' kwarg in Encoder constructor"));
-        }
     }
+}
 
     if (args[ARG_filter].u_int != -1) {
         self->filter = ns_to_filter(args[ARG_filter].u_int);
