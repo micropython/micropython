@@ -47,6 +47,11 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     sock->ssl_context = self;
     sock->sock = socket;
 
+    // Create a copy of the ESP-TLS config object and store the server hostname
+    // Note that ESP-TLS will use common_name for both SNI and verification
+    memcpy(&sock->ssl_config, &self->ssl_config, sizeof(self->ssl_config));
+    sock->ssl_config.common_name = server_hostname;
+
     esp_tls_t *tls_handle = esp_tls_init();
     if (tls_handle == NULL) {
         mp_raise_espidf_MemoryError();
@@ -55,6 +60,5 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
 
     // TODO: do something with the original socket? Don't call a close on the internal LWIP.
 
-    // Should we store server hostname on the socket in case connect is called with an ip?
     return sock;
 }
