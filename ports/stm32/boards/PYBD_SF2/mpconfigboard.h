@@ -181,6 +181,9 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT     (0)
 
+// MM card: the size is hard-coded to support the WBUS-EMMC add-on
+#define MICROPY_HW_MMCARD_LOG_BLOCK_NBR     (7469056 + 2048)
+
 // USB config
 #define MICROPY_HW_USB_FS           (1)
 #define MICROPY_HW_USB_HS           (1)

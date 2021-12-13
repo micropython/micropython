@@ -309,8 +309,12 @@ STATIC HAL_StatusTypeDef sdmmc_init_mmc(void) {
         return status;
     }
 
-    // As this is an eMMC card, overwrite LogBlockNbr with actual value
-    sdmmc_handle.mmc.MmcCard.LogBlockNbr = 7469056 + 2048;
+    #ifdef MICROPY_HW_MMCARD_LOG_BLOCK_NBR
+    // A board can override the number of logical blocks (card capacity) if needed.
+    // This is needed when a card is high capacity because the extended CSD command
+    // is not supported by the current version of the HAL.
+    sdmmc_handle.mmc.MmcCard.LogBlockNbr = MICROPY_HW_MMCARD_LOG_BLOCK_NBR;
+    #endif
 
     #if MICROPY_HW_SDCARD_BUS_WIDTH >= 4
     // Configure the SDIO bus width for 4/8-bit wide operation
