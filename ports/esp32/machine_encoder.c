@@ -46,15 +46,15 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
+#include "py/runtime.h"
+#include "mphalport.h"
+#include "modmachine.h"
+
 #if MICROPY_PY_MACHINE_PCNT
 
 #include "driver/pcnt.h"
 #include "soc/pcnt_struct.h"
 #include "esp_err.h"
-
-#include "py/runtime.h"
-#include "mphalport.h"
-#include "modmachine.h"
 
 #include "machine_encoder.h"
 
@@ -649,4 +649,4 @@ const mp_obj_type_t machine_Encoder_type = {
     // .parent = &machine_Counter_type,
 };
 
-#endif
+#endif // MICROPY_PY_MACHINE_PCNT
