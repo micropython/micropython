@@ -185,13 +185,13 @@ static void frequencyin_reference_tc_init(void) {
 
     #ifdef SAMD21
     tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 | TC_CTRLA_PRESCALER_DIV1;
-    tc->COUNT16.INTENSET.bit.OVF = 1;
+    tc->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
     NVIC_EnableIRQ(TC3_IRQn + reference_tc);
     #endif
     #ifdef SAM_D5X_E5X
     tc->COUNT16.CTRLA.reg = TC_CTRLA_MODE_COUNT16 |
                             TC_CTRLA_PRESCALER_DIV1;
-    tc->COUNT16.INTENSET.bit.OVF = 1;
+    tc->COUNT16.INTENSET.reg = TC_INTENSET_OVF;
     NVIC_EnableIRQ(TC0_IRQn + reference_tc);
     #endif
 }
