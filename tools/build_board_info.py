@@ -160,10 +160,10 @@ def get_version_info():
 
 
 def get_current_info():
-    response = github.get("/repos/adafruit/circuitpython-org/git/refs/heads/master")
+    response = github.get("/repos/adafruit/circuitpython-org/git/refs/heads/main")
     if not response.ok:
         print(response.text)
-        raise RuntimeError("cannot get master sha")
+        raise RuntimeError("cannot get main sha")
     commit_sha = response.json()["object"]["sha"]
 
     response = github.get(
@@ -235,7 +235,7 @@ def create_pr(changes, updated, git_info, user):
     pr_info = {
         "title": pr_title,
         "head": user + ":" + branch_name,
-        "base": "master",
+        "base": "main",
         "body": message,
         "maintainer_can_modify": True,
     }
