@@ -1,7 +1,7 @@
 USB_VID = 0X1B4F
 USB_PID = 0x0028
 
-USB_PRODUCT = "SparkFun Thing Plus - STM32"
+USB_PRODUCT = "Thing Plus - STM32"
 USB_MANUFACTURER = "SparkFun Electronics"
 
 SPI_FLASH_FILESYSTEM = 1
