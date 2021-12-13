@@ -518,15 +518,13 @@ See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage 
 
     from machine import Pin, Counter
 
-    cnt = Counter(0, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
-    #            id, pulse input pin,      direction input pin(optional)
-
-    _c = None
+    cnt = Counter(0, src=Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
+    _v = None
     while True:
-        c = cnt.value()  # get 64-bit signed value
-        if _c != c:
-            _c = c
-            print('Counter =', c)
+        v = cnt.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Counter value:', v)
 
 Encoder
 -------
@@ -540,15 +538,13 @@ See :ref:`machine.Encoder <esp32_machine.Encoder>` for details.  Simplest usage 
 
     from machine import Pin, Encoder
 
-    cnt = Encoder(0, Pin(17, mode=Pin.IN), Pin(16, mode=Pin.IN))
-    #            id, phase A input pin,    phase B input pin
-
-    _c = None
+    enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN))
+    _v = None
     while True:
-        c = cnt.value()  # get 64-bit signed value
-        if _c != c:
-            _c = c
-            print('Encoder =', c)
+        v = enc.value()  # get 64-bit signed value
+        if _v != v:
+            _v = v
+            print('Encoder value:', v)
 
 OneWire driver
 --------------
