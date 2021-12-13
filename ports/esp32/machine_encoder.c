@@ -61,33 +61,32 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 #define FILTER_MAX 1023
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
-static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = {}; //{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
 // ***********************************
 /* Decode what PCNT's unit originated an interrupt
  * and pass this information together with the event type
  * the main program using a queue.
  */
+
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+#define H_LIM_LAT cnt_thr_h_lim_lat_un
+#define L_LIM_LAT cnt_thr_l_lim_lat_un
+#else
+#define H_LIM_LAT h_lim_lat
+#define L_LIM_LAT l_lim_lat
+#endif
 static void IRAM_ATTR pcnt_intr_handler(void *arg) {
-    mp_pcnt_obj_t *self;
-    uint32_t intr_status = PCNT.int_st.val;
-
     for (int i = 0; i <= PCNT_UNIT_MAX; ++i) {
-        if (intr_status & (1 << i)) {
-            self = pcnts[i];
-            // Save the PCNT event type that caused an interrupt to pass it to the main program
-
-            int64_t status = 0;
-            if (PCNT.status_unit[i].h_lim_lat) {
-                status = self->r_enc_config.counter_h_lim;
-            } else if (PCNT.status_unit[i].l_lim_lat) {
-                status = self->r_enc_config.counter_l_lim;
+        if (PCNT.int_st.val & (1 << i)) {
+            if (PCNT.status_unit[i].H_LIM_LAT) {
+                pcnts[i]->count += _INT16_MAX;
+            } else if (PCNT.status_unit[i].L_LIM_LAT) {
+                pcnts[i]->count += _INT16_MIN;
             }
-            // pcnt_counter_clear(self->unit);
             PCNT.int_clr.val |= 1 << i; // clear the interrupt
-            self->count = status + self->count;
 
-            break;
+            //break;
         }
     }
 }
@@ -126,20 +125,6 @@ static void attach_Counter(mp_pcnt_obj_t *self) {
     if (self->attached) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached"));
     }
-/*
-    int index = 0;
-    for (; index <= PCNT_UNIT_MAX; index++) {
-        if (pcnts[index] == NULL) {
-            break;
-        }
-    }
-    if (index > PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many counters"));
-    }
-
-    // Set data now that pin attach checks are done
-    self->unit = (pcnt_unit_t)index;
-*/
     // Prepare configuration for the PCNT unit
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Direction
@@ -255,7 +240,10 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
     self->base.type = &machine_Counter_type;
 
-    self->unit = (pcnt_unit_t)mp_obj_get_int(args[0]);
+    self->unit = mp_obj_get_int(args[0]);
+    if ((self->unit < 0) || (self->unit > PCNT_UNIT_MAX)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX);
+    }
 
     self->attached = false;
     self->aPinNumber = PCNT_PIN_NOT_USED;
@@ -439,20 +427,6 @@ static void attach_Encoder(mp_pcnt_obj_t *self) {
     if (self->attached) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already attached"));
     }
-/*
-    int index = 0;
-    for (; index <= PCNT_UNIT_MAX; index++) {
-        if (pcnts[index] == NULL) {
-            break;
-        }
-    }
-    if (index > PCNT_UNIT_MAX) {
-        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("too many encoders"));
-    }
-
-    // Set data now that pin attach checks are done
-    self->unit = (pcnt_unit_t)index;
-*/
     // Set up encoder PCNT configuration
     self->r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     self->r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
@@ -583,12 +557,15 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     mp_pcnt_obj_t *self = m_new_obj(mp_pcnt_obj_t);
     self->base.type = &machine_Encoder_type;
 
+    self->unit = mp_obj_get_int(args[0]);
+    if ((self->unit < 0) || (self->unit > PCNT_UNIT_MAX)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX);
+    }
+
     self->attached = false;
     self->x124 = 4;
     self->scale = 1.0;
     self->filter = FILTER_MAX;
-
-    self->unit = (pcnt_unit_t)mp_obj_get_int(args[0]);
 
     self->aPinNumber = PCNT_PIN_NOT_USED;
     if (n_args >= 2) {

@@ -3,8 +3,8 @@
 #include <driver/gpio.h>
 #include "driver/pcnt.h"
 
-#define _INT16_MAX (32766)
-#define _INT16_MIN (-32766)
+#define _INT16_MAX (32767) // (32766)
+#define _INT16_MIN (-32768) //(-32766)
 
 enum edgeKind {
     RISING = 0x1,
@@ -18,7 +18,7 @@ typedef struct _mp_pcnt_obj_t {
 
     pcnt_config_t r_enc_config;
     bool attached;
-    pcnt_unit_t unit;
+    int unit;
     volatile int64_t count;
 
     int filter;
