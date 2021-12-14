@@ -81,17 +81,9 @@ void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *se
 }
 
 bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self) {
-    if (self->ssl_config.skip_common_name) {
-        return 0;
-    } else {
-        return 1;
-    }
+    return !self->ssl_config.skip_common_name;
 }
 
 void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value) {
-    if (value) {
-        self->ssl_config.skip_common_name = 0;
-    } else {
-        self->ssl_config.skip_common_name = 1;
-    }
+    self->ssl_config.skip_common_name = !value;
 }
