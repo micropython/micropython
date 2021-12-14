@@ -227,13 +227,12 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
             i = LEDC_REF_CLK_HZ; // 1 MHz
         }
 
-        #if 0
+        #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
         // original code
         i /= freq;
         #else
         // See https://github.com/espressif/esp-idf/issues/7722
-        unsigned int divider = i / freq; // truncated
-        // int divider = (i + freq / 2) / freq; // rounded
+        int divider = (i + freq / 2) / freq; // rounded
         if (divider == 0) {
             divider = 1;
         }
