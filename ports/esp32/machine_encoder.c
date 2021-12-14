@@ -61,7 +61,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 #define FILTER_MAX 1023
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
-static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = {}; //{ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
 
 // ***********************************
 /* Decode what PCNT's unit originated an interrupt
@@ -77,7 +77,7 @@ static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX + 1] = {}; //{ NULL, NULL, NULL, NULL,
 #define L_LIM_LAT l_lim_lat
 #endif
 static void IRAM_ATTR pcnt_intr_handler(void *arg) {
-    for (int i = 0; i <= PCNT_UNIT_MAX; ++i) {
+    for (int i = 0; i < PCNT_UNIT_MAX; ++i) {
         if (PCNT.int_st.val & (1 << i)) {
             if (PCNT.status_unit[i].H_LIM_LAT) {
                 pcnts[i]->count += _INT16_MAX;
@@ -85,8 +85,6 @@ static void IRAM_ATTR pcnt_intr_handler(void *arg) {
                 pcnts[i]->count += _INT16_MIN;
             }
             PCNT.int_clr.val |= 1 << i; // clear the interrupt
-
-            //break;
         }
     }
 }
@@ -232,7 +230,6 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 }
 
-// def Counter.__init__(srcPin: int, dirPin: int=PCNT_PIN_NOT_USED, edge:int, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 3, true);
 
@@ -241,8 +238,8 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     self->base.type = &machine_Counter_type;
 
     self->unit = mp_obj_get_int(args[0]);
-    if ((self->unit < 0) || (self->unit > PCNT_UNIT_MAX)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX);
+    if ((self->unit < 0) || (self->unit >= PCNT_UNIT_MAX)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX - 1);
     }
 
     self->attached = false;
@@ -528,12 +525,13 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
             if ((args[ARG_x124].u_int == 1) || (args[ARG_x124].u_int == 2) || (args[ARG_x124].u_int == 4)) {
                 self->x124 = args[ARG_x124].u_int;
             } else {
-                mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("x124 can be 1, 2, 4"));
+                mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("x124 must be 1, 2, 4")));
             }
         } else {
             mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("use 'x124=' kwarg in Encoder constructor"));
+        }
     }
-}
+
 
     if (args[ARG_filter].u_int != -1) {
         self->filter = ns_to_filter(args[ARG_filter].u_int);
@@ -553,7 +551,6 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 }
 
-// def Encoder.__init__(aPin: int, bPin: int, x124:int=4, filter:int=12787, scale:float=1.0)
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 3, true);
 
@@ -562,8 +559,8 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     self->base.type = &machine_Encoder_type;
 
     self->unit = mp_obj_get_int(args[0]);
-    if ((self->unit < 0) || (self->unit > PCNT_UNIT_MAX)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX);
+    if ((self->unit < 0) || (self->unit >= PCNT_UNIT_MAX)) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX - 1);
     }
 
     self->attached = false;
