@@ -36,19 +36,19 @@ extern const mp_obj_dict_t board_module_globals;
 STATIC const MP_DEFINE_STR_OBJ(board_module_id_obj, CIRCUITPY_BOARD_ID);
 
 bool common_hal_board_is_i2c(mp_obj_t obj);
-mp_obj_t common_hal_board_get_i2c(const mp_int_t insatnce);
+mp_obj_t common_hal_board_get_i2c(const mp_int_t instance);
 mp_obj_t common_hal_board_create_i2c(const mp_int_t instance);
 mp_obj_t board_i2c(size_t n_args, const mp_obj_t *args);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(board_i2c_obj);
 
 bool common_hal_board_is_spi(mp_obj_t obj);
-mp_obj_t common_hal_board_get_spi(const mp_int_t insatnce);
+mp_obj_t common_hal_board_get_spi(const mp_int_t instance);
 mp_obj_t common_hal_board_create_spi(const mp_int_t instance);
 mp_obj_t board_spi(size_t n_args, const mp_obj_t *args);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(board_spi_obj);
 
 bool common_hal_board_is_uart(mp_obj_t obj);
-mp_obj_t common_hal_board_get_uart(const mp_int_t insatnce);
+mp_obj_t common_hal_board_get_uart(const mp_int_t instance);
 mp_obj_t common_hal_board_create_uart(const mp_int_t instance);
 mp_obj_t board_uart(size_t n_args, const mp_obj_t *args);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(board_uart_obj);

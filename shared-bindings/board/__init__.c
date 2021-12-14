@@ -65,8 +65,9 @@ STATIC mp_int_t board_get_instance(size_t n_args, const mp_obj_t *args, const mp
 #endif
 
 //| def I2C(instance: Optional[int] = 0) -> busio.I2C:
-//|     """Returns the `busio.I2C` object for the board's designated I2C bus(es). It is a singleton.
-//|     The object created uses the default parameter values for `busio.I2C`."""
+//|     """Returns the `busio.I2C` object for the board's designated I2C bus(es).
+//|     If there is more than one default I2C bus, the buses are numbered starting at 0.
+//|     The object created is a singleton, and uses the default parameter values for `busio.I2C`."""
 //|     ...
 //|
 #if CIRCUITPY_BOARD_I2C
@@ -87,8 +88,9 @@ mp_obj_t board_i2c(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(board_i2c_obj, 0, 1, board_i2c);
 
 //| def SPI(instance: Optional[int] = 0) -> busio.SPI:
-//|     """Returns the `busio.SPI` object for the board's designated SPI bus(es). It is a singleton.
-//|     The object created uses the default parameter values for `busio.SPI`."""
+//|     """Returns the `busio.SPI` object for the board's designated SPI bus(es).
+//|     If there is more than one default SPI bus, the buses are numbered starting at 0.
+//|     The object created is a singleton, and uses the default parameter values for `busio.SPI`."""
 //|     ...
 //|
 #if CIRCUITPY_BOARD_SPI
@@ -109,8 +111,9 @@ mp_obj_t board_spi(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(board_spi_obj, 0, 1, board_spi);
 
 //| def UART(instance: Optional[int] = 0) -> busio.UART:
-//|     """Returns the `busio.UART` object for the board's designated UART bus(es). It is a singleton.
-//|     The object created uses the default parameter values for `busio.UART`."""
+//|     """Returns the `busio.UART` object for the board's designated UART bus(es).
+//|     If there is more than one default UART bus, the buses are numbered starting at 0.
+//|     The object created is a singleton, and uses the default parameter values for `busio.UART`."""
 //|     ...
 //|
 #if CIRCUITPY_BOARD_UART
