@@ -62,6 +62,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
     if (mp_obj_is_type(shape, &vectorio_polygon_type)) {
         common_hal_vectorio_polygon_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (mp_obj_is_type(shape, &vectorio_rectangle_type)) {
+        common_hal_vectorio_rectangle_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (mp_obj_is_type(shape, &vectorio_circle_type)) {
         common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else {
