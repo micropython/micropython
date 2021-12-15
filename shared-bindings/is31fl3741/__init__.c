@@ -39,9 +39,9 @@
 //| """Low-level is31fl3741 implementation
 //|
 //| The `is31fl3741_write` module contains a helper method to write out bytes in
-//| over the I2C bus.
+//| over the I2C bus."""
 //|
-//| def is31fl3741_write(i2c: busio.I2c, addr: int, mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
+//| def is31fl3741_write(i2c: busio.I2C, addr: int, mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
 //|     """Write buf out on the given I2C bus.
 //|
 //|     :param ~busio.I2C i2c: the I2C bus to output with
@@ -83,7 +83,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_write_obj, 0, is31fl3741_is31fl
 //|     """Initialize the IS31FL3741 device.
 //|
 //|     :param ~busio.I2C i2c: the I2C bus to output with
-//|     :param ~int addr: the I2C address of the IS31FL3741 device
+//|     :param ~int addr: the I2C address of the IS31FL3741 device"""
 //|     ...
 STATIC mp_obj_t is31fl3741_is31fl3741_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_i2c, ARG_addr };
