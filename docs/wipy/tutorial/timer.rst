@@ -5,7 +5,7 @@ Timers can be used for a great variety of tasks, calling a function periodically
 counting events, and generating a PWM signal are among the most common use cases.
 Each timer consists of two 16-bit channels and this channels can be tied together to
 form one 32-bit timer. The operating mode needs to be configured per timer, but then
-the period (or the frequency) can be independently configured on each channel. 
+the period (or the frequency) can be independently configured on each channel.
 By using the callback method, the timer event can call a Python function.
 
 Example usage to toggle an LED at a fixed frequency::

@@ -50,9 +50,9 @@ Methods
 
      - ``mode`` can be one of:
 
-       - ``TimerWiPy.ONE_SHOT`` - The timer runs once until the configured 
+       - ``TimerWiPy.ONE_SHOT`` - The timer runs once until the configured
          period of the channel expires.
-       - ``TimerWiPy.PERIODIC`` - The timer runs periodically at the configured 
+       - ``TimerWiPy.PERIODIC`` - The timer runs periodically at the configured
          frequency of the channel.
        - ``TimerWiPy.PWM``      - Output a PWM signal on a pin.
 
@@ -74,7 +74,7 @@ Methods
    The operating mode is is the one configured to the Timer object that was used to
    create the channel.
 
-   - ``channel`` if the width of the timer is 16-bit, then must be either ``TIMER.A``, ``TIMER.B``. 
+   - ``channel`` if the width of the timer is 16-bit, then must be either ``TIMER.A``, ``TIMER.B``.
      If the width is 32-bit then it **must be** ``TIMER.A | TIMER.B``.
 
    Keyword only arguments:
