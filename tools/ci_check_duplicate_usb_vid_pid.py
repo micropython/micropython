@@ -53,6 +53,10 @@ DEFAULT_IGNORELIST = [
     "espressif_kaluga_1.3",
     "espressif_esp32s3_devkitc_1",
     "espressif_esp32s3_devkitc_1_nopsram",
+    "jpconstantineau_pykey18",
+    "jpconstantineau_pykey44",
+    "jpconstantineau_pykey60",
+    "jpconstantineau_pykey87",
 ]
 
 cli_parser = argparse.ArgumentParser(description="USB VID/PID Duplicate Checker")
