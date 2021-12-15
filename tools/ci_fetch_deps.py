@@ -22,7 +22,7 @@ port_deps = {
         "lib/tinyusb/",
         "data/nvm.toml/",
     ],
-    "broadcom": ["lib/tinyusb/"],
+    "broadcom": ["extmod/ulab/", "lib/tinyusb/"],
     "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
     "espressif": ["extmod/ulab/", "lib/tinyusb/", "lib/protomatter/", "lib/quirc/"],
     "litex": ["extmod/ulab/", "lib/tinyusb/"],
