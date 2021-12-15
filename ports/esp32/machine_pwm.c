@@ -77,23 +77,6 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 
 // 10-bit resolution (compatible with esp8266 PWM)
 #define PWRES (LEDC_TIMER_10_BIT)
-// https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html#supported-range-of-frequency-and-duty-resolutions
-// duty() uses 10-bit resolution or less
-// duty_u16() and duty_ns() use 16-bit resolution or less
-
-// possible highest resolution in device
-#if CONFIG_IDF_TARGET_ESP32
-#define HIGHEST_PWM_RES (LEDC_TIMER_16_BIT) // 20 in fact, but 16 is used
-#else
-#define HIGHEST_PWM_RES (LEDC_TIMER_14_BIT)
-#endif
-// duty resolution of user interface in `duty_u16()` and `duty_u16` parameter in constructor/initializer
-#define UI_RES_16_BIT (16)
-// how much to shift from the HIGHEST_PWM_RES duty resolution to the user interface duty resolution UI_RES_16_BIT
-#define UI_RES_SHIFT (16 - HIGHEST_PWM_RES) // 0 for ESP32, 2 for S2, S3, C3
-
-// If the PWM frequency is less than EMPIRIC_FREQ, then LEDC_REF_CLK_HZ(1 MHz) is used, else LEDC_APB_CLK_HZ(80 MHz) is used
-#define EMPIRIC_FREQ (10) // Hz
 
 // Maximum duty value on 10-bit resolution
 #define MAX_DUTY_U10 ((1 << PWRES) - 1)
@@ -102,17 +85,17 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 // duty_u16() and duty_ns() use 16-bit resolution or less
 
 // Possible highest resolution in device
-#if CONFIG_IDF_TARGET_ESP32
-#define HIGHEST_PWM_RES (LEDC_TIMER_16_BIT) // 20 bit in fact, but 16 bit is used
+#if (LEDC_TIMER_BIT_MAX - 1) < LEDC_TIMER_16_BIT
+#define HIGHEST_PWM_RES (LEDC_TIMER_BIT_MAX - 1)
 #else
-#define HIGHEST_PWM_RES (LEDC_TIMER_14_BIT)
+#define HIGHEST_PWM_RES (LEDC_TIMER_16_BIT) // 20 bit for ESP32, but 16 bit is used
 #endif
 // Duty resolution of user interface in `duty_u16()` and `duty_u16` parameter in constructor/initializer
 #define UI_RES_16_BIT (16)
 // Maximum duty value on highest user interface resolution
 #define UI_MAX_DUTY ((1 << UI_RES_16_BIT) - 1)
 // How much to shift from the HIGHEST_PWM_RES duty resolution to the user interface duty resolution UI_RES_16_BIT
-#define UI_RES_SHIFT (16 - HIGHEST_PWM_RES) // 0 for ESP32, 2 for S2, S3, C3
+#define UI_RES_SHIFT (UI_RES_16_BIT - HIGHEST_PWM_RES) // 0 for ESP32, 2 for S2, S3, C3
 
 // If the PWM frequency is less than EMPIRIC_FREQ, then LEDC_REF_CLK_HZ(1 MHz) source is used, else LEDC_APB_CLK_HZ(80 MHz) source is used
 #define EMPIRIC_FREQ (10) // Hz
@@ -330,14 +313,14 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), UI_MAX_DUTY);
     }
     ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
-    int _duty = duty >> (HIGHEST_PWM_RES + UI_RES_SHIFT - timer.duty_resolution);
+    int channel_duty = duty >> (HIGHEST_PWM_RES + UI_RES_SHIFT - timer.duty_resolution);
     int max_duty = (1 << timer.duty_resolution) - 1;
-    if (_duty < 0) {
-        _duty = 0;
-    } else if (_duty > max_duty) {
-        _duty = max_duty;
+    if (channel_duty < 0) {
+        channel_duty = 0;
+    } else if (channel_duty > max_duty) {
+        channel_duty = max_duty;
     }
-    check_esp_err(ledc_set_duty(self->mode, self->channel, _duty));
+    check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
     check_esp_err(ledc_update_duty(self->mode, self->channel));
 
     /*
@@ -346,10 +329,10 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     // Bug: It has been experimentally established that the duty is setted during 2 signal periods, but 1 period is expected.
     // See https://github.com/espressif/esp-idf/issues/7288
     if (duty != get_duty_u16(self)) {
-        PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, _duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), _duty, timer.duty_resolution, timer.freq_hz);
+        PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
         ets_delay_us(2 * 1000000 / timer.freq_hz);
         if (duty != get_duty_u16(self)) {
-            PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, _duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), _duty, timer.duty_resolution, timer.freq_hz);
+            PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
         }
     }
     */
