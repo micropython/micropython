@@ -98,8 +98,8 @@ void mp_bytecode_print(const mp_print_t *print, const void *descr, const byte *i
 
     // raw bytecode dump
     size_t prelude_size = ip - mp_showbc_code_start + n_info + n_cell;
-    mp_printf(print, "Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n",
-        prelude_size, len - prelude_size);
+    mp_printf(print, "Raw bytecode (code_info_size=%u, bytecode_size=%u):\n",
+        (unsigned)prelude_size, (unsigned)(len - prelude_size));
     for (mp_uint_t i = 0; i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             mp_printf(print, "\n");
