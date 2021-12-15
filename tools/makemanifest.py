@@ -347,7 +347,7 @@ def main():
         )
         if res != 0:
             print("error freezing mpy {}:".format(mpy_files))
-            print(str(output_mpy, "utf8"))
+            print(output_mpy.decode())
             sys.exit(1)
     else:
         output_mpy = (
