@@ -29,6 +29,7 @@
 
 #include "py/objtuple.h"
 #include "py/objlist.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
 
@@ -51,10 +52,69 @@ STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(s);
 }
 
-//| def wrap_socket(sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
-//|     """Wraps the socket into a socket-compatible class that handles SSL negotiation.
-//|        The socket must be of type SOCK_STREAM."""
-//|     ...
+//|     def load_verify_locations(self, cadata: Optional[str] = None) -> None:
+//|         """Load a set of certification authority (CA) certificates used to validate
+//|            other peers' certificates."""
+//|
+
+STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_cadata };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    const char *cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+
+    common_hal_ssl_sslcontext_load_verify_locations(self, cadata);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_verify_locations_obj, 1, ssl_sslcontext_load_verify_locations);
+
+//|     def set_default_verify_paths(self) -> None:
+//|         """Load a set of default certification authority (CA) certificates."""
+//|
+
+STATIC mp_obj_t ssl_sslcontext_set_default_verify_paths(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+
+    common_hal_ssl_sslcontext_set_default_verify_paths(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_set_default_verify_paths_obj, 1, ssl_sslcontext_set_default_verify_paths);
+
+//|     check_hostname: bool
+//|     """Whether to match the peer certificate's hostname."""
+//|
+
+STATIC mp_obj_t ssl_sslcontext_get_check_hostname(mp_obj_t self_in) {
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    return mp_obj_new_bool(common_hal_ssl_sslcontext_get_check_hostname(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslcontext_get_check_hostname_obj, ssl_sslcontext_get_check_hostname);
+
+STATIC mp_obj_t ssl_sslcontext_set_check_hostname(mp_obj_t self_in, mp_obj_t value) {
+    ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    common_hal_ssl_sslcontext_set_check_hostname(self, mp_obj_is_true(value));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslcontext_set_check_hostname_obj, ssl_sslcontext_set_check_hostname);
+
+const mp_obj_property_t ssl_sslcontext_check_hostname_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
+              (mp_obj_t)&ssl_sslcontext_set_check_hostname_obj,
+              MP_ROM_NONE},
+};
+
+//|     def wrap_socket(self, sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
+//|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.
+//|            The socket must be of type SOCK_STREAM."""
 //|
 
 STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -69,7 +129,10 @@ STATIC mp_obj_t ssl_sslcontext_wrap_socket(size_t n_args, const mp_obj_t *pos_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *server_hostname = mp_obj_str_get_str(args[ARG_server_hostname].u_obj);
+    const char *server_hostname = NULL;
+    if (args[ARG_server_hostname].u_obj != mp_const_none) {
+        server_hostname = mp_obj_str_get_str(args[ARG_server_hostname].u_obj);
+    }
     bool server_side = args[ARG_server_side].u_bool;
     if (server_side && server_hostname != NULL) {
         mp_raise_ValueError(translate("Server side context cannot have hostname"));
@@ -83,6 +146,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_wrap_socket_obj, 1, ssl_sslcont
 
 STATIC const mp_rom_map_elem_t ssl_sslcontext_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_sslcontext_wrap_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_load_verify_locations), MP_ROM_PTR(&ssl_sslcontext_load_verify_locations_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_default_verify_paths), MP_ROM_PTR(&ssl_sslcontext_set_default_verify_paths_obj) },
+    { MP_ROM_QSTR(MP_QSTR_check_hostname), MP_ROM_PTR(&ssl_sslcontext_check_hostname_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(ssl_sslcontext_locals_dict, ssl_sslcontext_locals_dict_table);
