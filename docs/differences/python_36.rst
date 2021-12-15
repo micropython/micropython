@@ -75,13 +75,18 @@ Other Language Changes:
 Changes to MicroPython built-in modules:
 
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `array <https://docs.python.org/3.6/whatsnew/3.6.html#array>`_ Exhausted iterators of *array.array* will     |                |
-  | now stay exhausted even if the iterated array is extended.                                                   |                |
+  | `array <https://docs.python.org/3.6/whatsnew/3.6.html#array>`_                                               |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `binascii <https://docs.python.org/3.6/whatsnew/3.6.html#binascii>`_ The b2a_base64() function now accepts   |                |
-  | an optional newline keyword argument to control whether the newline character is appended to the return value|                |
+  | Exhausted iterators of *array.array* will now stay exhausted even if the iterated array is extended.         |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `cmath <https://docs.python.org/3.6/whatsnew/3.6.html#cmath>`_ The new cmath.tau (τ) constant has been added |                |
+  | `binascii <https://docs.python.org/3.6/whatsnew/3.6.html#binascii>`_                                         |                |
+  +--------------------------------------------------------------------------------------------------------------+----------------+
+  | The b2a_base64() function now accepts an optional newline keyword argument to control whether the newline    |                |
+  | character is appended to the return value                                                                    |                |
+  +--------------------------------------------------------------------------------------------------------------+----------------+
+  | `cmath <https://docs.python.org/3.6/whatsnew/3.6.html#cmath>`_                                               |                |
+  +--------------------------------------------------------------------------------------------------------------+----------------+
+  | The new cmath.tau (τ) constant has been added                                                                |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | New constants: *cmath.inf* and *cmath.nan* to match *math.inf* and *math.nan* , and also *cmath.infj* and    |                | 
   | *cmath.nanj* to match the format used by complex repr                                                        |                |
@@ -174,15 +179,17 @@ Changes to MicroPython built-in modules:
   | Added *SSLContext.post_handshake_auth* to enable and *ssl.SSLSocket.verify_client_post_handshake()* to       |                |
   | initiate TLS 1.3 post-handshake authentication.                                                              |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `struct <https://docs.python.org/3.6/whatsnew/3.6.html#struct>`_  now supports IEEE 754 half-precision floats|                |
-  | via the 'e' format specifier.                                                                                |                |
+  | `struct <https://docs.python.org/3.6/whatsnew/3.6.html#struct>`_                                             |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `sys <https://docs.python.org/3.6/whatsnew/3.6.html#sys>`_ The new *getfilesystemencodeerrors()* function    |                |
-  | returns the name of the error mode used to convert between Unicode filenames and bytes filenames.            |                |
+  | now supports IEEE 754 half-precision floats via the 'e' format specifier.                                    |                |+--------------------------------------------------------------------------------------------------------------+----------------+
+  | `sys <https://docs.python.org/3.6/whatsnew/3.6.html#sys>`_                                                   |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | `zlib <https://docs.python.org/3.6/whatsnew/3.6.html#zlib>`_ The *compress()* and *decompress()* functions   |                |
-  | now accept keyword arguments                                                                                 |                |
+  | The new *getfilesystemencodeerrors()* function returns the name of the error mode used to convert between    |                |
+  | Unicode filenames and bytes filenames.                                                                       |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
- 
+  | `zlib <https://docs.python.org/3.6/whatsnew/3.6.html#zlib>`_                                                 |                |
+  +--------------------------------------------------------------------------------------------------------------+----------------+
+  | The *compress()* and *decompress()* functions now accept keyword arguments                                   |                |
+  +--------------------------------------------------------------------------------------------------------------+----------------+                                 
   
  
