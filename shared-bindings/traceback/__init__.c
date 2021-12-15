@@ -42,7 +42,6 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
     if (!mp_obj_is_exception_instance(value)) {
         mp_raise_TypeError(translate("invalid exception"));
     }
-    mp_obj_exception_t exc = *(mp_obj_exception_t *)MP_OBJ_TO_PTR(value);
 
     mp_int_t limit = 0;
     bool print_tb = true;
@@ -51,13 +50,17 @@ STATIC void traceback_exception_common(mp_print_t *print, mp_obj_t value, mp_obj
         print_tb = (limit != 0);
     }
 
+    mp_obj_exception_t *exc = mp_obj_exception_get_native(value);
+    mp_obj_traceback_t *trace_backup = exc->traceback;
+
     if (tb_obj != mp_const_none && print_tb) {
-        exc.traceback = mp_arg_validate_type(tb_obj, &mp_type_traceback, MP_QSTR_tb);
+        exc->traceback = mp_arg_validate_type(tb_obj, &mp_type_traceback, MP_QSTR_tb);
     } else {
-        exc.traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
+        exc->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
     }
 
-    shared_module_traceback_print_exception(&exc, print, limit);
+    shared_module_traceback_print_exception(MP_OBJ_TO_PTR(value), print, limit);
+    exc->traceback = trace_backup;
 }
 
 //| def format_exception(etype: Type[BaseException], value: BaseException, tb: TracebackType,
