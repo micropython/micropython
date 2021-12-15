@@ -44,7 +44,7 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    | `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ | redesigning extension module loading            | In Progress   |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
 
-<<<<<<< HEAD
+
 Other Language Changes
 ----------------------
 
@@ -181,8 +181,7 @@ Changes to MicroPython built-in modules
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | The *monotonic()* function is now always available                                                        |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
-||||||| merged common ancestors
-=======
+
 Other Language Changes
 ----------------------
 
@@ -309,4 +308,3 @@ Changes to MicroPython built-in modules
    +-----------------------------------------------------------------------------------------------------------+---------------+
    |A new *is_finalizing()* function can be used to check if the Python interpreter is shutting down.          |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
->>>>>>> 39bfbd606773fd64aff0d8800a0e3cdf98c4d90d
