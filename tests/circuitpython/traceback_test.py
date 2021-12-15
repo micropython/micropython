@@ -22,4 +22,15 @@ except Exception as exc:
     traceback.print_exception(None, exc, exc.__traceback__, limit=0)
     print("\nLimit=-1 Trace:")
     traceback.print_exception(None, exc, exc.__traceback__, limit=-1)
+
+
+class NonNativeException(Exception):
+    pass
+
+
+try:
+    raise NonNativeException("test")
+except Exception as e:
+    print("\nNonNative Trace:")
+    traceback.print_exception(None, e, e.__traceback__)
     print("")
