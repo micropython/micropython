@@ -100,7 +100,7 @@ We apply code quality checks using pre-commit.  Install pre-commit once per syst
 
 Activate it once per git clone with
 
-    pre-commit --install
+    pre-commit install
 
 Pre-commit also requires some additional programs to be installed through your package manager:
 
