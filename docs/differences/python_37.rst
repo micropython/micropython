@@ -73,21 +73,28 @@ Other Language Changes:
 Other Modules:
 
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_ asyncio (many, may need a separate ticket)| Completed      |
+  | `asyncio <https://docs.python.org/3/whatsnew/3.7.html#asyncio>`_                                           |                |
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_ New features include *gc.freeze()*,                 | Won't Implement| 
-  | *gc.unfreeze()*, *gc-get_freeze_count*                                                                     |                |
+  | asyncio (many, may need a separate ticket)                                                                 | Completed      |
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_ math.remainder() added to implement IEEE        | Completed      |
-  | 754-style remainder                                                                                        |                |
+  | `gc <https://docs.python.org/3/whatsnew/3.7.html#gc>`_                                                     |                |
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_ A number of tidy up features including better       | In Progress    |
-  | support for splitting on empty strings and copy support for compiled expressions and match objects         |                |
+  | New features include *gc.freeze()*, *gc.unfreeze()*, *gc-get_freeze_count*                                 | Won't Implement|                  
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_ sys.breakpointhook() added.                       | In Progress    | 
-  | sys.get(/set)_coroutine_origin_tracking_depth() added                                                      |                |
+  | `math <https://docs.python.org/3/whatsnew/3.7.html#math>`_                                                 |                |
   +------------------------------------------------------------------------------------------------------------+----------------+
-  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_ Mostly updates to support nanosecond resolution |                | 
-  | in PEP564, see above                                                                                       |                |  
+  | math.remainder() added to implement IEEE 754-style remainder                                               | Completed      |
   +------------------------------------------------------------------------------------------------------------+----------------+
-
+  | `re <https://docs.python.org/3/whatsnew/3.7.html#re>`_                                                     |                |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | A number of tidy up features including better support for splitting on empty strings and copy support for  | In Progress    |
+  | compiled expressions and match objects                                                                     |                |
+  +---------------------------------------------- -------------------------------------------------------------+----------------+
+  | `sys <https://docs.python.org/3/whatsnew/3.7.html#sys>`_                                                   |                | 
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | sys.breakpointhook() added. sys.get(/set)_coroutine_origin_tracking_depth() added                          | In Progress    |
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | `time <https://docs.python.org/3/whatsnew/3.7.html#time>`_                                                 |                |  
+  +------------------------------------------------------------------------------------------------------------+----------------+
+  | Mostly updates to support nanosecond resolution in PEP564, see above                                       | In Progress    |
+  +------------------------------------------------------------------------------------------------------------+----------------+  
