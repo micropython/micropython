@@ -345,6 +345,35 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
     return true;
 }
 
+int64_t mp_obj_get_ll_int(mp_obj_t arg) {
+    if (arg == mp_const_false) {
+        return 0;
+    } else if (arg == mp_const_true) {
+        return 1;
+    } else if (mp_obj_is_small_int(arg)) {
+        return MP_OBJ_SMALL_INT_VALUE(arg);
+    } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
+        #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
+        mp_obj_int_t *a = arg;
+        return a->val;
+        #elif MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_MPZ
+        mp_obj_int_t *a = MP_OBJ_TO_PTR(arg);
+        int len = a->mpz.len;
+        uint64_t res = 0;
+        for (int i = len - 1; i >= 0; --i) {
+            res = (res << MPZ_DIG_SIZE) + a->mpz.dig[i];
+        }
+        if (a->mpz.neg) {
+            return -res;
+        }
+        return res;
+        #endif
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("expected an integer"));
+    }
+    return 0;
+}
+
 #if MICROPY_PY_BUILTINS_FLOAT
 bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     mp_float_t val;
