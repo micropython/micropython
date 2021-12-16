@@ -138,8 +138,8 @@ const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
 
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The image's pixel_shader.  The type depends on the underlying
-//|     bitmap's structure.  The pixel shadder can be modified (e.g., to set the
-//|     transparent pixel or, for paletted images, to update the palette"""
+//|     bitmap's structure.  The pixel shader can be modified (e.g., to set the
+//|     transparent pixel or, for palette shaded images, to update the palette.)"""
 //|
 STATIC mp_obj_t displayio_ondiskbitmap_obj_get_pixel_shader(mp_obj_t self_in) {
     displayio_ondiskbitmap_t *self = MP_OBJ_TO_PTR(self_in);
