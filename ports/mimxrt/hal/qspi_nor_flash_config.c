@@ -24,12 +24,16 @@ __attribute__((section(".boot_hdr.conf")))
 #pragma location = ".boot_hdr.conf"
 #endif
 
+#ifndef MICROPY_HW_FLASH_DQS
+#define MICROPY_HW_FLASH_DQS kFlexSPIReadSampleClk_LoopbackFromDqsPad
+#endif
+
 const flexspi_nor_config_t qspiflash_config = {
     .memConfig =
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
-        .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
+        .readSampleClkSrc = MICROPY_HW_FLASH_DQS,
         .csHoldTime = 3u,
         .csSetupTime = 3u,
         .busyOffset = FLASH_BUSY_STATUS_OFFSET,         // Status bit 0 indicates busy.
