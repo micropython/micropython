@@ -29,7 +29,11 @@ const flexspi_nor_config_t qspiflash_config = {
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
+#if defined(MICROPY_HW_FLASH_DQS)
+		.readSampleClkSrc = MICROPY_HW_FLASH_DQS,
+#elif
         .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
+#endif
         .csHoldTime = 3u,
         .csSetupTime = 3u,
         .busyOffset = FLASH_BUSY_STATUS_OFFSET,         // Status bit 0 indicates busy.
