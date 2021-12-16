@@ -109,7 +109,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Get I2C bus.
     int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
-    if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM) {
+    if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM || i2c_index_table[i2c_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
 
