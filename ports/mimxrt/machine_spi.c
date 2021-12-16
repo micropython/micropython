@@ -137,7 +137,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Get the SPI bus id.
     int spi_id = mp_obj_get_int(args[ARG_id].u_obj);
-    if (spi_id < 0 || spi_id >= MP_ARRAY_SIZE(spi_index_table)) {
+    if (spi_id < 0 || spi_id >= MP_ARRAY_SIZE(spi_index_table) || spi_index_table[spi_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
 
