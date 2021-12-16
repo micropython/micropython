@@ -21,6 +21,8 @@ typedef struct _mp_pcnt_obj_t {
     int unit;
     volatile int64_t count;
 
+    mp_obj_t handler;
+
     int filter;
     enum edgeKind edge; // Counter only
     int8_t x124; // Encoder only

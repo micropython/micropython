@@ -507,11 +507,11 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
     r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
-Counter
--------
+Counter (Pulse/Edge Counter)
+----------------------------
 
-The Counter (Pulse Counter) counts the number of rising and/or falling edges of an input signal.
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
+The Counter counts the number of rising and/or falling edges on any input pin.
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
 See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage is::
@@ -526,12 +526,12 @@ See :ref:`machine.Counter <esp32_machine.Counter>` for details.  Simplest usage 
             _v = v
             print('Counter value:', v)
 
-Encoder
--------
+Encoder (Quadrature Incremental Encoder)
+----------------------------------------
 
-The Encoder (Quadrature Incremental Encoder) counts quadrature-encoded pulses
-(two square wave signals A and B with ~50% duty cycle and ~90-degree phase difference between them).
-It is a 64-bit signed hardware-based counter.  Counter and Encoder share the same PCNT hardware peripheral,
+The Encoder counts the quadrature-encoded pulses on pair of input pins (two square wave signals A and B with
+~50% duty cycle and ~90-degree phase difference between them).
+It is a 64-bit signed hardware-based counter. Counter and Encoder share the same ESP32 PCNT hardware peripheral,
 the total summary available number of Counter and Encoder is up to 8.
 
 See :ref:`machine.Encoder <esp32_machine.Encoder>` for details.  Simplest usage is::
