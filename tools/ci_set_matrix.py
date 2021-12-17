@@ -120,7 +120,7 @@ def set_docs_to_build(build_all):
     doc_match = build_all
     if not build_all:
         doc_pattern = re.compile(
-            r"^(?:docs|(?:(?:extmod\/ulab|ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
+            r"^(?:docs|extmod/ulab|(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
         )
         for p in changed_files:
             if doc_pattern.search(p):
