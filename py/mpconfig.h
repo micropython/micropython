@@ -1306,6 +1306,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
+#ifndef MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
+#define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (1)
+#endif
+
 // Whether to provide "sys.maxsize" constant
 #ifndef MICROPY_PY_SYS_MAXSIZE
 #define MICROPY_PY_SYS_MAXSIZE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)

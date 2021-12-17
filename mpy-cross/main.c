@@ -192,8 +192,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #ifdef _WIN32
     set_fmode_binary();
     #endif
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_init(mp_sys_argv, 0);
 
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options

@@ -153,7 +153,8 @@ typedef struct _mp_state_vm_t {
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 
-    // these two lists must be initialised per port, after the call to mp_init
+    // If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is not enabled then these two lists
+    // must be initialised after the call to mp_init.
     mp_obj_list_t mp_sys_path_obj;
     mp_obj_list_t mp_sys_argv_obj;
 
