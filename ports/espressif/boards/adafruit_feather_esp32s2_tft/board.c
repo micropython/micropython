@@ -45,7 +45,7 @@ uint8_t display_init_sequence[] = {
     // normal display mode on
     0x13, 0,
     // display and color format settings
-    0x36, 1, 0x60,
+    0x36, 1, 0x68,
     0xB6, 2, 0x0A, 0x82,
     0x3A, 1 | DELAY,  0x55, 10,
     // ST7789V frame rate setting
