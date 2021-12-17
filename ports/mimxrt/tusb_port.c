@@ -25,10 +25,15 @@
  */
 
 #include "tusb.h"
+#include "mphalport.h"
 
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID (0xf055)
 #define MICROPY_HW_USB_PID (0x9802)
+#endif
+
+#ifndef MICROPY_HW_USB_STR_MANUF
+#define MICROPY_HW_USB_STR_MANUF ("MicroPython")
 #endif
 
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
@@ -77,9 +82,9 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 };
 
 static const char *const usbd_desc_str[] = {
-    [USBD_STR_MANUF] = "MicroPython",
-    [USBD_STR_PRODUCT] = "Board in FS mode", // Todo: fix string to indicate that product is running in High Speed mode
-    [USBD_STR_SERIAL] = "000000000000", // TODO
+    [USBD_STR_MANUF] = MICROPY_HW_USB_STR_MANUF,
+    [USBD_STR_PRODUCT] = MICROPY_HW_BOARD_NAME,
+    [USBD_STR_SERIAL] = "00000000000000000000",
     [USBD_STR_CDC] = "Board CDC",
 };
 
@@ -104,9 +109,31 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
             return NULL;
         }
+        if (index == USBD_STR_SERIAL)
+        {
+        uint8_t strs[DESC_STR_MAX];  
+        uint8_t uid[8];
+        mp_hal_get_unique_id(uid);
+                // convert it to hex string
+                for (int j = 0; j < 8; j++) {
+                    for (int k = 0; k < 2; k++) {
+                    strs[j * 2 + k] = (uid[j] & 0x0f) + 0x30;
+                    if (strs[j * 2 + k] > 0x39) {
+                        strs[j * 2 + k] += 7;
+                        }
+                    uid[j]>>=4;
+                }
+                }
+
+            for (len = 0; len < DESC_STR_MAX - 1 && strs[len]; ++len) {
+            desc_str[1 + len] = strs[len];
+        }
+        } else {
+
         const char *str = usbd_desc_str[index];
         for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
             desc_str[1 + len] = str[len];
+            }
         }
     }
 
