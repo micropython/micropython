@@ -118,7 +118,7 @@ void board_init(void) {
         240,            // width (after rotation)
         135,            // height (after rotation)
         40,             // column start
-        52,             // row start
+        53,             // row start
         0,              // rotation
         16,             // color depth
         false,          // grayscale
