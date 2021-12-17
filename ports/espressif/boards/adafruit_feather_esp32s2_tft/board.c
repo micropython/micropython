@@ -74,6 +74,12 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO19);
     common_hal_never_reset_pin(&pin_GPIO20);
 
+    // I2C/TFT power pin
+    common_hal_never_reset_pin(&pin_GPIO21);
+
+    // Turn on TFT and I2C
+    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(21, true);
 
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
 
@@ -93,7 +99,7 @@ void board_init(void) {
         bus,
         spi,
         &pin_GPIO39,    // DC
-        &pin_GPIO21,    // CS
+        &pin_GPIO7,     // CS
         &pin_GPIO40,    // RST
         40000000,       // baudrate
         0,              // polarity
