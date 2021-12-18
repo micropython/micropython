@@ -33,7 +33,12 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "fsl_snvs_lp.h"
+
+#if FSL_COMMON_DRIVER_VERSION != 0x020001
 #include "fsl_ocotp.h"
+#else
+void OCOTP_Init(OCOTP_Type *base, uint32_t srcClock_Hz);
+#endif
 
 #include CPU_HEADER_H
 
@@ -124,7 +129,6 @@ uint64_t mp_hal_time_ns(void) {
 // MAC address
 
 void mp_hal_get_unique_id(uint8_t id[]) {
-    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
     *(uint32_t *)&id[0] = OCOTP->CFG0;
     *(uint32_t *)&id[4] = OCOTP->CFG1;
 }
