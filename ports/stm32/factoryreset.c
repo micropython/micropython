@@ -109,6 +109,7 @@ MP_WEAK int factory_reset_create_filesystem(void) {
     uint32_t start_tick = HAL_GetTick();
 
     fs_user_mount_t vfs;
+    vfs.blockdev.flags = 0;
     pyb_flash_init_vfs(&vfs);
     uint8_t working_buf[FF_MAX_SS];
     FRESULT res = f_mkfs(&vfs.fatfs, FM_FAT, 0, working_buf, sizeof(working_buf));
