@@ -1308,7 +1308,7 @@ typedef double mp_float_t;
 
 // Whether to initialise "sys.path" and "sys.argv" to their defaults in mp_init()
 #ifndef MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
-#define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (1)
+#define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (MICROPY_PY_SYS)
 #endif
 
 // Whether to provide "sys.maxsize" constant
