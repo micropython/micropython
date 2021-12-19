@@ -1,5 +1,4 @@
 set(IDF_TARGET esp32s2)
-set(USB_ENABLED 0)
 
 set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base

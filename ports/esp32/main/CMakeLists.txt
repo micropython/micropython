@@ -121,10 +121,6 @@ set(IDF_COMPONENTS
     xtensa
 )
 
-if(NOT USB_ENABLED)
-    set(USB_ENABLED 1)
-endif()
-
 if(IDF_VERSION_MINOR GREATER_EQUAL 1 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
     list(APPEND IDF_COMPONENTS esp_netif)
 endif()
@@ -147,7 +143,7 @@ elseif(IDF_TARGET STREQUAL "esp32c3")
     list(APPEND IDF_COMPONENTS riscv)
 elseif(IDF_TARGET STREQUAL "esp32s2")
     list(APPEND IDF_COMPONENTS esp32s2)
-    if(USB_ENABLED GREATER_EQUAL 1)
+    if(USB_ENABLED)
         list(APPEND IDF_COMPONENTS tinyusb)
     endif()
 elseif(IDF_TARGET STREQUAL "esp32s3")
