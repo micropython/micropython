@@ -2749,6 +2749,10 @@ msgstr "pagkakalibrate ay basahin lamang"
 msgid "calibration value out of range +/-127"
 msgstr "ang halaga ng pagkakalibrate ay wala sa sakop +/-127"
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr ""
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr "maaari lamang magkaroon ng hanggang 4 na parameter sa Thumb assembly"
@@ -3998,7 +4002,9 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4013,7 +4019,6 @@ msgstr "pow() na may 3 argumento kailangan ng integers"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
-#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h

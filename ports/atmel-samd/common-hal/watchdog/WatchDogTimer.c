@@ -58,7 +58,7 @@ STATIC void setup_wdt(watchdog_watchdogtimer_obj_t *self, int setting) {
     while (WDT->SYNCBUSY.reg) { // Sync CTRL write
     }
 
-    WDT->INTENCLR.bit.EW = 1;   // Disable early warning interrupt
+    WDT->INTENCLR.reg = WDT_INTENCLR_EW;   // Disable early warning interrupt
     WDT->CONFIG.bit.PER = setting; // Set period for chip reset
     WDT->CTRLA.bit.WEN = 0;     // Disable window mode
     while (WDT->SYNCBUSY.reg) { // Sync CTRL write

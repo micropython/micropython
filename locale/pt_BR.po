@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-24 23:51+0000\n"
+"PO-Revision-Date: 2021-12-16 22:53+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.10\n"
 
 #: main.c
 msgid ""
@@ -2810,6 +2810,10 @@ msgstr "Calibração é somente leitura"
 msgid "calibration value out of range +/-127"
 msgstr "Valor de calibração fora do intervalo +/- 127"
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr "pode ser registrado apenas numa principal"
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
@@ -4061,7 +4065,9 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4076,7 +4082,6 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
-#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h

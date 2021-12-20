@@ -164,7 +164,7 @@ void alarm_pin_pinalarm_reset(void) {
     woke_up = false;
     SAMD_ALARM_FLAG &= ~SAMD_ALARM_FLAG_PIN; // clear flag
     // Disable TAMPER interrupt
-    RTC->MODE0.INTENCLR.bit.TAMPER = 1;
+    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_TAMPER;
     // Disable TAMPER control
     common_hal_mcu_disable_interrupts();
     RTC->MODE0.CTRLA.bit.ENABLE = 0;            // Disable the RTC

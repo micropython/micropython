@@ -6,7 +6,15 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "mphalport.h"
 
+#include "peripherals/broadcom/defines.h"
+
 void mp_hal_delay_us(mp_uint_t delay) {
+    uint32_t end = SYSTMR->CLO + delay;
+    // Wait if end is before current time because it must have wrapped.
+    while (end < SYSTMR->CLO) {
+    }
+    while (SYSTMR->CLO < end) {
+    }
 }
 
 void mp_hal_disable_all_interrupts(void) {
@@ -19,6 +27,7 @@ void mp_hal_enable_all_interrupts(void) {
 
 mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs) {
     size_t sp = 0;
+    #if defined(__ARM_ARCH) && (__ARM_ARCH >= 8)
     __asm__ ("mov %[out], sp" : [out] "=r" (sp));
     __asm__ ("mov %[out], x19" : [out] "=r" (regs[0]));
     __asm__ ("mov %[out], x20" : [out] "=r" (regs[1]));
@@ -30,5 +39,19 @@ mp_uint_t cpu_get_regs_and_sp(mp_uint_t *regs) {
     __asm__ ("mov %[out], x26" : [out] "=r" (regs[7]));
     __asm__ ("mov %[out], x27" : [out] "=r" (regs[8]));
     __asm__ ("mov %[out], x28" : [out] "=r" (regs[9]));
+    #else
+    __asm__ ("mov %[out], sp" : [out] "=r" (sp));
+    __asm__ ("mov %[out], x19" : [out] "=r" (regs[0]));
+    __asm__ ("mov %[out], x20" : [out] "=r" (regs[1]));
+    __asm__ ("mov %[out], x21" : [out] "=r" (regs[2]));
+    __asm__ ("mov %[out], x22" : [out] "=r" (regs[3]));
+    __asm__ ("mov %[out], x23" : [out] "=r" (regs[4]));
+    __asm__ ("mov %[out], x24" : [out] "=r" (regs[5]));
+    __asm__ ("mov %[out], x25" : [out] "=r" (regs[6]));
+    __asm__ ("mov %[out], x26" : [out] "=r" (regs[7]));
+    __asm__ ("mov %[out], x27" : [out] "=r" (regs[8]));
+    __asm__ ("mov %[out], x28" : [out] "=r" (regs[9]));
+    #endif
+
     return sp;
 }
