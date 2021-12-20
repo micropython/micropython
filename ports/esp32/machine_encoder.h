@@ -17,14 +17,17 @@ typedef struct _mp_pcnt_obj_t {
     gpio_num_t aPinNumber;
     gpio_num_t bPinNumber;
 
-    pcnt_config_t r_enc_config;
-    bool attached;
+    //pcnt_config_t r_enc_config;
     int unit;
     volatile int64_t counter;
-    int64_t compare1;
-    int64_t compare2;
 
-    mp_obj_t handler; // event handler
+    int64_t match1;
+    int64_t match2;
+    int64_t counter_match1;
+    int64_t counter_match2;
+    mp_obj_t handler_match1;
+    mp_obj_t handler_match2;
+    mp_obj_t handler_zero;
 
     int filter;
     enum edgeKind edge; // Counter only
