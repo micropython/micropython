@@ -225,54 +225,54 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_width(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_width_obj, displayio_tilegrid_obj_get_width);
 
 const mp_obj_property_t displayio_tilegrid_width_obj = {
-        .base.type = &mp_type_property,
-        .proxy = {(mp_obj_t)&displayio_tilegrid_get_width_obj,
-                  MP_ROM_NONE},
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_width_obj,
+              MP_ROM_NONE},
 };
 
 //|     height: int
 //|     """Height of the tilegrid in tiles."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_height(mp_obj_t self_in) {
-displayio_tilegrid_t *self = native_tilegrid(self_in);
-return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_height(self));
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_height_obj, displayio_tilegrid_obj_get_height);
 
 const mp_obj_property_t displayio_tilegrid_height_obj = {
-        .base.type = &mp_type_property,
-        .proxy = {(mp_obj_t)&displayio_tilegrid_get_height_obj,
-                  MP_ROM_NONE},
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_height_obj,
+              MP_ROM_NONE},
 };
 
 //|     tile_width: int
 //|     """Width of a single tile in pixels."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_tile_width(mp_obj_t self_in) {
-displayio_tilegrid_t *self = native_tilegrid(self_in);
-return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_width(self));
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_width_obj, displayio_tilegrid_obj_get_tile_width);
 
 const mp_obj_property_t displayio_tilegrid_tile_width_obj = {
-        .base.type = &mp_type_property,
-        .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_width_obj,
-                  MP_ROM_NONE},
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_width_obj,
+              MP_ROM_NONE},
 };
 
 //|     tile_height: int
 //|     """Height of a single tile in pixels."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_get_tile_height(mp_obj_t self_in) {
-displayio_tilegrid_t *self = native_tilegrid(self_in);
-return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_height(self));
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_displayio_tilegrid_get_tile_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_height_obj, displayio_tilegrid_obj_get_tile_height);
 
 const mp_obj_property_t displayio_tilegrid_tile_height_obj = {
-        .base.type = &mp_type_property,
-        .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_height_obj,
-                  MP_ROM_NONE},
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_height_obj,
+              MP_ROM_NONE},
 };
 
 //|     flip_x: bool
