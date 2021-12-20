@@ -3,8 +3,7 @@
 #include <driver/gpio.h>
 #include "driver/pcnt.h"
 
-#define INT16_ROLL 32000 // 32767 // (32766)
-//#define _INT16_MIN (-100)//(-32768) //(-32766)
+#define INT16_ROLL 32767 // 1000 // 32000 //
 
 #define FILTER_MAX 1023
 

@@ -76,8 +76,6 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 
 #include "machine_encoder.h"
 
-//STATIC bool pcnt_isr_service_installed = false;
-
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
 static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
 
@@ -108,16 +106,16 @@ STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
                 self->counter -= INT16_ROLL;
             }
             if (PCNT.status_unit[id].THRES1_LAT) {
-                    MP_PRN(3, "c11|%d %ld %ld", id, self->counter, self->compare1)
-                if (self->counter == self->compare1) {
-                    //MP_PRN(3, "c12|%ld %ld", self->counter, self->compare1)
+                    //MP_PRN(3, "c11|%d %d %d", id, (int32_t)self->counter, (int32_t)self->match1)
+                if (self->counter == self->match1) {
+                    //MP_PRN(3, "c12|%d %d", (int32_t)self->counter, (int32_t)self->match1)
                     mp_sched_schedule(self->handler, MP_OBJ_FROM_PTR(self));
                 }
             }
             if (PCNT.status_unit[id].THRES0_LAT) {
-                    MP_PRN(3, "c21|%d %ld %ld", id, self->counter, self->compare2)
-                if (self->counter == self->compare2) {
-                    //MP_PRN(3, "c22|%ld %ld", self->counter, self->compare2)
+                    //MP_PRN(3, "c21|%d %d %d", id, (int32_t)self->counter, (int32_t)self->match2)
+                if (self->counter == self->match2) {
+                    //MP_PRN(3, "c22|%d %d", (int32_t)self->counter, (int32_t)self->match2)
                     mp_sched_schedule(self->handler, MP_OBJ_FROM_PTR(self));
                 }
             }
@@ -212,13 +210,6 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
-    /*
-    if (!pcnt_isr_service_installed) {
-        check_esp_err(pcnt_isr_service_install(0));
-        pcnt_isr_service_installed = true;
-    }
-    */
-
     check_esp_err(pcnt_counter_clear(self->unit));
     self->counter = 0;
 
@@ -235,15 +226,15 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     MP_PRN(6, "mp_machine_Counter_init_helper()")
     check_esp_err(pcnt_counter_pause(self->unit));
 
-    enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale, ARG_compare1, ARG_compare2 };
+    enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_direction, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_edge, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_compare1,  MP_ARG_KW_ONLY | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_compare2,  MP_ARG_KW_ONLY | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_match1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_match2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -282,38 +273,38 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         }
     }
 
-    if (args[ARG_compare1].u_obj != MP_OBJ_NULL) {
-        self->compare1 = mp_obj_get_int/*_truncated*/(args[ARG_compare1].u_obj);
+    if (args[ARG_match1].u_obj != MP_OBJ_NULL) {
+        self->match1 = mp_obj_get_int_truncated(args[ARG_match1].u_obj);
         #if 0
         register_isr_handler();
-        int64_t compare1 = mp_obj_get_int/*_truncated*/(args[ARG_compare1].u_obj);
-        MP_PRN(3, "1|compare1:%ld", compare1)
-        self->compare1 = compare1 % INT16_ROLL;
-        MP_PRN(3, "2|compare1:%ld", self->compare1)
-        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_1, (int16_t)self->compare1));
-        self->compare1 = compare1 - self->compare1;
-        MP_PRN(3, "3|compare1:%ld", self->compare1)
+        int64_t match1 = mp_obj_get_int_truncated(args[ARG_match1].u_obj);
+        MP_PRN(3, "1|match1:%d", match1)
+        self->match1 = match1 % INT16_ROLL;
+        MP_PRN(3, "2|match1:%d", self->match1)
+        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_1, (int16_t)self->match1));
+        self->match1 = match1 - self->match1;
+        MP_PRN(3, "3|match1:%d", self->match1)
         /*
-        if (self->compare1 < 0) {
-            //self->compare1 += INT16_ROLL;
+        if (self->match1 < 0) {
+            //self->match1 += INT16_ROLL;
         }
         */
        #endif
     }
-    if (args[ARG_compare2].u_obj != MP_OBJ_NULL) {
-        self->compare2 = mp_obj_get_int/*_truncated*/(args[ARG_compare2].u_obj);
+    if (args[ARG_match2].u_obj != MP_OBJ_NULL) {
+        self->match2 = mp_obj_get_int_truncated(args[ARG_match2].u_obj);
         #if 0
         register_isr_handler();
-        int64_t compare2 = mp_obj_get_int/*_truncated*/(args[ARG_compare2].u_obj);
-        MP_PRN(3, "1|compare2:%ld", compare2)
-        self->compare2 = compare2 % INT16_ROLL;
-        MP_PRN(3, "2|compare2:%ld", self->compare2)
-        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, (int16_t)self->compare2));
-        self->compare2 = compare2 - self->compare2;
-        MP_PRN(3, "3|compare2:%ld", self->compare2)
+        int64_t match2 = mp_obj_get_int_truncated(args[ARG_match2].u_obj);
+        MP_PRN(3, "1|match2:%d", match2)
+        self->match2 = match2 % INT16_ROLL;
+        MP_PRN(3, "2|match2:%d", self->match2)
+        check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, (int16_t)self->match2));
+        self->match2 = match2 - self->match2;
+        MP_PRN(3, "3|match2:%d", self->match2)
         /*
-        if (self->compare2 < 0) {
-            //self->compare2 += INT16_ROLL;
+        if (self->match2 < 0) {
+            //self->match2 += INT16_ROLL;
         }
         */
        #endif
@@ -353,8 +344,8 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     self->edge = RISING;
     self->scale = 1.0;
     self->filter = 0;
-    self->compare1 = INT64_MIN;
-    self->compare2 = INT64_MIN;
+    self->match1 = INT64_MIN;
+    self->match2 = INT64_MIN;
 
     attach_Counter(self);
 
@@ -436,8 +427,12 @@ STATIC mp_obj_t machine_PCNT_count(size_t n_args, const mp_obj_t *args) {
 
     if (n_args > 1) {
         //uint64_t new_counter = mp_obj_get_ll_int(args[1]); // need PR: py\obj.c: Get 64-bit integer arg. #8089
-        uint64_t new_counter = mp_obj_get_int/*_truncated*/(args[1]);
-        self->counter = new_counter - count;
+        uint64_t new_counter = mp_obj_get_int_truncated(args[1]);
+        if (new_counter) {
+            self->counter = new_counter - count;
+        } else {
+            self->counter = 0;
+        }
     }
     return mp_obj_new_int_from_ll(counter + count);
 }
@@ -529,34 +524,20 @@ STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args,
         mp_raise_ValueError(MP_ERROR_TEXT("trigger"));
     }
 
-    if ((handler != mp_const_none) && ((self->compare1 != INT64_MIN) || (self->compare2 != INT64_MIN))) {
-        int64_t compare;
-        if (self->compare1 != INT64_MIN) {
-            compare = self->compare1 % (int64_t)INT16_ROLL;
-            self->compare1 -= compare;
-            MP_PRN(3, "self->compare1:%ld compare:%ld", self->compare1, compare)
-            check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_1, (int16_t)compare));
+    if ((handler != mp_const_none) && ((self->match1 != INT64_MIN) || (self->match2 != INT64_MIN))) {
+        int64_t match;
+        if (self->match1 != INT64_MIN) {
+            match = self->match1 % (int64_t)INT16_ROLL;
+            self->match1 -= match;
+            MP_PRN(3, "self->match1:%d match:%d", (int32_t)self->match1, (int32_t)match)
+            check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_1, (int16_t)match));
         }
-        if (self->compare2 != INT64_MIN) {
-            compare = self->compare2 % (int64_t)INT16_ROLL;
-            self->compare2 -= compare;
-            MP_PRN(3, "self->compare2:%ld compare:%ld", self->compare2, compare)
-            check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, (int16_t)compare));
+        if (self->match2 != INT64_MIN) {
+            match = self->match2 % (int64_t)INT16_ROLL;
+            self->match2 -= match;
+            MP_PRN(3, "self->match2:%d match:%d", (int32_t)self->match2, (int32_t)match)
+            check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, (int16_t)match));
         }
-        /*
-        if (self->compare1 < 0) {
-            //self->compare1 += INT16_ROLL;
-        }
-        */
-        /*
-        if (!pcnt_isr_service_installed) {
-            check_esp_err(pcnt_isr_service_install(0));
-            pcnt_isr_service_installed = true;
-        }
-        if (self->handler == MP_OBJ_NULL) {
-            pcnt_isr_handler_add(self->unit, pcnt_event_handler, (void *)self);
-        }
-        */
         self->handler = handler;
         for (pcnt_evt_type_t evt_type = PCNT_EVT_THRES_1; evt_type <= PCNT_EVT_THRES_0; evt_type <<= 1) {
             if (trigger & evt_type) {
@@ -595,8 +576,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&machine_PCNT_resume_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_PCNT_irq_obj) }, \
     \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_COMPARE1),  MP_ROM_INT(PCNT_EVT_THRES_1) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_COMPARE2),  MP_ROM_INT(PCNT_EVT_THRES_0) }
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH1), MP_ROM_INT(PCNT_EVT_THRES_1) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH2), MP_ROM_INT(PCNT_EVT_THRES_0) }
     // Constants ^^^
     //{ MP_ROM_QSTR(MP_QSTR_IRQ_ZERO),  MP_ROM_INT(PCNT_EVT_ZERO) },
 
@@ -703,15 +684,15 @@ STATIC void attach_Encoder(mp_pcnt_obj_t *self) {
 // -------------------------------------------------------------------------------------------------------------
 // Defining Encoder methods
 STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale, ARG_compare1, ARG_compare2 };
+    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_phase_b, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_compare1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_compare2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_match1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_match2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
