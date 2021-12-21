@@ -98,6 +98,7 @@ set(IDF_COMPONENTS
     bootloader_support
     bt
     driver
+    esp_adc_cal
     esp_common
     esp_eth
     esp_event
