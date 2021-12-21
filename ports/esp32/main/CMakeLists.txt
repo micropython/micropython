@@ -58,6 +58,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_timer.c
     ${PROJECT_DIR}/machine_pin.c
     ${PROJECT_DIR}/machine_touchpad.c
+    ${PROJECT_DIR}/machine_adcblock.c
     ${PROJECT_DIR}/machine_adc.c
     ${PROJECT_DIR}/machine_dac.c
     ${PROJECT_DIR}/machine_i2c.c
