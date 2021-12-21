@@ -125,7 +125,7 @@
 #endif
 #endif
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
-#define MICROPY_PY_SYS_PATH_DEFAULT "~/.micropython/lib:/usr/lib/micropython"
+#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)

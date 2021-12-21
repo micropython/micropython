@@ -90,7 +90,7 @@
 #define MICROPY_PY_SYS_ATEXIT       (1)
 #define MICROPY_PY_SYS_PLATFORM     "win32"
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
-#define MICROPY_PY_SYS_PATH_DEFAULT "~/.micropython/lib"
+#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen;~/.micropython/lib"
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)
