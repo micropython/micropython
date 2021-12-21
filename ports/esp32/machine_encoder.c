@@ -183,7 +183,7 @@ STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
 
     pcnts[self->unit] = NULL;
 
-    m_del_obj(mp_pcnt_obj_t, self); // ???
+    m_del_obj(mp_pcnt_obj_t, self); // Is it need?
 }
 
 // This called from Ctrl-D soft reboot
@@ -494,7 +494,6 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    //mp_machine_Counter_init_helper(self, n_args - n_args, args + n_args, &kw_args);
     mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
@@ -729,7 +728,6 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    // mp_machine_Encoder_init_helper(self, n_args - n_args, args + n_args, &kw_args);
     mp_machine_Encoder_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     attach_Encoder(self);
