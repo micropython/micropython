@@ -20,10 +20,10 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py website ${{ github.sha }}
     - name: Install deps
