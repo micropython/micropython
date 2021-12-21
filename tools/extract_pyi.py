@@ -244,7 +244,7 @@ def convert_folder(top_level, stub_directory):
     if imports["typing"]:
         import_lines.append("from typing import " + ", ".join(imports["typing"]))
     if imports["cpy_typing"]:
-        import_lines.append("from _typing import " + ", ".join(imports["cpy_typing"]))
+        import_lines.append("from circuitpython_typing import " + ", ".join(imports["cpy_typing"]))
     import_lines.extend(f"import {m}" for m in imports["modules"])
     import_body = "\n".join(import_lines)
     m = re.match(r'(\s*""".*?""")', stub_contents, flags=re.DOTALL)

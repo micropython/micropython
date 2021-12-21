@@ -42,7 +42,7 @@
 //|         """Create a new Address object encapsulating the address value.
 //|         The value itself can be one of:
 //|
-//|         :param ~_typing.ReadableBuffer address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
+//|         :param ~circuitpython_typing.ReadableBuffer address: The address value to encapsulate. A buffer object (bytearray, bytes) of 6 bytes.
 //|         :param int address_type: one of the integer values: `PUBLIC`, `RANDOM_STATIC`,
 //|           `RANDOM_PRIVATE_RESOLVABLE`, or `RANDOM_PRIVATE_NON_RESOLVABLE`."""
 //|         ...

@@ -19,10 +19,10 @@
 //|     def __init__(self, key: ReadableBuffer, mode: int = 0, iv: Optional[ReadableBuffer] = None, segment_size: int = 8) -> None:
 //|         """Create a new AES state with the given key.
 //|
-//|            :param ~_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
+//|            :param ~circuitpython_typing.ReadableBuffer key: A 16-, 24-, or 32-byte key
 //|            :param int mode: AES mode to use.  One of: `MODE_ECB`, `MODE_CBC`, or
 //|                             `MODE_CTR`
-//|            :param ~_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
+//|            :param ~circuitpython_typing.ReadableBuffer iv: Initialization vector to use for CBC or CTR mode
 //|
 //|            Additional arguments are supported for legacy reasons.
 //|

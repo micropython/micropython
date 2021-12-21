@@ -299,8 +299,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
 //|         The number of bytes read will be the length of ``out_buffer[in_start:in_end]``.
 
 //|         :param int address: 7-bit device address
-//|         :param ~_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
-//|         :param ~_typing.WriteableBuffer in_buffer: buffer to write into
+//|         :param ~circuitpython_typing.ReadableBuffer out_buffer: buffer containing the bytes to write
+//|         :param ~circuitpython_typing.WriteableBuffer in_buffer: buffer to write into
 //|         :param int out_start: beginning of ``out_buffer`` slice
 //|         :param int out_end: end of ``out_buffer`` slice; if not specified, use ``len(out_buffer)``
 //|         :param int in_start: beginning of ``in_buffer`` slice

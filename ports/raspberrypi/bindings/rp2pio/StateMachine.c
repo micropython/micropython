@@ -354,7 +354,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
-//|         :param ~_typing.ReadableBuffer buffer: Write out the data in this buffer
+//|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
@@ -402,7 +402,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|            include any data added to the fifo even if it was added before this was called.
 //|
-//|         :param ~_typing.WriteableBuffer buffer: Read data into this buffer
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
@@ -450,8 +450,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         may be different. The function will return once both are filled.
 //|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|         :param ~_typing.ReadableBuffer buffer_out: Write out the data in this buffer
-//|         :param ~_typing.WriteableBuffer buffer_in: Read data into this buffer
+//|         :param ~circuitpython_typing.ReadableBuffer buffer_out: Write out the data in this buffer
+//|         :param ~circuitpython_typing.WriteableBuffer buffer_in: Read data into this buffer
 //|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
