@@ -17,7 +17,6 @@ typedef struct _mp_pcnt_obj_t {
     gpio_num_t aPinNumber;
     gpio_num_t bPinNumber;
 
-    //pcnt_config_t r_enc_config;
     int unit;
     volatile int64_t counter;
 

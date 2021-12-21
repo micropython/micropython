@@ -47,7 +47,7 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-//#define MP_PRN_LEVEL 100
+// #define MP_PRN_LEVEL 10
 
 #if defined(MP_PRN_LEVEL) && (MP_PRN_LEVEL > 0)
 #define MP_PRN(level, ...) \
@@ -68,7 +68,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 #include "mphalport.h"
 #include "modmachine.h"
 
-#if 1 | MICROPY_PY_MACHINE_PCNT
+#if 1 || MICROPY_PY_MACHINE_PCNT
 
 #include "driver/pcnt.h"
 #include "soc/pcnt_struct.h"
@@ -131,10 +131,18 @@ STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
     }
 }
 
+STATIC void register_isr_handler(void) {
+    if (pcnt_isr_handle == NULL) {
+        check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)0, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
+        if (pcnt_isr_handle == NULL) {
+            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("wrap interrupt failed"));
+        }
+    }
+}
+
 /* Calculate the filter parameters based on an ns value
    1 / 80MHz = 12.5ns - min filter period
-   12.5ns * FILTER_MAX = 12.5ns * 1023 = 12787.5ns - max filter period
-*/
+   12.5ns * FILTER_MAX = 12.5ns * 1023 = 12787.5ns - max filter period */
 #define ns_to_filter(ns) ((ns * (APB_CLK_FREQ / 1000000) + 500) / 1000)
 #define filter_to_ns(filter) (filter * 1000 / (APB_CLK_FREQ / 1000000))
 
@@ -146,8 +154,15 @@ STATIC uint16_t get_filter_value_ns(pcnt_unit_t unit) {
 }
 
 STATIC void set_filter_value(pcnt_unit_t unit, int16_t value) {
+    /*
     if ((value < 0) || (value > FILTER_MAX)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("correct filter value is 0..%d ns"), filter_to_ns(FILTER_MAX));
+    }
+    */
+    if (value < 0) {
+        value = 0;
+    } else if (value > FILTER_MAX) {
+        value = FILTER_MAX;
     }
 
     check_esp_err(pcnt_set_filter_value(unit, value));
@@ -158,53 +173,221 @@ STATIC void set_filter_value(pcnt_unit_t unit, int16_t value) {
     }
 }
 
-// Register ISR handler
-STATIC void register_isr_handler(void) {
-    if (pcnt_isr_handle == NULL) {
-        check_esp_err(pcnt_isr_register(pcnt_intr_handler, (void *)0, (int)0, (pcnt_isr_handle_t *)&pcnt_isr_handle));
-        if (pcnt_isr_handle == NULL) {
-            mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("wrap interrupt failed"));
-        }
+STATIC void pcnt_disable_events(mp_pcnt_obj_t *self) {
+    if (self->handler_match2 != MP_OBJ_NULL) {
+        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_0));
+        self->handler_match2 = MP_OBJ_NULL;
+    }
+    if (self->handler_match1 != MP_OBJ_NULL) {
+        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_1));
+        self->handler_match1 = MP_OBJ_NULL;
+    }
+    if (self->handler_zero != MP_OBJ_NULL) {
+        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_ZERO));
+        self->handler_zero = MP_OBJ_NULL;
     }
 }
 
-// ====================================================================================
+STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
+    check_esp_err(pcnt_counter_pause(self->unit));
+
+    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_L_LIM));
+    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_H_LIM));
+    pcnt_disable_events(self);
+
+    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+
+    pcnts[self->unit] = NULL;
+
+    m_del_obj(mp_pcnt_obj_t, self); // ???
+}
+
+// This called from Ctrl-D soft reboot
+void machine_encoder_deinit_all(void) {
+    for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
+        pcnt_deinit(pcnts[id]);
+    }
+    if (pcnt_isr_handle != NULL) {
+        check_esp_err(pcnt_isr_unregister(pcnt_isr_handle));
+        pcnt_isr_handle = NULL;
+    }
+}
+
+// =================================================================
+// Common classes methods
+STATIC mp_obj_t machine_PCNT_deinit(mp_obj_t self_obj) {
+    pcnt_deinit(MP_OBJ_TO_PTR(self_obj));
+    return MP_ROM_NONE;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_deinit_obj, machine_PCNT_deinit);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_filter(size_t n_args, const mp_obj_t *args) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t value = get_filter_value_ns(self->unit);
+    if (n_args > 1) {
+        set_filter_value(self->unit, ns_to_filter(mp_obj_get_int(args[1])));
+    }
+    return MP_OBJ_NEW_SMALL_INT(value);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_filter_obj, 1, 2, machine_PCNT_filter);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_count(size_t n_args, const mp_obj_t *args) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int16_t count;
+    check_esp_err(pcnt_get_counter_value(self->unit, &count));
+    int64_t counter = self->counter;
+
+    if (n_args > 1) {
+        uint64_t new_counter = GET_INT(args[1]);
+        if (new_counter) {
+            self->counter = new_counter - count;
+        } else {
+            self->counter = 0;
+        }
+    }
+    return mp_obj_new_int_from_ll(counter + count);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_count_obj, 1, 2, machine_PCNT_count);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_get_count(mp_obj_t self_obj) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+
+    int16_t count;
+    pcnt_get_counter_value(self->unit, &count); // no error checking to speed up
+
+    return mp_obj_new_int_from_ll(self->counter + count);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_get_count_obj, machine_PCNT_get_count);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_scaled(size_t n_args, const mp_obj_t *args) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int64_t counter = self->counter;
+    int16_t count;
+    check_esp_err(pcnt_get_counter_value(self->unit, &count));
+    if (n_args > 1) {
+        int64_t new_counter = mp_obj_get_float_to_f(args[1]) / self->scale;
+        self->counter = new_counter - count;
+    }
+    return mp_obj_new_float_from_f(self->scale * (counter + count));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_scaled_obj, 1, 2, machine_PCNT_scaled);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_pause(mp_obj_t self_obj) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+
+    check_esp_err(pcnt_counter_pause(self->unit));
+
+    return MP_ROM_NONE;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_pause_obj, machine_PCNT_pause);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_resume(mp_obj_t self_obj) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+
+    check_esp_err(pcnt_counter_resume(self->unit));
+
+    return MP_ROM_NONE;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_resume_obj, machine_PCNT_resume);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_id(mp_obj_t self_obj) {
+    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+    return MP_OBJ_NEW_SMALL_INT(self->unit);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
+
+// -----------------------------------------------------------------
+STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = PCNT_EVT_THRES_0 | PCNT_EVT_THRES_1 | PCNT_EVT_ZERO} },
+    };
+
+    mp_pcnt_obj_t *self = pos_args[0];
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_pos_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t handler = args[ARG_handler].u_obj;
+    mp_uint_t trigger = args[ARG_trigger].u_int;
+
+    if (trigger & ~(PCNT_EVT_THRES_1 | PCNT_EVT_THRES_0 | PCNT_EVT_ZERO)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("trigger"));
+    }
+
+    if (handler != mp_const_none) {
+        if (trigger & PCNT_EVT_THRES_0) {
+            self->handler_match2 = handler;
+            pcnt_event_enable(self->unit, PCNT_EVT_THRES_0);
+        } else {
+            pcnt_event_disable(self->unit, PCNT_EVT_THRES_0);
+        }
+        if (trigger & PCNT_EVT_THRES_1) {
+            self->handler_match1 = handler;
+            pcnt_event_enable(self->unit, PCNT_EVT_THRES_1);
+        } else {
+            pcnt_event_disable(self->unit, PCNT_EVT_THRES_1);
+        }
+        if (trigger & PCNT_EVT_ZERO) {
+            self->handler_zero = handler;
+            pcnt_event_enable(self->unit, PCNT_EVT_ZERO);
+        } else {
+            pcnt_event_disable(self->unit, PCNT_EVT_ZERO);
+        }
+    } else {
+        pcnt_disable_events(self);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_PCNT_irq_obj, 1, machine_PCNT_irq);
+
+// =================================================================
 // class Counter(object):
 STATIC void attach_Counter(mp_pcnt_obj_t *self) {
-    MP_PRN(6, "attach_Counter()")
     // Prepare configuration for the PCNT unit
     pcnt_config_t r_enc_config;
-    /*self->*/r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
-    /*self->*/r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Direction
+    r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
+    r_enc_config.ctrl_gpio_num = self->bPinNumber; // Direction
 
-    /*self->*/r_enc_config.unit = self->unit;
-    /*self->*/r_enc_config.channel = PCNT_CHANNEL_0;
+    r_enc_config.unit = self->unit;
+    r_enc_config.channel = PCNT_CHANNEL_0;
 
     // What to do on the positive / negative edge of pulse input?
     if (self->edge & FALLING) {
-        /*self->*/r_enc_config.pos_mode = PCNT_COUNT_INC; // Count up on the positive edge
+        r_enc_config.pos_mode = PCNT_COUNT_INC; // Count up on the positive edge
     } else {
-        /*self->*/r_enc_config.pos_mode = PCNT_COUNT_DIS; // Keep the counter value on the positive edge
+        r_enc_config.pos_mode = PCNT_COUNT_DIS; // Keep the counter value on the positive edge
     }
     if (self->edge & RISING) {
-        /*self->*/r_enc_config.neg_mode = PCNT_COUNT_INC; // Count up on the negative edge
+        r_enc_config.neg_mode = PCNT_COUNT_INC; // Count up on the negative edge
     } else {
-        /*self->*/r_enc_config.neg_mode = PCNT_COUNT_DIS; // Keep the counter value on the negative edge
+        r_enc_config.neg_mode = PCNT_COUNT_DIS; // Keep the counter value on the negative edge
 
     }
     // What to do when control input is low or high?
-    /*self->*/r_enc_config.lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
-    /*self->*/r_enc_config.hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
+    r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if low
+    r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if high
 
     // Set the maximum and minimum limit values to watch
-    /*self->*/r_enc_config.counter_h_lim = INT16_ROLL;
-    /*self->*/r_enc_config.counter_l_lim = -INT16_ROLL;
+    r_enc_config.counter_h_lim = INT16_ROLL;
+    r_enc_config.counter_l_lim = -INT16_ROLL;
 
-    check_esp_err(pcnt_unit_config(&/*self->*/r_enc_config));
+    check_esp_err(pcnt_unit_config(&r_enc_config));
     check_esp_err(pcnt_counter_pause(self->unit));
 
     // Filter out bounces and noise
-    set_filter_value(self->unit, self->filter);  // Filter Runt Pulses
+    set_filter_value(self->unit, self->filter); // Filter Runt Pulses
 
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
@@ -217,12 +400,9 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
 
     // Enable interrupts for PCNT unit
     check_esp_err(pcnt_intr_enable(self->unit));
-    MP_PRN(6, "attach_Counter() exit")
 }
 
-// Defining Counter methods
 STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    MP_PRN(6, "mp_machine_Counter_init_helper()")
     check_esp_err(pcnt_counter_pause(self->unit));
 
     enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
@@ -286,11 +466,9 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         self->counter_match2 = self->match2 - self->counter_match2;
     }
     check_esp_err(pcnt_counter_resume(self->unit));
-    MP_PRN(6, "mp_machine_Counter_init_helper() exit")
 }
 
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    MP_PRN(6, "machine_Counter_make_new()")
     register_isr_handler();
 
     mp_arg_check_num(n_args, n_kw, 1, 5, true);
@@ -336,56 +514,8 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     //mp_machine_Counter_init_helper(self, n_args - n_args, args + n_args, &kw_args);
     mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
 
-    MP_PRN(6, "machine_Counter_make_new() exit")
     return MP_OBJ_FROM_PTR(self);
 }
-
-STATIC void pcnt_disable_events(mp_pcnt_obj_t *self) {
-    if (self->handler_match2 != MP_OBJ_NULL) {
-        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_0));
-        self->handler_match2 = MP_OBJ_NULL;
-    }
-    if (self->handler_match1 != MP_OBJ_NULL) {
-        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_THRES_1));
-        self->handler_match1 = MP_OBJ_NULL;
-    }
-    if (self->handler_zero != MP_OBJ_NULL) {
-        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_ZERO));
-        self->handler_zero = MP_OBJ_NULL;
-    }
-}
-
-STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
-    check_esp_err(pcnt_counter_pause(self->unit));
-
-    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_L_LIM));
-    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_H_LIM));
-    pcnt_disable_events(self);
-
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
-
-    pcnts[self->unit] = NULL;
-
-    m_del_obj(mp_pcnt_obj_t, self); // ???
-}
-
-// This called from Ctrl-D soft reboot
-void machine_encoder_deinit_all(void) {
-    for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
-        pcnt_deinit(pcnts[id]);
-    }
-    if (pcnt_isr_handle != NULL) {
-        check_esp_err(pcnt_isr_unregister(pcnt_isr_handle));
-        pcnt_isr_handle = NULL;
-    }
-}
-
-STATIC mp_obj_t machine_PCNT_deinit(mp_obj_t self_obj) {
-    pcnt_deinit(MP_OBJ_TO_PTR(self_obj));
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_deinit_obj, machine_PCNT_deinit);
 
 STATIC void common_print_pin(const mp_print_t *print, mp_pcnt_obj_t *self) {
     mp_printf(print, "%u, Pin(%u)", self->unit, self->aPinNumber);
@@ -411,141 +541,6 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
     mp_printf(print, ")");
 }
 
-// Get/Set PCNT filter value
-STATIC mp_obj_t machine_PCNT_filter(size_t n_args, const mp_obj_t *args) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t value = get_filter_value_ns(self->unit);
-    if (n_args > 1) {
-        set_filter_value(self->unit, ns_to_filter(mp_obj_get_int(args[1])));
-    }
-    return MP_OBJ_NEW_SMALL_INT(value);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_filter_obj, 1, 2, machine_PCNT_filter);
-
-// ====================================================================================
-STATIC mp_obj_t machine_PCNT_count(size_t n_args, const mp_obj_t *args) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    int16_t count;
-    check_esp_err(pcnt_get_counter_value(self->unit, &count));
-    int64_t counter = self->counter;
-
-    if (n_args > 1) {
-        uint64_t new_counter = GET_INT(args[1]);
-        if (new_counter) {
-            self->counter = new_counter - count;
-        } else {
-            self->counter = 0;
-        }
-    }
-    return mp_obj_new_int_from_ll(counter + count);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_count_obj, 1, 2, machine_PCNT_count);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_get_count(mp_obj_t self_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    int16_t count;
-    pcnt_get_counter_value(self->unit, &count);  // no error checking to speed up
-
-    return mp_obj_new_int_from_ll(self->counter + count);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_get_count_obj, machine_PCNT_get_count);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_id(mp_obj_t self_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-    return MP_OBJ_NEW_SMALL_INT(self->unit);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_scaled(size_t n_args, const mp_obj_t *args) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-
-    int64_t counter = self->counter;
-    int16_t count;
-    check_esp_err(pcnt_get_counter_value(self->unit, &count));
-    if (n_args > 1) {
-        int64_t new_counter = mp_obj_get_float_to_f(args[1]) / self->scale;
-        self->counter = new_counter - count;
-    }
-    return mp_obj_new_float_from_f(self->scale * (counter + count));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_PCNT_scaled_obj, 1, 2, machine_PCNT_scaled);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_pause(mp_obj_t self_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    check_esp_err(pcnt_counter_pause(self->unit));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_pause_obj, machine_PCNT_pause);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_resume(mp_obj_t self_obj) {
-    mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
-    check_esp_err(pcnt_counter_resume(self->unit));
-
-    return MP_ROM_NONE;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_resume_obj, machine_PCNT_resume);
-
-// -----------------------------------------------------------------
-STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    MP_PRN(6, "machine_PCNT_irq()")
-    enum { ARG_handler, ARG_trigger };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler,  MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-        { MP_QSTR_trigger,  MP_ARG_INT,  {.u_int = PCNT_EVT_THRES_0 | PCNT_EVT_THRES_1 | PCNT_EVT_ZERO} },
-    };
-
-    mp_pcnt_obj_t *self = pos_args[0];
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_pos_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_obj_t handler = args[ARG_handler].u_obj;
-    mp_uint_t trigger = args[ARG_trigger].u_int;
-
-    if (trigger & ~(PCNT_EVT_THRES_1 | PCNT_EVT_THRES_0 | PCNT_EVT_ZERO)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("trigger"));
-    }
-
-    if (handler != mp_const_none) {
-        if (trigger & PCNT_EVT_THRES_0) {
-            self->handler_match2 = handler;
-            pcnt_event_enable(self->unit, PCNT_EVT_THRES_0);
-        } else {
-            pcnt_event_disable(self->unit, PCNT_EVT_THRES_0);
-        }
-        if (trigger & PCNT_EVT_THRES_1) {
-            self->handler_match1 = handler;
-            pcnt_event_enable(self->unit, PCNT_EVT_THRES_1);
-        } else {
-            pcnt_event_disable(self->unit, PCNT_EVT_THRES_1);
-        }
-        if (trigger & PCNT_EVT_ZERO) {
-            self->handler_zero = handler;
-            pcnt_event_enable(self->unit, PCNT_EVT_ZERO);
-        } else {
-            pcnt_event_disable(self->unit, PCNT_EVT_ZERO);
-        }
-    } else {
-        pcnt_disable_events(self);
-    }
-
-    MP_PRN(6, "machine_PCNT_irq() exit")
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_PCNT_irq_obj, 1, machine_PCNT_irq);
-
-// ====================================================================================
-// Counter stuff
-// Counter.init([kwargs])
 STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_Counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
@@ -553,8 +548,7 @@ STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
 
 // Register class methods
-    // Methods
-#define COMMON \
+#define COMMON_METHODS \
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_PCNT_deinit_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_PCNT_count_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_get_value), MP_ROM_PTR(&machine_PCNT_get_count_obj) }, \
@@ -563,17 +557,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Counter_init_obj, 1, machine_Counter_init);
     { MP_ROM_QSTR(MP_QSTR_pause), MP_ROM_PTR(&machine_PCNT_pause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_resume), MP_ROM_PTR(&machine_PCNT_resume_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_PCNT_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&machine_PCNT_id_obj) }, \
-    \
+    { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&machine_PCNT_id_obj) }
+
+#define COMMON_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_IRQ_ZERO), MP_ROM_INT(PCNT_EVT_ZERO) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH1), MP_ROM_INT(PCNT_EVT_THRES_1) }, \
     { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH2), MP_ROM_INT(PCNT_EVT_THRES_0) }
-    // Constants ^^^
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
-    COMMON,
-    // Constants
+    COMMON_METHODS,
+    COMMON_CONSTANTS,
     { MP_ROM_QSTR(MP_QSTR_RISING), MP_ROM_INT(RISING) },
     { MP_ROM_QSTR(MP_QSTR_FALLING), MP_ROM_INT(FALLING) },
 };
@@ -588,71 +582,69 @@ const mp_obj_type_t machine_Counter_type = {
     .locals_dict = (mp_obj_dict_t *)&machine_Counter_locals_dict,
 };
 
-// ====================================================================================
+// =================================================================
 // class Encoder(object):
 STATIC void attach_Encoder(mp_pcnt_obj_t *self) {
     // Set up encoder PCNT configuration
     pcnt_config_t r_enc_config;
-    /*self->*/r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
-    /*self->*/r_enc_config.ctrl_gpio_num = self->bPinNumber;  // Rotary Encoder Chan B
+    r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
+    r_enc_config.ctrl_gpio_num = self->bPinNumber; // Rotary Encoder Chan B
 
-    /*self->*/r_enc_config.unit = self->unit;
-    /*self->*/r_enc_config.channel = PCNT_CHANNEL_0;
+    r_enc_config.unit = self->unit;
+    r_enc_config.channel = PCNT_CHANNEL_0;
 
-    /*self->*/r_enc_config.pos_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges // X1
-    /*self->*/r_enc_config.neg_mode = PCNT_COUNT_INC;   // Discard Falling-Edge
+    r_enc_config.pos_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges // X1
+    r_enc_config.neg_mode = PCNT_COUNT_INC; // Discard Falling-Edge
 
-    /*self->*/r_enc_config.lctrl_mode = PCNT_MODE_KEEP;    // Rising A on HIGH B = CW Step
-    /*self->*/r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Rising A on LOW B = CCW Step
+    r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Rising A on HIGH B = CW Step
+    r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Rising A on LOW B = CCW Step
 
     // Set the maximum and minimum limit values to watch
-    /*self->*/r_enc_config.counter_h_lim = INT16_ROLL;
-    /*self->*/r_enc_config.counter_l_lim = -INT16_ROLL;
+    r_enc_config.counter_h_lim = INT16_ROLL;
+    r_enc_config.counter_l_lim = -INT16_ROLL;
 
-    check_esp_err(pcnt_unit_config(&/*self->*/r_enc_config));
+    check_esp_err(pcnt_unit_config(&r_enc_config));
 
     if (self->x124 == 4) { // X4
         // set up second channel for full quad
-        /*self->*/r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
-        /*self->*/r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
+        r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
+        r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
 
-        /*self->*/r_enc_config.unit = self->unit;
-        /*self->*/r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
+        r_enc_config.unit = self->unit;
+        r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
 
-        /*self->*/r_enc_config.pos_mode = PCNT_COUNT_DEC; // Count Only On Rising-Edges
-        /*self->*/r_enc_config.neg_mode = PCNT_COUNT_INC; // Discard Falling-Edge
+        r_enc_config.pos_mode = PCNT_COUNT_DEC; // Count Only On Rising-Edges
+        r_enc_config.neg_mode = PCNT_COUNT_INC; // Discard Falling-Edge
 
-        /*self->*/r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // prior high mode is now low
-        /*self->*/r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // prior low mode is now high
+        r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // prior high mode is now low
+        r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // prior low mode is now high
 
-        /*self->*/r_enc_config.counter_h_lim = INT16_ROLL;
-        /*self->*/r_enc_config.counter_l_lim = -INT16_ROLL;
+        r_enc_config.counter_h_lim = INT16_ROLL;
+        r_enc_config.counter_l_lim = -INT16_ROLL;
 
-        check_esp_err(pcnt_unit_config(&/*self->*/r_enc_config));
+        check_esp_err(pcnt_unit_config(&r_enc_config));
     } else { // make sure channel 1 is not set when not full quad
-        /*self->*/r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
-        /*self->*/r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
+        r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
+        r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
 
-        /*self->*/r_enc_config.unit = self->unit;
-        /*self->*/r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
+        r_enc_config.unit = self->unit;
+        r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
 
-        /*self->*/r_enc_config.pos_mode = PCNT_COUNT_DIS; // disabling channel 1
-        /*self->*/r_enc_config.neg_mode = PCNT_COUNT_DIS;   // disabling channel 1
+        r_enc_config.pos_mode = PCNT_COUNT_DIS; // disabling channel 1
+        r_enc_config.neg_mode = PCNT_COUNT_DIS; // disabling channel 1
 
-        /*self->*/r_enc_config.lctrl_mode = PCNT_MODE_DISABLE;    // disabling channel 1
-        /*self->*/r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
+        r_enc_config.lctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
+        r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
 
-        /*self->*/r_enc_config.counter_h_lim = INT16_ROLL;
-        /*self->*/r_enc_config.counter_l_lim = -INT16_ROLL;
+        r_enc_config.counter_h_lim = INT16_ROLL;
+        r_enc_config.counter_l_lim = -INT16_ROLL;
 
-        check_esp_err(pcnt_unit_config(&/*self->*/r_enc_config));
+        check_esp_err(pcnt_unit_config(&r_enc_config));
     }
     check_esp_err(pcnt_counter_pause(self->unit));
 
     // Filter out bounces and noise
-    set_filter_value(self->unit, self->filter);  // Filter Runt Pulses
-
-    register_isr_handler();
+    set_filter_value(self->unit, self->filter); // Filter Runt Pulses
 
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
@@ -667,8 +659,6 @@ STATIC void attach_Encoder(mp_pcnt_obj_t *self) {
     check_esp_err(pcnt_counter_resume(self->unit));
 }
 
-// -------------------------------------------------------------------------------------------------------------
-// Defining Encoder methods
 STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
     static const mp_arg_t allowed_args[] = {
@@ -713,6 +703,8 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 }
 
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    register_isr_handler();
+
     mp_arg_check_num(n_args, n_kw, 1, 5, true);
 
     // create Encoder object for the given unit
@@ -762,7 +754,6 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-// Encoder.init([kwargs])
 STATIC mp_obj_t machine_Encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_Encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
@@ -779,11 +770,13 @@ STATIC void machine_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp
     mp_printf(print, ")");
 }
 
-STATIC const mp_rom_map_elem_t pcnt_Encoder_locals_dict_table[] = {
+// Register class methods
+STATIC const mp_rom_map_elem_t machine_Encoder_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Encoder_init_obj) },
-    COMMON
+    COMMON_METHODS,
+    COMMON_CONSTANTS
 };
-STATIC MP_DEFINE_CONST_DICT(pcnt_Encoder_locals_dict, pcnt_Encoder_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(machine_Encoder_locals_dict, machine_Encoder_locals_dict_table);
 
 // Create the class-object itself
 const mp_obj_type_t machine_Encoder_type = {
@@ -791,8 +784,7 @@ const mp_obj_type_t machine_Encoder_type = {
     .name = MP_QSTR_Encoder,
     .print = machine_Encoder_print,
     .make_new = machine_Encoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pcnt_Encoder_locals_dict,
-    // .parent = &machine_Counter_type,
+    .locals_dict = (mp_obj_dict_t *)&machine_Encoder_locals_dict,
 };
 
 #endif // MICROPY_PY_MACHINE_PCNT
