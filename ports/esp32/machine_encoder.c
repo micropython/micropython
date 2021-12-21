@@ -192,7 +192,9 @@ void machine_encoder_deinit_all(void) {
         pcnt_deinit(pcnts[id]);
     }
     if (pcnt_isr_handle != NULL) {
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
         check_esp_err(pcnt_isr_unregister(pcnt_isr_handle));
+        #endif
         pcnt_isr_handle = NULL;
     }
 }
