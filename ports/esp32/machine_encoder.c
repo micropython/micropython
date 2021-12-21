@@ -47,28 +47,11 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-// #define MP_PRN_LEVEL 10
-
-#if defined(MP_PRN_LEVEL) && (MP_PRN_LEVEL > 0)
-#define MP_PRN(level, ...) \
-    do { \
-        if (MP_PRN_LEVEL > 0) { \
-            if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
-                mp_printf(MP_PYTHON_PRINTER, "%d| ", level); \
-                mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
-                mp_printf(MP_PYTHON_PRINTER, "\n"); \
-            } \
-        } \
-    } while (0);
-#else
-#define MP_PRN(level, ...)
-#endif
-
 #include "py/runtime.h"
 #include "mphalport.h"
 #include "modmachine.h"
 
-#if 1 || MICROPY_PY_MACHINE_PCNT
+#if MICROPY_PY_MACHINE_PCNT
 
 #include "driver/pcnt.h"
 #include "soc/pcnt_struct.h"
