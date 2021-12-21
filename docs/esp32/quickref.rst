@@ -264,54 +264,91 @@ See more examples in the :ref:`esp32_pwm` tutorial.
 ADC (analog to digital conversion)
 ----------------------------------
 
-On the ESP32 ADC functionality is available on Pins 32-39. Note that, when
-using the default configuration, input voltages on the ADC pin must be between
-0.0v and 1.0v (anything above 1.0v will just read as 4095).  Attenuation must
-be applied in order to increase this usable voltage range.
+On the ESP32 ADC functionality is available on pins 32-39 (ADC block 1) and pins
+0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object on ADC pin
-    adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
+    adc = ADC(Pin(32))          # create ADC object for pin 32
+    adc.read_u16()              # read raw value, 0-65535
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
-    adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
-    adc.read()                  # read value using the newly configured attenuation and width
+Note that the ESP32 uses an internal ADC reference voltage of 1.0v. To read
+voltages above this value, input attenuation can be applied with the optional
+``atten`` keyword argument to the constructor. Valid values are:
 
-ESP32 specific ADC class method reference:
+  - ``ADC.ATTN_0DB``: No attenuation, this is the default
+  - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage of
+    approximately 1.33v
+  - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage of
+    approximately 2.00v
+  - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage of
+    approximately 3.55v
+
+E.g.::
+
+    adc = ADC(Pin(25), atten=ADC.ATTEN_11DB)  # 0.0v - 3.55v range
+
+.. Warning::
+   Note that, although 11dB attenuation allows for a voltage range up to 3.55v,
+   the absolute maximum voltage rating for input pins is 3.6v, and so going
+   near this boundary risks damage to the IC!
+
+ESP32-specific ADC class method reference:
+
+.. method:: ADC.init(*, atten)
+
+    Re-initialize the ADC pin with a different input attenuation.
+
+.. method:: ADC.read_uv()
+
+    This method uses internal per-package calibration values - set during
+    manufacture - to return the ADC input voltage in microvolts, taking into
+    account any input attenuation applied. Note that the calibration curves do
+    not guarantee that an input tied to ground will read as 0, and the returned
+    values have only millivolt resolution.
+
+.. method:: ADC.block()
+
+    Return the matching ``ADCBlock`` object.
+
+.. class:: ADCBlock(id, *, bits)
+
+    Return the ADC block object with the given ``id`` (1 or 2) and initialize
+    it to the specified resolution (9 to 12-bits) or the default 12-bits.
+
+.. method:: ADCBlock.init(*, bits)
+
+    Re-initialize the ADC block with a specific resolution.
+
+.. method:: ADCBlock.connect(channel_or_pin)
+
+    Return the ``ADC`` object for the specified ADC channel number or Pin object.
+
+Legacy API methods:
+
+.. method:: ADC.read()
+
+    This method returns the raw ADC value ranged according to the resolution of
+    the ADC block, 0-4095 for the default 12-bit resolution.
 
 .. method:: ADC.atten(attenuation)
 
-    This method allows for the setting of the amount of attenuation on the
-    input of the ADC. This allows for a wider possible input voltage range,
-    at the cost of accuracy (the same number of bits now represents a wider
-    range). The possible attenuation options are:
-
-      - ``ADC.ATTN_0DB``: 0dB attenuation, gives a maximum input voltage
-        of 1.00v - this is the default configuration
-      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage
-        of approximately 1.34v
-      - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage
-        of approximately 2.00v
-      - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage
-        of approximately 3.6v
-
-.. Warning::
-   Despite 11dB attenuation allowing for up to a 3.6v range, note that the
-   absolute maximum voltage rating for the input pins is 3.6v, and so going
-   near this boundary may be damaging to the IC!
+    Equivalent to ``ADC.init(atten=attenuation)``.
 
 .. method:: ADC.width(width)
 
-    This method allows for the setting of the number of bits to be utilised
-    and returned during ADC reads. Possible width options are:
+    Equivalent to ``ADC.block().init(bits=width)``.
 
-      - ``ADC.WIDTH_9BIT``: 9 bit data
-      - ``ADC.WIDTH_10BIT``: 10 bit data
-      - ``ADC.WIDTH_11BIT``: 11 bit data
-      - ``ADC.WIDTH_12BIT``: 12 bit data - this is the default configuration
+For compatibility, the ``ADC`` object also provides constants matching the
+supported ADC resolutions:
+
+  - ``ADC.WIDTH_9BIT`` = 9
+  - ``ADC.WIDTH_10BIT`` = 10
+  - ``ADC.WIDTH_11BIT`` = 11
+  - ``ADC.WIDTH_12BIT`` = 12
+
 
 Software SPI bus
 ----------------
