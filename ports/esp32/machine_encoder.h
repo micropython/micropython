@@ -12,6 +12,9 @@ enum edgeKind {
     FALLING = 0x2
 };
 
+#define COUNTER_UP   (-2)
+#define COUNTER_DOWN (-3)
+
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
     gpio_num_t aPinNumber;

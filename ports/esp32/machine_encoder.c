@@ -343,7 +343,11 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
     // Prepare configuration for the PCNT unit
     pcnt_config_t r_enc_config;
     r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses
-    r_enc_config.ctrl_gpio_num = self->bPinNumber; // Direction
+    if (self->bPinNumber > PCNT_PIN_NOT_USED) {
+        r_enc_config.ctrl_gpio_num = self->bPinNumber; // Direction
+    } else {
+        r_enc_config.ctrl_gpio_num = PCNT_PIN_NOT_USED;
+    }
 
     r_enc_config.unit = self->unit;
     r_enc_config.channel = PCNT_CHANNEL_0;
@@ -361,8 +365,13 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
 
     }
     // What to do when control input is low or high?
-    r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if low
-    r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if high
+    if (self->bPinNumber == COUNTER_UP) {
+        r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if low
+        r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if high
+    } else { // if (self->bPinNumber == COUNTER_UP) {
+        r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if low
+        r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if high
+    }
 
     // Set the maximum and minimum limit values to watch
     r_enc_config.counter_h_lim = INT16_ROLL;
@@ -410,9 +419,11 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 
     mp_obj_t direction = args[ARG_direction].u_obj;
-    if (direction != MP_OBJ_NULL) {
+    if (direction == MP_OBJ_NULL) {
+        self->bPinNumber = COUNTER_UP;
+    } else {
         if (mp_obj_is_type(direction, &mp_type_int)) {
-            mp_obj_get_int(direction); // TODO
+            self->bPinNumber = mp_obj_get_int(direction);
         } else {
             self->bPinNumber = machine_pin_get_id(direction);
         }
@@ -520,7 +531,7 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
 
     mp_printf(print, "Counter(");
     common_print_pin(print, self);
-    mp_printf(print, ", edge=%s", self->edge == 1 ? "RISING" : self->edge == 2 ? "FALLING" : "RISING | FALLING");
+    mp_printf(print, ", edge=%s", self->edge == 1 ? "Counter.RISING" : self->edge == 2 ? "Counter.FALLING" : "Counter.RISING | Counter.FALLING");
     common_print_kw(print, self);
     mp_printf(print, ")");
 }
@@ -554,6 +565,8 @@ STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     COMMON_CONSTANTS,
     { MP_ROM_QSTR(MP_QSTR_RISING), MP_ROM_INT(RISING) },
     { MP_ROM_QSTR(MP_QSTR_FALLING), MP_ROM_INT(FALLING) },
+    { MP_ROM_QSTR(MP_QSTR_UP), MP_ROM_INT(COUNTER_UP) },
+    { MP_ROM_QSTR(MP_QSTR_DOWN), MP_ROM_INT(COUNTER_DOWN) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_Counter_locals_dict, machine_Counter_locals_dict_table);
 
