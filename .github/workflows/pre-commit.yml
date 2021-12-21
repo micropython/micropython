@@ -13,7 +13,10 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2.2.0
-    - uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.x"
     - name: Install deps
       run: |
         sudo apt-add-repository -y -u ppa:pybricks/ppa
