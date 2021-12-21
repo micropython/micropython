@@ -220,6 +220,15 @@ Methods
 The Encoder has the same methods as the Counter and differs only
 in the constructor and internal hardware PCNT initialization.
 
+Constants
+---------
+
+.. data:: Encoder.IRQ_MATCH1
+          Encoder.IRQ_MATCH2
+          Encoder.IRQ_ZERO
+
+   Selects callback triggers.
+
 ::
 
     from machine import Encoder, Pin

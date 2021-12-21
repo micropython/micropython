@@ -17,8 +17,8 @@ enum edgeKind {
 
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
-    gpio_num_t aPinNumber;
-    gpio_num_t bPinNumber;
+    int aPinNumber;
+    int bPinNumber;
 
     int unit;
     volatile int64_t counter;

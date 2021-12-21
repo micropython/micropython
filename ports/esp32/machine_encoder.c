@@ -51,7 +51,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 #include "mphalport.h"
 #include "modmachine.h"
 
-#if MICROPY_PY_MACHINE_PCNT
+#if 1 | MICROPY_PY_MACHINE_PCNT
 
 #include "driver/pcnt.h"
 #include "soc/pcnt_struct.h"
@@ -96,16 +96,19 @@ STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
             if (PCNT.status_unit[id].THRES1_LAT) {
                 if (self->counter == self->counter_match1) {
                     mp_sched_schedule(self->handler_match1, MP_OBJ_FROM_PTR(self));
+                    mp_hal_wake_main_task_from_isr();
                 }
             }
             if (PCNT.status_unit[id].THRES0_LAT) {
                 if (self->counter == self->counter_match2) {
                     mp_sched_schedule(self->handler_match2, MP_OBJ_FROM_PTR(self));
+                    mp_hal_wake_main_task_from_isr();
                 }
             }
             if (PCNT.status_unit[id].ZERO_LAT) {
                 if (self->counter == 0) {
                     mp_sched_schedule(self->handler_zero, MP_OBJ_FROM_PTR(self));
+                    mp_hal_wake_main_task_from_isr();
                 }
             }
 
@@ -183,7 +186,7 @@ STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
 
     pcnts[self->unit] = NULL;
 
-    m_del_obj(mp_pcnt_obj_t, self); // Is it need?
+    // m_del_obj(mp_pcnt_obj_t, self); // Is it need??
 }
 
 // This called from Ctrl-D soft reboot
@@ -231,6 +234,7 @@ STATIC mp_obj_t machine_PCNT_count(size_t n_args, const mp_obj_t *args) {
         if (new_counter) {
             self->counter = new_counter - count;
         } else {
+            check_esp_err(pcnt_counter_clear(self->unit));
             self->counter = 0;
         }
     }
@@ -368,9 +372,9 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
     if (self->bPinNumber == COUNTER_UP) {
         r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if low
         r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if high
-    } else { // if (self->bPinNumber == COUNTER_UP) {
-        r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if low
-        r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if high
+    } else {
+        r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // Reverse counting direction if low
+        r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if high
     }
 
     // Set the maximum and minimum limit values to watch
@@ -379,6 +383,8 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
 
     check_esp_err(pcnt_unit_config(&r_enc_config));
     check_esp_err(pcnt_counter_pause(self->unit));
+
+    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, self->aPinNumber, r_enc_config.ctrl_gpio_num)); // ??
 
     // Filter out bounces and noise
     set_filter_value(self->unit, self->filter); // Filter Runt Pulses
@@ -389,11 +395,6 @@ STATIC void attach_Counter(mp_pcnt_obj_t *self) {
 
     check_esp_err(pcnt_counter_clear(self->unit));
     self->counter = 0;
-
-    pcnts[self->unit] = self;
-
-    // Enable interrupts for PCNT unit
-    check_esp_err(pcnt_intr_enable(self->unit));
 }
 
 STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -401,7 +402,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_src, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_src, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_direction, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_edge, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -418,21 +419,23 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         self->aPinNumber = machine_pin_get_id(src);
     }
 
-    mp_obj_t direction = args[ARG_direction].u_obj;
-    if (direction == MP_OBJ_NULL) {
-        self->bPinNumber = COUNTER_UP;
-    } else {
-        if (mp_obj_is_type(direction, &mp_type_int)) {
-            self->bPinNumber = mp_obj_get_int(direction);
+    mp_obj_t dir = args[ARG_direction].u_obj;
+    if (dir != MP_OBJ_NULL) {
+        if (mp_obj_is_type(dir, &machine_pin_type)) {
+            self->bPinNumber = machine_pin_get_id(dir);
         } else {
-            self->bPinNumber = machine_pin_get_id(direction);
+            self->bPinNumber = mp_obj_get_int(dir);
+            if (!((self->bPinNumber == COUNTER_UP) || (self->bPinNumber == COUNTER_DOWN))) {
+                mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("direction")));
+            }
         }
     }
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, self->aPinNumber, self->bPinNumber));
 
     if (args[ARG_edge].u_int != -1) {
         self->edge = args[ARG_edge].u_int;
     }
+
+    attach_Counter(self);
 
     if (args[ARG_filter].u_int != -1) {
         self->filter = ns_to_filter(args[ARG_filter].u_int);
@@ -461,12 +464,16 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         check_esp_err(pcnt_set_event_value(self->unit, PCNT_EVT_THRES_0, (int16_t)self->counter_match2));
         self->counter_match2 = self->match2 - self->counter_match2;
     }
+
+    pcnts[self->unit] = self;
+
+    // Enable interrupts for PCNT unit
+    register_isr_handler();
+    check_esp_err(pcnt_intr_enable(self->unit));
     check_esp_err(pcnt_counter_resume(self->unit));
 }
 
 STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    register_isr_handler();
-
     mp_arg_check_num(n_args, n_kw, 1, 5, true);
 
     // create Counter object for the given unit
@@ -482,17 +489,9 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     }
 
     self->aPinNumber = PCNT_PIN_NOT_USED;
-    if (n_args >= 2) {
-        self->aPinNumber = machine_pin_get_id(args[1]);
-    }
-    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
-        mp_raise_TypeError(MP_ERROR_TEXT("'src' argument required, either pos or kw arg are allowed"));
-    }
+    self->bPinNumber = COUNTER_UP; // PCNT_PIN_NOT_USED;
+    //self->direction = COUNTER_UP;
 
-    self->bPinNumber = PCNT_PIN_NOT_USED;
-    if (n_args >= 3) {
-        self->bPinNumber = machine_pin_get_id(args[2]);
-    }
     self->edge = RISING;
     self->scale = 1.0;
     self->filter = 0;
@@ -502,8 +501,6 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     self->counter_match1 = 0;
     self->counter_match2 = 0;
 
-    attach_Counter(self);
-
     // Process the remaining parameters
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -512,28 +509,23 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void common_print_pin(const mp_print_t *print, mp_pcnt_obj_t *self) {
-    mp_printf(print, "%u, Pin(%u)", self->unit, self->aPinNumber);
-    if (self->bPinNumber != PCNT_PIN_NOT_USED) {
-        mp_printf(print, ", Pin(%u)", self->bPinNumber);
-    }
-}
-
 STATIC void common_print_kw(const mp_print_t *print, mp_pcnt_obj_t *self) {
-    mp_printf(print, ", filter_ns=%u", get_filter_value_ns(self->unit));
-    mp_printf(print, ", scale=%f", self->scale);
+    mp_printf(print, ", filter_ns=%u, scale=%f", get_filter_value_ns(self->unit), self->scale);
     mp_printf(print, ", match1=%ld", self->match1);
-    mp_printf(print, ", match2=%ld", self->match2);
+    mp_printf(print, ", match2=%ld)", self->match2);
 }
 
 STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "Counter(");
-    common_print_pin(print, self);
-    mp_printf(print, ", edge=%s", self->edge == 1 ? "Counter.RISING" : self->edge == 2 ? "Counter.FALLING" : "Counter.RISING | Counter.FALLING");
+    mp_printf(print, "Counter(%u, src=Pin(%u), direction=", self->unit, self->aPinNumber);
+    if (self->bPinNumber > PCNT_PIN_NOT_USED) {
+        mp_printf(print, "Pin(%u)", self->bPinNumber);
+    } else {
+        mp_printf(print, "%s", self->bPinNumber == COUNTER_UP ? "Counter.UP" : "Counter.DOWN");
+    }
+    mp_printf(print, ", edge=%s", self->edge == RISING ? "Counter.RISING" : self->edge == FALLING ? "Counter.FALLING" : "Counter.RISING | Counter.FALLING");
     common_print_kw(print, self);
-    mp_printf(print, ")");
 }
 
 STATIC mp_obj_t machine_Counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
@@ -668,11 +660,20 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         { MP_QSTR_match2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, self->aPinNumber, self->bPinNumber));
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, self->bPinNumber, self->aPinNumber));
-
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t src = args[ARG_phase_a].u_obj;
+    if (src != MP_OBJ_NULL) {
+        self->aPinNumber = machine_pin_get_id(src);
+    }
+    src = args[ARG_phase_b].u_obj;
+    if (src != MP_OBJ_NULL) {
+        self->bPinNumber = machine_pin_get_id(src);
+    }
+
+    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, self->aPinNumber, self->bPinNumber));
+    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, self->bPinNumber, self->aPinNumber));
 
     if (args[ARG_x124].u_int != -1) {
         if ((args[ARG_x124].u_int == 1) || (args[ARG_x124].u_int == 2) || (args[ARG_x124].u_int == 4)) {
@@ -727,17 +728,11 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *t_ype, size_t n_ar
 
     self->aPinNumber = PCNT_PIN_NOT_USED;
     self->bPinNumber = PCNT_PIN_NOT_USED;
-    if (n_args >= 2) {
+    if (n_args <= 1) {
         self->aPinNumber = machine_pin_get_id(args[1]);
     }
     if (n_args >= 3) {
         self->bPinNumber = machine_pin_get_id(args[2]);
-    }
-    if (self->aPinNumber == PCNT_PIN_NOT_USED) {
-        mp_raise_TypeError(MP_ERROR_TEXT("'phase_a' argument required, either pos or kw arg are allowed"));
-    }
-    if (self->bPinNumber == PCNT_PIN_NOT_USED) {
-        mp_raise_TypeError(MP_ERROR_TEXT("'phase_b' argument required, either pos or kw arg are allowed"));
     }
 
     // Process the remaining parameters
@@ -759,11 +754,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_Encoder_init_obj, 1, machine_Encoder_init);
 STATIC void machine_Encoder_print(const mp_print_t *print, mp_obj_t self_obj, mp_print_kind_t kind) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
-    mp_printf(print, "Encoder(");
-    common_print_pin(print, self);
-    mp_printf(print, ", x124=%d", self->x124);
+    mp_printf(print, "Encoder(%u, phase_a=Pin(%u), phase_b=Pin(%u), x124=%d", self->unit, self->aPinNumber, self->bPinNumber, self->x124);
     common_print_kw(print, self);
-    mp_printf(print, ")");
 }
 
 // Register class methods
