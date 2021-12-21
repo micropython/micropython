@@ -20,7 +20,7 @@
 [submodule "lib/lv_bindings"]
 	path = lib/lv_bindings
 	url = git@github.com:minyiky/lv_binding_micropython.git
-	branch = espy_dive
+	branch = master
 	update = merge
 [submodule "lib/mbedtls"]
 	path = lib/mbedtls
