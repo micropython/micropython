@@ -418,17 +418,17 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     r_enc_config.ctrl_gpio_num = self->bPinNumber; // Direction // Control signal input GPIO number, a negative value will be ignored
 
     // What to do on the positive / negative edge of pulse input?
-    if (self->edge & FALLING) {
+    if (self->edge & RISING) {
         r_enc_config.pos_mode = PCNT_COUNT_INC; // Count up on the positive edge
     } else {
         r_enc_config.pos_mode = PCNT_COUNT_DIS; // Keep the counter value on the positive edge
     }
-    if (self->edge & RISING) {
+    if (self->edge & FALLING) {
         r_enc_config.neg_mode = PCNT_COUNT_INC; // Count up on the negative edge
     } else {
         r_enc_config.neg_mode = PCNT_COUNT_DIS; // Keep the counter value on the negative edge
-
     }
+
     // What to do when control input is low or high?
     if (self->bPinNumber == COUNTER_UP) {
         r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Keep the primary counter mode if low
@@ -534,6 +534,9 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
+
+    check_esp_err(pcnt_counter_clear(self->unit));
+    self->counter = 0;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -763,6 +766,9 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Encoder_init_helper(self, n_args - 1, args + 1, &kw_args);
+
+    check_esp_err(pcnt_counter_clear(self->unit));
+    self->counter = 0;
 
     return MP_OBJ_FROM_PTR(self);
 }
