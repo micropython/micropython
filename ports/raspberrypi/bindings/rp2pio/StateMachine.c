@@ -400,7 +400,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 
 //|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
-//|            include any data added to the fifo even if it was added before this was called.
+//|         includes any data added to the fifo even if it was added before this was called.
 //|
 //|         :param ~_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
