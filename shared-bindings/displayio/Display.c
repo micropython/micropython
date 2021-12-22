@@ -84,7 +84,7 @@
 //|
 //|         :param display_bus: The bus that the display is connected to
 //|         :type _DisplayBus: FourWire, ParallelBus or I2CDisplay
-//|         :param ~_typing.ReadableBuffer init_sequence: Byte-packed initialization sequence.
+//|         :param ~circuitpython_typing.ReadableBuffer init_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int colstart: The index if the first visible column
@@ -449,7 +449,7 @@ const mp_obj_property_t displayio_display_bus_obj = {
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param ~_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
 //|
 STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

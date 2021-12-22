@@ -76,8 +76,8 @@
 //|
 //|         :param display_bus: The bus that the display is connected to
 //|         :type _DisplayBus: displayio.FourWire or paralleldisplay.ParallelBus
-//|         :param ~_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
-//|         :param ~_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
+//|         :param ~circuitpython_typing.ReadableBuffer start_sequence: Byte-packed initialization sequence.
+//|         :param ~circuitpython_typing.ReadableBuffer stop_sequence: Byte-packed initialization sequence.
 //|         :param int width: Width in pixels
 //|         :param int height: Height in pixels
 //|         :param int ram_width: RAM width in pixels

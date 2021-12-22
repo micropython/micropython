@@ -148,7 +148,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj___exit__(size_t n_args, const mp_obj_
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiopwmio_pwmaudioout___exit___obj, 4, 4, audiopwmio_pwmaudioout_obj___exit__);
 
 
-//|     def play(self, sample: _typing.AudioSample, *, loop: bool = False) -> None:
+//|     def play(self, sample: circuitpython_typing.AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|

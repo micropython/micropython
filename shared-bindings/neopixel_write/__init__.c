@@ -54,7 +54,7 @@
 //|     """Write buf out on the given DigitalInOut.
 //|
 //|     :param ~digitalio.DigitalInOut digitalinout: the DigitalInOut to output with
-//|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
+//|     :param ~circuitpython_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
 //|     ...
 STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj_t buf) {
     if (!mp_obj_is_type(digitalinout_obj, &digitalio_digitalinout_type)) {
