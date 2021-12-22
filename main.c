@@ -122,7 +122,7 @@ static void reset_devices(void) {
     #endif
 }
 
-STATIC void start_mp(supervisor_allocation *heap) {
+STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
     autoreload_stop();
     supervisor_workflow_reset();
 
@@ -170,7 +170,8 @@ STATIC void start_mp(supervisor_allocation *heap) {
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any. An object may be created so the heap must be functional.
-    shared_alarm_save_wake_alarm(common_hal_alarm_create_wake_alarm());
+    // There is no alarm if this is not the first time code.py or the REPL has been run.
+    shared_alarm_save_wake_alarm(first_run ? common_hal_alarm_create_wake_alarm() : mp_const_none);
     // Reset alarm module only after we retrieved the wakeup alarm.
     alarm_reset();
     #endif
@@ -308,7 +309,7 @@ STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     }
 }
 
-STATIC bool run_code_py(safe_mode_t safe_mode) {
+STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_reset) {
     bool serial_connected_at_start = serial_connected();
     bool printed_safe_mode_message = false;
     #if CIRCUITPY_AUTORELOAD_DELAY_MS > 0
@@ -347,7 +348,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
         supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state. Includes an alarm check/reset for sleep.
-        start_mp(heap);
+        start_mp(heap, first_run);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
@@ -630,6 +631,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode) {
     #if CIRCUITPY_ALARM
     if (fake_sleeping) {
         board_init();
+        // Pretend that the next run is the first run, as if we were reset.
+        *simulate_reset = true;
     }
     #endif
 
@@ -651,7 +654,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     // Do USB setup even if boot.py is not run.
 
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+
+    // true means this is the first set of VM's after a hard reset.
+    start_mp(heap, true);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -728,12 +733,12 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     #endif
 }
 
-STATIC int run_repl(void) {
+STATIC int run_repl(bool first_run) {
     int exit_code = PYEXEC_FORCED_EXIT;
     stack_resize();
     filesystem_flush();
     supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap);
+    start_mp(heap, first_run);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
@@ -846,28 +851,34 @@ int __attribute__((used)) main(void) {
     supervisor_start_bluetooth();
     #endif
 
-    // Boot script is finished, so now go into REPL/main mode.
+    // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;
     bool skip_repl = true;
     bool first_run = true;
+    bool simulate_reset;
     for (;;) {
+        simulate_reset = false;
         if (!skip_repl) {
-            exit_code = run_repl();
+            exit_code = run_repl(first_run);
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!first_run) {
                 serial_write_compressed(translate("soft reboot\n"));
             }
-            first_run = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-                skip_repl = run_code_py(safe_mode);
+                skip_repl = run_code_py(safe_mode, first_run, &simulate_reset);
             } else {
                 skip_repl = false;
             }
         } else if (exit_code != 0) {
             break;
         }
+
+        // Either the REPL or code.py has run and finished.
+        // If code.py did a fake deep sleep, pretend that we are running code.py for
+        // the first time after a hard reset. This will preserve any alarm information.
+        first_run = simulate_reset;
     }
     mp_deinit();
     return 0;
