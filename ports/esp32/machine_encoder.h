@@ -13,7 +13,7 @@ enum edgeKind {
 };
 
 #define COUNTER_UP   (-2)
-#define COUNTER_DOWN (-3)
+#define COUNTER_DOWN (-4)
 
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;

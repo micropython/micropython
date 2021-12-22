@@ -47,28 +47,11 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-// #define MP_PRN_LEVEL 100
-
-#if defined(MP_PRN_LEVEL) && (MP_PRN_LEVEL > 0)
-#define MP_PRN(level, ...) \
-    do { \
-        if (MP_PRN_LEVEL > 0) { \
-            if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
-                mp_printf(MP_PYTHON_PRINTER, "%d| ", level); \
-                mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
-                mp_printf(MP_PYTHON_PRINTER, "\n"); \
-            } \
-        } \
-    } while (0);
-#else
-#define MP_PRN(level, ...)
-#endif
-
 #include "py/runtime.h"
 #include "mphalport.h"
 #include "modmachine.h"
 
-#if 1 | MICROPY_PY_MACHINE_PCNT
+#if MICROPY_PY_MACHINE_PCNT
 
 #include "driver/pcnt.h"
 #include "soc/pcnt_struct.h"
@@ -113,21 +96,21 @@ STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
             self->status = 0;
             if (PCNT.status_unit[id].THRES1_LAT) {
                 if (self->counter == self->counter_match1) {
-                    self->status |= PCNT_EVT_THRES_1;
+                    self->status |= 1 << PCNT_EVT_THRES_1;
                     mp_sched_schedule(self->handler_match1, MP_OBJ_FROM_PTR(self));
                     mp_hal_wake_main_task_from_isr();
                 }
             }
             if (PCNT.status_unit[id].THRES0_LAT) {
                 if (self->counter == self->counter_match2) {
-                    self->status |= PCNT_EVT_THRES_0;
+                    self->status |= 1 << PCNT_EVT_THRES_0;
                     mp_sched_schedule(self->handler_match2, MP_OBJ_FROM_PTR(self));
                     mp_hal_wake_main_task_from_isr();
                 }
             }
             if (PCNT.status_unit[id].ZERO_LAT) {
                 if (self->counter == 0) {
-                    self->status |= PCNT_EVT_ZERO;
+                    self->status |= 1 << PCNT_EVT_ZERO;
                     mp_sched_schedule(self->handler_zero, MP_OBJ_FROM_PTR(self));
                     mp_hal_wake_main_task_from_isr();
                 }
@@ -584,9 +567,9 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_PCNT_irq_obj) }
 
 #define COMMON_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_ZERO), MP_ROM_INT(PCNT_EVT_ZERO) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH1), MP_ROM_INT(PCNT_EVT_THRES_1) }, \
-    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH2), MP_ROM_INT(PCNT_EVT_THRES_0) }
+    { MP_ROM_QSTR(MP_QSTR_IRQ_ZERO), MP_ROM_INT(1 << PCNT_EVT_ZERO) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH1), MP_ROM_INT(1 << PCNT_EVT_THRES_1) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_MATCH2), MP_ROM_INT(1 << PCNT_EVT_THRES_0) }
 
 STATIC const mp_rom_map_elem_t machine_Counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_Counter_init_obj) },
