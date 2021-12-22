@@ -100,16 +100,21 @@ Methods
     The callback function *handler* receives a single argument, which is the Counter object.
     All events may share the same callback or have separate callbacks.
     The callback will be disabled, when called with handler=None.
+    The event which triggers the callback can be identified with the Counter.status() method.
 
    -*trigger* event may be:
 
     - Counter.IRQ_MATCH1 triggered when the counter matches the match1 value.
-    - Counter.IRQ_MATCH2 triggered when the counter matches the match1 value.
+    - Counter.IRQ_MATCH2 triggered when the counter matches the match2 value.
     - Counter.IRQ_ZERO triggered when the counter matches the 0.
 
-    The default is - trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH1 | Counter.IRQ_ZERO.
+    The default is - trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO.
     The events are triggered when the counter value and match value are identical, but
     callbacks have always a latency.
+
+.. method:: Counter.status()
+
+   Returns the event status flags of the recent handled Encoder interrupt as a bitmap.
 
 .. method:: Counter.id()
 
@@ -144,14 +149,14 @@ Constants
 
     try:
         def irq_handler(self):
-            print('irq_handler()', self.id(), self.value())
+            print('irq_handler()', self.id(), self.status(), self.value())
 
         cnt = Counter(0, src=Pin(17, mode=Pin.IN), direction=Pin(16, mode=Pin.IN))
 
         cnt.pause()
         flt = cnt.filter()  # return current filter value.
         cnt.filter(10_000)  # filter delay is 10ms
-        c = cnt.value(12345)  # get current counter value, set the counter value
+        c = cnt.value(0)  # get current counter value, set the counter value to 0
         cnt.irq(irq_handler, Counter.IRQ_ZERO)  # set irq handler
         cnt.resume()
 
@@ -234,18 +239,21 @@ Constants
     from machine import Encoder, Pin
 
     try:
+        n = 0
         def irq_handler1(self):
-            print('irq_handler1()', self.id(), self.value())
+            n -= 1
+            print('irq_handler1()', self.id(), self.value(), n)
 
         def irq_handler2(self):
-            print('irq_handler2()', self.id(), self.value())
+            n += 1
+            print('irq_handler2()', self.id(), self.value(), n)
 
-        enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN), match1=1000, match1=2000)
+        enc = Encoder(0, phase_a=Pin(17, mode=Pin.IN), phase_b=Pin(16, mode=Pin.IN), match1=-1000, match2=1000)
 
         enc.pause()
         flt = enc.filter()  # return current filter value.
         enc.filter(10_000)  # filter delay is 10ms
-        c = enc.value(12345)  # get current encoder value, set the encoder value
+        c = enc.value(0)  # get current encoder value, set the encoder value to 0
         cnt.irq(irq_handler1, Counter.IRQ_MATCH1)  # set irq handler
         cnt.irq(irq_handler2, Counter.IRQ_MATCH2)  # set irq handler
         enc.resume()
