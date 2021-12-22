@@ -17,10 +17,11 @@ enum edgeKind {
 
 typedef struct _mp_pcnt_obj_t {
     mp_obj_base_t base;
+    int unit;
+
     int aPinNumber;
     int bPinNumber;
 
-    int unit;
     volatile int64_t counter;
 
     int64_t match1;
@@ -30,6 +31,7 @@ typedef struct _mp_pcnt_obj_t {
     mp_obj_t handler_match1;
     mp_obj_t handler_match2;
     mp_obj_t handler_zero;
+    int status;
 
     int filter;
     enum edgeKind edge; // Counter only
