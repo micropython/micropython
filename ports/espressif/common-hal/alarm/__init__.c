@@ -62,11 +62,6 @@ void alarm_reset(void) {
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 }
 
-// This will be reset to false by full resets when bss is cleared. Otherwise, the
-// reload is due to CircuitPython and the ESP wakeup cause will be stale. This
-// can happen if USB is connected after a deep sleep.
-STATIC bool soft_wakeup = false;
-
 STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     // First check if the modules remember what last woke up
     if (alarm_pin_pinalarm_woke_this_cycle()) {
@@ -80,11 +75,7 @@ STATIC esp_sleep_wakeup_cause_t _get_wakeup_cause(void) {
     }
     // If waking from true deep sleep, modules will have lost their state,
     // so check the deep wakeup cause manually
-    if (!soft_wakeup) {
-        soft_wakeup = true;
-        return esp_sleep_get_wakeup_cause();
-    }
-    return ESP_SLEEP_WAKEUP_UNDEFINED;
+    return esp_sleep_get_wakeup_cause();
 }
 
 bool common_hal_alarm_woken_from_sleep(void) {
