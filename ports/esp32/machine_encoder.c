@@ -189,18 +189,20 @@ STATIC void pcnt_disable_events(mp_pcnt_obj_t *self) {
 }
 
 STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
-    check_esp_err(pcnt_counter_pause(self->unit));
+    if (self != NULL) {
+        check_esp_err(pcnt_counter_pause(self->unit));
 
-    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_L_LIM));
-    check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_H_LIM));
-    pcnt_disable_events(self);
+        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_L_LIM));
+        check_esp_err(pcnt_event_disable(self->unit, PCNT_EVT_H_LIM));
+        pcnt_disable_events(self);
 
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
-    check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+        check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
+        check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
-    pcnts[self->unit] = NULL;
+        pcnts[self->unit] = NULL;
 
-    // m_del_obj(mp_pcnt_obj_t, self); // Is it need??
+        // m_del_obj(mp_pcnt_obj_t, self); // Is it need??
+    }
 }
 
 // This called from Ctrl-D soft reboot
@@ -439,7 +441,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     check_esp_err(pcnt_counter_pause(self->unit));
 
     // Enable events on maximum and minimum limit values
-    check_esp_err(pcnt_event_enable(self->unit, EVT_H_LIM));
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
     if (args[ARG_filter].u_int != -1) {
@@ -700,7 +702,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     check_esp_err(pcnt_counter_pause(self->unit));
 
     // Enable events on maximum and minimum limit values
-    check_esp_err(pcnt_event_enable(self->unit, EVT_H_LIM));
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
     if (args[ARG_filter].u_int != -1) {
