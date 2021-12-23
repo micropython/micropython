@@ -96,36 +96,36 @@ STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
     for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
         if (PCNT.int_st.val & (1 << id)) {
             mp_pcnt_obj_t *self = pcnts[id];
+            if (self != NULL) {
+                if (PCNT.status_unit[id].H_LIM_LAT) {
+                    self->counter += INT16_ROLL;
+                } else if (PCNT.status_unit[id].L_LIM_LAT) {
+                    self->counter -= INT16_ROLL;
+                }
 
-            if (PCNT.status_unit[id].H_LIM_LAT) {
-                self->counter += INT16_ROLL;
-            } else if (PCNT.status_unit[id].L_LIM_LAT) {
-                self->counter -= INT16_ROLL;
-            }
-
-            self->status = 0;
-            if (PCNT.status_unit[id].THRES1_LAT) {
-                if (self->counter == self->counter_match1) {
-                    self->status |= EVT_THRES_1;
-                    mp_sched_schedule(self->handler_match1, MP_OBJ_FROM_PTR(self));
-                    mp_hal_wake_main_task_from_isr();
+                self->status = 0;
+                if (PCNT.status_unit[id].THRES1_LAT) {
+                    if (self->counter == self->counter_match1) {
+                        self->status |= EVT_THRES_1;
+                        mp_sched_schedule(self->handler_match1, MP_OBJ_FROM_PTR(self));
+                        mp_hal_wake_main_task_from_isr();
+                    }
+                }
+                if (PCNT.status_unit[id].THRES0_LAT) {
+                    if (self->counter == self->counter_match2) {
+                        self->status |= EVT_THRES_0;
+                        mp_sched_schedule(self->handler_match2, MP_OBJ_FROM_PTR(self));
+                        mp_hal_wake_main_task_from_isr();
+                    }
+                }
+                if (PCNT.status_unit[id].ZERO_LAT) {
+                    if (self->counter == 0) {
+                        self->status |= EVT_ZERO;
+                        mp_sched_schedule(self->handler_zero, MP_OBJ_FROM_PTR(self));
+                        mp_hal_wake_main_task_from_isr();
+                    }
                 }
             }
-            if (PCNT.status_unit[id].THRES0_LAT) {
-                if (self->counter == self->counter_match2) {
-                    self->status |= EVT_THRES_0;
-                    mp_sched_schedule(self->handler_match2, MP_OBJ_FROM_PTR(self));
-                    mp_hal_wake_main_task_from_isr();
-                }
-            }
-            if (PCNT.status_unit[id].ZERO_LAT) {
-                if (self->counter == 0) {
-                    self->status |= EVT_ZERO;
-                    mp_sched_schedule(self->handler_zero, MP_OBJ_FROM_PTR(self));
-                    mp_hal_wake_main_task_from_isr();
-                }
-            }
-
             PCNT.int_clr.val |= 1 << id; // clear the interrupt
         }
     }
