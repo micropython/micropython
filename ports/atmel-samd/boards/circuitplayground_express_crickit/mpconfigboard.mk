@@ -15,6 +15,7 @@ LONGINT_IMPL = NONE
 CIRCUITPY_BUSDEVICE = 1
 CIRCUITPY_DISPLAYIO = 0
 CIRCUITPY_KEYPAD = 0
+CIRCUITPY_ONEWIREIO = 0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground
