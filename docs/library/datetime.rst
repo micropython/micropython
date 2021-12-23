@@ -1044,17 +1044,16 @@ Constructors
    Return the local date and time corresponding to the timestamp defined by
    :attr:`~datetime.EPOCH`, such as is returned by :func:`time.time`.
 
-   If optional argument *tz* is ``None``, the timestamp is converted to the
-   platform's local date and time, and the returned :class:`datetime` object is
-   naive. If *tz* is not ``None``, it must be an instance of a :class:`tzinfo`
-   subclass, and the timestamp is converted to *tz*’s time zone. 
+   *tz* must be an instance of a :class:`tzinfo` subclass, and the timestamp is
+   converted to *tz*’s time zone. ``tz=None`` is not supported.
 
    .. note::
 
-      If *tz* is naive, the algorithm relies on platform's
+      If *tz* is naive, the CPython algorithm relies on platform's
       :func:`time.localtime` to perform the conversion which must properly
       handle daylight saving time for the timezone of interest in order to
-      compute meaningful dates and times.
+      compute meaningful dates and times. Micropython board ports do not
+      support timezones.
 
 
 .. classmethod:: datetime.fromordinal(n)
@@ -1243,8 +1242,7 @@ Class methods
    attribute *tz*, adjusting the date and time data so the result is the same
    UTC time as *self*, but in *tz*’s local time.
 
-   *self* can be aware or naive. If it is naive, it is presumed to represent
-   time in the system timezone.
+   *self* must be aware.
 
    If provided, *tz* must be an instance of a :class:`tzinfo` subclass. Its
    :meth:`tzinfo.utcoffset` and :meth:`tzinfo.dst` methods must not return
@@ -1260,10 +1258,11 @@ Class methods
 
    .. note::
 
-      If *self* is naive, the algorithm relies on platform's
+      If *self* is naive, the CPython algorithm relies on platform's
       :func:`time.localtime` to perform the conversion which must properly
       handle daylight saving time for the timezone of interest in order to
-      compute meaningful dates and times.
+      compute meaningful dates and times. Micropython board ports do not
+      support timezones.
 
 
 .. method:: datetime.utcoffset()
@@ -1313,14 +1312,15 @@ Class methods
 
       (dt - datetime.EPOCH).total_seconds()
 
-   Naive :class:`datetime` instances are assumed to represent local time.
+   Naive :class:`datetime` instances are not supported.
 
    .. note::
 
-      If *self* is naive, the algorithm relies on platform's
+      If *self* is naive, the CPython algorithm relies on platform's
       :func:`time.localtime` to perform the conversion which must properly
       handle daylight saving time for the timezone of interest in order to
-      compute meaningful dates and times.
+      compute meaningful dates and times. Micropython board ports do not
+      support timezones.
 
 
 .. method:: datetime.weekday()
