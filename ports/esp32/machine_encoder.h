@@ -39,6 +39,6 @@ typedef struct _mp_pcnt_obj_t {
     float scale;
 } mp_pcnt_obj_t;
 
-extern int machine_pin_get_id(mp_obj_t pin_in);
+//extern int machine_pin_get_id(mp_obj_t pin_in);
 
 #pragma once

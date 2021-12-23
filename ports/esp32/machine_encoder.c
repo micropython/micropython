@@ -56,7 +56,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
             if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
                 mp_printf(MP_PYTHON_PRINTER, "%d| ", level); \
                 mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
-                mp_printf(MP_PYTHON_PRINTER, "\n"); \
+                mp_printf(MP_PYTHON_PRINTER, "|%d %s\n", __LINE__, __FILE__); \
             } \
         } \
     } while (0);
@@ -80,7 +80,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 // #define GET_INT mp_obj_get_ll_int // need PR: py\obj.c: Get 64-bit integer arg. #80896
 
 static pcnt_isr_handle_t pcnt_isr_handle = NULL;
-STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
 #define EVT_THRES_0  PCNT_EVT_THRES_0
@@ -522,7 +522,7 @@ STATIC void pcnt_init_new(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *ar
     if ((self->unit < 0) || (self->unit >= PCNT_UNIT_MAX)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX - 1);
     }
-MP_PRN(0, "pcnts[self->unit] %d self->unit %d %d", pcnts[self->unit], self->unit, &pcnts)
+MP_PRN(1, "pcnts[self->unit ] %d self->unit %d %d", pcnts[self->unit], self->unit, &pcnts)
     if (pcnts[self->unit] != NULL) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already used"));
     }
