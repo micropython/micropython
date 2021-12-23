@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-16 01:34+0000\n"
+"PO-Revision-Date: 2021-12-24 21:51+0000\n"
 "Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.9.1-dev\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: main.c
 msgid ""
@@ -641,20 +641,20 @@ msgstr "Huǎnchōngqū chángdù bìxū wéi 512 de bèishù"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr "Huǎn chōng qū bì xū shì 512 zì jié de bèi shù"
+msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù 1"
+msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
 
 #: shared-bindings/_bleio/PacketBuffer.c
-#, c-format
+#, c-format, fuzzy
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr "huǎn chōng qì bì xū dà xiǎo xiāng tóng"
+msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -662,39 +662,42 @@ msgstr "huǎn chōng qì bì xū dà xiǎo xiāng tóng"
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
-msgstr "Zǒngxiàn yǐn jiǎo %d yǐ zài shǐyòng zhōng"
+msgstr "Zǒngxiàn yǐnjiǎo %d yǐjīng zài shǐyòng zhōng"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
-msgstr "Zì jié huǎnchōng qū bìxū shì 16 zì jié."
+msgstr "Zìjié huǎnchōng qū bìxū shì 16 zìjié."
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
-msgstr "Zì jié bìxū jiè yú 0 dào 255 zhī jiān."
+msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
-msgstr "CBC kuài bì xū shì 16 zì jié de bèi shù"
+msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
-msgstr "CRC huò jiào yàn hé wú xiào"
+msgstr "CRC huò jiàoyàn hé wúxiào"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr "Zài fǎngwèn běn jī wùjiàn zhīqián diàoyòng super().__init__()."
+msgstr "Zài fǎngwèn yuánshēn dùixiàng zhīqián diàoyòng super().__init__()."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
+#, fuzzy
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "zhǐ néng zài RTC Io shàng cóng shēn dù shuì mián zhōng bào jǐng."
+msgstr "zhǐ néng zài RTC IO shàng cóng shēndù shuìmián zhōng bào jǐng."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
+#, fuzzy
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
 "Zhǐ néng zài yīgè dī diàn píng yǐn jiǎo shàng fāchū jǐngbào, ér qítā yǐn "
 "jiǎo cóng shēndù shuìmián zhōng fāchū gāo diàn píng jǐngbào."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
+#, fuzzy
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr "zhǐ néng cóng shēn dù shuì mián zhōng bào jǐng liǎng gè dī yǐn jiǎo."
 
@@ -705,7 +708,7 @@ msgstr "Wúfǎ jiāng CCCD shèzhì wéi běndì tèzhēng"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr "xiàn zài wú fǎ gēng gǎi USB shè bèi"
+msgstr "xiànzài wúfǎ gēnggǎi USB shèbèi"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
@@ -715,14 +718,14 @@ msgstr "Wúfǎ chuàngjiàn xīn de shìpèiqì; shǐyòng_bleio.Adapter;"
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
-msgstr "Wúfǎ shānchú zhí"
+msgstr "Wúfǎ jiāng zhí shānchú"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
 #: ports/nrf/common-hal/digitalio/DigitalInOut.c
 #: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
-msgstr "Zài shūchū móshì xià wúfǎ huòqǔ lādòng"
+msgstr "Zài shūchū móshì xià wúfǎ huòqǔ shànglā huò xiàlā zhuàngtài"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
