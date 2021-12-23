@@ -58,4 +58,4 @@ fi
 do_build esp8266 GENERIC
 do_build esp8266-512k GENERIC_512K
 do_build esp8266-1m GENERIC_1M
-do_build_ota esp8266-ota GENERIC ota
+do_build_ota esp8266-ota GENERIC_1M ota
