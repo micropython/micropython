@@ -2,8 +2,7 @@
 huffman
 
 # For nvm.toml
-cascadetoml==0.3.1
-tomlkit==0.7.2
+cascadetoml
 jinja2
 typer
 
