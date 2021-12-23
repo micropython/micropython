@@ -77,7 +77,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         true, // Wait for txstall. If we don't, then we'll deinit too quickly.
         false, 32, true, // RX setting we don't use
         false, // claim pins
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        false); // No sideset enable
     if (!ok) {
         // Do nothing. Maybe bitbang?
         return;

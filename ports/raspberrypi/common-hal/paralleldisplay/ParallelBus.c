@@ -99,6 +99,7 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         NULL, 0, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin
         write, 1, 0, 1, // first sideset pin
+        false, // No sideset enable
         NULL, // jump pin
         0, // wait gpio pins
         true, // exclusive pin usage
