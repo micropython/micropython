@@ -3,7 +3,7 @@
 #include <driver/gpio.h>
 #include "driver/pcnt.h"
 
-#define INT16_ROLL 32767 // 1000 // 32000 //
+#define INT16_ROLL 32767
 
 #define FILTER_MAX 1023
 
@@ -38,7 +38,5 @@ typedef struct _mp_pcnt_obj_t {
     int8_t x124; // Encoder only
     float scale;
 } mp_pcnt_obj_t;
-
-//extern int machine_pin_get_id(mp_obj_t pin_in);
 
 #pragma once
