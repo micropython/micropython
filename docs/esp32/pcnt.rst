@@ -43,14 +43,18 @@ Constructor
         *src* is required in the constructor.
 
       - *direction* specifies the direction to count. Values for this include the constants
-        ``Counter.UP`` (default value) and ``Counter.DOWN``. Ports may support additional values or
-        objects, such as a :ref:`machine.Pin <machine.Pin>` object to control the direction externally.
+
+        - Counter.UP - (default value) and
+        - Counter.DOWN to control the direction by software or
+        - :ref:`machine.Pin <machine.Pin>` object to control the direction externally. If ``Pin.value()``:
+           - 0 - count down,
+           - 1 - count up.
 
       - *edge* specifies which edges of the input signal will be counted by Counter:
 
-        - Counter.RISING : raise edges
-        - Counter.FALLING : fall edges
-        - Counter.RISING | Counter.FALLING : both edges
+        - Counter.RISING : raise edges,
+        - Counter.FALLING : fall edges,
+        - Counter.RISING | Counter.FALLING : both edges.
 
       - *filter_ns* specifies a ns-value for the minimal time a signal has to be stable
         at the input to be recognized. The largest value is 12787ns (1023 * 1000000000 / APB_CLK_FREQ).
@@ -60,7 +64,7 @@ Constructor
         factor as **click per count**, **mm per count**, **inch per count** etc.
 
       - *match1* and *match2* set a counter match value. When the counter matches these values,
-        a callback function can be called. *irq* method sets the callback function.
+        a callback function can be called. *irq* method sets the callback function. They are 0 by default.
 
 Methods
 -------
@@ -94,15 +98,16 @@ Methods
             self._value = round(scaled / self.scale)
         return _scaled
 
-.. method:: Counter.irq(handler=None, trigger=event)
+.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO)
 
-   -*handler* specifies a function is called when the respective *event* happens.
+   -*handler* specifies a function is called when the respective *trigger* event happens.
     The callback function *handler* receives a single argument, which is the Counter object.
     All events may share the same callback or have separate callbacks.
     The callback will be disabled, when called with handler=None.
-    The event which triggers the callback can be identified with the Counter.status() method.
+    The event which triggers the callback can be identified with the ``Counter.status()`` method.
+    The Counter object which triggers the callback can be identified with the ``Counter.id()`` method.
 
-   -*trigger* event may be:
+   -*trigger* events may be:
 
     - Counter.IRQ_MATCH1 triggered when the counter matches the match1 value.
     - Counter.IRQ_MATCH2 triggered when the counter matches the match2 value.
@@ -114,7 +119,7 @@ Methods
 
 .. method:: Counter.status()
 
-   Returns the event status flags of the recent handled Encoder interrupt as a bitmap.
+   Returns the event status flags of the recent handled Counter interrupt as a bitmap.
 
 .. method:: Counter.id()
 
