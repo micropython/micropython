@@ -47,23 +47,6 @@ See also
 https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotary_encoder
 */
 
-#define MP_PRN_LEVEL 100
-
-#if defined(MP_PRN_LEVEL) && (MP_PRN_LEVEL > 0)
-#define MP_PRN(level, ...) \
-    do { \
-        if (MP_PRN_LEVEL > 0) { \
-            if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
-                mp_printf(MP_PYTHON_PRINTER, " %d| ", level); \
-                mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
-                mp_printf(MP_PYTHON_PRINTER, "|%d %s\n", __LINE__, __FILE__); \
-            } \
-        } \
-    } while (0);
-#else
-#define MP_PRN(level, ...)
-#endif
-
 #include "py/runtime.h"
 #include "mphalport.h"
 #include "modmachine.h"
@@ -80,7 +63,7 @@ https://github.com/espressif/esp-idf/tree/master/examples/peripherals/pcnt/rotar
 // #define GET_INT mp_obj_get_ll_int // need PR: py\obj.c: Get 64-bit integer arg. #80896
 
 STATIC pcnt_isr_handle_t pcnt_isr_handle = NULL;
-STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX];// = {MP_OBJ_NULL};
+STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
 #define EVT_THRES_0  PCNT_EVT_THRES_0
@@ -206,7 +189,6 @@ STATIC void pcnt_disable_events(mp_pcnt_obj_t *self) {
 }
 
 STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
-    MP_PRN(3, "self %d", self)
     if (self != NULL) {
         check_esp_err(pcnt_counter_pause(self->unit));
 
@@ -217,8 +199,7 @@ STATIC void pcnt_deinit(mp_pcnt_obj_t *self) {
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_0, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
         check_esp_err(pcnt_set_pin(self->unit, PCNT_CHANNEL_1, PCNT_PIN_NOT_USED, PCNT_PIN_NOT_USED));
 
-        pcnts[self->unit] = MP_OBJ_NULL;
-        MP_PRN(4, "pcnts[self->unit] %d self->unit %d", pcnts[self->unit], self->unit)
+        pcnts[self->unit] = NULL;
 
         // m_del_obj(mp_pcnt_obj_t, self); // Is it need??
     }
@@ -522,7 +503,6 @@ STATIC void pcnt_init_new(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *ar
     if ((self->unit < 0) || (self->unit >= PCNT_UNIT_MAX)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("id must be from 0 to %d"), PCNT_UNIT_MAX - 1);
     }
-MP_PRN(1, "pcnts[self->unit] %d self->unit %d %d", pcnts[self->unit], self->unit, &pcnts)
     if (pcnts[self->unit] != MP_OBJ_NULL) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("already used"));
     }
@@ -755,7 +735,6 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     }
 
     pcnts[self->unit] = self;
-    MP_PRN(1, "pcnts[self->unit] %d self->unit %d %d", pcnts[self->unit], self->unit, &pcnts)
 
     // Enable interrupts for PCNT unit
     register_isr_handler();
