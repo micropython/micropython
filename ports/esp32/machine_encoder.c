@@ -140,6 +140,29 @@ STATIC void register_isr_handler(void) {
     }
 }
 
+// from      ports/esp32/sdcadr.c
+STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
+    if (mp_obj_is_small_int(arg)) {
+        return MP_OBJ_SMALL_INT_VALUE(arg);
+    } else {
+        // This raises a value error if the argument is not a Pin.
+        return machine_pin_get_id(arg);
+    }
+}
+
+/* or change     ports/esp32/machine_pin.c
+
+gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
+    if (mp_obj_is_small_int(pin_in)) {
+        return MP_OBJ_SMALL_INT_VALUE(pin_in);
+    } else if (mp_obj_get_type(pin_in) != &machine_pin_type) {
+        mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
+    }
+    machine_pin_obj_t *self = pin_in;
+    return self->id;
+}
+*/
+
 /* Calculate the filter parameters based on an ns value
    1 / 80MHz = 12.5ns - min filter period
    12.5ns * FILTER_MAX = 12.5ns * 1023 = 12787.5ns - max filter period */
@@ -382,7 +405,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_src].u_obj != MP_OBJ_NULL) {
-        self->aPinNumber = machine_pin_get_id(args[ARG_src].u_obj);
+        self->aPinNumber = pin_or_int(args[ARG_src].u_obj);
     }
     if (self->aPinNumber == PCNT_PIN_NOT_USED) {
         mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("src")));
@@ -391,7 +414,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     mp_obj_t direction = args[ARG_direction].u_obj;
     if (direction != MP_OBJ_NULL) {
         if (mp_obj_is_type(direction, &machine_pin_type)) {
-            self->bPinNumber = machine_pin_get_id(direction);
+            self->bPinNumber = pin_or_int(direction);
         } else {
             self->bPinNumber = mp_obj_get_int(direction);
             if (!((self->bPinNumber == COUNTER_UP) || (self->bPinNumber == COUNTER_DOWN))) {
@@ -508,7 +531,7 @@ STATIC void pcnt_init_new(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *ar
     }
 
     if (n_args >= 2) {
-        self->aPinNumber = machine_pin_get_id(args[1]);
+        self->aPinNumber = pin_or_int(args[1]);
     }
 }
 
@@ -622,14 +645,14 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     mp_obj_t src = args[ARG_phase_a].u_obj;
     if (src != MP_OBJ_NULL) {
-        self->aPinNumber = machine_pin_get_id(src);
+        self->aPinNumber = pin_or_int(src);
     }
     if (self->aPinNumber == PCNT_PIN_NOT_USED) {
         mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("phase_a")));
     }
     src = args[ARG_phase_b].u_obj;
     if (src != MP_OBJ_NULL) {
-        self->bPinNumber = machine_pin_get_id(src);
+        self->bPinNumber = pin_or_int(src);
     }
     if (self->bPinNumber == PCNT_PIN_NOT_USED) {
         mp_raise_ValueError(MP_ERROR_TEXT(MP_ERROR_TEXT("phase_b")));
@@ -752,7 +775,7 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     pcnt_init_new(self, n_args, args);
 
     if (n_args >= 3) {
-        self->bPinNumber = machine_pin_get_id(args[2]);
+        self->bPinNumber = pin_or_int(args[2]);
     }
 
     self->x124 = 4;
