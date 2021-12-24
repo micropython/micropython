@@ -243,8 +243,10 @@ STATIC void machine_pin_isr_handler(void *arg) {
 STATIC const machine_pin_obj_t *find_pin_obj(int wanted_pin) {
     // get the wanted pin object
     const machine_pin_obj_t *self = NULL;
-    if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
-        self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
+    if (GPIO_IS_VALID_GPIO(wanted_pin)) {
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
+            self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
+        }
     }
     if (self == NULL || self->base.type == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
