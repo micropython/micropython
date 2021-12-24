@@ -533,7 +533,6 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     pcnt_init_new(self, n_args, args);
 
     self->bPinNumber = COUNTER_UP;
-
     self->edge = RISING;
 
     // Process the remaining parameters
@@ -765,7 +764,6 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     if (n_args >= 3) {
         self->bPinNumber = pin_or_int(args[2]);
     }
-
     self->x124 = 4;
 
     // Process the remaining parameters
