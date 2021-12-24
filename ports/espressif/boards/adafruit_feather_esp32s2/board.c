@@ -27,6 +27,7 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
 
 void board_init(void) {
     // USB
@@ -39,7 +40,9 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-
+    // Turn on I2C power by default.
+    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(7, false);
 }
 
 void board_deinit(void) {
