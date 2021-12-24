@@ -140,7 +140,8 @@ STATIC void register_isr_handler(void) {
     }
 }
 
-// from      ports/esp32/sdcadr.c
+// TODO: Remove after: esp32/machine_pin.c: Allow small int argument in machine_pin_get_id(). #8113
+// from      ports/esp32/machine_sdcadr.c
 STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
     if (mp_obj_is_small_int(arg)) {
         return MP_OBJ_SMALL_INT_VALUE(arg);
@@ -149,19 +150,6 @@ STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
         return machine_pin_get_id(arg);
     }
 }
-
-/* or change     ports/esp32/machine_pin.c
-
-gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
-    if (mp_obj_is_small_int(pin_in)) {
-        return MP_OBJ_SMALL_INT_VALUE(pin_in);
-    } else if (mp_obj_get_type(pin_in) != &machine_pin_type) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
-    }
-    machine_pin_obj_t *self = pin_in;
-    return self->id;
-}
-*/
 
 /* Calculate the filter parameters based on an ns value
    1 / 80MHz = 12.5ns - min filter period
