@@ -32,7 +32,7 @@ The Pulse Counter service.
 Constructor
 -----------
 
-.. class:: Counter(id, src=None, \*, edge=Counter.RISING, direction=Counter.UP, filter_ns=0, scale=1, match1=0, match2=0)
+.. class:: Counter(id, src=None, \*, edge=Counter.RISING, direction=Counter.UP, filter_ns=0, scale=1)
 
     The Counter starts to count immediately. Filtering is disabled.
 
@@ -62,9 +62,6 @@ Constructor
 
       - *scale* sets the scale value. The default value is 1. You may treat the scale
         factor as **click per count**, **mm per count**, **inch per count** etc.
-
-      - *match1* and *match2* set a counter match value. When the counter matches these values,
-        a callback function can be called. *irq* method sets the callback function. They are 0 by default.
 
 Methods
 -------
@@ -98,12 +95,12 @@ Methods
             self._value = round(scaled / self.scale)
         return _scaled
 
-.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO)
+.. method:: Counter.irq(handler=None, trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO, value=0)
 
    -*handler* specifies a function is called when the respective *trigger* event happens.
     The callback function *handler* receives a single argument, which is the Counter object.
     All events may share the same callback or have separate callbacks.
-    The callback will be disabled, when called with handler=None.
+    The callback will be disabled, when called with handler=None. Counter.irq() disable all callbacks.
     The event which triggers the callback can be identified with the ``Counter.status()`` method.
     The Counter object which triggers the callback can be identified with the ``Counter.id()`` method.
 
@@ -116,6 +113,9 @@ Methods
     The default is - trigger=Counter.IRQ_MATCH1 | Counter.IRQ_MATCH2 | Counter.IRQ_ZERO.
     The events are triggered when the counter value and match value are identical, but
     callbacks have always a latency.
+
+   - *value* sets a counter match1/match2 value. When the counter matches these values,
+     a callback function can be called. They are 0 by default.
 
 .. method:: Counter.status()
 
