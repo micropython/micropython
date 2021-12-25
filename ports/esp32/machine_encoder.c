@@ -331,10 +331,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_status_obj, machine_PCNT_status);
 
 // -----------------------------------------------------------------
 STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger };
+    enum { ARG_handler, ARG_trigger, ARG_value };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_trigger, MP_ARG_INT, {.u_int = EVT_THRES_0 | EVT_THRES_1 | EVT_ZERO} },
+        { MP_QSTR_value, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_pcnt_obj_t *self = pos_args[0];
@@ -348,27 +349,40 @@ STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args,
         mp_raise_ValueError(MP_ERROR_TEXT("trigger"));
     }
 
-    if (handler != mp_const_none) {
+    if (handler == mp_const_none) {
+        if (trigger & EVT_THRES_1) {
+            pcnt_event_disable(self->unit, EVT_THRES_1);
+        }
         if (trigger & EVT_THRES_0) {
-            self->handler_match2 = handler;
-            pcnt_event_enable(self->unit, EVT_THRES_0);
-        } else {
             pcnt_event_disable(self->unit, EVT_THRES_0);
         }
+        if (trigger & EVT_ZERO) {
+            pcnt_event_disable(self->unit, EVT_ZERO);
+        }
+    } else {
         if (trigger & EVT_THRES_1) {
+            if (args[ARG_value].u_obj != MP_OBJ_NULL) {
+                self->match1 = GET_INT(args[ARG_value].u_obj);
+                self->counter_match1 = self->match1 % INT16_ROLL;
+                check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_1, (int16_t)self->counter_match1));
+                self->counter_match1 = self->match1 - self->counter_match1;
+            }
             self->handler_match1 = handler;
             pcnt_event_enable(self->unit, EVT_THRES_1);
-        } else {
-            pcnt_event_disable(self->unit, EVT_THRES_1);
+        } else if (trigger & EVT_THRES_0) {
+            if (args[ARG_value].u_obj != MP_OBJ_NULL) {
+                self->match2 = GET_INT(args[ARG_value].u_obj);
+                self->counter_match2 = self->match2 % INT16_ROLL;
+                check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_0, (int16_t)self->counter_match2));
+                self->counter_match2 = self->match2 - self->counter_match2;
+            }
+            self->handler_match2 = handler;
+            pcnt_event_enable(self->unit, EVT_THRES_0);
         }
         if (trigger & EVT_ZERO) {
             self->handler_zero = handler;
             pcnt_event_enable(self->unit, EVT_ZERO);
-        } else {
-            pcnt_event_disable(self->unit, EVT_ZERO);
         }
-    } else {
-        pcnt_disable_events(self);
     }
 
     return mp_const_none;
@@ -378,15 +392,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_PCNT_irq_obj, 1, machine_PCNT_irq);
 // =================================================================
 // class Counter(object):
 STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
+    enum { ARG_src, ARG_direction, ARG_edge, ARG_filter, ARG_scale };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_src, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_direction, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_edge, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_match1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_match2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -469,19 +481,6 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         } else {
             mp_raise_TypeError(MP_ERROR_TEXT("scale argument muts be a number"));
         }
-    }
-
-    if (args[ARG_match1].u_obj != MP_OBJ_NULL) {
-        self->match1 = GET_INT(args[ARG_match1].u_obj);
-        self->counter_match1 = self->match1 % INT16_ROLL;
-        check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_1, (int16_t)self->counter_match1));
-        self->counter_match1 = self->match1 - self->counter_match1;
-    }
-    if (args[ARG_match2].u_obj != MP_OBJ_NULL) {
-        self->match2 = GET_INT(args[ARG_match2].u_obj);
-        self->counter_match2 = self->match2 % INT16_ROLL;
-        check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_0, (int16_t)self->counter_match2));
-        self->counter_match2 = self->match2 - self->counter_match2;
     }
 
     pcnts[self->unit] = self;
@@ -616,15 +615,13 @@ const mp_obj_type_t machine_Counter_type = {
 // =================================================================
 // class Encoder(object):
 STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale, ARG_match1, ARG_match2 };
+    enum { ARG_phase_a, ARG_phase_b, ARG_x124, ARG_filter, ARG_scale };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phase_a, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_phase_b, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_x124, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_filter_ns, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_scale, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_match1, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_match2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -729,19 +726,6 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         } else {
             mp_raise_TypeError(MP_ERROR_TEXT("scale argument muts be a number"));
         }
-    }
-
-    if (args[ARG_match1].u_obj != MP_OBJ_NULL) {
-        self->match1 = GET_INT(args[ARG_match1].u_obj);
-        self->counter_match1 = self->match1 % INT16_ROLL;
-        check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_1, (int16_t)self->counter_match1));
-        self->counter_match1 = self->match1 - self->counter_match1;
-    }
-    if (args[ARG_match2].u_obj != MP_OBJ_NULL) {
-        self->match2 = GET_INT(args[ARG_match2].u_obj);
-        self->counter_match2 = self->match2 % INT16_ROLL;
-        check_esp_err(pcnt_set_event_value(self->unit, EVT_THRES_0, (int16_t)self->counter_match2));
-        self->counter_match2 = self->match2 - self->counter_match2;
     }
 
     pcnts[self->unit] = self;
