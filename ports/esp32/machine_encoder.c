@@ -430,7 +430,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     // Prepare configuration for the PCNT unit
     pcnt_config_t r_enc_config;
     r_enc_config.unit = self->unit;
-    r_enc_config.channel = PCNT_CHANNEL_1;
+    r_enc_config.channel = PCNT_CHANNEL_0;
 
     r_enc_config.pulse_gpio_num = self->aPinNumber; // Pulses // Pulse input GPIO number, a negative value will be ignored
     r_enc_config.ctrl_gpio_num = self->bPinNumber; // Direction // Control signal input GPIO number, a negative value will be ignored
@@ -652,17 +652,17 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     // Set up Encoder PCNT configuration
     pcnt_config_t r_enc_config;
+    r_enc_config.unit = self->unit;
+    r_enc_config.channel = PCNT_CHANNEL_0; // channel 0
+
     r_enc_config.pulse_gpio_num = self->aPinNumber; // Rotary Encoder Chan A
     r_enc_config.ctrl_gpio_num = self->bPinNumber; // Rotary Encoder Chan B
 
-    r_enc_config.unit = self->unit;
-    r_enc_config.channel = PCNT_CHANNEL_0;
+    r_enc_config.pos_mode = PCNT_COUNT_INC; // X1 X2 X4 Count on Rising-Edges
+    r_enc_config.neg_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // X2 X4 Count on Falling-Edges
 
-    r_enc_config.pos_mode = (self->x124 != 1) ? PCNT_COUNT_DEC : PCNT_COUNT_DIS; // Count Only On Rising-Edges // X1
-    r_enc_config.neg_mode = PCNT_COUNT_INC; // Discard Falling-Edge
-
-    r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Rising A on HIGH B = CW Step
-    r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Rising A on LOW B = CCW Step
+    r_enc_config.lctrl_mode = PCNT_MODE_KEEP; // Rising A on HIGH B
+    r_enc_config.hctrl_mode = PCNT_MODE_REVERSE; // Rising A on LOW B
 
     // Set the maximum and minimum limit values to watch
     r_enc_config.counter_h_lim = INT16_ROLL;
@@ -672,26 +672,20 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
     if (self->x124 == 4) { // X4
         // set up second channel for full quad
-        r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
-        r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
-
         r_enc_config.unit = self->unit;
         r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
 
-        r_enc_config.pos_mode = PCNT_COUNT_DEC; // Count Only On Rising-Edges
-        r_enc_config.neg_mode = PCNT_COUNT_INC; // Discard Falling-Edge
+        r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
+        r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
+
+        r_enc_config.pos_mode = PCNT_COUNT_INC; // Count on Rising-Edges
+        r_enc_config.neg_mode = PCNT_COUNT_DEC; // Count on Falling-Edge
 
         r_enc_config.lctrl_mode = PCNT_MODE_REVERSE; // prior high mode is now low
         r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // prior low mode is now high
 
-        r_enc_config.counter_h_lim = INT16_ROLL;
-        r_enc_config.counter_l_lim = -INT16_ROLL;
-
         check_esp_err(pcnt_unit_config(&r_enc_config));
     } else { // make sure channel 1 is not set when not full quad
-        r_enc_config.pulse_gpio_num = self->bPinNumber; // make prior control into signal
-        r_enc_config.ctrl_gpio_num = self->aPinNumber; // and prior signal into control
-
         r_enc_config.unit = self->unit;
         r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
 
@@ -700,9 +694,6 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
         r_enc_config.lctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
         r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
-
-        r_enc_config.counter_h_lim = INT16_ROLL;
-        r_enc_config.counter_l_lim = -INT16_ROLL;
 
         check_esp_err(pcnt_unit_config(&r_enc_config));
     }
