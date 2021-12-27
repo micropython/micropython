@@ -80,17 +80,17 @@ STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
  * the main program using a queue.
  */
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#define H_LIM_LAT cnt_thr_h_lim_lat_un
-#define L_LIM_LAT cnt_thr_l_lim_lat_un
-#define THRES0_LAT cnt_thr_thres0_lat_un
-#define THRES1_LAT cnt_thr_thres0_lat_un
-#define ZERO_LAT cnt_thr_zero_lat_un
+#define H_LIM_LAT   cnt_thr_h_lim_lat_un
+#define L_LIM_LAT   cnt_thr_l_lim_lat_un
+#define THRES0_LAT  cnt_thr_thres0_lat_un
+#define THRES1_LAT  cnt_thr_thres0_lat_un
+#define ZERO_LAT    cnt_thr_zero_lat_un
 #else
-#define H_LIM_LAT h_lim_lat
-#define L_LIM_LAT l_lim_lat
-#define THRES0_LAT thres0_lat
-#define THRES1_LAT thres1_lat
-#define ZERO_LAT zero_lat
+#define H_LIM_LAT   h_lim_lat
+#define L_LIM_LAT   l_lim_lat
+#define THRES0_LAT  thres0_lat
+#define THRES1_LAT  thres1_lat
+#define ZERO_LAT    zero_lat
 #endif
 STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
     for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
@@ -284,9 +284,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_get_count_obj, machine_PCNT_get_co
 STATIC mp_obj_t machine_PCNT_scaled(size_t n_args, const mp_obj_t *args) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int64_t counter = self->counter;
     int16_t count;
     check_esp_err(pcnt_get_counter_value(self->unit, &count));
+    int64_t counter = self->counter;
     if (n_args > 1) {
         int64_t new_counter = mp_obj_get_float_to_f(args[1]) / self->scale;
         self->counter = new_counter - count;
@@ -300,7 +300,6 @@ STATIC mp_obj_t machine_PCNT_pause(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     check_esp_err(pcnt_counter_pause(self->unit));
-
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_pause_obj, machine_PCNT_pause);
@@ -310,7 +309,6 @@ STATIC mp_obj_t machine_PCNT_resume(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
 
     check_esp_err(pcnt_counter_resume(self->unit));
-
     return MP_ROM_NONE;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_resume_obj, machine_PCNT_resume);
@@ -318,6 +316,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_resume_obj, machine_PCNT_resume);
 // -----------------------------------------------------------------
 STATIC mp_obj_t machine_PCNT_id(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
+
     return MP_OBJ_NEW_SMALL_INT(self->unit);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
@@ -325,6 +324,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
 // -----------------------------------------------------------------
 mp_obj_t machine_PCNT_status(mp_obj_t self_in) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
     return MP_OBJ_NEW_SMALL_INT(self->status);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_status_obj, machine_PCNT_status);
@@ -463,6 +463,18 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     check_esp_err(pcnt_unit_config(&r_enc_config));
     check_esp_err(pcnt_counter_pause(self->unit));
 
+    // make sure channel 1 is not set
+    r_enc_config.unit = self->unit;
+    r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
+
+    r_enc_config.pos_mode = PCNT_COUNT_DIS; // disabling channel 1
+    r_enc_config.neg_mode = PCNT_COUNT_DIS; // disabling channel 1
+
+    r_enc_config.lctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
+    r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
+
+    check_esp_err(pcnt_unit_config(&r_enc_config));
+
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
@@ -568,9 +580,9 @@ STATIC void machine_Counter_print(const mp_print_t *print, mp_obj_t self_obj, mp
     if (self->bPinNumber >= 0) {
         mp_printf(print, "Pin(%u)", self->bPinNumber);
     } else {
-        mp_printf(print, "%s", self->bPinNumber == COUNTER_UP ? "Counter.UP" : "Counter.DOWN");
+        mp_printf(print, "Counter.%s", self->bPinNumber == COUNTER_UP ? "UP" : "DOWN");
     }
-    mp_printf(print, ", edge=%s", self->edge == RISING ? "Counter.RISING" : self->edge == FALLING ? "Counter.FALLING" : "Counter.RISING | Counter.FALLING");
+    mp_printf(print, ", edge=Counter.%s", self->edge == RISING ? "RISING" : self->edge == FALLING ? "FALLING" : "RISING | Counter.FALLING");
     common_print_kw(print, self);
 }
 
@@ -685,7 +697,8 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
         r_enc_config.hctrl_mode = PCNT_MODE_KEEP; // prior low mode is now high
 
         check_esp_err(pcnt_unit_config(&r_enc_config));
-    } else { // make sure channel 1 is not set when not full quad
+    } else {
+        // make sure channel 1 is not set when not full quad
         r_enc_config.unit = self->unit;
         r_enc_config.channel = PCNT_CHANNEL_1; // channel 1
 

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <driver/gpio.h>
-#include "driver/pcnt.h"
-
 #define INT16_ROLL 32767
 
 #define FILTER_MAX 1023
