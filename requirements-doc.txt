@@ -6,6 +6,7 @@ twine
 wheel
 astroid
 setuptools
+setuptools_scm
 
 # For sphinx
 Sphinx<4
