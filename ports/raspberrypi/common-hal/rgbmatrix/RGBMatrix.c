@@ -59,6 +59,8 @@ void common_hal_rgbmatrix_timer_enable(void *ptr) {
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
     int8_t slice = ((intptr_t)ptr) & 0xff;
     pwm_set_enabled(slice, false);
+    irq_set_enabled(PWM_IRQ_WRAP, false);
+    pwm_clear_irq(slice);
 }
 
 void common_hal_rgbmatrix_timer_free(void *ptr) {
