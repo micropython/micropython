@@ -230,7 +230,7 @@ void LPSPI_EDMAMasterCallback(LPSPI_Type *base, lpspi_master_edma_handle_t *hand
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     // Use DMA for large transfers if channels are available
-    const size_t dma_min_size_threshold = 16;  // That's the FIFO size
+    const size_t dma_min_size_threshold = FSL_FEATURE_LPSPI_FIFO_SIZEn(0);  // The Macro argument is ignored
 
     int chan_tx = -1;
     int chan_rx = -1;
@@ -302,6 +302,10 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
 
     if (!use_dma) {
+        // Wait until a previous Transfer is finished
+        while (LPSPI_GetTxFifoCount(self->spi_inst) > 0) {
+            MICROPY_EVENT_POLL_HOOK
+        }
         // Reconfigure the TCR, required after switch between DMA vs. non-DMA
         LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
         self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
