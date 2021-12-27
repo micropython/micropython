@@ -66,13 +66,13 @@ STATIC pcnt_isr_handle_t pcnt_isr_handle = NULL;
 STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
-#define EVT_THRES_0  PCNT_EVT_THRES_0
-#define EVT_THRES_1  PCNT_EVT_THRES_1
-#define EVT_ZERO     PCNT_EVT_ZERO
+#define EVT_THRES_0 PCNT_EVT_THRES_0
+#define EVT_THRES_1 PCNT_EVT_THRES_1
+#define EVT_ZERO    PCNT_EVT_ZERO
 #else
-#define EVT_THRES_0  (1 << PCNT_EVT_THRES_0)
-#define EVT_THRES_1  (1 << PCNT_EVT_THRES_1)
-#define EVT_ZERO     (1 << PCNT_EVT_ZERO)
+#define EVT_THRES_0 (1 << PCNT_EVT_THRES_0)
+#define EVT_THRES_1 (1 << PCNT_EVT_THRES_1)
+#define EVT_ZERO    (1 << PCNT_EVT_ZERO)
 #endif
 
 /* Decode what PCNT's unit originated an interrupt
@@ -80,17 +80,17 @@ STATIC mp_pcnt_obj_t *pcnts[PCNT_UNIT_MAX] = {};
  * the main program using a queue.
  */
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#define H_LIM_LAT   cnt_thr_h_lim_lat_un
-#define L_LIM_LAT   cnt_thr_l_lim_lat_un
-#define THRES0_LAT  cnt_thr_thres0_lat_un
-#define THRES1_LAT  cnt_thr_thres0_lat_un
-#define ZERO_LAT    cnt_thr_zero_lat_un
+#define H_LIM_LAT  cnt_thr_h_lim_lat_un
+#define L_LIM_LAT  cnt_thr_l_lim_lat_un
+#define THRES0_LAT cnt_thr_thres0_lat_un
+#define THRES1_LAT cnt_thr_thres0_lat_un
+#define ZERO_LAT   cnt_thr_zero_lat_un
 #else
-#define H_LIM_LAT   h_lim_lat
-#define L_LIM_LAT   l_lim_lat
-#define THRES0_LAT  thres0_lat
-#define THRES1_LAT  thres1_lat
-#define ZERO_LAT    zero_lat
+#define H_LIM_LAT  h_lim_lat
+#define L_LIM_LAT  l_lim_lat
+#define THRES0_LAT thres0_lat
+#define THRES1_LAT thres1_lat
+#define ZERO_LAT   zero_lat
 #endif
 STATIC void IRAM_ATTR pcnt_intr_handler(void *arg) {
     for (int id = 0; id < PCNT_UNIT_MAX; ++id) {
@@ -461,7 +461,6 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     r_enc_config.counter_l_lim = -INT16_ROLL;
 
     check_esp_err(pcnt_unit_config(&r_enc_config));
-    check_esp_err(pcnt_counter_pause(self->unit));
 
     // make sure channel 1 is not set
     r_enc_config.unit = self->unit;
@@ -474,6 +473,7 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
 
     check_esp_err(pcnt_unit_config(&r_enc_config));
+//    check_esp_err(pcnt_counter_pause(self->unit));
 
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
@@ -494,13 +494,16 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
             mp_raise_TypeError(MP_ERROR_TEXT("scale argument muts be a number"));
         }
     }
-
     pcnts[self->unit] = self;
 
     // Enable interrupts for PCNT unit
+    check_esp_err(pcnt_counter_pause(self->unit));
     register_isr_handler();
     check_esp_err(pcnt_intr_enable(self->unit));
+    check_esp_err(pcnt_counter_clear(self->unit));
+    self->counter = 0;
     check_esp_err(pcnt_counter_resume(self->unit));
+    check_esp_err(pcnt_counter_clear(self->unit));
 }
 
 STATIC void pcnt_init_new(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *args) {
@@ -550,9 +553,6 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
-
-    check_esp_err(pcnt_counter_clear(self->unit));
-    self->counter = 0;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -710,7 +710,7 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
         check_esp_err(pcnt_unit_config(&r_enc_config));
     }
-    check_esp_err(pcnt_counter_pause(self->unit));
+//    check_esp_err(pcnt_counter_pause(self->unit));
 
     // Enable events on maximum and minimum limit values
     check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
@@ -725,19 +725,22 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     if (args[ARG_scale].u_obj != MP_OBJ_NULL) {
         if (mp_obj_is_type(args[ARG_scale].u_obj, &mp_type_float)) {
             self->scale = mp_obj_get_float_to_f(args[ARG_scale].u_obj);
-        } else if (mp_obj_is_type(args[ARG_scale].u_obj, &mp_type_float)) {
+        } else if (mp_obj_is_type(args[ARG_scale].u_obj, &mp_type_int)) {
             self->scale = mp_obj_get_int(args[ARG_scale].u_obj);
         } else {
             mp_raise_TypeError(MP_ERROR_TEXT("scale argument muts be a number"));
         }
     }
-
     pcnts[self->unit] = self;
 
     // Enable interrupts for PCNT unit
+    check_esp_err(pcnt_counter_pause(self->unit));
     register_isr_handler();
     check_esp_err(pcnt_intr_enable(self->unit));
+    check_esp_err(pcnt_counter_clear(self->unit));
+    self->counter = 0;
     check_esp_err(pcnt_counter_resume(self->unit));
+    check_esp_err(pcnt_counter_clear(self->unit));
 }
 
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -758,9 +761,6 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Encoder_init_helper(self, n_args - 1, args + 1, &kw_args);
-
-    check_esp_err(pcnt_counter_clear(self->unit));
-    self->counter = 0;
 
     return MP_OBJ_FROM_PTR(self);
 }
