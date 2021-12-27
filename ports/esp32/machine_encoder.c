@@ -160,7 +160,6 @@ STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {
 STATIC uint16_t get_filter_value_ns(pcnt_unit_t unit) {
     uint16_t value;
     check_esp_err(pcnt_get_filter_value(unit, &value));
-
     return filter_to_ns(value);
 }
 
@@ -275,7 +274,6 @@ STATIC mp_obj_t machine_PCNT_get_count(mp_obj_t self_obj) {
 
     int16_t count;
     pcnt_get_counter_value(self->unit, &count); // no error checking to speed up
-
     return mp_obj_new_int_from_ll(self->counter + count);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_get_count_obj, machine_PCNT_get_count);
@@ -316,7 +314,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_resume_obj, machine_PCNT_resume);
 // -----------------------------------------------------------------
 STATIC mp_obj_t machine_PCNT_id(mp_obj_t self_obj) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_obj);
-
     return MP_OBJ_NEW_SMALL_INT(self->unit);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
@@ -324,7 +321,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_id_obj, machine_PCNT_id);
 // -----------------------------------------------------------------
 mp_obj_t machine_PCNT_status(mp_obj_t self_in) {
     mp_pcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
     return MP_OBJ_NEW_SMALL_INT(self->status);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_PCNT_status_obj, machine_PCNT_status);
@@ -383,8 +379,9 @@ STATIC mp_obj_t machine_PCNT_irq(mp_uint_t n_pos_args, const mp_obj_t *pos_args,
             self->handler_zero = handler;
             pcnt_event_enable(self->unit, EVT_ZERO);
         }
+        check_esp_err(pcnt_counter_clear(self->unit));
+        self->counter = 0;
     }
-
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_PCNT_irq_obj, 1, machine_PCNT_irq);
@@ -473,11 +470,6 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     r_enc_config.hctrl_mode = PCNT_MODE_DISABLE; // disabling channel 1
 
     check_esp_err(pcnt_unit_config(&r_enc_config));
-//    check_esp_err(pcnt_counter_pause(self->unit));
-
-    // Enable events on maximum and minimum limit values
-    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
-    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
     if (args[ARG_filter].u_int != -1) {
         self->filter = ns_to_filter(args[ARG_filter].u_int);
@@ -500,10 +492,12 @@ STATIC void mp_machine_Counter_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     check_esp_err(pcnt_counter_pause(self->unit));
     register_isr_handler();
     check_esp_err(pcnt_intr_enable(self->unit));
+    // Enable events on maximum and minimum limit values
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
     check_esp_err(pcnt_counter_clear(self->unit));
     self->counter = 0;
     check_esp_err(pcnt_counter_resume(self->unit));
-    check_esp_err(pcnt_counter_clear(self->unit));
 }
 
 STATIC void pcnt_init_new(mp_pcnt_obj_t *self, size_t n_args, const mp_obj_t *args) {
@@ -553,7 +547,6 @@ STATIC mp_obj_t machine_Counter_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Counter_init_helper(self, n_args - 1, args + 1, &kw_args);
-
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -710,11 +703,6 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
 
         check_esp_err(pcnt_unit_config(&r_enc_config));
     }
-//    check_esp_err(pcnt_counter_pause(self->unit));
-
-    // Enable events on maximum and minimum limit values
-    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
-    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
 
     if (args[ARG_filter].u_int != -1) {
         self->filter = ns_to_filter(args[ARG_filter].u_int);
@@ -737,10 +725,12 @@ STATIC void mp_machine_Encoder_init_helper(mp_pcnt_obj_t *self, size_t n_args, c
     check_esp_err(pcnt_counter_pause(self->unit));
     register_isr_handler();
     check_esp_err(pcnt_intr_enable(self->unit));
+    // Enable events on maximum and minimum limit values
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_H_LIM));
+    check_esp_err(pcnt_event_enable(self->unit, PCNT_EVT_L_LIM));
     check_esp_err(pcnt_counter_clear(self->unit));
     self->counter = 0;
     check_esp_err(pcnt_counter_resume(self->unit));
-    check_esp_err(pcnt_counter_clear(self->unit));
 }
 
 STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -761,7 +751,6 @@ STATIC mp_obj_t machine_Encoder_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_Encoder_init_helper(self, n_args - 1, args + 1, &kw_args);
-
     return MP_OBJ_FROM_PTR(self);
 }
 
