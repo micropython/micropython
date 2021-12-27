@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-12-24 21:51+0000\n"
-"Last-Translator: River Wang <urfdvw@gmail.com>\n"
+"PO-Revision-Date: 2021-12-27 02:51+0000\n"
+"Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
@@ -1257,7 +1257,7 @@ msgstr "Jiāmì bùzú"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
-msgstr ""
+msgstr "jiē kǒu bì xū qǐ dòng"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
@@ -1320,7 +1320,7 @@ msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "wú xiào de MAC dì zhǐ"
 
 #: shared-bindings/synthio/__init__.c
 msgid "Invalid MIDI file"
@@ -1397,7 +1397,7 @@ msgstr "Wúxiào de nèicún fǎngwèn."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
-msgstr ""
+msgstr "wú xiào de duō bō MAC dì zhǐ"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 msgid "Invalid number of bits"
@@ -1497,7 +1497,7 @@ msgstr "mì yào bì xū wéi 16, 24 huò 32 zì jié cháng"
 
 #: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
-msgstr ""
+msgstr "LED yìng shè bì xū yǔ xiǎn shì píng chǐ cùn pǐ pèi"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -2137,7 +2137,7 @@ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
-msgstr ""
+msgstr "bǐ lì chǐ cùn bì xū chú yǐ 3"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
@@ -2792,7 +2792,7 @@ msgstr "jiàozhǔn zhí chāochū fànwéi +/-127"
 
 #: shared-module/vectorio/Rectangle.c
 msgid "can only be registered in one parent"
-msgstr ""
+msgstr "zhǐ néng zài yí gè jiā zhǎng zhōng zhù cè"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -4249,7 +4249,7 @@ msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū
 
 #: shared-bindings/wifi/Radio.c
 msgid "ssid can't be more than 32 bytes"
-msgstr ""
+msgstr "ssid bù néng chāo guò 32 gè zì jié"
 
 #: py/objstr.c
 msgid "start/end indices"
