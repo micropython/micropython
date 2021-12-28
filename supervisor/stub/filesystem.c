@@ -26,9 +26,10 @@
 
 #include "supervisor/filesystem.h"
 
-void filesystem_init(bool create_allowed, bool force_create) {
+bool filesystem_init(bool create_allowed, bool force_create) {
     (void)create_allowed;
     (void)force_create;
+    return true;
 }
 
 void filesystem_flush(void) {
