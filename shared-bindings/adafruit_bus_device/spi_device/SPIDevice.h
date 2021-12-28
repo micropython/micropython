@@ -36,7 +36,7 @@
 
 #include "py/obj.h"
 
-#include "shared-module/adafruit_bus_device/SPIDevice.h"
+#include "shared-module/adafruit_bus_device/spi_device/SPIDevice.h"
 
 // Type object used in Python. Should be shared between ports.
 extern const mp_obj_type_t adafruit_bus_device_spidevice_type;

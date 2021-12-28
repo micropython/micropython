@@ -524,8 +524,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
-	adafruit_bus_device/I2CDevice.c \
-	adafruit_bus_device/SPIDevice.c \
+	adafruit_bus_device/i2c_device/I2CDevice.c \
+	adafruit_bus_device/spi_device/SPIDevice.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \

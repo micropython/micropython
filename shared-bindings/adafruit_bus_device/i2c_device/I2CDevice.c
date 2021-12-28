@@ -28,9 +28,9 @@
 // busio.I2C class.
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/adafruit_bus_device/I2CDevice.h"
+#include "shared-bindings/adafruit_bus_device/i2c_device/I2CDevice.h"
 #include "shared-bindings/util.h"
-#include "shared-module/adafruit_bus_device/I2CDevice.h"
+#include "shared-module/adafruit_bus_device/i2c_device/I2CDevice.h"
 
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
