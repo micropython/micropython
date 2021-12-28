@@ -9,6 +9,7 @@ https://electronics.stackexchange.com/questions/360637/quadrature-encoder-most-e
 """
 
 from machine import Pin
+import rp2
 from rp2 import PIO, StateMachine
 import utime
 import array
@@ -89,7 +90,7 @@ def pio_quadrature(in_init=rp2.PIO.IN_LOW):
     
     
  
-sm = StateMachine(0, pio_quad, freq=160000, in_base=Pin(2))
+sm = StateMachine(0, pio_quadrature, freq=160000, in_base=Pin(2))
 sm.irq(encoder_state_changed_irq_handler)
 sm.exec("set(y, 99)")  # add a last value for y that would be always different then the input
 sm.active(1)
