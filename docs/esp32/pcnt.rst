@@ -117,6 +117,8 @@ Methods
    - *value* sets a counter match1/match2 value. When the counter matches these values,
      a callback function can be called. They are 0 by default.
 
+Attention: ``Counter.irq()`` resets counter to 0.
+
 .. method:: Counter.status()
 
    Returns the event status flags of the recent handled Counter interrupt as a bitmap.
