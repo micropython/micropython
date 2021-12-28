@@ -48,14 +48,15 @@ void reset_pin_number(uint8_t pin_number) {
     pin_in_use[pin_number] = false;
     never_reset_pin[pin_number] = false;
     // Reset JTAG pins back to JTAG.
+    BP_PULL_Enum pull = BP_PULL_NONE;
     if (22 <= pin_number && pin_number <= 27) {
         gpio_set_function(pin_number, GPIO_FUNCTION_ALT4);
+        pull = BP_PULL_DOWN;
         return;
     } else {
         gpio_set_function(pin_number, GPIO_FUNCTION_INPUT);
     }
     // Set the pull to match the datasheet.
-    BP_PULL_Enum pull = BP_PULL_NONE;
     if (pin_number < 9 ||
         (33 < pin_number && pin_number < 37) ||
         pin_number > 45) {
