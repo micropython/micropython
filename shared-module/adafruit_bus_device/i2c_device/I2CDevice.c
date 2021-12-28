@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/adafruit_bus_device/I2CDevice.h"
+#include "shared-bindings/adafruit_bus_device/i2c_device/I2CDevice.h"
 #include "shared-bindings/busio/I2C.h"
 #include "py/mperrno.h"
 #include "py/nlr.h"
