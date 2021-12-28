@@ -667,6 +667,10 @@ msgstr "Sa gitna ng 0 o 255 dapat ang bytes."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr ""
+
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr ""

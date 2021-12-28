@@ -648,7 +648,7 @@ msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
 
 #: shared-bindings/_bleio/PacketBuffer.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
 
@@ -675,6 +675,10 @@ msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
+
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
