@@ -813,7 +813,7 @@ int __attribute__((used)) main(void) {
     // no SPI flash filesystem, and we might erase the existing one.
 
     // Check whether CIRCUITPY is available. Don't check if it already hasn't been found.
-    if (safe_mode != NO_CIRCUITPY && !filesystem_init(safe_mode == NO_SAFE_MODE, false)) {
+    if ((safe_mode != NO_CIRCUITPY) && !filesystem_init(safe_mode == NO_SAFE_MODE, false)) {
         reset_into_safe_mode(NO_CIRCUITPY);
     }
 

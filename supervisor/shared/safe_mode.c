@@ -177,6 +177,7 @@ void print_safe_mode_message(safe_mode_t reason) {
             break;
         case NO_CIRCUITPY:
             message = translate("CIRCUITPY drive could not be found or created.");
+            break;
         default:
             break;
     }
