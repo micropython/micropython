@@ -676,6 +676,10 @@ msgstr "Les octets 'bytes' doivent être entre 0 et 255."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Les blocs CBC doivent être des multiples de 16 octets"
 
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr ""
+
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC ou somme de contrôle invalide"
