@@ -36,7 +36,7 @@
 
 #include "py/obj.h"
 
-#include "shared-module/adafruit_bus_device/I2CDevice.h"
+#include "shared-module/adafruit_bus_device/i2c_device/I2CDevice.h"
 // #include "shared-bindings/busio/I2C.h"
 
 // Type object used in Python. Should be shared between ports.
