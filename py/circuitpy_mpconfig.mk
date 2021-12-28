@@ -462,3 +462,31 @@ CFLAGS += -DCIRCUITPY_WATCHDOG=$(CIRCUITPY_WATCHDOG)
 
 CIRCUITPY_WIFI ?= 0
 CFLAGS += -DCIRCUITPY_WIFI=$(CIRCUITPY_WIFI)
+
+# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
+# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
+# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
+#
+# Also propagate longint choice from .mk to C. There's no easy string comparison
+# in cpp conditionals, so we #define separate names for each.
+
+ifeq ($(LONGINT_IMPL),NONE)
+MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
+CFLAGS += -DLONGINT_IMPL_NONE
+else ifeq ($(LONGINT_IMPL),MPZ)
+MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
+CFLAGS += -DLONGINT_IMPL_MPZ
+else ifeq ($(LONGINT_IMPL),LONGLONG)
+MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
+CFLAGS += -DLONGINT_IMPL_LONGLONG
+else
+$(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
+endif
+
+###
+ifeq ($(LONGINT_IMPL),NONE)
+else ifeq ($(LONGINT_IMPL),MPZ)
+else ifeq ($(LONGINT_IMPL),LONGLONG)
+else
+$(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
+endif
