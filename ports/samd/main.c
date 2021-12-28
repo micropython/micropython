@@ -41,9 +41,6 @@ void samd_main(void) {
     for (;;) {
         gc_init(&_sheap, &_eheap);
         mp_init();
-        mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
-        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
-        mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");

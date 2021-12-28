@@ -1013,7 +1013,7 @@ bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
     #if defined MICROPY_USDHC2 && USDHC2_AVAIL
     if (card->usdhc_inst == USDHC2) {
         sdcard_usdhc2_state.inserted = detect;
-        sdcard_usdhc2_state.initialized = detect ? sdcard_usdhc1_state.initialized : false;
+        sdcard_usdhc2_state.initialized = detect ? sdcard_usdhc2_state.initialized : false;
     }
     #endif
 

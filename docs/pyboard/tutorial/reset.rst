@@ -21,7 +21,7 @@ To enter safe mode, do the following steps:
 4. The LEDs will then cycle green to orange to green+orange and back again.
 5. Keep holding down USR until *only the orange LED is lit*, and then let
    go of the USR switch.
-6. The orange LED should flash quickly 4 times, and then turn off.  
+6. The orange LED should flash quickly 4 times, and then turn off.
 7. You are now in safe mode.
 
 In safe mode, the ``boot.py`` and ``main.py`` files are not executed, and so

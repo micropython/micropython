@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include BOARD_FLASH_CONFIG_HEADER_H
+#include "flexspi_flash_config.h"
 
 /* Component ID definition, used by tools. */
 #ifndef FSL_COMPONENT_ID

@@ -110,6 +110,7 @@
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
+#define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
 #if MICROPY_PY_SYS_SETTRACE
@@ -122,6 +123,9 @@
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
 #endif
+#endif
+#ifndef MICROPY_PY_SYS_PATH_DEFAULT
+#define MICROPY_PY_SYS_PATH_DEFAULT "~/.micropython/lib:/usr/lib/micropython"
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_PY_SYS_STDFILES     (1)

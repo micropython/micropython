@@ -144,7 +144,7 @@ store constant data:
 
 As in the string example, at runtime a reference to the arbitrarily large
 integer is assigned to the variable ``bar``. That reference occupies a
-single machine word. 
+single machine word.
 
 It might be expected that tuples of integers could be employed for the purpose
 of storing constant data with minimal RAM use. With the current compiler this

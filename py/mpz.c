@@ -713,6 +713,7 @@ void mpz_set(mpz_t *dest, const mpz_t *src) {
 
 void mpz_set_from_int(mpz_t *z, mp_int_t val) {
     if (val == 0) {
+        z->neg = 0;
         z->len = 0;
         return;
     }
@@ -899,10 +900,6 @@ bool mpz_is_even(const mpz_t *z) {
 #endif
 
 int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
-    // to catch comparison of -0 with +0
-    if (z1->len == 0 && z2->len == 0) {
-        return 0;
-    }
     int cmp = (int)z2->neg - (int)z1->neg;
     if (cmp != 0) {
         return cmp;
@@ -1052,7 +1049,9 @@ void mpz_neg_inpl(mpz_t *dest, const mpz_t *z) {
     if (dest != z) {
         mpz_set(dest, z);
     }
-    dest->neg = 1 - dest->neg;
+    if (dest->len) {
+        dest->neg = 1 - dest->neg;
+    }
 }
 
 /* computes dest = ~z (= -z - 1)
@@ -1148,7 +1147,7 @@ void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         dest->len = mpn_sub(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 
-    dest->neg = lhs->neg;
+    dest->neg = lhs->neg & !!dest->len;
 }
 
 /* computes dest = lhs - rhs
@@ -1172,7 +1171,9 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
         dest->len = mpn_sub(dest->dig, lhs->dig, lhs->len, rhs->dig, rhs->len);
     }
 
-    if (neg) {
+    if (dest->len == 0) {
+        dest->neg = 0;
+    } else if (neg) {
         dest->neg = 1 - lhs->neg;
     } else {
         dest->neg = lhs->neg;
@@ -1484,14 +1485,16 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 
     mpz_need_dig(dest_quo, lhs->len + 1); // +1 necessary?
     memset(dest_quo->dig, 0, (lhs->len + 1) * sizeof(mpz_dig_t));
+    dest_quo->neg = 0;
     dest_quo->len = 0;
     mpz_need_dig(dest_rem, lhs->len + 1); // +1 necessary?
     mpz_set(dest_rem, lhs);
     mpn_div(dest_rem->dig, &dest_rem->len, rhs->dig, rhs->len, dest_quo->dig, &dest_quo->len);
+    dest_rem->neg &= !!dest_rem->len;
 
     // check signs and do Python style modulo
     if (lhs->neg != rhs->neg) {
-        dest_quo->neg = 1;
+        dest_quo->neg = !!dest_quo->len;
         if (!mpz_is_zero(dest_rem)) {
             mpz_t mpzone;
             mpz_init_from_int(&mpzone, -1);

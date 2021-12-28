@@ -249,14 +249,13 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    #define QS(x) (uintptr_t)MP_OBJ_NEW_QSTR(x)
 
     if (kwargs->used != 0) {
 
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
-                switch ((uintptr_t)kwargs->table[i].key) {
-                    case QS(MP_QSTR_mac): {
+                switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    case MP_QSTR_mac: {
                         mp_buffer_info_t bufinfo;
                         mp_get_buffer_raise(kwargs->table[i].value, &bufinfo, MP_BUFFER_READ);
                         if (bufinfo.len != 6) {
@@ -279,8 +278,8 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     mp_obj_t val = mp_const_none;
 
-    switch ((uintptr_t)args[1]) {
-        case QS(MP_QSTR_mac): {
+    switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_mac: {
             uint8_t mac[6];
             esp_eth_ioctl(self->eth_handle, ETH_CMD_G_MAC_ADDR, mac);
             return mp_obj_new_bytes(mac, sizeof(mac));

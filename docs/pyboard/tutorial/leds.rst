@@ -47,7 +47,7 @@ Here, n keeps track of the current LED and every time the loop is executed we cy
 One problem you might find is that if you stop the script and then start it again that the LEDs are stuck on from the previous run, ruining our carefully choreographed disco. We can fix this by turning all the LEDs off when we initialise the script and then using a try/finally block. When you press CTRL-C, MicroPython generates a VCPInterrupt exception. Exceptions normally mean something has gone wrong and you can use a try: command to "catch" an exception. In this case it is just the user interrupting the script, so we don't need to catch the error but just tell MicroPython what to do when we exit. The finally block does this, and we use it to make sure all the LEDs are off. The full code is::
 
     leds = [pyb.LED(i) for i in range(1,5)]
-    for l in leds: 
+    for l in leds:
         l.off()
 
     n = 0

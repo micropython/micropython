@@ -17,13 +17,6 @@ CFLAGS += -std=c99 -Wall -Werror -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -O3 -DNDEBUG
 CFLAGS += $(INC)
 
-ifneq ($(FROZEN_MPY_DIR),)
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-endif
-
 SRC_SHARED = $(addprefix shared/,\
 	runtime/interrupt_char.c \
 	runtime/stdout_helpers.c \

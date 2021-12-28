@@ -123,13 +123,25 @@ uint64_t mp_hal_time_ns(void) {
 /*******************************************************************************/
 // MAC address
 
+void mp_hal_get_unique_id(uint8_t id[]) {
+    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
+    *(uint32_t *)&id[0] = OCOTP->CFG0;
+    *(uint32_t *)&id[4] = OCOTP->CFG1;
+}
+
 // Generate a random locally administered MAC address (LAA)
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
     // Take the MAC addr from the OTP's Configuration and Manufacturing Info
-    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
+    unsigned char id[8];
+    mp_hal_get_unique_id(id);
+
+    uint32_t pt1 = *(uint32_t *)&id[0];
+    uint32_t pt2 = *(uint32_t *)&id[4];
+
     buf[0] = 0x02; // Locally Administered MAC
-    *(uint32_t *)&buf[1] = OCOTP->CFG0 ^ (OCOTP->CFG0 >> 8);
-    *(uint16_t *)&buf[4] = (uint16_t)(OCOTP->CFG1 ^ (OCOTP->CFG1 >> 16));
+    *(uint32_t *)&buf[1] = pt1 ^ (pt1 >> 8);
+    *(uint16_t *)&buf[4] = (uint16_t)(pt2 ^ pt2 >> 16);
+    buf[5] ^= (uint8_t)idx;
 }
 
 // A board can override this if needed

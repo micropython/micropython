@@ -64,7 +64,7 @@ Methods
      - *timeout_char* specifies the time to wait between characters (in ms).
      - *invert* specifies which lines to invert.
      - *flow* specifies which hardware flow control signals to use. The value
-       is a bitmask. 
+       is a bitmask.
 
          - ``0`` will ignore hardware flow control signals.
          - ``UART.RTS`` will enable receive flow control by using the RTS output pin to

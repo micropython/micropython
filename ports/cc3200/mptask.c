@@ -139,9 +139,6 @@ soft_reset:
 
     // MicroPython init
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_init(mp_sys_argv, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
 
     // execute all basic initializations
     mp_irq_init0();
