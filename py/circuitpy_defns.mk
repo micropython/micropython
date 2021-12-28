@@ -85,23 +85,6 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-
-###
-# Propagate longint choice from .mk to C. There's no easy string comparison
-# in cpp conditionals, so we #define separate names for each.
-ifeq ($(LONGINT_IMPL),NONE)
-CFLAGS += -DLONGINT_IMPL_NONE
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-CFLAGS += -DLONGINT_IMPL_MPZ
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-CFLAGS += -DLONGINT_IMPL_LONGLONG
-endif
-
-
 ###
 # Select which builtin modules to compile and include.
 
