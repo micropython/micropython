@@ -1,0 +1,2 @@
+#!/bin/sh
+git describe --dirty --tags --always --match "[1-9].*"
