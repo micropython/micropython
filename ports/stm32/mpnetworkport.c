@@ -52,6 +52,10 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
+#if MICROPY_PY_WIZNET5K
+void wiznet5k_poll(void);
+#endif
+
 STATIC void pyb_lwip_poll(void) {
     #if MICROPY_PY_WIZNET5K
     // Poll the NIC for incoming data
