@@ -418,6 +418,8 @@ def print_help():
             print("  ", cmd, " " * (max_command_len - len(cmd) + 2), help_message, sep="")
 
     print(_PROG, "-- MicroPython remote control")
+    print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
+
     print("\nList of commands:")
     print_commands_help(_COMMANDS, 3)
 
