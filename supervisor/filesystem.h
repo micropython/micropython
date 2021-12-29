@@ -35,7 +35,7 @@ extern volatile bool filesystem_flush_requested;
 
 void filesystem_background(void);
 void filesystem_tick(void);
-void filesystem_init(bool create_allowed, bool force_create);
+bool filesystem_init(bool create_allowed, bool force_create);
 void filesystem_flush(void);
 bool filesystem_present(void);
 void filesystem_set_internal_writable_by_usb(bool usb_writable);

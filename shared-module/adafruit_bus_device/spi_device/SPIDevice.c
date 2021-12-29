@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/adafruit_bus_device/SPIDevice.h"
+#include "shared-bindings/adafruit_bus_device/spi_device/SPIDevice.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/mperrno.h"

@@ -32,8 +32,8 @@
 #include "py/objproperty.h"
 
 #include "shared-bindings/adafruit_bus_device/__init__.h"
-#include "shared-bindings/adafruit_bus_device/I2CDevice.h"
-#include "shared-bindings/adafruit_bus_device/SPIDevice.h"
+#include "shared-bindings/adafruit_bus_device/i2c_device/I2CDevice.h"
+#include "shared-bindings/adafruit_bus_device/spi_device/SPIDevice.h"
 
 STATIC const mp_rom_map_elem_t adafruit_bus_device_i2c_device_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2c_device) },

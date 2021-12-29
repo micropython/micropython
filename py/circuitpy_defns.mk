@@ -85,23 +85,6 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-
-###
-# Propagate longint choice from .mk to C. There's no easy string comparison
-# in cpp conditionals, so we #define separate names for each.
-ifeq ($(LONGINT_IMPL),NONE)
-CFLAGS += -DLONGINT_IMPL_NONE
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-CFLAGS += -DLONGINT_IMPL_MPZ
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-CFLAGS += -DLONGINT_IMPL_LONGLONG
-endif
-
-
 ###
 # Select which builtin modules to compile and include.
 
@@ -524,8 +507,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
-	adafruit_bus_device/I2CDevice.c \
-	adafruit_bus_device/SPIDevice.c \
+	adafruit_bus_device/i2c_device/I2CDevice.c \
+	adafruit_bus_device/spi_device/SPIDevice.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
