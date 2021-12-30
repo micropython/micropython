@@ -66,11 +66,12 @@ lut_index = 0
 
 def encoder_state_changed_irq_handler(sm):
     global counter, direction, lut_index
-    lut_index |= sm.get() & 3
-    counter += state_look_up_table[lut_index]
-    if state_look_up_table[lut_index] != 0:
-        direction = 1 if (state_look_up_table[lut_index] > 0) else 0
-    lut_index = ((lut_index << 2) & 0b1100) | (direction << 4)
+    while sm.rx_fifo():
+        lut_index |= sm.get() & 3
+        counter += state_look_up_table[lut_index]
+        if state_look_up_table[lut_index] != 0:
+            direction = 1 if (state_look_up_table[lut_index] > 0) else 0
+        lut_index = ((lut_index << 2) & 0b1100) | (direction << 4)
  
  
 @rp2.asm_pio()
