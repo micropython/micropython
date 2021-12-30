@@ -64,7 +64,7 @@ void reset_pin_number(uint8_t pin_number) {
                pin_number != 44 &&
                pin_number != 45) {
         // Most pins are pulled low so we only exclude the four pins that aren't
-        // pulled at all. This will aso set the JTAG pins 22-27
+        // pulled at all. This will also set the JTAG pins 22-27
         pull = BP_PULL_DOWN;
     }
     gpio_set_pull(pin_number, pull);
