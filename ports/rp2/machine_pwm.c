@@ -91,7 +91,7 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     uint32_t source_hz = clock_get_hz(clk_sys);
     uint32_t div16 = pwm_hw->slice[self->slice].div;
     uint32_t top = pwm_hw->slice[self->slice].top;
-    uint32_t pwm_freq = 16 * source_hz / div16 / top;
+    uint32_t pwm_freq = 16 * source_hz / div16 / (top + 1);
     return MP_OBJ_NEW_SMALL_INT(pwm_freq);
 }
 
@@ -123,7 +123,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
     }
     pwm_hw->slice[self->slice].div = div16_top;
-    pwm_hw->slice[self->slice].top = top;
+    pwm_hw->slice[self->slice].top = top - 1;
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
