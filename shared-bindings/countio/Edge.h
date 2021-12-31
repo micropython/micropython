@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 an Halbertfor Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H
 
+#include "py/enum.h"
 #include "py/obj.h"
 
-typedef enum _digitalio_pull_t {
-    PULL_NONE,
-    PULL_UP,
-    PULL_DOWN
-} digitalio_pull_t;
+typedef enum _countio_edge_t {
+    EDGE_RISE,
+    EDGE_FALL,
+    EDGE_RISE_AND_FALL,
+} countio_edge_t;
 
-extern const mp_obj_type_t digitalio_pull_type;
+extern const mp_obj_type_t countio_edge_type;
+extern const cp_enum_obj_t edge_FALL_obj;
 
-typedef struct {
-    mp_obj_base_t base;
-} digitalio_pull_obj_t;
-extern const digitalio_pull_obj_t digitalio_pull_up_obj;
-extern const digitalio_pull_obj_t digitalio_pull_down_obj;
+countio_edge_t validate_edge(mp_obj_t obj, qstr arg_name);
 
-digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_COUNTIO_EDGE_H

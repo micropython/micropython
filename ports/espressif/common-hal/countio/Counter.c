@@ -32,7 +32,7 @@
 #include "supervisor/shared/translate.h"
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
-    const mcu_pin_obj_t *pin) {
+    const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
     claim_pin(pin);
 
     // Prepare configuration for the PCNT unit
@@ -41,9 +41,10 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         .pulse_gpio_num = pin->number,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
         .channel = PCNT_CHANNEL_0,
-        // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_INC,   // Count up on the positive edge
-        .neg_mode = PCNT_COUNT_DIS,   // Keep the counter value on the negative edge
+        // What to do on the rising / falling edge of pulse input?
+        // If EDGE_RISE_AND_FALL, both modeswill do PCNT_COUNT_INC.
+        .pos_mode = (edge == EDGE_FALL) ? PCNT_COUNT_DIS : PCNT_COUNT_INC, // Count up unless only fall
+        .neg_mode = (edge == EDGE_RISE) ? PCNT_COUNT_DIS : PCNT_COUNT_INC, // Count up unless only rise
     };
 
     // Initialize PCNT unit
@@ -53,6 +54,15 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     }
 
     self->pin = pin->number;
+
+    gpio_pullup_dis(pin->number);
+    gpio_pulldown_dis(pin->number);
+    if (pull == PULL_UP) {
+        gpio_pullup_en(pin->number);
+    } else if (pull == PULL_DOWN) {
+        gpio_pulldown_en(pin->number);
+    }
+
     self->unit = (pcnt_unit_t)unit;
 }
 
@@ -78,8 +88,4 @@ void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
     mp_int_t new_count) {
     self->count = new_count;
     pcnt_counter_clear(self->unit);
-}
-
-void common_hal_countio_counter_reset(countio_counter_obj_t *self) {
-    common_hal_countio_counter_set_count(self, 0);
 }

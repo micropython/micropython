@@ -453,8 +453,7 @@ $(filter $(SRC_PATTERNS), \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
-	qrio/PixelPolicy.c \
-	qrio/QRInfo.c \
+	countio/Edge.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -468,6 +467,8 @@ $(filter $(SRC_PATTERNS), \
 	msgpack/ExtType.c \
 	paralleldisplay/__init__.c \
 	paralleldisplay/ParallelBus.c \
+	qrio/PixelPolicy.c \
+	qrio/QRInfo.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \

@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
 #include "shared-bindings/digitalio/Pull.h"
 
 //| class Pull:
@@ -72,3 +73,15 @@ const mp_obj_type_t digitalio_pull_type = {
     .print = digitalio_pull_print,
     .locals_dict = (mp_obj_dict_t *)&digitalio_pull_locals_dict,
 };
+
+digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name) {
+    if (obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
+        return PULL_UP;
+    } else if (obj == MP_ROM_PTR(&digitalio_pull_down_obj)) {
+        return PULL_DOWN;
+    }
+    if (obj == MP_ROM_NONE) {
+        return PULL_NONE;
+    }
+    mp_raise_TypeError_varg(translate("%q must be of type %q or None"), arg_name, MP_QSTR_Pull);
+}
