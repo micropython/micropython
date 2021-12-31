@@ -1,0 +1,6 @@
+USB_VID = 0x2E8A
+USB_PID = 0xf015
+USB_PRODUCT = "Raspberry Pi Zero"
+USB_MANUFACTURER = "Raspberry Pi"
+
+CHIP_VARIANT = "bcm2835"
