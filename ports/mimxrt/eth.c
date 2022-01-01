@@ -84,6 +84,11 @@ enet_buffer_config_t buffConfig[] = {{
                                          &g_txBuffDescrip[0],
                                          &g_rxDataBuff[0][0],
                                          &g_txDataBuff[0][0],
+                                         #if FSL_ENET_DRIVER_VERSION >= 0x020300
+                                         0,
+                                         0,
+                                         NULL
+                                         #endif
                                      }};
 
 static uint8_t hw_addr[6]; // The MAC address field
@@ -118,7 +123,6 @@ static const iomux_table_t iomux_table_enet[] = {
 #define TRACE_ETH_TX (0x0002)
 #define TRACE_ETH_RX (0x0004)
 #define TRACE_ETH_FULL (0x0008)
-
 
 STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
     if (((flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_TX))
@@ -156,7 +160,11 @@ STATIC void eth_process_frame(eth_t *self, uint8_t *buf, size_t length) {
     }
 }
 
-void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, enet_event_t event, void *userData) {
+void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, 
+    #if FSL_FEATURE_ENET_QUEUE > 1
+    uint32_t ringId,
+    #endif /* FSL_FEATURE_ENET_QUEUE > 1 */
+    enet_event_t event, enet_frame_info_t *frameInfo, void *userData) {
     eth_t *self = (eth_t *)userData;
     uint8_t g_rx_frame[ENET_FRAME_MAX_FRAMELEN + 14];
     uint32_t length = 0;
@@ -164,13 +172,13 @@ void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, enet_event_t event,
 
     if (event == kENET_RxEvent) {
         do {
-            status = ENET_GetRxFrameSize(handle, &length);
+            status = ENET_GetRxFrameSize(handle, &length, 0);
             if (status == kStatus_Success) {
                 // Get the data
-                ENET_ReadFrame(base, handle, g_rx_frame, length);
+                ENET_ReadFrame(base, handle, g_rx_frame, length, 0, NULL);
                 eth_process_frame(self, g_rx_frame, length);
             } else if (status == kStatus_ENET_RxFrameError) {
-                ENET_ReadFrame(base, handle, NULL, 0);
+                ENET_ReadFrame(base, handle, NULL, 0, 0, NULL);
             }
         } while (status != kStatus_ENET_RxFrameEmpty);
     } else {
@@ -320,7 +328,7 @@ STATIC err_t eth_send_frame_blocking(ENET_Type *base, enet_handle_t *handle, uin
 
     // Try a few times to send the frame
     for (i = XMIT_LOOP; i > 0; i--) {
-        status = ENET_SendFrame(base, handle, buffer, len);
+        status = ENET_SendFrame(base, handle, buffer, len, 0, false, NULL);
         if (status != kStatus_ENET_TxFrameBusy) {
             break;
         }

@@ -91,6 +91,8 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 
+CFLAGS += -DI2C_RETRY_TIMES=1000000 -DSPI_RETRY_TIMES=1000000 -DUART_RETRY_TIMES=1000000
+
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
 endif
@@ -194,7 +196,6 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
-	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
@@ -213,6 +214,7 @@ endif
 
 SRC_C += \
 	board_init.c \
+	$(BOARD_DIR)/clock_config.c \
 	dma_manager.c \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \

@@ -33,9 +33,6 @@
 [submodule "lib/btstack"]
 	path = lib/btstack
 	url = https://github.com/bluekitchen/btstack.git
-[submodule "lib/nxp_driver"]
-	path = lib/nxp_driver
-	url = https://github.com/hathach/nxp_driver.git
 [submodule "lib/libhydrogen"]
 	path = lib/libhydrogen
 	url = https://github.com/jedisct1/libhydrogen.git
@@ -45,3 +42,6 @@
 [submodule "lib/fsp"]
 	path = lib/fsp
 	url = https://github.com/renesas/fsp.git
+[submodule "lib/nxp-driver"]
+	path = lib/nxp_driver
+	url = https://github.com/hathach/nxp_driver.git
