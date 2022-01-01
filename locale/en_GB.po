@@ -153,6 +153,10 @@ msgstr "%q must be between %d and %d"
 msgid "%q must be of type %q"
 msgstr ""
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q must be power of 2"
@@ -1611,7 +1615,7 @@ msgstr "No DMA channel found"
 msgid "No DMA pacing timer found"
 msgstr "No DMA pacing timer found"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "No I2C device at address: %x"
@@ -1917,7 +1921,7 @@ msgstr "Pin does not have ADC capabilities"
 msgid "Pin interrupt already in use"
 msgstr "Pin interrupt already in use"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pin is input only"
@@ -2001,6 +2005,10 @@ msgstr "Pull not used when direction is output."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE mode is not implemented"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2479,10 +2487,6 @@ msgstr "Unsupported format"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Unsupported operation"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Unsupported pull value."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4581,6 +4585,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Unsupported pull value."
 
 #~ msgid "%q must <= %d"
 #~ msgstr "%q must <= %d"

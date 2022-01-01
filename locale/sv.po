@@ -152,6 +152,10 @@ msgstr "%q måste vara mellan %d och %d"
 msgid "%q must be of type %q"
 msgstr "%q måste vara av typen %q"
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q måste vara en potens av 2"
@@ -1616,7 +1620,7 @@ msgstr "Ingen DMA-kanal hittades"
 msgid "No DMA pacing timer found"
 msgstr "Ingen DMA pacing timer hittades"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Ingen I2C-enhet på adress: %x"
@@ -1923,7 +1927,7 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 msgid "Pin interrupt already in use"
 msgstr "Pinnavbrott används redan"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pinnen är enbart ingång"
@@ -2009,6 +2013,10 @@ msgstr "Pull används inte när riktningen är output."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE-läge är inte implementerat"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2490,10 +2498,6 @@ msgstr "Formatet stöds inte"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Åtgärd som inte stöds"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Ogiltigt Pull-värde."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4605,6 +4609,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Ogiltigt Pull-värde."
 
 #~ msgid "Station must be started"
 #~ msgstr "Stationen måste startas"

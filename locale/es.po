@@ -155,6 +155,10 @@ msgstr "%q debe estar entre %d y %d"
 msgid "%q must be of type %q"
 msgstr ""
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr ""
@@ -1633,7 +1637,7 @@ msgstr "No se encontró el canal DMA"
 msgid "No DMA pacing timer found"
 msgstr "timer por establecedor de paso DMA no encontrado"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "No hay dispositivo I2C en la dirección: %x"
@@ -1941,7 +1945,7 @@ msgstr "Pin no tiene capacidad ADC"
 msgid "Pin interrupt already in use"
 msgstr "Interrupción de Pin ya está en uso"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "El pin es solo de entrada"
@@ -2028,6 +2032,10 @@ msgstr "Pull no se usa cuando la dirección es output."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "El modo RAISE no esta implementado"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2510,10 +2518,6 @@ msgstr "Formato no soportado"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operación no soportada"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "valor pull no soportado."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4628,6 +4632,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "valor pull no soportado."
 
 #~ msgid "%q must <= %d"
 #~ msgstr "%q debe ser <= %d"

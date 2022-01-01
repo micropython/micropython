@@ -154,6 +154,10 @@ msgstr "%q bì xū zài %d hé %d zhī jiān"
 msgid "%q must be of type %q"
 msgstr "%q bì xū shì %q lèi xíng"
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q bì xū shì 2 de zhěng shù cì fāng"
@@ -1630,7 +1634,7 @@ msgstr "Wèi zhǎodào DMA píndào"
 msgid "No DMA pacing timer found"
 msgstr "wèi zhǎo dào DMA qǐ bó qì"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "dì zhǐ wú I2C shè bèi: %x"
@@ -1936,7 +1940,7 @@ msgstr "Pin méiyǒu ADC nénglì"
 msgid "Pin interrupt already in use"
 msgstr "yǐn jiǎo zhōng duàn yǐ zài shǐ yòng zhōng"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Yǐn jiǎo jǐn shūrù"
@@ -2022,6 +2026,10 @@ msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "wèi shí xiàn tí shēng mó shì"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2502,10 +2510,6 @@ msgstr "Bù zhīchí de géshì"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Bù zhīchí de cāozuò"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Bù zhīchí de lādòng zhí."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4618,6 +4622,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Bù zhīchí de lādòng zhí."
 
 #~ msgid "%q must <= %d"
 #~ msgstr "%q bì xū <= %d"

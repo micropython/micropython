@@ -153,6 +153,10 @@ msgstr "%q deve estar entre %d e %d"
 msgid "%q must be of type %q"
 msgstr "%q deve ser do tipo %q"
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q deve ser a potência de 2"
@@ -1633,7 +1637,7 @@ msgstr "Nenhum canal DMA foi encontrado"
 msgid "No DMA pacing timer found"
 msgstr "Nenhum temporizador DMA foi encontrado"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Nenhum dispositivo I2C no endereço: %x"
@@ -1944,7 +1948,7 @@ msgstr "O pino não tem recursos de ADC"
 msgid "Pin interrupt already in use"
 msgstr "A interrupção do pino já está em uso"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Apenas o pino de entrada"
@@ -2033,6 +2037,10 @@ msgstr "O Pull não foi usado quando a direção for gerada."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "O modo RAISE não foi implementado"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2519,10 +2527,6 @@ msgstr "Formato não suportado"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Operação não suportada"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "O valor pull não é compatível."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4648,6 +4652,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "O valor pull não é compatível."
 
 #~ msgid "Station must be started"
 #~ msgstr "A estação deve ser iniciada"
