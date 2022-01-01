@@ -146,6 +146,10 @@ msgstr ""
 msgid "%q must be of type %q"
 msgstr ""
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr ""
@@ -1611,7 +1615,7 @@ msgstr "Walang DMA channel na mahanap"
 msgid "No DMA pacing timer found"
 msgstr ""
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1915,7 +1919,7 @@ msgstr "Ang pin ay walang kakayahan sa ADC"
 msgid "Pin interrupt already in use"
 msgstr ""
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
@@ -1995,6 +1999,10 @@ msgstr "Pull hindi ginagamit kapag ang direksyon ay output."
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -2468,10 +2476,6 @@ msgstr "Hindi supportadong format"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Hindi sinusuportahang operasyon"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Hindi suportado ang pull value."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4589,6 +4593,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Hindi suportado ang pull value."
 
 #, c-format
 #~ msgid ""

@@ -155,6 +155,10 @@ msgstr "%q doit être entre %d et %d"
 msgid "%q must be of type %q"
 msgstr "%q doit être du type %q"
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q doit être une puissance de 2"
@@ -1644,7 +1648,7 @@ msgstr "Aucun canal DMA trouvé"
 msgid "No DMA pacing timer found"
 msgstr "Aucun minuteur de rythme DMA trouvé"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Pas de dispositif I2C à l'adresse : %x"
@@ -1954,7 +1958,7 @@ msgstr "La broche 'pin' ne supporte pas les capacitées ADC"
 msgid "Pin interrupt already in use"
 msgstr "L'interruption de cette broche est déjà utilisée"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "La broche est entrée uniquement"
@@ -2041,6 +2045,10 @@ msgstr "Le tirage 'pull' n'est pas utilisé quand la direction est 'output'."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "Mode RAISE n'est pas implémenté"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2527,10 +2535,6 @@ msgstr "Format non supporté"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Opération non supportée"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Valeur de tirage 'pull' non supportée."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4659,6 +4663,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Valeur de tirage 'pull' non supportée."
 
 #, c-format
 #~ msgid ""
