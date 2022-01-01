@@ -133,6 +133,9 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
 
     // Uninstall the driver.
     check_esp_err(rmt_driver_uninstall(config.channel));
+
+    // Cancel RMT output to GPIO pin.
+    gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
 }
 
 #endif // MICROPY_PY_MACHINE_BITSTREAM
