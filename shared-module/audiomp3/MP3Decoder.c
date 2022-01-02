@@ -258,6 +258,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file
     self->channel_count = fi.nChans;
     self->frame_buffer_size = fi.outputSamps * sizeof(int16_t);
     self->len = 2 * self->frame_buffer_size;
+    self->samples_decoded = 0;
 }
 
 void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self) {
@@ -267,6 +268,7 @@ void common_hal_audiomp3_mp3file_deinit(audiomp3_mp3file_obj_t *self) {
     self->buffers[0] = NULL;
     self->buffers[1] = NULL;
     self->file = NULL;
+    self->samples_decoded = 0;
 }
 
 bool common_hal_audiomp3_mp3file_deinited(audiomp3_mp3file_obj_t *self) {
@@ -327,6 +329,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     if (channel == self->other_channel) {
         *bufptr = (uint8_t *)(self->buffers[self->other_buffer_index] + channel);
         self->other_channel = -1;
+        self->samples_decoded += *buffer_length / sizeof(int16_t);
         return GET_BUFFER_MORE_DATA;
     }
 
@@ -359,6 +362,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
             self);
     }
 
+    self->samples_decoded += *buffer_length / sizeof(int16_t);
     return GET_BUFFER_MORE_DATA;
 }
 
@@ -383,4 +387,8 @@ float common_hal_audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self) {
         sumsq += (float)buffer[i] * buffer[i];
     }
     return sqrtf(sumsq) / (self->frame_buffer_size / sizeof(int16_t));
+}
+
+uint32_t common_hal_audiomp3_mp3file_get_samples_decoded(audiomp3_mp3file_obj_t *self) {
+    return self->samples_decoded;
 }
