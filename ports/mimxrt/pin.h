@@ -55,6 +55,7 @@ enum {
     PIN_MODE_OUT,
     PIN_MODE_OPEN_DRAIN,
     PIN_MODE_ALT,
+    PIN_MODE_SKIP,
 };
 
 enum {
@@ -159,5 +160,6 @@ const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
 const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
 void machine_pin_set_mode(const machine_pin_obj_t *pin, uint8_t mode);
+uint32_t pin_generate_config(const uint32_t pull, const uint32_t mode, const uint32_t drive, uint32_t config_register);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H
