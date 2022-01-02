@@ -79,6 +79,7 @@ set(MICROPY_SOURCE_LIB
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
+    ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
 set(MICROPY_SOURCE_PORT
