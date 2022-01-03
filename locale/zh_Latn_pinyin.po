@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-12-27 02:51+0000\n"
+"PO-Revision-Date: 2022-01-04 04:27+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -156,7 +156,7 @@ msgstr "%q bì xū shì %q lèi xíng"
 
 #: shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
-msgstr ""
+msgstr "%q lèi xíng bì xū wéi %q huò wú"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -682,7 +682,7 @@ msgstr "CBC kuài bìxū shì 16 zìjié de bèishù"
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr ""
+msgstr "zhǎo bú dào huò chuàng jiàn CIRCUITPY qū dòng qì."
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -2029,7 +2029,7 @@ msgstr "wèi shí xiàn tí shēng mó shì"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
-msgstr ""
+msgstr "RISE_AND_FALL zài cǐ xīn piàn shàng bù kě yòng"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
