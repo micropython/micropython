@@ -304,6 +304,7 @@ void audiomp3_mp3file_reset_buffer(audiomp3_mp3file_obj_t *self,
     f_lseek(&self->file->fp, 0);
     self->inbuf_offset = self->inbuf_length;
     self->eof = 0;
+    self->samples_decoded = 0;
     self->other_channel = -1;
     mp3file_update_inbuf_half(self);
     mp3file_skip_id3v2(self);
