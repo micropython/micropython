@@ -199,3 +199,6 @@
 	url = https://github.com/raspberrypi/rpi-firmware.git
 	branch = master
 	shallow = true
+[submodule "lib/adafruit_floppy"]
+	path = lib/adafruit_floppy
+	url = https://github.com/adafruit/Adafruit_Floppy
