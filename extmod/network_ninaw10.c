@@ -58,25 +58,20 @@ typedef struct _nina_obj_t {
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
 const mod_network_nic_type_t mod_network_nic_type_nina;
-static nina_obj_t nina_obj = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
+static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
+static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_AP_IF};
 
 STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-
-    nina_obj.active = false;
-    if (n_args == 0) {
-        nina_obj.itf = MOD_NETWORK_STA_IF;
+    mp_obj_t nina_obj;
+    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+        nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_sta);
     } else {
-        nina_obj.itf = mp_obj_get_int(args[0]);
+        nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_ap);
     }
-
-    // Reset autobind port.
-    bind_port = BIND_PORT_RANGE_MIN;
-
     // Register with network module
-    mod_network_register_nic(MP_OBJ_FROM_PTR(&nina_obj));
-
-    return MP_OBJ_FROM_PTR(&nina_obj);
+    mod_network_register_nic(nina_obj);
+    return nina_obj;
 }
 
 STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
