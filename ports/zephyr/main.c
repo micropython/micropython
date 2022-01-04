@@ -34,7 +34,7 @@
 #include <net/net_context.h>
 #endif
 
-#ifdef CONFIG_USB
+#ifdef CONFIG_USB_DEVICE_STACK
 #include <usb/usb_device.h>
 #endif
 
@@ -140,7 +140,7 @@ soft_reset:
     #endif
     mp_init();
 
-    #ifdef CONFIG_USB
+    #ifdef CONFIG_USB_DEVICE_STACK
     usb_enable(NULL);
     #endif
 
