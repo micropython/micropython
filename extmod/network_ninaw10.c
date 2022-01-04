@@ -446,7 +446,15 @@ STATIC mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, c
 }
 
 STATIC mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
-    int ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
+    int ret = 0;
+    if (socket->type == MOD_NETWORK_SOCK_DGRAM) {
+        byte ip[4];
+        uint16_t port;
+        ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, &port, socket->timeout);
+    } else {
+        ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
+    }
+
     if (ret == NINA_ERROR_TIMEOUT) {
         // The socket is Not closed on timeout when calling functions that accept a timeout.
         *_errno = MP_ETIMEDOUT;
@@ -493,12 +501,18 @@ STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
 
 STATIC mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socket,
     byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
-    // Auto-bind the socket first if the socket is unbound.
-    if (network_ninaw10_socket_auto_bind(socket, _errno) != 0) {
-        return -1;
+    int ret = 0;
+    if (socket->type == MOD_NETWORK_SOCK_STREAM) {
+        *port = 0;
+        *((uint32_t *)ip) = 0;
+        ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
+    } else {
+        // Auto-bind the socket first if the socket is unbound.
+        if (network_ninaw10_socket_auto_bind(socket, _errno) != 0) {
+            return -1;
+        }
+        ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, (uint16_t *)port, socket->timeout);
     }
-
-    int ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, (uint16_t *)port, socket->timeout);
     if (ret == NINA_ERROR_TIMEOUT) {
         // The socket is Not closed on timeout when calling functions that accept a timeout.
         *_errno = MP_ETIMEDOUT;
