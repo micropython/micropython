@@ -173,6 +173,11 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
     }
 
+    // Disconnect active connections first.
+    if (nina_isconnected()) {
+        nina_disconnect();
+    }
+
     if (self->itf == MOD_NETWORK_STA_IF) {
         // Initialize WiFi in Station mode.
         if (nina_connect(ssid, security, key, 0) != 0) {
