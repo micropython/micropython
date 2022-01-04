@@ -1,2 +1,2 @@
 #!/bin/sh
-git describe --dirty --tags --always --match "[1-9].*"
+git describe --first-parent --dirty --tags --always --match "[1-9].*"
