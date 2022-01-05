@@ -496,16 +496,17 @@ int nina_ifconfig(nina_ifconfig_t *ifconfig, bool set) {
                 ARG_BYTE(3),         // Valid number of args.
                 {ip_len,  ifconfig->ip_addr},
                 {gw_len,  ifconfig->gateway_addr},
-                {sub_len, ifconfig->subnet_addr})) != SPI_ACK) {
+                {sub_len, ifconfig->subnet_addr})) != 0) {
             return -1;
         }
 
+        uint8_t dns2[4] = {8, 8, 8, 8};
         if (nina_send_command_read_ack(NINA_CMD_SET_DNS_CONFIG,
             3, ARG_8BITS,
             NINA_ARGS(
                 ARG_BYTE(1),         // Valid number of args.
                 {dns_len, ifconfig->dns_addr},
-                {dns_len, ifconfig->dns_addr})) != SPI_ACK) {
+                {dns_len, dns2})) != SPI_ACK) {
             return -1;
         }
 
