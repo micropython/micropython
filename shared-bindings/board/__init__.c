@@ -64,9 +64,8 @@ STATIC mp_int_t board_get_instance(size_t n_args, const mp_obj_t *args, const mp
 }
 #endif
 
-//| def I2C(instance: Optional[int] = 0) -> busio.I2C:
+//| def I2C() -> busio.I2C:
 //|     """Returns the `busio.I2C` object for the board's designated I2C bus(es).
-//|     If there is more than one default I2C bus, the buses are numbered starting at 0.
 //|     The object created is a singleton, and uses the default parameter values for `busio.I2C`."""
 //|     ...
 //|
@@ -85,11 +84,13 @@ mp_obj_t board_i2c(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(board_i2c_obj, 0, 1, board_i2c);
+STATIC mp_obj_t board_i2c_0(void) {
+    return board_i2c(0, NULL);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 
-//| def SPI(instance: Optional[int] = 0) -> busio.SPI:
+//| def SPI() -> busio.SPI:
 //|     """Returns the `busio.SPI` object for the board's designated SPI bus(es).
-//|     If there is more than one default SPI bus, the buses are numbered starting at 0.
 //|     The object created is a singleton, and uses the default parameter values for `busio.SPI`."""
 //|     ...
 //|
@@ -108,11 +109,13 @@ mp_obj_t board_spi(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(board_spi_obj, 0, 1, board_spi);
+STATIC mp_obj_t board_spi_0(void) {
+    return board_spi(0, NULL);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 
-//| def UART(instance: Optional[int] = 0) -> busio.UART:
+//| def UART() -> busio.UART:
 //|     """Returns the `busio.UART` object for the board's designated UART bus(es).
-//|     If there is more than one default UART bus, the buses are numbered starting at 0.
 //|     The object created is a singleton, and uses the default parameter values for `busio.UART`."""
 //|     ...
 //|
@@ -131,7 +134,10 @@ mp_obj_t board_uart(size_t n_args, const mp_obj_t *args) {
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(board_uart_obj, 0, 1, board_uart);
+STATIC mp_obj_t board_uart_0(void) {
+    return board_uart(0, NULL);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart_0);
 
 const mp_obj_module_t board_module = {
     .base = { &mp_type_module },
