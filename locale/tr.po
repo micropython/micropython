@@ -7,25 +7,31 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
+"PO-Revision-Date: 2022-01-06 14:54+0000\n"
+"Last-Translator: Gökhan Koçmarlı <gokhankocmarli@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.10.1\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"Program çalıştırıldı.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload.\n"
 msgstr ""
+"\n"
+"Program otomatik yeniden yükleme tarafından sonlandırıldı.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -33,53 +39,59 @@ msgid ""
 "Please file an issue with the contents of your CIRCUITPY drive at \n"
 "https://github.com/adafruit/circuitpython/issues\n"
 msgstr ""
+"\n"
+"Lütfen, şu adrese CIRCUITPY sürücünüzün içerikleri ile beraber bir hata/konu "
+"kaydı ekleyin\n"
+"https://github.com/adafruit/circuitpython/issues\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
-msgstr ""
+msgstr "  \"%q\" dosyası"
 
 #: py/obj.c
 msgid "  File \"%q\", line %d"
-msgstr ""
+msgstr "  \"%q\" dosyası, %d numaralı satır"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " nesnesi, %q tipindedir\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " bulunamadı.\n"
 
 #: main.c
 msgid " output:\n"
-msgstr ""
+msgstr " çıktı:\n"
 
 #: py/objstr.c
 #, c-format
 msgid "%%c requires int or char"
-msgstr ""
+msgstr "%%c int veya char tipine ihtiyaç duyar"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
+"%d adres pinleri, %d RGB pinleri ve %d döşemeleri %d'nin yüksekliği "
+"gösterir, %d'nin değil"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q ve %q yinelenen pinler içeriyor"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q yinelenen pinler içeriyor"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q hata: %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
-msgstr ""
+msgstr "%q kullanımda"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -88,35 +100,35 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
 #: py/objstrunicode.c
 msgid "%q index out of range"
-msgstr ""
+msgstr "%q indeksi aralık dışında"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "%q indeksleri integer olmalı, %s değil"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "%q boyutları %d-%d olmalıdır"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
-msgstr ""
+msgstr "%q boyutu >=1 olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q, %d-%d olmalıdır"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
-msgstr ""
+msgstr "%q <= %d olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q >= %d olmalıdır"
 
 #: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
 msgid "%q must be >= 0"
-msgstr ""
+msgstr "%q >= 0 olmalıdır"
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 #: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
@@ -124,86 +136,86 @@ msgstr ""
 #: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
-msgstr ""
+msgstr "%q >= 1 olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be a string"
-msgstr ""
+msgstr "%q bir string olmalıdır"
 
 #: shared-module/vectorio/Polygon.c
 msgid "%q must be a tuple of length 2"
-msgstr ""
+msgstr "%q, boyutu 2 olan bir tuple olmalıdır"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 #: shared-module/vectorio/VectorShape.c
 msgid "%q must be between %d and %d"
-msgstr ""
+msgstr "%q, %d ile %d arasında olmalıdır"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
-msgstr ""
+msgstr "%q, %q türünde olmalıdır"
 
 #: shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
-msgstr ""
+msgstr "%q, %q ya da None türünde olmalıdır"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q, 2'nin kuvveti olmalıdır"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
-msgstr ""
+msgstr "%q sınırların dışında"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
-msgstr ""
+msgstr "%q aralık dışında"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr ""
+msgstr "%q pini geçersiz"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
-msgstr ""
+msgstr "%q bir int olmalıdır"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
-msgstr ""
+msgstr "Rapor kimliği 0 olan %q, 1 uzunluğunda olmalıdır"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "%q(), %d konumsal argümanını alır ancak %d verildi"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "%q, %q ve %q aynı uzunlukta olmalıdır"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s hatası 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr ""
+msgstr "'%q' argümanı gerekli"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "'%q' nesnesi '%q' öğesini desteklemiyor"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "'%q' nesnesi bir iteratör değildir"
 
 #: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "'%q' nesnesi çağrılabilir değil"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "'%q' nesnesi iterable değildir"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -340,7 +352,7 @@ msgstr ""
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr ", içinde %q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -525,13 +537,15 @@ msgstr ""
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr ""
+msgstr "Otomatik yeniden yükleme devre dışı.\n"
 
 #: main.c
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
+"Otomatik yeniden yükleme aktif. Dosyaları çalıştırmak için USB aracılığı ile "
+"kaydedin ya da deaktif etmek için REPL moda girin.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
@@ -1947,6 +1961,8 @@ msgstr ""
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
+"REPL moda girmek için herhangi bir tuşa basınız. Programı yeniden yüklemek "
+"için CTRL+D tuş kombinasyonunu kullanabilirsiniz.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
