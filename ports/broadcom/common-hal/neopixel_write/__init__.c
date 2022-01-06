@@ -49,7 +49,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     }
 
     BP_Function_Enum alt_function = GPIO_FUNCTION_OUTPUT;
-    uint8_t index;
+    uint8_t index = 0;
     uint8_t channel = 0;
     bool found = false;
     for (size_t i = 0; i < NUM_ALT_FUNC; i++) {

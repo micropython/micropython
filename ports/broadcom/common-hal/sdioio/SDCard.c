@@ -37,6 +37,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 
+#include "peripherals/broadcom/cpu.h"
 #include "peripherals/broadcom/defines.h"
 #include "peripherals/broadcom/gpio.h"
 
@@ -256,6 +257,8 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
         GPIO->EXTRA_MUX_b.SDIO = GPIO_EXTRA_MUX_SDIO_ARASAN;
     }
 
+    COMPLETE_MEMORY_READS;
+
     self->host_info = (sdmmc_host_t) {
         .flags = SDMMC_HOST_FLAG_1BIT | SDMMC_HOST_FLAG_4BIT | SDMMC_HOST_FLAG_DEINIT_ARG,
         .slot = 0,
@@ -301,6 +304,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     self->init = err == SDMMC_OK;
 
     self->capacity = self->card_info.csd.capacity;
+    COMPLETE_MEMORY_READS;
 }
 
 uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
@@ -328,9 +332,10 @@ int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t sta
     check_whole_block(bufinfo);
     self->state_programming = true;
 
+    COMPLETE_MEMORY_READS;
     sdmmc_err_t error = sdmmc_write_sectors(&self->card_info, bufinfo->buf,
         start_block, bufinfo->len / 512);
-
+    COMPLETE_MEMORY_READS;
 
     if (error != SDMMC_OK) {
         mp_printf(&mp_plat_print, "write sectors result %d\n", error);
@@ -345,8 +350,10 @@ int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t *self, uint32_t star
         return -EIO;
     }
     check_whole_block(bufinfo);
+    COMPLETE_MEMORY_READS;
     sdmmc_err_t error = sdmmc_read_sectors(&self->card_info, bufinfo->buf,
         start_block, bufinfo->len / 512);
+    COMPLETE_MEMORY_READS;
 
     if (error != SDMMC_OK) {
         mp_printf(&mp_plat_print, "read sectors result %d when reading block %d for %d\n", error, start_block, bufinfo->len / 512);
