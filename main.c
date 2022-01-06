@@ -812,7 +812,8 @@ int __attribute__((used)) main(void) {
     // A power brownout here could make it appear as if there's
     // no SPI flash filesystem, and we might erase the existing one.
 
-    // Check whether CIRCUITPY is available. Don't check if it already hasn't been found.
+    // Check whether CIRCUITPY is available. No need to reset to get safe mode
+    // since we haven't run user code yet.
     if (!filesystem_init(safe_mode == NO_SAFE_MODE, false)) {
         safe_mode = NO_CIRCUITPY;
     }
