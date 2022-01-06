@@ -44,6 +44,8 @@
 #define PLATFORM_ARCH   "x86_64"
 #elif defined(__i386__) || defined(_M_IX86)
 #define PLATFORM_ARCH   "x86"
+#elif defined(__xtensa__) || defined(_M_IX86)
+#define PLATFORM_ARCH   "xtensa"
 #else
 #define PLATFORM_ARCH   ""
 #endif
