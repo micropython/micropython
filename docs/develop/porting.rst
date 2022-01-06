@@ -155,6 +155,9 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_PY_IO                           (0)
    #define MICROPY_PY_STRUCT                       (0)
 
+   // fixes sys/usys import issue
+   #define MICROPY_MODULE_WEAK_LINKS               (1)
+
    // Type definitions for the specific machine.
 
    typedef intptr_t mp_int_t; // must be pointer size
@@ -296,7 +299,7 @@ like this:
        mphalport.c \
        ...
 
-   SRC_QSTR += modport.c
+   SRC_QSTR += modmyport.c
 
 If all went correctly then, after rebuilding, you should be able to import the new module:
 
