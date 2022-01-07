@@ -30,7 +30,7 @@
 bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity) {
     r->heap = false;
     r->buf = buf;
-    r->size = capacity + 1;
+    r->size = capacity;
     r->iget = r->iput = 0;
     return r->buf != NULL;
 }
