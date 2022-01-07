@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_l452re.jpg"
+    ],
     "mcu": "stm32l4",
     "product": "Nucleo L452RE",
     "thumbnail": "",

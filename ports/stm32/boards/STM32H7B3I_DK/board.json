@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "stm32h7b3i_dk.jpg"
+    ],
     "mcu": "stm32h7",
     "product": "Discovery Kit H7",
     "thumbnail": "",

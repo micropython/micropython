@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_l073rz.jpg"
+    ],
     "mcu": "stm32l0",
     "product": "Nucleo L073RZ",
     "thumbnail": "",

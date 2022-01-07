@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_f429zi.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Nucleo F429ZI",
     "thumbnail": "",

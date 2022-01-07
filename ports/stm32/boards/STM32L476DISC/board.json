@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "stm32l476disc.jpg"
+    ],
     "mcu": "stm32l4",
     "product": "Discovery L476",
     "thumbnail": "",

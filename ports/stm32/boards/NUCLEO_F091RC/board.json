@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_f091rc.jpg"
+    ],
     "mcu": "stm32f0",
     "product": "Nucleo F091RC",
     "thumbnail": "",

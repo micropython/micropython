@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_f411re.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Nucleo F411RE",
     "thumbnail": "",

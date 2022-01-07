@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "usbdongle_wb55.jpg"
+    ],
     "mcu": "stm32wb",
     "product": "USBDONGLE_WB55",
     "thumbnail": "",

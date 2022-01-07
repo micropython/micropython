@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_f413zh.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Nucleo F413ZH",
     "thumbnail": "",

@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "stm32f429disc.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Discovery F429",
     "thumbnail": "",

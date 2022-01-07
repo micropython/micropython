@@ -6,7 +6,9 @@
     "features": [
         "mikroBUS"
     ],
-    "images": [],
+    "images": [
+        "mikroe_clicker2_stm32.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "MikroE Clicker 2 for STM32",
     "thumbnail": "",

@@ -9,7 +9,9 @@
         "WiFi"
     ],
     "id": "esp32spiram",
-    "images": [],
+    "images": [
+        "esp32_psram.jpg"
+    ],
     "mcu": "esp32",
     "product": "ESP32 with SPIRAM",
     "thumbnail": "",

@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "garatronic_nadhat_f405.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "GARATRONIC_NADHAT_F405",
     "thumbnail": "",

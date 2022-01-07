@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "sparkfun_micromod_stm32.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "Micromod STM32",
     "thumbnail": "",

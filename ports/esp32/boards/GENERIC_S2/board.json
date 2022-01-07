@@ -7,7 +7,9 @@
         "BLE",
         "WiFi"
     ],
-    "images": [],
+    "images": [
+        "generic_s2.jpg"
+    ],
     "mcu": "esp32s2",
     "product": "ESP32-S2",
     "thumbnail": "",

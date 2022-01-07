@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_l432kc.jpg"
+    ],
     "mcu": "stm32l4",
     "product": "Nucleo L432KC",
     "thumbnail": "",
