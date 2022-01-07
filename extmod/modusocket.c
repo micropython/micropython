@@ -85,6 +85,13 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
         if (self->nic_type->socket(self, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
+
+        #if MICROPY_PY_USOCKET_EXTENDED_STATE
+        // if a timeout was set before binding a NIC, call settimeout to reset it
+        if (self->timeout != 0 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
+            mp_raise_OSError(_errno);
+        }
+        #endif
     }
 }
 
@@ -317,10 +324,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_s
 // otherwise, timeout is in seconds
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->nic == MP_OBJ_NULL) {
-        // not connected
-        mp_raise_OSError(MP_ENOTCONN);
-    }
     mp_uint_t timeout;
     if (timeout_in == mp_const_none) {
         timeout = -1;
@@ -331,9 +334,19 @@ STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         timeout = 1000 * mp_obj_get_int(timeout_in);
         #endif
     }
-    int _errno;
-    if (self->nic_type->settimeout(self, timeout, &_errno) != 0) {
-        mp_raise_OSError(_errno);
+    if (self->nic == MP_OBJ_NULL) {
+        #if MICROPY_PY_USOCKET_EXTENDED_STATE
+        // store the timeout in the socket state until a NIC is bound
+        self->timeout = timeout;
+        #else
+        // not connected
+        mp_raise_OSError(MP_ENOTCONN);
+        #endif
+    } else {
+        int _errno;
+        if (self->nic_type->settimeout(self, timeout, &_errno) != 0) {
+            mp_raise_OSError(_errno);
+        }
     }
     return mp_const_none;
 }
