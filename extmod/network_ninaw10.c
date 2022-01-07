@@ -350,9 +350,8 @@ STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *
         return -1;
     }
 
-    // store state of this socket
+    // set socket state
     socket->fileno = fd;
-    socket->timeout = 0; // blocking
     socket->bound = false;
     return 0;
 }
@@ -413,9 +412,8 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
         return -1;
     }
 
-    // Set default socket timeout.
+    // set socket state
     socket2->fileno = fd;
-    socket2->timeout = 0;
     socket2->bound = false;
     return 0;
 }
