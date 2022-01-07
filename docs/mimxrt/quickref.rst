@@ -23,8 +23,7 @@ Documentation for proprietary classes or class extensions:
 .. toctree::
    :maxdepth: 1
 
-   machine.PWM.rst
-   machine.QECNT.rst
+   ../library/machine.PWMmimxrt.rst
 
 Installing MicroPython
 ----------------------
@@ -183,7 +182,7 @@ The i.MXRT has up to four dedicated PWM modules with four FLEXPWM submodules eac
 and up to four QTMR modules with four channels, which can be used to generate
 a PWM signal of signal pair.
 
-The PWM functions are provided by the :ref:`machine.PWM <machine.PWM>` class.
+The PWM functions are provided by the :ref:`machine.PWM <mimxrt_machine.PWM>` class.
 It supports all basic methods listed for that class and a few additional methods for
 handling signal groups. ::
 
@@ -450,20 +449,22 @@ DHT module have that already on their board.
 Ethernet driver
 ---------------
 
-All MIMXRT boards except the MIMXRT1010_EVK and Teensy4.0 support Ethernet. Example on usage::
+All MIMXRT boards except the MIMXRT1011 based boards and Teensy4.0 support Ethernet. Example on usage::
 
     import network
 
-    lan = network.LAN()
+    lan = network.LAN(0)
     lan.active(True)
 
 If there is a DHCP server in the LAN, the IP address is supplied by that server. Otherwise, the 
 IP address can be set with lan.ifconfig(). The default address is 192.168.0.1.
 Teensy 4.1 does not have an Ethernet jack on the board, but PJRC offers a low cost
 adapter for self-assembly. The Seeed ARCH MIX board has no PHY hardware on the board.
-However, you can attach external boards. By default, the firmware for Seeed ARCH MIX
-includes the driver for a LAN8720 PHY. The MIMXRT1170_EVK is equipped with two Ethernet ports.
+However, you can attach external PHY interfaces. By default, the firmware for Seeed ARCH MIX
+uses the driver for a LAN8720 PHY. The MIMXRT1170_EVK is equipped with two Ethernet ports.
 They are addressed as LAN(0) for the 100M port and LAN(1) for the 1G port.
+
+For details of the network interface refer to the class :std:ref:`network.LAN <mimxrt_network.LAN>`.
 
 Transferring files
 ------------------
