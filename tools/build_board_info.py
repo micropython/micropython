@@ -32,6 +32,7 @@ DFU = ("dfu",)
 BIN_DFU = ("bin", "dfu")
 COMBINED_HEX = ("combined.hex",)
 KERNEL8_IMG = ("disk.img.zip", "kernel8.img")
+KERNEL_IMG = ("disk.img.zip", "kernel.img")
 
 # Default extensions
 extension_by_port = {
@@ -70,6 +71,8 @@ extension_by_board = {
     # esp32c3
     "ai_thinker_esp32-c3s": BIN,
     "microdev_micro_c3": BIN,
+    # broadcom
+    "raspberrypi_zero_w": KERNEL_IMG,
 }
 
 language_allow_list = set(

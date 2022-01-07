@@ -16,7 +16,13 @@ void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *sel
     // TODO: Make the FB twice as tall if double buffering.
     uint32_t physical_height = height;
     uint32_t pitch = 0;
-    self->framebuffer = vcmailbox_get_framebuffer(&virtual_width, &virtual_height, &physical_width, &physical_height, &pitch);
+    uint32_t bits_per_pixel = 0;
+    self->framebuffer = vcmailbox_get_framebuffer(&virtual_width,
+        &virtual_height,
+        &physical_width,
+        &physical_height,
+        &pitch,
+        &bits_per_pixel);
     if (self->framebuffer == NULL) {
         if (gc_alloc_possible()) {
             mp_raise_ValueError(translate("no fb"));

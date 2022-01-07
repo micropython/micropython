@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Scott Shawcroft
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,33 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
 
-#include "lib/sdmmc/include/sdmmc_types.h"
+#include "bindings/videocore/Framebuffer.h"
+#include "shared-module/displayio/__init__.h"
+#include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    sdmmc_host_t host_info;
-    sdmmc_card_t card_info;
-    uint32_t frequency;
-    uint32_t capacity;
-    uint8_t num_data;
-    bool state_programming;
-    bool has_lock;
-    bool init;
-    uint8_t command_pin;
-    uint8_t clock_pin;
-    uint8_t data_pins[4];
-} sdioio_sdcard_obj_t;
+void board_init(void) {
+    videocore_framebuffer_obj_t *fb = &allocate_display_bus()->videocore;
+    fb->base.type = &videocore_framebuffer_type;
+    common_hal_videocore_framebuffer_construct(fb, 640, 480);
+
+    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
+    display->base.type = &framebufferio_framebufferdisplay_type;
+    common_hal_framebufferio_framebufferdisplay_construct(
+        display,
+        MP_OBJ_FROM_PTR(fb),
+        0,
+        true);
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+}
+
+void board_deinit(void) {
+}

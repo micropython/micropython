@@ -48,9 +48,9 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
     }
 
-    BP_Function_Enum alt_function;
-    uint8_t index;
-    uint8_t channel;
+    BP_Function_Enum alt_function = GPIO_FUNCTION_OUTPUT;
+    uint8_t index = 0;
+    uint8_t channel = 0;
     bool found = false;
     for (size_t i = 0; i < NUM_ALT_FUNC; i++) {
         const pin_function_t *f = &digitalinout->pin->functions[i];
