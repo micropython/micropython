@@ -121,6 +121,7 @@ set(IDF_COMPONENTS
     tcpip_adapter
     ulp
     vfs
+    wpa_supplicant
     xtensa
 )
 
