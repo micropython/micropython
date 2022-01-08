@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-01-06 14:54+0000\n"
+"PO-Revision-Date: 2022-01-09 21:53+0000\n"
 "Last-Translator: Gökhan Koçmarlı <gokhankocmarli@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
@@ -220,47 +220,47 @@ msgstr "'%q' nesnesi iterable değildir"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr ""
+msgstr "'%s' bir etiket bekliyor"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr ""
+msgstr "'%s' bir yazmaç bekliyor"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr ""
+msgstr "'%s' özel bir yazmaç bekliyor"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr ""
+msgstr "'%s' bir FPU yazmacı bekliyor"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s', [a, b] biçiminde bir adres bekliyor"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects an integer"
-msgstr ""
+msgstr "'%s' bir integer bekliyor"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' en fazla r%d bekler"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects {r0, r1, ...}"
-msgstr ""
+msgstr "'%s' {r0, r1, ...} bekliyor"
 
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' integer %d, %d..%d aralığında değil"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -270,21 +270,21 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "'%s' nesnesi, öğe atamasını desteklemiyor"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' nesnesi, öğe silmeyi desteklemiyor"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "'%s' nesnesinin '%q' özelliği yok"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' nesnesi subscriptable özelliğe sahip değil"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
