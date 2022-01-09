@@ -72,6 +72,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/network_ppp.c
     ${PROJECT_DIR}/network_wlan.c
     ${PROJECT_DIR}/network_wifi.c
+    ${PROJECT_DIR}/modmodbus.c
     ${PROJECT_DIR}/mpnimbleport.c
     ${PROJECT_DIR}/modsocket.c
     ${PROJECT_DIR}/modesp.c
@@ -110,6 +111,7 @@ set(IDF_COMPONENTS
     esp_rom
     esp_wifi
     freertos
+    freemodbus
     heap
     log
     lwip
