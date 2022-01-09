@@ -151,6 +151,17 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->nic = MP_OBJ_NULL;
     socket2->nic_type = NULL;
 
+    // set the same address family, socket type and protocol as parent
+    socket2->domain = self->domain;
+    socket2->type = self->type;
+    socket2->proto = self->proto;
+    socket2->bound = false;
+    socket2->fileno = -1;
+    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    socket2->timeout = 0;
+    socket2->state = NULL;
+    #endif
+
     // accept incoming connection
     uint8_t ip[MOD_NETWORK_IPADDR_BUF_SIZE];
     mp_uint_t port;
