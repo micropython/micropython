@@ -37,10 +37,13 @@
 #define IOMUX_TABLE_SPI \
     { IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK }, { IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0 }, \
     { IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO }, { IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI }, \
+    { 0 }, \
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
+    { 0 }, \
     { IOMUXC_GPIO_AD_B1_12_LPSPI3_SCK }, { IOMUXC_GPIO_AD_B1_13_LPSPI3_PCS0 }, \
-    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI },
+    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_15_LPSPI3_SDI }, \
+    { IOMUXC_GPIO_AD_B1_09_LPSPI3_PCS1 } \
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
                          kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
