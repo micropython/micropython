@@ -1,11 +1,6 @@
 # tests for errors in {} format string
 
 try:
-    '{0:0}'.format('zzz')
-except (ValueError):
-    print('ValueError')
-
-try:
     '{1:}'.format(1)
 except IndexError:
     print('IndexError')
