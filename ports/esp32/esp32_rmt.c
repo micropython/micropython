@@ -66,6 +66,10 @@ typedef struct _rmt_install_state_t {
     esp_err_t ret;
 } rmt_install_state_t;
 
+// Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
+// implementation.  A value of -1 means do not use RMT.
+int8_t esp32_rmt_bitstream_channel_id = RMT_CHANNEL_MAX - 1;
+
 STATIC void rmt_install_task(void *pvParameter) {
     rmt_install_state_t *state = pvParameter;
     state->ret = rmt_driver_install(state->channel_id, 0, 0);
@@ -104,8 +108,8 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_uint_t idle_level = args[3].u_bool;
     mp_obj_t tx_carrier_obj = args[4].u_obj;
 
-    if (channel_id == MICROPY_HW_ESP32_RMT_CHANNEL_BITSTREAM) {
-        mp_raise_ValueError(MP_ERROR_TEXT("reserved channel id"));
+    if (esp32_rmt_bitstream_channel_id >= 0 && channel_id == esp32_rmt_bitstream_channel_id) {
+        mp_raise_ValueError(MP_ERROR_TEXT("channel used by bitstream"));
     }
 
     if (clock_div < 1 || clock_div > 255) {
@@ -314,6 +318,27 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_write_pulses_obj, 2, 3, esp32_rmt_write_pulses);
 
+STATIC mp_obj_t esp32_rmt_bitstream_channel(size_t n_args, const mp_obj_t *args) {
+    if (n_args > 0) {
+        if (args[0] == mp_const_none) {
+            esp32_rmt_bitstream_channel_id = -1;
+        } else {
+            mp_int_t channel_id = mp_obj_get_int(args[0]);
+            if (channel_id < 0 || channel_id >= RMT_CHANNEL_MAX) {
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
+            }
+            esp32_rmt_bitstream_channel_id = channel_id;
+        }
+    }
+    if (esp32_rmt_bitstream_channel_id < 0) {
+        return mp_const_none;
+    } else {
+        return MP_OBJ_NEW_SMALL_INT(esp32_rmt_bitstream_channel_id);
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_rmt_bitstream_channel_fun_obj, 0, 1, esp32_rmt_bitstream_channel);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(esp32_rmt_bitstream_channel_obj, MP_ROM_PTR(&esp32_rmt_bitstream_channel_fun_obj));
+
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
@@ -322,6 +347,9 @@ STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
     { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_pulses), MP_ROM_PTR(&esp32_rmt_write_pulses_obj) },
+
+    // Static methods
+    { MP_ROM_QSTR(MP_QSTR_bitstream_channel), MP_ROM_PTR(&esp32_rmt_bitstream_channel_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 

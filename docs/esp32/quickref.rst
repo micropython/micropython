@@ -573,6 +573,9 @@ For low-level driving of a NeoPixel::
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
 
+The low-level driver uses an RMT channel by default.  To configure this see
+`RMT.bitstream_channel`.
+
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 
 Capacitive touch
