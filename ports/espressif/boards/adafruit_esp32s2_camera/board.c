@@ -81,7 +81,7 @@ void board_init(void) {
         240, // Height (after rotation)
         80, // column start
         0, // row start
-        270, // rotation
+        0, // rotation
         16, // Color depth
         false, // Grayscale
         false, // Pixels in a byte share a row. Only used for depth < 8
