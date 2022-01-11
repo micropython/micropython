@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,28 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BROADCOM_MPHALPORT_H
-#define MICROPY_INCLUDED_BROADCOM_MPHALPORT_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
 
-#include <stdint.h>
-#include "py/obj.h"
+#include "bindings/videocore/Framebuffer.h"
+#include "shared-module/displayio/__init__.h"
+#include "shared-bindings/framebufferio/FramebufferDisplay.h"
 
+void board_init(void) {
+    videocore_framebuffer_obj_t *fb = &allocate_display_bus()->videocore;
+    fb->base.type = &videocore_framebuffer_type;
+    common_hal_videocore_framebuffer_construct(fb, 640, 480);
 
-#include "supervisor/shared/tick.h"
+    framebufferio_framebufferdisplay_obj_t *display = &displays[0].framebuffer_display;
+    display->base.type = &framebufferio_framebufferdisplay_type;
+    common_hal_framebufferio_framebufferdisplay_construct(
+        display,
+        MP_OBJ_FROM_PTR(fb),
+        0,
+        true);
+}
 
-void mp_hal_delay_ms(mp_uint_t ms);
-void mp_hal_delay_us(mp_uint_t us);
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#define mp_hal_ticks_ms()       ((mp_uint_t)supervisor_ticks_ms32())
+void reset_board(void) {
+}
 
-void mp_hal_set_interrupt_char(int c);
-int mp_hal_stdin_rx_chr(void);
-void mp_hal_stdout_tx_strn(const char *str, size_t len);
-
-#ifdef MICROPY_HW_USBHOST
-#include "usbkbd.h"
-
-void usbkbd_setup();
-#endif
-
-#endif // MICROPY_INCLUDED_BROADCOM_MPHALPORT_H
+void board_deinit(void) {
+}

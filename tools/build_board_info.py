@@ -72,6 +72,7 @@ extension_by_board = {
     "ai_thinker_esp32-c3s": BIN,
     "microdev_micro_c3": BIN,
     # broadcom
+    "raspberrypi_zero": KERNEL_IMG,
     "raspberrypi_zero_w": KERNEL_IMG,
 }
 
