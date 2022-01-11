@@ -26,6 +26,13 @@ def A():
 
 print(re.sub("a", A(), "aBCBABCDabcda."))
 
+
+def B():
+    return bytearray(b"B")
+
+
+print(re.sub(b"a", B(), b"aBCBABCDabcda."))
+
 print(
     re.sub(
         r"def\s+([a-zA-Z_][a-zA-Z_0-9]*)\s*\(\s*\):",
@@ -61,10 +68,11 @@ try:
 except:
     print("invalid group")
 
-# Module function takes str/bytes/re.
+# Module function takes str/bytes/re/bytearray.
 print(re.sub("a", "a", "a"))
 print(re.sub(b".", b"a", b"a"))
 print(re.sub(re.compile("a"), "a", "a"))
+print(re.sub(b"a", bytearray(b"b"), bytearray(b"a")))
 try:
     re.sub(123, "a", "a")
 except TypeError:
