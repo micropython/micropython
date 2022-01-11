@@ -244,7 +244,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } // can't have zero-sized array
+#define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) } // can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else
