@@ -118,16 +118,16 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
+    self->tx_pin = pin_init(uart_id, tx, 0);
+    self->rx_pin = pin_init(uart_id, rx, 1);
+    self->cts_pin = pin_init(uart_id, cts, 2);
+    self->rts_pin = pin_init(uart_id, rts, 3);
+
     if (uart_status[uart_id] != STATUS_FREE) {
         mp_raise_RuntimeError(translate("All UART peripherals are in use"));
     } else {
         uart_status[uart_id] = STATUS_BUSY;
     }
-
-    self->tx_pin = pin_init(uart_id, tx, 0);
-    self->rx_pin = pin_init(uart_id, rx, 1);
-    self->cts_pin = pin_init(uart_id, cts, 2);
-    self->rts_pin = pin_init(uart_id, rts, 3);
 
     self->uart = UART_INST(uart_id);
     self->uart_id = uart_id;
