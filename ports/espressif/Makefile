@@ -295,7 +295,8 @@ ifeq ($(DEBUG), 1)
 else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
-SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);boards/$(BOARD)/sdkconfig
+
+SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
 
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
