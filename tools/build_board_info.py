@@ -93,6 +93,7 @@ language_allow_list = set(
         "pt_BR",
         "ru",
         "sv",
+        "tr",
         "zh_Latn_pinyin",
     ]
 )
