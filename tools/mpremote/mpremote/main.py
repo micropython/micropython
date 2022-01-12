@@ -10,6 +10,8 @@ MicroPython device over a serial connection.  Commands supported are:
     mpremote connect <device>        -- connect to given device
     mpremote disconnect              -- disconnect current device
     mpremote mount <local-dir>       -- mount local directory on device
+    mpremote soft-reset              -- next call of eval/exec/run will perform soft reset of the device before run
+    mpremote no-soft-reset           -- subsequent calls of eval/exec/run will be run without soft reset
     mpremote eval <string>           -- evaluate and print the string
     mpremote exec <string>           -- execute the string
     mpremote run <script>            -- run the given local script
@@ -51,6 +53,8 @@ _COMMANDS = {
             --inject-code <string>
             --inject-file <file>""",
     ),
+    "soft-reset": (False, False, 0, "next call of eval/exec/run will perform soft reset of the device before run"),
+    "no-soft-reset": (False, False, 0, "subsequent calls of eval/exec/run will be run without soft reset"),
     "eval": (True, True, 1, "evaluate and print the string"),
     "exec": (True, True, 1, "execute the string"),
     "run": (True, True, 1, "run the given local script"),
@@ -436,10 +440,6 @@ def main():
     did_action = False
     soft_reset = True
 
-    if args[0] == "--no-soft-reset"
-        soft_reset = False
-        args.pop(0)
-
     try:
         while args:
             do_command_expansion(args)
@@ -467,6 +467,18 @@ def main():
 
             if pyb is None:
                 pyb = do_connect(["auto"])
+
+            if cmd == "soft-reset" and not soft_reset:
+                if pyb.in_raw_repl:
+                    pyb.exit_raw_repl()
+                soft_reset = True
+                continue
+
+            if cmd == "no-soft-reset" and soft_reset:
+                if pyb.in_raw_repl:
+                    pyb.exit_raw_repl()
+                soft_reset = False
+                continue
 
             if need_raw_repl:
                 if not pyb.in_raw_repl:
