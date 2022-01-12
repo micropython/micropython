@@ -434,6 +434,11 @@ def main():
     args = sys.argv[1:]
     pyb = None
     did_action = False
+    soft_reset = True
+
+    if args[0] == "--no-soft-reset"
+        soft_reset = False
+        args.pop(0)
 
     try:
         while args:
@@ -465,7 +470,7 @@ def main():
 
             if need_raw_repl:
                 if not pyb.in_raw_repl:
-                    pyb.enter_raw_repl()
+                    pyb.enter_raw_repl(soft_reset=soft_reset)
             else:
                 if pyb.in_raw_repl:
                     pyb.exit_raw_repl()
