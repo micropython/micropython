@@ -84,8 +84,8 @@ Specific PWM class implementations
 
 The following concrete class(es) implement enhancements to the PWM class.
 
-   :ref:`pyb.Timer for PyBoard <pyb.Timer>`
-   :ref:`machine.PWM for the MIMXRT port <mimxrt_machine.PWM>`
+   | :ref:`pyb.Timer for PyBoard <pyb.Timer>`  
+   | :ref:`machine.PWM for the MIMXRT port <mimxrt_machine.PWM>`  
 
 Limitations of PWM
 ------------------

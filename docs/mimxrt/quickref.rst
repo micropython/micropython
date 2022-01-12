@@ -140,38 +140,40 @@ TX and RX pins for users. The pin assignment of UARTs to pins is fixed.
 The UARTs are numbered 1..8. The rx/tx pins are assigned according to the
 tables below:
 
-=================  ===========  ===========  ===========  ===========
+================  ===========  ===========  ===========  ===========
 Board / Pin           UART0        UART1        UART2        UART3
-=================  ===========  ===========  ===========  ===========
+================  ===========  ===========  ===========  ===========
 Teensy 4.0             -            0/1          7/8         14/15
 Teensy 4.1             -            0/1          7/8         14/15
-MIXMXRT1010-EVK     Debug USB      D0/D1        D7/D6           -
-MIXMXRT1020-EVK     Debug USB      D0/D1        D9/D6       D10/D13
-MIXMXRT1050-EVK     Debug USB      D0/D1        D7/D6        D8/D9
-MIXMXRT1050-EVKB    Debug USB      D0/D1        D7/D6        D8/D9
-MIXMXRT1060-EVK     Debug USB      D0/D1        D7/D6        D8/D9
-MIXMXRT1064-EVK     Debug USB      D0/D1        D7/D6        D8/D9
-MIXMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
-Seeed ARCH MIX         -        J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
-=================  ===========  ===========  ===========  ===========
+MIMXRT1010-EVK     Debug USB      D0/D1        D7/D6           -
+MIMXRT1015-EVK     Debug USB      D0/D1        D7/A1           -
+MIMXRT1020-EVK     Debug USB      D0/D1        D9/D6       D10/D13
+MIMXRT1050-EVK     Debug USB      D0/D1        D7/D6        D8/D9
+MIMXRT1050-EVKB    Debug USB      D0/D1        D7/D6        D8/D9
+MIMXRT1060-EVK     Debug USB      D0/D1        D7/D6        D8/D9
+MIMXRT1064-EVK     Debug USB      D0/D1        D7/D6        D8/D9
+MIMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
+Seeed ARCH MIX        -        J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
+================  ===========  ===========  ===========  ===========
 
 |
 |
 
-=================  ===========  ===========  =======  =======  =====
+================  ===========  ===========  =======  =======  =====
 Board / Pin           UART4        UART5      UART6    UART7   UART8
-=================  ===========  ===========  =======  =======  =====
+================  ===========  ===========  =======  =======  =====
 Teensy 4.0            16/17        21/20     25/24    28/29      -
 Teensy 4.1            16/17        21/20     25/24    28/29    34/35
-MIXMXRT1010-EVK         -            -         -        -        -
-MIXMXRT1020-EVK      D15/D14       A1/A0       -        -        -
-MIXMXRT1050-EVK       A1/A0          -         -        -        -
-MIXMXRT1050-EVKB      A1/A0          -         -        -        -
-MIXMXRT1060-EVK       A1/A0          -         -        -        -
-MIXMXRT1064-EVK       A1/A0          -         -        -        -
-MIXMXRT1170-EVK      D15/D14      D25/D26    D33/D34  D35/D36    -
-Seeed ARCH MIX     J4_10/J4_11  J5_08/J5_12    -        -        -
-=================  ===========  ===========  =======  =======  =====
+MIMXRT1010-EVK         -            -         -        -        -
+MIMXRT1015-EVK         -            -         -        -        -
+MIMXRT1020-EVK      D15/D14       A1/A0       -        -        -
+MIMXRT1050-EVK       A1/A0          -         -        -        -
+MIMXRT1050-EVKB      A1/A0          -         -        -        -
+MIMXRT1060-EVK       A1/A0          -         -        -        -
+MIMXRT1064-EVK       A1/A0          -         -        -        -
+MIMXRT1170-EVK      D15/D14      D25/D26    D33/D34  D35/D36    -
+Seeed ARCH MIX    J4_10/J4_11  J5_08/J5_12    -        -        -
+================  ===========  ===========  =======  =======  =====
 
 |
 
@@ -277,6 +279,7 @@ Board / Pin        SPI0                     SPI1                     SPI2
 Teensy 4.0         10/11/12/13              0/26/1/27                     -
 Teensy 4.1         10/11/12/13              38/26/39/27              -/50/54/49
 MIXMXRT1010-EVK    D10/D11/D12/D13              -                        -
+MIXMXRT1015-EVK    D10/D11/D12/D13              -                        -
 MIXMXRT1020-EVK    D10/D11/D12/D13              -                        -
 MIXMXRT1050-EVK    D10/D11/D12/D13 (*)          -                        -
 MIXMXRT1050-EVKB   D10/D11/D12/D13 (*)          -                        -
@@ -342,6 +345,7 @@ Board / Pin        I2C 0        I2C 1        I2C 2        I2C 3    I2C 4
 Teensy 4.0         18/19        17/16        25/24         -        -
 Teensy 4.1         18/19        17/16        25/24         -        -
 MIXMXRT1010-EVK    D14/D15      D0/D1         -            -        -
+MIXMXRT1015-EVK    D14/D15       -            -            -        -
 MIXMXRT1020-EVK    D14/D15      A4/A5        D0/D1         -        -
 MIXMXRT1050-EVK    A4/A5        D1/D0         -            -        -
 MIXMXRT1050-EVKB   A4/A5        D1/D0         -            -        -
@@ -393,6 +397,20 @@ See :ref:`machine.SDCard <machine.SDCard>`. ::
 
     uos.umount('/sd')     # eject
 
+Note: The i.mx-rt 1011 and 1015 based boards do not support the machine.SDCard() class. For these,
+      the SPI based driver sdcard.py from the MicroPython Library can be used. When using it, you
+      have to overdrive the CS pin of the SPI hardware module. Example::
+
+        import os, sdcard, machine
+
+        cs_pin = "D10"
+        spi = machine.SPI(0) # SPI0 with cs at Pin "D10" used for SDCARD
+        cs = machine.Pin(cs_pin, machine.Pin.OUT, value=1)
+        sd = sdcard.SDCard(spi, cs)
+        vfs = os.VfsFat(sd)
+        os.mount(vfs, "/sdcard")
+
+|
 
 OneWire driver
 --------------
