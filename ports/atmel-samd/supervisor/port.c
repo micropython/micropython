@@ -386,7 +386,7 @@ void reset_port(void) {
     audioout_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO
-    // pdmin_reset();
+    pdmin_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     i2sout_reset();
