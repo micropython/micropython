@@ -27,9 +27,10 @@
 #include "py/runtime.h"
 #include "modmachine.h"
 #include "mphalport.h"
-#include "driver/rmt.h"
-
 #include "modesp32.h"
+
+#include "esp_task.h"
+#include "driver/rmt.h"
 
 // This exposes the ESP32's RMT module to MicroPython. RMT is provided by the Espressif ESP-IDF:
 //
@@ -58,6 +59,34 @@ typedef struct _esp32_rmt_obj_t {
     rmt_item32_t *items;
     bool loop_en;
 } esp32_rmt_obj_t;
+
+typedef struct _rmt_install_state_t {
+    SemaphoreHandle_t handle;
+    uint8_t channel_id;
+    esp_err_t ret;
+} rmt_install_state_t;
+
+STATIC void rmt_install_task(void *pvParameter) {
+    rmt_install_state_t *state = pvParameter;
+    state->ret = rmt_driver_install(state->channel_id, 0, 0);
+    xSemaphoreGive(state->handle);
+    vTaskDelete(NULL);
+    for (;;) {
+    }
+}
+
+// Call rmt_driver_install on core 1.  This ensures that the RMT interrupt handler is
+// serviced on core 1, so that WiFi (if active) does not interrupt it and cause glitches.
+esp_err_t rmt_driver_install_core1(uint8_t channel_id) {
+    TaskHandle_t th;
+    rmt_install_state_t state;
+    state.handle = xSemaphoreCreateBinary();
+    state.channel_id = channel_id;
+    xTaskCreatePinnedToCore(rmt_install_task, "rmt_install_task", 2048 / sizeof(StackType_t), &state, ESP_TASK_PRIO_MIN + 1, &th, 1);
+    xSemaphoreTake(state.handle, portMAX_DELAY);
+    vSemaphoreDelete(state.handle);
+    return state.ret;
+}
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -125,7 +154,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
     config.clk_div = self->clock_div;
 
     check_esp_err(rmt_config(&config));
-    check_esp_err(rmt_driver_install(config.channel, 0, 0));
+    check_esp_err(rmt_driver_install_core1(config.channel));
 
     return MP_OBJ_FROM_PTR(self);
 }

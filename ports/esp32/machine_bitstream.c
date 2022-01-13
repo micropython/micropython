@@ -101,7 +101,7 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
 
     // Install the driver on this channel & pin.
     check_esp_err(rmt_config(&config));
-    check_esp_err(rmt_driver_install(config.channel, 0, 0));
+    check_esp_err(rmt_driver_install_core1(config.channel));
 
     // Get the tick rate in kHz (this will likely be 40000).
     uint32_t counter_clk_khz = 0;

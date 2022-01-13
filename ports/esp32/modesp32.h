@@ -34,4 +34,6 @@ extern const mp_obj_type_t esp32_ulp_type;
 // Reserve the last channel for machine.bitstream.
 #define MICROPY_HW_ESP32_RMT_CHANNEL_BITSTREAM (RMT_CHANNEL_MAX - 1)
 
+esp_err_t rmt_driver_install_core1(uint8_t channel_id);
+
 #endif // MICROPY_INCLUDED_ESP32_MODESP32_H
