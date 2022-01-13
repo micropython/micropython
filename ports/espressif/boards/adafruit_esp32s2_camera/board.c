@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/board/__init__.h"
 
 #include "esp_log.h"
 
@@ -54,10 +55,7 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO19);
     common_hal_never_reset_pin(&pin_GPIO20);
 
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
-    common_hal_busio_spi_never_reset(spi);
-
+    busio_spi_obj_t *spi = common_hal_board_create_spi();
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
