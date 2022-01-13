@@ -1,6 +1,21 @@
 #include "shared-bindings/board/__init__.h"
-
 #include "shared-module/displayio/__init__.h"
+
+STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
+    {&mp_type_tuple},
+    8,
+    {
+        MP_ROM_PTR(&pin_GPIO13),
+        MP_ROM_PTR(&pin_GPIO15),
+        MP_ROM_PTR(&pin_GPIO16),
+        MP_ROM_PTR(&pin_GPIO14),
+        MP_ROM_PTR(&pin_GPIO12),
+        MP_ROM_PTR(&pin_GPIO10),
+        MP_ROM_PTR(&pin_GPIO9),
+        MP_ROM_PTR(&pin_GPIO7),
+    }
+};
+
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
@@ -28,8 +43,10 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO33) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO34) },
 
+    { MP_ROM_QSTR(MP_QSTR_CAMERA_DATA), MP_ROM_PTR(&camera_data_tuple) },
+
     { MP_ROM_QSTR(MP_QSTR_CAMERA_VSYNC), MP_ROM_PTR(&pin_GPIO5) },
-    { MP_ROM_QSTR(MP_QSTR_CAMERA_HSYNC), MP_ROM_PTR(&pin_GPIO6) },
+    { MP_ROM_QSTR(MP_QSTR_CAMERA_HREF), MP_ROM_PTR(&pin_GPIO6) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_DATA9), MP_ROM_PTR(&pin_GPIO7) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_XCLK), MP_ROM_PTR(&pin_GPIO8) },
     { MP_ROM_QSTR(MP_QSTR_CAMERA_DATA8), MP_ROM_PTR(&pin_GPIO9) },
