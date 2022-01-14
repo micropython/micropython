@@ -37,7 +37,7 @@
 #define T3_5 (FLOPPYIO_SAMPLERATE * 7 / 2 / 1000000)
 
 #define MFM_IO_MMIO (1)
-#include "lib/adafruit_floppy/mfm_impl.h"
+#include "lib/adafruit_floppy/src/mfm_impl.h"
 
 __attribute__((optimize("O3")))
 int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalinout_obj_t *data, digitalio_digitalinout_obj_t *index) {
