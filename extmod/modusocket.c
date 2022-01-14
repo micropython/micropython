@@ -303,6 +303,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    if (self->nic == MP_OBJ_NULL) {
+        // not connected
+        return mp_const_none;
+    }
+
     mp_int_t level = mp_obj_get_int(args[1]);
     mp_int_t opt = mp_obj_get_int(args[2]);
 
