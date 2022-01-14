@@ -351,6 +351,49 @@ static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Channel4_5_6_7_IRQn,
 };
 
+
+#elif defined(STM32L4) && defined(DMAMUX1)
+
+// newer L4+ series parts have a DMAMUX unit
+#define NCONTROLLERS            (2)
+#define NSTREAMS_PER_CONTROLLER (7)
+#define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
+
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_request) (dma_request)
+
+#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponding to DMA1
+#define DMA2_ENABLE_MASK (0x3f80) // Bits in dma_enable_mask corresponding to DMA2
+
+// DMA1 streams
+const dma_descr_t dma_SPI_1_RX = { DMA1_Channel1, DMA_REQUEST_SPI1_RX, dma_id_0, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_1_TX = { DMA1_Channel2, DMA_REQUEST_SPI1_TX, dma_id_1, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel3, DMA_REQUEST_SPI2_RX, dma_id_2, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel4, DMA_REQUEST_SPI2_TX, dma_id_3, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_RX = { DMA1_Channel5, DMA_REQUEST_I2C2_RX,  dma_id_4, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_2_TX = { DMA1_Channel6, DMA_REQUEST_I2C2_TX, dma_id_5, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_RX = { DMA1_Channel5, DMA_REQUEST_I2C1_RX, dma_id_4, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_I2C_1_TX = { DMA1_Channel6, DMA_REQUEST_I2C1_TX, dma_id_5, &dma_init_struct_spi_i2c };
+
+static const uint8_t dma_irqn[NSTREAM] = {
+    DMA1_Channel1_IRQn,
+    DMA1_Channel2_IRQn,
+    DMA1_Channel3_IRQn,
+    DMA1_Channel4_IRQn,
+    DMA1_Channel5_IRQn,
+    DMA1_Channel6_IRQn,
+    DMA1_Channel7_IRQn,
+    DMA2_Channel1_IRQn,
+    DMA2_Channel2_IRQn,
+    DMA2_Channel3_IRQn,
+    DMA2_Channel4_IRQn,
+    DMA2_Channel5_IRQn,
+    DMA2_Channel6_IRQn,
+    DMA2_Channel7_IRQn,
+};
+
+// chip has some special DMA between SDMCC and system
+#undef ENABLE_SDIO
+
 #elif defined(STM32L4)
 
 #define NCONTROLLERS            (2)
@@ -459,6 +502,7 @@ static const uint8_t dma_irqn[NSTREAM] = {
     DMA2_Channel6_IRQn,
     DMA2_Channel7_IRQn,
 };
+
 
 #elif defined(STM32H7)
 
@@ -1044,7 +1088,11 @@ static void dma_idle_handler(uint32_t tick) {
     }
 }
 
-#if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+#if defined(STM32L4) && defined(DMAMUX1)
+
+// not required on L4+?
+
+#elif defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
 
 void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
     DMA_Channel_TypeDef *dma = descr->instance;

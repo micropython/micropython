@@ -34,8 +34,14 @@
 #define ADC_V2 (0)
 #endif
 
-#if defined(STM32F4) || defined(STM32L4)
-#define ADCx_COMMON ADC_COMMON_REGISTER(0)
+#if defined(STM32L4S5xx)
+#define ADCx_COMMON ADC1_COMMON
+#elif defined(STM32F4) || defined(STM32L4)
+# if defined(ADC123_COMMON)
+#  define ADCx_COMMON ADC123_COMMON
+# else
+#  define ADCx_COMMON ADC_COMMON_REGISTER(0)
+# endif
 #elif defined(STM32F7)
 #define ADCx_COMMON ADC123_COMMON
 #endif
