@@ -18,6 +18,7 @@ port_deps = {
         "extmod/ulab/",
         "lib/mp3/",
         "lib/protomatter/",
+        "lib/adafruit_floppy/",
         "lib/quirc/",
         "lib/tinyusb/",
         "data/nvm.toml/",
