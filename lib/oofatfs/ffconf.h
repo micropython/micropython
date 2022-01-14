@@ -73,7 +73,9 @@
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
 
+#ifndef FF_USE_FASTSEEK
 #define FF_USE_FASTSEEK 0
+#endif
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
