@@ -149,7 +149,7 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t *self,
         const uint8_t *data = cmd + 2;
         data_size &= ~DELAY;
         if (self->two_byte_sequence_length) {
-            data_size = (data_size & ~DELAY) + *(cmd + 2);
+            data_size = ((data_size & ~DELAY) << 8) + *(cmd + 2);
             data = cmd + 3;
         }
         displayio_display_core_begin_transaction(&self->core);
@@ -169,6 +169,9 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t *self,
             wait_for_busy(self);
         }
         i += 2 + data_size;
+        if (self->two_byte_sequence_length) {
+            i++;
+        }
     }
 }
 
