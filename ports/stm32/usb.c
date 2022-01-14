@@ -280,7 +280,9 @@ bool pyb_usb_dev_init(int dev_id, uint16_t vid, uint16_t pid, uint8_t mode, size
             return false;
         }
 
-        #if MICROPY_HW_USB_MSC
+        #if defined(MICROPY_HW_CUSTOM_USB_MSC)
+        MICROPY_HW_CUSTOM_USB_MSC(msc_n, &usb_dev->usbd_cdc_msc_hid_state);
+        #elif MICROPY_HW_USB_MSC
         // Configure the MSC interface
         const void *msc_unit_default[1];
         if (msc_n == 0) {
@@ -425,6 +427,9 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         #if defined(USE_HOST_MODE)
         return MP_OBJ_NEW_QSTR(MP_QSTR_host);
         #else
+        if(!usb_device.enabled) {
+            return mp_const_none;
+        } 
         uint8_t mode = USBD_GetMode(&usb_device.usbd_cdc_msc_hid_state);
         switch (mode & USBD_MODE_IFACE_MASK) {
             case USBD_MODE_CDC:
@@ -439,8 +444,11 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
                 return MP_OBJ_NEW_QSTR(MP_QSTR_VCP_plus_HID);
             case USBD_MODE_MSC_HID:
                 return MP_OBJ_NEW_QSTR(MP_QSTR_MSC_plus_HID);
+            case USBD_MODE_CDC_MSC_HID:
+                return MP_OBJ_NEW_QSTR(MP_QSTR_VCP_plus_MSC_plus_HID);
             default:
-                return mp_const_none;
+                // some mode we don't understand
+                return MP_OBJ_NEW_QSTR(MP_QSTR_USB_space_enabled);
         }
         #endif
     }
@@ -548,7 +556,9 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // Get MSC logical units
     size_t msc_n = 0;
     const void *msc_unit[USBD_MSC_MAX_LUN];
-    #if MICROPY_HW_USB_MSC
+    #if defined(MICROPY_HW_CUSTOM_USB_MSC)
+    // config not supported for now
+    #elif MICROPY_HW_USB_MSC
     if (mode & USBD_MODE_IFACE_MSC) {
         mp_obj_t *items;
         mp_obj_get_array(args[ARG_msc].u_obj, &msc_n, &items);
