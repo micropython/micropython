@@ -9,6 +9,7 @@ OPT_SETTINGS = [
     "CONFIG_ESP_CONSOLE_",
     "CONFIG_CONSOLE_UART_",
     "CONFIG_ESP_SYSTEM_PANIC_",
+    "CONFIG_ESP32S2_PANIC_",
     "COMPILER_OPTIMIZATION_",
     "CONFIG_ESP32S3_DEBUG_OCDAWARE",
     "CONFIG_FREERTOS_ASSERT_",
@@ -142,8 +143,7 @@ def update(debug, board, update_all):
                 current_group = None
             else:
                 current_group = line[2:]
-
-        if (not update_all and line not in defaults) or (
+        elif (not update_all and line not in defaults) or (
             update_all and matches_group(line, BOARD_SETTINGS)
         ):
             last_board_group = add_group(board_settings, last_board_group, current_group)
