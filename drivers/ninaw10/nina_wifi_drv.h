@@ -110,12 +110,12 @@ int nina_socket_close(int fd);
 int nina_socket_bind(int fd, uint8_t *ip, uint16_t port, int type);
 int nina_socket_listen(int fd, uint32_t backlog);
 int nina_socket_avail(int fd, int type, uint16_t *data);
-int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout);
-int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout);
-int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout);
-int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, uint32_t timeout);
-int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, uint32_t timeout);
-int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, uint32_t timeout);
+int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, int32_t timeout);
+int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, int32_t timeout);
+int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout);
+int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout);
+int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, int32_t timeout);
+int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, int32_t timeout);
 int nina_socket_setsockopt(int fd, uint32_t level, uint32_t opt, const void *optval, uint32_t optlen);
 
 #endif // MICROPY_INCLUDED_DRIVERS_NINAW10_NINA_WIFI_DRV_H

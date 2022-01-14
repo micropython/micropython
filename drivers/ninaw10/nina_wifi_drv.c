@@ -770,7 +770,7 @@ int nina_socket_avail(int fd, int type, uint16_t *data) {
     return 0;
 }
 
-int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout) {
+int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, int32_t timeout) {
     uint16_t sock = 0;
 
     if (nina_server_socket_status(fd) != SOCKET_STATE_LISTEN) {
@@ -781,7 +781,7 @@ int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_
         if (nina_socket_avail(fd, NINA_SOCKET_TYPE_TCP, &sock) != 0) {
             return -1;
         }
-        if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
+        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
             return NINA_ERROR_TIMEOUT;
         }
     }
@@ -798,7 +798,7 @@ int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_
     return 0;
 }
 
-int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout) {
+int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, int32_t timeout) {
     if (nina_send_command_read_ack(NINA_CMD_SOCKET_CONNECT,
         4, ARG_8BITS,
         NINA_ARGS(
@@ -819,7 +819,7 @@ int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout) {
             break;
         }
 
-        if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
+        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
             return NINA_ERROR_TIMEOUT;
         }
     }
@@ -827,7 +827,7 @@ int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout) {
     return 0;
 }
 
-int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout) {
+int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout) {
     uint16_t size = 2;
     uint16_t bytes = 0;
 
@@ -853,7 +853,7 @@ int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout)
             break;
         }
 
-        if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
+        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
             return NINA_ERROR_TIMEOUT;
         }
         mp_hal_delay_ms(1);
@@ -862,7 +862,7 @@ int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout)
     return bytes;
 }
 
-int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, uint32_t timeout) {
+int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout) {
     uint16_t bytes = 0;
 
     if (nina_socket_status(fd) != SOCKET_STATE_ESTABLISHED) {
@@ -877,7 +877,11 @@ int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, uint32_t timeout) {
             return -1;
         }
 
-        if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
+        if (bytes != 0) {
+            break;
+        }
+
+        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
             return NINA_ERROR_TIMEOUT;
         }
     }
@@ -885,7 +889,7 @@ int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, uint32_t timeout) {
 }
 
 // Check from the upper layer if the socket is bound, if not then auto-bind it first.
-int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, uint32_t timeout) {
+int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, int32_t timeout) {
     // TODO do we need to split the packet somewhere?
     if (nina_send_command_read_ack(NINA_CMD_SOCKET_CONNECT,
         4, ARG_8BITS,
@@ -912,7 +916,7 @@ int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, ui
 }
 
 // Check from the upper layer if the socket is bound, if not then auto-bind it first.
-int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, uint32_t timeout) {
+int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, int32_t timeout) {
     uint16_t bytes = 0;
     uint16_t port_len = 2;
     uint16_t ip_len = NINA_IPV4_ADDR_LEN;
@@ -925,7 +929,11 @@ int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16
             return -1;
         }
 
-        if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
+        if (bytes != 0) {
+            break;
+        }
+
+        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
             return NINA_ERROR_TIMEOUT;
         }
     }
