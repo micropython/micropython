@@ -545,8 +545,42 @@ STATIC int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, m
 }
 
 STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
-    *_errno = MP_EIO;
-    return -1;
+    mp_uint_t ret = 0;
+    uint8_t type;
+
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM:
+            type = NINA_SOCKET_TYPE_TCP;
+            break;
+
+        case MOD_NETWORK_SOCK_DGRAM:
+            type = NINA_SOCKET_TYPE_UDP;
+            break;
+
+        default:
+            *_errno = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+
+    if (request == MP_STREAM_POLL) {
+        if (arg & MP_STREAM_POLL_RD) {
+            uint16_t avail = 0;
+            if (nina_socket_avail(socket->fileno, type, &avail) != 0) {
+                *_errno = MP_EIO;
+                ret = MP_STREAM_ERROR;
+            } else if (avail) {
+                // Readable or accepted socket ready.
+                ret |= MP_STREAM_POLL_RD;
+            }
+        }
+        if (arg & MP_STREAM_POLL_WR) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *_errno = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
 }
 
 static const mp_rom_map_elem_t nina_locals_dict_table[] = {
