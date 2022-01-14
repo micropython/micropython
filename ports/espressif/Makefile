@@ -289,13 +289,15 @@ IDF_PATH = $(realpath ./esp-idf)
 $(BUILD)/esp-idf:
 	$(Q)$(MKDIR) -p $@
 
+TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
 FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 ifeq ($(DEBUG), 1)
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-debug.defaults
 else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
-SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);boards/$(BOARD)/sdkconfig
+
+SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
 
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
@@ -316,10 +318,11 @@ $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sd
 	IDF_PATH=$(IDF_PATH) ninja -C $(BUILD)/esp-idf partition_table/partition-table.bin
 
 # run menuconfig and then remove standard settings
-menuconfig: $(BUILD)/esp-idf/config
+menuconfig: $(BUILD)/esp-idf/config $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
-	$(Q)diff --old-line-format= --unchanged-line-format= esp-idf-config/sdkconfig.defaults $(BUILD)/esp-idf/sdkconfig > $(BUILD)/sdkconfig.diff || true
-	$(Q)grep -Fvxf $(DEBUG_SDKCONFIG) -f $(FLASH_SDKCONFIG) $(BUILD)/sdkconfig.diff > boards/$(BOARD)/sdkconfig
+	# Newer versions of the idf will have save-defconfig that will only include non-default values.
+	# We should use that when available. For now, we sort out everything.
+	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
 
 # qstr builds include headers so we need to make sure they are up to date
 $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
