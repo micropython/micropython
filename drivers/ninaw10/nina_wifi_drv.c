@@ -132,7 +132,7 @@ typedef enum {
     NINA_CMD_SOCKET_OPEN            = 0x3F,
     NINA_CMD_SOCKET_CLOSE           = 0x2E,
     NINA_CMD_SOCKET_CONNECT         = 0x2D,
-    NINA_CMD_SOCKET_ACCEPT          = 0x2B,
+    NINA_CMD_SOCKET_AVAIL           = 0x2B,
     NINA_CMD_SOCKET_BIND            = 0x28,
     NINA_CMD_SOCKET_STATE           = 0x2F,
     NINA_CMD_SOCKET_REMOTE_ADDR     = 0x3A,
@@ -752,21 +752,35 @@ int nina_socket_listen(int fd, uint32_t backlog) {
     return 0; // No listen ?
 }
 
-int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout) {
+int nina_socket_avail(int fd, int type, uint16_t *data) {
     uint16_t size = 2;
-    uint16_t sock = NO_SOCKET_AVAIL;
+
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_AVAIL,
+        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
+        1, ARG_8BITS, NINA_VALS({&size, data})) != 0) {
+        return -1;
+    }
+
+    // For TCP sockets in listen state, return 0 if there's no accepted socket.
+    if (*data == NO_SOCKET_AVAIL && type == NINA_SOCKET_TYPE_TCP
+        && nina_server_socket_status(fd) == SOCKET_STATE_LISTEN) {
+        *data = 0;
+    }
+
+    return 0;
+}
+
+int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout) {
+    uint16_t sock = 0;
 
     if (nina_server_socket_status(fd) != SOCKET_STATE_LISTEN) {
         return -1;
     }
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); sock == 0 || sock == NO_SOCKET_AVAIL; mp_hal_delay_ms(10)) {
-        if (nina_send_command_read_vals(NINA_CMD_SOCKET_ACCEPT,
-            1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
-            1, ARG_8BITS, NINA_VALS({&size, &sock})) != 0) {
+    for (mp_uint_t start = mp_hal_ticks_ms(); !sock; mp_hal_delay_ms(10)) {
+        if (nina_socket_avail(fd, NINA_SOCKET_TYPE_TCP, &sock) != 0) {
             return -1;
         }
-
         if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
             return NINA_ERROR_TIMEOUT;
         }
