@@ -35,7 +35,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-//| def flux_readinto(buffer: WriteableBuffer, data: DigitalInOut, index: DigitalInOut) -> int:
+//| def flux_readinto(buffer: WriteableBuffer, data: digitalio.DigitalInOut, index: digitalio.DigitalInOut) -> int:
 //|     """Read flux transition information into the buffer.
 //|
 //|     The function returns when the buffer has filled, or when the index input
@@ -69,7 +69,7 @@ STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto);
 
-//| def mfm_readinto(buffer: WriteableBuffer, data: DigitalInOut, index: DigitalInOut) -> int:
+//| def mfm_readinto(buffer: WriteableBuffer, data: digitalio.DigitalInOut, index: digitalio.DigitalInOut) -> int:
 //|     """Read mfm blocks into the buffer.
 //|
 //|     The track is assumed to consist of 512-byte sectors.
