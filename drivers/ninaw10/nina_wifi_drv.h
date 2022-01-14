@@ -109,6 +109,7 @@ int nina_socket_socket(uint8_t type);
 int nina_socket_close(int fd);
 int nina_socket_bind(int fd, uint8_t *ip, uint16_t port, int type);
 int nina_socket_listen(int fd, uint32_t backlog);
+int nina_socket_avail(int fd, int type, uint16_t *data);
 int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout);
 int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout);
 int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout);
