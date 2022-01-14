@@ -406,7 +406,11 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
     int fd = 0;
     // Call accept.
     int ret = nina_socket_accept(socket->fileno, ip, (uint16_t *)port, &fd, socket->timeout);
-    if (ret < 0) {
+    if (ret == NINA_ERROR_TIMEOUT) {
+        // The socket is Not closed on timeout when calling functions that accept a timeout.
+        *_errno = MP_ETIMEDOUT;
+        return -1;
+    } else if (ret < 0) {
         *_errno = ret;
         network_ninaw10_socket_close(socket);
         return -1;
@@ -420,7 +424,11 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
 
 STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     int ret = nina_socket_connect(socket->fileno, ip, port, socket->timeout);
-    if (ret < 0) {
+    if (ret == NINA_ERROR_TIMEOUT) {
+        // The socket is Not closed on timeout when calling functions that accept a timeout.
+        *_errno = MP_ETIMEDOUT;
+        return -1;
+    } else if (ret < 0) {
         *_errno = ret;
         network_ninaw10_socket_close(socket);
         return -1;
@@ -536,10 +544,6 @@ STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, m
 }
 
 STATIC int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
-    if (timeout_ms == UINT32_MAX) {
-        // no timeout is given, set the socket to blocking mode.
-        timeout_ms = 0;
-    }
     socket->timeout = timeout_ms;
     return 0;
 }
