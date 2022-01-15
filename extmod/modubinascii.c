@@ -172,12 +172,15 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
     vstr_t vstr;
     uint8_t newline = 0;
     vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + newline);
-    if (vstr.len == 0) {
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    }
 
     // First pass, we convert input buffer to numeric base 64 values
     byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
+    if (vstr.len == 0) {
+        if (newline > 0) {
+            *out = '\n';
+        }
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    }
     mp_uint_t i;
     for (i = bufinfo.len; i >= 3; i -= 3) {
         *out++ = (in[0] & 0xFC) >> 2;
