@@ -170,7 +170,11 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
     vstr_t vstr;
-    vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + 1);
+    uint8_t newline = 0;
+    vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + newline);
+    if (vstr.len == 0) {
+        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    }
 
     // First pass, we convert input buffer to numeric base 64 values
     byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
@@ -196,7 +200,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 
     // Second pass, we convert number base 64 values to actual base64 ascii encoding
     out = (byte *)vstr.buf;
-    for (mp_uint_t j = vstr.len - 1; j--;) {
+    for (mp_uint_t j = vstr.len - newline; j--;) {
         if (*out < 26) {
             *out += 'A';
         } else if (*out < 52) {
