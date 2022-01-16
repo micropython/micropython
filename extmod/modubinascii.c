@@ -170,7 +170,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
     uint8_t newline = 1;
     if (n_args > 1) {
         uint newline_bool = mp_obj_get_int(args[1]);
-        if (newline_bool == 0)  {
+        if (newline_bool == 0) {
             newline = 0;
         }
     }
@@ -226,7 +226,9 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
         }
         out++;
     }
-    *out = '\n';
+    if (newline > 0) {
+        *out = '\n';
+    }
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_b2a_base64_obj, 1, 2, mod_binascii_b2a_base64);
