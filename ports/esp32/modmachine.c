@@ -34,16 +34,14 @@
 #include "freertos/task.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
+#include "esp_private/esp_clk.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"
-#include "esp32/clk.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/rom/rtc.h"
-#include "esp32s2/clk.h"
 #elif CONFIG_IDF_TARGET_ESP32S3
 #include "esp32s3/rom/rtc.h"
-#include "esp32s3/clk.h"
 #endif
 
 #include "py/obj.h"

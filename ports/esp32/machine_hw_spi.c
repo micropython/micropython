@@ -35,6 +35,8 @@
 #include "modmachine.h"
 
 #include "driver/spi_master.h"
+#include "soc/gpio_sig_map.h"
+#include "soc/spi_pins.h"
 
 // SPI mappings by device, naming used by IDF old/new
 // upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3

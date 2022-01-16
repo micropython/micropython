@@ -28,6 +28,9 @@
 #include "py/mphal.h"
 #include "modesp32.h"
 
+#include "soc/gpio_sig_map.h"
+#include "soc/gpio_reg.h"
+
 #if MICROPY_PY_MACHINE_BITSTREAM
 
 /******************************************************************************/

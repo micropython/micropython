@@ -34,6 +34,7 @@
 
 #include "driver/ledc.h"
 #include "esp_err.h"
+#include "soc/gpio_sig_map.h"
 
 #define PWM_DBG(...)
 // #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");

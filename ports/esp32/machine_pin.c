@@ -707,14 +707,16 @@ STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 STATIC mp_obj_t machine_pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
-    machine_pin_irq_obj_t *self = args[0];
-    uint32_t orig_trig = GPIO.pin[self->id].int_type;
-    if (n_args == 2) {
-        // set trigger
-        gpio_set_intr_type(self->id, mp_obj_get_int(args[1]));
-    }
-    // return original trigger value
-    return MP_OBJ_NEW_SMALL_INT(orig_trig);
+    mp_raise_ValueError(MP_ERROR_TEXT("this function is broken because we can't find the GPIO struct"));
+    return mp_const_none;
+    // machine_pin_irq_obj_t *self = args[0];
+    // uint32_t orig_trig = GPIO.pin[self->id].int_type;
+    // if (n_args == 2) {
+    //     // set trigger
+    //     gpio_set_intr_type(self->id, mp_obj_get_int(args[1]));
+    // }
+    // // return original trigger value
+    // return MP_OBJ_NEW_SMALL_INT(orig_trig);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_irq_trigger_obj, 1, 2, machine_pin_irq_trigger);
 
