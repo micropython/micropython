@@ -56,14 +56,19 @@
 #define FDCAN_IT_GROUP_RX_FIFO1         (FDCAN_ILS_RF1NL | FDCAN_ILS_RF1FL | FDCAN_ILS_RF1LL)
 #endif
 
+// The dedicated Message RAM should be 2560 words, but the way it's defined in stm32h7xx_hal_fdcan.c
+// as (SRAMCAN_BASE + FDCAN_MESSAGE_RAM_SIZE - 0x4U) limits the usable number of words to 2559 words.
+#define FDCAN_MESSAGE_RAM_SIZE  (2560 - 1)
+
 // also defined in <PROC>_hal_fdcan.c, but not able to declare extern and reach the variable
-static const uint8_t DLCtoBytes[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
+const uint8_t DLCtoBytes[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
 
 bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_t sjw, uint32_t bs1, uint32_t bs2, bool auto_restart) {
     (void)auto_restart;
 
     FDCAN_InitTypeDef *init = &can_obj->can.Init;
-    init->FrameFormat = FDCAN_FRAME_CLASSIC;
+    // Configure FDCAN with FD frame and BRS support.
+    init->FrameFormat = FDCAN_FRAME_FD_BRS;
     init->Mode = mode;
 
     init->NominalPrescaler = prescaler; // tq = NominalPrescaler x (1/fdcan_ker_ck)
@@ -81,45 +86,57 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     init->DataSyncJumpWidth = 1;
     init->DataTimeSeg1 = 1;
     init->DataTimeSeg2 = 1;
-    #endif
-
-    #if defined(STM32H7)
-    // variable used to specify RAM address in HAL, only for H7, G4 uses defined offset address in HAL
-    // The Message RAM is shared between CAN1 and CAN2. Setting the offset to half
-    // the Message RAM for the second CAN and using half the resources for each CAN.
+    init->StdFiltersNbr = 28; // /2  ? if FDCAN2 is used !!?
+    init->ExtFiltersNbr = 0; // Not used
+    init->TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+    #elif defined(STM32H7)
+    // The dedicated FDCAN RAM is 2560 32-bit words and shared between the FDCAN instances.
+    // To support 2 FDCAN instances simultaneously, the Message RAM is divided in half by
+    // setting the second FDCAN memory offset to half the RAM size. With this configuration,
+    // the maximum words per FDCAN instance is 1280 32-bit words.
     if (can_obj->can_id == PYB_CAN_1) {
         init->MessageRAMOffset = 0;
     } else {
-        init->MessageRAMOffset = 2560 / 2;
+        init->MessageRAMOffset = FDCAN_MESSAGE_RAM_SIZE / 2;
     }
-    #endif
+    // An element stored in the Message RAM contains an identifier, DLC, control bits, the
+    // data field and the specific transmission or reception bits field for control.
+    // The following code configures the different Message RAM sections per FDCAN instance.
 
-    #if defined(STM32G4)
+    // The RAM filtering section is configured for 64 x 1 word elements for 11-bit standard
+    // identifiers, and 31 x 2 words elements for 29-bit extended identifiers.
+    // The total number of words reserved for the filtering per FDCAN instance is 126 words.
+    init->StdFiltersNbr = 64;
+    // Note extended identifiers are Not used in pyb_can.c and Not handled correctly.
+    // Disable the extended identifiers filters for now until this is fixed properly.
+    init->ExtFiltersNbr = 0 /*31*/;
 
-    init->StdFiltersNbr = 28; // /2  ? if FDCAN2 is used !!?
-    init->ExtFiltersNbr = 0; // Not used
+    // The Tx event FIFO is used to store the message ID and the timestamp of successfully
+    // transmitted elements. The Tx event FIFO can store a maximum of 32 (2 words) elements.
+    // NOTE: Events are stored in Tx event FIFO only if tx_msg.TxEventFifoControl is enabled.
+    init->TxEventsNbr = 0;
 
-    #elif defined(STM32H7)
-
-    init->StdFiltersNbr = 64; // 128 / 2
-    init->ExtFiltersNbr = 0; // Not used
-
-    init->TxEventsNbr = 16;  // 32 / 2
-    init->RxBuffersNbr = 32; // 64 / 2
-    init->TxBuffersNbr = 16; // 32 / 2
-
-    init->RxFifo0ElmtsNbr = 64; // 128 / 2
-    init->RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-
-    init->RxFifo1ElmtsNbr = 64; // 128 / 2
-    init->RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
-
-    init->TxFifoQueueElmtsNbr = 16; // Tx fifo elements
-    init->TxElmtSize = FDCAN_DATA_BYTES_8;
-
-    #endif
-
+    // Transmission section is configured in FIFO mode operation, with no dedicated Tx buffers.
+    // The Tx FIFO can store a maximum of 32 elements (or 576 words), each element is 18 words
+    // long (to support a maximum of 64 bytes data field):
+    //  2 words header + 16 words data field (to support up to 64 bytes of data).
+    // The total number of words reserved for the Tx FIFO per FDCAN instance is 288 words.
+    init->TxBuffersNbr = 0;
+    init->TxFifoQueueElmtsNbr = 16;
+    init->TxElmtSize = FDCAN_DATA_BYTES_64;
     init->TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
+
+    // Reception section is configured to use Rx FIFO 0 and Rx FIFO1, with no dedicated Rx buffers.
+    // Each Rx FIFO can store a maximum of 64 elements (1152 words), each element is 18 words
+    // long (to support a maximum of 64 bytes data field):
+    //  2 words header + 16 words data field (to support up to 64 bytes of data).
+    // The total number of words reserved for the Rx FIFOs per FDCAN instance is 864 words.
+    init->RxBuffersNbr = 0;
+    init->RxFifo0ElmtsNbr = 24;
+    init->RxFifo0ElmtSize = FDCAN_DATA_BYTES_64;
+    init->RxFifo1ElmtsNbr = 24;
+    init->RxFifo1ElmtSize = FDCAN_DATA_BYTES_64;
+    #endif
 
     FDCAN_GlobalTypeDef *CANx = NULL;
     const pin_obj_t *pins[2];
@@ -159,7 +176,10 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
 
     // init CANx
     can_obj->can.Instance = CANx;
-    HAL_FDCAN_Init(&can_obj->can);
+    // catch bad configuration errors.
+    if (HAL_FDCAN_Init(&can_obj->can) != HAL_OK) {
+        return false;
+    }
 
     // Disable acceptance of non-matching frames (enabled by default)
     HAL_FDCAN_ConfigGlobalFilter(&can_obj->can, FDCAN_REJECT, FDCAN_REJECT, DISABLE, DISABLE);
@@ -168,7 +188,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     HAL_FDCAN_Start(&can_obj->can);
 
     // Reset all filters
-    for (int f = 0; f < 64; ++f) {
+    for (int f = 0; f < init->StdFiltersNbr; ++f) {
         can_clearfilter(can_obj, f, 0);
     }
 
@@ -299,10 +319,12 @@ int can_receive(FDCAN_HandleTypeDef *can, int fifo, FDCAN_RxHeaderTypeDef *hdr, 
     hdr->FDFormat = *address & FDCAN_ELEMENT_MASK_FDF;
     hdr->FilterIndex = (*address & FDCAN_ELEMENT_MASK_FIDX) >> 24;
     hdr->IsFilterMatchingFrame = (*address++ & FDCAN_ELEMENT_MASK_ANMF) >> 31;
+    // Convert DLC to Bytes.
+    hdr->DataLength = DLCtoBytes[hdr->DataLength];
 
     // Copy data
     uint8_t *pdata = (uint8_t *)address;
-    for (uint32_t i = 0; i < DLCtoBytes[hdr->DataLength]; ++i) {
+    for (uint32_t i = 0; i < hdr->DataLength; ++i) {
         *data++ = *pdata++;
     }
 

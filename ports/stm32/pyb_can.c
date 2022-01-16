@@ -42,6 +42,7 @@
 #if MICROPY_HW_ENABLE_FDCAN
 
 #define CAN_MAX_FILTER              (64)
+#define CAN_MAX_DATA_FRAME          (64)
 
 #define CAN_FIFO0                   FDCAN_RX_FIFO0
 #define CAN_FIFO1                   FDCAN_RX_FIFO1
@@ -89,10 +90,11 @@
 
 // Both banks start at 0
 STATIC uint8_t can2_start_bank = 0;
-
+extern const uint8_t DLCtoBytes[16];
 #else
 
 #define CAN_MAX_FILTER              (28)
+#define CAN_MAX_DATA_FRAME          (8)
 
 #define CAN_DEFAULT_PRESCALER       (100)
 #define CAN_DEFAULT_SJW             (1)
@@ -180,19 +182,50 @@ STATIC uint32_t pyb_can_get_source_freq() {
     return can_kern_clk;
 }
 
+STATIC void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
+    mp_int_t *bs1_out, mp_int_t *bs2_out, mp_int_t *prescaler_out) {
+    uint32_t can_kern_clk = pyb_can_get_source_freq();
+
+    // The following max values work on all MCUs for classical CAN.
+    for (int brp = 1; brp < 512; brp++) {
+        for (int bs1 = 1; bs1 < 16; bs1++) {
+            for (int bs2 = 1; bs2 < 8; bs2++) {
+                if ((baudrate == (can_kern_clk / (brp * (1 + bs1 + bs2)))) &&
+                    ((sample_point * 10) == (((1 + bs1) * 1000) / (1 + bs1 + bs2)))) {
+                    *bs1_out = bs1;
+                    *bs2_out = bs2;
+                    *prescaler_out = brp;
+                    return;
+                }
+            }
+        }
+    }
+
+    mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("couldn't match baudrate and sample point"));
+}
+
 // init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_baudrate, ARG_sample_point };
+    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_baudrate, ARG_sample_point,
+           ARG_brs_prescaler, ARG_brs_sjw, ARG_brs_bs1, ARG_brs_bs2, ARG_brs_baudrate, ARG_brs_sample_point };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mode,         MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
-        { MP_QSTR_extframe,     MP_ARG_BOOL,                    {.u_bool = false} },
-        { MP_QSTR_prescaler,    MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
-        { MP_QSTR_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
-        { MP_QSTR_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
-        { MP_QSTR_bs2,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS2} },
-        { MP_QSTR_auto_restart, MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
-        { MP_QSTR_baudrate,     MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 0} },
-        { MP_QSTR_sample_point, MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 75} }, // 75% sampling point
+        { MP_QSTR_mode,             MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
+        { MP_QSTR_extframe,         MP_ARG_BOOL,                    {.u_bool = false} },
+        { MP_QSTR_prescaler,        MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
+        { MP_QSTR_sjw,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
+        { MP_QSTR_bs1,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
+        { MP_QSTR_bs2,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS2} },
+        { MP_QSTR_auto_restart,     MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
+        { MP_QSTR_baudrate,         MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 0} },
+        { MP_QSTR_sample_point,     MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 75} }, // 75% sampling point
+        #if MICROPY_HW_ENABLE_FDCAN
+        { MP_QSTR_brs_prescaler,    MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
+        { MP_QSTR_brs_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
+        { MP_QSTR_brs_bs1,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
+        { MP_QSTR_brs_bs2,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS2} },
+        { MP_QSTR_brs_baudrate,     MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 0} },
+        { MP_QSTR_brs_sample_point, MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 0} }
+        #endif
     };
 
     // parse args
@@ -206,34 +239,30 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
 
     // Calculate CAN bit timing from baudrate if provided
     if (args[ARG_baudrate].u_int != 0) {
-        uint32_t baudrate = args[ARG_baudrate].u_int;
-        uint32_t sampoint = args[ARG_sample_point].u_int;
-        uint32_t can_kern_clk = pyb_can_get_source_freq();
-        bool timing_found = false;
-
-        // The following max values work on all MCUs for classical CAN.
-        for (int brp = 1; brp < 512 && !timing_found; brp++) {
-            for (int bs1 = 1; bs1 < 16 && !timing_found; bs1++) {
-                for (int bs2 = 1; bs2 < 8 && !timing_found; bs2++) {
-                    if ((baudrate == (can_kern_clk / (brp * (1 + bs1 + bs2)))) &&
-                        ((sampoint * 10) == (((1 + bs1) * 1000) / (1 + bs1 + bs2)))) {
-                        args[ARG_bs1].u_int = bs1;
-                        args[ARG_bs2].u_int = bs2;
-                        args[ARG_prescaler].u_int = brp;
-                        timing_found = true;
-                    }
-                }
-            }
-        }
-        if (!timing_found) {
-            mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("couldn't match baudrate and sample point"));
-        }
+        pyb_can_get_bit_timing(args[ARG_baudrate].u_int, args[ARG_sample_point].u_int,
+            &args[ARG_bs1].u_int, &args[ARG_bs2].u_int, &args[ARG_prescaler].u_int);
     }
 
-    // init CAN (if it fails, it's because the port doesn't exist)
+    #if MICROPY_HW_ENABLE_FDCAN
+    // If no sample point is provided for data bit timing, use the nominal sample point.
+    if (args[ARG_brs_sample_point].u_int == 0) {
+        args[ARG_brs_sample_point].u_int = args[ARG_sample_point].u_int;
+    }
+    // Calculate BRS CAN bit timing from baudrate if provided
+    if (args[ARG_brs_baudrate].u_int != 0) {
+        pyb_can_get_bit_timing(args[ARG_brs_baudrate].u_int, args[ARG_brs_sample_point].u_int,
+            &args[ARG_brs_bs1].u_int, &args[ARG_brs_bs2].u_int, &args[ARG_brs_prescaler].u_int);
+    }
+    // Set BRS bit timings.
+    self->can.Init.DataPrescaler = args[ARG_brs_prescaler].u_int;
+    self->can.Init.DataSyncJumpWidth = args[ARG_brs_sjw].u_int;
+    self->can.Init.DataTimeSeg1 = args[ARG_bs1].u_int;     // DataTimeSeg1 = Propagation_segment + Phase_segment_1
+    self->can.Init.DataTimeSeg2 = args[ARG_bs2].u_int;
+    #endif
+
     if (!can_init(self, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
         args[ARG_bs1].u_int, args[ARG_bs2].u_int, args[ARG_auto_restart].u_bool)) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("CAN(%d) doesn't exist"), self->can_id);
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Failed to initialise CAN(%d)"), self->can_id);
     }
 
     return mp_const_none;
@@ -450,12 +479,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_any_obj, pyb_can_any);
 
 // send(send, addr, *, timeout=5000)
 STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr };
+    enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_fdf, ARG_brs };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_id,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_rtr,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        #if MICROPY_HW_ENABLE_FDCAN
+        { MP_QSTR_fdf,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_brs,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        #endif
     };
 
     // parse args
@@ -468,7 +501,7 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     uint8_t data[1];
     pyb_buf_get_for_send(args[ARG_data].u_obj, &bufinfo, data);
 
-    if (bufinfo.len > 8) {
+    if (bufinfo.len > CAN_MAX_DATA_FRAME) {
         mp_raise_ValueError(MP_ERROR_TEXT("CAN data field too long"));
     }
 
@@ -476,13 +509,12 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     CanTxMsgTypeDef tx_msg;
 
     #if MICROPY_HW_ENABLE_FDCAN
-    uint8_t tx_data[8];
+    uint8_t tx_data[CAN_MAX_DATA_FRAME];
+    memset(tx_data, 0, sizeof(tx_data));
+
     tx_msg.MessageMarker = 0;
     tx_msg.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-    tx_msg.BitRateSwitch = FDCAN_BRS_OFF;
-    tx_msg.FDFormat = FDCAN_CLASSIC_CAN;
     tx_msg.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-    tx_msg.DataLength = (bufinfo.len << 16); // TODO DLC for len > 8
 
     if (self->extframe) {
         tx_msg.Identifier = args[ARG_id].u_int & 0x1FFFFFFF;
@@ -495,6 +527,23 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         tx_msg.TxFrameType = FDCAN_DATA_FRAME;
     } else {
         tx_msg.TxFrameType = FDCAN_REMOTE_FRAME;
+    }
+    if (args[ARG_fdf].u_bool == false) {
+        tx_msg.FDFormat = FDCAN_CLASSIC_CAN;
+    } else {
+        tx_msg.FDFormat = FDCAN_FD_CAN;
+    }
+    if (args[ARG_brs].u_bool == false) {
+        tx_msg.BitRateSwitch = FDCAN_BRS_OFF;
+    } else {
+        tx_msg.BitRateSwitch = FDCAN_BRS_ON;
+    }
+    // Roundup DataLength to next DLC size and encode to DLC.
+    for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(DLCtoBytes); i++) {
+        if (bufinfo.len <= DLCtoBytes[i]) {
+            tx_msg.DataLength = (i << 16);
+            break;
+        }
     }
     #else
     tx_msg.DLC = bufinfo.len;
@@ -565,7 +614,7 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // receive the data
     CanRxMsgTypeDef rx_msg;
     #if MICROPY_HW_ENABLE_FDCAN
-    uint8_t rx_data[8];
+    uint8_t rx_data[CAN_MAX_DATA_FRAME];
     #else
     uint8_t *rx_data = rx_msg.Data;
     #endif
