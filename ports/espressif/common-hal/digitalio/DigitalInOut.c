@@ -108,11 +108,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     digitalio_digitalinout_obj_t *self,
     digitalio_drive_mode_t drive_mode) {
     gpio_num_t number = self->pin->number;
-    gpio_mode_t mode;
+    gpio_mode_t mode = GPIO_MODE_DEF_OUTPUT;
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
-        mode = GPIO_MODE_DEF_OD;
-    } else {
-        mode = GPIO_MODE_DEF_OUTPUT;
+        mode |= GPIO_MODE_DEF_OD;
     }
     esp_err_t result = gpio_set_direction(number, mode);
     if (result != ESP_OK) {
