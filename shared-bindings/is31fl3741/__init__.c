@@ -35,12 +35,6 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/is31fl3741/IS31FL3741.h"
 
-
-//| """Low-level is31fl3741 implementation
-//|
-//| The `is31fl3741_write` module contains a helper method to write out bytes in
-//| over the I2C bus."""
-//|
 //| def is31fl3741_write(i2c: busio.I2C, addr: int, mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
 //|     """Write buf out on the given I2C bus.
 //|
@@ -79,33 +73,9 @@ STATIC mp_obj_t is31fl3741_is31fl3741_write(size_t n_args, const mp_obj_t *pos_a
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_write_obj, 0, is31fl3741_is31fl3741_write);
 
-//| def is31fl3741_init(i2c: busio.I2c, addr: int) -> None:
-//|     """Initialize the IS31FL3741 device.
-//|
-//|     :param ~busio.I2C i2c: the I2C bus to output with
-//|     :param ~int addr: the I2C address of the IS31FL3741 device"""
-//|     ...
-STATIC mp_obj_t is31fl3741_is31fl3741_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_i2c, ARG_addr };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_i2c,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_addr,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x30 } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
-
-    common_hal_is31fl3741_init(i2c, args[ARG_addr].u_int);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(is31fl3741_is31fl3741_init_obj, 0, is31fl3741_is31fl3741_init);
-
 STATIC const mp_rom_map_elem_t is31fl3741_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_is31fl3741) },
     { MP_ROM_QSTR(MP_QSTR_IS31FL3741), MP_ROM_PTR(&is31fl3741_IS31FL3741_type) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_is31fl3741_init), (mp_obj_t)&is31fl3741_is31fl3741_init_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_is31fl3741_write), (mp_obj_t)&is31fl3741_is31fl3741_write_obj },
 };
 

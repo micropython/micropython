@@ -42,26 +42,6 @@ void is31fl3741_end_transaction(busio_i2c_obj_t *i2c) {
     common_hal_busio_i2c_unlock(i2c);
 }
 
-void common_hal_is31fl3741_init(busio_i2c_obj_t *i2c, uint8_t addr) {
-    is31fl3741_begin_transaction(i2c);
-
-    uint8_t command = 0xFC; // device ID
-    common_hal_busio_i2c_write(i2c, addr, &command, 1, false);
-    uint8_t data = 0;
-    common_hal_busio_i2c_read(i2c, addr, &data, 1);
-
-    is31fl3741_send_reset(i2c, addr);
-    is31fl3741_send_enable(i2c, addr);
-    is31fl3741_set_current(i2c, addr, 0xFF);
-
-    // set scale (brightness) to max for all LEDs
-    for (int i = 0; i < 351; i++) {
-        is31fl3741_set_led(i2c, addr, i, 0xFF, 2);
-    }
-
-    is31fl3741_end_transaction(i2c);
-}
-
 void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_obj_t *mapping, const uint8_t *pixels, size_t numBytes) {
     is31fl3741_begin_transaction(i2c);
 
