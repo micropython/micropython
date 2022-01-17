@@ -166,28 +166,15 @@ STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
 STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *args) {
-    mp_obj_t *data = MP_OBJ_TO_PTR(args[0]);
-    uint8_t newline = 1;
-    if (n_args > 1) {
-        uint newline_bool = mp_obj_get_int(args[1]);
-        if (newline_bool == 0) {
-            newline = 0;
-        }
-    }
+    uint8_t newline = n_args < 2 || mp_obj_is_true(args[1]);
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
     vstr_t vstr;
     vstr_init_len(&vstr, ((bufinfo.len != 0) ? (((bufinfo.len - 1) / 3) + 1) * 4 : 0) + newline);
 
     // First pass, we convert input buffer to numeric base 64 values
     byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
-    if (vstr.len == 0) {
-        if (newline > 0) {
-            *out = '\n';
-        }
-        return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
-    }
     mp_uint_t i;
     for (i = bufinfo.len; i >= 3; i -= 3) {
         *out++ = (in[0] & 0xFC) >> 2;
