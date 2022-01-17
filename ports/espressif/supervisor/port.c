@@ -51,6 +51,8 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
@@ -263,6 +265,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+    common_hal_mcu_on_next_reset(RUNMODE_UF2);
     esp_restart();
 }
 
