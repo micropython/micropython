@@ -107,9 +107,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
     // identifiers, and 31 x 2 words elements for 29-bit extended identifiers.
     // The total number of words reserved for the filtering per FDCAN instance is 126 words.
     init->StdFiltersNbr = 64;
-    // Note extended identifiers are Not used in pyb_can.c and Not handled correctly.
-    // Disable the extended identifiers filters for now until this is fixed properly.
-    init->ExtFiltersNbr = 0 /*31*/;
+    init->ExtFiltersNbr = 31;
 
     // The Tx event FIFO is used to store the message ID and the timestamp of successfully
     // transmitted elements. The Tx event FIFO can store a maximum of 32 (2 words) elements.
@@ -189,7 +187,11 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
 
     // Reset all filters
     for (int f = 0; f < init->StdFiltersNbr; ++f) {
-        can_clearfilter(can_obj, f, 0);
+        can_clearfilter(can_obj, f, false);
+    }
+
+    for (int f = 0; f < init->ExtFiltersNbr; ++f) {
+        can_clearfilter(can_obj, f, true);
     }
 
     can_obj->is_enabled = true;
@@ -250,10 +252,14 @@ void can_deinit(pyb_can_obj_t *self) {
     }
 }
 
-void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t bank) {
+void can_clearfilter(pyb_can_obj_t *self, uint32_t f, uint8_t extid) {
     if (self && self->can.Instance) {
         FDCAN_FilterTypeDef filter = {0};
-        filter.IdType = FDCAN_STANDARD_ID;
+        if (extid == 1) {
+            filter.IdType = FDCAN_EXTENDED_ID;
+        } else {
+            filter.IdType = FDCAN_STANDARD_ID;
+        }
         filter.FilterIndex = f;
         filter.FilterConfig = FDCAN_FILTER_DISABLE;
         HAL_FDCAN_ConfigFilter(&self->can, &filter);
