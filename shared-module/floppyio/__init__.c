@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "hal_gpio.h"
-
 #include "py/runtime.h"
 
 #include "shared-bindings/time/__init__.h"
@@ -33,8 +31,12 @@
 #include "common-hal/floppyio/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 
+#ifndef T2_5
 #define T2_5 (FLOPPYIO_SAMPLERATE * 5 / 2 / 1000000)
+#endif
+#ifndef T3_5
 #define T3_5 (FLOPPYIO_SAMPLERATE * 7 / 2 / 1000000)
+#endif
 
 #define MFM_IO_MMIO (1)
 #include "lib/adafruit_floppy/src/mfm_impl.h"
