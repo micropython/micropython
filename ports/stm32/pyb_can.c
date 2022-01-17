@@ -41,7 +41,6 @@
 
 #if MICROPY_HW_ENABLE_FDCAN
 
-#define CAN_MAX_FILTER              (64)
 #define CAN_MAX_DATA_FRAME          (64)
 
 #define CAN_FIFO0                   FDCAN_RX_FIFO0
@@ -87,9 +86,6 @@
 #define __HAL_CAN_DISABLE_IT        __HAL_FDCAN_DISABLE_IT
 #define __HAL_CAN_CLEAR_FLAG        __HAL_FDCAN_CLEAR_FLAG
 #define __HAL_CAN_MSG_PENDING       HAL_FDCAN_GetRxFifoFillLevel
-
-// Both banks start at 0
-STATIC uint8_t can2_start_bank = 0;
 extern const uint8_t DLCtoBytes[16];
 #else
 
@@ -715,16 +711,29 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 
 // initfilterbanks(n)
-STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self, mp_obj_t bank_in) {
+STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self_in, mp_obj_t bank_in) {
+    pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     #if MICROPY_HW_ENABLE_FDCAN
-    can2_start_bank = 0;
-    #else
-    can2_start_bank = mp_obj_get_int(bank_in);
-    #endif
-
-    for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(MP_OBJ_TO_PTR(self), f, can2_start_bank);
+    (void)self;
+    #if 0
+    FDCAN_InitTypeDef *init = &self->can.Init;
+    // Clear standard ID filters.
+    for (int f = 0; f < init->StdFiltersNbr; ++f) {
+        can_clearfilter(self, f, false);
     }
+    // Clear extended ID filters.
+    for (int f = 0; f < init->ExtFiltersNbr; ++f) {
+        can_clearfilter(self, f, true);
+    }
+    #endif
+    #else
+    // NOTE: For classic CAN, this function calls HAL_CAN_ConfigFilter(NULL, &filter);
+    // if CAN3 is defined, ConfigFilter() will dereference a NULL pointer.
+    can2_start_bank = mp_obj_get_int(bank_in);
+    for (int f = 0; f < CAN_MAX_FILTER; f++) {
+        can_clearfilter(self, f, can2_start_bank);
+    }
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_initfilterbanks_fun_obj, pyb_can_initfilterbanks);
@@ -733,10 +742,14 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pyb_can_initfilterbanks_obj, MP_ROM_PTR(&
 STATIC mp_obj_t pyb_can_clearfilter(mp_obj_t self_in, mp_obj_t bank_in) {
     pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t f = mp_obj_get_int(bank_in);
+    #if MICROPY_HW_ENABLE_FDCAN
+    can_clearfilter(self, f, self->extframe);
+    #else
     if (self->can_id == 2) {
         f += can2_start_bank;
     }
     can_clearfilter(self, f, can2_start_bank);
+    #endif
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_clearfilter_obj, pyb_can_clearfilter);
@@ -760,9 +773,18 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     #if MICROPY_HW_ENABLE_FDCAN
     FDCAN_FilterTypeDef filter = {0};
-    filter.IdType = FDCAN_STANDARD_ID;
-    // TODO check filter index
+    if (self->extframe) {
+        filter.IdType = FDCAN_EXTENDED_ID;
+    } else {
+        filter.IdType = FDCAN_STANDARD_ID;
+    }
+
     filter.FilterIndex = args[ARG_bank].u_int;
+    // Check filter index.
+    if ((filter.IdType == FDCAN_STANDARD_ID && filter.FilterIndex >= self->can.Init.StdFiltersNbr) ||
+        (filter.IdType == FDCAN_EXTENDED_ID && filter.FilterIndex >= self->can.Init.ExtFiltersNbr)) {
+        goto error;
+    }
 
     // Check filter mode
     if (((args[ARG_mode].u_int != FDCAN_FILTER_RANGE) &&
