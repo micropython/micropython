@@ -12,6 +12,7 @@ def instance0():
     multitest.next()
     for i in range(NUM_NEW_SOCKETS):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(socket.getaddrinfo("0.0.0.0", PORT)[0][-1])
         multitest.broadcast("server ready")
         for j in range(NUM_TRANSFERS):
