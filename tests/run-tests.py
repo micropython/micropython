@@ -742,9 +742,7 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "--via-mpy", action="store_true", help="compile .py files to .mpy first"
     )
-    cmd_parser.add_argument(
-        "--mpy-cross-flags", default="-mcache-lookup-bc", help="flags to pass to mpy-cross"
-    )
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
     )
@@ -854,7 +852,7 @@ the last matching regex is used:
 
     if not args.keep_path:
         # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = os.pathsep + base_path("../extmod")
+        os.environ["MICROPYPATH"] = ".frozen" + os.pathsep + base_path("../extmod")
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)

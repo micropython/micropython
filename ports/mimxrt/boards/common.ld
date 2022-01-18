@@ -45,12 +45,19 @@ MEMORY
   m_itcm         (RX) : ORIGIN = itcm_start,            LENGTH = itcm_size
   m_dtcm         (RW) : ORIGIN = dtcm_start,            LENGTH = dtcm_size
   m_ocrm         (RW) : ORIGIN = ocrm_start,            LENGTH = ocrm_size
+
+  #ifdef MICROPY_HW_SDRAM_AVAIL
+  m_sdram        (RX) : ORIGIN = sdram_start,           LENGTH = sdram_size
+  #endif
 }
 
 /* Define output sections */
 SECTIONS
 {
   __flash_start = flash_start;
+  #ifdef MICROPY_HW_SDRAM_AVAIL
+  __sdram_start = sdram_start;
+  #endif
   __vfs_start = ORIGIN(m_vfs);
   __vfs_end = __vfs_start + LENGTH(m_vfs);  
   
@@ -89,7 +96,7 @@ SECTIONS
   .text :
   {
     . = ALIGN(4);
-    *(EXCLUDE_FILE(*fsl_flexspi.o) .text*) /* .text* sections (code) */
+    *(EXCLUDE_FILE(*fsl_flexspi.o *gc*.o *vm.o *parse.o *runtime*.o *mpirq.o *map.o) .text*) /* .text* sections (code) */
     *(.rodata)               /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)              /* .rodata* sections (constants, strings, etc.) */
     *(.glue_7)               /* glue arm to thumb code */
@@ -193,8 +200,9 @@ SECTIONS
   {
     . = ALIGN(4);
     __ram_function_start__ = .;
-    *fsl_flexspi.o(.text*)
     *(.ram_functions*)
+    /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
+    *(.text*)
     . = ALIGN(4);
     __ram_function_end__ = .;
   } > m_itcm  

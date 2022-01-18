@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f4disc.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Discovery F4",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

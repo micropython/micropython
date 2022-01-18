@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "netduino_plus_2.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "NETDUINO_PLUS_2",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

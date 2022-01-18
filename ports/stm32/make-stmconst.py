@@ -17,7 +17,6 @@ if platform.python_version_tuple()[0] == "2":
     def convert_bytes_to_str(b):
         return b
 
-
 elif platform.python_version_tuple()[0] == "3":
 
     def convert_bytes_to_str(b):

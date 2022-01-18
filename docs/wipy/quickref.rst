@@ -154,7 +154,7 @@ See :ref:`machine.RTC <machine.RTC>` ::
         pass
         # do some non blocking operations
         # warning printing on an irq via telnet is not
-        # possible, only via UART 
+        # possible, only via UART
 
     # create a RTC alarm that expires after 5 seconds
     rtc.alarm(time=5000, repeat=False)
@@ -179,7 +179,7 @@ See :ref:`machine.SD <machine.SD>`. ::
     sd = SD()
     os.mount(sd, '/sd')
 
-WLAN (WiFi) 
+WLAN (WiFi)
 -----------
 
 See :ref:`network.WLAN <network.WLAN>` and :mod:`machine`. ::

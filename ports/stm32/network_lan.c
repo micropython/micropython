@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "eth.h"
 
 #if defined(MICROPY_HW_ETH_MDC)

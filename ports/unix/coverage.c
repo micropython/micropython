@@ -153,7 +153,7 @@ STATIC void pairheap_test(size_t nops, int *ops) {
         mp_pairheap_init_node(pairheap_lt, &node[i]);
     }
     mp_pairheap_t *heap = mp_pairheap_new(pairheap_lt);
-    printf("create:");
+    mp_printf(&mp_plat_print, "create:");
     for (size_t i = 0; i < nops; ++i) {
         if (ops[i] >= 0) {
             heap = mp_pairheap_push(pairheap_lt, heap, &node[ops[i]]);
@@ -167,13 +167,13 @@ STATIC void pairheap_test(size_t nops, int *ops) {
             ;
         }
     }
-    printf("\npop all:");
+    mp_printf(&mp_plat_print, "\npop all:");
     while (!mp_pairheap_is_empty(pairheap_lt, heap)) {
         mp_printf(&mp_plat_print, " %d", mp_pairheap_peek(pairheap_lt, heap) - &node[0]);
         ;
         heap = mp_pairheap_pop(pairheap_lt, heap);
     }
-    printf("\n");
+    mp_printf(&mp_plat_print, "\n");
 }
 
 // function to run extra tests for things that can't be checked by scripts

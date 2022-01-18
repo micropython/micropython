@@ -120,7 +120,7 @@ Methods
      - *value* if not None will set the port output value before enabling the pin.
 
      - *alt* can be used when mode is ``Pin.AF_PP`` or ``Pin.AF_OD`` to set the
-       index or name of one of the alternate functions associated with a pin. 
+       index or name of one of the alternate functions associated with a pin.
        This arg was previously called *af* which can still be used if needed.
 
    Returns: ``None``.

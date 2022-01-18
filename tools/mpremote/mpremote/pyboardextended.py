@@ -21,6 +21,8 @@ fs_hook_cmds = {
     "CMD_SEEK": 8,
     "CMD_REMOVE": 9,
     "CMD_RENAME": 10,
+    "CMD_MKDIR": 11,
+    "CMD_RMDIR": 12,
 }
 
 fs_hook_code = """\
@@ -142,7 +144,13 @@ class RemoteFile(uio.IOBase):
         self.close()
 
     def ioctl(self, request, arg):
-        if request == 4:  # CLOSE
+        if request == 1:  # FLUSH
+            self.flush()
+        elif request == 2:  # SEEK
+            # This assumes a 32-bit bare-metal machine.
+            import machine
+            machine.mem32[arg] = self.seek(machine.mem32[arg], machine.mem32[arg + 4])
+        elif request == 4:  # CLOSE
             self.close()
         return 0
 
@@ -254,6 +262,24 @@ class RemoteFS:
         c.begin(CMD_RENAME)
         c.wr_str(self.path + old)
         c.wr_str(self.path + new)
+        res = c.rd_s32()
+        c.end()
+        if res < 0:
+            raise OSError(-res)
+
+    def mkdir(self, path):
+        c = self.cmd
+        c.begin(CMD_MKDIR)
+        c.wr_str(self.path + path)
+        res = c.rd_s32()
+        c.end()
+        if res < 0:
+            raise OSError(-res)
+
+    def rmdir(self, path):
+        c = self.cmd
+        c.begin(CMD_RMDIR)
+        c.wr_str(self.path + path)
         res = c.rd_s32()
         c.end()
         if res < 0:
@@ -495,6 +521,28 @@ class PyboardCommand:
             ret = -abs(er.errno)
         self.wr_s32(ret)
 
+    def do_mkdir(self):
+        path = self.root + self.rd_str()
+        # self.log_cmd(f"mkdir {path}")
+        try:
+            self.path_check(path)
+            os.mkdir(path)
+            ret = 0
+        except OSError as er:
+            ret = -abs(er.errno)
+        self.wr_s32(ret)
+
+    def do_rmdir(self):
+        path = self.root + self.rd_str()
+        # self.log_cmd(f"rmdir {path}")
+        try:
+            self.path_check(path)
+            os.rmdir(path)
+            ret = 0
+        except OSError as er:
+            ret = -abs(er.errno)
+        self.wr_s32(ret)
+
     cmd_table = {
         fs_hook_cmds["CMD_STAT"]: do_stat,
         fs_hook_cmds["CMD_ILISTDIR_START"]: do_ilistdir_start,
@@ -506,6 +554,8 @@ class PyboardCommand:
         fs_hook_cmds["CMD_SEEK"]: do_seek,
         fs_hook_cmds["CMD_REMOVE"]: do_remove,
         fs_hook_cmds["CMD_RENAME"]: do_rename,
+        fs_hook_cmds["CMD_MKDIR"]: do_mkdir,
+        fs_hook_cmds["CMD_RMDIR"]: do_rmdir,
     }
 
 

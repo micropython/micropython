@@ -4,7 +4,6 @@
 #define MICROPY_HW_HAS_SWITCH       (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 
 // MSI is used and is 4MHz,

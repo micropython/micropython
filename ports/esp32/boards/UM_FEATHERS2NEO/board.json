@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Feather",
+        "RGB LED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "5x5 RGB LED Matrix"
+    ],
+    "id": "featherS2neo",
+    "images": [
+        "FeatherS2_Neo_White_Product2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Feather S2 Neo",
+    "thumbnail": "",
+    "url": "https://unexpectedmaker.com/feathers2-neo",
+    "vendor": "Unexpected Maker"
+}

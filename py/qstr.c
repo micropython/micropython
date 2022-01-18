@@ -175,6 +175,12 @@ STATIC qstr qstr_add(const byte *q_ptr) {
         #endif
         qstr_pool_t *pool = m_new_obj_var_maybe(qstr_pool_t, const char *, new_alloc);
         if (pool == NULL) {
+            // Keep qstr_last_chunk consistent with qstr_pool_t: qstr_last_chunk is not scanned
+            // at garbage collection since it's reachable from a qstr_pool_t.  And the caller of
+            // this function expects q_ptr to be stored in a qstr_pool_t so it can be reached
+            // by the collector.  If qstr_pool_t allocation failed, qstr_last_chunk needs to be
+            // NULL'd.  Otherwise it may become a dangling pointer at the next garbage collection.
+            MP_STATE_VM(qstr_last_chunk) = NULL;
             QSTR_EXIT();
             m_malloc_fail(new_alloc);
         }

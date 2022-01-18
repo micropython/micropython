@@ -18,6 +18,9 @@ MicroPython device over a serial connection.  Commands supported are:
 """
 
 import os, sys
+from collections.abc import Mapping
+from textwrap import dedent
+
 import serial.tools.list_ports
 
 from . import pyboardextended as pyboard
@@ -25,21 +28,42 @@ from .console import Console, ConsolePosix
 
 _PROG = "mpremote"
 
+_COMMANDS = {
+    "connect": (
+        False,
+        False,
+        1,
+        """\
+        connect to given device
+        device may be: list, auto, id:x, port:x
+        or any valid device name/path""",
+    ),
+    "disconnect": (False, False, 0, "disconnect current device"),
+    "mount": (True, False, 1, "mount local directory on device"),
+    "repl": (
+        False,
+        True,
+        0,
+        """\
+        enter REPL
+        options:
+            --capture <file>
+            --inject-code <string>
+            --inject-file <file>""",
+    ),
+    "eval": (True, True, 1, "evaluate and print the string"),
+    "exec": (True, True, 1, "execute the string"),
+    "run": (True, True, 1, "run the given local script"),
+    "fs": (True, True, 1, "execute filesystem commands on the device"),
+    "help": (False, False, 0, "print help and exit"),
+}
+
 _BUILTIN_COMMAND_EXPANSIONS = {
     # Device connection shortcuts.
-    "devs": "connect list",
-    "a0": "connect /dev/ttyACM0",
-    "a1": "connect /dev/ttyACM1",
-    "a2": "connect /dev/ttyACM2",
-    "a3": "connect /dev/ttyACM3",
-    "u0": "connect /dev/ttyUSB0",
-    "u1": "connect /dev/ttyUSB1",
-    "u2": "connect /dev/ttyUSB2",
-    "u3": "connect /dev/ttyUSB3",
-    "c0": "connect COM0",
-    "c1": "connect COM1",
-    "c2": "connect COM2",
-    "c3": "connect COM3",
+    "devs": {
+        "command": "connect list",
+        "help": "list available serial ports",
+    },
     # Filesystem shortcuts.
     "cat": "fs cat",
     "ls": "fs ls",
@@ -52,21 +76,34 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "import uos\nprint('mount \\tsize \\tused \\tavail \\tuse%')\nfor _m in [''] + uos.listdir('/'):\n _s = uos.stat('/' + _m)\n if not _s[0] & 1 << 14: continue\n _s = uos.statvfs(_m)\n if _s[0]:\n  _size = _s[0] * _s[2]; _free = _s[0] * _s[3]; print(_m, _size, _size - _free, _free, int(100 * (_size - _free) / _size), sep='\\t')",
     ],
     # Other shortcuts.
-    "reset t_ms=100": [
-        "exec",
-        "--no-follow",
-        "import utime, umachine; utime.sleep_ms(t_ms); umachine.reset()",
-    ],
-    "bootloader t_ms=100": [
-        "exec",
-        "--no-follow",
-        "import utime, umachine; utime.sleep_ms(t_ms); umachine.bootloader()",
-    ],
+    "reset t_ms=100": {
+        "command": [
+            "exec",
+            "--no-follow",
+            "import utime, umachine; utime.sleep_ms(t_ms); umachine.reset()",
+        ],
+        "help": "reset the device after delay",
+    },
+    "bootloader t_ms=100": {
+        "command": [
+            "exec",
+            "--no-follow",
+            "import utime, umachine; utime.sleep_ms(t_ms); umachine.bootloader()",
+        ],
+        "help": "make the device enter its bootloader",
+    },
     "setrtc": [
         "exec",
         "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
     ],
 }
+
+for port_num in range(4):
+    for prefix, port in [("a", "/dev/ttyACM"), ("u", "/dev/ttyUSB"), ("c", "COM")]:
+        _BUILTIN_COMMAND_EXPANSIONS["{}{}".format(prefix, port_num)] = {
+            "command": "connect {}{}".format(port, port_num),
+            "help": 'connect to serial port "{}{}"'.format(port, port_num),
+        }
 
 
 def load_user_config():
@@ -111,9 +148,14 @@ def prepare_command_expansions(config):
                 args = ()
             else:
                 args = tuple(c.split("=") for c in cmd[1:])
+
+            help_message = ""
+            if isinstance(sub, Mapping):
+                help_message = sub.get("help", "")
+                sub = sub["command"]
             if isinstance(sub, str):
                 sub = sub.split()
-            _command_expansions[cmd[0]] = (args, sub)
+            _command_expansions[cmd[0]] = (args, sub, help_message)
 
 
 def do_command_expansion(args):
@@ -126,7 +168,7 @@ def do_command_expansion(args):
     pre = []
     while args and args[0] in _command_expansions:
         cmd = args.pop(0)
-        exp_args, exp_sub = _command_expansions[cmd]
+        exp_args, exp_sub, _ = _command_expansions[cmd]
         for exp_arg in exp_args:
             exp_arg_name = exp_arg[0]
             if args and "=" not in args[0]:
@@ -365,6 +407,26 @@ def execbuffer(pyb, buf, follow):
     return ret_val
 
 
+def print_help():
+    def print_commands_help(cmds, help_idx):
+        max_command_len = max(len(cmd) for cmd in cmds.keys())
+        for cmd in sorted(cmds.keys()):
+            help_message_lines = dedent(cmds[cmd][help_idx]).split("\n")
+            help_message = help_message_lines[0]
+            for line in help_message_lines[1:]:
+                help_message = "{}\n{}{}".format(help_message, " " * (max_command_len + 4), line)
+            print("  ", cmd, " " * (max_command_len - len(cmd) + 2), help_message, sep="")
+
+    print(_PROG, "-- MicroPython remote control")
+    print("See https://docs.micropython.org/en/latest/reference/mpremote.html")
+
+    print("\nList of commands:")
+    print_commands_help(_COMMANDS, 3)
+
+    print("\nList of shortcuts:")
+    print_commands_help(_command_expansions, 2)
+
+
 def main():
     config = load_user_config()
     prepare_command_expansions(config)
@@ -376,20 +438,9 @@ def main():
     try:
         while args:
             do_command_expansion(args)
-
-            cmds = {
-                "connect": (False, False, 1),
-                "disconnect": (False, False, 0),
-                "mount": (True, False, 1),
-                "repl": (False, True, 0),
-                "eval": (True, True, 1),
-                "exec": (True, True, 1),
-                "run": (True, True, 1),
-                "fs": (True, True, 1),
-            }
             cmd = args.pop(0)
             try:
-                need_raw_repl, is_action, num_args_min = cmds[cmd]
+                need_raw_repl, is_action, num_args_min, _ = _COMMANDS[cmd]
             except KeyError:
                 print(f"{_PROG}: '{cmd}' is not a command")
                 return 1
@@ -405,6 +456,9 @@ def main():
                 if pyb is None:
                     did_action = True
                 continue
+            elif cmd == "help":
+                print_help()
+                sys.exit(0)
 
             if pyb is None:
                 pyb = do_connect(["auto"])

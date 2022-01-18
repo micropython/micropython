@@ -215,7 +215,9 @@ STATIC mp_int_t bluetooth_uuid_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bu
     return 0;
 }
 
-#if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS && MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
+
+#if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 STATIC void ringbuf_put_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) {
     assert(ringbuf_free(ringbuf) >= (size_t)uuid->type + 1);
     ringbuf_put(ringbuf, uuid->type);
@@ -223,7 +225,9 @@ STATIC void ringbuf_put_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) 
         ringbuf_put(ringbuf, uuid->data[i]);
     }
 }
+#endif
 
+#if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC void ringbuf_get_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) {
     assert(ringbuf_avail(ringbuf) >= 1);
     uuid->type = ringbuf_get(ringbuf);
@@ -232,7 +236,9 @@ STATIC void ringbuf_get_uuid(ringbuf_t *ringbuf, mp_obj_bluetooth_uuid_t *uuid) 
         uuid->data[i] = ringbuf_get(ringbuf);
     }
 }
-#endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#endif
+
+#endif // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
 const mp_obj_type_t mp_type_bluetooth_uuid = {
     { &mp_type_type },
@@ -630,6 +636,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(bluetooth_ble_gatts_register_services_obj, blue
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 2) {
+        if (args[1] == mp_const_none) {
+            int err = mp_bluetooth_gap_peripheral_connect_cancel();
+            return bluetooth_handle_errno(err);
+        }
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid addr"));
+    }
     uint8_t addr_type = mp_obj_get_int(args[1]);
     mp_buffer_info_t bufinfo = {0};
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
@@ -637,14 +650,22 @@ STATIC mp_obj_t bluetooth_ble_gap_connect(size_t n_args, const mp_obj_t *args) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid addr"));
     }
     mp_int_t scan_duration_ms = MP_BLUETOOTH_CONNECT_DEFAULT_SCAN_DURATION_MS;
-    if (n_args == 4) {
+    mp_int_t min_conn_interval_us = 0;
+    mp_int_t max_conn_interval_us = 0;
+    if (n_args >= 4 && args[3] != mp_const_none) {
         scan_duration_ms = mp_obj_get_int(args[3]);
     }
+    if (n_args >= 5 && args[4] != mp_const_none) {
+        min_conn_interval_us = mp_obj_get_int(args[4]);
+    }
+    if (n_args >= 6 && args[5] != mp_const_none) {
+        max_conn_interval_us = mp_obj_get_int(args[5]);
+    }
 
-    int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms);
+    int err = mp_bluetooth_gap_peripheral_connect(addr_type, bufinfo.buf, scan_duration_ms, min_conn_interval_us, max_conn_interval_us);
     return bluetooth_handle_errno(err);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 3, 4, bluetooth_ble_gap_connect);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bluetooth_ble_gap_connect_obj, 2, 6, bluetooth_ble_gap_connect);
 
 STATIC mp_obj_t bluetooth_ble_gap_scan(size_t n_args, const mp_obj_t *args) {
     // Default is indefinite scan, with the NimBLE "background scan" interval and window.

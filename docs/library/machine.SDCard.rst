@@ -50,7 +50,7 @@ vary from platform to platform.
      - *mosi* can be used to specify an SPI mosi pin.
 
      - *cs* can be used to specify an SPI chip select pin.
-     
+
      - *freq* selects the SD/MMC interface frequency in Hz (only supported on the ESP32).
 
 Implementation-specific details

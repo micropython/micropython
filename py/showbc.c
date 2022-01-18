@@ -98,8 +98,8 @@ void mp_bytecode_print(const mp_print_t *print, const void *descr, const byte *i
 
     // raw bytecode dump
     size_t prelude_size = ip - mp_showbc_code_start + n_info + n_cell;
-    mp_printf(print, "Raw bytecode (code_info_size=" UINT_FMT ", bytecode_size=" UINT_FMT "):\n",
-        prelude_size, len - prelude_size);
+    mp_printf(print, "Raw bytecode (code_info_size=%u, bytecode_size=%u):\n",
+        (unsigned)prelude_size, (unsigned)(len - prelude_size));
     for (mp_uint_t i = 0; i < len; i++) {
         if (i > 0 && i % 16 == 0) {
             mp_printf(print, "\n");
@@ -208,25 +208,16 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
         case MP_BC_LOAD_NAME:
             DECODE_QSTR;
             mp_printf(print, "LOAD_NAME %s", qstr_str(qst));
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                mp_printf(print, " (cache=%u)", *ip++);
-            }
             break;
 
         case MP_BC_LOAD_GLOBAL:
             DECODE_QSTR;
             mp_printf(print, "LOAD_GLOBAL %s", qstr_str(qst));
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                mp_printf(print, " (cache=%u)", *ip++);
-            }
             break;
 
         case MP_BC_LOAD_ATTR:
             DECODE_QSTR;
             mp_printf(print, "LOAD_ATTR %s", qstr_str(qst));
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                mp_printf(print, " (cache=%u)", *ip++);
-            }
             break;
 
         case MP_BC_LOAD_METHOD:
@@ -270,9 +261,6 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
         case MP_BC_STORE_ATTR:
             DECODE_QSTR;
             mp_printf(print, "STORE_ATTR %s", qstr_str(qst));
-            if (MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE) {
-                mp_printf(print, " (cache=%u)", *ip++);
-            }
             break;
 
         case MP_BC_STORE_SUBSCR:
@@ -531,7 +519,8 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip) {
             } else if (ip[-1] < MP_BC_STORE_FAST_MULTI + 16) {
                 mp_printf(print, "STORE_FAST " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_STORE_FAST_MULTI);
             } else if (ip[-1] < MP_BC_UNARY_OP_MULTI + MP_UNARY_OP_NUM_BYTECODE) {
-                mp_printf(print, "UNARY_OP " UINT_FMT, (mp_uint_t)ip[-1] - MP_BC_UNARY_OP_MULTI);
+                mp_uint_t op = ip[-1] - MP_BC_UNARY_OP_MULTI;
+                mp_printf(print, "UNARY_OP " UINT_FMT " %s", op, qstr_str(mp_unary_op_method_name[op]));
             } else if (ip[-1] < MP_BC_BINARY_OP_MULTI + MP_BINARY_OP_NUM_BYTECODE) {
                 mp_uint_t op = ip[-1] - MP_BC_BINARY_OP_MULTI;
                 mp_printf(print, "BINARY_OP " UINT_FMT " %s", op, qstr_str(mp_binary_op_method_name[op]));

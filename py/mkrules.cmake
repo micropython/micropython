@@ -10,6 +10,15 @@ set(MICROPY_QSTRDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/qstrdefs.collected.h")
 set(MICROPY_QSTRDEFS_PREPROCESSED "${MICROPY_GENHDR_DIR}/qstrdefs.preprocessed.h")
 set(MICROPY_QSTRDEFS_GENERATED "${MICROPY_GENHDR_DIR}/qstrdefs.generated.h")
 
+# Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
+# manifest handling is at the end of this file.
+if(MICROPY_FROZEN_MANIFEST)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+        MICROPY_MODULE_FROZEN_MPY=\(1\)
+    )
+endif()
+
 # Provide defaults for preprocessor flags if not already defined
 if(NOT MICROPY_CPP_FLAGS)
     get_target_property(MICROPY_CPP_INC ${MICROPY_TARGET} INCLUDE_DIRECTORIES)
@@ -120,10 +129,7 @@ if(MICROPY_FROZEN_MANIFEST)
         ${MICROPY_FROZEN_CONTENT}
     )
 
-    target_compile_definitions(${MICROPY_TARGET} PUBLIC
-        MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-        MICROPY_MODULE_FROZEN_MPY=\(1\)
-    )
+    # Note: target_compile_definitions already added earlier.
 
     if(NOT MICROPY_LIB_DIR)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/../micropython-lib)

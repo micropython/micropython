@@ -1,7 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Variant support. For compatibility with how it works for the other ports, this gets imported
+       early so variants cannot override build options like the ones specified in the rest of this file.
+       Use CustomPropsFile (see the .vcxproj file) for that. -->
+  <PropertyGroup>
+    <PyVariant Condition="'$(PyVariant)' == ''">standard</PyVariant>
+    <PyBuild Condition="'$(PyBuild)' == ''">build-$(PyVariant)</PyBuild>
+  </PropertyGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
+    <Import Project="$(PyVariantDir)mpconfigvariant.props"/>
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -31,7 +39,13 @@
       <Destination>$(PyTargetDir)%(FileName)%(Extension)</Destination>
     </PyOutputFiles>
     <PyCookieFiles Include="$(PyBuildDir)copycookie*" Exclude="$(PyFileCopyCookie)"/>
+    <QstrDependencies Include="$(PyVariantDir)mpconfigvariant.h"/>
   </ItemGroup>
+
+  <!-- Helper for getting resulting executable path since it depends on other properties. -->
+  <Target Name="ShowTargetPath">
+    <Message Text="$(TargetPath)" Importance="high"/>
+  </Target>
 
   <!-- Copy PyOutputFiles to their target destination.
        To force this when switching between platforms/configurations which are already up-to-date (and as such,

@@ -116,6 +116,21 @@ const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn
     return NULL;
 }
 
+const machine_pin_af_obj_t *pin_find_af_by_base(const machine_pin_obj_t *pin, void *base_ptr[], size_t base_size) {
+    const machine_pin_af_obj_t *af_obj = NULL;
+
+    for (int i = 0; i < pin->af_list_len; ++i) {
+        af_obj = &pin->af_list[i];
+        for (int j = 0; j < base_size; ++j) {
+            if (af_obj->instance == base_ptr[j]) {
+                return af_obj;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx) {
     // TODO: Implement pin_find_af_by_index function
     return NULL;

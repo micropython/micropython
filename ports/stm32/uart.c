@@ -40,11 +40,13 @@
 
 #if defined(STM32F4)
 #define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
-#elif defined(STM32H7)
-#define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE_RXFNE)
 #else
+#if defined(STM32H7)
+#define USART_ISR_RXNE USART_ISR_RXNE_RXFNE
+#endif
 #define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE)
 #endif
+
 #define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
 #define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
 
@@ -717,6 +719,33 @@ uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
             uart_clk = LSE_VALUE;
             break;
     }
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    uint32_t csel;
+    if (self->uart_id == 1 || self->uart_id == 6 || self->uart_id == 9 || self->uart_id == 10) {
+        csel = RCC->CDCCIP2R >> 3;
+    } else {
+        csel = RCC->CDCCIP2R;
+    }
+    switch (csel & 3) {
+        case 0:
+            if (self->uart_id == 1 || self->uart_id == 6 || self->uart_id == 9 || self->uart_id == 10) {
+                uart_clk = HAL_RCC_GetPCLK2Freq();
+            } else {
+                uart_clk = HAL_RCC_GetPCLK1Freq();
+            }
+            break;
+        case 3:
+            uart_clk = HSI_VALUE;
+            break;
+        case 4:
+            uart_clk = CSI_VALUE;
+            break;
+        case 5:
+            uart_clk = LSE_VALUE;
+            break;
+        default:
+            break;
+    }
     #elif defined(STM32H7)
     uint32_t csel;
     if (self->uart_id == 1 || self->uart_id == 6) {
@@ -850,7 +879,17 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;
         #else
-        return self->uartx->DR & self->char_mask;
+        int data = self->uartx->DR & self->char_mask;
+        // Re-enable any IRQs that were disabled in uart_irq_handler because SR couldn't
+        // be cleared there (clearing SR in uart_irq_handler required reading DR which
+        // may have lost a character).
+        if (self->mp_irq_trigger & UART_FLAG_RXNE) {
+            self->uartx->CR1 |= USART_CR1_RXNEIE;
+        }
+        if (self->mp_irq_trigger & UART_FLAG_IDLE) {
+            self->uartx->CR1 |= USART_CR1_IDLEIE;
+        }
+        return data;
         #endif
     }
 }
@@ -955,7 +994,10 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
     uart_tx_data(uart_obj, str, len, &errcode);
 }
 
-// this IRQ handler is set up to handle RXNE interrupts only
+// This IRQ handler is set up to handle RXNE, IDLE and ORE interrupts only.
+// Notes:
+// - ORE (overrun error) is tied to the RXNE IRQ line.
+// - On STM32F4 the IRQ flags are cleared by reading SR then DR.
 void uart_irq_handler(mp_uint_t uart_id) {
     // get the uart object
     pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
@@ -966,16 +1008,28 @@ void uart_irq_handler(mp_uint_t uart_id) {
         return;
     }
 
-    if (UART_RXNE_IS_SET(self->uartx)) {
+    // Capture IRQ status flags.
+    #if defined(STM32F4)
+    self->mp_irq_flags = self->uartx->SR;
+    bool rxne_is_set = self->mp_irq_flags & USART_SR_RXNE;
+    bool did_clear_sr = false;
+    #else
+    self->mp_irq_flags = self->uartx->ISR;
+    bool rxne_is_set = self->mp_irq_flags & USART_ISR_RXNE;
+    #endif
+
+    // Process RXNE flag, either read the character or disable the interrupt.
+    if (rxne_is_set) {
         if (self->read_buf_len != 0) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
                 #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
                 int data = self->uartx->RDR; // clears UART_FLAG_RXNE
-                self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
                 #else
+                self->mp_irq_flags = self->uartx->SR; // resample to get any new flags since next read of DR will clear SR
                 int data = self->uartx->DR; // clears UART_FLAG_RXNE
+                did_clear_sr = true;
                 #endif
                 data &= self->char_mask;
                 if (self->attached_to_repl && data == mp_interrupt_char) {
@@ -992,32 +1046,32 @@ void uart_irq_handler(mp_uint_t uart_id) {
             } else { // No room: leave char in buf, disable interrupt
                 UART_RXNE_IT_DIS(self->uartx);
             }
+        } else {
+            // No buffering, disable interrupt.
+            UART_RXNE_IT_DIS(self->uartx);
         }
     }
-    // If RXNE is clear but ORE set then clear the ORE flag (it's tied to RXNE IRQ)
-    #if defined(STM32F4)
-    else if (self->uartx->SR & USART_SR_ORE) {
-        (void)self->uartx->DR;
-    }
-    #else
-    else if (self->uartx->ISR & USART_ISR_ORE) {
-        self->uartx->ICR = USART_ICR_ORECF;
-    }
-    #endif
 
-    // Set user IRQ flags
-    self->mp_irq_flags = 0;
+    // Clear other interrupt flags that can trigger this IRQ handler.
     #if defined(STM32F4)
-    if (self->uartx->SR & USART_SR_IDLE) {
-        (void)self->uartx->SR;
-        (void)self->uartx->DR;
-        self->mp_irq_flags |= UART_FLAG_IDLE;
+    if (did_clear_sr) {
+        // SR was cleared above.  Re-enable IDLE if it should be enabled.
+        if (self->mp_irq_trigger & UART_FLAG_IDLE) {
+            self->uartx->CR1 |= USART_CR1_IDLEIE;
+        }
+    } else {
+        // On STM32F4 the only way to clear flags is to read SR then DR, but that may
+        // lead to a loss of data in DR.  So instead the IRQs are disabled.
+        if (self->mp_irq_flags & USART_SR_IDLE) {
+            self->uartx->CR1 &= ~USART_CR1_IDLEIE;
+        }
+        if (self->mp_irq_flags & USART_SR_ORE) {
+            // ORE is tied to RXNE so that must be disabled.
+            self->uartx->CR1 &= ~USART_CR1_RXNEIE;
+        }
     }
     #else
-    if (self->uartx->ISR & USART_ISR_IDLE) {
-        self->uartx->ICR = USART_ICR_IDLECF;
-        self->mp_irq_flags |= UART_FLAG_IDLE;
-    }
+    self->uartx->ICR = self->mp_irq_flags & (USART_ICR_IDLECF | USART_ICR_ORECF);
     #endif
 
     // Check the flags to see if the user handler should be called

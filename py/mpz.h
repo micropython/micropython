@@ -91,6 +91,7 @@ typedef int8_t mpz_dbl_dig_signed_t;
 #define MPZ_NUM_DIG_FOR_LL ((sizeof(long long) * 8 + MPZ_DIG_SIZE - 1) / MPZ_DIG_SIZE)
 
 typedef struct _mpz_t {
+    // Zero has neg=0, len=0.  Negative zero is not allowed.
     size_t neg : 1;
     size_t fixed_dig : 1;
     size_t alloc : (8 * sizeof(size_t) - 2);
@@ -119,7 +120,7 @@ static inline bool mpz_is_zero(const mpz_t *z) {
     return z->len == 0;
 }
 static inline bool mpz_is_neg(const mpz_t *z) {
-    return z->len != 0 && z->neg != 0;
+    return z->neg != 0;
 }
 int mpz_cmp(const mpz_t *lhs, const mpz_t *rhs);
 

@@ -5,7 +5,7 @@ This chapter covers a tour of MicroPython from the perspective of a developer, c
 to MicroPython. It acts as a comprehensive resource on the implementation details of MicroPython
 for both novice and expert contributors.
 
-Development around MicroPython usually involves modifying the core runtime, porting or 
+Development around MicroPython usually involves modifying the core runtime, porting or
 maintaining a new library. This guide describes at great depth, the implementation
 details of MicroPython including a getting started guide, compiler internals, porting
 MicroPython to a new platform and implementing a core MicroPython library.
@@ -24,4 +24,3 @@ MicroPython to a new platform and implementing a core MicroPython library.
    publiccapi.rst
    extendingmicropython.rst
    porting.rst
-   

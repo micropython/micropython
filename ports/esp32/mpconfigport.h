@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <alloca.h>
 #include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "driver/i2s.h"
 
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
@@ -30,6 +32,8 @@
 
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 #define MICROPY_OPT_MPZ_BITWISE             (1)
 
 // Python internal features
@@ -158,15 +162,25 @@
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#define MICROPY_PY_MACHINE_PWM              (1)
+#define MICROPY_PY_MACHINE_PWM_INIT         (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY         (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #ifndef MICROPY_PY_MACHINE_DAC
 #define MICROPY_PY_MACHINE_DAC              (1)
 #endif
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (1)
+#endif
+#ifndef MICROPY_PY_NETWORK_WLAN
+#define MICROPY_PY_NETWORK_WLAN             (1)
 #endif
 #ifndef MICROPY_HW_ENABLE_SDCARD
 #define MICROPY_HW_ENABLE_SDCARD            (1)
@@ -180,6 +194,8 @@
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_BTREE                    (1)
+#define MICROPY_PY_ONEWIRE                  (1)
+#define MICROPY_PY_UPLATFORM                (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
 #define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
@@ -299,6 +315,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
+    struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
@@ -341,6 +358,12 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 
 // Functions that should go in IRAM
+#define MICROPY_WRAP_MP_BINARY_OP(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_LOAD_GLOBAL(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_LOAD_NAME(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_MAP_LOOKUP(f) IRAM_ATTR f
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) IRAM_ATTR f
 
@@ -356,6 +379,11 @@ typedef long mp_off_t;
 // board specifics
 #define MICROPY_PY_SYS_PLATFORM "esp32"
 
+// ESP32-S3 extended IO for 47 & 48
+#ifndef MICROPY_HW_ESP32S3_EXTENDED_IO
+#define MICROPY_HW_ESP32S3_EXTENDED_IO      (1)
+#endif
+
 #ifndef MICROPY_HW_ENABLE_MDNS_QUERIES
 #define MICROPY_HW_ENABLE_MDNS_QUERIES      (1)
 #endif
@@ -363,3 +391,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_HW_ENABLE_MDNS_RESPONDER
 #define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
 #endif
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP boardctrl_startup
+#endif
+
+void boardctrl_startup(void);

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "hydrabus.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "HYDRABUS",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

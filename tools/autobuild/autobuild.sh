@@ -5,7 +5,7 @@
 # Requirements:
 # - All toolchains must be in path (arm-none-eabi-gcc, xtensa-lx106-elf)
 # - IDF_PATH_V42 must be set
-# - IDF_PATH_V43 must be set
+# - IDF_PATH_V44 must be set
 # - MICROPY_AUTOBUILD_MICROPYTHON_REPO must be set to location of micropython repository
 # - MICROPY_AUTOBUILD_MAKE must be set to the make command to use, eg "make -j2"
 #
@@ -18,8 +18,8 @@ if [ ! -d "$IDF_PATH_V42" ]; then
     exit 1
 fi
 
-if [ ! -d "$IDF_PATH_V43" ]; then
-    echo "must set IDF_PATH_V43"
+if [ ! -d "$IDF_PATH_V44" ]; then
+    echo "must set IDF_PATH_V44"
     exit 1
 fi
 
@@ -38,6 +38,9 @@ fi
 
 # get directory of this script for access to other build scripts
 AUTODIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# source additional functions
+source ${AUTODIR}/build-boards.sh
 
 # make local directory to put firmware
 LOCAL_FIRMWARE=/tmp/autobuild-firmware-$$
@@ -62,19 +65,22 @@ FW_GIT="$(git describe --dirty || echo unknown)"
 FW_TAG="-$FW_DATE-unstable-$FW_GIT"
 
 # build new firmware
-cd ports/stm32
-${AUTODIR}/build-stm32-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
-cd ../cc3200
+cd ports/cc3200
 ${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 ${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32
-${AUTODIR}/build-esp32-latest.sh ${IDF_PATH_V42} ${FW_TAG} ${LOCAL_FIRMWARE}
-${AUTODIR}/build-esp32-latest.sh ${IDF_PATH_V43} ${FW_TAG} ${LOCAL_FIRMWARE}
-cd ../rp2
-${AUTODIR}/build-rp2-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+(source ${IDF_PATH_V42}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
+(source ${IDF_PATH_V44}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
 cd ../mimxrt
-${AUTODIR}/build-mimxrt-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_mimxrt_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../rp2
+build_rp2_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../samd
+build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+cd ../stm32
+build_stm32_boards ${FW_TAG} ${LOCAL_FIRMWARE}
+${AUTODIR}/build-stm32-extra.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 

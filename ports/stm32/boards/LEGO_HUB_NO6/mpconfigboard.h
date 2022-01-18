@@ -18,6 +18,7 @@
 #define MICROPY_HW_ENABLE_RNG                    (1)
 #define MICROPY_HW_ENABLE_DAC                    (1)
 #define MICROPY_HW_ENABLE_USB                    (1)
+#define MICROPY_HW_FLASH_FS_LABEL                "HUB_NO6"
 
 // HSE is 16MHz, CPU freq set to 100MHz, buses at maximum freq
 #define MICROPY_HW_CLK_PLLM                      (16)

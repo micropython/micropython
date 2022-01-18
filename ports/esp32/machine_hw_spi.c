@@ -36,18 +36,47 @@
 
 #include "driver/spi_master.h"
 
-// Default pins for SPI(1), can be overridden by a board
+// SPI mappings by device, naming used by IDF old/new
+// upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3
+// ----------+-----------+-----------+---------+---------
+// SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2
+// SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err
+
+// Default pins for SPI(id=1) aka IDF SPI2, can be overridden by a board
 #ifndef MICROPY_HW_SPI1_SCK
-#define MICROPY_HW_SPI1_SCK (14)
-#define MICROPY_HW_SPI1_MOSI (13)
-#define MICROPY_HW_SPI1_MISO (12)
+#ifdef SPI2_IOMUX_PIN_NUM_CLK
+// Use IO_MUX pins by default.
+// If SPI lines are routed to other pins through GPIO matrix
+// routing adds some delay and lower limit applies to SPI clk freq
+#define MICROPY_HW_SPI1_SCK SPI2_IOMUX_PIN_NUM_CLK      // pin 14 on ESP32
+#define MICROPY_HW_SPI1_MOSI SPI2_IOMUX_PIN_NUM_MOSI    // pin 13 on ESP32
+#define MICROPY_HW_SPI1_MISO SPI2_IOMUX_PIN_NUM_MISO    // pin 12 on ESP32
+// Only for compatibility with IDF 4.2 and older
+#elif CONFIG_IDF_TARGET_ESP32S2
+#define MICROPY_HW_SPI1_SCK FSPI_IOMUX_PIN_NUM_CLK
+#define MICROPY_HW_SPI1_MOSI FSPI_IOMUX_PIN_NUM_MOSI
+#define MICROPY_HW_SPI1_MISO FSPI_IOMUX_PIN_NUM_MISO
+#else
+#define MICROPY_HW_SPI1_SCK HSPI_IOMUX_PIN_NUM_CLK
+#define MICROPY_HW_SPI1_MOSI HSPI_IOMUX_PIN_NUM_MOSI
+#define MICROPY_HW_SPI1_MISO HSPI_IOMUX_PIN_NUM_MISO
+#endif
 #endif
 
-// Default pins for SPI(2), can be overridden by a board
+// Default pins for SPI(id=2) aka IDF SPI3, can be overridden by a board
 #ifndef MICROPY_HW_SPI2_SCK
-#define MICROPY_HW_SPI2_SCK (18)
-#define MICROPY_HW_SPI2_MOSI (23)
-#define MICROPY_HW_SPI2_MISO (19)
+#if CONFIG_IDF_TARGET_ESP32
+// ESP32 has IO_MUX pins for VSPI/SPI3 lines, use them as defaults
+#define MICROPY_HW_SPI2_SCK VSPI_IOMUX_PIN_NUM_CLK      // pin 18
+#define MICROPY_HW_SPI2_MOSI VSPI_IOMUX_PIN_NUM_MOSI    // pin 23
+#define MICROPY_HW_SPI2_MISO VSPI_IOMUX_PIN_NUM_MISO    // pin 19
+#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+// ESP32S2 and S3 uses GPIO matrix for SPI3 pins, no IO_MUX possible
+// Set defaults to the pins used by SPI2 in Octal mode
+#define MICROPY_HW_SPI2_SCK (36)
+#define MICROPY_HW_SPI2_MOSI (35)
+#define MICROPY_HW_SPI2_MISO (37)
+#endif
 #endif
 
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
@@ -55,6 +84,9 @@
 
 #if CONFIG_IDF_TARGET_ESP32C3
 #define HSPI_HOST SPI2_HOST
+#elif CONFIG_IDF_TARGET_ESP32S3
+#define HSPI_HOST SPI3_HOST
+#define FSPI_HOST SPI2_HOST
 #endif
 
 typedef struct _machine_hw_spi_default_pins_t {
@@ -85,7 +117,9 @@ typedef struct _machine_hw_spi_obj_t {
 // Default pin mappings for the hardware SPI instances
 STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
     { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
+    #ifdef MICROPY_HW_SPI2_SCK
     { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
+    #endif
 };
 
 // Static objects mapping to HSPI and VSPI hardware peripherals
@@ -193,6 +227,9 @@ STATIC void machine_hw_spi_init_internal(
     }
 
     if (self->host != HSPI_HOST
+        #ifdef FSPI_HOST
+        && self->host != FSPI_HOST
+        #endif
         #ifdef VSPI_HOST
         && self->host != VSPI_HOST
         #endif
@@ -231,7 +268,15 @@ STATIC void machine_hw_spi_init_internal(
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
+        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+        dma_chan = 3;
+        #else
         dma_chan = 1;
+        #endif
+    #ifdef FSPI_HOST
+    } else if (self->host == FSPI_HOST) {
+        dma_chan = 1;
+    #endif
     #ifdef VSPI_HOST
     } else if (self->host == VSPI_HOST) {
         dma_chan = 2;
@@ -444,7 +489,7 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     machine_hw_spi_obj_t *self;
     const machine_hw_spi_default_pins_t *default_pins;
-    if (args[ARG_id].u_int == HSPI_HOST) {
+    if (args[ARG_id].u_int == 1) { // SPI2_HOST which is FSPI_HOST on ESP32Sx, HSPI_HOST on others
         self = &machine_hw_spi_obj[0];
         default_pins = &machine_hw_spi_default_pins[0];
     } else {

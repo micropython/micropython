@@ -1,0 +1,18 @@
+{
+    "deploy": [
+        "../MIKROE_QUAIL/deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "mikroBUS"
+    ],
+    "id": "MIKROE-QUAIL",
+    "images": [
+            "quail_top.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "MikroE Quail",
+    "thumbnail": "",
+    "url": "https://www.mikroe.com/quail",
+    "vendor": "MikroElektronika"
+}

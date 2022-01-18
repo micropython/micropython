@@ -370,10 +370,14 @@ int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_
 int mp_bluetooth_gap_scan_stop(void);
 
 // Connect to a found peripheral.
-int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms);
+int mp_bluetooth_gap_peripheral_connect(uint8_t addr_type, const uint8_t *addr, int32_t duration_ms, int32_t min_conn_interval_us, int32_t max_conn_interval_us);
+
+// Cancel in-progress connection to a peripheral.
+int mp_bluetooth_gap_peripheral_connect_cancel(void);
 #endif
 
 #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+
 // Find all primary services on the connected peripheral.
 int mp_bluetooth_gattc_discover_primary_services(uint16_t conn_handle, const mp_obj_bluetooth_uuid_t *uuid);
 

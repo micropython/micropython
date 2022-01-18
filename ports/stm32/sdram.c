@@ -283,10 +283,10 @@ void sdram_leave_low_power(void) {
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 
-bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
+bool __attribute__((optimize("Os"))) sdram_test(bool exhaustive) {
     uint8_t const pattern = 0xaa;
     uint8_t const antipattern = 0x55;
-    uint8_t *const mem_base = (uint8_t *)sdram_start();
+    volatile uint8_t *const mem_base = (uint8_t *)sdram_start();
 
     #if MICROPY_HW_SDRAM_TEST_FAIL_ON_ERROR
     char error_buffer[1024];
@@ -310,12 +310,13 @@ bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
 
     // Test data bus
     for (uint32_t i = 0; i < MICROPY_HW_SDRAM_MEM_BUS_WIDTH; i++) {
-        *((uint32_t *)mem_base) = (1 << i);
-        if (*((uint32_t *)mem_base) != (1 << i)) {
+        *((volatile uint32_t *)mem_base) = (1 << i);
+        __DSB();
+        if (*((volatile uint32_t *)mem_base) != (1 << i)) {
             #if MICROPY_HW_SDRAM_TEST_FAIL_ON_ERROR
             snprintf(error_buffer, sizeof(error_buffer),
                 "Data bus test failed at 0x%p expected 0x%x found 0x%lx",
-                &mem_base[0], (1 << i), ((uint32_t *)mem_base)[0]);
+                &mem_base[0], (1 << i), ((volatile uint32_t *)mem_base)[0]);
             __fatal_error(error_buffer);
             #endif
             return false;
@@ -325,6 +326,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
     // Test address bus
     for (uint32_t i = 1; i < MICROPY_HW_SDRAM_SIZE; i <<= 1) {
         mem_base[i] = pattern;
+        __DSB();
         if (mem_base[i] != pattern) {
             #if MICROPY_HW_SDRAM_TEST_FAIL_ON_ERROR
             snprintf(error_buffer, sizeof(error_buffer),
@@ -338,6 +340,7 @@ bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
 
     // Check for aliasing (overlaping addresses)
     mem_base[0] = antipattern;
+    __DSB();
     for (uint32_t i = 1; i < MICROPY_HW_SDRAM_SIZE; i <<= 1) {
         if (mem_base[i] != pattern) {
             #if MICROPY_HW_SDRAM_TEST_FAIL_ON_ERROR
@@ -356,15 +359,15 @@ bool __attribute__((optimize("O0"))) sdram_test(bool exhaustive) {
         // is enabled, it's not just writing and reading from cache.
         // Note: This test should also detect refresh rate issues.
         for (uint32_t i = 0; i < MICROPY_HW_SDRAM_SIZE; i++) {
-            mem_base[i] = pattern;
+            mem_base[i] = ((i % 2) ? pattern : antipattern);
         }
 
         for (uint32_t i = 0; i < MICROPY_HW_SDRAM_SIZE; i++) {
-            if (mem_base[i] != pattern) {
+            if (mem_base[i] != ((i % 2) ? pattern : antipattern)) {
                 #if MICROPY_HW_SDRAM_TEST_FAIL_ON_ERROR
                 snprintf(error_buffer, sizeof(error_buffer),
                     "Address bus slow test failed at 0x%p expected 0x%x found 0x%x",
-                    &mem_base[i], pattern, mem_base[i]);
+                    &mem_base[i], ((i % 2) ? pattern : antipattern), mem_base[i]);
                 __fatal_error(error_buffer);
                 #endif
                 return false;

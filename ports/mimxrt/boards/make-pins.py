@@ -8,9 +8,20 @@ import sys
 import csv
 import re
 
-SUPPORTED_AFS = {"GPIO"}
+SUPPORTED_AFS = {"GPIO", "USDHC", "FLEXPWM", "TMR"}
 MAX_AF = 10  # AF0 .. AF9
 ADC_COL = 11
+
+
+regexes = [
+    r"IOMUXC_(?P<pin>GPIO_SD_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_AD_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_EMC_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_AD_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_SD_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+]
 
 
 def parse_pad(pad_str):
@@ -127,16 +138,18 @@ class AdcFunction(object):
 class AlternateFunction(object):
     """Holds the information associated with a pins alternate function."""
 
-    def __init__(self, idx, af_str):
+    def __init__(self, idx, input_reg, input_daisy, af_str):
         self.idx = idx
         self.af_str = af_str
+        self.input_reg = input_reg
+        self.input_daisy = input_daisy
         self.instance = self.af_str.split("_")[0]
 
     def print(self):
         """Prints the C representation of this AF."""
         print(
-            "    PIN_AF({0}, PIN_AF_MODE_ALT{1}, {2}, {3}),".format(
-                self.af_str, self.idx, self.instance, "0x10B0U"
+            "    PIN_AF({0}, PIN_AF_MODE_ALT{1}, {2}, {3}, {4}, {5}),".format(
+                self.af_str, self.idx, self.input_daisy, self.instance, self.input_reg, "0x10B0U"
             )
         )
 
@@ -167,12 +180,36 @@ class Pins(object):
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
+                if len(row) == 0 or row[0].startswith("#"):
+                    # Skip empty lines, and lines starting with "#"
+                    continue
+                if len(row) != 2:
+                    raise ValueError("Expecting two entries in a row")
+
                 pin = self.find_pin_by_name(row[1])
                 if pin and row[0]:  # Only add board pins that have a name
                     self.board_pins.append(NamedPin(row[0], pin.pad, pin.idx))
 
-    def parse_af_file(self, filename, pad_col, af_start_col):
+    def parse_af_file(self, filename, iomux_filename, pad_col, af_start_col):
         af_end_col = af_start_col + MAX_AF
+
+        iomux_pin_config = dict()
+
+        with open(iomux_filename, "r") as ipt:
+            input_str = ipt.read()
+            for regex in regexes:
+                matches = re.finditer(regex, input_str, re.MULTILINE)
+
+                for match in matches:
+                    if match.group("pin") not in iomux_pin_config:
+                        iomux_pin_config[match.group("pin")] = {
+                            int((match.groupdict()["muxMode"].strip("U")), 16): match.groupdict()
+                        }
+                    else:
+                        iomux_pin_config[match.group("pin")][
+                            int((match.groupdict()["muxMode"].strip("U")), 16)
+                        ] = match.groupdict()
+
         with open(filename, "r") as csvfile:
             rows = csv.reader(csvfile)
             header = next(rows)
@@ -187,7 +224,16 @@ class Pins(object):
                 af_idx = 0
                 for af_idx, af in enumerate(row[af_start_col:af_end_col]):
                     if af and af_supported(af):
-                        pin.add_af(AlternateFunction(af_idx, af))
+                        pin.add_af(
+                            AlternateFunction(
+                                af_idx,
+                                iomux_pin_config[pin.name][af_idx]["inputRegister"].strip("U"),
+                                int(
+                                    iomux_pin_config[pin.name][af_idx]["inputDaisy"].strip("U"), 16
+                                ),
+                                af,
+                            )
+                        )
 
                 pin.parse_adc(row[ADC_COL])
 
@@ -235,6 +281,37 @@ class Pins(object):
             hdr_file.write("extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;\n")
             hdr_file.write("extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;\n")
 
+            hdr_file.write("\n// Defines\n")
+            module_instance_factory(self.cpu_pins, hdr_file, "USDHC")
+            module_instance_factory(self.cpu_pins, hdr_file, "FLEXPWM")
+            module_instance_factory(self.cpu_pins, hdr_file, "TMR")
+
+
+def module_instance_factory(pins, output_file, name):
+    module_pin = filter(lambda p: any([af for af in p.alt_fn if name in af.af_str]), pins)
+
+    module_instances = dict()
+    for pin in module_pin:
+        for idx, alt_fn in enumerate(pin.alt_fn):
+            if name in alt_fn.instance:
+                format_string = "#define {0}_{1} &pin_{0}, {2}"
+                if alt_fn.instance not in module_instances:
+                    module_instances[alt_fn.instance] = [
+                        format_string.format(pin.name, alt_fn.af_str, idx)
+                    ]
+                else:
+                    module_instances[alt_fn.instance].append(
+                        format_string.format(pin.name, alt_fn.af_str, idx)
+                    )
+
+    for k, v in module_instances.items():
+        output_file.write(f"// {k}\n")
+        output_file.write(f"#define {k}_AVAIL (1)\n")
+        if name == "FLEXPWM":
+            output_file.write(f"#define {k} {k[-4:]}\n")
+        for i in v:
+            output_file.write(i + "\n")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -248,6 +325,13 @@ def main():
         dest="af_filename",
         help="Specifies the alternate function file for the chip",
         default="mimxrt1021_af.csv",
+    )
+    parser.add_argument(
+        "-i",
+        "--iomux",
+        dest="iomux_filename",
+        help="Specifies the fsl_iomuxc.h file for the chip",
+        default="fsl_iomuxc.h",
     )
     parser.add_argument(
         "-b",
@@ -279,7 +363,7 @@ def main():
 
     if args.af_filename:
         print("// --af {:s}".format(args.af_filename))
-        pins.parse_af_file(args.af_filename, 0, 1)
+        pins.parse_af_file(args.af_filename, args.iomux_filename, 0, 1)
 
     if args.board_filename:
         print("// --board {:s}".format(args.board_filename))

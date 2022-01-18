@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "stm32f439.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "STM32F439",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

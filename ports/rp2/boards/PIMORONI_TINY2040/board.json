@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "RGB LED",
+        "USB-C"
+    ],
+    "images": [
+        "tiny-2040-on-white-1_1024x1024.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Tiny2040",
+    "thumbnail": "",
+    "url": "https://shop.pimoroni.com/products/tiny-2040",
+    "vendor": "Pimoroni"
+}

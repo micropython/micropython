@@ -58,7 +58,8 @@ enum {
 };
 
 enum {
-    PIN_AF_MODE_ALT1 = 1,
+    PIN_AF_MODE_ALT0 = 0,
+    PIN_AF_MODE_ALT1,
     PIN_AF_MODE_ALT2,
     PIN_AF_MODE_ALT3,
     PIN_AF_MODE_ALT4,
@@ -66,6 +67,7 @@ enum {
     PIN_AF_MODE_ALT6,
     PIN_AF_MODE_ALT7,
     PIN_AF_MODE_ALT8,
+    PIN_AF_MODE_ALT9,
 };
 
 enum {
@@ -97,7 +99,9 @@ typedef struct {
     mp_obj_base_t base;
     qstr name;  // port name
     uint8_t af_mode;  // alternate function
+    uint8_t input_daisy;
     void *instance;  // pointer to peripheral instance for alternate function
+    uint32_t input_register;
     uint32_t pad_config;  // pad configuration for alternate function
 } machine_pin_af_obj_t;
 
