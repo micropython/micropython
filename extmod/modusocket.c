@@ -67,7 +67,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    s->timeout = 0;
+    s->timeout = -1;
     s->state = NULL;
     #endif
 
@@ -88,7 +88,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
 
         #if MICROPY_PY_USOCKET_EXTENDED_STATE
         // if a timeout was set before binding a NIC, call settimeout to reset it
-        if (self->timeout != 0 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
+        if (self->timeout != -1 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
         #endif
@@ -158,7 +158,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->bound = false;
     socket2->fileno = -1;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    socket2->timeout = 0;
+    socket2->timeout = -1;
     socket2->state = NULL;
     #endif
 
