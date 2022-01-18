@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-03 05:53+0000\n"
+"PO-Revision-Date: 2022-01-19 23:56+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -2830,7 +2830,7 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
+msgstr "kan inte konvertera complex till float"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2930,11 +2930,11 @@ msgstr "kan inte casta utdata med regel"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "kan inte konvertera komplex till dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "kan inte konvertera complex typer"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3132,7 +3132,7 @@ msgstr "divisor måste vara 4"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype måste vara float eller complex"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3304,7 +3304,7 @@ msgstr "funktionen är enbart definierad för ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "funktionen är bara implementerad för ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3437,7 +3437,7 @@ msgstr "indata måste vara en iterable"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "indatatyp måste vara float eller complex"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3450,7 +3450,7 @@ msgstr "indatamatrisen är singulär"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "indata måste vara en 1D ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
@@ -3466,7 +3466,7 @@ msgstr "indata måste vara en ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "indata måste vara en ndarray eller en scalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3843,7 +3843,7 @@ msgstr "inte tillräckligt med argument för formatsträng"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "inte implementerat för complex dtype"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -4604,7 +4604,7 @@ msgstr "fel indatatyp"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
-msgstr ""
+msgstr "fel längd på villkorsmatrisen"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
