@@ -70,6 +70,10 @@
 #include "common-hal/audiobusio/__init__.h"
 #endif
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#endif
+
 #if CIRCUITPY_IMAGECAPTURE
 #include "cam.h"
 #endif
@@ -277,6 +281,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
+    #endif
+
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
     #endif
 
     #if CIRCUITPY_WIFI

@@ -56,9 +56,9 @@ void shared_module_bleio_scanresults_append(bleio_scanresults_obj_t *self,
     bool connectable,
     bool scan_result,
     int8_t rssi,
-    uint8_t *peer_addr,
+    const uint8_t *peer_addr,
     uint8_t addr_type,
-    uint8_t *data,
+    const uint8_t *data,
     uint16_t len);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_BLEIO_SCANRESULTS_H

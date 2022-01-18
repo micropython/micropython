@@ -14,7 +14,7 @@ CONFIG_SDK_TOOLPREFIX="xtensa-esp32s3-elf-"
 CONFIG_BOOTLOADER_OFFSET_IN_FLASH=0x0
 # end of Bootloader config
 
-# CONFIG_ESP32S3_DEFAULT_CPU_FREQ_80 is not set
+CONFIG_BT_SOC_SUPPORT_5_0=y
 #
 # ESP32S3-Specific
 #

@@ -86,6 +86,14 @@ INC += \
 	-isystem esp-idf \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
+	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/util/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/porting/nimble/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
+	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
@@ -133,6 +141,7 @@ endif
 
 CFLAGS += \
 	-DHAVE_CONFIG_H \
+	-DESP_PLATFORM=1 \
 	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
 	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
@@ -298,8 +307,10 @@ else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
 
-SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
-
+SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
+ifneq ($(CIRCUITPY_BLEIO),0)
+	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
+endif
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
 	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
@@ -332,6 +343,12 @@ BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a l
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
 ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ifneq ($(CIRCUITPY_BLEIO),0)
+	ESP_IDF_COMPONENTS_LINK += bt
+	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
+	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+endif
+
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
 MBEDTLS_COMPONENTS_LINK = crypto tls x509
@@ -372,6 +389,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 		esp-idf/esp_system/__ldgen_output_sections.ld \
 		esp-idf/app_update/libapp_update.a \
 		esp-idf/bootloader_support/libbootloader_support.a \
+		esp-idf/bt/libbt.a \
 		esp-idf/driver/libdriver.a \
 		esp-idf/efuse/libefuse.a \
 		esp-idf/esp_adc_cal/libesp_adc_cal.a \

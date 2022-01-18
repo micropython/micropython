@@ -4,6 +4,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +26,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H
 
-#include <stdbool.h>
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-#include "shared-bindings/_bleio/UUID.h"
+#include "shared-bindings/_bleio/Connection.h"
+#include "shared-bindings/_bleio/ScanResults.h"
 
-#include "att.h"
-#include "hci.h"
+#include "supervisor/background_callback.h"
 
-void bleio_hci_background(void);
+#ifndef BLEIO_TOTAL_CONNECTION_COUNT
+#define BLEIO_TOTAL_CONNECTION_COUNT 5
+#endif
+
+#define BLEIO_HANDLE_INVALID     0xffff
+
+extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 typedef struct {
-    // ble_gap_enc_key_t own_enc;
-    // ble_gap_enc_key_t peer_enc;
-    // ble_gap_id_key_t peer_id;
-} bonding_keys_t;
+    mp_obj_base_t base;
+    // Pointer to buffers we maintain so that the data is long lived.
+    uint8_t *advertising_data;
+    uint8_t *scan_response_data;
+    // Pointer to current data.
+    const uint8_t *current_advertising_data;
+    bleio_scanresults_obj_t *scan_results;
+    mp_obj_t name;
+    mp_obj_tuple_t *connection_objs;
+    background_callback_t background_callback;
+    bool user_advertising;
+} bleio_adapter_obj_t;
 
-// We assume variable length data.
-// 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BT_ATT_DEFAULT_LE_MTU - 3)
+void bleio_adapter_gc_collect(bleio_adapter_obj_t *adapter);
+void bleio_adapter_reset(bleio_adapter_obj_t *adapter);
 
-// FIX
-#define BLE_GATT_HANDLE_INVALID 0x0000
-#define BLE_CONN_HANDLE_INVALID 0xFFFF
-#define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */
-#define BLE_GATTS_VAR_ATTR_LEN_MAX (512)  /**< Maximum length for variable length Attribute Values. */
-
-// Track if the user code modified the BLE state to know if we need to undo it on reload.
-extern bool vm_used_ble;
-
-// UUID shared by all CCCD's.
-extern bleio_uuid_obj_t cccd_uuid;
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_ADAPTER_H
