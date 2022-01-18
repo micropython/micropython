@@ -81,7 +81,17 @@
 #include "esp32/spiram.h"
 #endif
 
+// Heap sizes for when there is no external RAM for CircuitPython to use
+// exclusively.
+#ifdef CONFIG_IDF_TARGET_ESP32S2
 #define HEAP_SIZE (48 * 1024)
+#endif
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define HEAP_SIZE (176 * 1024)
+#endif
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define HEAP_SIZE (88 * 1024)
+#endif
 
 uint32_t *heap;
 uint32_t heap_size;
