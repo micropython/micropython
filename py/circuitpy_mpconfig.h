@@ -337,6 +337,10 @@ extern const struct _mp_obj_module_t nvm_module;
 #endif
 #endif
 
+#ifndef ULAB_SUPPORTS_COMPLEX
+#define ULAB_SUPPORTS_COMPLEX (0)
+#endif
+
 #if CIRCUITPY_ULAB
 // ulab requires reverse special methods
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
