@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,23 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "common-hal/microcontroller/Pin.h"
+// Micropython setup
 
-void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
+#define MICROPY_HW_BOARD_NAME       "Adafruit Camera"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-    // Turn on I2C
-    common_hal_never_reset_pin(&pin_GPIO7);
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
-}
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
+#define MICROPY_HW_NEOPIXEL_COUNT (6)
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
 
-void reset_board(void) {
-    // Turn on I2C power by default.
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
-}
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-void board_deinit(void) {
-}
+#define AUTORESET_DELAY_MS 500
+
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
+
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)

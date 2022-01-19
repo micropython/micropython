@@ -27,19 +27,26 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
     // USB
     common_hal_never_reset_pin(&pin_GPIO19);
     common_hal_never_reset_pin(&pin_GPIO20);
 
-    // Turn on I2C
-    common_hal_never_reset_pin(&pin_GPIO7);
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
+
+    // SPI Flash and RAM
+    common_hal_never_reset_pin(&pin_GPIO26);
+    common_hal_never_reset_pin(&pin_GPIO27);
+    common_hal_never_reset_pin(&pin_GPIO28);
+    common_hal_never_reset_pin(&pin_GPIO29);
+    common_hal_never_reset_pin(&pin_GPIO30);
+    common_hal_never_reset_pin(&pin_GPIO31);
+    common_hal_never_reset_pin(&pin_GPIO32);
 }
 
 bool board_requests_safe_mode(void) {
@@ -47,9 +54,7 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    // Turn on I2C power by default.
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
+
 }
 
 void board_deinit(void) {
