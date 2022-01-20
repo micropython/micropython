@@ -326,11 +326,6 @@ void SystemClock_Config(void) {
 
 #endif
 
-// Needed by HAL_PCD_IRQHandler
-uint32_t HAL_RCC_GetHCLKFreq(void) {
-    return SystemCoreClock;
-}
-
 /******************************************************************************/
 // GPIO
 
