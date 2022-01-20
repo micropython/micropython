@@ -1,0 +1,54 @@
+; This file is part of the MicroPython project, http://micropython.org/
+;
+; The MIT License (MIT)
+;
+; Copyright (c) 2013-2021 Ibrahim Abdelkader <iabdalkader@openmv.io>
+;
+; Permission is hereby granted, free of charge, to any person obtaining a copy
+; of this software and associated documentation files (the "Software"), to deal
+; in the Software without restriction, including without limitation the rights
+; to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+; copies of the Software, and to permit persons to whom the Software is
+; furnished to do so, subject to the following conditions:
+;
+; The above copyright notice and this permission notice shall be included in
+; all copies or substantial portions of the Software.
+;
+; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+; THE SOFTWARE.
+
+.program pdm_pio
+.side_set 1
+.wrap_target
+  push iffull noblock  side 1
+  in pins, 1  side 0
+.wrap
+
+% c-sdk {
+#include "hardware/gpio.h"
+
+static inline void pdm_pio_program_init(PIO pio, uint sm, uint offset, uint clk, uint din, float div) {
+  pio_sm_config c = pdm_pio_program_get_default_config(offset);
+
+  sm_config_set_sideset(&c, 1, false, false);
+  sm_config_set_in_shift(&c, false, false, 8);
+
+  sm_config_set_in_pins(&c, din);
+  sm_config_set_sideset_pins(&c, clk);
+  sm_config_set_clkdiv(&c, div);
+
+  pio_sm_set_consecutive_pindirs(pio, sm, din, 1, false);
+  pio_sm_set_consecutive_pindirs(pio, sm, clk, 1, true);
+  pio_sm_set_pins_with_mask(pio, sm, 0, (1u << clk) );
+  pio_gpio_init(pio, clk);
+
+  pio_sm_init(pio, sm, offset, &c);
+  pio_sm_set_enabled(pio, sm, true);
+}
+
+%}

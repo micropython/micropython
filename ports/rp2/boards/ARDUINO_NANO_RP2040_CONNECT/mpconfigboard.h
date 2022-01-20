@@ -45,3 +45,14 @@
 #define MICROPY_HW_NINA_GPIO0           (2)
 #define MICROPY_HW_NINA_GPIO1           (9)
 #define MICROPY_HW_NINA_ACK             (10)
+
+// AUDIO config.
+#define MICROPY_HW_PDM_PIO              (pio1)
+#define MICROPY_HW_PDM_SM               (0)
+#define MICROPY_HW_PDM_DMA              (1)
+#define MICROPY_HW_PDM_DMA_IRQ          (DMA_IRQ_1)
+
+#define MICROPY_HW_PDM_CLK_PIN          (23)
+#define MICROPY_HW_PDM_DIN_PIN          (22)
+
+#define MICROPY_BOARD_ROOT_POINTERS     struct _audio_data_t *audio_data;
