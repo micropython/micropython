@@ -42,3 +42,5 @@
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO38)

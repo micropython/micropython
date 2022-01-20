@@ -32,10 +32,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     // Turn on I2C
     common_hal_never_reset_pin(&pin_GPIO7);
     gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
