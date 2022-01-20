@@ -39,7 +39,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "defl_static.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "uzlib_conf.h"
 #if UZLIB_CONF_DEBUG_LOG
@@ -53,10 +55,6 @@
  #else
   #define TINFCC
  #endif
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 /* ok status, more data produced */
@@ -146,7 +144,11 @@ int TINFCC uzlib_gzip_parse_header(TINF_DATA *d);
 typedef const uint8_t *uzlib_hash_entry_t;
 
 struct uzlib_comp {
-    struct Outbuf out;
+    unsigned char *outbuf;
+    int outlen, outsize;
+    unsigned long outbits;
+    int noutbits;
+    int comp_disabled;
 
     uzlib_hash_entry_t *hash_table;
     unsigned int hash_bits;
@@ -154,6 +156,8 @@ struct uzlib_comp {
 };
 
 void TINFCC uzlib_compress(struct uzlib_comp *c, const uint8_t *src, unsigned slen);
+
+#include "defl_static.h"
 
 /* Checksum API */
 

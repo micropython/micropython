@@ -30,16 +30,8 @@
    They may be altered/distinct from the originals used in PuTTY source
    code. */
 
-struct Outbuf {
-    unsigned char *outbuf;
-    int outlen, outsize;
-    unsigned long outbits;
-    int noutbits;
-    int comp_disabled;
-};
-
-void outbits(struct Outbuf *out, unsigned long bits, int nbits);
-void zlib_start_block(struct Outbuf *ctx);
-void zlib_finish_block(struct Outbuf *ctx);
-void zlib_literal(struct Outbuf *ectx, unsigned char c);
-void zlib_match(struct Outbuf *ectx, int distance, int len);
+void outbits(struct uzlib_comp *ctx, unsigned long bits, int nbits);
+void zlib_start_block(struct uzlib_comp *ctx);
+void zlib_finish_block(struct uzlib_comp *ctx);
+void zlib_literal(struct uzlib_comp *ctx, unsigned char c);
+void zlib_match(struct uzlib_comp *ctx, int distance, int len);

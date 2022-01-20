@@ -33,6 +33,7 @@
  */
 
 #include <assert.h>
+#include <string.h>
 #include "tinf.h"
 
 #define UZLIB_DUMP_ARRAY(heading, arr, size) \
@@ -402,7 +403,7 @@ static int tinf_decode_trees(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
  * -- block inflate functions -- *
  * ----------------------------- */
 
-/* given a stream and two trees, inflate next byte of output */
+/* given a stream and two trees, inflate next chunk of output (a byte or more) */
 static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
 {
     if (d->curlen == 0) {
@@ -464,7 +465,7 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
             }
         } else {
             /* catch trying to point before the start of dest buffer */
-            if (offs > (unsigned int)(d->dest - d->destStart)) {
+            if (offs > d->dest - d->destStart) {
                 return TINF_DATA_ERROR;
             }
             d->lzOff = -offs;
@@ -478,8 +479,20 @@ static int tinf_inflate_block_data(TINF_DATA *d, TINF_TREE *lt, TINF_TREE *dt)
             d->lzOff = 0;
         }
     } else {
+        #if UZLIB_CONF_USE_MEMCPY
+        /* copy as much as possible, in one memcpy() call */
+        unsigned int to_copy = d->curlen, dest_len = d->dest_limit - d->dest;
+        if (to_copy > dest_len) {
+            to_copy = dest_len;
+        }
+        memcpy(d->dest, d->dest + d->lzOff, to_copy);
+        d->dest += to_copy;
+        d->curlen -= to_copy;
+        return TINF_OK;
+        #else
         d->dest[0] = d->dest[d->lzOff];
         d->dest++;
+        #endif
     }
     d->curlen--;
     return TINF_OK;
@@ -556,7 +569,9 @@ int uzlib_uncompress(TINF_DATA *d)
 
         /* start a new block */
         if (d->btype == -1) {
+            int old_btype;
 next_blk:
+            old_btype = d->btype;
             /* read final block flag */
             d->bfinal = tinf_getbit(d);
             /* read block type (2 bits) */
@@ -566,7 +581,7 @@ next_blk:
             printf("Started new block: type=%d final=%d\n", d->btype, d->bfinal);
             #endif
 
-            if (d->btype == 1) {
+            if (d->btype == 1 && old_btype != 1) {
                 /* build fixed huffman trees */
                 tinf_build_fixed_trees(&d->ltree, &d->dtree);
             } else if (d->btype == 2) {
