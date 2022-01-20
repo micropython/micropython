@@ -28,6 +28,7 @@
  */
 
 #include "py/mphal.h"
+#include "py/mperrno.h"
 
 #if MICROPY_PY_NETWORK_NINAW10
 
@@ -480,7 +481,7 @@ int nina_connected_sta(uint32_t *sta_ip) {
 }
 
 int nina_wait_for_sta(uint32_t *sta_ip, uint32_t timeout) {
-    return NINA_ERROR_TIMEOUT;
+    return -MP_ETIMEDOUT;
 }
 
 int nina_ifconfig(nina_ifconfig_t *ifconfig, bool set) {
@@ -597,7 +598,7 @@ int nina_scan(nina_scan_callback_t scan_callback, void *arg, uint32_t timeout) {
 
         if (timeout && (mp_hal_ticks_ms() - start) >= timeout) {
             // Timeout, no networks.
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
 
         mp_hal_delay_ms(100);
@@ -723,7 +724,7 @@ int nina_socket_close(int fd) {
                 break;
             }
             if ((mp_hal_ticks_ms() - start) >= 5000) {
-                return NINA_ERROR_TIMEOUT;
+                return -MP_ETIMEDOUT;
             }
         }
     }
@@ -777,12 +778,15 @@ int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, int32_t
         return -1;
     }
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); !sock; mp_hal_delay_ms(10)) {
+    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
         if (nina_socket_avail(fd, NINA_SOCKET_TYPE_TCP, &sock) != 0) {
             return -1;
         }
+        if (sock != 0) {
+            break;
+        }
         if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
     }
 
@@ -820,7 +824,7 @@ int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, int32_t timeout) {
         }
 
         if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
     }
 
@@ -832,7 +836,7 @@ int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout) 
     uint16_t bytes = 0;
 
     if (nina_socket_status(fd) != SOCKET_STATE_ESTABLISHED) {
-        return -1;
+        return -MP_ENOTCONN;
     }
 
     if (nina_send_command_read_vals(NINA_CMD_TCP_SEND,
@@ -854,7 +858,7 @@ int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout) 
         }
 
         if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
         mp_hal_delay_ms(1);
     }
@@ -866,7 +870,7 @@ int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout) {
     uint16_t bytes = 0;
 
     if (nina_socket_status(fd) != SOCKET_STATE_ESTABLISHED) {
-        return -1;
+        return -MP_ENOTCONN;
     }
 
     for (mp_uint_t start = mp_hal_ticks_ms(); bytes == 0; mp_hal_delay_ms(1)) {
@@ -882,7 +886,7 @@ int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout) {
         }
 
         if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
     }
     return bytes;
@@ -934,7 +938,7 @@ int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16
         }
 
         if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return NINA_ERROR_TIMEOUT;
+            return -MP_ETIMEDOUT;
         }
     }
     if (nina_send_command_read_vals(NINA_CMD_SOCKET_REMOTE_ADDR,
