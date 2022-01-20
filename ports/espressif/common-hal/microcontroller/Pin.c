@@ -51,7 +51,7 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 STATIC void _reset_pin(gpio_num_t pin_number) {
-    #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+    #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used for flash and RAM.
     if (26 <= pin_number && pin_number <= 32) {
         return;
@@ -69,7 +69,7 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
         return;
     }
     #endif
-    #elif CONFIG_IDF_TARGET_ESP32C3
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
     // Never ever reset pins used for flash and RAM.
     if (11 <= pin_number && pin_number <= 17) {
         return;
