@@ -36,20 +36,6 @@
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
 
-STATIC void floating_gpio_reset(gpio_num_t pin_number) {
-    // This is the same as gpio_reset_pin(), but without the pullup.
-    // Note that gpio_config resets the iomatrix to GPIO_FUNC as well.
-    gpio_config_t cfg = {
-        .pin_bit_mask = BIT64(pin_number),
-        .mode = GPIO_MODE_DISABLE,
-        .pull_up_en = false,
-        .pull_down_en = false,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&cfg);
-    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin_number], 0);
-}
-
 void never_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
@@ -72,7 +58,7 @@ void reset_pin_number(gpio_num_t pin_number) {
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
 
-    floating_gpio_reset(pin_number);
+    gpio_reset_pin(pin_number);
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t i) {
@@ -93,7 +79,7 @@ void reset_all_pins(void) {
             (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
             continue;
         }
-        floating_gpio_reset(i);
+        gpio_reset_pin(i);
     }
     in_use[0] = never_reset_pins[0];
     in_use[1] = never_reset_pins[1];

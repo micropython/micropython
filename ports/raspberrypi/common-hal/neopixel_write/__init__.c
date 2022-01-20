@@ -98,6 +98,6 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     gpio_init(digitalinout->pin->number);
     common_hal_digitalio_digitalinout_switch_to_output((digitalio_digitalinout_obj_t *)digitalinout, false, DRIVE_MODE_PUSH_PULL);
 
-    // Update the next start.
-    next_start_raw_ticks = port_get_raw_ticks(NULL) + 1;
+    // Update the next start to +2 ticks. This ensures we give it at least 300us.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 2;
 }
