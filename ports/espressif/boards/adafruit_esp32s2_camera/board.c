@@ -51,10 +51,6 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     busio_spi_obj_t *spi = common_hal_board_create_spi();
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;

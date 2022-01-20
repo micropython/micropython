@@ -71,10 +71,6 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     // I2C/TFT power pin
     common_hal_never_reset_pin(&pin_GPIO21);
 
