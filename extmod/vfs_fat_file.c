@@ -177,7 +177,6 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
                 break;
             default:
                 bad_mode = true;
-                mp_raise_ValueError(translate("Invalid mode"));
                 break;
         }
     }
