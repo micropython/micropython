@@ -80,7 +80,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, umachine; utime.sleep_ms(t_ms); umachine.reset()",
+            "import utime, machine; utime.sleep_ms(t_ms); machine.reset()",
         ],
         "help": "reset the device after delay",
     },
@@ -88,7 +88,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, umachine; utime.sleep_ms(t_ms); umachine.bootloader()",
+            "import utime, machine; utime.sleep_ms(t_ms); machine.bootloader()",
         ],
         "help": "make the device enter its bootloader",
     },
