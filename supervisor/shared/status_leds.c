@@ -48,6 +48,7 @@ uint8_t rgb_status_brightness = 63;
 #define MICROPY_HW_NEOPIXEL_COUNT (1)
 #endif
 
+static uint64_t next_start_raw_ticks;
 static uint8_t status_neopixel_color[3 * MICROPY_HW_NEOPIXEL_COUNT];
 static digitalio_digitalinout_obj_t status_neopixel;
 
@@ -218,6 +219,10 @@ void status_led_init() {
 
 void status_led_deinit() {
     #ifdef MICROPY_HW_NEOPIXEL
+    // Make sure the pin stays low for the reset period. The pin reset may pull
+    // it up and stop the reset period.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
     common_hal_reset_pin(MICROPY_HW_NEOPIXEL);
 
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
@@ -265,7 +270,7 @@ void new_status_color(uint32_t rgb) {
         status_neopixel_color[3 * i + 2] = rgb_adjusted & 0xff;
     }
     common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3 * MICROPY_HW_NEOPIXEL_COUNT);
-
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 2;
     #elif defined(MICROPY_HW_APA102_MOSI) && defined(MICROPY_HW_APA102_SCK)
     for (size_t i = 0; i < MICROPY_HW_APA102_COUNT; i++) {
         // Skip 4 + offset to skip the header bytes too.
