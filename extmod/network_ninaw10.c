@@ -406,13 +406,12 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
     int fd = 0;
     // Call accept.
     int ret = nina_socket_accept(socket->fileno, ip, (uint16_t *)port, &fd, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
 
@@ -424,13 +423,12 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
 
 STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     int ret = nina_socket_connect(socket->fileno, ip, port, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return 0;
@@ -438,14 +436,12 @@ STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte
 
 STATIC mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     int ret = nina_socket_send(socket->fileno, buf, len, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -460,15 +456,12 @@ STATIC mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, b
     } else {
         ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
     }
-
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -493,13 +486,12 @@ STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
     }
 
     int ret = nina_socket_sendto(socket->fileno, buf, len, ip, port, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -519,14 +511,12 @@ STATIC mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socke
         }
         ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, (uint16_t *)port, socket->timeout);
     }
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return -1;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;

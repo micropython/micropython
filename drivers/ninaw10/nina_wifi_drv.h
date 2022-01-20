@@ -61,11 +61,6 @@ typedef enum {
     NINA_SOCKET_TYPE_TLS_BEARSSL
 } nina_socket_type_t;
 
-typedef enum {
-    NINA_ERROR_IO       = -1,
-    NINA_ERROR_TIMEOUT  = -2,
-} nina_error_t;
-
 typedef struct {
     uint8_t ip_addr[NINA_IPV4_ADDR_LEN];
     uint8_t subnet_addr[NINA_IPV4_ADDR_LEN];
