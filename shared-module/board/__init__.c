@@ -72,6 +72,11 @@ mp_obj_t common_hal_board_get_i2c(const mp_int_t instance) {
 }
 
 mp_obj_t common_hal_board_create_i2c(const mp_int_t instance) {
+    const mp_obj_t singleton = common_hal_board_get_i2c(instance);
+    if (singleton != NULL && !common_hal_busio_i2c_deinited(singleton)) {
+        return singleton;
+    }
+
     busio_i2c_obj_t *self = &i2c_obj[instance];
     self->base.type = &busio_i2c_type;
 
@@ -111,6 +116,11 @@ mp_obj_t common_hal_board_get_spi(const mp_int_t instance) {
 }
 
 mp_obj_t common_hal_board_create_spi(const mp_int_t instance) {
+    const mp_obj_t singleton = common_hal_board_get_spi(instance);
+    if (singleton != NULL && !common_hal_busio_spi_deinited(singleton)) {
+        return singleton;
+    }
+
     busio_spi_obj_t *self = &spi_obj[instance];
     self->base.type = &busio_spi_type;
 
@@ -148,6 +158,11 @@ mp_obj_t common_hal_board_get_uart(const mp_int_t instance) {
 }
 
 mp_obj_t common_hal_board_create_uart(const mp_int_t instance) {
+    const mp_obj_t singleton = common_hal_board_get_uart(instance);
+    if (singleton != NULL && !common_hal_busio_uart_deinited(singleton)) {
+        return singleton;
+    }
+
     busio_uart_obj_t *self = &uart_obj[instance];
     self->base.type = &busio_uart_type;
 

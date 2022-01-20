@@ -55,8 +55,7 @@ MP_DECLARE_CONST_FUN_OBJ_0(board_uart_obj);
 
 #define CIRCUITPY_BOARD_BUS_SINGLETON(name, bus, instance) \
     STATIC mp_obj_t board_##name(void) { \
-        const mp_obj_t inst = mp_obj_new_int_from_uint(instance); \
-        return board_##bus(1, &inst); \
+        return common_hal_board_create_##bus(instance); \
     } \
     MP_DEFINE_CONST_FUN_OBJ_0(board_##name##_obj, board_##name);
 

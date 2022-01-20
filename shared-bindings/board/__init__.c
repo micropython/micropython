@@ -51,42 +51,21 @@
 //| circuitpython, as well as on circuitpython.org.
 //| Example: "hallowing_m0_express"."""
 
-#if CIRCUITPY_BOARD_I2C || CIRCUITPY_BOARD_SPI || CIRCUITPY_BOARD_UART
-STATIC mp_int_t board_get_instance(size_t n_args, const mp_obj_t *args, const mp_int_t bus_in) {
-    if (n_args == 0) {
-        return 0;
-    }
-    const mp_int_t instance = mp_obj_get_int(args[0]);
-    if (instance >= bus_in || instance < 0) {
-        mp_raise_ValueError_varg(translate("No default %q bus"), MP_QSTR_UART);
-    }
-    return instance;
-}
-#endif
-
 //| def I2C() -> busio.I2C:
 //|     """Returns the `busio.I2C` object for the board's designated I2C bus(es).
 //|     The object created is a singleton, and uses the default parameter values for `busio.I2C`."""
 //|     ...
 //|
 #if CIRCUITPY_BOARD_I2C
-mp_obj_t board_i2c(size_t n_args, const mp_obj_t *args) {
-    const mp_int_t instance = board_get_instance(n_args, args, CIRCUITPY_BOARD_I2C);
-    const mp_obj_t singleton = common_hal_board_get_i2c(instance);
-    if (singleton != NULL && !common_hal_busio_i2c_deinited(singleton)) {
-        return singleton;
-    }
-    return common_hal_board_create_i2c(instance);
+STATIC mp_obj_t board_i2c_0(void) {
+    return common_hal_board_create_i2c(0);
 }
 #else
-mp_obj_t board_i2c(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t board_i2c_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_I2C);
     return MP_ROM_NONE;
 }
 #endif
-STATIC mp_obj_t board_i2c_0(void) {
-    return board_i2c(0, NULL);
-}
 MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 
 //| def SPI() -> busio.SPI:
@@ -95,23 +74,15 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 //|     ...
 //|
 #if CIRCUITPY_BOARD_SPI
-mp_obj_t board_spi(size_t n_args, const mp_obj_t *args) {
-    const mp_int_t instance = board_get_instance(n_args, args, CIRCUITPY_BOARD_SPI);
-    const mp_obj_t singleton = common_hal_board_get_spi(instance);
-    if (singleton != NULL && !common_hal_busio_spi_deinited(singleton)) {
-        return singleton;
-    }
-    return common_hal_board_create_spi(instance);
+STATIC mp_obj_t board_spi_0(void) {
+    return common_hal_board_create_spi(0);
 }
 #else
-mp_obj_t board_spi(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t board_spi_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_SPI);
     return MP_ROM_NONE;
 }
 #endif
-STATIC mp_obj_t board_spi_0(void) {
-    return board_spi(0, NULL);
-}
 MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 
 //| def UART() -> busio.UART:
@@ -120,23 +91,15 @@ MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 //|     ...
 //|
 #if CIRCUITPY_BOARD_UART
-mp_obj_t board_uart(size_t n_args, const mp_obj_t *args) {
-    const mp_int_t instance = board_get_instance(n_args, args, CIRCUITPY_BOARD_UART);
-    const mp_obj_t singleton = common_hal_board_get_uart(instance);
-    if (singleton != NULL && !common_hal_busio_uart_deinited(singleton)) {
-        return singleton;
-    }
-    return common_hal_board_create_uart(instance);
+STATIC mp_obj_t board_uart_0(void) {
+    return common_hal_board_create_uart(0);
 }
 #else
-mp_obj_t board_uart(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t board_uart_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_UART);
     return MP_ROM_NONE;
 }
 #endif
-STATIC mp_obj_t board_uart_0(void) {
-    return board_uart(0, NULL);
-}
 MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart_0);
 
 const mp_obj_module_t board_module = {
