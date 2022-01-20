@@ -282,12 +282,12 @@ const mp_obj_module_t mp_module_uzlib = {
 // Source files #include'd here to make sure they're compiled in
 // only if module is enabled by config setting.
 
-#include "uzlib/tinflate.c"
-#include "uzlib/tinfzlib.c"
-#include "uzlib/tinfgzip.c"
-#include "uzlib/adler32.c"
-#include "uzlib/crc32.c"
-#include "uzlib/genlz77.c"
-#include "uzlib/defl_static.c"
+#include "lib/uzlib/tinflate.c"
+#include "lib/uzlib/tinfzlib.c"
+#include "lib/uzlib/tinfgzip.c"
+#include "lib/uzlib/adler32.c"
+#include "lib/uzlib/crc32.c"
+#include "lib/uzlib/genlz77.c"
+#include "lib/uzlib/defl_static.c"
 
 #endif // MICROPY_PY_UZLIB
