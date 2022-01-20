@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-03 05:53+0000\n"
+"PO-Revision-Date: 2022-01-19 23:56+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -2862,7 +2862,7 @@ msgstr "não é possível converter implicitamente o objeto '%q' para %q"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
+msgstr "não foi possível converter complexo em flutuante"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2964,11 +2964,11 @@ msgstr "não pode lançar a saída com a regra de fundição"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "não foi possível converter complexo em dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "não foi possível converter o tipo complexo"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3168,7 +3168,7 @@ msgstr "o divisor deve ser 4"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype deve ser flutuante ou complexo"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3340,7 +3340,7 @@ msgstr "A função é definida apenas para ndarrays"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "a função está implementada apenas para ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3474,7 +3474,7 @@ msgstr "os dados da entrada devem ser iteráveis"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3487,7 +3487,7 @@ msgstr "a matriz da entrada é singular"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "a entrada deve ser um 1D ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
@@ -3503,7 +3503,7 @@ msgstr "a entrada deve ser um ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "a entrada deve ser um ndarray ou um escalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3882,7 +3882,7 @@ msgstr "argumentos insuficientes para o formato da string"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "não foi implementado para dtype complexo"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -4647,7 +4647,7 @@ msgstr "tipo da entrada incorreta"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
-msgstr ""
+msgstr "comprimento errado na condição da matriz"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
