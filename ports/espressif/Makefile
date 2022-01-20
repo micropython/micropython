@@ -94,6 +94,7 @@ INC += \
 	-isystem esp-idf/components/esp_event/include \
 	-isystem esp-idf/components/esp_hw_support/include \
 	-isystem esp-idf/components/esp_hw_support/include/soc \
+	-isystem esp-idf/components/esp_ipc/include \
 	-isystem esp-idf/components/esp_netif/include \
 	-isystem esp-idf/components/esp_pm/include \
 	-isystem esp-idf/components/esp_ringbuf/include \
