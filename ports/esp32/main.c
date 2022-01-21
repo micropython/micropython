@@ -128,10 +128,14 @@ void mp_task(void *pvParameter) {
     if (mp_task_heap == NULL) {
         // Allocate the uPy heap using malloc and get the largest available region,
         // limiting to 1/2 total available memory to leave memory for the OS.
-        mp_task_heap_size = MIN(
-            heap_caps_get_largest_free_block(MALLOC_CAP_8BIT),
-            heap_caps_get_total_size(MALLOC_CAP_8BIT) / 2
-            );
+        #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
+        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
+        #else
+        multi_heap_info_t info;
+        heap_caps_get_info(&info, MALLOC_CAP_8BIT);
+        size_t heap_total = info.total_free_bytes + info.total_allocated_bytes;
+        #endif
+        mp_task_heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
         mp_task_heap = malloc(mp_task_heap_size);
     }
 
