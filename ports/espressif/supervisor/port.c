@@ -275,7 +275,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
-    common_hal_mcu_on_next_reset(RUNMODE_UF2);
+    common_hal_mcu_on_next_reset(RUNMODE_BOOTLOADER);
     esp_restart();
 }
 
