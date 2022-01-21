@@ -47,6 +47,7 @@ def instance0():
     s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert)
     print(s2.read(16))
     s2.write(b"server to client")
+    s2.close()
     s.close()
 
 

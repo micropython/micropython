@@ -57,7 +57,7 @@ Constructors
    of *scl* and *sda* that cannot be changed.
 
 .. _machine.SoftI2C:
-.. class:: SoftI2C(scl, sda, *, freq=400000, timeout=255)
+.. class:: SoftI2C(scl, sda, *, freq=400000, timeout=50000)
 
    Construct a new software I2C object.  The parameters are:
 

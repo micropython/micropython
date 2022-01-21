@@ -127,12 +127,12 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     if (flags & MP_MACHINE_I2C_FLAG_READ) {
         ret = i2c_read_blocking(self->i2c_inst, addr, buf, len, nostop);
     } else {
-        if (len <= 2) {
-            // Workaround issue with hardware I2C not accepting short writes.
+        if (len == 0) {
+            // Workaround issue with hardware I2C not accepting zero-length writes.
             mp_machine_soft_i2c_obj_t soft_i2c = {
                 .base = { &mp_machine_soft_i2c_type },
                 .us_delay = 500000 / self->freq + 1,
-                .us_timeout = 255,
+                .us_timeout = 50000,
                 .scl = self->scl,
                 .sda = self->sda,
             };

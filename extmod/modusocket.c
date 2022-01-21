@@ -67,7 +67,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    s->timeout = 0;
+    s->timeout = -1;
     s->state = NULL;
     #endif
 
@@ -88,7 +88,7 @@ STATIC void socket_select_nic(mod_network_socket_obj_t *self, const byte *ip) {
 
         #if MICROPY_PY_USOCKET_EXTENDED_STATE
         // if a timeout was set before binding a NIC, call settimeout to reset it
-        if (self->timeout != 0 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
+        if (self->timeout != -1 && self->nic_type->settimeout(self, self->timeout, &_errno) != 0) {
             mp_raise_OSError(_errno);
         }
         #endif
@@ -158,7 +158,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->bound = false;
     socket2->fileno = -1;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    socket2->timeout = 0;
+    socket2->timeout = -1;
     socket2->state = NULL;
     #endif
 
@@ -303,6 +303,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_recvfrom_obj, socket_recvfrom);
 STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
+    if (self->nic == MP_OBJ_NULL) {
+        // not connected
+        return mp_const_none;
+    }
+
     mp_int_t level = mp_obj_get_int(args[1]);
     mp_int_t opt = mp_obj_get_int(args[2]);
 
@@ -328,6 +333,12 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_setsockopt_obj, 4, 4, socket_setsockopt);
+
+STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+    return args[0];
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 
 // method socket.settimeout(value)
 // timeout=0 means non-blocking
@@ -385,6 +396,7 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
     { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&socket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&socket_settimeout_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&socket_setblocking_obj) },
 
@@ -460,18 +472,41 @@ STATIC const mp_obj_type_t socket_type = {
 // usocket module
 
 // function usocket.getaddrinfo(host, port)
-STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
+STATIC mp_obj_t mod_usocket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     size_t hlen;
-    const char *host = mp_obj_str_get_data(host_in, &hlen);
-    mp_int_t port = mp_obj_get_int(port_in);
+    const char *host = mp_obj_str_get_data(args[0], &hlen);
+    mp_int_t port = mp_obj_get_int(args[1]);
     uint8_t out_ip[MOD_NETWORK_IPADDR_BUF_SIZE];
     bool have_ip = false;
+
+    // if constraints were passed then check they are compatible with the supported params
+    if (n_args > 2) {
+        mp_int_t family = mp_obj_get_int(args[2]);
+        mp_int_t type = 0;
+        mp_int_t proto = 0;
+        mp_int_t flags = 0;
+        if (n_args > 3) {
+            type = mp_obj_get_int(args[3]);
+            if (n_args > 4) {
+                proto = mp_obj_get_int(args[4]);
+                if (n_args > 5) {
+                    flags = mp_obj_get_int(args[5]);
+                }
+            }
+        }
+        if (!((family == 0 || family == MOD_NETWORK_AF_INET)
+              && (type == 0 || type == MOD_NETWORK_SOCK_STREAM)
+              && proto == 0
+              && flags == 0)) {
+            mp_warning(MP_WARN_CAT(RuntimeWarning), "unsupported getaddrinfo constraints");
+        }
+    }
 
     if (hlen > 0) {
         // check if host is already in IP form
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            netutils_parse_ipv4_addr(host_in, out_ip, NETUTILS_BIG);
+            netutils_parse_ipv4_addr(args[0], out_ip, NETUTILS_BIG);
             have_ip = true;
             nlr_pop();
         } else {
@@ -507,7 +542,7 @@ STATIC mp_obj_t mod_usocket_getaddrinfo(mp_obj_t host_in, mp_obj_t port_in) {
     tuple->items[4] = netutils_format_inet_addr(out_ip, port, NETUTILS_BIG);
     return mp_obj_new_list(1, (mp_obj_t *)&tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_usocket_getaddrinfo_obj, mod_usocket_getaddrinfo);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_usocket_getaddrinfo_obj, 2, 6, mod_usocket_getaddrinfo);
 
 STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
@@ -522,6 +557,12 @@ STATIC const mp_rom_map_elem_t mp_module_usocket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SOCK_STREAM), MP_ROM_INT(MOD_NETWORK_SOCK_STREAM) },
     { MP_ROM_QSTR(MP_QSTR_SOCK_DGRAM), MP_ROM_INT(MOD_NETWORK_SOCK_DGRAM) },
     { MP_ROM_QSTR(MP_QSTR_SOCK_RAW), MP_ROM_INT(MOD_NETWORK_SOCK_RAW) },
+
+    { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(MOD_NETWORK_SOL_SOCKET) },
+    { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(MOD_NETWORK_SO_REUSEADDR) },
+    { MP_ROM_QSTR(MP_QSTR_SO_KEEPALIVE), MP_ROM_INT(MOD_NETWORK_SO_KEEPALIVE) },
+    { MP_ROM_QSTR(MP_QSTR_SO_SNDTIMEO), MP_ROM_INT(MOD_NETWORK_SO_SNDTIMEO) },
+    { MP_ROM_QSTR(MP_QSTR_SO_RCVTIMEO), MP_ROM_INT(MOD_NETWORK_SO_RCVTIMEO) },
 
     /*
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(MOD_NETWORK_IPPROTO_IP) },
