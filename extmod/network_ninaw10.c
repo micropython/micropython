@@ -78,7 +78,9 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 2) {
         bool active = mp_obj_is_true(args[1]);
-        if (active) {
+        if (active && self->active) {
+            // Module is already active.
+        } else if (active) {
             int error = 0;
             if ((error = nina_init()) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
