@@ -7,8 +7,8 @@ first erase the entire flash using:
 esptool.py --chip esp32 --port /dev/ttyUSB0 erase_flash
 ```
 
-From then on program the firmware starting at address 0x1000:
+From then on program the firmware starting at address 0x0:
 
 ```bash
-esptool.py --chip esp32-c3 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x0000 esp32-20190125-v1.10.bin
+esptool.py --chip esp32-c3 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x0 esp32-20190125-v1.10.bin
 ```
