@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-24 23:51+0000\n"
+"PO-Revision-Date: 2022-01-19 23:56+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -152,6 +152,10 @@ msgstr "%q deve estar entre %d e %d"
 #: py/argcheck.c
 msgid "%q must be of type %q"
 msgstr "%q deve ser do tipo %q"
+
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr "%q deve ser do tipo %q ou nenhum"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -678,6 +682,10 @@ msgstr "Os bytes devem estar entre 0 e 255."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Os blocos CBC devem ter múltiplos de 16 bytes"
+
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr "A unidade CIRCUITPY não pôde ser encontrada nem criada."
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -1629,7 +1637,7 @@ msgstr "Nenhum canal DMA foi encontrado"
 msgid "No DMA pacing timer found"
 msgstr "Nenhum temporizador DMA foi encontrado"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Nenhum dispositivo I2C no endereço: %x"
@@ -1940,7 +1948,7 @@ msgstr "O pino não tem recursos de ADC"
 msgid "Pin interrupt already in use"
 msgstr "A interrupção do pino já está em uso"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Apenas o pino de entrada"
@@ -2029,6 +2037,10 @@ msgstr "O Pull não foi usado quando a direção for gerada."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "O modo RAISE não foi implementado"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr "RISE_AND_FALL não está disponível neste chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2516,10 +2528,6 @@ msgstr "Formato não suportado"
 msgid "Unsupported operation"
 msgstr "Operação não suportada"
 
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "O valor pull não é compatível."
-
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "A atualização falou"
@@ -2700,7 +2708,7 @@ msgstr "tente obter argmin/argmax de uma sequência vazia"
 msgid "attributes not supported yet"
 msgstr "atributos ainda não suportados"
 
-#: extmod/ulab/code/numpy/numerical.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
 msgstr "o eixo está fora dos limites"
 
@@ -2756,11 +2764,11 @@ msgstr "bits_per_sample deve ser 8 ou 16"
 msgid "branch not in range"
 msgstr "ramo fora do alcance"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "o tamanho do buffer é menor do que o tamanho que foi solicitado"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "o tamanho do buffer deve ser um múltiplo do tamanho do elemento"
 
@@ -2810,6 +2818,10 @@ msgstr "Calibração é somente leitura"
 msgid "calibration value out of range +/-127"
 msgstr "Valor de calibração fora do intervalo +/- 127"
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr "pode ser registrado apenas numa principal"
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr "só pode haver até 4 parâmetros para a montagem Thumb"
@@ -2847,6 +2859,10 @@ msgstr "Não é possível converter %s para complex"
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "não é possível converter implicitamente o objeto '%q' para %q"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "can't convert complex to float"
+msgstr "não foi possível converter complexo em flutuante"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2945,6 +2961,14 @@ msgstr "não é possível atribuir uma nova forma"
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
 msgstr "não pode lançar a saída com a regra de fundição"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex to dtype"
+msgstr "não foi possível converter complexo em dtype"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex type"
+msgstr "não foi possível converter o tipo complexo"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3142,6 +3166,10 @@ msgstr "divisão por zero"
 msgid "divisor must be 4"
 msgstr "o divisor deve ser 4"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "dtype must be float, or complex"
+msgstr "dtype deve ser flutuante ou complexo"
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "vazio"
@@ -3245,7 +3273,7 @@ msgstr "o primeiro argumento deve ser chamável"
 msgid "first argument must be a function"
 msgstr "o primeiro argumento deve ser uma função"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
 msgstr "o primeiro argumento deve ser um tuple de ndarrays"
 
@@ -3309,6 +3337,10 @@ msgstr "a função tem o mesmo sinal nas extremidades do intervalo"
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
 msgstr "A função é definida apenas para ndarrays"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "function is implemented for ndarrays only"
+msgstr "a função está implementada apenas para ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3423,7 +3455,7 @@ msgstr "o assembler em linha deve ser uma função"
 msgid "input and output shapes are not compatible"
 msgstr "as formas de entrada e saída não são compatíveis"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 "argumento da entrada deve ser um número inteiro, uma tupla ou uma lista"
@@ -3432,13 +3464,17 @@ msgstr ""
 msgid "input array length must be power of 2"
 msgstr "comprimento da matriz da entrada deve ter potência de 2"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
 msgstr "as matrizes da entrada não são compatíveis"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
 msgstr "os dados da entrada devem ser iteráveis"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input dtype must be float or complex"
+msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3449,17 +3485,25 @@ msgstr "a matriz da entrada é assimétrica"
 msgid "input matrix is singular"
 msgstr "a matriz da entrada é singular"
 
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be a 1D ndarray"
+msgstr "a entrada deve ser um 1D ndarray"
+
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "a entrada deve ser um ndarray denso"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
 msgstr "a entrada dos dados deve ser um tensor de nível 2"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr "a entrada deve ser um ndarray"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be an ndarray, or a scalar"
+msgstr "a entrada deve ser um ndarray ou um escalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3836,7 +3880,11 @@ msgstr "nem todos os argumentos são convertidos durante a formatação da strin
 msgid "not enough arguments for format string"
 msgstr "argumentos insuficientes para o formato da string"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/carray/carray_tools.c
+msgid "not implemented for complex dtype"
+msgstr "não foi implementado para dtype complexo"
+
+#: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
 msgstr "a quantidade dos pontos deve ser pelo menos 2"
 
@@ -3894,7 +3942,7 @@ msgstr "é necessário objeto com protocolo do buffer"
 msgid "odd-length string"
 msgstr "sequência com comprimento ímpar"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "o offset é muito grande"
 
@@ -3902,7 +3950,7 @@ msgstr "o offset é muito grande"
 msgid "offset must be >= 0"
 msgstr "o offset deve ser >= 0"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr "o offset deve ser positivo e não maior do que o comprimento do buffer"
 
@@ -4061,7 +4109,9 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4076,7 +4126,6 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
-#: ports/espressif/boards/microdev_macro_s3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
 #: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
 #: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
@@ -4387,7 +4436,7 @@ msgstr "os tobytes podem ser invocados apenas nas matrizes densas"
 msgid "too many arguments provided with the given format"
 msgstr "Muitos argumentos fornecidos com o formato dado"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "dimensões demais"
 
@@ -4588,7 +4637,7 @@ msgstr "a janela deve ser <= intervalo"
 msgid "wrong axis index"
 msgstr "índice do eixo errado"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "wrong axis specified"
 msgstr "um eixo errado foi definido"
 
@@ -4596,7 +4645,11 @@ msgstr "um eixo errado foi definido"
 msgid "wrong input type"
 msgstr "tipo da entrada incorreta"
 
-#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of condition array"
+msgstr "comprimento errado na condição da matriz"
+
+#: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "quantidade errada dos argumentos"
 
@@ -4639,6 +4692,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "O valor pull não é compatível."
 
 #~ msgid "Station must be started"
 #~ msgstr "A estação deve ser iniciada"

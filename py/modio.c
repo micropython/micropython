@@ -257,7 +257,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(resource_stream_obj, resource_stream);
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
+    #if CIRCUITPY
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_io) },
+    #else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uio) },
+    #endif
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },

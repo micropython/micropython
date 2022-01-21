@@ -21,3 +21,8 @@ Traceback (most recent call last):
   File "circuitpython/traceback_test.py", line 9, in fun
 Exception: test
 
+NonNative Trace:
+Traceback (most recent call last):
+  File "circuitpython/traceback_test.py", line 32, in <module>
+NonNativeException: test
+

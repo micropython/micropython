@@ -95,11 +95,11 @@ Supported operators and special sequences are:
 
 Example::
 
-    import ure
+    import re
 
-    # As ure doesn't support escapes itself, use of r"" strings is not
+    # As re doesn't support escapes itself, use of r"" strings is not
     # recommended.
-    regex = ure.compile("[\r\n]")
+    regex = re.compile("[\r\n]")
 
     regex.split("line1\rline2\nline3\r\n")
 

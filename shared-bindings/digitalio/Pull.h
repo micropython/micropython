@@ -43,4 +43,6 @@ typedef struct {
 extern const digitalio_pull_obj_t digitalio_pull_up_obj;
 extern const digitalio_pull_obj_t digitalio_pull_down_obj;
 
+digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_PULL_H

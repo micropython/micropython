@@ -239,6 +239,9 @@ SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(S
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR +=
 
+UF2_FAMILY_ID_nrf52840 = 0xADA52840
+UF2_FAMILY_ID_nrf52833 = 0x621E937A
+
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.combined.hex
 
@@ -264,7 +267,7 @@ $(BUILD)/firmware.combined.hex: $(BUILD)/firmware.hex $(SOFTDEV_HEX)
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.hex
 	$(ECHO) "Create $@"
-	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xADA52840 -c -o "$(BUILD)/firmware.uf2" $^
+	$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f $(UF2_FAMILY_ID_$(MCU_CHIP)) -c -o "$(BUILD)/firmware.uf2" $^
 
 
 

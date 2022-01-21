@@ -64,8 +64,8 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
 //|         :param str byteorder: Byte order string (such as "RGB", "RGBW" or "PBGR")
 //|         :param float brightness: Brightness (0 to 1.0, default 1.0)
 //|         :param bool auto_write: Whether to automatically write pixels (Default False)
-//|         :param ~_typing.ReadableBuffer header: Sequence of bytes to always send before pixel values.
-//|         :param ~_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
+//|         :param ~circuitpython_typing.ReadableBuffer header: Sequence of bytes to always send before pixel values.
+//|         :param ~circuitpython_typing.ReadableBuffer trailer: Sequence of bytes to always send after pixel values."""
 //|         ...
 //|
 STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

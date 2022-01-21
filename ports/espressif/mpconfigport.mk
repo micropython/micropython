@@ -1,8 +1,3 @@
-# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
-# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
-# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
-
 # Internal math library is substantially smaller than toolchain one
 INTERNAL_LIBM = 1
 
@@ -26,7 +21,7 @@ CIRCUITPY_FRAMEBUFFERIO ?= 1
 CIRCUITPY_FREQUENCYIO ?= 1
 CIRCUITPY_IMAGECAPTURE ?= 1
 CIRCUITPY_I2CPERIPHERAL ?= 1
-CIRCUITPY_RGBMATRIX ?= 0
+CIRCUITPY_RGBMATRIX ?= 1
 CIRCUITPY_ROTARYIO ?= 1
 CIRCUITPY_NVM ?= 1
 CIRCUITPY_PS2IO ?= 1

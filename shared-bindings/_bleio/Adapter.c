@@ -196,8 +196,8 @@ const mp_obj_property_t bleio_adapter_name_obj = {
 //|         .. note:: If you set ``anonymous=True``, then a timeout must be specified. If no timeout is
 //|            specified, then the maximum allowed timeout will be selected automatically.
 //|
-//|         :param ~_typing.ReadableBuffer data: advertising data packet bytes
-//|         :param ~_typing.ReadableBuffer scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
+//|         :param ~circuitpython_typing.ReadableBuffer data: advertising data packet bytes
+//|         :param ~circuitpython_typing.ReadableBuffer scan_response: scan response data packet bytes. ``None`` if no scan response is needed.
 //|         :param bool connectable:  If `True` then other devices are allowed to connect to this peripheral.
 //|         :param bool anonymous:  If `True` then this device's MAC address is randomized before advertising.
 //|         :param int timeout:  If set, we will only advertise for this many seconds. Zero means no timeout.
@@ -282,7 +282,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_stop_advertising_obj, bleio_adapt
 //|         """Starts a BLE scan and returns an iterator of results. Advertisements and scan responses are
 //|         filtered and returned separately.
 //|
-//|         :param ~_typing.ReadableBuffer prefixes: Sequence of byte string prefixes to filter advertising packets
+//|         :param ~circuitpython_typing.ReadableBuffer prefixes: Sequence of byte string prefixes to filter advertising packets
 //|             with. A packet without an advertising structure that matches one of the prefixes is
 //|             ignored. Format is one byte for length (n) and n bytes of prefix and can be repeated.
 //|         :param int buffer_size: the maximum number of advertising bytes to buffer.

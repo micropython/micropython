@@ -133,7 +133,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         false, 32, false, // shift out left to start with MSB
         false, // Wait for txstall
         false, 32, false, // in settings
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        false); // No sideset enable
 
     self->playing = false;
     audio_dma_init(&self->dma);

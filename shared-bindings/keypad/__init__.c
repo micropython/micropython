@@ -42,7 +42,7 @@
 //| """
 //|
 
-STATIC mp_map_elem_t keypad_module_globals_table[] = {
+STATIC mp_rom_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),          MP_OBJ_NEW_QSTR(MP_QSTR_keypad) },
     { MP_ROM_QSTR(MP_QSTR_Event),             MP_OBJ_FROM_PTR(&keypad_event_type) },
     { MP_ROM_QSTR(MP_QSTR_EventQueue),        MP_OBJ_FROM_PTR(&keypad_eventqueue_type) },
@@ -51,7 +51,7 @@ STATIC mp_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ShiftRegisterKeys), MP_OBJ_FROM_PTR(&keypad_shiftregisterkeys_type) },
 };
 
-STATIC MP_DEFINE_MUTABLE_DICT(keypad_module_globals, keypad_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(keypad_module_globals, keypad_module_globals_table);
 
 const mp_obj_module_t keypad_module = {
     .base = { &mp_type_module },
