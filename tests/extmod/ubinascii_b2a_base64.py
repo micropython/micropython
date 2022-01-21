@@ -21,18 +21,5 @@ print(binascii.b2a_base64(b"\x7f\x80\xff"))
 print(binascii.b2a_base64(b"1234ABCDabcd"))
 print(binascii.b2a_base64(b"\x00\x00>"))  # convert into '+'
 
-print(binascii.b2a_base64(b"", newline=True))
-print(binascii.b2a_base64(b"f", newline=True))
-print(binascii.b2a_base64(b"fo", newline=True))
-print(binascii.b2a_base64(b"foo", newline=True))
-print(binascii.b2a_base64(b"foob", newline=True))
-print(binascii.b2a_base64(b"fooba", newline=True))
 print(binascii.b2a_base64(b"foobar", newline=True))
-
-print(binascii.b2a_base64(b"", newline=False))
-print(binascii.b2a_base64(b"f", newline=False))
-print(binascii.b2a_base64(b"fo", newline=False))
-print(binascii.b2a_base64(b"foo", newline=False))
-print(binascii.b2a_base64(b"foob", newline=False))
-print(binascii.b2a_base64(b"fooba", newline=False))
 print(binascii.b2a_base64(b"foobar", newline=False))
