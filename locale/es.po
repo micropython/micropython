@@ -1403,6 +1403,10 @@ msgstr "Formato de fragmento de formato no válido"
 msgid "Invalid memory access."
 msgstr "Acceso a memoria no válido."
 
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr ""
@@ -4075,6 +4079,7 @@ msgstr "el 3er argumento de pow() no puede ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argumentos requiere enteros"
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
@@ -4082,15 +4087,18 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
