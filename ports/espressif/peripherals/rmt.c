@@ -37,8 +37,17 @@ void peripherals_rmt_reset(void) {
     }
 }
 
-rmt_channel_t peripherals_find_and_reserve_rmt(void) {
-    for (size_t i = 0; i < RMT_CHANNEL_MAX; i++) {
+rmt_channel_t peripherals_find_and_reserve_rmt(bool mode) {
+    size_t start_channel = 0;
+    size_t end_channel = RMT_CHANNEL_MAX;
+    #if SOC_RMT_CHANNELS_PER_GROUP > 4
+    if (mode == RECEIVE_MODE) {
+        start_channel = 4;
+    } else {
+        end_channel = 4;
+    }
+    #endif
+    for (size_t i = start_channel; i < end_channel; i++) {
         if (!rmt_reserved_channels[i]) {
             rmt_reserved_channels[i] = true;
             return i;
