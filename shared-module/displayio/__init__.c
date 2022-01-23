@@ -229,11 +229,11 @@ void reset_displays(void) {
 
             if (((uint32_t)is31fb->is31fl3741->i2c) < ((uint32_t)&displays) ||
                 ((uint32_t)is31fb->is31fl3741->i2c) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
-                #if BOARD_I2C
+                #if CIRCUITPY_BOARD_I2C
                 // We don't need to move original_i2c if it is the board.I2C object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (is31fb->is31fl3741->i2c == common_hal_board_get_i2c()) {
+                if (common_hal_board_is_i2c(is31fb->is31fl3741->i2c)) {
                     continue;
                 }
                 #endif
