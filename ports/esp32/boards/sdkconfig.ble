@@ -7,11 +7,3 @@ CONFIG_BTDM_CTRL_MODE_BTDM=
 CONFIG_BT_NIMBLE_ENABLED=y
 
 CONFIG_BT_NIMBLE_MAX_CONNECTIONS=4
-
-# Pin to the same core as MP.
-# Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
-# with the ringbuffer and scheduler MP needs to be on the same core.
-# See https://github.com/micropython/micropython/issues/5489
-CONFIG_BT_NIMBLE_PINNED_TO_CORE_0=y
-CONFIG_BT_NIMBLE_PINNED_TO_CORE_1=n
-CONFIG_BT_NIMBLE_PINNED_TO_CORE=0

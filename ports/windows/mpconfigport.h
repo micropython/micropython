@@ -69,6 +69,9 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
+#ifndef MICROPY_ENABLE_SCHEDULER
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#endif
 #define MICROPY_VFS_POSIX_FILE      (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
@@ -216,6 +219,15 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #define MICROPY_MPHALPORT_H         "windows_mphal.h"
 
+#if MICROPY_ENABLE_SCHEDULER
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        mp_hal_delay_us(500); \
+    } while (0);
+#endif
+
 // We need to provide a declaration/definition of alloca()
 #include <malloc.h>
 
@@ -244,7 +256,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define MP_NOINLINE                 __declspec(noinline)
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } // can't have zero-sized array
+#define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) } // can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else
