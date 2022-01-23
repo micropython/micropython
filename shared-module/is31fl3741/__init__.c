@@ -23,36 +23,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-
-#include "shared-bindings/is31fl3741/__init__.h"
-#include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/is31fl3741/IS31FL3741.h"
-
-void is31fl3741_begin_transaction(busio_i2c_obj_t *i2c) {
-    while (!common_hal_busio_i2c_try_lock(i2c)) {
-        RUN_BACKGROUND_TASKS;
-        if (mp_hal_is_interrupted()) {
-            break;
-        }
-    }
-}
-
-void is31fl3741_end_transaction(busio_i2c_obj_t *i2c) {
-    common_hal_busio_i2c_unlock(i2c);
-}
-
-void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_obj_t *mapping, const uint8_t *pixels, size_t numBytes) {
-    is31fl3741_begin_transaction(i2c);
-
-    for (size_t i = 0; i < numBytes; i += 3) {
-        uint16_t ridx = mp_obj_get_int(mapping[i]);
-        if (ridx != 65535) {
-            is31fl3741_set_led(i2c, addr, ridx, IS31GammaTable[pixels[i]], 0); // red
-            is31fl3741_set_led(i2c, addr, mp_obj_get_int(mapping[i + 1]), IS31GammaTable[pixels[i + 1]], 0); // green
-            is31fl3741_set_led(i2c, addr, mp_obj_get_int(mapping[i + 2]), IS31GammaTable[pixels[i + 2]], 0); // blue
-        }
-    }
-
-    is31fl3741_end_transaction(i2c);
-}

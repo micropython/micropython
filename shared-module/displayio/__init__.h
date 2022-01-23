@@ -42,7 +42,7 @@
 #include "shared-bindings/rgbmatrix/RGBMatrix.h"
 #endif
 #if CIRCUITPY_IS31FL3741
-#include "shared-bindings/is31fl3741/IS31FL3741.h"
+#include "shared-bindings/is31fl3741/FrameBuffer.h"
 #endif
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
@@ -63,7 +63,7 @@ typedef struct {
         rgbmatrix_rgbmatrix_obj_t rgbmatrix;
         #endif
         #if CIRCUITPY_IS31FL3741
-        is31fl3741_IS31FL3741_obj_t is31fl3741;
+        is31fl3741_FrameBuffer_obj_t is31fl3741;
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         sharpdisplay_framebuffer_obj_t sharpdisplay;

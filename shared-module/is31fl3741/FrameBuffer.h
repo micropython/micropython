@@ -1,5 +1,5 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,16 +24,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
+#pragma once
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "py/obj.h"
+#include "lib/protomatter/src/core.h"
+#include "shared-module/is31fl3741/IS31FL3741.h"
 
-#include "shared-bindings/busio/I2C.h"
-
-extern void common_hal_is31fl3741_write(busio_i2c_obj_t *i2c, uint8_t addr, const mp_obj_t *mapping, const uint8_t *pixels, size_t numBytes);
-void is31fl3741_begin_transaction(busio_i2c_obj_t *i2c);
-void is31fl3741_end_transaction(busio_i2c_obj_t *i2c);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_NEOPIXEL_WRITE_H
+extern const mp_obj_type_t is31fl3741_FrameBuffer_type;
+typedef struct {
+    mp_obj_base_t base;
+    is31fl3741_IS31FL3741_obj_t *is31fl3741;
+    is31fl3741_IS31FL3741_obj_t inline_is31fl3741;
+    mp_obj_t framebuffer;
+    mp_buffer_info_t bufinfo;
+    uint16_t bufsize, width, height, scale_width, scale_height;
+    uint16_t *mapping;
+    uint8_t bit_depth;
+    bool paused;
+    bool scale;
+    bool auto_gamma;
+} is31fl3741_FrameBuffer_obj_t;

@@ -33,17 +33,9 @@
 extern const mp_obj_type_t is31fl3741_is31fl3741_type;
 typedef struct {
     mp_obj_base_t base;
-    mp_obj_t framebuffer;
-    mp_buffer_info_t bufinfo;
-    uint16_t bufsize, width, height, scale_width, scale_height;
     busio_i2c_obj_t *i2c;
     busio_i2c_obj_t inline_i2c;
     uint8_t device_address;
-    uint16_t *mapping;
-    uint8_t bit_depth;
-    bool paused;
-    bool scale;
-    bool auto_gamma;
 } is31fl3741_IS31FL3741_obj_t;
 
 // Gamma correction table
