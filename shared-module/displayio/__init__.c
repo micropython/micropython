@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-
 #include <string.h>
 
 #include "shared-module/displayio/__init__.h"
@@ -169,11 +168,11 @@ void reset_displays(void) {
             if (((size_t)fourwire->bus) < ((size_t)&displays) ||
                 ((size_t)fourwire->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_spi_obj_t *original_spi = fourwire->bus;
-                #if BOARD_SPI
-                // We don't need to move original_spi if it is the board.SPI object because it is
+                #if CIRCUITPY_BOARD_SPI
+                // We don't need to move original_spi if it is a board.SPI object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (original_spi == common_hal_board_get_spi()) {
+                if (common_hal_board_is_spi(original_spi)) {
                     continue;
                 }
                 #endif
@@ -197,11 +196,11 @@ void reset_displays(void) {
             if (((size_t)i2c->bus) < ((size_t)&displays) ||
                 ((size_t)i2c->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_i2c_obj_t *original_i2c = i2c->bus;
-                #if BOARD_I2C
-                // We don't need to move original_i2c if it is the board.I2C object because it is
+                #if CIRCUITPY_BOARD_I2C
+                // We don't need to move original_i2c if it is a board.I2C object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (original_i2c == common_hal_board_get_i2c()) {
+                if (common_hal_board_is_i2c(original_i2c)) {
                     continue;
                 }
                 #endif

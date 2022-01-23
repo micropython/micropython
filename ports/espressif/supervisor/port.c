@@ -51,6 +51,8 @@
 #include "supervisor/background_callback.h"
 #include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
+#include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 
 #include "peripherals/rmt.h"
@@ -58,6 +60,9 @@
 
 #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
 #include "peripherals/pcnt.h"
+#endif
+
+#if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "peripherals/touch.h"
 #endif
 
@@ -69,19 +74,28 @@
 #include "cam.h"
 #endif
 
-#include "esp_heap_caps.h"
-#include "esp_debug_helpers.h"
-
 #include "soc/cache_memory.h"
 #include "soc/rtc_cntl_reg.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "components/esp_rom/include/esp32s2/rom/ets_sys.h"
+#include "esp_debug_helpers.h"
+
+#include "esp_ipc.h"
+
+#ifdef CONFIG_SPIRAM
+#include "esp32/spiram.h"
 #endif
 
+// Heap sizes for when there is no external RAM for CircuitPython to use
+// exclusively.
+#ifdef CONFIG_IDF_TARGET_ESP32S2
 #define HEAP_SIZE (48 * 1024)
+#endif
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#define HEAP_SIZE (176 * 1024)
+#endif
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define HEAP_SIZE (88 * 1024)
+#endif
 
 uint32_t *heap;
 uint32_t heap_size;
@@ -93,12 +107,24 @@ TaskHandle_t circuitpython_task = NULL;
 
 extern void esp_restart(void) NORETURN;
 
-STATIC void tick_timer_cb(void *arg) {
+STATIC void tick_on_cp_core(void *arg) {
     supervisor_tick();
 
     // CircuitPython's VM is run in a separate FreeRTOS task from timer callbacks. So, we have to
     // notify the main task every time in case it's waiting for us.
     xTaskNotifyGive(circuitpython_task);
+}
+
+// This function may happen on the PRO core when CP is on the APP core. So, make
+// sure we run on the CP core.
+STATIC void tick_timer_cb(void *arg) {
+    #if defined(CONFIG_FREERTOS_UNICORE) && CONFIG_FREERTOS_UNICORE
+    tick_on_cp_core(arg);
+    #else
+    // This only blocks until the start of the function. That's ok since the PRO
+    // core shouldn't care what we do.
+    esp_ipc_call(CONFIG_ESP_MAIN_TASK_AFFINITY, tick_on_cp_core, NULL);
+    #endif
 }
 
 void sleep_timer_cb(void *arg);
@@ -136,7 +162,7 @@ safe_mode_t port_init(void) {
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO20);
     common_hal_never_reset_pin(&pin_GPIO21);
-    #elif CONFIG_IDF_TARGET_ESP32S2
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif
@@ -153,7 +179,7 @@ safe_mode_t port_init(void) {
     common_hal_never_reset_pin(&pin_GPIO5);
     common_hal_never_reset_pin(&pin_GPIO6);
     common_hal_never_reset_pin(&pin_GPIO7);
-    #elif CONFIG_IDF_TARGET_ESP32S2
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     common_hal_never_reset_pin(&pin_GPIO39);
     common_hal_never_reset_pin(&pin_GPIO40);
     common_hal_never_reset_pin(&pin_GPIO41);
@@ -162,8 +188,11 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-    heap = (uint32_t *)(DRAM0_CACHE_ADDRESS_HIGH - CONFIG_SPIRAM_SIZE);
-    heap_size = CONFIG_SPIRAM_SIZE / sizeof(uint32_t);
+    if (esp_spiram_is_initialized()) {
+        size_t spiram_size = esp_spiram_get_size();
+        heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
+        heap_size = spiram_size / sizeof(uint32_t);
+    }
     #endif
 
     if (heap == NULL) {
@@ -260,6 +289,7 @@ void reset_port(void) {
 }
 
 void reset_to_bootloader(void) {
+    common_hal_mcu_on_next_reset(RUNMODE_BOOTLOADER);
     esp_restart();
 }
 

@@ -65,7 +65,15 @@ static void erase_and_write_sector(uint32_t address, uint32_t len, uint8_t *byte
     // Write a whole sector to flash, buffering it first and then erasing and rewriting it
     // since we can only erase a whole sector at a time.
     uint8_t buffer[FLASH_SECTOR_SIZE];
+    #pragma GCC diagnostic push
+    #if __GNUC__ >= 11
+    // TODO: Update this to a better workaround for GCC 11 when one is provided.
+    // See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578#c20
+    #pragma GCC diagnostic ignored "-Warray-bounds"
+    #pragma GCC diagnostic ignored "-Wstringop-overread"
+    #endif
     memcpy(buffer, (uint8_t *)CIRCUITPY_INTERNAL_NVM_START_ADDR, FLASH_SECTOR_SIZE);
+    #pragma GCC diagnostic pop
     memcpy(buffer + address, bytes, len);
     // disable interrupts to prevent core hang on rp2040
     common_hal_mcu_disable_interrupts();

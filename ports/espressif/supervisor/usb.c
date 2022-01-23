@@ -33,6 +33,7 @@
 #include "shared/readline/readline.h"
 
 #include "hal/gpio_ll.h"
+#include "hal/usb_hal.h"
 #include "soc/usb_periph.h"
 
 #include "components/driver/include/driver/gpio.h"
@@ -40,14 +41,14 @@
 
 #ifdef CONFIG_IDF_TARGET_ESP32C3
 #include "components/esp_rom/include/esp32c3/rom/gpio.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "components/esp_rom/include/esp32s2/rom/gpio.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "components/esp_rom/include/esp32s3/rom/gpio.h"
 #endif
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
-#include "hal/usb_hal.h"
 
 #include "tusb.h"
 
@@ -108,13 +109,16 @@ void init_usb_hardware(void) {
     usb_hal_init(&hal);
     configure_pins(&hal);
 
-    (void)xTaskCreateStatic(usb_device_task,
+    // Pin the USB task to the same core as CircuitPython. This way we leave
+    // the other core for networking.
+    (void)xTaskCreateStaticPinnedToCore(usb_device_task,
         "usbd",
         USBD_STACK_SIZE,
         NULL,
         5,
         usb_device_stack,
-        &usb_device_taskdef);
+        &usb_device_taskdef,
+        xPortGetCoreID());
 }
 
 /**

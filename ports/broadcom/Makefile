@@ -31,7 +31,20 @@ include $(TOP)/supervisor/supervisor.mk
 # Include make rules and variables common across CircuitPython builds.
 include $(TOP)/py/circuitpy_defns.mk
 
-HAL_DIR=hal/$(MCU_SERIES)
+ifeq ($(CHIP_VARIANT), "bcm2711")
+CFLAGS += -mcpu=cortex-a72 -DBCM_VERSION=2711
+CROSS_COMPILE = aarch64-none-elf-
+SUFFIX = 8
+else ifeq ($(CHIP_VARIANT), "bcm2837")
+CFLAGS += -mcpu=cortex-a53 -DBCM_VERSION=2837
+CROSS_COMPILE = aarch64-none-elf-
+SUFFIX = 8
+else ifeq ($(CHIP_VARIANT), "bcm2835")
+CFLAGS += -mcpu=arm1176jzf-s -DBCM_VERSION=2835
+CROSS_COMPILE = arm-none-eabi-
+SUFFIX =
+# TODO add 32-bit support for Cortex-A7 in 2836
+endif
 
 INC += -I. \
 	   -I../.. \
@@ -69,6 +82,7 @@ SRC_C += bindings/videocore/__init__.c \
 		 peripherals/broadcom/mmu.c \
 		 peripherals/broadcom/vcmailbox.c
 
+SRC_S = peripherals/broadcom/boot$(SUFFIX).s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
@@ -82,7 +96,6 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
 # because a few modules have files both in common-hal/ and shared-modules/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-SRC_S = peripherals/broadcom/boot.s
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
@@ -95,15 +108,6 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # BCM CLFAGS
 CFLAGS += -ffreestanding -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
-
-ifeq ($(CHIP_VARIANT), "bcm2711")
-CFLAGS += -mcpu=cortex-a72 -DBCM_VERSION=2711
-CROSS_COMPILE = aarch64-none-elf-
-else
-CFLAGS += -mcpu=cortex-a53 -DBCM_VERSION=2837
-CROSS_COMPILE = aarch64-none-elf-
-# TODO add 32-bit support for Cortex-A7 and ARM1176
-endif
 
 
 OPTIMIZATION_FLAGS ?= -O3
@@ -134,40 +138,40 @@ CFLAGS += $(INC) -Wall -Werror -std=gnu11 $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $
 
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
-LDFLAGS += $(CFLAGS) -T peripherals/broadcom/link.ld -Wl,--gc-sections -Wl,-Map=$@.map # -Wl,--cref
+LDFLAGS += $(CFLAGS) -T peripherals/broadcom/link$(SUFFIX).ld -Wl,--gc-sections -Wl,-Map=$@.map # -Wl,--cref
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
 LIBS += -lm
 endif
 
-all: $(BUILD)/firmware.kernel8.img $(BUILD)/firmware.disk.img.zip
+all: $(BUILD)/firmware.kernel$(SUFFIX).img $(BUILD)/firmware.disk.img.zip
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/kernel8.elf: $(OBJ)
+$(BUILD)/kernel$(SUFFIX).elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
 
-$(BUILD)/kernel8.img: $(BUILD)/kernel8.elf
+$(BUILD)/kernel$(SUFFIX).img: $(BUILD)/kernel$(SUFFIX).elf
 	$(STEPECHO) "Create $@"
-	$(OBJCOPY) -O binary $(BUILD)/kernel8.elf $@
+	$(OBJCOPY) -O binary $(BUILD)/kernel$(SUFFIX).elf $@
 
-$(BUILD)/firmware.kernel8.img: $(BUILD)/kernel8.img
+$(BUILD)/firmware.kernel$(SUFFIX).img: $(BUILD)/kernel$(SUFFIX).img
 	$(STEPECHO) "Create $@"
 	$(CP) $^ $@
 
-$(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel8.img
+$(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel$(SUFFIX).img
 	$(STEPECHO) "Create $@"
 	$(Q)dd if=/dev/zero of=$(BUILD)/circuitpython-disk.img bs=1 count=0 seek=256M
 	$(Q)parted -s $(BUILD)/circuitpython-disk.img mktable msdos
 	$(Q)parted -s $(BUILD)/circuitpython-disk.img mkpart primary fat32 0% 100%
 	$(Q)mkfs.fat -F 32 -n BOOT --offset=2048 $(BUILD)/circuitpython-disk.img
 
-	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M config.txt firmware/bootcode.bin firmware/fixup* firmware/start* ::
-	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M $(BUILD)/kernel8.img ::
+	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M config.txt firmware/bootcode.bin firmware/fixup* firmware/start* firmware/*.dtb ::
+	$(Q)mcopy -i $(BUILD)/circuitpython-disk.img@@1M $(BUILD)/kernel$(SUFFIX).img ::
 	$(Q)zip $@ $(BUILD)/circuitpython-disk.img
 	$(Q)rm $(BUILD)/circuitpython-disk.img
 

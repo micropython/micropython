@@ -31,6 +31,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/board/__init__.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -45,7 +46,7 @@ uint8_t display_init_sequence[] = {
     // normal display mode on
     0x13, 0,
     // display and color format settings
-    0x36, 1, 0x60,
+    0x36, 1, 0x68,
     0xB6, 2, 0x0A, 0x82,
     0x3A, 1 | DELAY,  0x55, 10,
     // ST7789V frame rate setting
@@ -70,22 +71,14 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
+    // I2C/TFT power pin
+    common_hal_never_reset_pin(&pin_GPIO21);
 
+    // Turn on TFT and I2C
+    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(21, true);
 
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-
-    common_hal_busio_spi_construct(
-        spi,
-        &pin_GPIO36,    // CLK
-        &pin_GPIO35,    // MOSI
-        NULL            // MISO not connected
-        );
-
-    common_hal_busio_spi_never_reset(spi);
-
+    busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
 
@@ -93,7 +86,7 @@ void board_init(void) {
         bus,
         spi,
         &pin_GPIO39,    // DC
-        &pin_GPIO21,    // CS
+        &pin_GPIO7,     // CS
         &pin_GPIO40,    // RST
         40000000,       // baudrate
         0,              // polarity
@@ -112,7 +105,7 @@ void board_init(void) {
         240,            // width (after rotation)
         135,            // height (after rotation)
         40,             // column start
-        52,             // row start
+        53,             // row start
         0,              // rotation
         16,             // color depth
         false,          // grayscale

@@ -72,7 +72,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     uint8_t sda_alt = 0;
     for (scl_alt = 0; scl_alt < 6; scl_alt++) {
         if (scl->functions[scl_alt].type != PIN_FUNCTION_I2C ||
-            i2c_in_use[scl->functions[scl_alt].index]) {
+            i2c_in_use[scl->functions[scl_alt].index] ||
+            scl->functions[scl_alt].function != I2C_FUNCTION_SCL) {
             continue;
         }
         for (sda_alt = 0; sda_alt < 6; sda_alt++) {

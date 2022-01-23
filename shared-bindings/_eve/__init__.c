@@ -79,7 +79,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(flush_obj, _flush);
 //|     def cc(self, b: ReadableBuffer) -> None:
 //|         """Append bytes to the command FIFO.
 //|
-//|         :param ~_typing.ReadableBuffer b: The bytes to add"""
+//|         :param ~circuitpython_typing.ReadableBuffer b: The bytes to add"""
 //|         ...
 //|
 STATIC mp_obj_t _cc(mp_obj_t self, mp_obj_t b) {

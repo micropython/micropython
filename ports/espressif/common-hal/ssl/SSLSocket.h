@@ -39,6 +39,7 @@ typedef struct {
     socketpool_socket_obj_t *sock;
     esp_tls_t *tls;
     ssl_sslcontext_obj_t *ssl_context;
+    esp_tls_cfg_t ssl_config;
 } ssl_sslsocket_obj_t;
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SSL_SSLSOCKET_H

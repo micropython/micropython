@@ -56,6 +56,9 @@ void common_hal_displayio_tilegrid_set_transpose_xy(displayio_tilegrid_t *self, 
 uint16_t common_hal_displayio_tilegrid_get_width(displayio_tilegrid_t *self);
 uint16_t common_hal_displayio_tilegrid_get_height(displayio_tilegrid_t *self);
 
+uint16_t common_hal_displayio_tilegrid_get_tile_width(displayio_tilegrid_t *self);
+uint16_t common_hal_displayio_tilegrid_get_tile_height(displayio_tilegrid_t *self);
+
 uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
 void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y, uint8_t tile_index);
 

@@ -47,3 +47,8 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_GPIO16)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO5)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO10)
+
+#define DEBUG_UART_RX               DEFAULT_UART_BUS_RX
+#define DEBUG_UART_TX               DEFAULT_UART_BUS_TX

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-11-25 00:02+0000\n"
+"PO-Revision-Date: 2022-01-19 23:56+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -151,6 +151,10 @@ msgstr "%q måste vara mellan %d och %d"
 #: py/argcheck.c
 msgid "%q must be of type %q"
 msgstr "%q måste vara av typen %q"
+
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr "%q måste vara av typen %q eller None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -584,7 +588,7 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
@@ -668,6 +672,10 @@ msgstr "Bytes måste vara mellan 0 och 255."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC-block måste vara multiplar om 16 byte"
+
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr "CIRCUITPY-enheten kunde inte hittas eller skapas."
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -1381,6 +1389,10 @@ msgstr "Ogiltig formatsegmentstorlek"
 msgid "Invalid memory access."
 msgstr "Ogiltig minnesåtkomst."
 
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr "Ogiltig MAC-adress för multicast"
@@ -1481,7 +1493,7 @@ msgstr "Ogiltig word-/bitlängd"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr "LED-mappning måste matcha displaystorlek"
 
@@ -1612,7 +1624,7 @@ msgstr "Ingen DMA-kanal hittades"
 msgid "No DMA pacing timer found"
 msgstr "Ingen DMA pacing timer hittades"
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Ingen I2C-enhet på adress: %x"
@@ -1919,7 +1931,7 @@ msgstr "Pinnen har inte ADC-funktionalitet"
 msgid "Pin interrupt already in use"
 msgstr "Pinnavbrott används redan"
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pinnen är enbart ingång"
@@ -2005,6 +2017,10 @@ msgstr "Pull används inte när riktningen är output."
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
 msgstr "RAISE-läge är inte implementerat"
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
+msgstr "RISE_AND_FALL är inte tillgängligt på detta chip"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2122,7 +2138,7 @@ msgstr "Samplingsfrekvensen måste vara positiv"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr "Skaldimension måste vara delbar med 3"
 
@@ -2393,7 +2409,7 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 msgid "Unable to create lock"
 msgstr "Kan inte skapa lås"
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Det gick inte att hitta I2C-display på %x"
@@ -2486,10 +2502,6 @@ msgstr "Formatet stöds inte"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Åtgärd som inte stöds"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Ogiltigt Pull-värde."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -2668,7 +2680,7 @@ msgstr "försök att få argmin/argmax för en tom sekvens"
 msgid "attributes not supported yet"
 msgstr "attribut stöds inte än"
 
-#: extmod/ulab/code/numpy/numerical.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
 msgstr "axis är utanför gränsen"
 
@@ -2724,11 +2736,11 @@ msgstr "bits_per_sample måste vara 8 eller 16"
 msgid "branch not in range"
 msgstr "branch utanför räckvidd"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "bufferten är mindre än begärd storlek"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "buffertstorlek måste vara en multipel av elementstorlek"
 
@@ -2778,6 +2790,10 @@ msgstr "kalibrering är skrivskyddad"
 msgid "calibration value out of range +/-127"
 msgstr "kalibreringsvärde utanför intervallet +/- 127"
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr "kan endast registreras med en förälder"
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr "kan bara ha upp till 4 parametrar för Thumbs assembly"
@@ -2815,6 +2831,10 @@ msgstr "kan inte konvertera %s till komplex"
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan inte konvertera '%q' objekt implicit till %q"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "can't convert complex to float"
+msgstr "kan inte konvertera complex till float"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2911,6 +2931,14 @@ msgstr "kan inte tilldela en ny form"
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
 msgstr "kan inte casta utdata med regel"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex to dtype"
+msgstr "kan inte konvertera komplex till dtype"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex type"
+msgstr "kan inte konvertera complex typer"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3106,6 +3134,10 @@ msgstr "division med noll"
 msgid "divisor must be 4"
 msgstr "divisor måste vara 4"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "dtype must be float, or complex"
+msgstr "dtype måste vara float eller complex"
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "tom"
@@ -3209,7 +3241,7 @@ msgstr "första argumentet måste vara en callable"
 msgid "first argument must be a function"
 msgstr "första argumentet måste vara en funktion"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
 msgstr "första argumentet måste vara en tupel av ndarray"
 
@@ -3273,6 +3305,10 @@ msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
 msgstr "funktionen är enbart definierad för ndarray"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "function is implemented for ndarrays only"
+msgstr "funktionen är bara implementerad för ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3387,7 +3423,7 @@ msgstr "inline assembler måste vara en funktion"
 msgid "input and output shapes are not compatible"
 msgstr "indata- och utdataformer är inte kompatibla"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "indataargument måste vara integer, en tuple eller list"
 
@@ -3395,13 +3431,17 @@ msgstr "indataargument måste vara integer, en tuple eller list"
 msgid "input array length must be power of 2"
 msgstr "indataarraylängden måste vara en multipel av 2"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
 msgstr "indatamatriser är inte kompatibla"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
 msgstr "indata måste vara en iterable"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input dtype must be float or complex"
+msgstr "indatatyp måste vara float eller complex"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3412,17 +3452,25 @@ msgstr "indatamatrisen är asymmetrisk"
 msgid "input matrix is singular"
 msgstr "indatamatrisen är singulär"
 
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be a 1D ndarray"
+msgstr "indata måste vara en 1D ndarray"
+
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "indata måste vara en dense ndarray"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
 msgstr "indata måste vara en tensor av rank 2"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr "indata måste vara en ndarray"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be an ndarray, or a scalar"
+msgstr "indata måste vara en ndarray eller en scalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3797,7 +3845,11 @@ msgstr "inte alla argument omvandlade under strängformatering"
 msgid "not enough arguments for format string"
 msgstr "inte tillräckligt med argument för formatsträng"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/carray/carray_tools.c
+msgid "not implemented for complex dtype"
+msgstr "inte implementerat för complex dtype"
+
+#: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
 msgstr "antal punkter måste vara minst 2"
 
@@ -3855,7 +3907,7 @@ msgstr "objekt med buffertprotokoll krävs"
 msgid "odd-length string"
 msgstr "sträng har udda längd"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "offset är för stor"
 
@@ -3863,7 +3915,7 @@ msgstr "offset är för stor"
 msgid "offset must be >= 0"
 msgstr "offset måste vara >= 0"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr "offset måste vara icke-negativt och inte längre än buffertlängd"
 
@@ -4005,18 +4057,26 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4341,7 +4401,7 @@ msgstr "tobyte kan enbart anropas för täta matriser"
 msgid "too many arguments provided with the given format"
 msgstr "för många argument för det givna formatet"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "för många dimensioner"
 
@@ -4525,7 +4585,7 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width måste vara mellan 2 och 8, inte %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
@@ -4542,7 +4602,7 @@ msgstr "window måste vara <= interval"
 msgid "wrong axis index"
 msgstr "fel axelindex"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "wrong axis specified"
 msgstr "fel axel angiven"
 
@@ -4550,7 +4610,11 @@ msgstr "fel axel angiven"
 msgid "wrong input type"
 msgstr "fel indatatyp"
 
-#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of condition array"
+msgstr "fel längd på villkorsmatrisen"
+
+#: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
 
@@ -4593,6 +4657,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Ogiltigt Pull-värde."
 
 #~ msgid "Station must be started"
 #~ msgstr "Stationen måste startas"

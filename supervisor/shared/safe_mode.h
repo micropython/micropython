@@ -48,6 +48,7 @@ typedef enum {
     USB_TOO_MANY_INTERFACE_NAMES,
     USB_BOOT_DEVICE_NOT_INTERFACE_ZERO,
     NO_HEAP,
+    NO_CIRCUITPY,
 } safe_mode_t;
 
 safe_mode_t wait_for_safe_mode_reset(void);

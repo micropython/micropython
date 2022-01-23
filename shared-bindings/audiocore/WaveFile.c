@@ -44,7 +44,7 @@
 //|         """Load a .wav file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened wave file
-//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer,
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer,
 //|           that will be split in half and used for double-buffering of the data.
 //|           The buffer must be 8 to 1024 bytes long.
 //|           If not provided, two 256 byte buffers are initially allocated internally.

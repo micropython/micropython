@@ -25,6 +25,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_P10), MP_ROM_PTR(&pin_P0_10) },
     { MP_ROM_QSTR(MP_QSTR_P18), MP_ROM_PTR(&pin_P0_18) }, // !Reset button.
     { MP_ROM_QSTR(MP_QSTR_P19), MP_ROM_PTR(&pin_P0_19) },
+    { MP_ROM_QSTR(MP_QSTR_P20), MP_ROM_PTR(&pin_P0_20) },
+    { MP_ROM_QSTR(MP_QSTR_P21), MP_ROM_PTR(&pin_P0_21) },
     { MP_ROM_QSTR(MP_QSTR_P22), MP_ROM_PTR(&pin_P0_22) }, // green led, low is on.
     { MP_ROM_QSTR(MP_QSTR_P23), MP_ROM_PTR(&pin_P0_23) }, // red led, low is on.
     { MP_ROM_QSTR(MP_QSTR_P24), MP_ROM_PTR(&pin_P0_24) }, // blue led, low is on.

@@ -164,7 +164,8 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool claim_pins,
-    bool user_interruptible
+    bool user_interruptible,
+    bool sideset_enable
     ) {
     // Create a program id that isn't the pointer so we can store it without storing the original object.
     uint32_t program_id = ~((uint32_t)program);
@@ -278,7 +279,11 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         sm_config_set_set_pins(&c, first_set_pin->number, set_pin_count);
     }
     if (first_sideset_pin != NULL) {
-        sm_config_set_sideset(&c, sideset_pin_count, false /* optional */, false /* pin direction */);
+        size_t total_sideset_bits = sideset_pin_count;
+        if (sideset_enable) {
+            total_sideset_bits += 1;
+        }
+        sm_config_set_sideset(&c, total_sideset_bits, sideset_enable, false /* pin direction */);
         sm_config_set_sideset_pins(&c, first_sideset_pin->number);
     }
     if (jmp_pin != NULL) {
@@ -336,6 +341,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
+    bool sideset_enable,
     const mcu_pin_obj_t *jmp_pin,
     uint32_t wait_gpio_mask,
     bool exclusive_pin_use,
@@ -503,7 +509,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         wait_for_txstall,
         auto_push, push_threshold, in_shift_right,
         true /* claim pins */,
-        user_interruptible);
+        user_interruptible,
+        sideset_enable);
     if (!ok) {
         mp_raise_RuntimeError(translate("All state machines in use"));
     }
@@ -513,7 +520,7 @@ void common_hal_rp2pio_statemachine_restart(rp2pio_statemachine_obj_t *self) {
     common_hal_rp2pio_statemachine_stop(self);
     // Reset program counter to the original offset. A JMP is 0x0000 plus
     // the desired offset, so we can just use self->offset.
-    pio_sm_exec(self->pio, self->state_machine,self->offset);
+    pio_sm_exec(self->pio, self->state_machine, self->offset);
     pio_sm_restart(self->pio, self->state_machine);
     uint8_t pio_index = pio_get_index(self->pio);
     uint32_t pins_we_use = _current_sm_pins[pio_index][self->state_machine];

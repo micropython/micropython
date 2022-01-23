@@ -43,11 +43,15 @@
 
 float common_hal_mcu_processor_get_temperature(void) {
     float tsens_out;
+    #ifdef CONFIG_IDF_TARGET_ESP32S3
+    mp_raise_NotImplementedError(NULL);
+    #else
     temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
     temp_sensor_set_config(temp_sensor);
     temp_sensor_start();
     temp_sensor_read_celsius(&tsens_out);
     temp_sensor_stop();
+    #endif
     return tsens_out;
 }
 

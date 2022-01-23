@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-11-29 12:53+0000\n"
+"PO-Revision-Date: 2021-12-04 12:51+0000\n"
 "Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -74,16 +74,17 @@ msgstr "%%c требует int или char"
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr ""
-"%d адресные выводы, %d rgb выводы и %d плитки указывают высоту %d а не %d"
+msgstr "%d адресные пины, %d rgb пины и %d плитки указывают высоту %d а не %d"
 
 #: shared-bindings/microcontroller/Pin.c
+#, fuzzy
 msgid "%q and %q contain duplicate pins"
-msgstr "%q и %q содержат повторяющиеся выводы"
+msgstr "%q и %q содержат пины-дупликаты"
 
 #: shared-bindings/microcontroller/Pin.c
+#, fuzzy
 msgid "%q contains duplicate pins"
-msgstr "%q содержит повторяющиеся выводы"
+msgstr "%q содержит пины-дупликаты"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -155,6 +156,10 @@ msgstr "%q должен быть между %d и %d"
 msgid "%q must be of type %q"
 msgstr "%q должен быть типа %q"
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr "%q должен быть во 2-й степени"
@@ -170,7 +175,7 @@ msgstr "%q вне диапазона"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
-msgstr "Вывод %q не допустим"
+msgstr "Пин %q не допустим"
 
 #: shared-bindings/fontio/BuiltinFont.c
 msgid "%q should be an int"
@@ -434,7 +439,7 @@ msgstr "Все каналы событий синхронизации уже и�
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Все таймеры для этого вывода уже используются"
+msgstr "Все таймеры для этого Пина уже используются"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -472,7 +477,7 @@ msgstr "Поиск сетей wifi уже происходит"
 
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
 msgid "AnalogIn not supported on given pin"
-msgstr "AnalogIn не поддерживается на данном выводе"
+msgstr "AnalogIn не поддерживается на данном пине"
 
 #: ports/cxd56/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
@@ -487,7 +492,7 @@ msgstr "AnalogOut имеет только 16 бит. Значение должн
 
 #: ports/atmel-samd/common-hal/analogio/AnalogOut.c
 msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut не поддерживается на данном выводе"
+msgstr "AnalogOut не поддерживается на данном пине"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -556,8 +561,7 @@ msgstr "Ниже минимальной частоты кадров"
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
 msgstr ""
-"Битовый тактовый генератор и выбор слова должны быть последовательными "
-"выводами"
+"Битовый тактовый генератор и выбор слова должны быть последовательными пинами"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -588,11 +592,11 @@ msgstr "Для управления потоком требуется как RX,
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr "Оба вывода должны поддерживать аппаратные прерывания"
+msgstr "Оба пина должны поддерживать аппаратные прерывания"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Яркость должна быть в диапазоне от 0 до 1.0"
@@ -663,7 +667,7 @@ msgstr "Буферы должны быть одинакового размера
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
-msgstr "Вывод шины %d уже используется"
+msgstr "Пин шины %d уже используется"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -677,6 +681,10 @@ msgstr "Bytes должен быть в диапазоне от 0 до 255."
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Блоки CBC должны быть кратны 16 байтам"
 
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr ""
+
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
 msgstr "CRC или контрольная сумма неправильная"
@@ -687,7 +695,7 @@ msgstr "Вызовите super().__init__() перед обращением к �
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "Сигнал из глубокого сна может подаваться только на выводе RTC IO."
+msgstr "Сигнал из глубокого сна может подаваться только на пине RTC IO."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
@@ -1265,8 +1273,9 @@ msgid "Insufficient encryption"
 msgstr "Недостаточное шифрование"
 
 #: ports/espressif/common-hal/wifi/Radio.c
+#, fuzzy
 msgid "Interface must be started"
-msgstr ""
+msgstr "Интерфейс должен быть запущен"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
@@ -1404,6 +1413,10 @@ msgstr "Неверный размер блока формата"
 msgid "Invalid memory access."
 msgstr "Неправильный доступ к памяти."
 
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr "Неверный MAC-адрес multicast"
@@ -1504,7 +1517,7 @@ msgstr "Недопустимая длина слова/бита"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Ключ должен быть длинной 16, 24 или 32 байта"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1561,9 +1574,9 @@ msgstr ""
 "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на вывод(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
+#, fuzzy, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе вывода"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1636,7 +1649,7 @@ msgstr "Канал DMA не найден"
 msgid "No DMA pacing timer found"
 msgstr ""
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr "Нет устройства I2C по адресу: %x"
@@ -1687,7 +1700,7 @@ msgstr "Свободные GCLK отсутствуют"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
-msgstr ""
+msgstr "Отсутствует аппаратный генератор случайных чисел"
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
@@ -1705,7 +1718,7 @@ msgstr "Нет in в программе"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "В программе отсутствует ввод или вывод"
 
 #: shared-bindings/aesio/aes.c
 msgid "No key was specified"
@@ -1718,7 +1731,7 @@ msgstr "Нет поддержки длинных целых чисел (long int
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "Допускается не более %d HID устройств"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -1726,7 +1739,7 @@ msgstr "Нет сети с этим ssid"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "В программе отсутствует вывод"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/busio/I2C.c
@@ -1773,11 +1786,12 @@ msgstr "Не подключено"
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audioio/AudioOut.c
 #: shared-bindings/audiopwmio/PWMAudioOut.c
 msgid "Not playing"
-msgstr ""
+msgstr "Не играет"
 
 #: shared-bindings/_bleio/__init__.c
+#, fuzzy
 msgid "Not settable"
-msgstr ""
+msgstr "Не устанавливается"
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
@@ -1797,8 +1811,9 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
+#, fuzzy
 msgid "Only 8 or 16 bit mono with "
-msgstr ""
+msgstr "Только 8- или 16-битное моно с "
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
@@ -1942,7 +1957,7 @@ msgstr ""
 msgid "Pin interrupt already in use"
 msgstr ""
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr ""
@@ -2024,6 +2039,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -2142,7 +2161,7 @@ msgstr ""
 msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -2403,7 +2422,7 @@ msgstr ""
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr ""
@@ -2493,10 +2512,6 @@ msgstr ""
 
 #: py/moduerrno.c
 msgid "Unsupported operation"
-msgstr ""
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
@@ -2668,7 +2683,7 @@ msgstr ""
 msgid "attributes not supported yet"
 msgstr ""
 
-#: extmod/ulab/code/numpy/numerical.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
 msgstr ""
 
@@ -2724,11 +2739,11 @@ msgstr ""
 msgid "branch not in range"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr ""
 
@@ -2778,6 +2793,10 @@ msgstr ""
 msgid "calibration value out of range +/-127"
 msgstr ""
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr ""
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr ""
@@ -2814,6 +2833,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
@@ -2908,6 +2931,14 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex to dtype"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex type"
 msgstr ""
 
 #: py/objtype.c
@@ -3101,6 +3132,10 @@ msgstr ""
 msgid "divisor must be 4"
 msgstr ""
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "dtype must be float, or complex"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr ""
@@ -3204,7 +3239,7 @@ msgstr ""
 msgid "first argument must be a function"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
@@ -3267,6 +3302,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
+msgstr ""
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "function is implemented for ndarrays only"
 msgstr ""
 
 #: py/argcheck.c
@@ -3382,7 +3421,7 @@ msgstr ""
 msgid "input and output shapes are not compatible"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
 
@@ -3390,12 +3429,16 @@ msgstr ""
 msgid "input array length must be power of 2"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
 msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input dtype must be float or complex"
 msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
@@ -3407,16 +3450,24 @@ msgstr ""
 msgid "input matrix is singular"
 msgstr ""
 
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be a 1D ndarray"
+msgstr ""
+
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be an ndarray, or a scalar"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
@@ -3789,7 +3840,11 @@ msgstr ""
 msgid "not enough arguments for format string"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/carray/carray_tools.c
+msgid "not implemented for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
 msgstr ""
 
@@ -3847,7 +3902,7 @@ msgstr ""
 msgid "odd-length string"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3855,7 +3910,7 @@ msgstr ""
 msgid "offset must be >= 0"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
@@ -3996,18 +4051,26 @@ msgstr ""
 msgid "pow() with 3 arguments requires integers"
 msgstr ""
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4330,7 +4393,7 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
 
@@ -4514,7 +4577,7 @@ msgstr ""
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
@@ -4531,7 +4594,7 @@ msgstr ""
 msgid "wrong axis index"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "wrong axis specified"
 msgstr ""
 
@@ -4539,7 +4602,11 @@ msgstr ""
 msgid "wrong input type"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of condition array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr ""
 
@@ -4576,8 +4643,9 @@ msgid "zi must be an ndarray"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
+#, fuzzy
 msgid "zi must be of float type"
-msgstr ""
+msgstr "zi должно быть типа float"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"

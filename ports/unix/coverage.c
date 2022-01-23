@@ -527,7 +527,8 @@ STATIC mp_obj_t extra_coverage(void) {
     // ringbuf
     {
         byte buf[100];
-        ringbuf_t ringbuf = {buf, sizeof(buf), 0, 0};
+        ringbuf_t ringbuf;
+        ringbuf_init(&ringbuf, &buf[0], sizeof(buf));
 
         mp_printf(&mp_plat_print, "# ringbuf\n");
 

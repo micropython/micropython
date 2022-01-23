@@ -18,6 +18,8 @@ void common_hal_vectorio_vector_shape_construct(vectorio_vector_shape_t *self,
     vectorio_ishape_t ishape,
     mp_obj_t pixel_shader, int32_t x, int32_t y);
 
+bool common_hal_vectorio_vector_shape_contains(vectorio_vector_shape_t *self, mp_int_t x, mp_int_t y);
+
 void common_hal_vectorio_vector_shape_set_dirty(void *self);
 
 mp_int_t common_hal_vectorio_vector_shape_get_x(vectorio_vector_shape_t *self);
@@ -40,5 +42,6 @@ extern const mp_obj_property_t vectorio_vector_shape_x_obj;
 extern const mp_obj_property_t vectorio_vector_shape_y_obj;
 extern const mp_obj_property_t vectorio_vector_shape_location_obj;
 extern const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj;
+extern const mp_obj_fun_builtin_fixed_t vectorio_vector_shape_contains_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H

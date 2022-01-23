@@ -163,7 +163,7 @@ STATIC void _pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color,
     }
 
     if (mp_obj_is_int(color) || mp_obj_is_float(color)) {
-        mp_int_t value = mp_obj_is_int(color) ? mp_obj_get_int_truncated(color) : mp_obj_get_float(color);
+        mp_int_t value = mp_obj_is_int(color) ? mp_obj_get_int_truncated(color) : (mp_int_t)mp_obj_get_float(color);
         *r = value >> 16 & 0xff;
         *g = (value >> 8) & 0xff;
         *b = value & 0xff;

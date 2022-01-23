@@ -152,6 +152,10 @@ msgstr ""
 msgid "%q must be of type %q"
 msgstr ""
 
+#: shared-bindings/digitalio/Pull.c
+msgid "%q must be of type %q or None"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
 msgstr ""
@@ -585,7 +589,7 @@ msgstr "Beide pins müssen Hardware Interrupts unterstützen"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
@@ -669,6 +673,10 @@ msgstr "Ein Bytes kann nur Werte zwischen 0 und 255 annehmen."
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "CBC-Blöcke müssen ein Vielfaches von 16 Bytes sein"
+
+#: supervisor/shared/safe_mode.c
+msgid "CIRCUITPY drive could not be found or created."
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -1382,6 +1390,10 @@ msgstr "Ungültige format chunk size"
 msgid "Invalid memory access."
 msgstr "Ungültiger Speicherzugriff."
 
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr ""
@@ -1482,7 +1494,7 @@ msgstr "Ungültige Wort- / Bitlänge"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Der Schlüssel muss 16, 24 oder 32 Byte lang sein"
 
-#: shared-module/is31fl3741/is31fl3741.c
+#: shared-module/is31fl3741/IS31FL3741.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1613,7 +1625,7 @@ msgstr "Kein DMA Kanal gefunden"
 msgid "No DMA pacing timer found"
 msgstr ""
 
-#: shared-module/adafruit_bus_device/I2CDevice.c
+#: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: %x"
 msgstr ""
@@ -1919,7 +1931,7 @@ msgstr "Pin hat keine ADC Funktionalität"
 msgid "Pin interrupt already in use"
 msgstr ""
 
-#: shared-bindings/adafruit_bus_device/SPIDevice.c
+#: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
 msgstr "Pin kann nur als Eingang verwendet werden"
@@ -2004,6 +2016,10 @@ msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
 #: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "RAISE mode is not implemented"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/countio/Counter.c
+msgid "RISE_AND_FALL not available on this chip"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -2122,7 +2138,7 @@ msgstr "Abtastrate muss positiv sein"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -2386,7 +2402,7 @@ msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 msgid "Unable to create lock"
 msgstr ""
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/is31fl3741.c
+#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Konnte kein I2C Display finden an %x"
@@ -2481,10 +2497,6 @@ msgstr "Nicht unterstütztes Format"
 #: py/moduerrno.c
 msgid "Unsupported operation"
 msgstr "Nicht unterstützte Operation"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Unsupported pull value."
-msgstr "Nicht unterstützter Pull-Wert."
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -2658,7 +2670,7 @@ msgstr "Sie haben versucht argmin/argmax einer leeren Sequenz zu erhalten"
 msgid "attributes not supported yet"
 msgstr "Attribute werden noch nicht unterstützt"
 
-#: extmod/ulab/code/numpy/numerical.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
 msgstr "Achse außerhalb des Wertebereichs"
 
@@ -2714,11 +2726,11 @@ msgstr "Es müssen 8 oder 16 bits_per_sample sein"
 msgid "branch not in range"
 msgstr "Zweig ist außerhalb der Reichweite"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "Der Puffer ist kleiner als die angefragte Größe"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "Die Puffergröße muss ein vielfaches der Elementgröße sein"
 
@@ -2768,6 +2780,10 @@ msgstr "Kalibrierung ist Schreibgeschützt"
 msgid "calibration value out of range +/-127"
 msgstr "Kalibrierwert nicht im Bereich von +/-127"
 
+#: shared-module/vectorio/Rectangle.c
+msgid "can only be registered in one parent"
+msgstr ""
+
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
 msgstr "kann nur bis zu 4 Parameter für die Thumb assembly haben"
@@ -2807,6 +2823,10 @@ msgstr "kann %s nicht nach complex konvertieren"
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "Kann '%q' Objekt nicht implizit nach %q konvertieren"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "can't convert complex to float"
+msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2906,6 +2926,14 @@ msgstr "Kann neue shape nicht zuweisen"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex to dtype"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex type"
 msgstr ""
 
 #: py/objtype.c
@@ -3103,6 +3131,10 @@ msgstr "Division durch Null"
 msgid "divisor must be 4"
 msgstr ""
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "dtype must be float, or complex"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "leer"
@@ -3206,7 +3238,7 @@ msgstr ""
 msgid "first argument must be a function"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
@@ -3269,6 +3301,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
+msgstr ""
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "function is implemented for ndarrays only"
 msgstr ""
 
 #: py/argcheck.c
@@ -3386,7 +3422,7 @@ msgstr "inline assembler muss eine function sein"
 msgid "input and output shapes are not compatible"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "das Eingabeargument muss ein Integer, Tupel oder eine Liste sein"
 
@@ -3394,13 +3430,17 @@ msgstr "das Eingabeargument muss ein Integer, Tupel oder eine Liste sein"
 msgid "input array length must be power of 2"
 msgstr "Die Länge des Eingabearrays muss eine Potenz von 2 sein"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
 msgstr "Eingabe-Arrays sind nicht kompatibel"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
 msgstr "Eingabedaten müssen iterierbar sein"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input dtype must be float or complex"
+msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3411,16 +3451,24 @@ msgstr "Eingabematrix ist asymmetrisch"
 msgid "input matrix is singular"
 msgstr "Eingabematrix ist singulär"
 
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be a 1D ndarray"
+msgstr ""
+
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be an ndarray, or a scalar"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
@@ -3800,7 +3848,11 @@ msgstr ""
 msgid "not enough arguments for format string"
 msgstr "Nicht genügend Argumente für den Formatierungs-String"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/carray/carray_tools.c
+msgid "not implemented for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
 msgstr "Die Anzahl der Punkte muss mindestens 2 betragen"
 
@@ -3858,7 +3910,7 @@ msgstr "Objekt mit Pufferprotokoll (buffer protocol) erforderlich"
 msgid "odd-length string"
 msgstr "String mit ungerader Länge"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3866,7 +3918,7 @@ msgstr ""
 msgid "offset must be >= 0"
 msgstr ""
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
 
@@ -4010,18 +4062,26 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() mit 3 Argumenten erfordert Integer"
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
 #: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4347,7 +4407,7 @@ msgstr ""
 msgid "too many arguments provided with the given format"
 msgstr "zu viele Argumente mit dem angegebenen Format"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "zu viele Dimensionen"
 
@@ -4533,7 +4593,7 @@ msgstr "watchdog Zeitlimit muss größer als 0 sein"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "breite muss zwischen (inklusive) 2 und 8 liegen, nicht %d"
 
-#: shared-bindings/is31fl3741/is31fl3741.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "breite muss größer als 0 sein"
@@ -4550,7 +4610,7 @@ msgstr "Fenster muss <= Intervall sein"
 msgid "wrong axis index"
 msgstr "falscher Achsenindex"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "wrong axis specified"
 msgstr "falsche Achse gewählt"
 
@@ -4558,7 +4618,11 @@ msgstr "falsche Achse gewählt"
 msgid "wrong input type"
 msgstr "falscher Eingabetyp"
 
-#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of condition array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "falsche Anzahl an Argumenten"
 
@@ -4601,6 +4665,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Nicht unterstützter Pull-Wert."
 
 #, c-format
 #~ msgid ""

@@ -64,8 +64,10 @@
 //| This object is the sole instance of `alarm.SleepMemory`."""
 //|
 
-//| wake_alarm: Alarm
-//| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm the woke it from sleep."""
+//| wake_alarm: Optional[Alarm]
+//| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
+//| If no alarm occured since the last hard reset or soft restart, value is ``None``.
+//| """
 //|
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
@@ -103,7 +105,9 @@ STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *ar
 
     validate_objs_are_alarms(n_args, args);
 
-    return common_hal_alarm_light_sleep_until_alarms(n_args, args);
+    mp_obj_t alarm = common_hal_alarm_light_sleep_until_alarms(n_args, args);
+    shared_alarm_save_wake_alarm(alarm);
+    return alarm;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
