@@ -371,6 +371,11 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_math) },
     { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
     { MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi },
+    #if MICROPY_PY_MATH_CONSTANTS
+    { MP_ROM_QSTR(MP_QSTR_tau), mp_const_float_tau },
+    { MP_ROM_QSTR(MP_QSTR_inf), mp_const_float_inf },
+    { MP_ROM_QSTR(MP_QSTR_nan), mp_const_float_nan },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_sqrt), MP_ROM_PTR(&mp_math_sqrt_obj) },
     { MP_ROM_QSTR(MP_QSTR_pow), MP_ROM_PTR(&mp_math_pow_obj) },
     { MP_ROM_QSTR(MP_QSTR_exp), MP_ROM_PTR(&mp_math_exp_obj) },
