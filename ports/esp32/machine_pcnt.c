@@ -202,18 +202,6 @@ STATIC mp_obj_t mpcnt_event_value(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_event_value_obj, 2, 3, mpcnt_event_value);
 
-STATIC mp_obj_t mpcnt_intr_enable(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_intr_enable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_intr_enable_obj, mpcnt_intr_enable);
-
-STATIC mp_obj_t mpcnt_intr_disable(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_intr_disable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_intr_disable_obj, mpcnt_intr_disable);
-
 STATIC int _mpcnt_map_pin(mp_obj_t pin) {
   if(pin == mp_const_none) return PCNT_PIN_NOT_USED;
   return machine_pin_get_id(pin);
@@ -320,9 +308,6 @@ STATIC const mp_rom_map_elem_t mpcnt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_event_status), MP_ROM_PTR(&mpcnt_event_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_event_value), MP_ROM_PTR(&mpcnt_event_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&mpcnt_irq_obj) },
-    
-    { MP_ROM_QSTR(MP_QSTR_intr_enable), MP_ROM_PTR(&mpcnt_intr_enable_obj) },
-    { MP_ROM_QSTR(MP_QSTR_intr_disable), MP_ROM_PTR(&mpcnt_intr_disable_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mpcnt_locals_dict, mpcnt_locals_dict_table);
