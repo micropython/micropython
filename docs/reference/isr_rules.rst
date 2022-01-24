@@ -339,8 +339,8 @@ A critical section can comprise a single line of code and a single variable. Con
 
 This example illustrates a subtle source of bugs. The line ``count += 1`` in the main loop carries a specific race
 condition hazard known as a read-modify-write. This is a classic cause of bugs in real time systems. In the main loop
-MicroPython reads the value of ``t.counter``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs
-after the read and before the write. The interrupt modifies ``t.counter`` but its change is overwritten by the main
+MicroPython reads the value of ``count``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs
+after the read and before the write. The interrupt modifies ``count`` but its change is overwritten by the main
 loop when the ISR returns. In a real system this could lead to rare, unpredictable failures.
 
 As mentioned above, care should be taken if an instance of a Python built in type is modified in the main code and
