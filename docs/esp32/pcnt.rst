@@ -272,4 +272,4 @@ Constants
                 _c = c
                 print('Encoder =', c)
     finally:
-        encoder.deinit()  # free the input pins and encoder.
+        enc.deinit()  # free the input pins and encoder.
