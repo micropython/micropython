@@ -107,7 +107,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     }
 
     // Find a free RMT Channel and configure it
-    rmt_channel_t channel = peripherals_find_and_reserve_rmt();
+    rmt_channel_t channel = peripherals_find_and_reserve_rmt(RECEIVE_MODE);
     if (channel == RMT_CHANNEL_MAX) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
