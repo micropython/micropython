@@ -73,6 +73,8 @@
 #define CAN_FLAG_FIFO1_FULL         FDCAN_FLAG_RX_FIFO1_FULL
 #define CAN_FLAG_FIFO0_OVRF         FDCAN_FLAG_RX_FIFO0_MESSAGE_LOST
 #define CAN_FLAG_FIFO1_OVRF         FDCAN_FLAG_RX_FIFO1_MESSAGE_LOST
+#define CAN_FLAG_FIFO0_PENDING      FDCAN_FLAG_RX_FIFO0_NEW_MESSAGE
+#define CAN_FLAG_FIFO1_PENDING      FDCAN_FLAG_RX_FIFO1_NEW_MESSAGE
 
 #define __HAL_CAN_ENABLE_IT         __HAL_FDCAN_ENABLE_IT
 #define __HAL_CAN_DISABLE_IT        __HAL_FDCAN_DISABLE_IT
@@ -578,6 +580,9 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
             case RX_STATE_MESSAGE_PENDING:
                 if (__HAL_CAN_MSG_PENDING(&self->can, fifo) == 0) {
                     // Fifo is empty
+                    #if MICROPY_HW_ENABLE_FDCAN
+                    __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_FLAG_FIFO0_PENDING : CAN_FLAG_FIFO1_PENDING);
+                    #endif
                     __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
                     *state = RX_STATE_FIFO_EMPTY;
                 }
@@ -587,6 +592,9 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
                 *state = RX_STATE_MESSAGE_PENDING;
                 break;
             case RX_STATE_FIFO_OVERFLOW:
+                #if MICROPY_HW_ENABLE_FDCAN
+                __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_FLAG_FIFO0_OVRF : CAN_FLAG_FIFO1_OVRF);
+                #endif
                 __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
                 __HAL_CAN_ENABLE_IT(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
                 *state = RX_STATE_MESSAGE_PENDING;
@@ -842,6 +850,10 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
 
     callback = (fifo == 0) ? &self->rxcallback0 : &self->rxcallback1;
     if (callback_in == mp_const_none) {
+        #if MICROPY_HW_ENABLE_FDCAN
+        HAL_FDCAN_DeactivateNotification(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
+        __HAL_CAN_CLEAR_FLAG(&self->can, (fifo == CAN_FIFO0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
+        #endif
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
         __HAL_CAN_DISABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
@@ -868,9 +880,18 @@ STATIC mp_obj_t pyb_can_rxcallback(mp_obj_t self_in, mp_obj_t fifo_in, mp_obj_t 
         }
         NVIC_SetPriority(irq, IRQ_PRI_CAN);
         HAL_NVIC_EnableIRQ(irq);
+        #if MICROPY_HW_ENABLE_FDCAN
+        if (fifo == 0) {
+            HAL_FDCAN_ActivateNotification(&self->can, CAN_IT_FIFO0_PENDING | CAN_IT_FIFO0_FULL | CAN_IT_FIFO0_OVRF, 0);
+        } else {
+            HAL_FDCAN_ActivateNotification(&self->can, CAN_IT_FIFO1_PENDING | CAN_IT_FIFO1_FULL | CAN_IT_FIFO1_OVRF, 0);
+        }
+        #else
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_PENDING : CAN_IT_FIFO1_PENDING);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_FULL : CAN_IT_FIFO1_FULL);
         __HAL_CAN_ENABLE_IT(&self->can, (fifo == 0) ? CAN_IT_FIFO0_OVRF : CAN_IT_FIFO1_OVRF);
+        #endif
+
     }
     return mp_const_none;
 }
