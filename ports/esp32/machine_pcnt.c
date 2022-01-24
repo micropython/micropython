@@ -80,48 +80,39 @@ STATIC mp_obj_t mpcnt_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_deinit_obj, mpcnt_deinit);
 
-STATIC void mpcnt_check_err(esp_err_t err) {
-    if ( err == ESP_ERR_INVALID_STATE )
-        mp_raise_ValueError(MP_ERROR_TEXT("pcnt driver not initialized"));
-    else if ( err == ESP_ERR_INVALID_ARG )
-        mp_raise_ValueError(MP_ERROR_TEXT("parameter error"));
-    else if ( err != ESP_OK)
-        mp_raise_ValueError(MP_ERROR_TEXT("unknown error"));
-}
-  
 STATIC mp_obj_t mpcnt_counter_value(mp_obj_t self_in) {
     int16_t count; 
-    mpcnt_check_err(pcnt_get_counter_value(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id, &count));
+    check_esp_err(pcnt_get_counter_value(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id, &count));
     return mp_obj_new_int(count);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_counter_value_obj, mpcnt_counter_value);
 
 STATIC mp_obj_t mpcnt_counter_clear(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_counter_clear(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
+    check_esp_err(pcnt_counter_clear(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_counter_clear_obj, mpcnt_counter_clear);
 
 STATIC mp_obj_t mpcnt_counter_resume(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_counter_resume(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
+    check_esp_err(pcnt_counter_resume(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_counter_resume_obj, mpcnt_counter_resume);
 
 STATIC mp_obj_t mpcnt_counter_pause(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_counter_pause(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
+    check_esp_err(pcnt_counter_pause(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_counter_pause_obj, mpcnt_counter_pause);
 
 STATIC mp_obj_t mpcnt_filter_enable(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_filter_enable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
+    check_esp_err(pcnt_filter_enable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_filter_enable_obj, mpcnt_filter_enable);
 
 STATIC mp_obj_t mpcnt_filter_disable(mp_obj_t self_in) {
-    mpcnt_check_err(pcnt_filter_disable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
+    check_esp_err(pcnt_filter_disable(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_filter_disable_obj, mpcnt_filter_disable);
@@ -130,11 +121,11 @@ STATIC mp_obj_t mpcnt_filter_value(size_t n_args, const mp_obj_t *args) {
     mpcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         uint16_t value;
-        mpcnt_check_err(pcnt_get_filter_value(self->unit_id, &value));
+        check_esp_err(pcnt_get_filter_value(self->unit_id, &value));
 	return mp_obj_new_int(value);
     }
     uint16_t value = mp_obj_get_int(args[1]);
-    mpcnt_check_err(pcnt_set_filter_value(self->unit_id, value));
+    check_esp_err(pcnt_set_filter_value(self->unit_id, value));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_filter_value_obj, 1, 2, mpcnt_filter_value);
@@ -152,7 +143,7 @@ STATIC mp_obj_t mpcnt_irq(mp_obj_t self_in, mp_obj_t handler_in) {
     pcnt_isr_handler_remove(self->unit_id);   // Ignore failure as no handler may be installed yet.
     
     self->irq_handler = handler_in;
-    mpcnt_check_err(pcnt_isr_handler_add(self->unit_id, mpcnt_isr_handler, (void *)self));
+    check_esp_err(pcnt_isr_handler_add(self->unit_id, mpcnt_isr_handler, (void *)self));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_irq_obj, mpcnt_irq);
@@ -160,7 +151,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_irq_obj, mpcnt_irq);
 STATIC mp_obj_t mpcnt_event_enable(mp_obj_t self_in, mp_obj_t value_in) {
     mpcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int value = mp_obj_get_int(value_in);
-    mpcnt_check_err(pcnt_event_enable(self->unit_id, value));
+    check_esp_err(pcnt_event_enable(self->unit_id, value));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_event_enable_obj, mpcnt_event_enable);
@@ -168,7 +159,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_event_enable_obj, mpcnt_event_enable);
 STATIC mp_obj_t mpcnt_event_disable(mp_obj_t self_in, mp_obj_t value_in) {
     mpcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int value = mp_obj_get_int(value_in);
-    mpcnt_check_err(pcnt_event_disable(self->unit_id, value));
+    check_esp_err(pcnt_event_disable(self->unit_id, value));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_event_disable_obj, mpcnt_event_disable);
@@ -182,7 +173,7 @@ STATIC mp_obj_t mpcnt_event_status(mp_obj_t self_in) {
     status = PCNT.status_unit[self->unit_id].val;
     PCNT.int_clr.val = BIT(self->unit_id);
 #else
-    mpcnt_check_err(pcnt_get_event_status(self->unit_id, &status));
+    check_esp_err(pcnt_get_event_status(self->unit_id, &status));
 #endif
     return mp_obj_new_int(status);
 }
@@ -193,11 +184,11 @@ STATIC mp_obj_t mpcnt_event_value(size_t n_args, const mp_obj_t *args) {
     pcnt_evt_type_t type = mp_obj_get_int(args[1]);
     if (n_args == 2) {
         int16_t value;
-        mpcnt_check_err(pcnt_get_event_value(self->unit_id, type, &value));
+        check_esp_err(pcnt_get_event_value(self->unit_id, type, &value));
 	return mp_obj_new_int(value);
     }
     int16_t value = mp_obj_get_int(args[2]);
-    mpcnt_check_err(pcnt_set_event_value(self->unit_id, type, value));
+    check_esp_err(pcnt_set_event_value(self->unit_id, type, value));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_event_value_obj, 2, 3, mpcnt_event_value);
@@ -247,7 +238,7 @@ STATIC mp_obj_t mpcnt_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     };
     
     /* Initialize PCNT unit */
-    mpcnt_check_err(pcnt_unit_config(&pcnt_config));
+    check_esp_err(pcnt_unit_config(&pcnt_config));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(mpcnt_config_obj, 1, mpcnt_config);
@@ -257,7 +248,7 @@ STATIC mp_obj_t mpcnt_set_pin(size_t n_args, const mp_obj_t *args) {
     pcnt_channel_t channel = mp_obj_get_int(args[1]);
     int pulse_io = _mpcnt_map_pin(args[2]);
     int ctrl_io = _mpcnt_map_pin(args[3]);
-    mpcnt_check_err(pcnt_set_pin(self->unit_id, channel, pulse_io, ctrl_io));
+    check_esp_err(pcnt_set_pin(self->unit_id, channel, pulse_io, ctrl_io));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_set_pin_obj, 4, 4, mpcnt_set_pin);
@@ -269,7 +260,7 @@ STATIC mp_obj_t mpcnt_set_mode(size_t n_args, const mp_obj_t *args) {
     pcnt_count_mode_t neg_mode = mp_obj_get_int(args[3]);
     pcnt_ctrl_mode_t hctrl_mode = mp_obj_get_int(args[4]);
     pcnt_ctrl_mode_t lctrl_mode = mp_obj_get_int(args[5]);
-    mpcnt_check_err(pcnt_set_mode(self->unit_id, channel, pos_mode, neg_mode, hctrl_mode, lctrl_mode));
+    check_esp_err(pcnt_set_mode(self->unit_id, channel, pos_mode, neg_mode, hctrl_mode, lctrl_mode));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_set_mode_obj, 6, 6, mpcnt_set_mode);
