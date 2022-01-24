@@ -24,15 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
 
 #if MICROPY_PY_MACHINE_PCNT
 
-#include "driver/gpio.h"
 #include "driver/pcnt.h"
 
 typedef struct _mpcnt_obj_t {
