@@ -261,8 +261,8 @@ Constants
         flt = enc.filter()  # return current filter value.
         enc.filter(10_000)  # filter delay is 10ms
         c = enc.value(0)  # get current encoder value, set the encoder value to 0
-        enc.irq(irq_handler1, Counter.IRQ_MATCH1)  # set irq handler
-        enc.irq(irq_handler2, Counter.IRQ_MATCH2)  # set irq handler
+        enc.irq(irq_handler1, Encoder.IRQ_MATCH1)  # set irq handler
+        enc.irq(irq_handler2, Encoder.IRQ_MATCH2)  # set irq handler
         enc.resume()
 
         _c = None
