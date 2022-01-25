@@ -100,7 +100,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
         "");
 }
 
-uint64_t next_start_raw_ticks = 0;
+STATIC uint64_t next_start_raw_ticks = 0;
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // This is adapted directly from the Adafruit NeoPixel library SAMD21G18A code:

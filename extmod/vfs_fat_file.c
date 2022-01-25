@@ -139,38 +139,57 @@ STATIC const mp_arg_t file_open_args[] = {
 STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_arg_val_t *args) {
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
-    // TODO make sure only one of r, w, x, a, and b, t are specified
+    uint32_t rwxa_count = 0;
+    uint32_t bt_count = 0;
+    uint32_t plus_count = 0;
+    bool bad_mode = false;
     while (*mode_s) {
         switch (*mode_s++) {
             case 'r':
                 mode |= FA_READ;
+                rwxa_count++;
                 break;
             case 'w':
                 mode |= FA_WRITE | FA_CREATE_ALWAYS;
+                rwxa_count++;
                 break;
             case 'x':
                 mode |= FA_WRITE | FA_CREATE_NEW;
+                rwxa_count++;
                 break;
             case 'a':
                 mode |= FA_WRITE | FA_OPEN_ALWAYS;
+                rwxa_count++;
                 break;
             case '+':
                 mode |= FA_READ | FA_WRITE;
+                plus_count++;
                 break;
             #if MICROPY_PY_IO_FILEIO
             case 'b':
+                bt_count++;
                 type = &mp_type_vfs_fat_fileio;
                 break;
             #endif
             case 't':
+                bt_count++;
                 type = &mp_type_vfs_fat_textio;
+                break;
+            default:
+                bad_mode = true;
                 break;
         }
     }
+
+    if (rwxa_count != 1 || plus_count > 1 || bt_count > 1 || bad_mode) {
+        mp_raise_ValueError(translate("Invalid mode"));
+    }
+
     assert(vfs != NULL);
     if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(vfs)) {
         mp_raise_OSError(MP_EROFS);
     }
+
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
