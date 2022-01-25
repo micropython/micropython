@@ -94,8 +94,6 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 #define UI_RES_16_BIT (16)
 // Maximum duty value on highest user interface resolution
 #define UI_MAX_DUTY ((1 << UI_RES_16_BIT) - 1)
-// How much to shift from the HIGHEST_PWM_RES duty resolution to the user interface duty resolution UI_RES_16_BIT
-#define UI_RES_SHIFT (UI_RES_16_BIT - HIGHEST_PWM_RES) // 0 for ESP32, 2 for S2, S3, C3
 
 // If the PWM frequency is less than EMPIRIC_FREQ, then LEDC_REF_CLK_HZ(1 MHz) source is used, else LEDC_APB_CLK_HZ(80 MHz) source is used
 #define EMPIRIC_FREQ (10) // Hz
@@ -296,7 +294,7 @@ STATIC int duty_to_ns(machine_pwm_obj_t *self, int duty) {
 #define get_duty_raw(self) ledc_get_duty(self->mode, self->channel)
 
 STATIC uint32_t get_duty_u16(machine_pwm_obj_t *self) {
-    return ledc_get_duty(self->mode, self->channel) << (HIGHEST_PWM_RES + UI_RES_SHIFT - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
+    return ledc_get_duty(self->mode, self->channel) << (UI_RES_16_BIT - timers[TIMER_IDX(self->mode, self->timer)].duty_resolution);
 }
 
 STATIC uint32_t get_duty_u10(machine_pwm_obj_t *self) {
@@ -312,7 +310,7 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), UI_MAX_DUTY);
     }
     ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
-    int channel_duty = duty >> (HIGHEST_PWM_RES + UI_RES_SHIFT - timer.duty_resolution);
+    int channel_duty = duty >> (UI_RES_16_BIT - timer.duty_resolution);
     int max_duty = (1 << timer.duty_resolution) - 1;
     if (channel_duty < 0) {
         channel_duty = 0;
@@ -344,7 +342,7 @@ STATIC void set_duty_u10(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > MAX_DUTY_U10)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), MAX_DUTY_U10);
     }
-    set_duty_u16(self, duty << (HIGHEST_PWM_RES + UI_RES_SHIFT - PWRES));
+    set_duty_u16(self, duty << (UI_RES_16_BIT - LEDC_TIMER_10_BIT));
     self->duty_x = PWRES;
     self->duty_u10 = duty;
 }
