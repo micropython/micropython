@@ -57,6 +57,7 @@ typedef struct {
     bool refreshing;
     bool grayscale;
     display_chip_select_behavior_t chip_select;
+    bool two_byte_sequence_length;
 } displayio_epaperdisplay_obj_t;
 
 void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisplay_obj_t *self,
