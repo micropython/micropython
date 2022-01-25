@@ -85,10 +85,10 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 // duty_u16() and duty_ns() use 16-bit resolution or less
 
 // Possible highest resolution in device
-#if (LEDC_TIMER_BIT_MAX - 1) < LEDC_TIMER_16_BIT
-#define HIGHEST_PWM_RES (LEDC_TIMER_BIT_MAX - 1)
-#else
+#if CONFIG_IDF_TARGET_ESP32
 #define HIGHEST_PWM_RES (LEDC_TIMER_16_BIT) // 20 bit for ESP32, but 16 bit is used
+#else
+#define HIGHEST_PWM_RES (LEDC_TIMER_BIT_MAX - 1) // 14 bit is used
 #endif
 // Duty resolution of user interface in `duty_u16()` and `duty_u16` parameter in constructor/initializer
 #define UI_RES_16_BIT (16)
@@ -300,7 +300,7 @@ STATIC uint32_t get_duty_u16(machine_pwm_obj_t *self) {
 }
 
 STATIC uint32_t get_duty_u10(machine_pwm_obj_t *self) {
-    return get_duty_u16(self) >> (HIGHEST_PWM_RES - PWRES);
+    return get_duty_u16(self) >> (UI_RES_16_BIT - LEDC_TIMER_10_BIT);
 }
 
 STATIC uint32_t get_duty_ns(machine_pwm_obj_t *self) {
