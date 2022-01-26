@@ -71,9 +71,9 @@ STATIC ledc_timer_config_t timers[PWM_TIMER_MAX];
 #define TIMER_IDX_TO_MODE(timer_idx) (timer_idx / LEDC_TIMER_MAX)
 #define TIMER_IDX_TO_TIMER(timer_idx) (timer_idx % LEDC_TIMER_MAX)
 
-// Params for PW operation
+// Params for PWM operation
 // 5khz is default frequency
-#define PWFREQ (5000)
+#define PWM_FREQ (5000)
 
 // 10-bit resolution (compatible with esp8266 PWM)
 #define PWRES (LEDC_TIMER_10_BIT)
@@ -477,7 +477,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
             freq = timers[chans[channel_idx].timer_idx].freq_hz;
         }
         if (freq <= 0) {
-            freq = PWFREQ;
+            freq = PWM_FREQ;
         }
     }
     if ((freq <= 0) || (freq > 40000000)) {
