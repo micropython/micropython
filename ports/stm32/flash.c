@@ -97,7 +97,7 @@ static const flash_layout_t flash_layout[] = {
 };
 #endif
 
-#elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB) ||defined(STM32G4)
+#elif defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
 
 static const flash_layout_t flash_layout[] = {
     { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
@@ -126,7 +126,7 @@ static uint32_t get_bank(uint32_t addr) {
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
         } else {
-            #if defined (FLASH_OPTR_DBANK)
+            #if defined(FLASH_OPTR_DBANK)
             return FLASH_BANK_2;
             #else
             return 0;
@@ -135,7 +135,7 @@ static uint32_t get_bank(uint32_t addr) {
     } else {
         // bank swap
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
-             #if defined (FLASH_OPTR_DBANK)
+            #if defined(FLASH_OPTR_DBANK)
             return FLASH_BANK_2;
             #else
             return 0;
@@ -172,16 +172,16 @@ static uint32_t get_page(uint32_t addr) {
 }
 
 static uint32_t get_bank(uint32_t addr) {
-        // no bank swap
-	if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
-		return FLASH_BANK_1;
-	} else {
-		#if defined (FLASH_OPTR_DBANK)
-		return FLASH_BANK_2;
-		#else
-		return 0;
-		#endif
-	}
+    // no bank swap
+    if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        return FLASH_BANK_1;
+    } else {
+        #if defined(FLASH_OPTR_DBANK)
+        return FLASH_BANK_2;
+        #else
+        return 0;
+        #endif
+    }
 }
 
 

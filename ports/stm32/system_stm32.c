@@ -195,7 +195,7 @@ void SystemClock_Config(void) {
     #elif defined(STM32L4)
     // Configure LSE Drive Capability
     __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
-	#elif defined(STM32G4)
+    #elif defined(STM32G4)
     /** Configure the main internal regulator output voltage
     */
     HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
@@ -338,7 +338,7 @@ void SystemClock_Config(void) {
     RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
-	#elif defined(STM32G4)
+    #elif defined(STM32G4)
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
@@ -381,32 +381,30 @@ void SystemClock_Config(void) {
     }
     #endif
 
-	#if defined(STM32G4)
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK)
-    {
-    	__fatal_error("HAL_RCC_ClockConfig");
+    #if defined(STM32G4)
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_8) != HAL_OK) {
+        __fatal_error("HAL_RCC_ClockConfig");
     }
 
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC|RCC_PERIPHCLK_LPUART1
-                                  	  	  	  |RCC_PERIPHCLK_RNG|RCC_PERIPHCLK_ADC12
-											  |RCC_PERIPHCLK_FDCAN;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
+        | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
+        | RCC_PERIPHCLK_FDCAN;
     PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
     PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
     PeriphClkInitStruct.Adc12ClockSelection = RCC_ADC12CLKSOURCE_SYSCLK;
     PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-	{
-		__fatal_error("HAL_RCCEx_PeriphCLKConfig");
-	}
-	#else
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+    }
+    #else
     uint32_t vco_out = RCC_OscInitStruct.PLL.PLLN * (MICROPY_HW_CLK_VALUE / 1000000) / RCC_OscInitStruct.PLL.PLLM;
     uint32_t sysclk_mhz = vco_out / RCC_OscInitStruct.PLL.PLLP;
     bool need_pll48 = vco_out % 48 != 0;
     if (powerctrl_rcc_clock_config_pll(&RCC_ClkInitStruct, sysclk_mhz, need_pll48) != 0) {
         __fatal_error("HAL_RCC_ClockConfig");
     }
-#endif
+    #endif
 
 
     #if defined(STM32H7)

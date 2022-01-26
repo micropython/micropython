@@ -53,8 +53,7 @@ void NUCLEO_G474RE_board_early_init(void);
 //#define MICROPY_HW_UART4_TX         (pin_)   // C10
 //#define MICROPY_HW_UART4_RX         (pin_)   // C11
 
-//#define MICROPY_HW_UART_REPL        (PYB_UART_3) // or uart_1 and solder bridge rework
-#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // not working yet for Nucleo, no response after startup
+#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // default on Nucleo G474
 #define MICROPY_HW_UART_REPL_BAUD   (115200)
 
 // I2C busses
@@ -102,6 +101,7 @@ void NUCLEO_G474RE_board_early_init(void);
 //#define MICROPY_HW_USB_OTG_ID_PIN      (pin_A10)
 
 // FDCAN bus
+// User TODO: fit transceiver chip
 #define MICROPY_HW_CAN1_NAME  "FDCAN1"
-#define MICROPY_HW_CAN1_TX    (pin_A12) // A12, B9, D1 ToDo: fit transceiver chip
+#define MICROPY_HW_CAN1_TX    (pin_A12) // A12, B9, D1
 #define MICROPY_HW_CAN1_RX    (pin_A11) // A11, B8, D0

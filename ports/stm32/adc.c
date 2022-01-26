@@ -118,6 +118,16 @@
 #define ADC_CAL2                (TEMPSENSOR_CAL2_ADDR)
 #define ADC_CAL_BITS            (12)
 
+#elif defined(STM32G4)
+
+#define ADC_FIRST_GPIO_CHANNEL  (0)
+#define ADC_LAST_GPIO_CHANNEL   (18)
+#define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f) // stm32g4xx_ll_adc.h
+#define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR                                        // stm32g4xx_ll_adc.h
+#define ADC_CAL1                TEMPSENSOR_CAL1_ADDR                            // stm32g4xx_ll_adc.h
+#define ADC_CAL2                TEMPSENSOR_CAL2_ADDR                            // stm32g4xx_ll_adc.h
+#define ADC_CAL_BITS            (12)   // UM2570, __HAL_ADC_CALC_TEMPERATURE: 'corresponds to a resolution of 12 bits,'
+
 #else
 
 #error Unsupported processor
@@ -325,6 +335,11 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     ADC_ChannelConfTypeDef sConfig;
 
     #if defined(STM32H7) || defined(STM32WB)
+    sConfig.Rank = ADC_REGULAR_RANK_1;
+    if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
+        channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
+    }
+    #elif defined(STM32G4)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
         channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
@@ -766,6 +781,14 @@ STATIC uint32_t adc_config_and_read_ref(ADC_HandleTypeDef *adcHandle, uint32_t c
 }
 
 int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4)
+    int32_t raw_value = 0;
+    if (adcHandle->Instance == ADC1) {
+        raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
+    } else {
+        return 0;
+    }
+    #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     return ((raw_value - CORE_TEMP_V25) / CORE_TEMP_AVG_SLOPE) + 25;
 }
@@ -775,6 +798,14 @@ int adc_read_core_temp(ADC_HandleTypeDef *adcHandle) {
 STATIC volatile float adc_refcor = 1.0f;
 
 float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
+    #if defined(STM32G4)
+    int32_t raw_value = 0;
+    if (adcHandle->Instance == ADC1) {
+        raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR_ADC1);
+    } else {
+        return 0;
+    }
+    #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 80.0f;
     return (((float)raw_value * adc_refcor - *ADC_CAL1) / core_temp_avg_slope) + 30.0f;
