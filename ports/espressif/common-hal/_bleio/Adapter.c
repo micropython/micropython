@@ -113,18 +113,40 @@ bool common_hal_bleio_adapter_get_enabled(bleio_adapter_obj_t *self) {
 }
 
 bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *self) {
-    return NULL;
+    uint8_t address_bytes[6];
+    uint8_t address_type = BLE_ADDR_RANDOM;
+    ble_hs_id_infer_auto(0, &address_type);
+    int result = ble_hs_id_copy_addr(address_type, address_bytes, NULL);
+    if (result != 0) {
+        return NULL;
+    }
+
+    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
+    address->base.type = &bleio_address_type;
+    common_hal_bleio_address_construct(address, address_bytes, BLEIO_ADDRESS_TYPE_RANDOM_STATIC);
+    return address;
 }
 
 bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_address_obj_t *address) {
-    return false;
+    if (address->type != BLEIO_ADDRESS_TYPE_RANDOM_STATIC) {
+        return false;
+    }
+    mp_buffer_info_t bufinfo;
+    if (!mp_get_buffer(address->bytes, &bufinfo, MP_BUFFER_READ)) {
+        return false;
+    }
+    int result = ble_hs_id_set_rnd(bufinfo.buf);
+    return result == 0;
 }
 
 mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
-    return NULL;
+    const char *name = ble_svc_gap_device_name();
+
+    return mp_obj_new_str(name, strlen(name));
 }
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {
+    ble_svc_gap_device_name_set(name);
 }
 
 static int _scan_event(struct ble_gap_event *event, void *scan_results_in) {
