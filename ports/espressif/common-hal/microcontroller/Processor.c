@@ -60,7 +60,13 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return 0;
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+    return CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2)
+    return CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    return CONFIG_ESP32S3_DEFAULT_CPU_FREQ_MHZ * 1000000;
+    #endif
 }
 
 STATIC uint8_t swap_nibbles(uint8_t v) {
