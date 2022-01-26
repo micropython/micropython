@@ -108,7 +108,7 @@ typedef struct _machine_pwm_obj_t {
     int mode;
     int channel;
     int timer;
-    int duty_x; // PWM_RES_10_BIT if duty(), HIGHEST_PWM_RES if duty_u16(), -HIGHEST_PWM_RES if duty_ns()
+    int duty_x; // PWM_RES_10_BIT if duty(), UI_RES_16_BIT if duty_u16(), -UI_RES_16_BIT if duty_ns()
     int duty_u10; // stored values from previous duty setters
     int duty_u16; // - / -
     int duty_ns; // - / -
@@ -261,11 +261,11 @@ STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_conf
 
         // Save the same duty cycle when frequency is changed
         if (save_duty_resolution != timer->duty_resolution) {
-            if (self->duty_x == HIGHEST_PWM_RES) {
+            if (self->duty_x == UI_RES_16_BIT) {
                 set_duty_u16(self, self->duty_u16);
             } else if (self->duty_x == PWM_RES_10_BIT) {
                 set_duty_u10(self, self->duty_u10);
-            } else if (self->duty_x == -HIGHEST_PWM_RES) {
+            } else if (self->duty_x == -UI_RES_16_BIT) {
                 set_duty_ns(self, self->duty_ns);
             }
         }
@@ -333,7 +333,7 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     }
     */
 
-    self->duty_x = HIGHEST_PWM_RES;
+    self->duty_x = UI_RES_16_BIT;
     self->duty_u16 = duty;
 }
 
@@ -351,7 +351,7 @@ STATIC void set_duty_ns(machine_pwm_obj_t *self, int ns) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_ns must be from 0 to %d ns"), duty_to_ns(self, UI_MAX_DUTY));
     }
     set_duty_u16(self, ns_to_duty(self, ns));
-    self->duty_x = -HIGHEST_PWM_RES;
+    self->duty_x = -UI_RES_16_BIT;
     self->duty_ns = ns;
 }
 
@@ -424,7 +424,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
         if (self->duty_x == PWM_RES_10_BIT) {
             mp_printf(print, ", duty=%d", get_duty_u10(self));
-        } else if (self->duty_x == -HIGHEST_PWM_RES) {
+        } else if (self->duty_x == -UI_RES_16_BIT) {
             mp_printf(print, ", duty_ns=%d", get_duty_ns(self));
         } else {
             mp_printf(print, ", duty_u16=%d", get_duty_u16(self));
