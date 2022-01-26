@@ -15,7 +15,9 @@
 #define MICROPY_SSL_MBEDTLS  (0)
 #define MICROPY_PY_UASYNCIO  (0)
 #define MICROPY_PY_UZLIB     (0)
-#define MICROPY_PY_UJSON     (1)
+#define MICROPY_PY_UBINASCII (0)
+#define MICROPY_PY_UHASHLIB  (0)
+#define MICROPY_PY_UJSON     (0)
 #define MICROPY_PY_URE       (0)
 #define MICROPY_PY_FRAMEBUF  (0)
 #define MICROPY_PY_USOCKET   (0)
@@ -51,8 +53,8 @@ void NUCLEO_G474RE_board_early_init(void);
 //#define MICROPY_HW_UART4_TX         (pin_)   // C10
 //#define MICROPY_HW_UART4_RX         (pin_)   // C11
 
-#define MICROPY_HW_UART_REPL        (PYB_UART_3) // or uart_1 and solder bridge rework
-//#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // not working yet for Nucleo, no response after startup
+//#define MICROPY_HW_UART_REPL        (PYB_UART_3) // or uart_1 and solder bridge rework
+#define MICROPY_HW_UART_REPL        (PYB_LPUART_1) // not working yet for Nucleo, no response after startup
 #define MICROPY_HW_UART_REPL_BAUD   (115200)
 
 // I2C busses

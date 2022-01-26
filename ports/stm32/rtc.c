@@ -741,10 +741,6 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         RTC->SR &= ~RTC_SR_WUTF;
         #else
         RTC->ISR &= ~RTC_ISR_WUTF;
-        #elif defined(STM32G4)
-        RTC->ICSR &= ~RTC_ICSR_WUTWF;
-        #else
-        RTC->ISR &= ~RTC_ISR_WUTF;
         #endif
         #if defined(STM32L4) || defined(STM32WB) || defined(STM32G4)
         EXTI->PR1 = 1 << EXTI_RTC_WAKEUP;
