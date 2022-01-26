@@ -367,6 +367,11 @@ else
 BOOTLOADER_OFFSET = 0x1000
 endif
 
+IDF_CMAKE_TARGETS = \
+		bootloader/bootloader.bin \
+		esp-idf/esp_system/__ldgen_output_sections.ld \
+		$(foreach component, $(ESP_IDF_COMPONENTS_LINK), esp-idf/$(component)/lib$(component).a)
+
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
@@ -384,42 +389,7 @@ endif
 
 .PHONY: esp-idf-stamp
 esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
-	$(Q)ninja -C $(BUILD)/esp-idf \
-		bootloader/bootloader.bin \
-		esp-idf/esp_system/__ldgen_output_sections.ld \
-		esp-idf/app_update/libapp_update.a \
-		esp-idf/bootloader_support/libbootloader_support.a \
-		esp-idf/bt/libbt.a \
-		esp-idf/driver/libdriver.a \
-		esp-idf/efuse/libefuse.a \
-		esp-idf/esp_adc_cal/libesp_adc_cal.a \
-		esp-idf/esp_common/libesp_common.a \
-		esp-idf/esp_event/libesp_event.a \
-		esp-idf/esp_hw_support/libesp_hw_support.a \
-		esp-idf/esp_ipc/libesp_ipc.a \
-		esp-idf/esp_netif/libesp_netif.a \
-		esp-idf/esp_phy/libesp_phy.a \
-		esp-idf/esp_pm/libesp_pm.a \
-		esp-idf/esp_ringbuf/libesp_ringbuf.a \
-		esp-idf/esp_rom/libesp_rom.a \
-		esp-idf/esp_system/libesp_system.a \
-		esp-idf/esp_timer/libesp_timer.a \
-		esp-idf/esp-tls/libesp-tls.a \
-		esp-idf/esp_wifi/libesp_wifi.a \
-		esp-idf/freertos/libfreertos.a \
-		esp-idf/hal/libhal.a \
-		esp-idf/heap/libheap.a \
-		esp-idf/log/liblog.a \
-		esp-idf/lwip/liblwip.a \
-		esp-idf/mbedtls/libmbedtls.a \
-		esp-idf/newlib/libnewlib.a \
-		esp-idf/nvs_flash/libnvs_flash.a \
-		esp-idf/pthread/libpthread.a \
-		esp-idf/soc/libsoc.a \
-		esp-idf/spi_flash/libspi_flash.a \
-		esp-idf/vfs/libvfs.a \
-		esp-idf/wpa_supplicant/libwpa_supplicant.a \
-		esp-idf/$(IDF_TARGET_ARCH)/lib$(IDF_TARGET_ARCH).a
+	$(Q)ninja -C $(BUILD)/esp-idf $(IDF_CMAKE_TARGETS)
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"
