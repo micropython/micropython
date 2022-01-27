@@ -45,7 +45,6 @@
 #include "nrf_nvic.h"
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/_bleio/__init__.h"
 #include "common-hal/alarm/time/TimeAlarm.h"
 #include "common-hal/analogio/AnalogIn.h"
 #include "common-hal/busio/I2C.h"
@@ -59,6 +58,7 @@
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/alarm/__init__.h"
 
+#include "shared-bindings/_bleio/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
 

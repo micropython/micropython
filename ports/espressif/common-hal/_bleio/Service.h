@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +25,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H
 
-#include <stdbool.h>
+#include "py/objlist.h"
+#include "common-hal/_bleio/UUID.h"
 
-#include "shared-bindings/_bleio/UUID.h"
+typedef struct bleio_service_obj {
+    mp_obj_base_t base;
+    // Handle for the local service.
+    uint16_t handle;
+    // True if created during discovery.
+    bool is_remote;
+    bool is_secondary;
+    bleio_uuid_obj_t *uuid;
+    // The connection object is set only when this is a remote service.
+    // A local service doesn't know the connection.
+    mp_obj_t connection;
+    mp_obj_list_t *characteristic_list;
+    // Range of attribute handles of this remote service.
+    uint16_t start_handle;
+    uint16_t end_handle;
+} bleio_service_obj_t;
 
-#include "att.h"
-#include "hci.h"
+void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection);
 
-void bleio_hci_background(void);
-
-typedef struct {
-    // ble_gap_enc_key_t own_enc;
-    // ble_gap_enc_key_t peer_enc;
-    // ble_gap_id_key_t peer_id;
-} bonding_keys_t;
-
-// We assume variable length data.
-// 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BT_ATT_DEFAULT_LE_MTU - 3)
-
-// FIX
-#define BLE_GATT_HANDLE_INVALID 0x0000
-#define BLE_CONN_HANDLE_INVALID 0xFFFF
-#define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */
-#define BLE_GATTS_VAR_ATTR_LEN_MAX (512)  /**< Maximum length for variable length Attribute Values. */
-
-// Track if the user code modified the BLE state to know if we need to undo it on reload.
-extern bool vm_used_ble;
-
-// UUID shared by all CCCD's.
-extern bleio_uuid_obj_t cccd_uuid;
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_SERVICE_H

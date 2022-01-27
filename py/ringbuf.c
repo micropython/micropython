@@ -114,7 +114,7 @@ size_t ringbuf_num_filled(ringbuf_t *r) {
 
 // If the ring buffer fills up, not all bytes will be written.
 // Returns how many bytes were successfully written.
-size_t ringbuf_put_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
+size_t ringbuf_put_n(ringbuf_t *r, const uint8_t *buf, size_t bufsize) {
     for (size_t i = 0; i < bufsize; i++) {
         if (ringbuf_put(r, buf[i]) < 0) {
             // If ringbuf is full, give up and return how many bytes

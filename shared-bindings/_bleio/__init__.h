@@ -54,6 +54,8 @@ extern const mp_obj_type_t mp_type_bleio_BluetoothError;
 extern const mp_obj_type_t mp_type_bleio_RoleError;
 extern const mp_obj_type_t mp_type_bleio_SecurityError;
 
+void bleio_reset(void);
+
 extern mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj);
 
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *msg, ...);

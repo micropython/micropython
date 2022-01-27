@@ -4,6 +4,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,38 +26,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
-#define MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
 
-#include <stdbool.h>
+#include "py/obj.h"
 
-#include "shared-bindings/_bleio/UUID.h"
+#include "common-hal/_bleio/UUID.h"
 
-#include "att.h"
-#include "hci.h"
+// Forward declare characteristic because it includes a Descriptor.
+struct _bleio_characteristic_obj;
 
-void bleio_hci_background(void);
+typedef struct _bleio_descriptor_obj {
+    mp_obj_base_t base;
+    // Will be MP_OBJ_NULL before being assigned to a Characteristic.
+    struct _bleio_characteristic_obj *characteristic;
+    bleio_uuid_obj_t *uuid;
+    mp_obj_t initial_value;
+    uint16_t max_length;
+    bool fixed_length;
+    uint16_t handle;
+    bleio_attribute_security_mode_t read_perm;
+    bleio_attribute_security_mode_t write_perm;
+} bleio_descriptor_obj_t;
 
-typedef struct {
-    // ble_gap_enc_key_t own_enc;
-    // ble_gap_enc_key_t peer_enc;
-    // ble_gap_id_key_t peer_id;
-} bonding_keys_t;
-
-// We assume variable length data.
-// 20 bytes max (23 - 3).
-#define GATT_MAX_DATA_LENGTH (BT_ATT_DEFAULT_LE_MTU - 3)
-
-// FIX
-#define BLE_GATT_HANDLE_INVALID 0x0000
-#define BLE_CONN_HANDLE_INVALID 0xFFFF
-#define BLE_GATTS_FIX_ATTR_LEN_MAX (510)  /**< Maximum length for fixed length Attribute Values. */
-#define BLE_GATTS_VAR_ATTR_LEN_MAX (512)  /**< Maximum length for variable length Attribute Values. */
-
-// Track if the user code modified the BLE state to know if we need to undo it on reload.
-extern bool vm_used_ble;
-
-// UUID shared by all CCCD's.
-extern bleio_uuid_obj_t cccd_uuid;
-
-#endif // MICROPY_INCLUDED_BLE_HCI_COMMON_HAL_INIT_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
