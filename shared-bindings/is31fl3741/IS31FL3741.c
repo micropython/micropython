@@ -35,9 +35,8 @@
 #include "shared-bindings/busio/I2C.h"
 
 //| class IS31FL3741:
-//|     """Driver for a IS31FL3741 device."""
+//|     """Driver for an IS31FL3741 device."""
 //|
-
 //|     def __init__(self, *, width: int) -> None:
 //|         """Create a IS31FL3741 object with the given attributes.
 //|
@@ -79,6 +78,10 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_deinit_obj, is31fl3741_IS31FL3741_deinit);
 
+//| def reset(self) -> None:
+//|     """Resets the IS31FL3741 chip."""
+//|     ...
+//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_reset(mp_obj_t self_in) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_is31fl3741_send_reset(self);
@@ -86,6 +89,10 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_reset(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_reset_obj, is31fl3741_IS31FL3741_reset);
 
+//| def enable(self) -> None:
+//|     """Enables the IS31FL3741 chip."""
+//|     ...
+//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_enable(mp_obj_t self_in) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_is31fl3741_send_enable(self);
@@ -93,6 +100,12 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_enable(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_enable_obj, is31fl3741_IS31FL3741_enable);
 
+//| def set_global_current(self, current: int) -> None:
+//|     """Sets the global current of the IS31FL3741 chip.
+//|
+//|     :param int current: global current value 0x00 to 0xFF"""
+//|     ...
+//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_set_global_current(mp_obj_t self_in, mp_obj_t value) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t current = mp_obj_get_int(value);
@@ -101,6 +114,16 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_set_global_current(mp_obj_t self_in, mp_ob
 }
 MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_global_current_obj, is31fl3741_IS31FL3741_set_global_current);
 
+//| def set_led(self, led: int, value: int, page: int) -> None:
+//|     """Resets the IS31FL3741 chip."""
+//|
+//|     :param int led: which LED to set
+//|     :param int value: value to set the LED to 0x00 to 0xFF
+//|     :param int page: page to write to 0 or 2. If the LED is a >= 180
+//|       the routine will automatically write to page 1 or 3 (instead
+//|       of 0 ot 2)"""
+//|     ...
+//|
 STATIC mp_obj_t is31fl3741_IS31FL3741_set_led(size_t n_args, const mp_obj_t *args) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t led = mp_obj_get_int(args[1]);
@@ -111,7 +134,7 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_set_led(size_t n_args, const mp_obj_t *arg
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(is31fl3741_IS31FL3741_set_led_obj, 4, 4, is31fl3741_IS31FL3741_set_led);
 
-//| def is31fl3741_write(mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
+//| def write(mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
 //|     """Write buf out on the I2C bus to the IS31FL3741.
 //|
 //|     :param ~Tuple[int, ...] mapping: map the pixels in the buffer to the order addressed by the driver chip

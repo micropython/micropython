@@ -38,11 +38,10 @@
 #include "shared-bindings/busio/I2C.h"
 
 //| class IS31FL3741_FrameBuffer:
-//|     """Displays an in-memory framebuffer to a IS31FL3741 drive display."""
+//|     """Creates an in-memory framebuffer for a IS31FL3741 device."""
 //|
-
 //|     def __init__(self, *, width: int) -> None:
-//|         """Create a IS31FL3741 object with the given attributes.
+//|         """Create a IS31FL3741_FrameBuffer object with the given attributes.
 //|
 //|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
 //|         Bits 24-31 are ignored. The format is in RGB order.
