@@ -47,11 +47,6 @@ extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUN
 
 typedef struct {
     mp_obj_base_t base;
-    // Pointer to buffers we maintain so that the data is long lived.
-    uint8_t *advertising_data;
-    uint8_t *scan_response_data;
-    // Pointer to current data.
-    const uint8_t *current_advertising_data;
     bleio_scanresults_obj_t *scan_results;
     mp_obj_t name;
     mp_obj_tuple_t *connection_objs;

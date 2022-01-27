@@ -39,4 +39,19 @@ void bleio_background(void);
 // 20 bytes max (23 - 3).
 #define GATT_MAX_DATA_LENGTH (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
+#define NIMBLE_OK (0)
+
+void check_nimble_error(int rc, const char *file, size_t line);
+#define CHECK_NIMBLE_ERROR(rc) check_nimble_error(rc, __FILE__, __LINE__)
+
+#define MSEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000) / (RESOLUTION))
+#define SEC_TO_UNITS(TIME, RESOLUTION) (((TIME) * 1000000) / (RESOLUTION))
+#define UNITS_TO_SEC(TIME, RESOLUTION) (((TIME)*(RESOLUTION)) / 1000000)
+// 0.625 msecs (625 usecs)
+#define ADV_INTERVAL_UNIT_FLOAT_SECS (0.000625)
+// Microseconds is the base unit. The macros above know that.
+#define UNIT_0_625_MS (625)
+#define UNIT_1_25_MS  (1250)
+#define UNIT_10_MS    (10000)
+
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_INIT_H

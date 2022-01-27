@@ -65,3 +65,35 @@ void bleio_background(void) {
 void common_hal_bleio_gc_collect(void) {
     bleio_adapter_gc_collect(&common_hal_bleio_adapter_obj);
 }
+
+void check_nimble_error(int rc, const char *file, size_t line) {
+    if (rc == NIMBLE_OK) {
+        return;
+    }
+    switch (rc) {
+        case BLE_HS_ENOMEM:
+            mp_raise_msg(&mp_type_MemoryError, translate("Nimble out of memory"));
+            return;
+        case BLE_HS_ETIMEOUT:
+            mp_raise_msg(&mp_type_TimeoutError, NULL);
+            return;
+        case BLE_HS_EINVAL:
+            mp_raise_ValueError(translate("Invalid BLE parameter"));
+            return;
+        case BLE_HS_ENOTCONN:
+            mp_raise_ConnectionError(translate("Not connected"));
+            return;
+        default:
+            #if CIRCUITPY_VERBOSE_BLE
+            if (file) {
+                mp_raise_bleio_BluetoothError(translate("Unknown system firmware error at %s:%d: %d"), file, line, rc);
+            }
+            #else
+            (void)file;
+            (void)line;
+            mp_raise_bleio_BluetoothError(translate("Unknown system firmware error: %d"), rc);
+            #endif
+
+            break;
+    }
+}

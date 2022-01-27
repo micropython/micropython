@@ -48,6 +48,38 @@
 
 #include "host/ble_att.h"
 
+int bleio_connection_event_cb(struct ble_gap_event *event, void *connection_in) {
+    bleio_connection_internal_t *connection = (bleio_connection_internal_t *)connection_in;
+
+    switch (event->type) {
+        case BLE_GAP_EVENT_DISCONNECT: {
+            connection->conn_handle = BLEIO_HANDLE_INVALID;
+            connection->pair_status = PAIR_NOT_PAIRED;
+
+            #if CIRCUITPY_VERBOSE_BLE
+            mp_printf(&mp_plat_print, "disconnected %02x\n", event->disconnect.reason);
+            #endif
+            if (connection->connection_obj != mp_const_none) {
+                bleio_connection_obj_t *obj = connection->connection_obj;
+                obj->connection = NULL;
+                obj->disconnect_reason = event->disconnect.reason;
+            }
+
+            break;
+        }
+
+        case BLE_GAP_EVENT_PHY_UPDATE_COMPLETE: {
+            break;
+        }
+
+        default:
+            #if CIRCUITPY_VERBOSE_BLE
+            mp_printf(&mp_plat_print, "Unhandled connection event: %d\n", event->type);
+            #endif
+            return 0;
+    }
+    return 0;
+}
 
 bool common_hal_bleio_connection_get_paired(bleio_connection_obj_t *self) {
     if (self->connection == NULL) {
