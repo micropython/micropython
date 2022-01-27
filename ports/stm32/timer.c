@@ -1110,14 +1110,14 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         const pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an af for Timer(%d)"), pin->name, self->tim_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an alt for Timer(%d)"), pin->name, self->tim_id);
         }
-        // pin.init(mode=AF_PP, af=idx)
+        // pin.init(mode=AF_PP, alt=idx)
         const mp_obj_t args2[6] = {
             MP_OBJ_FROM_PTR(&pin_init_obj),
             pin_obj,
             MP_OBJ_NEW_QSTR(MP_QSTR_mode),  MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
-            MP_OBJ_NEW_QSTR(MP_QSTR_af),    MP_OBJ_NEW_SMALL_INT(af->idx)
+            MP_OBJ_NEW_QSTR(MP_QSTR_alt),   MP_OBJ_NEW_SMALL_INT(af->idx)
         };
         mp_call_method_n_kw(0, 2, args2);
     }
