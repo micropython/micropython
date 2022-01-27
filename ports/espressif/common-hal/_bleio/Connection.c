@@ -64,13 +64,15 @@ bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self) {
 }
 
 void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
+    // TODO: Implement this.
 }
 
 void common_hal_bleio_connection_pair(bleio_connection_internal_t *self, bool bond) {
-
+    // TODO: Implement this.
 }
 
 mp_float_t common_hal_bleio_connection_get_connection_interval(bleio_connection_internal_t *self) {
+    // TODO: Implement this.
     while (self->conn_params_updating && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
     }
@@ -84,6 +86,7 @@ mp_int_t common_hal_bleio_connection_get_max_packet_length(bleio_connection_inte
 
 void common_hal_bleio_connection_set_connection_interval(bleio_connection_internal_t *self, mp_float_t new_interval) {
     self->conn_params_updating = true;
+    // TODO: Implement this.
 }
 
 mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_connection_obj_t *self, mp_obj_t service_uuids_whitelist) {
@@ -94,6 +97,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(bleio_conne
             self->connection->remote_service_list->items);
     mp_obj_list_clear(MP_OBJ_FROM_PTR(self->connection->remote_service_list));
 
+    // TODO: Implement this.
     return services_tuple;
 }
 

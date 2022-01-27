@@ -118,7 +118,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
     }
 
     // Copy received data. Lock out write interrupt handler while copying.
-
+    // TODO: Implement this.
     return 0;
 }
 
@@ -172,6 +172,7 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
     self->pending_size += len;
     num_bytes_written += len;
 
+    // TODO: Implement this.
 
     // If no writes are queued then sneak in this data.
     if (!self->packet_queued) {
@@ -270,4 +271,5 @@ bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
 void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self) {
     if (!common_hal_bleio_packet_buffer_deinited(self)) {
     }
+    // TODO: Implement this.
 }

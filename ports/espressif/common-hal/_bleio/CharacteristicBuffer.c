@@ -65,15 +65,17 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-
+    // TODO: Implement this.
     return 0;
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
+    // TODO: Implement this.
     return 0;
 }
 
 void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self) {
+    // TODO: Implement this.
 }
 
 bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self) {
@@ -81,6 +83,7 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 }
 
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
+    // TODO: Implement this.
 }
 
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {

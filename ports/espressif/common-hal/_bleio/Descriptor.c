@@ -68,10 +68,13 @@ size_t common_hal_bleio_descriptor_get_value(bleio_descriptor_obj_t *self, uint8
         (void)conn_handle;
     }
 
+    // TODO: Implement this.
+
     return 0;
 }
 
 void common_hal_bleio_descriptor_set_value(bleio_descriptor_obj_t *self, mp_buffer_info_t *bufinfo) {
+    // TODO: Implement this.
     // Do GATT operations only if this descriptor has been registered.
     if (self->handle != BLEIO_HANDLE_INVALID) {
         // uint16_t conn_handle = bleio_connection_get_conn_handle(self->characteristic->service->connection);

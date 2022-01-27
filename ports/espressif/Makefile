@@ -157,7 +157,12 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-  OPTIMIZATION_FLAGS ?= -O2
+	ifeq ($(IDF_TARGET_ARCH),xtensa)
+	  OPTIMIZATION_FLAGS ?= -O2
+	else
+		# RISC-V is larger than xtensa so do -Os for it
+	  OPTIMIZATION_FLAGS ?= -Os
+	endif
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif

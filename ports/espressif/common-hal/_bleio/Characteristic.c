@@ -75,6 +75,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
     //     mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
     //         max_length_max, fixed_length ? "True" : "False");
     // }
+    // TODO: Implement this.
     self->max_length = max_length;
     self->fixed_length = fixed_length;
 
@@ -97,6 +98,7 @@ bleio_service_obj_t *common_hal_bleio_characteristic_get_service(bleio_character
 }
 
 size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *self, uint8_t *buf, size_t len) {
+    // TODO: Implement this.
     return 0;
 }
 
@@ -105,6 +107,7 @@ size_t common_hal_bleio_characteristic_get_max_length(bleio_characteristic_obj_t
 }
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
+    // TODO: Implement this.
 }
 
 bleio_uuid_obj_t *common_hal_bleio_characteristic_get_uuid(bleio_characteristic_obj_t *self) {
@@ -116,8 +119,9 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 }
 
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
+    // TODO: Implement this.
 }
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
-
+    // TODO: Implement this.
 }
