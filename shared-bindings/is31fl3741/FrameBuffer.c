@@ -40,7 +40,8 @@
 //| class IS31FL3741_FrameBuffer:
 //|     """Creates an in-memory framebuffer for a IS31FL3741 device."""
 //|
-//|     def __init__(self, *, width: int) -> None:
+//|     def __init__(self, is31: ~is31fl3741.IS31FL3741, width: int, height: int, mapping: Tuple[int, ...], *,
+//|         framebuffer: Optional[WriteableBuffer] = None, scale: bool = false, gamma: bool = false) -> None:
 //|         """Create a IS31FL3741_FrameBuffer object with the given attributes.
 //|
 //|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
@@ -51,7 +52,16 @@
 //|         by passing the Is31fl3741 object to memoryview().
 //|
 //|         A Is31fl3741 is often used in conjunction with a
-//|         `framebufferio.FramebufferDisplay`."""
+//|         `framebufferio.FramebufferDisplay`.
+//|
+//|         :param ~is31fl3741.IS31FL3741 is31: base IS31FL3741 instance to drive the framebuffer
+//|         :param int width: width of the display
+//|         :param int height: height of the display
+//|         :param Tuple[int, ...] mapping: mapping of matrix locations to LEDs
+//|         :param Optional[WriteableBuffer] framebuffer: Optional buffer to hold the display
+//|         :param bool scale: if True display is scaled down by 3 when displayed
+//|         :param bool gamma: if True apply gamma correction to all LEDs"""
+//|         ...
 //|
 STATIC mp_obj_t is31fl3741_FrameBuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_is31, ARG_width, ARG_height, ARG_framebuffer, ARG_mapping, ARG_scale, ARG_gamma };

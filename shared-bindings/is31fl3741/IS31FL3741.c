@@ -37,11 +37,15 @@
 //| class IS31FL3741:
 //|     """Driver for an IS31FL3741 device."""
 //|
-//|     def __init__(self, *, width: int) -> None:
+//|     def __init__(self, i2c: busio.I2C, *, addr: int = 0x30) -> None:
 //|         """Create a IS31FL3741 object with the given attributes.
 //|
 //|         Designed to work low level or passed to and object such as
-//|         `is31fl3741.IS31FL3741_FrameBuffer`."""
+//|         :class:`~is31fl3741.IS31FL3741_FrameBuffer`.
+//|
+//|         :param ~busio.I2C i2c: I2C bus the IS31FL3741 is on
+//|         :param int addr: device address"""
+//|         ...
 //|
 STATIC mp_obj_t is31fl3741_IS31FL3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_i2c, ARG_addr };
@@ -115,7 +119,7 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_set_global_current(mp_obj_t self_in, mp_ob
 MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_global_current_obj, is31fl3741_IS31FL3741_set_global_current);
 
 //| def set_led(self, led: int, value: int, page: int) -> None:
-//|     """Resets the IS31FL3741 chip."""
+//|     """Resets the IS31FL3741 chip.
 //|
 //|     :param int led: which LED to set
 //|     :param int value: value to set the LED to 0x00 to 0xFF
