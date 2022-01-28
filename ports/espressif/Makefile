@@ -86,7 +86,9 @@ INC += \
 	-isystem esp-idf \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
+	-isystem esp-idf/components/bt/include/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \

@@ -42,6 +42,8 @@ void common_hal_bleio_uuid_construct(bleio_uuid_obj_t *self, mp_int_t uuid16, co
         ble_uuid_init_from_buf(&self->nimble_ble_uuid, (uint8_t *)&uuid16, 2);
     } else {
         ble_uuid_init_from_buf(&self->nimble_ble_uuid, uuid128, 16);
+        self->nimble_ble_uuid.u128.value[12] = uuid16 & 0xff;
+        self->nimble_ble_uuid.u128.value[13] = (uuid16 >> 8) & 0xff;
     }
 }
 
