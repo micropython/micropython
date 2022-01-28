@@ -1328,9 +1328,6 @@ void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
         __HAL_DMA2_REMAP(descr->sub_instance);
     }
     #elif defined(STM32G4)
-    // descr = { DMA1_Channel4, DMA_REQUEST_UART3_TX, dma_id_3,  &dma_init_struct_spi_i2c };
-    // #error Hier moet ik nog ff naar kijken hoe we dit aanpassen aan de G4 serie
-    // in L4 wordt hier channel geselecteerd, in G4 ws via DMAMUX (net als H7?)
     uint32_t *dmamux_ctrl = (void *)(DMAMUX1_Channel0_BASE + 0x04 * descr->id);
     *dmamux_ctrl = (*dmamux_ctrl & ~(0x7f)) | descr->sub_instance;
     #else

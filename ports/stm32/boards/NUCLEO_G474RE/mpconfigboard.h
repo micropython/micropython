@@ -24,9 +24,6 @@
 #define MICROPY_PY_NETWORK   (0)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 
-#define MICROPY_BOARD_EARLY_INIT    NUCLEO_G474RE_board_early_init
-void NUCLEO_G474RE_board_early_init(void);
-
 // The board has an 24MHz HSE, the following gives 170MHz CPU speed
 #define MICROPY_HW_CLK_PLLM (6)
 #define MICROPY_HW_CLK_PLLN (85)

@@ -1,35 +1,76 @@
-/**
-  ******************************************************************************
-  * @file    stm32g4xx_hal_conf.h
-  * @author  MCD Application Team
-  * @brief   HAL configuration template file.
-  *          This file should be copied to the application folder and renamed
-  *          to stm32g4xx_hal_conf.h.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
-  *
-  ******************************************************************************
-  */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2019 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 #ifndef MICROPY_INCLUDED_STM32G4xx_HAL_CONF_BASE_H
 #define MICROPY_INCLUDED_STM32G4xx_HAL_CONF_BASE_H
 
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
+// Include various HAL modules for convenience
 
-/* ########################## Module Selection ############################## */
-/**
-  * @brief This is the list of modules to be used in the HAL driver
-  */
+#include "stm32g4xx_hal_rcc.h"
+#include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_hal_dma.h"
+#include "stm32g4xx_hal_cortex.h"
+#include "stm32g4xx_hal_adc.h"
+#include "stm32g4xx_hal_comp.h"
+#include "stm32g4xx_hal_cordic.h"
+#include "stm32g4xx_hal_crc.h"
+#include "stm32g4xx_hal_cryp.h"
+#include "stm32g4xx_hal_dac.h"
+#include "stm32g4xx_hal_exti.h"
+#include "stm32g4xx_hal_fdcan.h"
+#include "stm32g4xx_hal_flash.h"
+#include "stm32g4xx_hal_fmac.h"
+#include "stm32g4xx_hal_hrtim.h"
+#include "stm32g4xx_hal_irda.h"
+#include "stm32g4xx_hal_iwdg.h"
+#include "stm32g4xx_hal_i2c.h"
+#include "stm32g4xx_hal_i2s.h"
+#include "stm32g4xx_hal_lptim.h"
+#include "stm32g4xx_hal_nand.h"
+#include "stm32g4xx_hal_nor.h"
+#include "stm32g4xx_hal_opamp.h"
+#include "stm32g4xx_hal_pcd.h"
+#include "stm32g4xx_hal_pwr.h"
+#include "stm32g4xx_hal_qspi.h"
+#include "stm32g4xx_hal_rng.h"
+#include "stm32g4xx_hal_rtc.h"
+#include "stm32g4xx_hal_sai.h"
+#include "stm32g4xx_hal_smartcard.h"
+#include "stm32g4xx_hal_smbus.h"
+#include "stm32g4xx_hal_spi.h"
+#include "stm32g4xx_hal_sram.h"
+#include "stm32g4xx_hal_tim.h"
+#include "stm32g4xx_hal_uart.h"
+#include "stm32g4xx_hal_usart.h"
+#include "stm32g4xx_hal_wwdg.h"
+
+#include "stm32g4xx_ll_adc.h"
+#include "stm32g4xx_ll_rtc.h"
+#include "stm32g4xx_ll_usart.h"
+#include "stm32g4xx_ll_lpuart.h"
+
 #define HAL_MODULE_ENABLED
 #define HAL_ADC_MODULE_ENABLED
 #define HAL_COMP_MODULE_ENABLED
@@ -69,257 +110,23 @@
 #define HAL_USART_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
 
-/* ########################## Register Callbacks selection ############################## */
-/**
-  * @brief This is the list of modules where register callback can be used
-  */
+// Oscillator values in Hz
+#define HSI_VALUE    (16000000UL)
+#define HSI48_VALUE  (48000000UL)
+#define LSI_VALUE    (32000UL)
 
-#define USE_HAL_ADC_REGISTER_CALLBACKS        0U
-#define USE_HAL_COMP_REGISTER_CALLBACKS       0U
-#define USE_HAL_CORDIC_REGISTER_CALLBACKS     0U
-#define USE_HAL_CRYP_REGISTER_CALLBACKS       0U
-#define USE_HAL_DAC_REGISTER_CALLBACKS        0U
-#define USE_HAL_EXTI_REGISTER_CALLBACKS       0U
-#define USE_HAL_FDCAN_REGISTER_CALLBACKS      0U
-#define USE_HAL_FMAC_REGISTER_CALLBACKS       0U
-#define USE_HAL_HRTIM_REGISTER_CALLBACKS      0U
-#define USE_HAL_I2C_REGISTER_CALLBACKS        0U
-#define USE_HAL_I2S_REGISTER_CALLBACKS        0U
-#define USE_HAL_IRDA_REGISTER_CALLBACKS       0U
-#define USE_HAL_LPTIM_REGISTER_CALLBACKS      0U
-#define USE_HAL_NAND_REGISTER_CALLBACKS       0U
-#define USE_HAL_NOR_REGISTER_CALLBACKS        0U
-#define USE_HAL_OPAMP_REGISTER_CALLBACKS      0U
-#define USE_HAL_PCD_REGISTER_CALLBACKS        0U
-#define USE_HAL_QSPI_REGISTER_CALLBACKS       0U
-#define USE_HAL_RNG_REGISTER_CALLBACKS        0U
-#define USE_HAL_RTC_REGISTER_CALLBACKS        0U
-#define USE_HAL_SAI_REGISTER_CALLBACKS        0U
-#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS  0U
-#define USE_HAL_SMBUS_REGISTER_CALLBACKS      0U
-#define USE_HAL_SPI_REGISTER_CALLBACKS        0U
-#define USE_HAL_SRAM_REGISTER_CALLBACKS       0U
-#define USE_HAL_TIM_REGISTER_CALLBACKS        0U
-#define USE_HAL_UART_REGISTER_CALLBACKS       0U
-#define USE_HAL_USART_REGISTER_CALLBACKS      0U
-#define USE_HAL_WWDG_REGISTER_CALLBACKS       0U
+// SysTick has the highest priority
+#define TICK_INT_PRIORITY (0x00)
 
-/* ########################## Oscillator Values adaptation ####################*/
-/**
-  * @brief Internal High Speed oscillator (HSI) value.
-  *        This value is used by the RCC HAL module to compute the system frequency
-  *        (when HSI is used as system clock source, directly or through the PLL).
-  */
-#if !defined  (HSI_VALUE)
-#define HSI_VALUE    (16000000UL) /*!< Value of the Internal oscillator in Hz*/
-#endif /* HSI_VALUE */
-
-/**
-  * @brief Internal High Speed oscillator (HSI48) value for USB FS and RNG.
-  *        This internal oscillator is mainly dedicated to provide a high precision clock to
-  *        the USB peripheral by means of a special Clock Recovery System (CRS) circuitry.
-  *        When the CRS is not used, the HSI48 RC oscillator runs on it default frequency
-  *        which is subject to manufacturing process variations.
-  */
-#if !defined  (HSI48_VALUE)
-#define HSI48_VALUE   (48000000UL) /*!< Value of the Internal High Speed oscillator for USB FS/RNG in Hz.
-                                          The real value my vary depending on manufacturing process variations.*/
-#endif /* HSI48_VALUE */
-
-/**
-  * @brief Internal Low Speed oscillator (LSI) value.
-  */
-#if !defined  (LSI_VALUE)
-/*!< Value of the Internal Low Speed oscillator in Hz
-The real value may vary depending on the variations in voltage and temperature.*/
-#define LSI_VALUE  (32000UL)      /*!< LSI Typical Value in Hz*/
-#endif /* LSI_VALUE */
-
-
-/* Tip: To avoid modifying this file each time you need to use different HSE,
-   ===  you can define the HSE value in your toolchain compiler preprocessor. */
-
-/* ########################### System Configuration ######################### */
-/**
-  * @brief This is the HAL system configuration section
-  */
-#define  VDD_VALUE                    (3300UL) /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            (0x0FUL) /*!< tick interrupt priority */
+// Miscellaneous HAL settings
+//#define  VDD_VALUE                    (3300UL) /*!< Value of VDD in mv */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              0U
 #define  INSTRUCTION_CACHE_ENABLE     1U
 #define  DATA_CACHE_ENABLE            1U
-
-/* ################## SPI peripheral configuration ########################## */
-
-/* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
- * Activated: CRC code is present inside driver
- * Deactivated: CRC code cleaned from driver
- */
-
-#define USE_SPI_CRC                   1U
-
-/* Includes ------------------------------------------------------------------*/
-/**
-  * @brief Include module's header file
-  */
-
-#ifdef HAL_RCC_MODULE_ENABLED
-#include "stm32g4xx_hal_rcc.h"
-#endif /* HAL_RCC_MODULE_ENABLED */
-
-#ifdef HAL_GPIO_MODULE_ENABLED
-#include "stm32g4xx_hal_gpio.h"
-#endif /* HAL_GPIO_MODULE_ENABLED */
-
-#ifdef HAL_DMA_MODULE_ENABLED
-#include "stm32g4xx_hal_dma.h"
-#endif /* HAL_DMA_MODULE_ENABLED */
-
-#ifdef HAL_CORTEX_MODULE_ENABLED
-#include "stm32g4xx_hal_cortex.h"
-#endif /* HAL_CORTEX_MODULE_ENABLED */
-
-#ifdef HAL_ADC_MODULE_ENABLED
-#include "stm32g4xx_hal_adc.h"
-#endif /* HAL_ADC_MODULE_ENABLED */
-
-#ifdef HAL_COMP_MODULE_ENABLED
-#include "stm32g4xx_hal_comp.h"
-#endif /* HAL_COMP_MODULE_ENABLED */
-
-#ifdef HAL_CORDIC_MODULE_ENABLED
-#include "stm32g4xx_hal_cordic.h"
-#endif /* HAL_CORDIC_MODULE_ENABLED */
-
-#ifdef HAL_CRC_MODULE_ENABLED
-#include "stm32g4xx_hal_crc.h"
-#endif /* HAL_CRC_MODULE_ENABLED */
-
-#ifdef HAL_CRYP_MODULE_ENABLED
-#include "stm32g4xx_hal_cryp.h"
-#endif /* HAL_CRYP_MODULE_ENABLED */
-
-#ifdef HAL_DAC_MODULE_ENABLED
-#include "stm32g4xx_hal_dac.h"
-#endif /* HAL_DAC_MODULE_ENABLED */
-
-#ifdef HAL_EXTI_MODULE_ENABLED
-#include "stm32g4xx_hal_exti.h"
-#endif /* HAL_EXTI_MODULE_ENABLED */
-
-//#ifdef HAL_FDCAN_MODULE_ENABLED
-#include "stm32g4xx_hal_fdcan.h"
-//#endif /* HAL_FDCAN_MODULE_ENABLED */
-
-#ifdef HAL_FLASH_MODULE_ENABLED
-#include "stm32g4xx_hal_flash.h"
-#endif /* HAL_FLASH_MODULE_ENABLED */
-
-#ifdef HAL_FMAC_MODULE_ENABLED
-#include "stm32g4xx_hal_fmac.h"
-#endif /* HAL_FMAC_MODULE_ENABLED */
-
-#ifdef HAL_HRTIM_MODULE_ENABLED
-#include "stm32g4xx_hal_hrtim.h"
-#endif /* HAL_HRTIM_MODULE_ENABLED */
-
-#ifdef HAL_IRDA_MODULE_ENABLED
-#include "stm32g4xx_hal_irda.h"
-#endif /* HAL_IRDA_MODULE_ENABLED */
-
-#ifdef HAL_IWDG_MODULE_ENABLED
-#include "stm32g4xx_hal_iwdg.h"
-#endif /* HAL_IWDG_MODULE_ENABLED */
-
-#ifdef HAL_I2C_MODULE_ENABLED
-#include "stm32g4xx_hal_i2c.h"
-#endif /* HAL_I2C_MODULE_ENABLED */
-
-#ifdef HAL_I2S_MODULE_ENABLED
-#include "stm32g4xx_hal_i2s.h"
-#endif /* HAL_I2S_MODULE_ENABLED */
-
-#ifdef HAL_LPTIM_MODULE_ENABLED
-#include "stm32g4xx_hal_lptim.h"
-#endif /* HAL_LPTIM_MODULE_ENABLED */
-
-#ifdef HAL_NAND_MODULE_ENABLED
-#include "stm32g4xx_hal_nand.h"
-#endif /* HAL_NAND_MODULE_ENABLED */
-
-#ifdef HAL_NOR_MODULE_ENABLED
-#include "stm32g4xx_hal_nor.h"
-#endif /* HAL_NOR_MODULE_ENABLED */
-
-#ifdef HAL_OPAMP_MODULE_ENABLED
-#include "stm32g4xx_hal_opamp.h"
-#endif /* HAL_OPAMP_MODULE_ENABLED */
-
-#ifdef HAL_PCD_MODULE_ENABLED
-#include "stm32g4xx_hal_pcd.h"
-#endif /* HAL_PCD_MODULE_ENABLED */
-
-#ifdef HAL_PWR_MODULE_ENABLED
-#include "stm32g4xx_hal_pwr.h"
-#endif /* HAL_PWR_MODULE_ENABLED */
-
-#ifdef HAL_QSPI_MODULE_ENABLED
-#include "stm32g4xx_hal_qspi.h"
-#endif /* HAL_QSPI_MODULE_ENABLED */
-
-#ifdef HAL_RNG_MODULE_ENABLED
-#include "stm32g4xx_hal_rng.h"
-#endif /* HAL_RNG_MODULE_ENABLED */
-
-#ifdef HAL_RTC_MODULE_ENABLED
-#include "stm32g4xx_hal_rtc.h"
-#endif /* HAL_RTC_MODULE_ENABLED */
-
-#ifdef HAL_SAI_MODULE_ENABLED
-#include "stm32g4xx_hal_sai.h"
-#endif /* HAL_SAI_MODULE_ENABLED */
-
-#ifdef HAL_SMARTCARD_MODULE_ENABLED
-#include "stm32g4xx_hal_smartcard.h"
-#endif /* HAL_SMARTCARD_MODULE_ENABLED */
-
-#ifdef HAL_SMBUS_MODULE_ENABLED
-#include "stm32g4xx_hal_smbus.h"
-#endif /* HAL_SMBUS_MODULE_ENABLED */
-
-#ifdef HAL_SPI_MODULE_ENABLED
-#include "stm32g4xx_hal_spi.h"
-#endif /* HAL_SPI_MODULE_ENABLED */
-
-#ifdef HAL_SRAM_MODULE_ENABLED
-#include "stm32g4xx_hal_sram.h"
-#endif /* HAL_SRAM_MODULE_ENABLED */
-
-#ifdef HAL_TIM_MODULE_ENABLED
-#include "stm32g4xx_hal_tim.h"
-#endif /* HAL_TIM_MODULE_ENABLED */
-
-#ifdef HAL_UART_MODULE_ENABLED
-#include "stm32g4xx_hal_uart.h"
-#endif /* HAL_UART_MODULE_ENABLED */
-
-#ifdef HAL_USART_MODULE_ENABLED
-#include "stm32g4xx_hal_usart.h"
-#endif /* HAL_USART_MODULE_ENABLED */
-
-#ifdef HAL_WWDG_MODULE_ENABLED
-#include "stm32g4xx_hal_wwdg.h"
-#endif /* HAL_WWDG_MODULE_ENABLED */
-#include "stm32g4xx_ll_adc.h"
-#include "stm32g4xx_ll_rtc.h"
-#include "stm32g4xx_ll_usart.h"
-#include "stm32g4xx_ll_lpuart.h"
+#define  USE_SPI_CRC                  1U
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)
 
 #endif /* MICROPY_INCLUDED_STM32G4xx_HAL_CONF_BASE_H */
-
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
