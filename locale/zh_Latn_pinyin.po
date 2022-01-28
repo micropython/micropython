@@ -457,6 +457,7 @@ msgstr "cǐ yǐnjiǎo de suǒyǒu jìshíqì dōu zài shǐyòng zhōng"
 msgid "All timers in use"
 msgstr "suǒyǒu jìshí qì dōu zài shǐyòng zhōng"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Mùqián zhèngzài guǎngbō."
@@ -930,10 +931,12 @@ msgstr "Shùjù 0 de yǐn jiǎo bìxū shì zì jié duìqí"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr "bù zhī chí dìng xiàng guǎng gào de shù jù"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Guǎnggào bāo de shùjù tài dà"
@@ -1015,6 +1018,7 @@ msgstr "yù qī yǒu jǐng bào"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Bù zhīchí dài yǒu sǎomiáo xiǎngyìng de kuòzhǎn guǎngbò."
@@ -1068,6 +1072,7 @@ msgstr "Wúfǎ fēnpèi wifi sǎomiáo nèicún"
 msgid "Failed to buffer the sample"
 msgstr "wèi néng huǎn chōng yàng běn"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Liánjiē shībài: Nèibù cuòwù"
@@ -1309,6 +1314,7 @@ msgstr "Wúxiào de ADC dānwèi zhí"
 msgid "Invalid AuthMode"
 msgstr "wú xiào AuthMode"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "wú xiào BLE cān shù"
@@ -1618,6 +1624,10 @@ msgstr "NVS cuò wù"
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Zhège tèzhēng méiyǒu CCCD"
@@ -1765,6 +1775,7 @@ msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"
 msgid "Not a valid IP string"
 msgstr "Wúxiào de IP zìfú chuàn"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2155,6 +2166,7 @@ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
 msgid "Scale dimensions must divide by 3"
 msgstr "bǐ lì chǐ cùn bì xū chú yǐ 3"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
@@ -2322,6 +2334,7 @@ msgstr "Píng pū kuāndù bìxū huàfēn wèi tú kuāndù"
 msgid "Time is in the past."
 msgstr "shí jiān yǐ jīng guò qù."
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2344,6 +2357,7 @@ msgstr "Xiǎnshì zǒngxiàn tài duōle"
 msgid "Too many displays"
 msgstr "Xiǎnshì tài duō"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
@@ -2475,10 +2489,20 @@ msgstr "Yuányīn bùmíng."
 msgid "Unknown security error: 0x%04x"
 msgstr "Wèizhī de ānquán cuòwù: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "wèi zhī xì tǒng gù jiàn cuò wù: %04x"
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
+msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2519,11 +2543,13 @@ msgstr "Bù zhīchí de cāozuò"
 msgid "Update Failed"
 msgstr "gēng xīn shī bài"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Zhí chángdù != Suǒ xū de gùdìng chángdù"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2587,6 +2613,7 @@ msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
 msgid "Woken up by alarm.\n"
 msgstr "bèi jǐng bào chǎo xǐng.\n"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Tèzhēng bù zhīchí xiě rù"
@@ -3663,6 +3690,7 @@ msgstr "shùxué yù cuòwù"
 msgid "matrix is not positive definite"
 msgstr "jǔzhèn bùshì zhèngdìng de"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
