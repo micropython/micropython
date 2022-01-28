@@ -100,7 +100,10 @@ void mp_task(void *pvParameter) {
     size_t mp_task_heap_size;
     void *mp_task_heap = NULL;
 
-    #if CONFIG_ESP32_SPIRAM_SUPPORT
+    #if CONFIG_SPIRAM_USE_MALLOC
+    // SPIRAM is issued using MALLOC, fallback to normal allocation rules
+    mp_task_heap = NULL;
+    #elif CONFIG_ESP32_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     mp_task_heap = (void *)SOC_EXTRAM_DATA_LOW;
     switch (esp_spiram_get_chip_size()) {
