@@ -63,6 +63,8 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t cert_reqs;
+    mp_arg_val_t cadata;
     mp_arg_val_t do_handshake;
 };
 
@@ -191,7 +193,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    mbedtls_ssl_conf_authmode(&o->conf, args->cert_reqs.u_int);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -235,6 +237,19 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         if (ret != 0) {
             goto cleanup;
         }
+    }
+
+    if (args->cadata.u_obj != mp_const_none) {
+        size_t cacert_len;
+        const byte *cacert = (const byte *)mp_obj_str_get_data(args->cadata.u_obj, &cacert_len);
+        // len should include terminating null
+        ret = mbedtls_x509_crt_parse(&o->cacert, cacert, cacert_len + 1);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
+            goto cleanup;
+        }
+
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->cacert, NULL);
     }
 
     if (args->do_handshake.u_bool) {
@@ -395,6 +410,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MBEDTLS_SSL_VERIFY_NONE}},
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
@@ -412,6 +429,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socke
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ussl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(MBEDTLS_SSL_VERIFY_OPTIONAL) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(MBEDTLS_SSL_VERIFY_REQUIRED) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
