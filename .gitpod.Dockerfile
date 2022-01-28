@@ -5,5 +5,5 @@ ENV GITPOD_TRIGGER_REBUILD=1
 
 # Install dependencies
 RUN sudo apt-get update && \
-    sudo apt-get install -y libgtk-3-dev libsdl2-dev x11-xserver-utils parallel libfreetype-dev librlottie-dev
+    sudo apt-get install -y libgtk-3-dev libsdl2-dev x11-xserver-utils parallel libfreetype-dev librlottie-dev libusb-1.0-0
 
