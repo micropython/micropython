@@ -431,20 +431,6 @@ STATIC mp_obj_t pyb_can_info(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(NULL);
         }
     }
-
-    #if MICROPY_HW_ENABLE_FDCAN
-    FDCAN_GlobalTypeDef *can = self->can.Instance;
-    uint32_t esr = can->ECR;
-    list->items[0] = MP_OBJ_NEW_SMALL_INT((esr & FDCAN_ECR_TEC_Msk) >> FDCAN_ECR_TEC_Pos);
-    list->items[1] = MP_OBJ_NEW_SMALL_INT((esr & FDCAN_ECR_REC_Msk) >> FDCAN_ECR_REC_Pos);
-    list->items[2] = MP_OBJ_NEW_SMALL_INT(self->num_error_warning);
-    list->items[3] = MP_OBJ_NEW_SMALL_INT(self->num_error_passive);
-    list->items[4] = MP_OBJ_NEW_SMALL_INT(self->num_bus_off);
-    uint32_t TXEFS = can->TXEFS;
-    list->items[5] = MP_OBJ_NEW_SMALL_INT(TXEFS & 0x7);
-    list->items[6] = MP_OBJ_NEW_SMALL_INT((can->RXF0S & FDCAN_RXF0S_F0FL_Msk) >> FDCAN_RXF0S_F0FL_Pos);
-    list->items[7] = MP_OBJ_NEW_SMALL_INT((can->RXF1S & FDCAN_RXF1S_F1FL_Msk) >> FDCAN_RXF1S_F1FL_Pos);
-    #else
     CAN_TypeDef *can = self->can.Instance;
     uint32_t esr = can->ESR;
     list->items[0] = MP_OBJ_NEW_SMALL_INT(esr >> CAN_ESR_TEC_Pos & 0xff);

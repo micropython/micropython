@@ -115,8 +115,8 @@
 #define HSI48_VALUE  (48000000UL)
 #define LSI_VALUE    (32000UL)
 
-// SysTick has the highest priority
-#define TICK_INT_PRIORITY (0x00)
+// SysTick priority
+#define TICK_INT_PRIORITY (0x0FUL)
 
 // Miscellaneous HAL settings
 //#define  VDD_VALUE                    (3300UL) /*!< Value of VDD in mv */
