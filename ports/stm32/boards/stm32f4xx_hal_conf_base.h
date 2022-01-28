@@ -42,6 +42,7 @@
 #include "stm32f4xx_hal_i2c.h"
 #include "stm32f4xx_hal_i2s.h"
 #include "stm32f4xx_hal_iwdg.h"
+#include "stm32f4xx_hal_mmc.h"
 #include "stm32f4xx_hal_pcd.h"
 #include "stm32f4xx_hal_pwr.h"
 #include "stm32f4xx_hal_rcc.h"
@@ -74,6 +75,7 @@
 #define HAL_I2C_MODULE_ENABLED
 #define HAL_I2S_MODULE_ENABLED
 #define HAL_IWDG_MODULE_ENABLED
+#define HAL_MMC_MODULE_ENABLED
 #define HAL_PCD_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED

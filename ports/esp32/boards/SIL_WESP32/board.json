@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "Ethernet",
+        "PoE",
+        "WiFi"
+    ],
+    "id": "wesp32",
+    "images": [
+        "wesp32-iso.jpg",
+        "wesp32-top.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "SIL WESP32",
+    "thumbnail": "",
+    "url": "https://wesp32.com/",
+    "vendor": "Silicognition LLC"
+}

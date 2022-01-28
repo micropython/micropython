@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "dongle_pcba_case.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "nrf52840-mdk-usb-dongle",
+    "thumbnail": "",
+    "url": "https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle",
+    "vendor": ""
+}

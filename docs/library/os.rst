@@ -314,6 +314,12 @@ that the block device supports the extended interface.
        ``ioctl(6, ...)`` must also be intercepted. The need for others is
        hardware dependent.
 
+       Prior to any call to ``writeblocks(block, ...)`` littlefs issues
+       ``ioctl(6, block)``. This enables a device driver to erase the block
+       prior to a write if the hardware requires it. Alternatively a driver
+       might intercept ``ioctl(6, block)`` and return 0 (success). In this case
+       the driver assumes responsibility for detecting the need for erasure.
+
        Unless otherwise stated ``ioctl(op, arg)`` can return ``None``.
        Consequently an implementation can ignore unused values of ``op``. Where
        ``op`` is intercepted, the return value for operations 4 and 5 are as

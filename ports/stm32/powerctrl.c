@@ -32,18 +32,26 @@
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
-#if defined(STM32H743xx)
+#if defined(STM32H743xx) || defined(STM32H750xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #elif defined(STM32H747xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+#define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #endif
 #define RCC_SR_RMVF     RCC_RSR_RMVF
 // This macro returns the actual voltage scaling level factoring in the power overdrive bit.
 // If the current voltage scale is VOLTAGE_SCALE1 and PWER_ODEN bit is set return VOLTAGE_SCALE0
 // otherwise the current voltage scaling (level VOS1 to VOS3) set in PWER_CSR is returned instead.
+#if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+// TODO
+#define POWERCTRL_GET_VOLTAGE_SCALING() PWR_REGULATOR_VOLTAGE_SCALE0
+#else
 #define POWERCTRL_GET_VOLTAGE_SCALING()     \
     (((PWR->CSR1 & PWR_CSR1_ACTVOS) && (SYSCFG->PWRCR & SYSCFG_PWRCR_ODEN)) ? \
     PWR_REGULATOR_VOLTAGE_SCALE0 : (PWR->CSR1 & PWR_CSR1_ACTVOS))
+#endif
 #else
 #define RCC_SR          CSR
 #define RCC_SR_SFTRSTF  RCC_CSR_SFTRSTF
@@ -147,6 +155,15 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
     { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
     { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
     // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
+};
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+    // See table 15 "FLASH recommended number of wait states and programming delay" of RM0455.
+    {88, PWR_REGULATOR_VOLTAGE_SCALE3},
+    {160, PWR_REGULATOR_VOLTAGE_SCALE2},
+    {225, PWR_REGULATOR_VOLTAGE_SCALE1},
+    {280, PWR_REGULATOR_VOLTAGE_SCALE0},
 };
 #elif defined(STM32H7)
 STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
@@ -836,6 +853,9 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define SR_BITS (RTC_SR_ALRAF | RTC_SR_ALRBF | RTC_SR_WUTF | RTC_SR_TSF)
     #else
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_ALRBF | RTC_ISR_WUTF | RTC_ISR_TSF)
@@ -852,7 +872,11 @@ void powerctrl_enter_standby_mode(void) {
     RTC->CR &= ~CR_BITS;
 
     // clear RTC wake-up flags
+    #if defined(SR_BITS)
+    RTC->SR &= ~SR_BITS;
+    #else
     RTC->ISR &= ~ISR_BITS;
+    #endif
 
     #if defined(STM32F7)
     // Save EWUP state

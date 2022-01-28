@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
+    ],
+    "id": "tinys2",
+    "images": [
+        "TinyS2+Product+Shot.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Tiny S2",
+    "thumbnail": "",
+    "url": "https://unexpectedmaker.com/tinys2",
+    "vendor": "Unexpected Maker"
+}

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "blyst-nano-mod-4_jpg_project-body.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "blueio_tag_evim",
+    "thumbnail": "",
+    "url": "https://www.i-syst.com/index.php/products/blyst-nano",
+    "vendor": "I-SYST"
+}

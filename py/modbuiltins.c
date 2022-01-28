@@ -775,6 +775,7 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
 
     // Extra builtins as defined by a port
     MICROPY_PORT_BUILTINS
+    MICROPY_PORT_EXTRA_BUILTINS
 };
 
 MP_DEFINE_CONST_DICT(mp_module_builtins_globals, mp_module_builtins_globals_table);

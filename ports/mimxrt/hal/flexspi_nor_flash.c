@@ -41,8 +41,7 @@ void flexspi_nor_reset(FLEXSPI_Type *base) __attribute__((section(".ram_function
 void flexspi_nor_reset(FLEXSPI_Type *base) {
     // Using content of FLEXSPI_SoftwareReset directly to prevent issues when compiler does not inline function
     base->MCR0 |= FLEXSPI_MCR0_SWRESET_MASK;
-    while (base->MCR0 & FLEXSPI_MCR0_SWRESET_MASK)
-    {
+    while (base->MCR0 & FLEXSPI_MCR0_SWRESET_MASK) {
     }
 }
 
@@ -63,7 +62,7 @@ status_t flexspi_nor_write_enable(FLEXSPI_Type *base, uint32_t baseAddr) {
     return status;
 }
 
-status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base) __attribute__((section(".ram_functions"))) ;
+status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base) {
     /* Wait status ready. */
     bool isBusy;
@@ -103,7 +102,7 @@ status_t flexspi_nor_wait_bus_busy(FLEXSPI_Type *base) {
     return status;
 }
 
-status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) __attribute__((section(".ram_functions"))) ;
+status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) {
     flexspi_transfer_t flashXfer;
     status_t status;
@@ -135,7 +134,7 @@ status_t flexspi_nor_enable_quad_mode(FLEXSPI_Type *base) {
     return status;
 }
 
-status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) __attribute__((section(".ram_functions"))) ;
+status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     status_t status;
     flexspi_transfer_t flashXfer;
@@ -166,7 +165,7 @@ status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     return status;
 }
 
-status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) __attribute__((section(".ram_functions"))) ;
+status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) {
     status_t status;
     flexspi_transfer_t flashXfer;
@@ -184,7 +183,7 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
     flashXfer.cmdType = kFLEXSPI_Write;
     flashXfer.SeqNumber = 1;
     flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM_QUAD;
-    flashXfer.data = (uint32_t *) src;
+    flashXfer.data = (uint32_t *)src;
     flashXfer.dataSize = size;
     status = FLEXSPI_TransferBlocking(base, &flashXfer);
 
@@ -199,7 +198,7 @@ status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, co
     return status;
 }
 
-status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId) __attribute__((section(".ram_functions"))) ;
+status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_get_vendor_id(FLEXSPI_Type *base, uint8_t *vendorId) {
     uint32_t temp;
     flexspi_transfer_t flashXfer;

@@ -77,7 +77,7 @@ CFLAGS_CORTEX_M = -mthumb
 # Select hardware floating-point support
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 SUPPORTS_HARDWARE_FP_DOUBLE = 1
@@ -267,7 +267,9 @@ endif
 
 EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
-        )
+	modnetwork.c \
+	modusocket.c \
+	)
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
@@ -286,6 +288,7 @@ SRC_C += \
 	usbd_hid_interface.c \
 	usbd_msc_interface.c \
 	mphalport.c \
+	mpnetworkport.c \
 	mpthreadport.c \
 	irq.c \
 	pendsv.c \
@@ -329,9 +332,7 @@ SRC_C += \
 	modstm.c \
 	moduos.c \
 	modutime.c \
-	modusocket.c \
 	network_lan.c \
-	modnetwork.c \
 	extint.c \
 	usrsw.c \
 	rng.c \
@@ -423,13 +424,23 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_dma_ex.c \
 	hal_dcmi.c \
 	)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
+# HAL F4-1.16.0 has a bug with missing parentheses in HAL_MMC_Erase.
+# This function is unused so let the error go by as a warning.
+$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno-error=parentheses
+endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
     HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7))
     HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+else
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
+HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/Legacy/stm32$(MCU_SERIES)xx_, hal_can.c)
+$(BUILD)/$(HAL_DIR)/Src/Legacy/stm32$(MCU_SERIES)xx_hal_can.o: CFLAGS += -Wno-error=cpp
+endif
 endif
 endif
 
@@ -600,17 +611,10 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
-ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
-# To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
-# then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
+ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 define RUN_DFU

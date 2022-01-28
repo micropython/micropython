@@ -122,6 +122,15 @@ void mp_init(void) {
     MP_STATE_VM(vfs_mount_table) = NULL;
     #endif
 
+    #if MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
+    #if MICROPY_MODULE_FROZEN
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    #endif
+    mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
+    #endif
+
     #if MICROPY_PY_SYS_ATEXIT
     MP_STATE_VM(sys_exitfunc) = mp_const_none;
     #endif
@@ -157,7 +166,7 @@ void mp_deinit(void) {
     #endif
 }
 
-mp_obj_t mp_load_name(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
     // If we're at the outer scope (locals == globals), dispatch to load_global right away
@@ -170,7 +179,7 @@ mp_obj_t mp_load_name(qstr qst) {
     return mp_load_global(qst);
 }
 
-mp_obj_t mp_load_global(qstr qst) {
+mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     // logic: search globals, builtins
     DEBUG_OP_printf("load global %s\n", qstr_str(qst));
     mp_map_elem_t *elem = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP);
@@ -311,7 +320,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
     }
 }
 
-mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     DEBUG_OP_printf("binary " UINT_FMT " %q %p %p\n", op, mp_binary_op_method_name[op], lhs, rhs);
 
     // TODO correctly distinguish inplace operators for mutable objects
@@ -1081,6 +1090,10 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
 
+    // Note: the specific case of obj being an instance type is fast-path'ed in the VM
+    // for the MP_BC_LOAD_ATTR opcode. Instance types handle type->attr and look up directly
+    // in their member's map.
+
     // get the type
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
@@ -1096,12 +1109,20 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR___next__ && type->iternext != NULL) {
         dest[0] = MP_OBJ_FROM_PTR(&mp_builtin_next_obj);
         dest[1] = obj;
-
-    } else if (type->attr != NULL) {
+        return;
+    }
+    if (type->attr != NULL) {
         // this type can do its own load, so call it
         type->attr(obj, attr, dest);
-
-    } else if (type->locals_dict != NULL) {
+        // If type->attr has set dest[1] = MP_OBJ_SENTINEL, we should proceed
+        // with lookups below (i.e. in locals_dict). If not, return right away.
+        if (dest[1] != MP_OBJ_SENTINEL) {
+            return;
+        }
+        // Clear the fail flag set by type->attr so it's like it never ran.
+        dest[1] = MP_OBJ_NULL;
+    }
+    if (type->locals_dict != NULL) {
         // generic method lookup
         // this is a lookup in the object (ie not class or type)
         assert(type->locals_dict->base.type == &mp_type_dict); // MicroPython restriction, for now
@@ -1110,6 +1131,7 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         if (elem != NULL) {
             mp_convert_member_lookup(obj, type, elem->value, dest);
         }
+        return;
     }
 }
 
@@ -1368,8 +1390,10 @@ mp_obj_t mp_make_raise_obj(mp_obj_t o) {
         // create and return a new exception instance by calling o
         // TODO could have an option to disable traceback, then builtin exceptions (eg TypeError)
         // could have const instances in ROM which we return here instead
-        return mp_call_function_n_kw(o, 0, 0, NULL);
-    } else if (mp_obj_is_exception_instance(o)) {
+        o = mp_call_function_n_kw(o, 0, 0, NULL);
+    }
+
+    if (mp_obj_is_exception_instance(o)) {
         // o is an instance of an exception, so use it as the exception
         return o;
     } else {

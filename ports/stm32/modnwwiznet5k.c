@@ -34,7 +34,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 #include "pin.h"
 #include "spi.h"
 
@@ -99,33 +99,33 @@ STATIC int wiznet5k_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len,
 }
 
 STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno) {
-    if (socket->u_param.domain != MOD_NETWORK_AF_INET) {
+    if (socket->domain != MOD_NETWORK_AF_INET) {
         *_errno = MP_EAFNOSUPPORT;
         return -1;
     }
 
-    switch (socket->u_param.type) {
+    switch (socket->type) {
         case MOD_NETWORK_SOCK_STREAM:
-            socket->u_param.type = Sn_MR_TCP;
+            socket->type = Sn_MR_TCP;
             break;
         case MOD_NETWORK_SOCK_DGRAM:
-            socket->u_param.type = Sn_MR_UDP;
+            socket->type = Sn_MR_UDP;
             break;
         default:
             *_errno = MP_EINVAL;
             return -1;
     }
 
-    if (socket->u_param.fileno == -1) {
+    if (socket->fileno == -1) {
         // get first unused socket number
         for (mp_uint_t sn = 0; sn < _WIZCHIP_SOCK_NUM_; sn++) {
             if ((wiznet5k_obj.socket_used & (1 << sn)) == 0) {
                 wiznet5k_obj.socket_used |= (1 << sn);
-                socket->u_param.fileno = sn;
+                socket->fileno = sn;
                 break;
             }
         }
-        if (socket->u_param.fileno == -1) {
+        if (socket->fileno == -1) {
             // too many open sockets
             *_errno = MP_EMFILE;
             return -1;
@@ -137,13 +137,13 @@ STATIC int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
     // So, we defer the open until we know what kind of socket we want.
 
     // use "domain" to indicate that this socket has not yet been opened
-    socket->u_param.domain = 0;
+    socket->domain = 0;
 
     return 0;
 }
 
 STATIC void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
-    uint8_t sn = (uint8_t)socket->u_param.fileno;
+    uint8_t sn = (uint8_t)socket->fileno;
     if (sn < _WIZCHIP_SOCK_NUM_) {
         wiznet5k_obj.socket_used &= ~(1 << sn);
         WIZCHIP_EXPORT(close)(sn);
@@ -152,7 +152,7 @@ STATIC void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
 
 STATIC int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     // open the socket in server mode (if port != 0)
-    mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->u_param.fileno, socket->u_param.type, port, 0);
+    mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, 0);
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -160,14 +160,14 @@ STATIC int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_u
     }
 
     // indicate that this socket has been opened
-    socket->u_param.domain = 1;
+    socket->domain = 1;
 
     // success
     return 0;
 }
 
 STATIC int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t backlog, int *_errno) {
-    mp_int_t ret = WIZCHIP_EXPORT(listen)(socket->u_param.fileno);
+    mp_int_t ret = WIZCHIP_EXPORT(listen)(socket->fileno);
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -178,17 +178,19 @@ STATIC int wiznet5k_socket_listen(mod_network_socket_obj_t *socket, mp_int_t bac
 
 STATIC int wiznet5k_socket_accept(mod_network_socket_obj_t *socket, mod_network_socket_obj_t *socket2, byte *ip, mp_uint_t *port, int *_errno) {
     for (;;) {
-        int sr = getSn_SR((uint8_t)socket->u_param.fileno);
+        int sr = getSn_SR((uint8_t)socket->fileno);
         if (sr == SOCK_ESTABLISHED) {
-            socket2->u_param = socket->u_param;
-            getSn_DIPR((uint8_t)socket2->u_param.fileno, ip);
-            *port = getSn_PORT(socket2->u_param.fileno);
+            socket2->domain = socket->domain;
+            socket2->type = socket->type;
+            socket2->fileno = socket->fileno;
+            getSn_DIPR((uint8_t)socket2->fileno, ip);
+            *port = getSn_PORT(socket2->fileno);
 
             // WIZnet turns the listening socket into the client socket, so we
             // need to re-bind and re-listen on another socket for the server.
             // TODO handle errors, especially no-more-sockets error
-            socket->u_param.domain = MOD_NETWORK_AF_INET;
-            socket->u_param.fileno = -1;
+            socket->domain = MOD_NETWORK_AF_INET;
+            socket->fileno = -1;
             int _errno2;
             if (wiznet5k_socket_socket(socket, &_errno2) != 0) {
                 // printf("(bad resocket %d)\n", _errno2);
@@ -217,7 +219,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 
     // now connect
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->u_param.fileno, ip, port);
+    mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->fileno, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -232,7 +234,7 @@ STATIC int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
 
 STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->u_param.fileno, (byte *)buf, len);
+    mp_int_t ret = WIZCHIP_EXPORT(send)(socket->fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -246,7 +248,7 @@ STATIC mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
 
 STATIC mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->u_param.fileno, buf, len);
+    mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->fileno, buf, len);
     MP_THREAD_GIL_ENTER();
 
     // TODO convert Wiz errno's to POSIX ones
@@ -259,7 +261,7 @@ STATIC mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *bu
 }
 
 STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
-    if (socket->u_param.domain == 0) {
+    if (socket->domain == 0) {
         // socket not opened; use "bind" function to open the socket in client mode
         if (wiznet5k_socket_bind(socket, ip, 0, _errno) != 0) {
             return -1;
@@ -267,7 +269,7 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
     }
 
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->u_param.fileno, (byte *)buf, len, ip, port);
+    mp_int_t ret = WIZCHIP_EXPORT(sendto)(socket->fileno, (byte *)buf, len, ip, port);
     MP_THREAD_GIL_ENTER();
 
     if (ret < 0) {
@@ -281,7 +283,7 @@ STATIC mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
 STATIC mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
     MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->u_param.fileno, buf, len, ip, &port2);
+    mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->fileno, buf, len, ip, &port2);
     MP_THREAD_GIL_ENTER();
     *port = port2;
     if (ret < 0) {
@@ -307,7 +309,7 @@ STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
     if (timeout_ms == 0) {
         // set non-blocking mode
         uint8_t arg = SOCK_IO_NONBLOCK;
-        WIZCHIP_EXPORT(ctlsocket)(socket->u_param.fileno, CS_SET_IOMODE, &arg);
+        WIZCHIP_EXPORT(ctlsocket)(socket->fileno, CS_SET_IOMODE, &arg);
     }
     */
 }
@@ -315,10 +317,10 @@ STATIC int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_
 STATIC int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
     if (request == MP_STREAM_POLL) {
         int ret = 0;
-        if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(socket->u_param.fileno) != 0) {
+        if (arg & MP_STREAM_POLL_RD && getSn_RX_RSR(socket->fileno) != 0) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(socket->u_param.fileno) != 0) {
+        if (arg & MP_STREAM_POLL_WR && getSn_TX_FSR(socket->fileno) != 0) {
             ret |= MP_STREAM_POLL_WR;
         }
         return ret;

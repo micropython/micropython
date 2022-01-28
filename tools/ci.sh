@@ -106,22 +106,24 @@ function ci_esp32_idf402_setup {
     ci_esp32_setup_helper v4.0.2
 }
 
-function ci_esp32_idf43_setup {
-    ci_esp32_setup_helper v4.3
+function ci_esp32_idf44_setup {
+    # This commit is just before v5.0-dev
+    ci_esp32_setup_helper 142bb32c50fa9875b8b69fa539a2d59559460d72
 }
 
 function ci_esp32_build {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
-    make ${MAKEOPTS} -C ports/esp32
-    make ${MAKEOPTS} -C ports/esp32 clean
     make ${MAKEOPTS} -C ports/esp32 USER_C_MODULES=../../../examples/usercmodule/micropython.cmake FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest.py
     # if [ -d $IDF_PATH/components/esp32c3 ]; then
     #     make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
     # fi
     # if [ -d $IDF_PATH/components/esp32s2 ]; then
     #     make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
+    # fi
+    # if [ -d $IDF_PATH/components/esp32s3 ]; then
+    #     make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S3
     # fi
 }
 
@@ -281,12 +283,16 @@ function ci_stm32_nucleo_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/stm32 submodules
     git submodule update --init lib/mynewt-nimble
+
+    # Test building various MCU families, some with additional options.
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
-    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
-    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55
+
+    # Test building a board with mboot packing enabled (encryption, signing, compression).
+    make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=NUCLEO_WB55 USE_MBOOT=1 MBOOT_ENABLE_PACKING=1
     # Test mboot_pack_dfu.py created a valid file, and that its unpack-dfu command works.
     BOARD_WB55=ports/stm32/boards/NUCLEO_WB55
     BUILD_WB55=ports/stm32/build-NUCLEO_WB55
@@ -598,29 +604,32 @@ function ci_windows_build {
 ########################################################################################
 # ports/zephyr
 
+ZEPHYR_DOCKER_VERSION=v0.21.0
+ZEPHYR_SDK_VERSION=0.13.2
+ZEPHYR_VERSION=v2.7.0
+
 function ci_zephyr_setup {
-    docker pull zephyrprojectrtos/ci:v0.17.3
+    docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
     docker run --name zephyr-ci -d -it \
       -v "$(pwd)":/micropython \
-      -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-0.12.4 \
+      -e ZEPHYR_SDK_INSTALL_DIR=/opt/toolchains/zephyr-sdk-${ZEPHYR_SDK_VERSION} \
       -e ZEPHYR_TOOLCHAIN_VARIANT=zephyr \
       -e ZEPHYR_BASE=/zephyrproject/zephyr \
       -w /micropython/ports/zephyr \
-      zephyrprojectrtos/ci:v0.17.3
+      zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}
     docker ps -a
 }
 
 function ci_zephyr_install {
-    docker exec zephyr-ci west init --mr v2.6.0 /zephyrproject
+    docker exec zephyr-ci west init --mr ${ZEPHYR_VERSION} /zephyrproject
     docker exec -w /zephyrproject zephyr-ci west update
     docker exec -w /zephyrproject zephyr-ci west zephyr-export
 }
 
 function ci_zephyr_build {
     docker exec zephyr-ci west build -p auto -b qemu_x86 -- -DCONF_FILE=prj_minimal.conf
-    docker exec zephyr-ci west build -p auto -b frdm_k64f -- -DCONF_FILE=prj_minimal.conf
     docker exec zephyr-ci west build -p auto -b qemu_x86
     docker exec zephyr-ci west build -p auto -b frdm_k64f
     docker exec zephyr-ci west build -p auto -b mimxrt1050_evk
-    docker exec zephyr-ci west build -p auto -b reel_board
+    docker exec zephyr-ci west build -p auto -b nucleo_wb55rg # for bluetooth
 }

@@ -18,7 +18,13 @@
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
     <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
     <PyClTool>$([System.IO.Path]::Combine(`$(CLToolPath)`, `$(CLToolExe)`))</PyClTool>
+    <PyPlatformToolsetNum>120</PyPlatformToolsetNum> <!--Minimum we support is VS2013.-->
+    <PyPlatformToolsetNum Condition="$(PlatformToolset.StartsWith('v'))">$(PlatformToolset.Replace('v', ''))</PyPlatformToolsetNum>
+    <PyParallelPreProc Condition="'$(PyPlatformToolsetNum)' &gt; '140'">True</PyParallelPreProc> <!--VS2017 and up.-->
   </PropertyGroup>
+
+  <UsingTask Condition="'$(PyParallelPreProc)' == 'True'"
+             TaskName="ParallelCustomBuild" AssemblyFile="$(VCTargetsPath)\Microsoft.Build.CppTasks.Common.dll"/>
 
   <Target Name="MakeDestDir">
     <MakeDir Directories="$(DestDir)"/>
@@ -57,6 +63,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
       <PyIncDirs Include="$(PyIncDirs)"/>
       <PreProcDefs Include="%(ClCompile.PreProcessorDefinitions);NO_QSTR"/>
       <PyQstrSourceFiles Include="@(ClCompile)" Exclude="$(PyBuildDir)\frozen_content.c">
+        <Changed>False</Changed>
         <OutFile>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', '$(DestDir)qstr\'))</OutFile>
       </PyQstrSourceFiles>
       <PyQstrSourceFiles>
@@ -71,13 +78,21 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
       </QstrDependencies>
     </ItemGroup>
     <PropertyGroup>
+      <PyPreProcCommand>$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D')</PyPreProcCommand>
       <ForceQstrRebuild>@(QstrDependencies->AnyHaveMetadataValue('Changed', 'True'))</ForceQstrRebuild>
       <RunPreProcConcat>@(PyQstrSourceFiles->AnyHaveMetadataValue('Changed', 'True'))</RunPreProcConcat>
     </PropertyGroup>
+    <ItemGroup>
+      <PyQstrSourceFilesToPreProc Include="@(PyQstrSourceFiles)" Condition="'%(Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'">
+        <Command>$(PyPreProcCommand) /Fi%(OutFile) /P %(Identity)</Command>
+        <Outputs>%(OutFile)</Outputs>
+      </PyQstrSourceFilesToPreProc>
+    </ItemGroup>
 
-    <MakeDir Directories="@(PyQstrSourceFiles->'%(OutDir)')"/>
-    <Exec Command="$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D') /Fi%(PyQstrSourceFiles.OutFile) /P %(PyQstrSourceFiles.Identity)"
-          Condition="'%(PyQstrSourceFiles.Changed)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
+    <MakeDir Directories="@(PyQstrSourceFilesToPreProc->'%(OutDir)')"/>
+    <Exec Condition="'$(PyParallelPreProc)' != 'True'" Command="%(PyQstrSourceFilesToPreProc.Command)" />
+    <ParallelCustomBuild Condition="'$(PyParallelPreProc)' == 'True' And '@(PyQstrSourceFilesToPreProc)' != ''" Sources="@(PyQstrSourceFilesToPreProc)" />
+
     <ConcatPreProcFiles InputFiles="@(PyQstrSourceFiles->'%(OutFile)')" OutputFile="$(DestDir)qstr.i.last"
                         Condition="'$(RunPreProcConcat)' == 'True' Or '$(ForceQstrRebuild)' == 'True'"/>
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split qstr $(DestDir)qstr.i.last $(DestDir)qstr _"/>
@@ -123,7 +138,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
         <PreprocessorDefinitions>MICROPY_MODULE_FROZEN_MPY=1;MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       </ClCompile>
     </ItemGroup>
-    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -f&quot;-mcache-lookup-bc&quot; -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
+    <Exec Command="$(PyPython) $(PyBaseDir)tools\makemanifest.py -v MPY_DIR=$(PyBaseDir) -v MPY_LIB_DIR=$(PyBaseDir)../micropython-lib -v PORT_DIR=$(PyWinDir) -o $(PyBuildDir)frozen_content.c -b $(PyBuildDir) $(FrozenManifest)"/>
     <WriteLinesToFile File="$(TLogLocation)frozen.read.1.tlog" Lines="$(FrozenManifest)" Overwrite="True"/>
   </Target>
 

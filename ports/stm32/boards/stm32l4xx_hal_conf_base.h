@@ -26,10 +26,13 @@
 #ifndef MICROPY_INCLUDED_STM32L4XX_HAL_CONF_BASE_H
 #define MICROPY_INCLUDED_STM32L4XX_HAL_CONF_BASE_H
 
+// Needs to be defined before ll_usb.h is included
+#define HAL_PCD_MODULE_ENABLED
+
 // Include various HAL modules for convenience
 #include "stm32l4xx_hal_dma.h"
 #include "stm32l4xx_hal_adc.h"
-#include "stm32l4xx_hal_can.h"
+#include "Legacy/stm32l4xx_hal_can_legacy.h"
 #include "stm32l4xx_hal_cortex.h"
 #include "stm32l4xx_hal_crc.h"
 #include "stm32l4xx_hal_dac.h"
@@ -54,11 +57,12 @@
 #include "stm32l4xx_ll_lpuart.h"
 #include "stm32l4xx_ll_rtc.h"
 #include "stm32l4xx_ll_usart.h"
+#include "stm32l4xx_ll_usb.h"
 
 // Enable various HAL modules
 #define HAL_MODULE_ENABLED
 #define HAL_ADC_MODULE_ENABLED
-#define HAL_CAN_MODULE_ENABLED
+#define HAL_CAN_LEGACY_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
 #define HAL_CRC_MODULE_ENABLED
 #define HAL_DAC_MODULE_ENABLED
@@ -70,7 +74,6 @@
 #define HAL_HCD_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
 #define HAL_IWDG_MODULE_ENABLED
-#define HAL_PCD_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
 #define HAL_RTC_MODULE_ENABLED

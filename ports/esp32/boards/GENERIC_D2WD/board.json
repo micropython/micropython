@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi"
+    ],
+    "id": "esp32-d2wd",
+    "images": [
+        "generic_d2wd.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "ESP32 D2WD",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Espressif"
+}

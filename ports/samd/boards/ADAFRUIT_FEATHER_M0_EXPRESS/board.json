@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Breadboard Friendly",
+        "Feather",
+        "Micro USB",
+        "RGB LED",
+        "SPI Flash"
+    ],
+    "images": [
+        "feather_m0_express.jpg"
+    ],
+    "mcu": "samd21",
+    "product": "Feather M0 Express",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/3403",
+    "vendor": "Adafruit"
+}

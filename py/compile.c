@@ -59,6 +59,12 @@ typedef enum {
 #undef DEF_RULE_NC
 } pn_kind_t;
 
+// Whether a mp_parse_node_struct_t that has pns->kind == PN_testlist_comp
+// corresponds to a list comprehension or generator.
+#define MP_PARSE_NODE_TESTLIST_COMP_HAS_COMP_FOR(pns) \
+    (MP_PARSE_NODE_STRUCT_NUM_NODES(pns) == 2 && \
+    MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[1], PN_comp_for))
+
 #define NEED_METHOD_TABLE MICROPY_EMIT_NATIVE
 
 #if NEED_METHOD_TABLE
@@ -317,25 +323,13 @@ STATIC void compile_delete_id(compiler_t *comp, qstr qst) {
     }
 }
 
-STATIC void c_tuple(compiler_t *comp, mp_parse_node_t pn, mp_parse_node_struct_t *pns_list) {
-    int total = 0;
-    if (!MP_PARSE_NODE_IS_NULL(pn)) {
-        compile_node(comp, pn);
-        total += 1;
-    }
-    if (pns_list != NULL) {
-        int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns_list);
-        for (int i = 0; i < n; i++) {
-            compile_node(comp, pns_list->nodes[i]);
-        }
-        total += n;
-    }
-    EMIT_ARG(build, total, MP_EMIT_BUILD_TUPLE);
-}
-
 STATIC void compile_generic_tuple(compiler_t *comp, mp_parse_node_struct_t *pns) {
     // a simple tuple expression
-    c_tuple(comp, MP_PARSE_NODE_NULL, pns);
+    size_t num_nodes = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+    for (size_t i = 0; i < num_nodes; i++) {
+        compile_node(comp, pns->nodes[i]);
+    }
+    EMIT_ARG(build, num_nodes, MP_EMIT_BUILD_TUPLE);
 }
 
 STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int label) {
@@ -452,21 +446,14 @@ STATIC void c_assign_atom_expr(compiler_t *comp, mp_parse_node_struct_t *pns, as
     compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("can't assign to expression"));
 }
 
-// we need to allow for a caller passing in 1 initial node (node_head) followed by an array of nodes (nodes_tail)
-STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num_tail, mp_parse_node_t *nodes_tail) {
-    uint num_head = (node_head == MP_PARSE_NODE_NULL) ? 0 : 1;
-
+STATIC void c_assign_tuple(compiler_t *comp, uint num_tail, mp_parse_node_t *nodes_tail) {
     // look for star expression
     uint have_star_index = -1;
-    if (num_head != 0 && MP_PARSE_NODE_IS_STRUCT_KIND(node_head, PN_star_expr)) {
-        EMIT_ARG(unpack_ex, 0, num_tail);
-        have_star_index = 0;
-    }
     for (uint i = 0; i < num_tail; i++) {
         if (MP_PARSE_NODE_IS_STRUCT_KIND(nodes_tail[i], PN_star_expr)) {
             if (have_star_index == (uint)-1) {
-                EMIT_ARG(unpack_ex, num_head + i, num_tail - i - 1);
-                have_star_index = num_head + i;
+                EMIT_ARG(unpack_ex, i, num_tail - i - 1);
+                have_star_index = i;
             } else {
                 compile_syntax_error(comp, nodes_tail[i], MP_ERROR_TEXT("multiple *x in assignment"));
                 return;
@@ -474,17 +461,10 @@ STATIC void c_assign_tuple(compiler_t *comp, mp_parse_node_t node_head, uint num
         }
     }
     if (have_star_index == (uint)-1) {
-        EMIT_ARG(unpack_sequence, num_head + num_tail);
-    }
-    if (num_head != 0) {
-        if (0 == have_star_index) {
-            c_assign(comp, ((mp_parse_node_struct_t *)node_head)->nodes[0], ASSIGN_STORE);
-        } else {
-            c_assign(comp, node_head, ASSIGN_STORE);
-        }
+        EMIT_ARG(unpack_sequence, num_tail);
     }
     for (uint i = 0; i < num_tail; i++) {
-        if (num_head + i == have_star_index) {
+        if (i == have_star_index) {
             c_assign(comp, ((mp_parse_node_struct_t *)nodes_tail[i])->nodes[0], ASSIGN_STORE);
         } else {
             c_assign(comp, nodes_tail[i], ASSIGN_STORE);
@@ -526,7 +506,7 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 if (assign_kind != ASSIGN_STORE) {
                     goto cannot_assign;
                 }
-                c_assign_tuple(comp, MP_PARSE_NODE_NULL, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
+                c_assign_tuple(comp, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
                 break;
 
             case PN_atom_paren:
@@ -551,13 +531,13 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
                 }
                 if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
                     // empty list, assignment allowed
-                    c_assign_tuple(comp, MP_PARSE_NODE_NULL, 0, NULL);
+                    c_assign_tuple(comp, 0, NULL);
                 } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
                     pns = (mp_parse_node_struct_t *)pns->nodes[0];
                     goto testlist_comp;
                 } else {
                     // brackets around 1 item
-                    c_assign_tuple(comp, pns->nodes[0], 0, NULL);
+                    c_assign_tuple(comp, 1, pns->nodes);
                 }
                 break;
 
@@ -568,27 +548,10 @@ STATIC void c_assign(compiler_t *comp, mp_parse_node_t pn, assign_kind_t assign_
 
     testlist_comp:
         // lhs is a sequence
-        if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
-            mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t *)pns->nodes[1];
-            if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3b) {
-                // sequence of one item, with trailing comma
-                assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[0]));
-                c_assign_tuple(comp, pns->nodes[0], 0, NULL);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3c) {
-                // sequence of many items
-                uint n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns2);
-                c_assign_tuple(comp, pns->nodes[0], n, pns2->nodes);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for) {
-                goto cannot_assign;
-            } else {
-                // sequence with 2 items
-                goto sequence_with_2_items;
-            }
-        } else {
-            // sequence with 2 items
-        sequence_with_2_items:
-            c_assign_tuple(comp, MP_PARSE_NODE_NULL, 2, pns->nodes);
+        if (MP_PARSE_NODE_TESTLIST_COMP_HAS_COMP_FOR(pns)) {
+            goto cannot_assign;
         }
+        c_assign_tuple(comp, MP_PARSE_NODE_STRUCT_NUM_NODES(pns), pns->nodes);
         return;
     }
     return;
@@ -983,32 +946,11 @@ STATIC void c_del_stmt(compiler_t *comp, mp_parse_node_t pn) {
         } else {
             assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, PN_testlist_comp));
             mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-            // TODO perhaps factorise testlist_comp code with other uses of PN_testlist_comp
-
-            if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
-                mp_parse_node_struct_t *pns1 = (mp_parse_node_struct_t *)pns->nodes[1];
-                if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_testlist_comp_3b) {
-                    // sequence of one item, with trailing comma
-                    assert(MP_PARSE_NODE_IS_NULL(pns1->nodes[0]));
-                    c_del_stmt(comp, pns->nodes[0]);
-                } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_testlist_comp_3c) {
-                    // sequence of many items
-                    int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns1);
-                    c_del_stmt(comp, pns->nodes[0]);
-                    for (int i = 0; i < n; i++) {
-                        c_del_stmt(comp, pns1->nodes[i]);
-                    }
-                } else if (MP_PARSE_NODE_STRUCT_KIND(pns1) == PN_comp_for) {
-                    goto cannot_delete;
-                } else {
-                    // sequence with 2 items
-                    goto sequence_with_2_items;
-                }
-            } else {
-                // sequence with 2 items
-            sequence_with_2_items:
-                c_del_stmt(comp, pns->nodes[0]);
-                c_del_stmt(comp, pns->nodes[1]);
+            if (MP_PARSE_NODE_TESTLIST_COMP_HAS_COMP_FOR(pns)) {
+                goto cannot_delete;
+            }
+            for (size_t i = 0; i < MP_PARSE_NODE_STRUCT_NUM_NODES(pns); ++i) {
+                c_del_stmt(comp, pns->nodes[i]);
             }
         }
     } else {
@@ -2490,31 +2432,16 @@ STATIC void compile_comprehension(compiler_t *comp, mp_parse_node_struct_t *pns,
 STATIC void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // an empty tuple
-        c_tuple(comp, MP_PARSE_NODE_NULL, NULL);
+        EMIT_ARG(build, 0, MP_EMIT_BUILD_TUPLE);
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
         pns = (mp_parse_node_struct_t *)pns->nodes[0];
-        assert(!MP_PARSE_NODE_IS_NULL(pns->nodes[1]));
-        if (MP_PARSE_NODE_IS_STRUCT(pns->nodes[1])) {
-            mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t *)pns->nodes[1];
-            if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3b) {
-                // tuple of one item, with trailing comma
-                assert(MP_PARSE_NODE_IS_NULL(pns2->nodes[0]));
-                c_tuple(comp, pns->nodes[0], NULL);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_testlist_comp_3c) {
-                // tuple of many items
-                c_tuple(comp, pns->nodes[0], pns2);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns2) == PN_comp_for) {
-                // generator expression
-                compile_comprehension(comp, pns, SCOPE_GEN_EXPR);
-            } else {
-                // tuple with 2 items
-                goto tuple_with_2_items;
-            }
+        if (MP_PARSE_NODE_TESTLIST_COMP_HAS_COMP_FOR(pns)) {
+            // generator expression
+            compile_comprehension(comp, pns, SCOPE_GEN_EXPR);
         } else {
-            // tuple with 2 items
-        tuple_with_2_items:
-            c_tuple(comp, MP_PARSE_NODE_NULL, pns);
+            // tuple with N items
+            compile_generic_tuple(comp, pns);
         }
     }
 }
@@ -2525,31 +2452,13 @@ STATIC void compile_atom_bracket(compiler_t *comp, mp_parse_node_struct_t *pns) 
         EMIT_ARG(build, 0, MP_EMIT_BUILD_LIST);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp)) {
         mp_parse_node_struct_t *pns2 = (mp_parse_node_struct_t *)pns->nodes[0];
-        if (MP_PARSE_NODE_IS_STRUCT(pns2->nodes[1])) {
-            mp_parse_node_struct_t *pns3 = (mp_parse_node_struct_t *)pns2->nodes[1];
-            if (MP_PARSE_NODE_STRUCT_KIND(pns3) == PN_testlist_comp_3b) {
-                // list of one item, with trailing comma
-                assert(MP_PARSE_NODE_IS_NULL(pns3->nodes[0]));
-                compile_node(comp, pns2->nodes[0]);
-                EMIT_ARG(build, 1, MP_EMIT_BUILD_LIST);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns3) == PN_testlist_comp_3c) {
-                // list of many items
-                compile_node(comp, pns2->nodes[0]);
-                compile_generic_all_nodes(comp, pns3);
-                EMIT_ARG(build, 1 + MP_PARSE_NODE_STRUCT_NUM_NODES(pns3), MP_EMIT_BUILD_LIST);
-            } else if (MP_PARSE_NODE_STRUCT_KIND(pns3) == PN_comp_for) {
-                // list comprehension
-                compile_comprehension(comp, pns2, SCOPE_LIST_COMP);
-            } else {
-                // list with 2 items
-                goto list_with_2_items;
-            }
+        if (MP_PARSE_NODE_TESTLIST_COMP_HAS_COMP_FOR(pns2)) {
+            // list comprehension
+            compile_comprehension(comp, pns2, SCOPE_LIST_COMP);
         } else {
-            // list with 2 items
-        list_with_2_items:
-            compile_node(comp, pns2->nodes[0]);
-            compile_node(comp, pns2->nodes[1]);
-            EMIT_ARG(build, 2, MP_EMIT_BUILD_LIST);
+            // list with N items
+            compile_generic_all_nodes(comp, pns2);
+            EMIT_ARG(build, MP_PARSE_NODE_STRUCT_NUM_NODES(pns2), MP_EMIT_BUILD_LIST);
         }
     } else {
         // list with 1 item

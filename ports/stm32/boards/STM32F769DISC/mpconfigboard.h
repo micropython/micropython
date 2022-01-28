@@ -10,6 +10,7 @@
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
@@ -85,7 +86,7 @@ extern struct _spi_bdev_t spi_bdev;
 
 // LEDs
 #define MICROPY_HW_LED1             (pin_J13) // red
-#define MICROPY_HW_LED2             (pin_J5) // green 
+#define MICROPY_HW_LED2             (pin_J5) // green
 #define MICROPY_HW_LED3             (pin_A12) // green
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))

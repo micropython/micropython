@@ -84,7 +84,6 @@ if "length" in getargspec(usb.util.get_string).args:
     def get_string(dev, index):
         return usb.util.get_string(dev, 255, index)
 
-
 else:
     # PyUSB 1.0.0.b2 dropped the length argument
     def get_string(dev, index):

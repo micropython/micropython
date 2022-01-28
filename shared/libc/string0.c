@@ -25,7 +25,7 @@
  */
 
 #include <stdint.h>
-#include <string.h>
+#include <stddef.h>
 
 #define likely(x) __builtin_expect((x), 1)
 
@@ -62,6 +62,13 @@ void *memcpy(void *dst, const void *src, size_t n) {
     }
 
     return dst;
+}
+
+void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen) {
+    if (len > slen) {
+        return NULL;
+    }
+    return memcpy(dest, src, len);
 }
 
 void *memmove(void *dest, const void *src, size_t n) {

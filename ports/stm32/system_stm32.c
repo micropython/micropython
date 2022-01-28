@@ -180,7 +180,9 @@ void SystemClock_Config(void) {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
     /* Enable Power Control clock */
-    #if defined(STM32H7)
+    #if defined(STM32H7A3xxQ) || defined(STM32H7B3xxQ)
+    MODIFY_REG(PWR->CR3, PWR_SUPPLY_CONFIG_MASK, PWR_CR3_SMPSEN);
+    #elif defined(STM32H7)
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
     #else
     __PWR_CLK_ENABLE();
@@ -197,7 +199,7 @@ void SystemClock_Config(void) {
 
     #if defined(STM32H7)
     // Wait for PWR_FLAG_VOSRDY
-    while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) {
+    while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
     }
     #endif
 

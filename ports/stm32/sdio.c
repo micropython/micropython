@@ -134,9 +134,6 @@ void sdio_init(uint32_t irq_pri) {
 
 void sdio_deinit(void) {
     SDMMC_CLK_DISABLE();
-    #if defined(STM32F7)
-    __HAL_RCC_DMA2_CLK_DISABLE();
-    #endif
 }
 
 void sdio_reenable(void) {

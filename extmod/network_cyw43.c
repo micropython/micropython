@@ -43,8 +43,8 @@ typedef struct _network_cyw43_obj_t {
     int itf;
 } network_cyw43_obj_t;
 
-STATIC const network_cyw43_obj_t network_cyw43_wl0 = { { &mp_network_cyw43_type }, &cyw43_state, 0 };
-STATIC const network_cyw43_obj_t network_cyw43_wl1 = { { &mp_network_cyw43_type }, &cyw43_state, 1 };
+STATIC const network_cyw43_obj_t network_cyw43_wl_sta = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_STA };
+STATIC const network_cyw43_obj_t network_cyw43_wl_ap = { { &mp_network_cyw43_type }, &cyw43_state, CYW43_ITF_AP };
 
 STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_cyw43_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -65,7 +65,7 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
         status_str = "fail";
     }
     mp_printf(print, "<CYW43 %s %s %u.%u.%u.%u>",
-        self->itf == 0 ? "STA" : "AP",
+        self->itf == CYW43_ITF_STA ? "STA" : "AP",
         status_str,
         netif->ip_addr.addr & 0xff,
         netif->ip_addr.addr >> 8 & 0xff,
@@ -76,10 +76,10 @@ STATIC void network_cyw43_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
 
 STATIC mp_obj_t network_cyw43_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    if (n_args == 0 || mp_obj_get_int(args[0]) == 0) {
-        return MP_OBJ_FROM_PTR(&network_cyw43_wl0);
+    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+        return MP_OBJ_FROM_PTR(&network_cyw43_wl_sta);
     } else {
-        return MP_OBJ_FROM_PTR(&network_cyw43_wl1);
+        return MP_OBJ_FROM_PTR(&network_cyw43_wl_ap);
     }
 }
 

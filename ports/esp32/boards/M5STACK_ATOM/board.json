@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Grove",
+        "IMU",
+        "Infrared",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "m5stack_atom.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "M5 Stack Atom",
+    "thumbnail": "",
+    "url": "https://m5stack.com/",
+    "vendor": "M5 Stack"
+}

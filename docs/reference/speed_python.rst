@@ -36,7 +36,7 @@ Algorithms
 ~~~~~~~~~~
 
 The most important aspect of designing any routine for performance is ensuring that
-the best algorithm is employed. This is a topic for textbooks rather than for a 
+the best algorithm is employed. This is a topic for textbooks rather than for a
 MicroPython guide but spectacular performance gains can sometimes be achieved
 by adopting algorithms known for their efficiency.
 
@@ -210,7 +210,7 @@ no adaptation (but see below). It is invoked by means of a function decorator:
         buf = self.linebuf # Cached object
         # code
 
-There are certain limitations in the current implementation of the native code emitter. 
+There are certain limitations in the current implementation of the native code emitter.
 
 * Context managers are not supported (the ``with`` statement).
 * Generators are not supported.
@@ -222,7 +222,7 @@ increase in compiled code size.
 The Viper code emitter
 ----------------------
 
-The optimisations discussed above involve standards-compliant Python code. The 
+The optimisations discussed above involve standards-compliant Python code. The
 Viper code emitter is not fully compliant. It supports special Viper native data types
 in pursuit of performance. Integer processing is non-compliant because it uses machine
 words: arithmetic on 32 bit hardware is performed modulo 2**32.
@@ -237,7 +237,7 @@ bit manipulations. It is invoked using a decorator:
     def foo(self, arg: int) -> int:
         # code
 
-As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser. 
+As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser.
 Type hints provide information on the data types of arguments and of the return value; these
 are a standard Python language feature formally defined here `PEP0484 <https://www.python.org/dev/peps/pep-0484/>`_.
 Viper supports its own set of types namely ``int``, ``uint`` (unsigned integer), ``ptr``, ``ptr8``,

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "4062-02.jpg"
+    ],
+    "mcu": "nrf52",
+    "product": "Feather nRF52840 Express",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4062",
+    "vendor": "Adafruit"
+}

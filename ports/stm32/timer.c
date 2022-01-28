@@ -239,6 +239,9 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         #if defined(STM32F0)
         source = HAL_RCC_GetPCLK1Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        source = HAL_RCC_GetPCLK2Freq();
+        clk_div = RCC->CDCFGR2 & RCC_CDCFGR2_CDPPRE2;
         #elif defined(STM32H7)
         source = HAL_RCC_GetPCLK2Freq();
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE2;
@@ -251,6 +254,8 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
         source = HAL_RCC_GetPCLK1Freq();
         #if defined(STM32F0)
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
+        #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+        clk_div = RCC->CDCFGR1 & RCC_CDCFGR2_CDPPRE1;
         #elif defined(STM32H7)
         clk_div = RCC->D2CFGR & RCC_D2CFGR_D2PPRE1;
         #else

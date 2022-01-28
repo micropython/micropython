@@ -30,8 +30,6 @@
 #include "py/runtime.h"
 #include "extmod/machine_spi.h"
 
-#if MICROPY_PY_MACHINE_SPI
-
 // if a port didn't define MSB/LSB constants then provide them
 #ifndef MICROPY_PY_MACHINE_SPI_MSB
 #define MICROPY_PY_MACHINE_SPI_MSB (0)
@@ -40,6 +38,8 @@
 
 /******************************************************************************/
 // MicroPython bindings for generic machine.SPI
+
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 
 STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(args[0]);
@@ -115,11 +115,14 @@ STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPI_MSB) },
     { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(MICROPY_PY_MACHINE_SPI_LSB) },
 };
-
 MP_DEFINE_CONST_DICT(mp_machine_spi_locals_dict, machine_spi_locals_dict_table);
+
+#endif // MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 
 /******************************************************************************/
 // Implementation of soft SPI
+
+#if MICROPY_PY_MACHINE_SOFTSPI
 
 STATIC uint32_t baudrate_from_delay_half(uint32_t delay_half) {
     #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
@@ -258,4 +261,4 @@ const mp_obj_type_t mp_machine_soft_spi_type = {
     .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
 };
 
-#endif // MICROPY_PY_MACHINE_SPI
+#endif // MICROPY_PY_MACHINE_SOFTSPI

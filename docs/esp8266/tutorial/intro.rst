@@ -41,8 +41,8 @@ Please refer to the documentation for your board for further details.
 Getting the firmware
 --------------------
 
-The first thing you need to do is download the most recent MicroPython firmware 
-.bin file to load onto your ESP8266 device. You can download it from the  
+The first thing you need to do is download the most recent MicroPython firmware
+.bin file to load onto your ESP8266 device. You can download it from the
 `MicroPython downloads page <http://micropython.org/download#esp8266>`_.
 From here, you have 3 main choices
 
@@ -64,7 +64,7 @@ such, only daily builds for 512kb modules are provided.
 Deploying the firmware
 ----------------------
 
-Once you have the MicroPython firmware (compiled code), you need to load it onto 
+Once you have the MicroPython firmware (compiled code), you need to load it onto
 your ESP8266 device.  There are two main steps to do this: first you
 need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the

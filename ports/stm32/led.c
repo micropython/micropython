@@ -58,6 +58,12 @@ STATIC const pyb_led_obj_t pyb_led_obj[] = {
     {{&pyb_led_type}, 3, MICROPY_HW_LED3},
     #if defined(MICROPY_HW_LED4)
     {{&pyb_led_type}, 4, MICROPY_HW_LED4},
+    #if defined(MICROPY_HW_LED5)
+    {{&pyb_led_type}, 5, MICROPY_HW_LED5},
+    #if defined(MICROPY_HW_LED6)
+    {{&pyb_led_type}, 6, MICROPY_HW_LED6},
+    #endif
+    #endif
     #endif
     #endif
     #endif
@@ -77,7 +83,9 @@ void led_init(void) {
 #if defined(MICROPY_HW_LED1_PWM) \
     || defined(MICROPY_HW_LED2_PWM) \
     || defined(MICROPY_HW_LED3_PWM) \
-    || defined(MICROPY_HW_LED4_PWM)
+    || defined(MICROPY_HW_LED4_PWM) \
+    || defined(MICROPY_HW_LED5_PWM) \
+    || defined(MICROPY_HW_LED6_PWM)
 
 // The following is semi-generic code to control LEDs using PWM.
 // It currently supports TIM1, TIM2 and TIM3, channels 1-4.
@@ -98,6 +106,12 @@ void led_init(void) {
 #ifndef MICROPY_HW_LED4_PWM
 #define MICROPY_HW_LED4_PWM { NULL, 0, 0, 0 }
 #endif
+#ifndef MICROPY_HW_LED5_PWM
+#define MICROPY_HW_LED5_PWM { NULL, 0, 0, 0 }
+#endif
+#ifndef MICROPY_HW_LED6_PWM
+#define MICROPY_HW_LED6_PWM { NULL, 0, 0, 0 }
+#endif
 
 #define LED_PWM_TIM_PERIOD (10000) // TIM runs at 1MHz and fires every 10ms
 
@@ -116,6 +130,8 @@ STATIC const led_pwm_config_t led_pwm_config[] = {
     MICROPY_HW_LED2_PWM,
     MICROPY_HW_LED3_PWM,
     MICROPY_HW_LED4_PWM,
+    MICROPY_HW_LED5_PWM,
+    MICROPY_HW_LED6_PWM,
 };
 
 STATIC uint8_t led_pwm_state = 0;

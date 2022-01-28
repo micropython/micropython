@@ -126,7 +126,7 @@ STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self) {
 }
 
 STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
-    if (uart_get_hw(self->uart)->mis & UART_UARTMIS_RXMIS_BITS) { // rx interrupt?
+    if (uart_get_hw(self->uart)->mis & (UART_UARTMIS_RXMIS_BITS | UART_UARTMIS_RTMIS_BITS)) { // rx interrupt?
         // clear all interrupt bits but tx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
         if (!self->read_lock) {

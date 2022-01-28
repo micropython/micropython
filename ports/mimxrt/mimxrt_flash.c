@@ -32,8 +32,6 @@
 #include "modmimxrt.h"
 #include BOARD_FLASH_OPS_HEADER_H
 
-// BOARD_FLASH_SIZE is defined in mpconfigport.h
-
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
 #define PAGE_SIZE_BYTES (qspiflash_config.pageSize)
 
@@ -81,7 +79,7 @@ status_t flash_erase_block(uint32_t erase_addr) {
 // the vfs driver takes care for erasing the sector if required
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_functions")));
 status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
-    status_t status;
+    status_t status = 0;
     uint32_t size;
     uint32_t next_addr;
 

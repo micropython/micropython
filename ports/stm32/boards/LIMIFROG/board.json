@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "limifrog.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "LIMIFROG",
+    "thumbnail": "",
+    "url": "",
+    "vendor": ""
+}

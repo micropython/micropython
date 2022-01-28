@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy_s2.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "OLED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "lolin_s2_pico.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "S2 pico",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/s2/s2_pico.html",
+    "vendor": "Wemos"
+}

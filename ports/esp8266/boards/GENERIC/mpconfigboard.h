@@ -11,6 +11,7 @@
 #define MICROPY_READER_VFS              (MICROPY_VFS)
 #define MICROPY_VFS                     (1)
 
+#define MICROPY_PY_FSTRINGS             (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
 #define MICROPY_PY_ALL_SPECIAL_METHODS  (1)
 #define MICROPY_PY_IO_FILEIO            (1)

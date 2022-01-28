@@ -13,9 +13,7 @@ function do_build() {
     shift
     shift
     echo "building $descr $board"
-    #build_dir=/tmp/esp8266-build-$board
-    build_dir=build-$board # until esp8266.ld is fixed
-    rm -rf $build_dir # be sure we don't have anything leftover from a previous build
+    build_dir=/tmp/esp8266-build-$board
     $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BUILD=$build_dir || exit 1
     mv $build_dir/firmware-combined.bin $dest_dir/$descr$fw_tag.bin
     mv $build_dir/firmware.elf $dest_dir/$descr$fw_tag.elf
@@ -29,19 +27,16 @@ function do_build_ota() {
     shift
     shift
     echo "building $descr $board"
-    #build_dir=/tmp/esp8266-build-$board
-    build_dir=build-$board # until esp8266.ld is fixed
-    rm -rf $build_dir # be sure we don't have anything leftover from a previous build
+    build_dir=/tmp/esp8266-build-$board
     $MICROPY_AUTOBUILD_MAKE $@ BOARD=$board BUILD=$build_dir || exit 1
     cat $yaota8266/yaota8266.bin $build_dir/firmware-ota.bin > $dest_dir/$descr$fw_tag.bin
-    cwd=$(pwd)
     pushd $yaota8266/ota-client
-    $PYTHON3 ota_client.py sign $cwd/$build_dir/firmware-ota.bin 
+    $PYTHON3 ota_client.py sign $build_dir/firmware-ota.bin
     popd
     mv $build_dir/firmware-ota.bin.ota $dest_dir/$descr$fw_tag.ota
     mv $build_dir/firmware.elf $dest_dir/$descr$fw_tag.elf
     mv $build_dir/firmware.map $dest_dir/$descr$fw_tag.map
-    #rm -rf $build_dir
+    rm -rf $build_dir
 }
 
 # check/get parameters
@@ -63,4 +58,4 @@ fi
 do_build esp8266 GENERIC
 do_build esp8266-512k GENERIC_512K
 do_build esp8266-1m GENERIC_1M
-do_build_ota esp8266-ota GENERIC ota
+do_build_ota esp8266-ota GENERIC_1M ota

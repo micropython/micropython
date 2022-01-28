@@ -147,11 +147,9 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
     { 4,  5,  6,  7,  0,  1,  2,  3 },  // Stereo, 32-bits
 };
 
-STATIC machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX];
-
 void machine_i2s_init0() {
     for (i2s_port_t p = 0; p < I2S_NUM_MAX; p++) {
-        machine_i2s_obj[p] = NULL;
+        MP_STATE_PORT(machine_i2s_obj)[p] = NULL;
     }
 }
 
@@ -265,13 +263,22 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
             delay = portMAX_DELAY;  // block until supplied buffer is filled
         }
 
-        // read a chunk of audio samples from DMA memory
-        check_esp_err(i2s_read(
+        esp_err_t ret = i2s_read(
             self->port,
             self->transform_buffer,
             num_bytes_requested_from_dma,
             &num_bytes_received_from_dma,
-            delay));
+            delay);
+
+        // the following is a workaround for a bug in ESP-IDF v4.4
+        // https://github.com/espressif/esp-idf/issues/8121
+        #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
+        if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
+            ret = ESP_OK;
+        }
+        #endif
+
+        check_esp_err(ret);
 
         // process the transform buffer one frame at a time.
         // copy selected bytes from the transform buffer into the user supplied appbuf.
@@ -326,7 +333,17 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
         delay = portMAX_DELAY;  // block until supplied buffer is emptied
     }
 
-    check_esp_err(i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay));
+    esp_err_t ret = i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay);
+
+    // the following is a workaround for a bug in ESP-IDF v4.4
+    // https://github.com/espressif/esp-idf/issues/8121
+    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
+    if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
+        ret = ESP_OK;
+    }
+    #endif
+
+    check_esp_err(ret);
 
     if ((self->io_mode == UASYNCIO) && (num_bytes_written < appbuf->len)) {
         // Unable to empty the entire app buffer into DMA memory.  This indicates all DMA TX buffers are full.
@@ -448,6 +465,12 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_config.dma_buf_count = get_dma_buf_count(mode, bits, format, self->ibuf);
     i2s_config.dma_buf_len = DMA_BUF_LEN_IN_I2S_FRAMES;
     i2s_config.use_apll = false;
+    i2s_config.tx_desc_auto_clear = true;
+    i2s_config.fixed_mclk = 0;
+    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
+    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_DEFAULT;
+    i2s_config.bits_per_chan = 0;
+    #endif
 
     // I2S queue size equals the number of DMA buffers
     check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
@@ -455,18 +478,26 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // apply low-level workaround for bug in some ESP-IDF versions that swap
     // the left and right channels
     // https://github.com/espressif/esp-idf/issues/6625
+    #if CONFIG_IDF_TARGET_ESP32S3
+    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_TX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_RX_MSB_SHIFT);
+    #else
     REG_SET_BIT(I2S_CONF_REG(self->port), I2S_TX_MSB_RIGHT);
     REG_SET_BIT(I2S_CONF_REG(self->port), I2S_RX_MSB_RIGHT);
+    #endif
 
     i2s_pin_config_t pin_config;
+    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
+    pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
+    #endif
     pin_config.bck_io_num = self->sck;
     pin_config.ws_io_num = self->ws;
 
     if (mode == (I2S_MODE_MASTER | I2S_MODE_RX)) {
         pin_config.data_in_num = self->sd;
-        pin_config.data_out_num = -1;
+        pin_config.data_out_num = I2S_PIN_NO_CHANGE;
     } else { // TX
-        pin_config.data_in_num = -1;
+        pin_config.data_in_num = I2S_PIN_NO_CHANGE;
         pin_config.data_out_num = self->sd;
     }
 
@@ -501,13 +532,13 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     }
 
     machine_i2s_obj_t *self;
-    if (machine_i2s_obj[port] == NULL) {
+    if (MP_STATE_PORT(machine_i2s_obj)[port] == NULL) {
         self = m_new_obj(machine_i2s_obj_t);
-        machine_i2s_obj[port] = self;
+        MP_STATE_PORT(machine_i2s_obj)[port] = self;
         self->base.type = &machine_i2s_type;
         self->port = port;
     } else {
-        self = machine_i2s_obj[port];
+        self = MP_STATE_PORT(machine_i2s_obj)[port];
         machine_i2s_deinit(self);
     }
 

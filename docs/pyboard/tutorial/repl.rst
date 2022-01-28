@@ -73,7 +73,7 @@ indicate that you should type the text after it at the prompt.  In the end, once
 you have entered the text ``print("hello pyboard!")`` and pressed Enter, the output
 on your screen should look like it does above.
 
-If you already know some python you can now try some basic commands here. 
+If you already know some python you can now try some basic commands here.
 
 If any of this is not working you can try either a hard reset or a soft reset;
 see below.

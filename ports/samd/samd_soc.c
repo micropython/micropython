@@ -1,6 +1,12 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * This file initialises the USB (tinyUSB) and USART (SERCOM). Board USART settings
+ * are set in 'boards/<board>/mpconfigboard.h.
+ *
+ * IMPORTANT: Please refer to "I/O Multiplexing and Considerations" chapters
+ *            in device datasheets for I/O Pin functions and assignments.
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
@@ -24,56 +30,53 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+#include "modmachine.h"
 #include "samd_soc.h"
 #include "tusb.h"
 
-static void uart0_init(void) {
+// "MP" macros defined in "boards/$(BOARD)/mpconfigboard.h"
+mp_obj_t machine_uart_init(void) {
+    // Firstly, assign alternate function SERCOM PADs to GPIO pins.
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 1; // Enable
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 1; // Enable
+    PORT->Group[MP_PIN_GRP].PMUX[MP_PERIPHERAL_MUX].reg = MP_PORT_FUNC; // Sets PMUXE & PMUXO in 1 hit.
+    uint32_t rxpo = MP_RXPO_PAD; // 1=Pad1,3=Pad3 Rx data
+    uint32_t txpo = MP_TXPO_PAD; // 0=pad0,1=Pad2 Tx data
+
+    // Initialise the clocks
     #if defined(MCU_SAMD21)
-
-    // SERCOM0, TX=PA06=PAD2, RX=PA07=PAD3, ALT-D
-    PORT->Group[0].PMUX[3].reg = 0x33;
-    PORT->Group[0].PINCFG[6].reg = 1;
-    PORT->Group[0].PINCFG[7].reg = 1;
-
-    PM->APBCMASK.bit.SERCOM0_ = 1;
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_SERCOM0_CORE;
+    PM->APBCMASK.bit.MP_SERCOMx = 1; // Enable synchronous clock
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | MP_SERCOM_GCLK_ID_x_CORE; // Select multiplexer generic clock source and enable.
+    // Wait while it updates synchronously.
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
-
-    uint32_t rxpo = 3;
-    uint32_t txpo = 1;
-
     #elif defined(MCU_SAMD51)
-
-    // SERCOM3, TX=PA17=PAD0, RX=PA16=PAD1, ALT-D
-    PORT->Group[0].PMUX[8].reg = 0x33;
-    PORT->Group[0].PINCFG[16].reg = 1;
-    PORT->Group[0].PINCFG[17].reg = 1;
-
-    // Use Generator 0 which is already enabled and switched to DFLL @ 48MHz
-    GCLK->PCHCTRL[SERCOM3_GCLK_ID_CORE].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK0;
-    MCLK->APBBMASK.bit.SERCOM3_ = 1;
-
-    uint32_t rxpo = 1;
-    uint32_t txpo = 2;
-
+    GCLK->PCHCTRL[MP_SERCOM_GCLK_ID_x_CORE].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK0;
+    MCLK->APBBMASK.bit.MP_SERCOMx = 1;
     #endif
 
+    // Setup the Peripheral.
+    // Reset (clear) the peripheral registers.
     while (USARTx->USART.SYNCBUSY.bit.SWRST) {
     }
-    USARTx->USART.CTRLA.bit.SWRST = 1;
+    USARTx->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
     while (USARTx->USART.SYNCBUSY.bit.SWRST) {
     }
 
-    USARTx->USART.CTRLA.reg =
-        SERCOM_USART_CTRLA_DORD
-        | SERCOM_USART_CTRLA_RXPO(rxpo)
-        | SERCOM_USART_CTRLA_TXPO(txpo)
-        | SERCOM_USART_CTRLA_MODE(1)
+    // Set the register bits as needed
+    // (CMODE (async),CHSIZE (8),FORM (no parity),SBMODE (1 stop) already 0).
+    USARTx->USART.CTRLA.reg =   // USARTx = SERCOMx set in "boards/$(BOARD)/mpconfigboard.h"
+        SERCOM_USART_CTRLA_DORD // Data order
+        | SERCOM_USART_CTRLA_RXPO(rxpo) // Set Pad#
+        | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
+        | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
     ;
-    USARTx->USART.CTRLB.reg = SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
+    USARTx->USART.CTRLB.reg = SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN; // Enable Rx & Tx
     while (USARTx->USART.SYNCBUSY.bit.CTRLB) {
     }
+
+    // Baud rate is clock dependant.
     #if CPU_FREQ == 8000000
     uint32_t baud = 50437; // 115200 baud; 65536*(1 - 16 * 115200/8e6)
     #elif CPU_FREQ == 48000000
@@ -81,11 +84,25 @@ static void uart0_init(void) {
     #elif CPU_FREQ == 120000000
     uint32_t baud = 64529; // 115200 baud; 65536*(1 - 16 * 115200/120e6)
     #endif
-    USARTx->USART.BAUD.bit.BAUD = baud;
-    USARTx->USART.CTRLA.bit.ENABLE = 1;
+    USARTx->USART.BAUD.bit.BAUD = baud; // Set Baud
+    USARTx->USART.CTRLA.bit.ENABLE = 1; // Enable the peripheral
+    // Wait for the Registers to update.
     while (USARTx->USART.SYNCBUSY.bit.ENABLE) {
     }
+
+    return mp_const_none;
 }
+
+// Disconnect SERCOM from GPIO pins. (Can't SWRST, as that will totally kill USART).
+mp_obj_t machine_uart_deinit(void) {
+    // Reset
+    printf("Disabling the Alt-Funct, releasing the USART pins for GPIO... \n");
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 0; // Disable
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 0; // Disable
+
+    return mp_const_none;
+}
+
 
 static void usb_init(void) {
     // Init USB clock
@@ -142,21 +159,15 @@ void samd_init(void) {
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
 
-    // Configure PA10 as output for LED
-    PORT->Group[0].DIRSET.reg = 1 << 10;
-
     #elif defined(MCU_SAMD51)
 
     GCLK->GENCTRL[1].reg = 1 << GCLK_GENCTRL_DIV_Pos | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
     while (GCLK->SYNCBUSY.bit.GENCTRL1) {
     }
 
-    // Configure PA22 as output for LED
-    PORT->Group[0].DIRSET.reg = 1 << 22;
-
     #endif
 
     SysTick_Config(CPU_FREQ / 1000);
-    uart0_init();
+    machine_uart_init();
     usb_init();
 }

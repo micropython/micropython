@@ -27,13 +27,13 @@ Constructors
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.
    For more info check the `pinout and alternate functions
-   table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_ 
+   table. <https://raw.githubusercontent.com/wipy/wipy/master/docs/PinOUT.png>`_
 
-   .. warning:: 
+   .. warning::
 
-      ADC pin input range is 0-1.4V (being 1.8V the absolute maximum that it 
-      can withstand). When GP2, GP3, GP4 or GP5 are remapped to the 
-      ADC block, 1.8 V is the maximum. If these pins are used in digital mode, 
+      ADC pin input range is 0-1.4V (being 1.8V the absolute maximum that it
+      can withstand). When GP2, GP3, GP4 or GP5 are remapped to the
+      ADC block, 1.8 V is the maximum. If these pins are used in digital mode,
       then the maximum allowed input is 3.6V.
 
 Methods

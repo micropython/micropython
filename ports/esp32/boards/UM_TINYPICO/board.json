@@ -1,0 +1,29 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "BLE",
+        "RGB LED",
+        "SPIRAM",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "TinyPICO Compatible"
+    ],
+    "id": "tinypico",
+    "images": [
+        "tinypico-v2-both.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "TinyPICO",
+    "thumbnail": "",
+    "url": "https://www.tinypico.com/",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "Unexpected Maker"
+}

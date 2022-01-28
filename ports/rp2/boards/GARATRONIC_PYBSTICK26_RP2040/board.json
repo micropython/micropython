@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "USB Stick form factor",
+        "Breadboard Friendly",
+        "Reset/User button",
+        "Red/green/orange/blue leds",
+        "1MB SPI Flash",
+        "USB-A"
+    ],
+    "images": [
+        "pybstick-rp2040-26-broches-micropython-c.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "PYBSTICK26 RP2040",
+    "thumbnail": "",
+    "url": "https://shop.mchobby.be/product.php?id_product=2331",
+    "vendor": "McHobby"
+}

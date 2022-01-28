@@ -175,7 +175,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
 #endif
 
 #if MICROPY_PY_SYS_SETTRACE
-// settrace(tracefunc): Set the system’s trace function.
+// settrace(tracefunc): Set the system's trace function.
 STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
     return mp_prof_settrace(obj);
 }

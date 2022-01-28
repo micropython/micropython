@@ -6,6 +6,42 @@ QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
+USE_FROZEN = 1
+USE_MEMZIP = 0
+
+ifeq ($(USE_MEMZIP),1)
+SRC_C += \
+	shared/memzip/import.c \
+	shared/memzip/lexermemzip.c \
+	shared/memzip/memzip.c \
+
+OBJ += $(BUILD)/memzip-files.o
+
+MAKE_MEMZIP = $(TOP)/shared/memzip/make-memzip.py
+ifeq ($(MEMZIP_DIR),)
+MEMZIP_DIR = memzip_files
+endif
+
+$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
+	$(call compile_c)
+
+$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
+	@$(ECHO) "Creating $@"
+	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
+
+endif # USE_MEMZIP
+
+ifeq ($(USE_FROZEN),1)
+
+FROZEN_MANIFEST ?= "manifest.py"
+
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+
+SRC_C += \
+	lexerfrozen.c
+
+endif # USE_FROZEN
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
@@ -76,10 +112,7 @@ endif
 CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += -Wl,--gc-sections
 
-USE_FROZEN = 1
-USE_MEMZIP = 0
-
-SRC_C = \
+SRC_C += \
 	hal_ftm.c \
 	hal_gpio.c \
 	help.c \
@@ -126,42 +159,6 @@ OBJ += $(BUILD)/pins_gen.o
 
 all: hex
 hex: $(BUILD)/micropython.hex
-
-ifeq ($(USE_MEMZIP),1)
-SRC_C += \
-	shared/memzip/import.c \
-	shared/memzip/lexermemzip.c \
-	shared/memzip/memzip.c \
-
-OBJ += $(BUILD)/memzip-files.o
-
-MAKE_MEMZIP = $(TOP)/shared/memzip/make-memzip.py
-ifeq ($(MEMZIP_DIR),)
-MEMZIP_DIR = memzip_files
-endif
-
-$(BUILD)/memzip-files.o: $(BUILD)/memzip-files.c
-	$(call compile_c)
-
-$(BUILD)/memzip-files.c: $(shell find ${MEMZIP_DIR} -type f)
-	@$(ECHO) "Creating $@"
-	$(Q)$(PYTHON) $(MAKE_MEMZIP) --zip-file $(BUILD)/memzip-files.zip --c-file $@ $(MEMZIP_DIR)
-
-endif # USE_MEMZIP
-
-ifeq ($(USE_FROZEN),1)
-
-ifeq ($(FROZEN_DIR),)
-FROZEN_DIR = memzip_files
-endif
-
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-
-SRC_C += \
-	lexerfrozen.c \
-	$(BUILD)/frozen.c
-
-endif # USE_FROZEN
 
 ifeq ($(ARDUINO),)
 post_compile: $(BUILD)/micropython.hex

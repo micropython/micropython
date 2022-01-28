@@ -13,9 +13,9 @@ You can check the current mode (which is always ``WLAN.AP`` after power up)::
 
    >>> wlan.mode()
 
-.. warning:: 
-    When you change the WLAN mode following the instructions below, your WLAN 
-    connection to the WiPy will be broken. This means you will not be able 
+.. warning::
+    When you change the WLAN mode following the instructions below, your WLAN
+    connection to the WiPy will be broken. This means you will not be able
     to run these commands interactively over the WLAN.
 
     There are two ways around this::

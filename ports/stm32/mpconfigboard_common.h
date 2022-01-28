@@ -57,6 +57,11 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif
 
+// If internal flash storage is enabled, whether to use a second segment of flash.
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE_SEGMENT2 (0)
+#endif
+
 // Whether to enable the RTC, exposed as pyb.RTC
 #ifndef MICROPY_HW_ENABLE_RTC
 #define MICROPY_HW_ENABLE_RTC (0)
@@ -314,6 +319,17 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+// Configuration for STM32H7A3/B3 series
+#elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
+    defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (0x08fff800)
+#define PYB_EXTI_NUM_VECTORS (24)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (10)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7 series
 #elif defined(STM32H7)
 
@@ -477,6 +493,15 @@
 #define MICROPY_HW_MAX_CAN (2)
 #elif defined(MICROPY_HW_CAN1_TX)
 #define MICROPY_HW_MAX_CAN (1)
+#endif
+
+// Enable I2S if there are any peripherals defined
+#if defined(MICROPY_HW_I2S1) || defined(MICROPY_HW_I2S2)
+#define MICROPY_HW_ENABLE_I2S (1)
+#define MICROPY_HW_MAX_I2S (2)
+#else
+#define MICROPY_HW_ENABLE_I2S (0)
+#define MICROPY_HW_MAX_I2S (0)
 #endif
 
 // Define MICROPY_HW_SDMMCx_CK values if that peripheral is used, so that make-pins.py

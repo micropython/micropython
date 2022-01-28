@@ -236,11 +236,13 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/machine_pinbase.o \
 	extmod/machine_signal.o \
 	extmod/machine_pulse.o \
+	extmod/machine_pwm.o \
 	extmod/machine_i2c.o \
 	extmod/machine_spi.o \
 	extmod/modbluetooth.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
+	extmod/moduplatform.o\
 	extmod/modurandom.o \
 	extmod/moduselect.o \
 	extmod/moduwebsocket.o \
@@ -270,16 +272,6 @@ PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
 PY_O += $(BUILD)/$(BUILD)/frozen_content.o
-endif
-
-# object file for frozen files
-ifneq ($(FROZEN_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen.o
-endif
-
-# object file for frozen bytecode (frozen .mpy files)
-ifneq ($(FROZEN_MPY_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings

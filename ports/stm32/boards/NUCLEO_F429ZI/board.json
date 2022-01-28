@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_f429zi.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Nucleo F429ZI",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

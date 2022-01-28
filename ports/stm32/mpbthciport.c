@@ -71,7 +71,7 @@ STATIC void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 
-void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
+void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms) {
     soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
 }
 
@@ -92,7 +92,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_sched
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
 // request that processing happens ASAP in the scheduler.
-void mp_bluetooth_hci_poll_now(void) {
+void mp_bluetooth_hci_poll_now_default(void) {
     if (!events_task_is_scheduled) {
         events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
         if (!events_task_is_scheduled) {
@@ -104,7 +104,7 @@ void mp_bluetooth_hci_poll_now(void) {
 
 #else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
-void mp_bluetooth_hci_poll_now(void) {
+void mp_bluetooth_hci_poll_now_default(void) {
     pendsv_schedule_dispatch(PENDSV_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll);
 }
 

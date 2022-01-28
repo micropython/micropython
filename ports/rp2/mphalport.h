@@ -28,6 +28,10 @@
 #include "py/mpconfig.h"
 #include "py/ringbuf.h"
 #include "pico/time.h"
+#include "hardware/clocks.h"
+#include "hardware/structs/systick.h"
+
+#define SYSTICK_MAX (0xffffff)
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
@@ -57,6 +61,10 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
     // ticks_cpu() is defined as using the highest-resolution timing source
     // in the system. This is usually a CPU clock, but doesn't have to be.
     return time_us_32();
+}
+
+static inline mp_uint_t mp_hal_get_cpu_freq(void) {
+    return clock_get_hz(clk_sys);
 }
 
 // C-level pin HAL
@@ -108,6 +116,14 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_dir(pin, GPIO_IN);
+}
+
+static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
+    gpio_clr_mask(1 << pin);
+}
+
+static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
+    gpio_set_mask(1 << pin);
 }
 
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

@@ -1,14 +1,10 @@
 #define MICROPY_HW_BOARD_NAME "Teensy 4.1"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1062DVJ6A"
 
-#define BOARD_FLASH_SIZE (8 * 1024 * 1024)
-
 // Teensy 4.1 has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_B0_03)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
-#define BOARD_FLASH_CONFIG_HEADER_H "teensy41_flexspi_nor_config.h"
-#define BOARD_FLASH_OPS_HEADER_H "hal/flexspi_nor_flash.h"
 
 #define MICROPY_HW_NUM_PIN_IRQS (4 * 32 + 3)
 
@@ -39,10 +35,10 @@
     { IOMUXC_GPIO_B0_02_LPSPI4_SDO }, { IOMUXC_GPIO_B0_01_LPSPI4_SDI },
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
-                            kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
+                         kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
 
 #define DMA_REQ_SRC_TX { 0, kDmaRequestMuxLPSPI1Tx, kDmaRequestMuxLPSPI2Tx, \
-                            kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx } 
+                         kDmaRequestMuxLPSPI3Tx, kDmaRequestMuxLPSPI4Tx }
 
 // Define mapping hardware I2C # to logical I2C #
 // SDA/SCL  HW-I2C    Logical I2C
@@ -57,3 +53,36 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA }, \
     { IOMUXC_GPIO_AD_B0_12_LPI2C4_SCL }, { IOMUXC_GPIO_AD_B0_13_LPI2C4_SDA },
+
+#define USDHC_DUMMY_PIN NULL, 0
+#define MICROPY_USDHC1 \
+    { \
+        .cmd = {GPIO_SD_B0_00_USDHC1_CMD}, \
+        .clk = { GPIO_SD_B0_01_USDHC1_CLK }, \
+        .cd_b = { USDHC_DUMMY_PIN }, \
+        .data0 = { GPIO_SD_B0_02_USDHC1_DATA0 }, \
+        .data1 = { GPIO_SD_B0_03_USDHC1_DATA1 }, \
+        .data2 = { GPIO_SD_B0_04_USDHC1_DATA2 }, \
+        .data3 = { GPIO_SD_B0_05_USDHC1_DATA3 }, \
+    }
+
+// Network definitions
+// Transceiver Phy Address & Type
+#define ENET_PHY_ADDRESS    (0)
+#define ENET_PHY_OPS        phydp83825_ops
+
+// Ethernet PIN definitions
+#define ENET_RESET_PIN      pin_GPIO_B0_14
+#define ENET_INT_PIN        pin_GPIO_B0_15
+
+#define IOMUX_TABLE_ENET \
+    { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_05_ENET_RX_DATA01, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_06_ENET_RX_EN, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_07_ENET_TX_DATA00, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_08_ENET_TX_DATA01, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_09_ENET_TX_EN, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_10_ENET_REF_CLK, 1, 0x71u }, \
+    { IOMUXC_GPIO_B1_11_ENET_RX_ER, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_15_ENET_MDIO, 0, 0xB0E9u }, \
+    { IOMUXC_GPIO_B1_14_ENET_MDC, 0, 0xB0E9u },
