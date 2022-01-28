@@ -31,6 +31,13 @@ Functions
      until it completes. Note that in AXTLS the handshake can be deferred until the first
      read or write but it then blocks until completion.
 
+   - *cert_reqs* determines whether the peer (server or client) must present a valid certificate.
+     Note that for mbedtls based ports, ``ssl.CERT_NONE`` and ``ssl.CERT_OPTIONAL`` will not
+     validate any certificate, only ``ssl.CERT_REQUIRED`` will.
+
+   - *ca_certs* is the CA certificate chain that will validate the peer's certificate.
+
+
    Depending on the underlying module implementation in a particular
    :term:`MicroPython port`, some or all keyword arguments above may be not supported.
 
