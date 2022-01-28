@@ -125,7 +125,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_global_current_obj, is31fl37
 //|     :param int value: value to set the LED to 0x00 to 0xFF
 //|     :param int page: page to write to 0 or 2. If the LED is a >= 180
 //|       the routine will automatically write to page 1 or 3 (instead
-//|       of 0 ot 2)"""
+//|       of 0 or 2)"""
 //|     ...
 //|
 STATIC mp_obj_t is31fl3741_IS31FL3741_set_led(size_t n_args, const mp_obj_t *args) {
