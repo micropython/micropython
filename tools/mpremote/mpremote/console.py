@@ -11,8 +11,13 @@ except ImportError:
 class ConsolePosix:
     def __init__(self):
         self.infd = sys.stdin.fileno()
-        self.infile = sys.stdin.buffer.raw
-        self.outfile = sys.stdout.buffer.raw
+        self.infile = sys.stdin.buffer
+        self.outfile = sys.stdout.buffer
+        if hasattr(self.infile, "raw"):
+            self.infile = self.infile.raw
+        if hasattr(self.outfile, "raw"):
+            self.outfile = self.outfile.raw
+
         self.orig_attr = termios.tcgetattr(self.infd)
 
     def enter(self):
