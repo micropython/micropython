@@ -28,8 +28,10 @@
 #define MICROPY_HW_CLK_PLLM (6)
 #define MICROPY_HW_CLK_PLLN (85)
 #define MICROPY_HW_CLK_PLLP (2)
-#define MICROPY_HW_CLK_PLLQ (2)
+#define MICROPY_HW_CLK_PLLQ (8) // RNG
 #define MICROPY_HW_CLK_PLLR (2)
+
+#define MICROPY_HW_CLK_USE_HSI48      (1) // for RNG
 
 // 4 wait states
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_8

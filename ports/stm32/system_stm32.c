@@ -171,10 +171,10 @@ void SystemClock_Config(void) {
     RCC->DCKCFGR2 = 0;
     #endif
 
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_OscInitTypeDef RCC_OscInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     #if defined(STM32H7) || defined(STM32G4)
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
     #endif
 
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
@@ -247,10 +247,10 @@ void SystemClock_Config(void) {
 
     #if defined(STM32G4)
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     #if MICROPY_HW_CLK_USE_HSI && MICROPY_HW_CLK_USE_HSI48
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSI48;
     RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-    RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
     RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
     #else
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
@@ -388,7 +388,8 @@ void SystemClock_Config(void) {
 
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_RTC | RCC_PERIPHCLK_LPUART1
         | RCC_PERIPHCLK_RNG | RCC_PERIPHCLK_ADC12
-        | RCC_PERIPHCLK_FDCAN;
+        | RCC_PERIPHCLK_FDCAN | RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
     PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
     PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     PeriphClkInitStruct.RngClockSelection = RCC_RNGCLKSOURCE_HSI48;
