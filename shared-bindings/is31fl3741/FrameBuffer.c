@@ -41,7 +41,7 @@
 //|     """Creates an in-memory framebuffer for a IS31FL3741 device."""
 //|
 //|     def __init__(self, is31: ~is31fl3741.IS31FL3741, width: int, height: int, mapping: Tuple[int, ...], *,
-//|         framebuffer: Optional[WriteableBuffer] = None, scale: bool = false, gamma: bool = false) -> None:
+//|         framebuffer: Optional[WriteableBuffer] = None, scale: bool = False, gamma: bool = False) -> None:
 //|         """Create a IS31FL3741_FrameBuffer object with the given attributes.
 //|
 //|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
@@ -54,7 +54,7 @@
 //|         A Is31fl3741 is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
-//|         :param ~is31fl3741.IS31FL3741 is31: base IS31FL3741 instance to drive the framebuffer
+//|         :param is31fl3741.IS31FL3741 is31: base IS31FL3741 instance to drive the framebuffer
 //|         :param int width: width of the display
 //|         :param int height: height of the display
 //|         :param Tuple[int, ...] mapping: mapping of matrix locations to LEDs
