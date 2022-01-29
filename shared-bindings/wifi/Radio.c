@@ -507,7 +507,7 @@ const mp_obj_property_t wifi_radio_ap_info_obj = {
                MP_ROM_NONE },
 };
 
-//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> float:
+//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> Optional[float]:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|            Returns None when it times out."""
 //|         ...
