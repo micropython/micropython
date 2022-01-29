@@ -29,7 +29,14 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
+
+STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
+    if (common_hal_digitalio_digitalinout_deinited(self)) {
+        raise_deinited_error();
+    }
+}
 
 //| """Low-level neopixel implementation
 //|
@@ -60,8 +67,13 @@ STATIC mp_obj_t neopixel_write_neopixel_write_(mp_obj_t digitalinout_obj, mp_obj
     if (!mp_obj_is_type(digitalinout_obj, &digitalio_digitalinout_type)) {
         mp_raise_TypeError_varg(translate("Expected a %q"), digitalio_digitalinout_type.name);
     }
+
     // Convert parameters into expected types.
     const digitalio_digitalinout_obj_t *digitalinout = MP_OBJ_TO_PTR(digitalinout_obj);
+
+    // Check to see if the NeoPixel has been deinited before writing to it.
+    check_for_deinit(digitalinout_obj);
+
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     // Call platform's neopixel write function with provided buffer and options.
