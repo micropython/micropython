@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "stm32f769disc.jpg"
+    ],
     "mcu": "stm32f7",
     "product": "Discovery F769",
     "thumbnail": "",

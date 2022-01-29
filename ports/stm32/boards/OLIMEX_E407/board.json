@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "olimex_e407.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "E407",
     "thumbnail": "",

@@ -212,6 +212,13 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+#define TEST_WIFI_AUTH_MAX 9
+#else
+#define TEST_WIFI_AUTH_MAX 8
+#endif
+_Static_assert(WIFI_AUTH_MAX == TEST_WIFI_AUTH_MAX, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
@@ -242,9 +249,10 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_ENTERPRISE), MP_ROM_INT(WIFI_AUTH_WPA2_ENTERPRISE) },
-    #if 0 // TODO: Remove this #if/#endif when lastest ISP IDF will be used
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_WPA3_PSK) },
+    #if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 3, 0)
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WAPI_PSK), MP_ROM_INT(WIFI_AUTH_WAPI_PSK) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
     #endif

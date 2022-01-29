@@ -25,11 +25,6 @@ if(NOT MICROPY_BOARD)
     set(MICROPY_BOARD PICO)
 endif()
 
-# Set the PICO_BOARD if it's not already set.
-if(NOT PICO_BOARD)
-    string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
-endif()
-
 # Set the board directory and check that it exists.
 if(NOT MICROPY_BOARD_DIR)
     set(MICROPY_BOARD_DIR ${MICROPY_PORT_DIR}/boards/${MICROPY_BOARD})
@@ -40,6 +35,11 @@ endif()
 
 # Include board config
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake) 
+
+# Set the PICO_BOARD if it's not already set (allow a board to override it).
+if(NOT PICO_BOARD)
+    string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
+endif()
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
@@ -79,6 +79,7 @@ set(MICROPY_SOURCE_LIB
 
 set(MICROPY_SOURCE_DRIVERS
     ${MICROPY_DIR}/drivers/bus/softspi.c
+    ${MICROPY_DIR}/drivers/dht/dht.c
 )
 
 set(MICROPY_SOURCE_PORT

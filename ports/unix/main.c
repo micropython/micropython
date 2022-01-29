@@ -497,7 +497,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     if (path == NULL) {
         path = MICROPY_PY_SYS_PATH_DEFAULT;
     }
-    size_t path_num = 2; // [0] is frozen, [1] is for current dir (or base dir of the script)
+    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
     if (*path == PATHLIST_SEP_CHAR) {
         path_num++;
     }
@@ -510,11 +510,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), path_num);
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
-    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen);
-    path_items[1] = MP_OBJ_NEW_QSTR(MP_QSTR_);
+    path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
     {
         char *p = path;
-        for (mp_uint_t i = 2; i < path_num; i++) {
+        for (mp_uint_t i = 1; i < path_num; i++) {
             char *p1 = strchr(p, PATHLIST_SEP_CHAR);
             if (p1 == NULL) {
                 p1 = p + strlen(p);
@@ -655,9 +654,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 break;
             }
 
-            // Set base dir of the script as second entry in sys.path.
+            // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
-            path_items[1] = mp_obj_new_str_via_qstr(basedir, p - basedir);
+            path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);
 
             set_sys_argv(argv, argc, a);

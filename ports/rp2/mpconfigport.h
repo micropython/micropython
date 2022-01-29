@@ -70,6 +70,7 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_USE_INTERNAL_ERRNO              (1)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 
 // Fine control over Python builtins, classes, modules, etc

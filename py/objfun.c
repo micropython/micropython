@@ -410,7 +410,7 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
-    mp_obj_fun_bc_t *self = self_in;
+    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);
 }
@@ -424,9 +424,9 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
 };
 
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table);
+    mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table));
     o->base.type = &mp_type_fun_native;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_EMIT_NATIVE
@@ -494,7 +494,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
 }
 
 STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_fun_asm_t *self = self_in;
+    mp_obj_fun_asm_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_arg_check_num(n_args, n_kw, self->n_args, self->n_args, false);
 
@@ -537,7 +537,7 @@ mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_
     o->n_args = n_args;
     o->fun_data = fun_data;
     o->type_sig = type_sig;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_EMIT_INLINE_ASM

@@ -24,6 +24,14 @@
 #define MICROPY_HW_SPI1_MOSI            (11)
 #define MICROPY_HW_SPI1_MISO            (8)
 
+// I2C0 config.
+#define MICROPY_HW_I2C0_SCL             (13)
+#define MICROPY_HW_I2C0_SDA             (12)
+
+// I2C1 config.
+#define MICROPY_HW_I2C1_SCL             (27)
+#define MICROPY_HW_I2C1_SDA             (26)
+
 // Bluetooth config.
 #define MICROPY_HW_BLE_UART_ID          (1)
 #define MICROPY_HW_BLE_UART_BAUDRATE    (119600)

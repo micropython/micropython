@@ -91,12 +91,6 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 
-ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
-else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
-endif
-
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
 endif
@@ -272,15 +266,30 @@ SRC_C += \
 	$(SRC_HAL_IMX_C) \
 	$(SRC_ETH_C) \
 
-
 ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
-SRC_C += \
-	hal/flexspi_nor_flash.c \
-	hal/qspi_nor_flash_config.c
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
+SRC_C += hal/flexspi_nor_flash.c
+
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+SRC_C += $(BOARD_DIR)/qspi_nor_flash_config.c
+else
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
+SRC_C += hal/qspi_nor_flash_config.c
+endif
+#
 else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
-SRC_C += \
-	hal/flexspi_hyper_flash.c \
-	hal/qspi_hyper_flash_config.c
+CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
+SRC_C += hal/flexspi_hyper_flash.c
+
+ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+SRC_C += $(BOARD_DIR)/qspi_hyper_flash_config.c
+else
+CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
+SRC_C += hal/qspi_hyper_flash_config.c
+endif
+#
 else
 $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif

@@ -35,11 +35,18 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
+
 // The core that the MicroPython task(s) are pinned to.
-// Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
-// with the ringbuffer and scheduler MP needs to be on the same core.
-// See https://github.com/micropython/micropython/issues/5489
+// Now that we have IDF 4.2.0+, we are once again able to pin to core 1
+// and avoid the Wifi/BLE timing problems on the same core.
+// Best effort here to remain backwards compatible in rare version edge cases...
+// See https://github.com/micropython/micropython/issues/5489 for history
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 2, 0)
+#define MP_TASK_COREID (1)
+#else
 #define MP_TASK_COREID (0)
+#endif
 
 extern TaskHandle_t mp_main_task_handle;
 

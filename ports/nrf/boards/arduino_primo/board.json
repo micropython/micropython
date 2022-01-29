@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "arduino_primo.jpg"
+    ],
     "mcu": "nrf52",
     "product": "arduino_primo",
     "thumbnail": "",

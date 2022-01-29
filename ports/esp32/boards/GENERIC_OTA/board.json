@@ -8,7 +8,9 @@
         "WiFi"
     ],
     "id": "esp32-ota",
-    "images": [],
+    "images": [
+        "esp32_devkitc.jpg"
+    ],
     "mcu": "esp32",
     "product": "ESP32 with OTA support",
     "thumbnail": "",

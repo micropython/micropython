@@ -131,6 +131,13 @@ STATIC void dac_deinit(uint32_t dac_channel) {
     #endif
 }
 
+void dac_deinit_all(void) {
+    dac_deinit(DAC_CHANNEL_1);
+    #if !defined(STM32L452xx)
+    dac_deinit(DAC_CHANNEL_2);
+    #endif
+}
+
 STATIC void dac_config_channel(uint32_t dac_channel, uint32_t trig, uint32_t outbuf) {
     DAC->CR &= ~(DAC_CR_EN1 << dac_channel);
     uint32_t cr_off = DAC_CR_DMAEN1 | DAC_CR_MAMP1 | DAC_CR_WAVE1 | DAC_CR_TSEL1 | DAC_CR_TEN1;

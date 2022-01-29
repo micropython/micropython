@@ -10,7 +10,10 @@
         "WiFi"
     ],
     "id": "wesp32",
-    "images": [],
+    "images": [
+        "wesp32-iso.jpg",
+        "wesp32-top.jpg"
+    ],
     "mcu": "esp32",
     "product": "SIL WESP32",
     "thumbnail": "",

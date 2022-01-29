@@ -269,7 +269,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_hal_pin_obj_t rst = pin_find(args[2]);
 
     // Access the existing object, if it has been constructed with the same hardware interface
-    if (wiznet5k_obj.base.type == &mod_network_nic_type_wiznet5k) {
+    if (wiznet5k_obj.base.type == (mp_obj_type_t *)&mod_network_nic_type_wiznet5k) {
         if (!(wiznet5k_obj.spi == spi && wiznet5k_obj.cs == cs && wiznet5k_obj.rst == rst
               && wiznet5k_obj.netif.flags != 0)) {
             wiznet5k_deinit();
@@ -277,7 +277,7 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // Init the wiznet5k object
-    wiznet5k_obj.base.type = &mod_network_nic_type_wiznet5k;
+    wiznet5k_obj.base.type = (mp_obj_type_t *)&mod_network_nic_type_wiznet5k;
     wiznet5k_obj.cris_state = 0;
     wiznet5k_obj.spi = spi;
     wiznet5k_obj.cs = cs;

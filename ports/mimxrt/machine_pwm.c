@@ -518,7 +518,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     IOMUXC_SetPinMux(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,
         pin1->configRegister, 0U);
     IOMUXC_SetPinConfig(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,
-        pin1->configRegister, 0x10B0U);
+        pin1->configRegister, pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_POWER_5, pin1->configRegister));
 
     // Settings for the second pin, if given.
     if (pin2 != NULL && pin2 != pin1) {
@@ -529,7 +529,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         IOMUXC_SetPinMux(pin2->muxRegister, af_obj2->af_mode, af_obj2->input_register, af_obj2->input_daisy,
             pin2->configRegister, 0U);
         IOMUXC_SetPinConfig(pin2->muxRegister, af_obj2->af_mode, af_obj2->input_register, af_obj2->input_daisy,
-            pin2->configRegister, 0x10B0U);
+            pin2->configRegister, pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_POWER_5, pin2->configRegister));
     } else {
         self->complementary = 0;
     }

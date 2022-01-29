@@ -7,6 +7,8 @@ if sys.platform.startswith("esp"):
     from esp import dht_readinto
 elif sys.platform == "mimxrt":
     from mimxrt import dht_readinto
+elif sys.platform == "rp2":
+    from rp2 import dht_readinto
 else:
     from pyb import dht_readinto
 

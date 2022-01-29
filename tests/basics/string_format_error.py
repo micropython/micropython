@@ -1,7 +1,7 @@
 # tests for errors in {} format string
 
 try:
-    '{0:0}'.format('zzz')
+    '{0:=}'.format('zzz')
 except (ValueError):
     print('ValueError')
 

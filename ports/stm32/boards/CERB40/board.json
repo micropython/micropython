@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "cerb40.jpg"
+    ],
     "mcu": "stm32f4",
     "product": "CERB40",
     "thumbnail": "",

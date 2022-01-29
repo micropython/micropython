@@ -15,6 +15,7 @@ def instance0():
     s2, _ = s.accept()
     print(s2.recv(16))
     s2.send(b"server to client")
+    s2.close()
     s.close()
 
 
