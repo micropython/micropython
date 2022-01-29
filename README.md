@@ -63,7 +63,7 @@ For more details please refer to [Micropython ESP32 README](https://github.com/m
 
 ### JavaScript port
 
-Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#for-javascript-port
+Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
 
 ### Raspberry Pi Pico port
 
