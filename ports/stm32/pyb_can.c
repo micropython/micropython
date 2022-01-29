@@ -133,10 +133,9 @@ STATIC void pyb_can_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
                 mode = MP_QSTR_SILENT_LOOPBACK;
                 break;
         }
-        mp_printf(print, "CAN(%u, CAN.%q, extframe=%q, auto_restart=%q)",
+        mp_printf(print, "CAN(%u, CAN.%q, auto_restart=%q)",
             self->can_id,
             mode,
-            self->extframe ? MP_QSTR_True : MP_QSTR_False,
             #if MICROPY_HW_ENABLE_FDCAN
             (self->can.Instance->CCCR & FDCAN_CCCR_DAR) ? MP_QSTR_True : MP_QSTR_False
             #else
@@ -200,13 +199,12 @@ STATIC void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
     mp_raise_msg(&mp_type_ValueError, MP_ERROR_TEXT("couldn't match baudrate and sample point"));
 }
 
-// init(mode, extframe=False, prescaler=100, *, sjw=1, bs1=6, bs2=8)
+// init(mode, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_extframe, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_baudrate, ARG_sample_point,
+    enum { ARG_mode, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_baudrate, ARG_sample_point,
            ARG_brs_prescaler, ARG_brs_sjw, ARG_brs_bs1, ARG_brs_bs2, ARG_brs_baudrate, ARG_brs_sample_point };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,             MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
-        { MP_QSTR_extframe,         MP_ARG_BOOL,                    {.u_bool = false} },
         { MP_QSTR_prescaler,        MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
         { MP_QSTR_sjw,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
         { MP_QSTR_bs1,              MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_BS1} },
@@ -227,8 +225,6 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    self->extframe = args[ARG_extframe].u_bool;
 
     // set the CAN configuration values
     memset(&self->can, 0, sizeof(self->can));
@@ -475,15 +471,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_any_obj, pyb_can_any);
 
 // send(send, addr, *, timeout=5000)
 STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_fdf, ARG_brs };
+    enum { ARG_data, ARG_id, ARG_timeout, ARG_rtr, ARG_extframe, ARG_fdf, ARG_brs };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_data,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_id,      MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_rtr,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_data,     MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = 0} },
+        { MP_QSTR_timeout,  MP_ARG_KW_ONLY | MP_ARG_INT,   {.u_int = 0} },
+        { MP_QSTR_rtr,      MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
+        { MP_QSTR_extframe, MP_ARG_BOOL,                    {.u_bool = false} },
         #if MICROPY_HW_ENABLE_FDCAN
-        { MP_QSTR_fdf,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_brs,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_fdf,      MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
+        { MP_QSTR_brs,      MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = false} },
         #endif
     };
 
@@ -512,7 +509,7 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     tx_msg.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     tx_msg.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
 
-    if (self->extframe) {
+    if (args[ARG_extframe].u_bool == true) {
         tx_msg.Identifier = args[ARG_id].u_int & 0x1FFFFFFF;
         tx_msg.IdType = FDCAN_EXTENDED_ID;
     } else {
@@ -545,7 +542,7 @@ STATIC mp_obj_t pyb_can_send(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     tx_msg.DLC = bufinfo.len;
     uint8_t *tx_data = tx_msg.Data; // Data is uint32_t but holds only 1 byte
 
-    if (self->extframe) {
+    if (args[ARG_extframe].u_bool == true) {
         tx_msg.ExtId = args[ARG_id].u_int & 0x1FFFFFFF;
         tx_msg.IDE = CAN_ID_EXT;
     } else {
@@ -739,11 +736,20 @@ STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self_in, mp_obj_t bank_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_initfilterbanks_fun_obj, pyb_can_initfilterbanks);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pyb_can_initfilterbanks_obj, MP_ROM_PTR(&pyb_can_initfilterbanks_fun_obj));
 
-STATIC mp_obj_t pyb_can_clearfilter(mp_obj_t self_in, mp_obj_t bank_in) {
-    pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_int_t f = mp_obj_get_int(bank_in);
+STATIC mp_obj_t pyb_can_clearfilter(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_extframe };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_extframe, MP_ARG_BOOL, {.u_bool = false} },
+    };
+
+    // parse args
+    pyb_can_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_int_t f = mp_obj_get_int(pos_args[1]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 2, pos_args + 2, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     #if MICROPY_HW_ENABLE_FDCAN
-    can_clearfilter(self, f, self->extframe);
+    can_clearfilter(self, f, args[ARG_extframe].u_bool);
     #else
     if (self->can_id == 2) {
         f += can2_start_bank;
@@ -752,18 +758,19 @@ STATIC mp_obj_t pyb_can_clearfilter(mp_obj_t self_in, mp_obj_t bank_in) {
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_clearfilter_obj, pyb_can_clearfilter);
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_clearfilter_obj, 2, pyb_can_clearfilter);
 
 // setfilter(bank, mode, fifo, params, *, rtr)
 #define EXTENDED_ID_TO_16BIT_FILTER(id) (((id & 0xC00000) >> 13) | ((id & 0x38000) >> 15)) | 8
 STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_bank, ARG_mode, ARG_fifo, ARG_params, ARG_rtr };
+    enum { ARG_bank, ARG_mode, ARG_fifo, ARG_params, ARG_rtr, ARG_extframe };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bank,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_fifo,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = CAN_FILTER_FIFO0} },
         { MP_QSTR_params,   MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_rtr,      MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_extframe, MP_ARG_BOOL,                  {.u_bool = false} },
     };
 
     // parse args
@@ -773,7 +780,7 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     #if MICROPY_HW_ENABLE_FDCAN
     FDCAN_FilterTypeDef filter = {0};
-    if (self->extframe) {
+    if (args[ARG_extframe].u_bool == true) {
         filter.IdType = FDCAN_EXTENDED_ID;
     } else {
         filter.IdType = FDCAN_STANDARD_ID;
@@ -831,7 +838,7 @@ STATIC mp_obj_t pyb_can_setfilter(size_t n_args, const mp_obj_t *pos_args, mp_ma
             goto error;
         }
         filter.FilterScale = CAN_FILTERSCALE_16BIT;
-        if (self->extframe) {
+        if (args[ARG_extframe].u_bool == true) {
             if (args[ARG_rtr].u_obj != MP_OBJ_NULL) {
                 if (args[ARG_mode].u_int == MASK16) {
                     rtr_masks[0] = mp_obj_get_int(rtr_flags[0]) ? 0x02 : 0;
