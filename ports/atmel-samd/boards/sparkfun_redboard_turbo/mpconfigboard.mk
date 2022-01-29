@@ -9,3 +9,12 @@ CHIP_FAMILY = samd21
 SPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICES = "W25Q32FV"
 LONGINT_IMPL = MPZ
+
+CIRCUITPY_FULL_BUILD = 0
+
+# Turn off audioio/audiobusio/usbmidi to save flash space since this board
+# is resource limited
+
+CIRCUITPY_AUDIOBUSIO = 0
+CIRCUITPY_AUDIOIO = 0
+CIRCUITPY_USB_MIDI = 0
