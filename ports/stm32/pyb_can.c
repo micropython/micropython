@@ -660,29 +660,29 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     }
 
     // Create the tuple, or get the list, that will hold the return values
-    // Also populate the fourth element, either a new bytes or reuse existing memoryview
+    // Also populate the fifth element, either a new bytes or reuse existing memoryview
     mp_obj_t ret_obj = args[ARG_list].u_obj;
     mp_obj_t *items;
     if (ret_obj == mp_const_none) {
-        ret_obj = mp_obj_new_tuple(4, NULL);
+        ret_obj = mp_obj_new_tuple(5, NULL);
         items = ((mp_obj_tuple_t *)MP_OBJ_TO_PTR(ret_obj))->items;
-        items[3] = mp_obj_new_bytes(rx_data, rx_dlc);
+        items[4] = mp_obj_new_bytes(rx_data, rx_dlc);
     } else {
-        // User should provide a list of length at least 4 to hold the values
+        // User should provide a list of length at least 5 to hold the values
         if (!mp_obj_is_type(ret_obj, &mp_type_list)) {
             mp_raise_TypeError(NULL);
         }
         mp_obj_list_t *list = MP_OBJ_TO_PTR(ret_obj);
-        if (list->len < 4) {
+        if (list->len < 5) {
             mp_raise_ValueError(NULL);
         }
         items = list->items;
-        // Fourth element must be a memoryview which we assume points to a
+        // Fifth element must be a memoryview which we assume points to a
         // byte-like array which is large enough, and then we resize it inplace
-        if (!mp_obj_is_type(items[3], &mp_type_memoryview)) {
+        if (!mp_obj_is_type(items[4], &mp_type_memoryview)) {
             mp_raise_TypeError(NULL);
         }
-        mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[3]);
+        mp_obj_array_t *mv = MP_OBJ_TO_PTR(items[4]);
         if (!(mv->typecode == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | BYTEARRAY_TYPECODE)
               || (mv->typecode | 0x20) == (MP_OBJ_ARRAY_TYPECODE_FLAG_RW | 'b'))) {
             mp_raise_ValueError(NULL);
@@ -691,15 +691,17 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         memcpy(mv->items, rx_data, rx_dlc);
     }
 
-    // Populate the first 3 values of the tuple/list
+    // Populate the first 4 values of the tuple/list
     #if MICROPY_HW_ENABLE_FDCAN
     items[0] = MP_OBJ_NEW_SMALL_INT(rx_msg.Identifier);
-    items[1] = rx_msg.RxFrameType == FDCAN_REMOTE_FRAME ? mp_const_true : mp_const_false;
-    items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FilterIndex);
+    items[1] = mp_obj_new_bool(rx_msg.IdType == FDCAN_EXTENDED_ID);
+    items[2] = rx_msg.RxFrameType == FDCAN_REMOTE_FRAME ? mp_const_true : mp_const_false;
+    items[3] = MP_OBJ_NEW_SMALL_INT(rx_msg.FilterIndex);
     #else
     items[0] = MP_OBJ_NEW_SMALL_INT((rx_msg.IDE == CAN_ID_STD ? rx_msg.StdId : rx_msg.ExtId));
-    items[1] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
-    items[2] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
+    items[1] = mp_obj_new_bool(rx_msg.IDE == CAN_ID_EXT);
+    items[2] = rx_msg.RTR == CAN_RTR_REMOTE ? mp_const_true : mp_const_false;
+    items[3] = MP_OBJ_NEW_SMALL_INT(rx_msg.FMI);
     #endif
 
     // Return the result
