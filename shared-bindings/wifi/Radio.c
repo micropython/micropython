@@ -304,7 +304,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 //|                 *,
 //|                 channel: Optional[int] = 0,
 //|                 bssid: Optional[ReadableBuffer] = b"",
-//|                 timeout: Optional[float] = None) -> bool:
+//|                 timeout: Optional[float] = None) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|            automatically once one connection succeeds.
 //|
@@ -507,7 +507,7 @@ const mp_obj_property_t wifi_radio_ap_info_obj = {
                MP_ROM_NONE },
 };
 
-//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> float:
+//|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> Optional[float]:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.
 //|            Returns None when it times out."""
 //|         ...
