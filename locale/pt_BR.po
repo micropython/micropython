@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-25 05:55+0000\n"
+"PO-Revision-Date: 2022-01-31 05:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1629,7 +1629,7 @@ msgstr "Nome muito longo"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
-msgstr ""
+msgstr "Ágil fora da memória"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -2509,7 +2509,7 @@ msgstr "Erro de segurança desconhecido: 0x%04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error at %s:%d: %d"
-msgstr ""
+msgstr "Ocorreu um erro desconhecido no firmware do sistema em %s:%d: %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2519,7 +2519,7 @@ msgstr "Erro desconhecido do firmware: %04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr ""
+msgstr "Ocorreu um erro desconhecido no firmware do sistema: %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
