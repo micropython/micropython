@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "SPIRAM",
+        "USB-C",
+        "WiFi",
+        "BLE",
+        "STEMMA QT/QWIIC",
+        "Feather"
+    ],
+    "features_non_filterable": [
+    ],
+    "id": "feathers3",
+    "images": [
+        "unexpectedmaker_feathers3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "FeatherS3",
+    "thumbnail": "",
+    "url": "https://feathers3.io",
+    "vendor": "Unexpected Maker"
+}
