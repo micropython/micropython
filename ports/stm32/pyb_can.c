@@ -59,6 +59,16 @@
 #define CAN_DEFAULT_BS1             (8)
 #define CAN_DEFAULT_BS2             (3)
 
+#define CAN_MAXIMUM_NBRP            (512)
+#define CAN_MAXIMUM_NBS1            (256)
+#define CAN_MAXIMUM_NBS2            (128)
+// Minimum Nominal time segment for FDCAN is 2.
+#define CAN_MINIMUM_TSEG            (2)
+
+#define CAN_MAXIMUM_DBRP            (32)
+#define CAN_MAXIMUM_DBS1            (32)
+#define CAN_MAXIMUM_DBS2            (16)
+
 #define CAN_MODE_NORMAL             FDCAN_MODE_NORMAL
 #define CAN_MODE_LOOPBACK           FDCAN_MODE_EXTERNAL_LOOPBACK
 #define CAN_MODE_SILENT             FDCAN_MODE_BUS_MONITORING
@@ -96,6 +106,11 @@ extern const uint8_t DLCtoBytes[16];
 #define CAN_DEFAULT_SJW             (1)
 #define CAN_DEFAULT_BS1             (6)
 #define CAN_DEFAULT_BS2             (8)
+
+#define CAN_MAXIMUM_NBRP            (1024)
+#define CAN_MAXIMUM_NBS1            (16)
+#define CAN_MAXIMUM_NBS2            (8)
+#define CAN_MINIMUM_TSEG            (1)
 
 #define CAN_IT_FIFO0_FULL           CAN_IT_FF0
 #define CAN_IT_FIFO1_FULL           CAN_IT_FF1
@@ -178,13 +193,13 @@ STATIC uint32_t pyb_can_get_source_freq() {
 }
 
 STATIC void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
+    uint32_t max_brp, uint32_t max_bs1, uint32_t max_bs2, uint32_t min_tseg,
     mp_int_t *bs1_out, mp_int_t *bs2_out, mp_int_t *prescaler_out) {
     uint32_t can_kern_clk = pyb_can_get_source_freq();
-
-    // The following max values work on all MCUs for classical CAN.
-    for (int brp = 1; brp < 512; brp++) {
-        for (int bs1 = 1; bs1 < 16; bs1++) {
-            for (int bs2 = 1; bs2 < 8; bs2++) {
+    // Calculate CAN bit timing.
+    for (uint32_t brp = 1; brp < max_brp; brp++) {
+        for (uint32_t bs1 = min_tseg; bs1 < max_bs1; bs1++) {
+            for (uint32_t bs2 = min_tseg; bs2 < max_bs2; bs2++) {
                 if ((baudrate == (can_kern_clk / (brp * (1 + bs1 + bs2)))) &&
                     ((sample_point * 10) == (((1 + bs1) * 1000) / (1 + bs1 + bs2)))) {
                     *bs1_out = bs1;
@@ -229,9 +244,10 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     // set the CAN configuration values
     memset(&self->can, 0, sizeof(self->can));
 
-    // Calculate CAN bit timing from baudrate if provided
+    // Calculate CAN nominal bit timing from baudrate if provided
     if (args[ARG_baudrate].u_int != 0) {
         pyb_can_get_bit_timing(args[ARG_baudrate].u_int, args[ARG_sample_point].u_int,
+            CAN_MAXIMUM_NBRP, CAN_MAXIMUM_NBS1, CAN_MAXIMUM_NBS2, CAN_MINIMUM_TSEG,
             &args[ARG_bs1].u_int, &args[ARG_bs2].u_int, &args[ARG_prescaler].u_int);
     }
 
@@ -240,9 +256,10 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     if (args[ARG_brs_sample_point].u_int == 0) {
         args[ARG_brs_sample_point].u_int = args[ARG_sample_point].u_int;
     }
-    // Calculate BRS CAN bit timing from baudrate if provided
+    // Calculate CAN data bit timing from baudrate if provided
     if (args[ARG_brs_baudrate].u_int != 0) {
         pyb_can_get_bit_timing(args[ARG_brs_baudrate].u_int, args[ARG_brs_sample_point].u_int,
+            CAN_MAXIMUM_DBRP, CAN_MAXIMUM_DBS1, CAN_MAXIMUM_DBS2, 1,
             &args[ARG_brs_bs1].u_int, &args[ARG_brs_bs2].u_int, &args[ARG_brs_prescaler].u_int);
     }
     // Set BRS bit timings.
