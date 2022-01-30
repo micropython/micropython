@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_I2C_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_I2C_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#include "shared-module/bitbangio/I2C.h"
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
 
-#include "py/obj.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-typedef struct {
-    mp_obj_base_t base;
-    bitbangio_i2c_obj_t bitbang;
-} busio_i2c_obj_t;
+void reset_board(void) {
 
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_MODULE_BUSIO_I2C_H
+}
+
+void board_deinit(void) {
+}

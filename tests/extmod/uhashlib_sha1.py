@@ -22,7 +22,7 @@ print(sha1.digest())
 
 sha1 = hashlib.sha1(b"hello")
 try:
-    sha1.update(u"world")
+    sha1.update("world")
 except TypeError as e:
     print("TypeError")
 print(sha1.digest())

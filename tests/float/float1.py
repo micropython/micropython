@@ -88,7 +88,7 @@ except ZeroDivisionError:
     print("ZeroDivisionError")
 
 try:
-    0.0 ** -1
+    0.0**-1
 except ZeroDivisionError:
     print("ZeroDivisionError")
 

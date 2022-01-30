@@ -19,21 +19,21 @@ sample_names = ["unsigned 8 bit", "signed 8 bit", "unsigned 16 bit", "signed 16 
 # unsigned 8 bit
 u8 = array.array("B", [0] * length)
 for i in range(length):
-    u8[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 7) + 2 ** 7)
+    u8[i] = int(math.sin(math.pi * 2 * i / length) * (2**7) + 2**7)
 
 samples.append(audiocore.RawSample(u8, sample_rate=4000))
 
 # signed 8 bit
 s8 = array.array("b", [0] * length)
 for i in range(length):
-    s8[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 7))
+    s8[i] = int(math.sin(math.pi * 2 * i / length) * (2**7))
 
 samples.append(audiocore.RawSample(s8, sample_rate=16000))
 
 # unsigned 16 bit
 u16 = array.array("H", [0] * length)
 for i in range(length):
-    u16[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15) + 2 ** 15)
+    u16[i] = int(math.sin(math.pi * 2 * i / length) * (2**15) + 2**15)
 
 samples.append(audiocore.RawSample(u16, sample_rate=8000))
 
@@ -41,7 +41,7 @@ samples.append(audiocore.RawSample(u16, sample_rate=8000))
 # signed 16 bit
 s16 = array.array("h", [0] * length)
 for i in range(length):
-    s16[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
+    s16[i] = int(math.sin(math.pi * 2 * i / length) * (2**15))
 
 samples.append(audiocore.RawSample(s16, sample_rate=8000))
 

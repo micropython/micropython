@@ -259,7 +259,7 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->tx->pin == NULL && self->rx->pin == NULL;
+    return self->tx == NULL && self->rx == NULL;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {

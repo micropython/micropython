@@ -19,7 +19,7 @@ length = 8000 // 440
 # signed 16 bit
 s16 = array.array("h", [0] * length)
 for i in range(length):
-    s16[i] = int(math.sin(math.pi * 2 * i / length) * (2 ** 15))
+    s16[i] = int(math.sin(math.pi * 2 * i / length) * (2**15))
     print(s16[i])
 
 sample = audiocore.RawSample(s16, sample_rate=8000)

@@ -49,6 +49,7 @@ TARGET_SETTINGS = [
     "CONFIG_TOOLPREFIX",
     "ESP_SLEEP_GPIO_RESET_WORKAROUND",
     "CONFIG_ESP_PHY_ENABLE_USB",
+    "CONFIG_BT_SOC_SUPPORT_5_0",
 ]
 
 BOARD_SETTINGS = [
@@ -65,6 +66,8 @@ FLASH_SETTINGS = [
     "CONFIG_PARTITION_TABLE_FILENAME",
 ]
 
+BLE_SETTINGS = ["CONFIG_BT_", "CONFIG_BLUEDROID_", "CONFIG_NIMBLE_", "CONFIG_SW_COEXIST_ENABLE"]
+
 # boards/lilygo_ttgo_t8_s2_st7789/sdkconfig
 # CONFIG_LWIP_DNS_SUPPORT_MDNS_QUERIES=y
 
@@ -80,16 +83,17 @@ def matches_group(line, group):
 
 
 def add_group(lines, last_group, current_group):
-    if last_group != current_group:
+    # TODO: Properly handle nested groups
+    if last_group != current_group[-1]:
         if last_group:
             lines.append("# end of " + last_group)
             lines.append("")
             return None
         if current_group:
             lines.append("#")
-            lines.append("# " + current_group)
+            lines.append("# " + current_group[-1])
             lines.append("#")
-            return current_group
+            return current_group[-1]
     return last_group
 
 
@@ -120,12 +124,14 @@ def update(debug, board, update_all):
         opt_config = pathlib.Path("esp-idf-config/sdkconfig-opt.defaults")
     flash_config = pathlib.Path(f"esp-idf-config/sdkconfig-{flash}.defaults")
     target_config = pathlib.Path(f"esp-idf-config/sdkconfig-{target}.defaults")
+    ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
     board_config = pathlib.Path(f"boards/{board}/sdkconfig")
 
     defaults = default_config.read_text().split("\n")
     defaults.extend(opt_config.read_text().split("\n"))
     defaults.extend(flash_config.read_text().split("\n"))
     defaults.extend(target_config.read_text().split("\n"))
+    defaults.extend(ble_config.read_text().split("\n"))
 
     board_settings = []
     last_board_group = None
@@ -135,15 +141,17 @@ def update(debug, board, update_all):
     last_opt_group = None
     target_settings = []
     last_target_group = None
+    ble_settings = []
+    last_ble_group = None
     default_settings = []
     last_default_group = None
-    current_group = None
+    current_group = []
     for line in input_config.read_text().split("\n"):
         if line.startswith("# ") and "CONFIG_" not in line and len(line) > 3:
             if line.startswith("# end of"):
-                current_group = None
+                current_group.pop()
             else:
-                current_group = line[2:]
+                current_group.append(line[2:])
         elif (not update_all and line not in defaults) or (
             update_all and matches_group(line, BOARD_SETTINGS)
         ):
@@ -159,6 +167,9 @@ def update(debug, board, update_all):
             elif matches_group(line, TARGET_SETTINGS):
                 last_target_group = add_group(target_settings, last_target_group, current_group)
                 target_settings.append(line)
+            elif matches_group(line, BLE_SETTINGS):
+                last_ble_group = add_group(ble_settings, last_ble_group, current_group)
+                ble_settings.append(line)
             elif "CONFIG_" in line:
                 last_default_group = add_group(default_settings, last_default_group, current_group)
                 default_settings.append(line)
@@ -167,6 +178,7 @@ def update(debug, board, update_all):
     add_group(opt_settings, last_opt_group, current_group)
     add_group(flash_settings, last_flash_group, current_group)
     add_group(target_settings, last_target_group, current_group)
+    add_group(ble_settings, last_ble_group, current_group)
     add_group(default_settings, last_default_group, current_group)
 
     board_config.write_text("\n".join(board_settings))
@@ -175,6 +187,7 @@ def update(debug, board, update_all):
         opt_config.write_text("\n".join(opt_settings))
         default_config.write_text("\n".join(default_settings))
         target_config.write_text("\n".join(target_settings))
+        ble_config.write_text("\n".join(ble_settings))
 
 
 if __name__ == "__main__":

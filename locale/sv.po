@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-23 15:53+0000\n"
+"PO-Revision-Date: 2022-01-29 07:53+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -454,6 +454,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 msgid "All timers in use"
 msgstr "Alla timers används"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Annonserar redan."
@@ -923,10 +924,12 @@ msgstr "Datapinne 0 måste vara bytejusterad"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Datasegmentet måste följa fmt-segmentet"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr "Data stöds inte med riktad annonsering"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Data för stor för annonseringspaket"
@@ -1007,6 +1010,7 @@ msgstr "Förväntade ett larm"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Förväntad tupel med längd %d, fick %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Utökad annonsering i kombination med skanningssvar stöds inte."
@@ -1060,6 +1064,7 @@ msgstr "Det gick inte att allokera minne för WiFi-scanning"
 msgid "Failed to buffer the sample"
 msgstr "Det gick inte att buffra samplingen"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Det gick inte att ansluta: internt fel"
@@ -1295,6 +1300,7 @@ msgstr "Ogiltigt ADC-enhetsvärde"
 msgid "Invalid AuthMode"
 msgstr "Ogiltig AuthMode"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Ogiltig BLE-parameter"
@@ -1604,6 +1610,10 @@ msgstr "NVS-fel"
 msgid "Name too long"
 msgstr "Name är för långt"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr "Nimble har inget minne kvar"
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Ingen CCCD för denna karaktäristik"
@@ -1751,6 +1761,7 @@ msgstr "Nordic systemfirmware fick slut på minne"
 msgid "Not a valid IP string"
 msgstr "Inte en giltig IP-sträng"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2142,6 +2153,7 @@ msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 msgid "Scale dimensions must divide by 3"
 msgstr "Skaldimension måste vara delbar med 3"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Skanning pågår redan. Avsluta med stop_scan."
@@ -2310,6 +2322,7 @@ msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
 msgid "Time is in the past."
 msgstr "Tid har passerats."
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2332,6 +2345,7 @@ msgstr "För många display-bussar"
 msgid "Too many displays"
 msgstr "För många displayer"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
@@ -2463,10 +2477,20 @@ msgstr "Okänd anledning."
 msgid "Unknown security error: 0x%04x"
 msgstr "Okänt säkerhetsfel: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr "Okänt fel i systemets firmware vid %s:%d: %d"
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Okänt systemfirmwarefel: %04x"
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
+msgstr "Okänt fel i systemets firmware: %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2507,11 +2531,13 @@ msgstr "Åtgärd som inte stöds"
 msgid "Update Failed"
 msgstr "Uppdateringen misslyckades"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Värdets längde ! = krävd fast längd"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2575,6 +2601,7 @@ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
 msgid "Woken up by alarm.\n"
 msgstr "Vaknade av larm.\n"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Skrivning stöds inte på karaktäristik"
@@ -3652,6 +3679,7 @@ msgstr "matematikdomänfel"
 msgid "matrix is not positive definite"
 msgstr "matrisen är inte positiv bestämd"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
