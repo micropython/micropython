@@ -112,12 +112,12 @@ void common_hal_displayio_i2cdisplay_send(mp_obj_t obj, display_byte_type_t data
             command_bytes[2 * i] = 0x80;
             command_bytes[2 * i + 1] = data[i];
         }
-        common_hal_busio_i2c_write(self->bus, self->address, command_bytes, 2 * data_length, true);
+        common_hal_busio_i2c_write(self->bus, self->address, command_bytes, 2 * data_length);
     } else {
         uint8_t data_bytes[data_length + 1];
         data_bytes[0] = 0x40;
         memcpy(data_bytes + 1, data, data_length);
-        common_hal_busio_i2c_write(self->bus, self->address, data_bytes, data_length + 1, true);
+        common_hal_busio_i2c_write(self->bus, self->address, data_bytes, data_length + 1);
     }
 }
 
