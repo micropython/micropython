@@ -219,6 +219,34 @@ Exceptions
 If an ISR raises an exception it will not propagate to the main loop. The interrupt will be disabled unless the
 exception is handled by the ISR code.
 
+
+Interfacing to uasyncio
+-----------------------
+
+When an ISR runs it can pre-empt the ``uasyncio`` scheduler. If the ISR performs a ``uasyncio``
+operation the scheduler's operation can be disrupted. This applies whether the interrupt is hard
+or soft and also applies if the ISR has passed execution to another function via
+``micropython.schedule``. In particular creating or cancelling tasks is invalid in an ISR context.
+The safe way to interact with ``uasyncio`` is to implement a coroutine with synchronisation performed by
+``uasyncio.ThreadSafeFlag``. The following fragment illustrates the creation of a task in response
+to an interrupt:
+
+.. code:: python
+
+    tsf = uasyncio.ThreadSafeFlag()
+
+    def isr(_):  # Interrupt handler
+        tsf.set()
+
+    async def foo():
+        while True:
+            await tsf.wait()
+            uasyncio.create_task(bar())
+
+In this example there will be a variable amount of latency between the execution of the ISR and the execution
+of ``foo()``. This is inherent to cooperative scheduling. The maximum latency is application
+and platform dependent but may typically be measured in tens of ms.
+
 General issues
 --------------
 
