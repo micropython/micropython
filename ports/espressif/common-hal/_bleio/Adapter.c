@@ -229,7 +229,12 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     disc_params.filter_policy = 0;
     disc_params.limited = 0;
 
-    CHECK_NIMBLE_ERROR(ble_gap_disc(own_addr_type, timeout * 1000, &disc_params,
+    size_t duration_ms = timeout * 1000;
+    if (duration_ms == 0) {
+        duration_ms = BLE_HS_FOREVER;
+    }
+
+    CHECK_NIMBLE_ERROR(ble_gap_disc(own_addr_type, duration_ms, &disc_params,
         _scan_event, self->scan_results));
 
     return MP_OBJ_FROM_PTR(self->scan_results);
