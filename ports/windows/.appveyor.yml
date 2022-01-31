@@ -5,81 +5,51 @@ skip_tags: true
 environment:
   # Python version used
   MICROPY_CPYTHON3: c:/python38/python.exe
-  # The variants.
-  matrix:
-    - PyVariant: dev
-    - PyVariant: standard
 
 init:
   # Set build version number to commit to be travis-like
 - ps: Update-AppveyorBuild -Version $env:appveyor_repo_commit.substring(0,8)
 
-configuration:
-- Debug
-- Release
-
-platform:
-- x86
-- x64
-
-matrix:
-  # One debug build is enough.
-  exclude:
-    - configuration: Debug
-      PyVariant: dev
-
-before_build:
+build_script:
 - ps: |
-    @"
-    <?xml version="1.0" encoding="utf-8"?>
-    <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-      <Target Name="Build">
-        <MsBuild BuildInParallel="True" Projects="mpy-cross\mpy-cross.vcxproj;ports\windows\micropython.vcxproj"/>
-      </Target>
-    </Project>
-    "@ | Set-Content build.proj
+    $upyDir = $env:APPVEYOR_BUILD_FOLDER
+    $msys2Bash = "C:/msys64/usr/bin/bash.exe"
+    $VerbosePreference = [Management.Automation.ActionPreference]::Continue
+    . "$upyDir/ports/windows/build.ps1"
 
-build:
-  project: build.proj
-  parallel: true
-  verbosity: normal
+    @(
+        @{platform = "Win32"; configuration = "Debug"; variant = "standard"},
+        @{platform = "Win32"; configuration = "Release"; variant = "standard"},
+        @{platform = "x64"; configuration = "Debug"; variant = "standard"},
+        @{platform = "x64"; configuration = "Release"; variant = "standard"},
+        @{platform = "x64"; configuration = "Release"; variant = "dev"}
+    ) |
+        ForEach-Object {
+            $buildOpts = "/p:Platform=$($_.platform);Configuration=$($_.configuration);PyVariant=$($_.variant)"
+            Invoke-MsvcBuild $uPydir $buildOpts 
+            Invoke-MsvcTests $uPydir $buildOpts
+        }
 
-test_script:
-- ps: |
-    $env:MICROPY_MICROPYTHON=(msbuild ports\windows\micropython.vcxproj /nologo /v:m /t:ShowTargetPath).Trim()
-    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
-    & $env:MICROPY_CPYTHON3 run-tests.py
-    if ($LASTEXITCODE -ne 0) {
-      & $env:MICROPY_CPYTHON3 run-tests.py --print-failures
-      throw "Test failure"
-    }
-    & $env:MICROPY_CPYTHON3 run-tests.py --via-mpy -d basics float micropython
-    if ($LASTEXITCODE -ne 0) {
-      & $env:MICROPY_CPYTHON3 run-tests.py --print-failures
-      throw "Test failure"
-    }
+    @(
+        @{platform = "MINGW32"; variant = "standard"},
+        @{platform = "MINGW64"; variant = "standard"}
+        @{platform = "MINGW64"; variant = "dev"}
+    ) |
+        ForEach-Object {
+            $makeOpts = "-j4 V=1 PYTHON=$($env:MICROPY_CPYTHON3)"
+            # Use distinct BINDIR so we can pick up artifacts without each build overwriting the output of the previous one.
+            $mpycrossMakeOpts = "$makeOpts BINDIR=build/$($_.platform)"
+            $upyMakeOpts = "$makeOpts VARIANT=$($_.variant) BINDIR=build-$($_.variant)/$($_.platform)"
+            Invoke-MingwBuild $uPydir $_.platform $msys2Bash $mpycrossMakeOpts $upyMakeOpts
+            Invoke-MingwTests $uPydir $_.platform $msys2Bash $upyMakeOpts
+        }
 
-# After the build/test phase for the MSVC build completes,
-# build and test with mingw-w64, release versions only.
-after_test:
-- ps: |
-    if ($env:configuration -eq 'Debug') {
-      return
-    }
-    $env:MSYSTEM = if ($platform -eq 'x86') {'MINGW32'} else {'MINGW64'}
-    $env:CHERE_INVOKING = 'enabled_from_arguments'
-    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'mpy-cross')
-    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1"
-    if ($LASTEXITCODE -ne 0) {
-      throw "$env:MSYSTEM mpy_cross build exited with code $LASTEXITCODE"
-    }
-    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'ports/windows')
-    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 MICROPY_MPYCROSS=../../mpy-cross/mpy-cross.exe VARIANT=$($env:PyVariant)"
-    if ($LASTEXITCODE -ne 0) {
-      throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
-    }
-    C:\msys64\usr\bin\bash.exe -l -c "make V=1 test_full VARIANT=$($env:PyVariant)"
-    if ($LASTEXITCODE -ne 0) {
-      & $env:MICROPY_CPYTHON3 run-tests.py --print-failures
-      throw "Test failure"
-    }
+artifacts:
+  - path: mpy-cross/build/Releasex64/mpy-cross.exe
+    name: mpy-cross-msvc
+  - path: mpy-cross/build/MINGW64/mpy-cross.exe
+    name: mpy-cross-mingw
+  - path: ports/windows/build-standard/Releasex64/micropython.exe
+    name: micropython-msvc
+  - path: ports/windows/build-standard/MINGW64/micropython.exe
+    name: micropython-mingw

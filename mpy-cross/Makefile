@@ -60,3 +60,12 @@ OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
 include $(TOP)/py/mkrules.mk
+
+PREFIX = /usr/local
+BINDIR = $(DESTDIR)$(PREFIX)/bin
+
+install: $(PROG)
+	install -D $(PROG) $(BINDIR)/$(PROG)
+
+uninstall:
+	-rm $(BINDIR)/$(PROG)
