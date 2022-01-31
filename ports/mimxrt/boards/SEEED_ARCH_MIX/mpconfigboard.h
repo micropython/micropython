@@ -47,16 +47,20 @@
 #define IOMUX_TABLE_SPI \
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
     { 0 }, \
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
     { 0 }, \
-    { IOMUXC_GPIO_AD_B1_15_LPSPI3_SCK }, { IOMUXC_GPIO_AD_B1_12_LPSPI3_PCS0 }, \
-    { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_13_LPSPI3_SDI },  \
+    { pin_GPIO_AD_B1_15, IOMUXC_GPIO_AD_B1_15_LPSPI3_SCK }, { pin_GPIO_AD_B1_12, IOMUXC_GPIO_AD_B1_12_LPSPI3_PCS0 }, \
+    { pin_GPIO_AD_B1_14, IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { pin_GPIO_AD_B1_13, IOMUXC_GPIO_AD_B1_13_LPSPI3_SDI },  \
+    { 0 }, { 0 }, \
     { 0 }, \
-    { IOMUXC_GPIO_B1_07_LPSPI4_SCK }, { IOMUXC_GPIO_B1_04_LPSPI4_PCS0 }, \
-    { IOMUXC_GPIO_B1_06_LPSPI4_SDO }, { IOMUXC_GPIO_B1_05_LPSPI4_SDI }, \
-    { IOMUXC_GPIO_B1_03_LPSPI4_PCS1 }
+    { pin_GPIO_B1_07, IOMUXC_GPIO_B1_07_LPSPI4_SCK }, { pin_GPIO_B1_04, IOMUXC_GPIO_B1_04_LPSPI4_PCS0 }, \
+    { pin_GPIO_B1_06, IOMUXC_GPIO_B1_06_LPSPI4_SDO }, { pin_GPIO_B1_05, IOMUXC_GPIO_B1_05_LPSPI4_SDI }, \
+    { pin_GPIO_B1_03, IOMUXC_GPIO_B1_03_LPSPI4_PCS1 }, { 0 }, \
+    { 0 }
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
                          kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
