@@ -27,6 +27,8 @@ def check_mem_contains(addr, buf):
 
 
 def dfu_read(filename):
+    from binascii import crc32
+
     f = open(filename, "rb")
 
     hdr = f.read(3)
@@ -39,23 +41,28 @@ def dfu_read(filename):
         print("Invalid firmware", filename)
         return None
 
+    crc = 0
     elems = []
 
     hdr = f.read(11)
+    crc = crc32(hdr, crc)
     sig, ver, size, num_targ = struct.unpack("<5sBIB", hdr)
 
     file_offset = 11
 
     for i in range(num_targ):
         hdr = f.read(274)
+        crc = crc32(hdr, crc)
         sig, alt, has_name, name, t_size, num_elem = struct.unpack("<6sBi255sII", hdr)
 
         file_offset += 274
         file_offset_t = file_offset
         for j in range(num_elem):
             hdr = f.read(8)
+            crc = crc32(hdr, crc)
             addr, e_size = struct.unpack("<II", hdr)
             data = f.read(e_size)
+            crc = crc32(data, crc)
             elems.append((addr, data))
             file_offset += 8 + e_size
 
@@ -68,7 +75,13 @@ def dfu_read(filename):
         return None
 
     hdr = f.read(16)
+    crc = crc32(hdr[:-4], crc)
     hdr = struct.unpack("<HHHH3sBI", hdr)
+
+    crc = ~crc & 0xFFFFFFFF
+    if crc != hdr[-1]:
+        print("CRC failed", crc, hdr[-1])
+        return None
 
     return elems
 
@@ -179,8 +192,6 @@ def update_mboot(filename):
     mboot_addr, mboot_fw = mboot_fw[0]
     if mboot_addr != 0x08000000:
         assert 0
-
-    # TODO: Validate firmware in a simple way
 
     print("Found Mboot data with size %u." % len(mboot_fw))
 
