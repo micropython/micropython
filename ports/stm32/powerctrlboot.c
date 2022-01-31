@@ -33,6 +33,11 @@ void powerctrl_config_systick(void) {
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
     SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
+
+    #if !BUILDING_MBOOT && (defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
+    // Set SysTick IRQ priority variable in case the HAL needs to use it
+    uwTickPrio = IRQ_PRI_SYSTICK;
+    #endif
 }
 
 #if defined(STM32F0)
