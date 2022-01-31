@@ -115,7 +115,7 @@ void common_hal_is31fl3741_IS31FL3741_reconstruct(is31fl3741_IS31FL3741_obj_t *s
     is31fl3741_set_current(self->i2c, self->device_address, 0xFF);
 
     // set scale (brightness) to max for all LEDs
-    for (int i; i < 351; i++) {
+    for (int i = 0; i < 351; i++) {
         is31fl3741_set_led(self->i2c, self->device_address, i, 0xFF, 2);
     }
 
