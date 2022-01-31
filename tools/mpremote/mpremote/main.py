@@ -268,7 +268,7 @@ def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
             for entry in os.listdir(path):
-                _list_recursive(files, os.path.join(path, entry))
+                _list_recursive(files, "/".join((path, entry)))
         else:
             files.append(os.path.split(path))
 
@@ -289,7 +289,7 @@ def do_filesystem(pyb, args):
                 if d not in known_dirs:
                     pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
                     known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", os.path.join(dir, file), ":" + dir + "/"])
+            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
     else:
         pyboard.filesystem_command(pyb, args)
     args.clear()
