@@ -42,6 +42,12 @@ _COMMANDS = {
     "disconnect": (False, False, 0, "disconnect current device"),
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
+    "manifest": (
+        True,
+        False,
+        1,
+        "compile manifest.py",
+    ),
     "mount": (True, False, 1, "mount local directory on device"),
     "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
@@ -275,7 +281,7 @@ def do_filesystem(pyb, args):
         args.pop(0)
         assert args[-1] == ":"
         args.pop()
-        cp_recursive(args)
+        pyb.cp_recursive(args)
     else:
         pyboard.filesystem_command(pyb, args)
     args.clear()
@@ -517,6 +523,9 @@ def main():
             elif cmd == "soft-reset":
                 pyb.enter_raw_repl(soft_reset=True)
                 auto_soft_reset = False
+            elif cmd == "manifest":
+                path = args.pop(0)
+                pyb.build_manifest(path)
             elif cmd == "mount":
                 path = args.pop(0)
                 pyb.mount_local(path)

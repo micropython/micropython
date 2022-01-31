@@ -2,13 +2,25 @@ import io, os, re, serial, struct, time
 from errno import EPERM
 from .console import VT_ENABLED
 
+
+DEFAULT_MPY_DIR = os.path.abspath(os.path.dirname(__file__) + "/../../..")
+TOOLS_DIR = DEFAULT_MPY_DIR + "/tools"
+if not os.path.exists(TOOLS_DIR):
+    DEFAULT_MPY_DIR = TOOLS_DIR = None
+
+
 try:
     from .pyboard import Pyboard, PyboardError, stdout_write_bytes, filesystem_command
+    from . import makemanifest
 except ImportError:
-    import sys
+    if TOOLS_DIR:
+        import sys
 
-    sys.path.append(os.path.dirname(__file__) + "/../..")
-    from pyboard import Pyboard, PyboardError, stdout_write_bytes, filesystem_command
+        sys.path.append(TOOLS_DIR)
+        from pyboard import Pyboard, PyboardError, stdout_write_bytes, filesystem_command
+        import makemanifest
+    else:
+        raise
 
 fs_hook_cmds = {
     "CMD_STAT": 1,
@@ -26,7 +38,7 @@ fs_hook_cmds = {
 }
 
 fs_hook_code = """\
-import uos, uio, ustruct, micropython
+import uos, uio, sys, ustruct, micropython
 
 SEEK_SET = 0
 
@@ -337,6 +349,10 @@ class RemoteFS:
 def __mount():
     uos.mount(RemoteFS(RemoteCommand()), '/remote')
     uos.chdir('/remote')
+
+
+def __manifest_path():
+    sys.path.insert(0, '/remote/_manifest')
 """
 
 # Apply basic compression on hook code.
@@ -611,19 +627,45 @@ class PyboardExtended(Pyboard):
         super().__init__(dev, *args, **kwargs)
         self.device_name = dev
         self.mounted = False
+        self.manifest = None
+        self.manifest_dir = "_manifest"
+
+    def build_manifest(self, path, out_callback=None):
+        if makemanifest:
+            if os.path.isdir(path):
+                path = os.path.join(path, "manifest.py")
+            makemanifest.VARS["PORT_DIR"] = os.environ.get("PORT_DIR", None)
+            makemanifest.VARS["MPY_DIR"] = os.environ.get("MPY_DIR", DEFAULT_MPY_DIR)
+            makemanifest.QUIET = True if out_callback else False
+            all_files, new_files = makemanifest.process(
+                [path], self.manifest_dir
+            )
+            if self.eval('"RemoteFS" in globals()') == b"False":
+                self.exec_(fs_hook_code)
+            if self.mounted:
+                self.exec_("__manifest_path()")
+            self.manifest = path
+            if out_callback:
+                for f in new_files:
+                    if f.startswith(self.manifest_dir):
+                        f = f[len(self.manifest_dir):].lstrip('/')
+                    out_callback(b"MPY %s\r\n" % f.encode())
+            return new_files
 
     def mount_local(self, path):
         fout = self.serial
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
         self.exec_("__mount()")
+        if self.manifest:
+           self.exec_("__manifest_path()")
         self.mounted = True
         self.cmd = PyboardCommand(self.serial, fout, path)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def write_ctrl_d(self, out_callback):
         self.serial.write(b"\x04")
-        if not self.mounted:
+        if not self.mounted and not self.manifest:
             return
 
         # Read response from the device until it is quiet (with a timeout).
@@ -661,17 +703,26 @@ class PyboardExtended(Pyboard):
             return
 
         # Clear state while board remounts, it will be re-set once mounted.
+        do_mount = self.mounted
         self.mounted = False
-        self.serial = self.serial.orig_serial
-
-        # Provide a message about the remount.
-        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
-
-        # Enter raw REPL and re-mount the remote filesystem.
+        if hasattr(self.serial, "orig_serial"):
+            self.serial = self.serial.orig_serial
+            
+        # Enter raw REPL and re-run remote hooks.
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
-        self.exec_("__mount()")
-        self.mounted = True
+        if do_mount:
+            # Provide a message about the remount.
+            out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+
+            self.exec_("__mount()")
+            if self.manifest:
+                self.exec_("__manifest_path()")
+
+            self.mounted = True
+
+        if self.manifest:
+            updated = self.build_manifest(self.manifest, out_callback)
 
         # Exit raw REPL if needed, and wait for the friendly REPL prompt.
         if in_friendly_repl:
@@ -681,7 +732,8 @@ class PyboardExtended(Pyboard):
             prompt = b">"
         self.read_until(len(prompt), prompt)
         out_callback(prompt)
-        self.serial = SerialIntercept(self.serial, self.cmd)
+        if self.mounted:
+            self.serial = SerialIntercept(self.serial, self.cmd)
 
     def umount_local(self):
         if self.mounted:
