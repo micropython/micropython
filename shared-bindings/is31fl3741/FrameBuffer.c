@@ -40,7 +40,7 @@
 //| class IS31FL3741_FrameBuffer:
 //|     """Creates an in-memory framebuffer for a IS31FL3741 device."""
 //|
-//|     def __init__(self, *, is31: is31fl3741.IS31FL3741, width: int, height: int, mapping: Tuple[int, ...],
+//|     def __init__(self, is31: is31fl3741.IS31FL3741, width: int, height: int, mapping: Tuple[int, ...], *,
 //|         framebuffer: Optional[WriteableBuffer] = None, scale: bool = False, gamma: bool = False) -> None:
 //|         """Create a IS31FL3741_FrameBuffer object with the given attributes.
 //|
