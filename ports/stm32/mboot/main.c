@@ -265,25 +265,46 @@ void SystemClock_Config(void) {
     while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) != RESET) {
     }
 
-    // Configure PLL1 factors and source
-    RCC->PLLCKSELR =
-        MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos
-        | 2 << RCC_PLLCKSELR_PLLSRC_Pos; // HSE selected as PLL source
+    // Disable PLL3
+    __HAL_RCC_PLL3_DISABLE();
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) != RESET) {
+    }
+
+    // Select HSE as PLLx source
+    RCC->PLLCKSELR = 2 << RCC_PLLCKSELR_PLLSRC_Pos;
+    RCC->PLLCFGR = 0;
+
+    // Configure PLL1 for use by SYSCLK
+    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
+    RCC->PLLCFGR |= RCC_PLLCFGR_DIVP1EN;
+    RCC->PLL1FRACR = 0;
     RCC->PLL1DIVR =
         (MICROPY_HW_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
         | (MICROPY_HW_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
         | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
         | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
 
-    // Enable PLL1 outputs for SYSCLK and USB
-    RCC->PLLCFGR = RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN;
+    // Configure PLL3 for use by USB at Q=48MHz
+    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLL3M << RCC_PLLCKSELR_DIVM3_Pos;
+    RCC->PLLCFGR |= RCC_PLLCFGR_DIVQ3EN;
+    RCC->PLL3FRACR = 0;
+    RCC->PLL3DIVR =
+        (MICROPY_HW_CLK_PLL3N - 1) << RCC_PLL3DIVR_N3_Pos
+        | (MICROPY_HW_CLK_PLL3P - 1) << RCC_PLL3DIVR_P3_Pos // only even P allowed
+        | (MICROPY_HW_CLK_PLL3Q - 1) << RCC_PLL3DIVR_Q3_Pos
+        | (MICROPY_HW_CLK_PLL3R - 1) << RCC_PLL3DIVR_R3_Pos;
 
-    // Select PLL1-Q for USB clock source
-    RCC->D2CCIP2R |= 1 << RCC_D2CCIP2R_USBSEL_Pos;
+    // Select PLL3-Q for USB clock source
+    MODIFY_REG(RCC->D2CCIP2R, RCC_D2CCIP2R_USBSEL, RCC_D2CCIP2R_USBSEL_1);
 
     // Enable PLL1
     __HAL_RCC_PLL_ENABLE();
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+    }
+
+    // Enable PLL3
+    __HAL_RCC_PLL3_ENABLE();
+    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) == RESET) {
     }
 
     // Increase latency before changing SYSCLK
@@ -320,7 +341,7 @@ void SystemClock_Config(void) {
         ;
 
     // Update clock value and reconfigure systick now that the frequency changed
-    SystemCoreClock = CORE_PLL_FREQ;
+    SystemCoreClockUpdate();
     systick_init();
 }
 
@@ -1485,6 +1506,9 @@ enter_bootloader:
 
     // set the system clock to be HSE
     SystemClock_Config();
+
+    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
+    __set_PRIMASK(0);
 
     #if USE_USB_POLLING
     // irqs with a priority value greater or equal to "pri" will be disabled
