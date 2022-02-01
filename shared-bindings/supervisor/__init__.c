@@ -305,8 +305,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disabl
 //|     ...
 //|
 STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
+    #if CIRCUITPY_DISPLAYIO
     supervisor_stop_terminal();
     supervisor_start_terminal(mp_obj_get_int(x_pixels), mp_obj_get_int(y_pixels));
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_terminal);
