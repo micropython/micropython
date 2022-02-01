@@ -58,6 +58,7 @@
 //|         :param int frequency: The clock frequency in Hertz
 //|         :param int timeout: The maximum clock stretching timeut - (used only for
 //|             :class:`bitbangio.I2C`; ignored for :class:`busio.I2C`)
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
