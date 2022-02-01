@@ -324,7 +324,6 @@ STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ticks_ms),  MP_ROM_PTR(&supervisor_ticks_ms_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_previous_traceback),  MP_ROM_PTR(&supervisor_get_previous_traceback_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_ble_workflow),  MP_ROM_PTR(&supervisor_disable_ble_workflow_obj) },
-    { MP_ROM_QSTR(MP_QSTR_splash),  MP_ROM_PTR(&circuitpython_splash) },
     { MP_ROM_QSTR(MP_QSTR_reset_terminal),  MP_ROM_PTR(&supervisor_reset_terminal_obj) },
 };
 

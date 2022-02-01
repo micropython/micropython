@@ -220,6 +220,10 @@ mp_obj_t common_hal_displayio_display_get_bus(displayio_display_obj_t *self) {
     return self->core.bus;
 }
 
+mp_obj_t common_hal_displayio_display_get_root_group(displayio_display_obj_t *self) {
+    return self->core.current_group;
+}
+
 STATIC const displayio_area_t *_get_refresh_areas(displayio_display_obj_t *self) {
     if (self->core.full_refresh) {
         self->core.area.next = NULL;

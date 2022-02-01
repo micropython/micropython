@@ -32,7 +32,6 @@
 #if CIRCUITPY_TERMINALIO
 
 #include "shared-bindings/displayio/Bitmap.h"
-#include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/TileGrid.h"
 #include "shared-bindings/fontio/BuiltinFont.h"
 #include "shared-bindings/terminalio/Terminal.h"
@@ -46,7 +45,6 @@ extern const fontio_builtinfont_t supervisor_terminal_font;
 extern displayio_bitmap_t supervisor_terminal_font_bitmap;
 extern displayio_tilegrid_t supervisor_terminal_text_grid;
 extern terminalio_terminal_obj_t supervisor_terminal;
-extern displayio_group_t circuitpython_splash;
 
 #endif
 
