@@ -182,19 +182,19 @@ static uint8_t convert_esp_err(esp_err_t result) {
     }
 }
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint8_t addr, const uint8_t *data, size_t len) {
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len) {
     return convert_esp_err(len == 0
         ? i2c_zero_length_write(self, addr, 100)
-        : i2c_master_write_to_device(self->i2c_num, addr, data, len, 100 /* wait in ticks */)
+        : i2c_master_write_to_device(self->i2c_num, (uint8_t)addr, data, len, 100 /* wait in ticks */)
         );
 }
 
-uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint8_t addr, uint8_t *data, size_t len) {
+uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t *data, size_t len) {
     return convert_esp_err(
-        i2c_master_read_from_device(self->i2c_num, addr, data, len, 100 /* wait in ticks */));
+        i2c_master_read_from_device(self->i2c_num, (uint8_t)addr, data, len, 100 /* wait in ticks */));
 }
 
-uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint8_t addr,
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
     uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
     return convert_esp_err(
         i2c_master_write_read_device(self->i2c_num, (uint8_t)addr,
