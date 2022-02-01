@@ -105,6 +105,7 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
 
 bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t data_length) {
     uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
+    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
     if (!flash_enable()) {
@@ -125,6 +126,7 @@ bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t data_length) 
         request[0] = CMD_FAST_READ_DATA;
         command_length = 5;
     }
+    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     // Write the SPI flash read address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
     if (!flash_enable()) {
