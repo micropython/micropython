@@ -614,10 +614,10 @@ class PyboardExtended(Pyboard):
 
     def mount_local(self, path):
         fout = self.serial
-        self.mounted = True
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
         self.exec_("__mount()")
+        self.mounted = True
         self.cmd = PyboardCommand(self.serial, fout, path)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
@@ -625,6 +625,9 @@ class PyboardExtended(Pyboard):
         self.serial.write(b"\x04")
         if not self.mounted:
             return
+
+        # Clear flag while board reboots, it will be re-set once mounted.
+        self.mounted = False
 
         # Wait for a response to the soft-reset command.
         for i in range(10):
@@ -646,6 +649,7 @@ class PyboardExtended(Pyboard):
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
         self.exec_("__mount()")
+        self.mounted = True
         self.exit_raw_repl()
         self.read_until(4, b">>> ")
         self.serial = SerialIntercept(self.serial, self.cmd)
