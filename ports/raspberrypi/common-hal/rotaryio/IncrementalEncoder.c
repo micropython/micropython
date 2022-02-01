@@ -86,7 +86,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         NULL, 0, 0, 0x1f, // set pins
         NULL, 0, 0, 0x1f, // sideset pins
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings

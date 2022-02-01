@@ -27,6 +27,7 @@
 #include "bindings/rp2pio/StateMachine.h"
 
 #include "common-hal/microcontroller/__init__.h"
+#include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -342,7 +343,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
     bool sideset_enable,
-    const mcu_pin_obj_t *jmp_pin,
+    const mcu_pin_obj_t *jmp_pin, digitalio_pull_t jmp_pull,
     uint32_t wait_gpio_mask,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
@@ -489,6 +490,16 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     // Deal with pull up/downs
     uint32_t pull_up = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_up);
     uint32_t pull_down = mask_and_rotate(first_in_pin, in_pin_count, pull_pin_down);
+
+    if (jmp_pin) {
+        uint32_t jmp_mask = mask_and_rotate(jmp_pin, 1, 0x1f);
+        if (jmp_pull == PULL_UP) {
+            pull_up |= jmp_mask;
+        }
+        if (jmp_pull == PULL_DOWN) {
+            pull_up |= jmp_mask;
+        }
+    }
     if (initial_pin_direction & (pull_up | pull_down)) {
         mp_raise_ValueError(translate("pull masks conflict with direction masks"));
     }

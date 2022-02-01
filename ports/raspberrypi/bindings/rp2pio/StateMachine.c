@@ -79,6 +79,8 @@
 //|                  initial_sideset_pin_state: int = 0,
 //|                  initial_sideset_pin_direction: int = 0x1f,
 //|                  sideset_enable: bool = False,
+//|                  jmp_pin: Optional[microcontroller.Pin] = None,
+//|                  jmp_pin_pull: Optional[digitalio.Pull] = None,
 //|                  exclusive_pin_use: bool = True,
 //|                  auto_pull: bool = False,
 //|                  pull_threshold: int = 32,
@@ -113,6 +115,7 @@
 //|         :param int initial_sideset_pin_direction: the initial output direction for sideset pins starting at first_sideset_pin
 //|         :param bool sideset_enable: True when the top sideset bit is to enable. This should be used with the ".side_set # opt" directive
 //|         :param ~microcontroller.Pin jmp_pin: the pin which determines the branch taken by JMP PIN instructions
+//|         :param ~digitalio.Pull jmp_pin_pull: The pull value for the jmp pin, default is no pull.
 //|         :param bool exclusive_pin_use: When True, do not share any pins with other state machines. Pins are never shared with other peripherals
 //|         :param bool auto_pull: When True, automatically load data from the tx FIFO into the
 //|             output shift register (OSR) when an OUT instruction shifts more than pull_threshold bits
@@ -150,7 +153,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_first_set_pin, ARG_set_pin_count, ARG_initial_set_pin_state, ARG_initial_set_pin_direction,
            ARG_first_sideset_pin, ARG_sideset_pin_count, ARG_initial_sideset_pin_state, ARG_initial_sideset_pin_direction,
            ARG_sideset_enable,
-           ARG_jmp_pin,
+           ARG_jmp_pin, ARG_jmp_pin_pull,
            ARG_exclusive_pin_use,
            ARG_auto_pull, ARG_pull_threshold, ARG_out_shift_right,
            ARG_wait_for_txstall,
@@ -184,6 +187,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_sideset_enable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
 
         { MP_QSTR_jmp_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_jmp_pin_pull, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 
         { MP_QSTR_exclusive_pin_use, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_auto_pull, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -230,6 +234,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     }
 
     const mcu_pin_obj_t *jmp_pin = validate_obj_is_pin_or_none(args[ARG_jmp_pin].u_obj);
+    digitalio_pull_t jmp_pin_pull = validate_pull(args[ARG_jmp_pin_pull].u_rom_obj, MP_QSTR_jmp_pull);
 
     mp_int_t pull_threshold = args[ARG_pull_threshold].u_int;
     mp_int_t push_threshold = args[ARG_push_threshold].u_int;
@@ -263,7 +268,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         first_set_pin, args[ARG_set_pin_count].u_int, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
         first_sideset_pin, args[ARG_sideset_pin_count].u_int, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
         args[ARG_sideset_enable].u_bool,
-        jmp_pin,
+        jmp_pin, jmp_pin_pull,
         0,
         args[ARG_exclusive_pin_use].u_bool,
         args[ARG_auto_pull].u_bool, pull_threshold, args[ARG_out_shift_right].u_bool,

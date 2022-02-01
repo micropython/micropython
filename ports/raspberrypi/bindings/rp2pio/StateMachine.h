@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 
+#include "shared-bindings/digitalio/Pull.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/rp2pio/StateMachine.h"
 
@@ -45,7 +46,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
     const mcu_pin_obj_t *first_sideset_pin, uint8_t sideset_pin_count, uint32_t initial_sideset_pin_state, uint32_t initial_sideset_pin_direction,
     bool sideset_enable,
-    const mcu_pin_obj_t *jmp_pin,
+    const mcu_pin_obj_t *jmp_pin, digitalio_pull_t jmp_pin_pull,
     uint32_t wait_gpio_mask,
     bool exclusive_pin_use,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,

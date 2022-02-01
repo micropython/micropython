@@ -100,7 +100,7 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         NULL, 0, 0, 0, // first set pin
         write, 1, 0, 1, // first sideset pin
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
         true, // exclusive pin usage
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
