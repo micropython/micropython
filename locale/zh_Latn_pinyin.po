@@ -109,7 +109,7 @@ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %s"
 msgid "%q length must be %d-%d"
 msgstr "%q cháng dù bì xū wéi %d-%d"
 
-#: shared-bindings/usb_hid/Device.c
+#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
 msgstr "%q cháng dù bì xū >= 1"
 
@@ -648,7 +648,7 @@ msgstr "Huǎnchōngqū chángdù bìxū wéi 512 de bèishù"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
 
@@ -1650,8 +1650,8 @@ msgstr "wèi zhǎo dào DMA qǐ bó qì"
 
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
-msgid "No I2C device at address: %x"
-msgstr "dì zhǐ wú I2C shè bèi: %x"
+msgid "No I2C device at address: 0x%x"
+msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
@@ -4140,7 +4140,10 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
 
@@ -4698,6 +4701,10 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "dì zhǐ wú I2C shè bèi: %x"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "Bù zhīchí de lādòng zhí."

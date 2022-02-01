@@ -108,7 +108,7 @@ msgstr "Os índices %q devem ser inteiros, e não %s"
 msgid "%q length must be %d-%d"
 msgstr "o comprimento %q deve ser %d-%d"
 
-#: shared-bindings/usb_hid/Device.c
+#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
 msgstr "o comprimento %q deve ser >=1"
 
@@ -651,7 +651,7 @@ msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "O buffer deve ser um múltiplo de 512 bytes"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "O comprimento do buffer deve ter pelo menos 1"
 
@@ -1653,8 +1653,8 @@ msgstr "Nenhum temporizador DMA foi encontrado"
 
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
-msgid "No I2C device at address: %x"
-msgstr "Nenhum dispositivo I2C no endereço: %x"
+msgid "No I2C device at address: 0x%x"
+msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
@@ -4173,7 +4173,10 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "pressionando o botão de boot na inicialização.\n"
 
@@ -4728,6 +4731,10 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Nenhum dispositivo I2C no endereço: %x"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "O valor pull não é compatível."
