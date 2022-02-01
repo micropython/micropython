@@ -641,7 +641,7 @@ class PyboardExtended(Pyboard):
         while n > 0:
             buf = self.serial.read(n)
             out_callback(buf)
-            time.sleep(0.1)
+            time.sleep(0.2)
             n = self.serial.inWaiting()
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
