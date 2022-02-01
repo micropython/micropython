@@ -104,8 +104,6 @@
 
 #elif defined(STM32G4)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (18)
 #define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f)
 #define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR
 #define ADC_CAL1                TEMPSENSOR_CAL1_ADDR
