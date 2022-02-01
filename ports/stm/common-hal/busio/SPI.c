@@ -250,7 +250,7 @@ void common_hal_busio_spi_never_reset(busio_spi_obj_t *self) {
 }
 
 bool common_hal_busio_spi_deinited(busio_spi_obj_t *self) {
-    return self->sck->pin == NULL;
+    return self->sck == NULL;
 }
 
 void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {

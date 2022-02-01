@@ -160,7 +160,8 @@ void board_init(void) {
         false,  // busy_state
         5.0, // seconds_per_frame
         false,  // always_toggle_chip_select
-        true);  // grayscale
+        true, // grayscale
+        false);  // two_byte_sequence_length
 }
 
 bool board_requests_safe_mode(void) {

@@ -27,8 +27,6 @@ CIRCUITPY_BLEIO ?= 1
 # No I2CPeripheral implementation
 CIRCUITPY_I2CPERIPHERAL = 0
 
-CIRCUITPY_IS31FL3741 ?= 1
-
 CIRCUITPY_RTC ?= 1
 
 # frequencyio not yet implemented

@@ -455,6 +455,7 @@ msgstr "Alle timer für diesen Pin werden bereits benutzt"
 msgid "All timers in use"
 msgstr "Alle timer werden benutzt"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Bereits am anbieten (advertising)."
@@ -923,10 +924,12 @@ msgstr "Data 0 pin muss am Byte ausgerichtet sein"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Dem fmt Block muss ein Datenblock folgen"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Zu vielen Daten für das advertisement packet"
@@ -1007,6 +1010,7 @@ msgstr "Alarm erwartet"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
@@ -1061,6 +1065,7 @@ msgstr "Zuweisung des Wifi Scan Speichers ist fehlgeschlagen"
 msgid "Failed to buffer the sample"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Verbindung fehlgeschlagen: interner Fehler"
@@ -1296,6 +1301,7 @@ msgstr "Ungültiger ADC-Einheitenwert"
 msgid "Invalid AuthMode"
 msgstr "Ungültiges AuthMode"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Ungültiges BLE Parameter"
@@ -1605,6 +1611,10 @@ msgstr "NVS Fehler"
 msgid "Name too long"
 msgstr "Name zu lang"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Kein CCCD für diese Charakteristik"
@@ -1752,6 +1762,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2142,6 +2153,7 @@ msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scannen Sie bereits in Bearbeitung. Stoppen Sie mit stop_scan."
@@ -2302,6 +2314,7 @@ msgstr "Die Kachelbreite muss die Bitmap-Breite genau teilen"
 msgid "Time is in the past."
 msgstr "Zeit liegt in der Vergangenheit"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2325,6 +2338,7 @@ msgstr "Zu viele Display Busse"
 msgid "Too many displays"
 msgstr "Zu viele displays"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "Gesamte zu schreibende Datenmenge ist größer als %q"
@@ -2456,10 +2470,20 @@ msgstr "Unbekannter Grund."
 msgid "Unknown security error: 0x%04x"
 msgstr "Unbekannter Sicherheitsfehler: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Unbekannter Systemfirmware Fehler: %04x"
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
+msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2502,11 +2526,13 @@ msgstr "Nicht unterstützte Operation"
 msgid "Update Failed"
 msgstr "Update fehlgeschlagen"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Wert Länge != Erforderliche feste Länge"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2567,6 +2593,7 @@ msgstr "WiFi Passwort muss zwischen 8 und 63 Zeichen lang sein"
 msgid "Woken up by alarm.\n"
 msgstr "Aufgeweckt durch Alarm.\n"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Schreiben nicht unterstüzt für diese Charakteristik"
@@ -3654,6 +3681,7 @@ msgstr "Mathe-Domain-Fehler"
 msgid "matrix is not positive definite"
 msgstr "Matrix ist nicht positiv definitiv"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format

@@ -28,7 +28,7 @@ print(hashlib.sha256(b"\xff" * 56).digest())
 
 sha256 = hashlib.sha256(b"hello")
 try:
-    sha256.update(u"world")
+    sha256.update("world")
 except TypeError as e:
     print("TypeError")
 print(sha256.digest())

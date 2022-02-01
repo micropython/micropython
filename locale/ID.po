@@ -454,6 +454,7 @@ msgstr "Semua timer untuk pin ini sedang digunakan"
 msgid "All timers in use"
 msgstr "Semua timer sedang digunakan"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Sudah disebarkan."
@@ -927,10 +928,12 @@ msgstr "Data 0 pin harus byte disejajarkan"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Potongan data harus mengikuti fmt chunk"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Data terlalu besar untuk paket advertisment"
@@ -1011,6 +1014,7 @@ msgstr ""
 msgid "Expected tuple of length %d, got %d"
 msgstr "Diharapkan tuple dengan panjang %d, didapatkan %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Penyebaran yang diperluas dengan respon pindai tidak didukung."
@@ -1064,6 +1068,7 @@ msgstr ""
 msgid "Failed to buffer the sample"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Gagal terhubung: kesalahan internal"
@@ -1297,6 +1302,7 @@ msgstr "Nilai Unit ADC tidak valid"
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr ""
@@ -1605,6 +1611,10 @@ msgstr ""
 msgid "Name too long"
 msgstr "Nama terlalu panjang"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Tidak ada CCCD untuk Karakteristik ini"
@@ -1752,6 +1762,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2145,6 +2156,7 @@ msgstr "Nilai sampel terlalu tinggi. Nilai harus kurang dari %d"
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Pindai sudah dalam proses. Hentikan dengan stop_scan."
@@ -2303,6 +2315,7 @@ msgstr "Lebar ubin harus persis membagi lebar bitmap"
 msgid "Time is in the past."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2325,6 +2338,7 @@ msgstr "Terlalu banyak tampilan bus"
 msgid "Too many displays"
 msgstr "Terlalu banyak tampilan"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr ""
@@ -2456,9 +2470,19 @@ msgstr "Alasan yang tidak diketahui."
 msgid "Unknown security error: 0x%04x"
 msgstr "Kesalahan keamanan tidak dikenal: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -2500,11 +2524,13 @@ msgstr "Operasi yang tidak didukung"
 msgid "Update Failed"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Panjang nilai != Panjang tetap yang dibutuhkan"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2562,6 +2588,7 @@ msgstr ""
 msgid "Woken up by alarm.\n"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Menulis tidak didukung pada Karakteristik"
@@ -3629,6 +3656,7 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format

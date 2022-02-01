@@ -61,13 +61,16 @@ extern bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr);
 
 // Write to the device and return 0 on success or an appropriate error code from mperrno.h
 extern uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address,
-    const uint8_t *data, size_t len,
-    bool stop);
+    const uint8_t *data, size_t len);
 
 // Reads memory of the i2c device picking up where it left off and return 0 on
 // success or an appropriate error code from mperrno.h
 extern uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address,
     uint8_t *data, size_t len);
+
+// Do a write and then a read in the same I2C transaction.
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t address,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len);
 
 // This is used by the supervisor to claim I2C devices indefinitely.
 extern void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self);

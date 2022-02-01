@@ -35,7 +35,6 @@
 #include "hci.h"
 
 void bleio_hci_background(void);
-void bleio_reset(void);
 
 typedef struct {
     // ble_gap_enc_key_t own_enc;

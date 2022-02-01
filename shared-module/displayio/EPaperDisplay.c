@@ -54,7 +54,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
     uint16_t set_column_window_command, uint16_t set_row_window_command,
     uint16_t set_current_column_command, uint16_t set_current_row_command,
     uint16_t write_black_ram_command, bool black_bits_inverted, uint16_t write_color_ram_command, bool color_bits_inverted, uint32_t highlight_color, uint16_t refresh_display_command, mp_float_t refresh_time,
-    const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select, bool grayscale) {
+    const mcu_pin_obj_t *busy_pin, bool busy_state, mp_float_t seconds_per_frame, bool chip_select, bool grayscale, bool two_byte_sequence_length) {
     if (highlight_color != 0x000000) {
         self->core.colorspace.tricolor = true;
         self->core.colorspace.tricolor_hue = displayio_colorconverter_compute_hue(highlight_color);
@@ -85,6 +85,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
     self->stop_sequence_len = stop_sequence_len;
 
     self->busy.base.type = &mp_type_NoneType;
+    self->two_byte_sequence_length = two_byte_sequence_length;
     if (busy_pin != NULL) {
         self->busy.base.type = &digitalio_digitalinout_type;
         common_hal_digitalio_digitalinout_construct(&self->busy, busy_pin);
@@ -145,8 +146,12 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t *self,
         const uint8_t *cmd = sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
-        data_size &= ~DELAY;
         const uint8_t *data = cmd + 2;
+        data_size &= ~DELAY;
+        if (self->two_byte_sequence_length) {
+            data_size = ((data_size & ~DELAY) << 8) + *(cmd + 2);
+            data = cmd + 3;
+        }
         displayio_display_core_begin_transaction(&self->core);
         self->core.send(self->core.bus, DISPLAY_COMMAND, self->chip_select, cmd, 1);
         self->core.send(self->core.bus, DISPLAY_DATA, self->chip_select, data, data_size);
@@ -164,6 +169,9 @@ STATIC void send_command_sequence(displayio_epaperdisplay_obj_t *self,
             wait_for_busy(self);
         }
         i += 2 + data_size;
+        if (self->two_byte_sequence_length) {
+            i++;
+        }
     }
 }
 
