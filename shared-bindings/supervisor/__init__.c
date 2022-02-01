@@ -301,7 +301,7 @@ STATIC mp_obj_t supervisor_disable_ble_workflow(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_ble_workflow_obj, supervisor_disable_ble_workflow);
 
 //| def reset_terminal(x_pixels: int, y_pixels: int) -> None:
-//|     """Adjust the pixel dimensions of the REPL console."""
+//|     """Reset the CircuitPython serial terminal with new dimensions."""
 //|     ...
 //|
 STATIC mp_obj_t supervisor_reset_terminal(mp_obj_t x_pixels, mp_obj_t y_pixels) {
