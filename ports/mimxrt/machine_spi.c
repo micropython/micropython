@@ -93,11 +93,11 @@ bool lpspi_set_iomux(int8_t spi, uint8_t drive, uint8_t cs) {
         if (cs == 0 && CS0.muxRegister != 0) {
             IOMUXC_SetPinMux(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister, 0U);
             IOMUXC_SetPinConfig(CS0.muxRegister, CS0.muxMode, CS0.inputRegister, CS0.inputDaisy, CS0.configRegister,
-                0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS0.configRegister));
         } else if (cs == 1 && CS1.muxRegister != 0) {
             IOMUXC_SetPinMux(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister, 0U);
             IOMUXC_SetPinConfig(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister,
-                0x1080u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+                pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS1.configRegister));
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("The chosen CS is not available"));
         }
