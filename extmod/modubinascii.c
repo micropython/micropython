@@ -1,5 +1,6 @@
 // Copyright (c) 2014 Paul Sokolovsky
 // SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: 2022 Beat Ludin for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
 
@@ -204,19 +205,78 @@ STATIC mp_obj_t mod_binascii_b2a_base64(mp_obj_t data) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_b2a_base64_obj, mod_binascii_b2a_base64);
 
-#if MICROPY_PY_UBINASCII_CRC32
-#include "lib/uzlib/tinf.h"
+/*
+ * CRC32 checksum
+ *
+ * Copyright (c) 1998-2003 by Joergen Ibsen / Jibz
+ * All Rights Reserved
+ *
+ * http://www.ibsensoftware.com/
+ *
+ * This software is provided 'as-is', without any express
+ * or implied warranty.  In no event will the authors be
+ * held liable for any damages arising from the use of
+ * this software.
+ *
+ * Permission is granted to anyone to use this software
+ * for any purpose, including commercial applications,
+ * and to alter it and redistribute it freely, subject to
+ * the following restrictions:
+ *
+ * 1. The origin of this software must not be
+ *    misrepresented; you must not claim that you
+ *    wrote the original software. If you use this
+ *    software in a product, an acknowledgment in
+ *    the product documentation would be appreciated
+ *    but is not required.
+ *
+ * 2. Altered source versions must be plainly marked
+ *    as such, and must not be misrepresented as
+ *    being the original software.
+ *
+ * 3. This notice may not be removed or altered from
+ *    any source distribution.
+ */
+
+/*
+ * CRC32 algorithm taken from the zlib source, which is
+ * Copyright (C) 1995-1998 Jean-loup Gailly and Mark Adler
+ */
+
+
+static const unsigned int tinf_crc32tab[16] = {
+    0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190,
+    0x6b6b51f4, 0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344,
+    0xd6d6a3e8, 0xcb61b38c, 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278,
+    0xbdbdf21c
+};
+
+/* crc is previous value for incremental computation, 0xffffffff initially */
+static uint32_t from_uzlib_crc32(const void *data, unsigned int length, uint32_t crc) {
+    const unsigned char *buf = (const unsigned char *)data;
+    unsigned int i;
+
+    for (i = 0; i < length; ++i)
+    {
+        crc ^= buf[i];
+        crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
+        crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
+    }
+
+    // return value suitable for passing in next time, for final value invert it
+    return crc /* ^ 0xffffffff*/;
+}
 
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
-    crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
+    crc = from_uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
     return mp_obj_new_int_from_uint(crc ^ 0xffffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_binascii_crc32);
-#endif
+
 
 STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_binascii) },
@@ -224,9 +284,7 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
-    #if MICROPY_PY_UBINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globals_table);
