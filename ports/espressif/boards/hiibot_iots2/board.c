@@ -24,9 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "boards/board.h"
+#include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-module/displayio/__init__.h"
+#include "shared-module/displayio/mipi_constants.h"
 
 void board_init(void) {
     // USB
@@ -34,8 +36,10 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO20);
 
     // Debug UART
+    #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
+    #endif
 
     // SPI Flash and RAM
     common_hal_never_reset_pin(&pin_GPIO26);
@@ -52,5 +56,7 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+}
 
+void board_deinit(void) {
 }
