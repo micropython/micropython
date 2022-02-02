@@ -32,82 +32,38 @@
 #include "shared-bindings/is31fl3741/IS31FL3741.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "shared-module/framebufferio/__init__.h"
-#include "shared-module/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/busio/I2C.h"
 
 //| class IS31FL3741:
-//|     """Displays an in-memory framebuffer to a IS31FL3741 drive display."""
+//|     """Driver for an IS31FL3741 device."""
 //|
-
-//|     def __init__(self, *, width: int) -> None:
+//|     def __init__(self, i2c: busio.I2C, *, addr: int = 0x30) -> None:
 //|         """Create a IS31FL3741 object with the given attributes.
 //|
-//|         The framebuffer is in "RGB888" format using 4 bytes per pixel.
-//|         Bits 24-31 are ignored. The format is in RGB order.
+//|         Designed to work low level or passed to and object such as
+//|         :class:`~is31fl3741.IS31FL3741_FrameBuffer`.
 //|
-//|         If a framebuffer is not passed in, one is allocated and initialized
-//|         to all black.  In any case, the framebuffer can be retrieved
-//|         by passing the Is31fl3741 object to memoryview().
+//|         :param ~busio.I2C i2c: I2C bus the IS31FL3741 is on
+//|         :param int addr: device address"""
+//|         ...
 //|
-//|         A Is31fl3741 is often used in conjunction with a
-//|         `framebufferio.FramebufferDisplay`."""
-//|
-
 STATIC mp_obj_t is31fl3741_IS31FL3741_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_width, ARG_height, ARG_i2c, ARG_addr, ARG_framebuffer, ARG_mapping, ARG_scale, ARG_gamma };
+    enum { ARG_i2c, ARG_addr };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_width, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
-        { MP_QSTR_height, MP_ARG_INT | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
-        { MP_QSTR_i2c, MP_ARG_OBJ | MP_ARG_REQUIRED | MP_ARG_KW_ONLY },
+        { MP_QSTR_i2c, MP_ARG_OBJ | MP_ARG_REQUIRED },
         { MP_QSTR_addr, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0x30 } },
-        { MP_QSTR_framebuffer, MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-        { MP_QSTR_mapping, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_scale, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
-        { MP_QSTR_gamma, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_obj_t i2c = mp_arg_validate_type(args[ARG_i2c].u_obj, &busio_i2c_type, MP_QSTR_i2c_bus);
 
-    is31fl3741_IS31FL3741_obj_t *self = &allocate_display_bus_or_raise()->is31fl3741;
+    is31fl3741_IS31FL3741_obj_t *self = m_new_obj(is31fl3741_IS31FL3741_obj_t);
     self->base.type = &is31fl3741_IS31FL3741_type;
 
-    if (args[ARG_width].u_int <= 0) {
-        mp_raise_ValueError(translate("width must be greater than zero"));
-    }
-
-    self->scale = args[ARG_scale].u_bool;
-    if (self->scale) {
-        if (((args[ARG_height].u_int % 3) != 0) || ((args[ARG_width].u_int % 3) != 0)) {
-            mp_raise_ValueError(translate("Scale dimensions must divide by 3"));
-        }
-
-        self->scale_width = args[ARG_width].u_int / 3;
-        self->scale_height = args[ARG_height].u_int / 3;
-    } else {
-        self->scale_width = args[ARG_width].u_int;
-        self->scale_height = args[ARG_height].u_int;
-    }
-
-    self->auto_gamma = args[ARG_gamma].u_bool;
-
-    mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
-    if (framebuffer == mp_const_none) {
-        int width = args[ARG_width].u_int;
-        int height = args[ARG_height].u_int;
-        int bufsize = 4 * width * height;
-        framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
-    }
-
     common_hal_is31fl3741_IS31FL3741_construct(self,
-        args[ARG_width].u_int,
-        args[ARG_height].u_int,
-        framebuffer,
         MP_OBJ_TO_PTR(i2c),
-        args[ARG_addr].u_int,
-        args[ARG_mapping].u_obj
+        args[ARG_addr].u_int
         );
 
     return MP_OBJ_FROM_PTR(self);
@@ -124,185 +80,101 @@ STATIC mp_obj_t is31fl3741_IS31FL3741_deinit(mp_obj_t self_in) {
     common_hal_is31fl3741_IS31FL3741_deinit(self);
     return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_deinit_obj, is31fl3741_IS31FL3741_deinit);
 
-static void check_for_deinit(is31fl3741_IS31FL3741_obj_t *self) {
-    if (self->framebuffer == NULL) {
-        raise_deinited_error();
-    }
-}
-
-//|     brightness: float
-//|     """In the current implementation, 0.0 turns the display off entirely
-//|     and any other value up to 1.0 turns the display on fully."""
+//| def reset(self) -> None:
+//|     """Resets the IS31FL3741 chip."""
+//|     ...
 //|
-STATIC mp_obj_t is31fl3741_IS31FL3741_get_brightness(mp_obj_t self_in) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-    uint8_t current = common_hal_is31fl3741_IS31FL3741_get_global_current(self);
-
-    float brightness = (float)current / (float)0xFF;
-    return mp_obj_new_float(brightness);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_get_brightness_obj, is31fl3741_IS31FL3741_get_brightness);
-
-STATIC mp_obj_t is31fl3741_IS31FL3741_set_brightness(mp_obj_t self_in, mp_obj_t value_in) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-    mp_float_t brightness = mp_obj_get_float(value_in);
-    if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
-    }
-
-    uint8_t current = (uint8_t)(brightness * 0xFF);
-    common_hal_is31fl3741_IS31FL3741_set_global_current(self, current);
-
+STATIC mp_obj_t is31fl3741_IS31FL3741_reset(mp_obj_t self_in) {
+    is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_is31fl3741_send_reset(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_brightness_obj, is31fl3741_IS31FL3741_set_brightness);
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_reset_obj, is31fl3741_IS31FL3741_reset);
 
-const mp_obj_property_t is31fl3741_IS31FL3741_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_IS31FL3741_get_brightness_obj,
-              (mp_obj_t)&is31fl3741_IS31FL3741_set_brightness_obj,
-              MP_ROM_NONE},
-};
-
-//|     def refresh(self) -> None:
-//|         """Transmits the color data in the buffer to the pixels so that
-//|         they are shown."""
-//|         ...
+//| def enable(self) -> None:
+//|     """Enables the IS31FL3741 chip."""
+//|     ...
 //|
-STATIC mp_obj_t is31fl3741_IS31FL3741_refresh(mp_obj_t self_in) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-    common_hal_is31fl3741_IS31FL3741_refresh(self, 0);
+STATIC mp_obj_t is31fl3741_IS31FL3741_enable(mp_obj_t self_in) {
+    is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_is31fl3741_send_enable(self);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_refresh_obj, is31fl3741_IS31FL3741_refresh);
+MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_enable_obj, is31fl3741_IS31FL3741_enable);
 
-//|     width: int
-//|     """The width of the display, in pixels"""
+//| def set_global_current(self, current: int) -> None:
+//|     """Sets the global current of the IS31FL3741 chip.
 //|
-STATIC mp_obj_t is31fl3741_IS31FL3741_get_width(mp_obj_t self_in) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_IS31FL3741_get_width(self));
+//|     :param int current: global current value 0x00 to 0xFF"""
+//|     ...
+//|
+STATIC mp_obj_t is31fl3741_IS31FL3741_set_global_current(mp_obj_t self_in, mp_obj_t value) {
+    is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_int_t current = mp_obj_get_int(value);
+    common_hal_is31fl3741_set_current(self, current);
+    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_get_width_obj, is31fl3741_IS31FL3741_get_width);
-const mp_obj_property_t is31fl3741_IS31FL3741_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_IS31FL3741_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_IS31FL3741_set_global_current_obj, is31fl3741_IS31FL3741_set_global_current);
 
-//|     height: int
-//|     """The height of the display, in pixels"""
+//| def set_led(self, led: int, value: int, page: int) -> None:
+//|     """Resets the IS31FL3741 chip.
 //|
-STATIC mp_obj_t is31fl3741_IS31FL3741_get_height(mp_obj_t self_in) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-    return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_IS31FL3741_get_height(self));
+//|     :param int led: which LED to set
+//|     :param int value: value to set the LED to 0x00 to 0xFF
+//|     :param int page: page to write to 0 or 2. If the LED is a >= 180
+//|       the routine will automatically write to page 1 or 3 (instead
+//|       of 0 or 2)"""
+//|     ...
+//|
+STATIC mp_obj_t is31fl3741_IS31FL3741_set_led(size_t n_args, const mp_obj_t *args) {
+    is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t led = mp_obj_get_int(args[1]);
+    mp_int_t value = mp_obj_get_int(args[2]);
+    mp_int_t page = mp_obj_get_int(args[3]);
+    common_hal_is31fl3741_set_led(self, led, value, page);
+    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_IS31FL3741_get_height_obj, is31fl3741_IS31FL3741_get_height);
-const mp_obj_property_t is31fl3741_IS31FL3741_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_IS31FL3741_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(is31fl3741_IS31FL3741_set_led_obj, 4, 4, is31fl3741_IS31FL3741_set_led);
+
+//| def write(mapping: Tuple[int, ...], buf: ReadableBuffer) -> None:
+//|     """Write buf out on the I2C bus to the IS31FL3741.
+//|
+//|     :param ~Tuple[int, ...] mapping: map the pixels in the buffer to the order addressed by the driver chip
+//|     :param ~_typing.ReadableBuffer buf: The bytes to clock out. No assumption is made about color order"""
+//|     ...
+STATIC mp_obj_t is31fl3741_IS31FL3741_write(mp_obj_t self_in, mp_obj_t mapping, mp_obj_t buffer) {
+    is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (!mp_obj_is_tuple_compatible(mapping)) {
+        mp_raise_ValueError(translate("Mapping must be a tuple"));
+    }
+
+    mp_obj_t *map_items;
+    size_t map_len;
+    mp_obj_tuple_get(mapping, &map_len, &map_items);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
+
+    common_hal_is31fl3741_write(self, map_items, (uint8_t *)bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_3(is31fl3741_IS31FL3741_write_obj, is31fl3741_IS31FL3741_write);
 
 STATIC const mp_rom_map_elem_t is31fl3741_IS31FL3741_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&is31fl3741_IS31FL3741_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&is31fl3741_IS31FL3741_brightness_obj) },
-    { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&is31fl3741_IS31FL3741_refresh_obj) },
-    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&is31fl3741_IS31FL3741_width_obj) },
-    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&is31fl3741_IS31FL3741_height_obj) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_write), (mp_obj_t)&is31fl3741_IS31FL3741_write_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_reset), (mp_obj_t)&is31fl3741_IS31FL3741_reset_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_enable), (mp_obj_t)&is31fl3741_IS31FL3741_enable_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_global_current), (mp_obj_t)&is31fl3741_IS31FL3741_set_global_current_obj },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_set_led), (mp_obj_t)&is31fl3741_IS31FL3741_set_led_obj },
 };
 STATIC MP_DEFINE_CONST_DICT(is31fl3741_IS31FL3741_locals_dict, is31fl3741_IS31FL3741_locals_dict_table);
 
-STATIC void is31fl3741_IS31FL3741_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    check_for_deinit(self);
-
-    *bufinfo = self->bufinfo;
-}
-
-STATIC void is31fl3741_IS31FL3741_swapbuffers(mp_obj_t self_in, uint8_t *dirty_row_bitmap) {
-    common_hal_is31fl3741_IS31FL3741_refresh(self_in, dirty_row_bitmap);
-}
-
-STATIC void is31fl3741_IS31FL3741_deinit_proto(mp_obj_t self_in) {
-    common_hal_is31fl3741_IS31FL3741_deinit(self_in);
-}
-
-STATIC float is31fl3741_IS31FL3741_get_brightness_proto(mp_obj_t self_in) {
-    return common_hal_is31fl3741_IS31FL3741_get_paused(self_in) ? 0.0f : 1.0f;
-}
-
-STATIC bool is31fl3741_IS31FL3741_set_brightness_proto(mp_obj_t self_in, mp_float_t value) {
-    common_hal_is31fl3741_IS31FL3741_set_paused(self_in, value <= 0);
-    return true;
-}
-
-STATIC int is31fl3741_IS31FL3741_get_width_proto(mp_obj_t self_in) {
-    return common_hal_is31fl3741_IS31FL3741_get_width(self_in);
-}
-
-STATIC int is31fl3741_IS31FL3741_get_height_proto(mp_obj_t self_in) {
-    return common_hal_is31fl3741_IS31FL3741_get_height(self_in);
-}
-
-STATIC int is31fl3741_IS31FL3741_get_color_depth_proto(mp_obj_t self_in) {
-    // The way displayio works depth is used to calculate bytes
-    // We use an uint32_t for color already so setting to 24 causes
-    // more changes required
-    return 32;
-}
-
-STATIC int is31fl3741_IS31FL3741_get_bytes_per_cell_proto(mp_obj_t self_in) {
-    return 1;
-}
-
-STATIC int is31fl3741_IS31FL3741_get_native_frames_per_second_proto(mp_obj_t self_in) {
-    return 60; // This was just chosen may vary based on LEDs used?
-}
-
-STATIC const framebuffer_p_t is31fl3741_IS31FL3741_proto = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
-    .get_bufinfo = is31fl3741_IS31FL3741_get_bufinfo,
-    .set_brightness = is31fl3741_IS31FL3741_set_brightness_proto,
-    .get_brightness = is31fl3741_IS31FL3741_get_brightness_proto,
-    .get_width = is31fl3741_IS31FL3741_get_width_proto,
-    .get_height = is31fl3741_IS31FL3741_get_height_proto,
-    .get_color_depth = is31fl3741_IS31FL3741_get_color_depth_proto,
-    .get_bytes_per_cell = is31fl3741_IS31FL3741_get_bytes_per_cell_proto,
-    .get_native_frames_per_second = is31fl3741_IS31FL3741_get_native_frames_per_second_proto,
-    .swapbuffers = is31fl3741_IS31FL3741_swapbuffers,
-    .deinit = is31fl3741_IS31FL3741_deinit_proto,
-};
-
-STATIC mp_int_t is31fl3741_IS31FL3741_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    is31fl3741_IS31FL3741_obj_t *self = (is31fl3741_IS31FL3741_obj_t *)self_in;
-    // a readonly framebuffer would be unusual but not impossible
-    if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
-        return 1;
-    }
-    *bufinfo = self->bufinfo;
-    bufinfo->typecode = 'H';
-    return 0;
-}
-
 const mp_obj_type_t is31fl3741_IS31FL3741_type = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_is31fl3741,
     .locals_dict = (mp_obj_dict_t *)&is31fl3741_IS31FL3741_locals_dict,
     .make_new = is31fl3741_IS31FL3741_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = is31fl3741_IS31FL3741_get_buffer, },
-        .protocol = &is31fl3741_IS31FL3741_proto,
-        ),
 };
