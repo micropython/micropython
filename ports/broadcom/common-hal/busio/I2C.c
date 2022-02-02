@@ -124,7 +124,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    uint8_t result = common_hal_busio_i2c_write(self, addr, NULL, 0, true);
+    uint8_t result = common_hal_busio_i2c_write(self, addr, NULL, 0);
     return result == 0;
 }
 
@@ -147,7 +147,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
 
 // Discussion of I2C implementation is here: https://github.com/raspberrypi/linux/issues/254
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
     COMPLETE_MEMORY_READS;
     self->peripheral->S_b.DONE = true;
@@ -202,6 +202,11 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     return 0;
 }
 
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+    const uint8_t *data, size_t len) {
+    return _common_hal_busio_i2c_write(self, addr, data, len, true);
+}
+
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     uint8_t *data, size_t len) {
     COMPLETE_MEMORY_READS;
@@ -245,6 +250,16 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     }
 
     return 0;
+}
+
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
+    uint8_t result = _common_hal_busio_i2c_write(self, addr, out_data, out_len, false);
+    if (result != 0) {
+        return result;
+    }
+
+    return common_hal_busio_i2c_read(self, addr, in_data, in_len);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {

@@ -72,7 +72,6 @@
 //|         Playing a wave file from flash::
 //|
 //|           import board
-//|           import audioio
 //|           import audiocore
 //|           import audiobusio
 //|           import digitalio

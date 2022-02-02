@@ -458,6 +458,7 @@ msgstr "Все таймеры для этого Пина уже использу
 msgid "All timers in use"
 msgstr "Все таймеры уже используются"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Уже объявляемся (advertising)."
@@ -935,10 +936,12 @@ msgstr "Вывод data 0 должен быть выровнен по байта
 msgid "Data chunk must follow fmt chunk"
 msgstr "Блок данных должен следовать за блоком fmt"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr "Данные не поддерживаются направленным объявлением"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Данные слишком велики для пакета объявления"
@@ -1021,6 +1024,7 @@ msgstr "Ожидался сигнал"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Ожидался кортеж длины %d, получен %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Расширенные объявления с ответом сканирования не поддерживаются."
@@ -1074,6 +1078,7 @@ msgstr "Не удалось выделить память для сканиро�
 msgid "Failed to buffer the sample"
 msgstr "Не удалось выполнить буферизацию образца"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Не удалось подключиться: внутренняя ошибка"
@@ -1319,6 +1324,7 @@ msgstr "Недопустимое значение единицы АЦП"
 msgid "Invalid AuthMode"
 msgstr "Недопустимый AuthMode"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Недопустимый параметр BLE"
@@ -1629,6 +1635,10 @@ msgstr "Ошибка NVS"
 msgid "Name too long"
 msgstr "Имя слишком длинное"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Нет CCCD для этой Characteristic"
@@ -1778,6 +1788,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "Недействительная строка IP"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2165,6 +2176,7 @@ msgstr ""
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr ""
@@ -2323,6 +2335,7 @@ msgstr ""
 msgid "Time is in the past."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2345,6 +2358,7 @@ msgstr ""
 msgid "Too many displays"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr ""
@@ -2476,9 +2490,19 @@ msgstr ""
 msgid "Unknown security error: 0x%04x"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -2518,11 +2542,13 @@ msgstr ""
 msgid "Update Failed"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2580,6 +2606,7 @@ msgstr ""
 msgid "Woken up by alarm.\n"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr ""
@@ -3647,6 +3674,7 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format

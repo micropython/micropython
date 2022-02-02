@@ -97,7 +97,7 @@ bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
     return I2C_TRANSFER(self->i2c_dev, &msg, 1) < 0 ? false : true;
 }
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, const uint8_t *data, size_t len, bool stop) {
+STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, const uint8_t *data, size_t len, bool stop) {
     struct i2c_msg_s msg;
 
     msg.frequency = self->frequency;
@@ -106,6 +106,11 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t address, cons
     msg.buffer = (uint8_t *)data;
     msg.length = len;
     return -I2C_TRANSFER(self->i2c_dev, &msg, 1);
+}
+
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+    const uint8_t *data, size_t len) {
+    return _common_hal_busio_i2c_write(self, addr, data, len, true);
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address, uint8_t *data, size_t len) {
@@ -117,6 +122,16 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t address, uint8
     msg.buffer = data;
     msg.length = len;
     return -I2C_TRANSFER(self->i2c_dev, &msg, 1);
+}
+
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
+    uint8_t result = _common_hal_busio_i2c_write(self, addr, out_data, out_len, false);
+    if (result != 0) {
+        return result;
+    }
+
+    return common_hal_busio_i2c_read(self, addr, in_data, in_len);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {

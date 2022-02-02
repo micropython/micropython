@@ -90,7 +90,7 @@ uint8_t is31fl3741_cur_page = 99; // set to invalid page to start
 
 void common_hal_is31fl3741_send_unlock(is31fl3741_IS31FL3741_obj_t *self) {
     uint8_t unlock[2] = { 0xFE, 0xC5 }; // unlock command
-    common_hal_busio_i2c_write(self->i2c, self->device_address, unlock, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, unlock, 2);
 }
 
 void common_hal_is31fl3741_set_page(is31fl3741_IS31FL3741_obj_t *self, uint8_t p) {
@@ -103,26 +103,26 @@ void common_hal_is31fl3741_set_page(is31fl3741_IS31FL3741_obj_t *self, uint8_t p
 
     uint8_t page[2] = { 0xFD, 0x00 }; // page command
     page[1] = p;
-    common_hal_busio_i2c_write(self->i2c, self->device_address, page, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, page, 2);
 }
 
 void common_hal_is31fl3741_send_enable(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_is31fl3741_set_page(self, 4);
     uint8_t enable[2] = { 0x00, 0x01 }; // enable command
-    common_hal_busio_i2c_write(self->i2c, self->device_address, enable, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, enable, 2);
 }
 
 void common_hal_is31fl3741_send_reset(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_is31fl3741_set_page(self, 4);
     uint8_t rst[2] = { 0x3F, 0xAE }; // reset command
-    common_hal_busio_i2c_write(self->i2c, self->device_address, rst, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, rst, 2);
 }
 
 void common_hal_is31fl3741_set_current(is31fl3741_IS31FL3741_obj_t *self, uint8_t current) {
     common_hal_is31fl3741_set_page(self, 4);
     uint8_t gcur[2] = { 0x01, 0x00 }; // global current command
     gcur[1] = current;
-    common_hal_busio_i2c_write(self->i2c, self->device_address, gcur, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, gcur, 2);
 }
 
 uint8_t common_hal_is31fl3741_get_current(is31fl3741_IS31FL3741_obj_t *self) {
@@ -145,7 +145,7 @@ void common_hal_is31fl3741_set_led(is31fl3741_IS31FL3741_obj_t *self, uint16_t l
 
     cmd[1] = level;
 
-    common_hal_busio_i2c_write(self->i2c, self->device_address, cmd, 2, true);
+    common_hal_busio_i2c_write(self->i2c, self->device_address, cmd, 2);
 }
 
 void common_hal_is31fl3741_draw_pixel(is31fl3741_IS31FL3741_obj_t *self, int16_t x, int16_t y, uint32_t color, uint16_t *mapping) {

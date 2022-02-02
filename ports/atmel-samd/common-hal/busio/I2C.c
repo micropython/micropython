@@ -190,7 +190,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
 
     uint16_t attempts = ATTEMPTS;
@@ -214,6 +214,11 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         return MP_ENODEV;
     }
     return MP_EIO;
+}
+
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+    const uint8_t *data, size_t len) {
+    return _common_hal_busio_i2c_write(self, addr, data, len, true);
 }
 
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
@@ -240,6 +245,16 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         return MP_ENODEV;
     }
     return MP_EIO;
+}
+
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
+    uint8_t result = _common_hal_busio_i2c_write(self, addr, out_data, out_len, false);
+    if (result != 0) {
+        return result;
+    }
+
+    return common_hal_busio_i2c_read(self, addr, in_data, in_len);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {
