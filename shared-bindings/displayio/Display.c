@@ -444,7 +444,7 @@ const mp_obj_property_t displayio_display_bus_obj = {
               MP_ROM_NONE},
 };
 
-//|     root_group: _Group
+//|     root_group: Group
 //|     """The root group on the display."""
 //|
 //|
