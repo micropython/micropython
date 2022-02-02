@@ -374,17 +374,13 @@ Use the ``neopixel`` module::
     np.write()              # write data to all pixels
     r, g, b = np[0]         # get first pixel colour
 
-For low-level driving of a NeoPixel::
-
-    import esp
-    esp.neopixel_write(pin, grb_buf, is800khz)
-
 .. Warning::
    By default ``NeoPixel`` is configured to control the more popular *800kHz*
    units. It is possible to use alternative timing to control other (typically
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
 
+For low-level driving of a NeoPixel see `machine.bitstream`.
 
 APA102 driver
 -------------
