@@ -96,6 +96,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "exec",
         "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
     ],
+    "--help": "help",
 }
 
 for port_num in range(4):
