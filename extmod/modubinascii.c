@@ -1,5 +1,6 @@
 // Copyright (c) 2014 Paul Sokolovsky
 // SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+// SPDX-FileCopyrightText: 2022 Beat Ludin for Adafruit Industries
 //
 // SPDX-License-Identifier: MIT
 
