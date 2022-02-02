@@ -1541,6 +1541,10 @@ msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
 msgid "MOSI pin init failed."
 msgstr "MOSI yǐn jiǎo shūrù shībài."
 
+#: shared-bindings/is31fl3741/__init__.c
+msgid "Mapping must be a tuple"
+msgstr ""
+
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
