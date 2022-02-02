@@ -128,11 +128,8 @@ void common_hal_is31fl3741_set_current(is31fl3741_IS31FL3741_obj_t *self, uint8_
 uint8_t common_hal_is31fl3741_get_current(is31fl3741_IS31FL3741_obj_t *self) {
     common_hal_is31fl3741_set_page(self, 4);
     uint8_t gcur = 0x01; // global current command
-    common_hal_busio_i2c_write(self->i2c, self->device_address, &gcur, 1, true);
-
-    uint8_t data = 0;
-    common_hal_busio_i2c_read(self->i2c, self->device_address, &data, 1);
-    return data;
+    common_hal_busio_i2c_write_read(self->i2c, self->device_address, &gcur, 1, &gcur, 1);
+    return gcur;
 }
 
 void common_hal_is31fl3741_set_led(is31fl3741_IS31FL3741_obj_t *self, uint16_t led, uint8_t level, uint8_t page) {
