@@ -444,6 +444,23 @@ const mp_obj_property_t displayio_display_bus_obj = {
               MP_ROM_NONE},
 };
 
+//|     root_group: Group
+//|     """The root group on the display."""
+//|
+//|
+STATIC mp_obj_t displayio_display_obj_get_root_group(mp_obj_t self_in) {
+    displayio_display_obj_t *self = native_display(self_in);
+    return common_hal_displayio_display_get_root_group(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_display_get_root_group_obj, displayio_display_obj_get_root_group);
+
+const mp_obj_property_t displayio_display_root_group_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_display_get_root_group_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
 
 //|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:
 //|         """Extract the pixels from a single row
@@ -517,6 +534,7 @@ STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&displayio_display_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&displayio_display_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_bus), MP_ROM_PTR(&displayio_display_bus_obj) },
+    { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&displayio_display_root_group_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_display_locals_dict, displayio_display_locals_dict_table);
 
