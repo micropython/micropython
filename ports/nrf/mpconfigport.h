@@ -220,7 +220,6 @@ typedef long mp_off_t;
 
 // extra built in modules to add to the list of known ones
 extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t nrf_module;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_uos;
@@ -263,7 +262,6 @@ extern const struct _mp_obj_module_t ble_module;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
@@ -278,7 +276,6 @@ extern const struct _mp_obj_module_t ble_module;
 extern const struct _mp_obj_module_t ble_module;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     MUSIC_MODULE \
@@ -296,7 +293,7 @@ extern const struct _mp_obj_module_t ble_module;
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     BLE_MODULE \
 
 #define MP_STATE_PORT MP_STATE_VM
