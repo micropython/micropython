@@ -16,9 +16,9 @@ print(target, ref)
 port_deps = {
     "atmel-samd": [
         "extmod/ulab/",
+        "lib/adafruit_floppy/",
         "lib/mp3/",
         "lib/protomatter/",
-        "lib/adafruit_floppy/",
         "lib/quirc/",
         "lib/tinyusb/",
         "data/nvm.toml/",
@@ -31,6 +31,7 @@ port_deps = {
     "nrf": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"],
     "raspberrypi": [
         "extmod/ulab/",
+        "lib/adafruit_floppy/",
         "lib/mp3/",
         "lib/protomatter/",
         "lib/quirc/",
