@@ -116,9 +116,6 @@
 [submodule "frozen/Adafruit_CircuitPython_Requests"]
 	path = frozen/Adafruit_CircuitPython_Requests
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Requests
-[submodule "ports/stm/st_driver"]
-	path = ports/stm/st_driver
-	url = https://github.com/hathach/st_driver.git
 [submodule "lib/protomatter"]
 	path = lib/protomatter
 	url = https://github.com/adafruit/Adafruit_Protomatter
