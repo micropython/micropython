@@ -75,9 +75,19 @@
 #endif
 
 #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
-// Location in RAM of bootloader state (just after the top of the stack)
-extern uint32_t _estack[];
-#define BL_STATE ((uint32_t *)&_estack)
+// Location in RAM of bootloader state (just after the top of the stack).
+// STM32H7 has ECC and writes to RAM must be 64-bit so they are fully committed
+// to actual SRAM before a system reset occurs.
+#define BL_STATE_PTR                ((uint64_t *)&_estack)
+#define BL_STATE_KEY                (0x5a5)
+#define BL_STATE_KEY_MASK           (0xfff)
+#define BL_STATE_KEY_SHIFT          (32)
+#define BL_STATE_INVALID            (0)
+#define BL_STATE_VALID(reg, addr)   ((uint64_t)(reg) | ((uint64_t)((addr) | BL_STATE_KEY)) << BL_STATE_KEY_SHIFT)
+#define BL_STATE_GET_REG(s)         ((s) & 0xffffffff)
+#define BL_STATE_GET_KEY(s)         (((s) >> BL_STATE_KEY_SHIFT) & BL_STATE_KEY_MASK)
+#define BL_STATE_GET_ADDR(s)        (((s) >> BL_STATE_KEY_SHIFT) & ~BL_STATE_KEY_MASK)
+extern uint64_t _estack[];
 #endif
 
 static inline void powerctrl_disable_hsi_if_unused(void) {
@@ -89,7 +99,7 @@ static inline void powerctrl_disable_hsi_if_unused(void) {
 
 NORETURN void powerctrl_mcu_reset(void) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
-    BL_STATE[1] = 1; // invalidate bootloader address
+    *BL_STATE_PTR = BL_STATE_INVALID;
     #if __DCACHE_PRESENT == 1
     SCB_CleanDCache();
     #endif
@@ -112,8 +122,7 @@ NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
 
     // Enter the bootloader via a reset, so everything is reset (including WDT).
     // Upon reset powerctrl_check_enter_bootloader() will jump to the bootloader.
-    BL_STATE[0] = r0;
-    BL_STATE[1] = bl_addr;
+    *BL_STATE_PTR = BL_STATE_VALID(r0, bl_addr);
     #if __DCACHE_PRESENT == 1
     SCB_CleanDCache();
     #endif
@@ -129,16 +138,15 @@ NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr) {
 
 void powerctrl_check_enter_bootloader(void) {
     #if MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
-    uint32_t bl_addr = BL_STATE[1];
-    BL_STATE[1] = 1; // invalidate bootloader address
-    if ((bl_addr & 0xfff) == 0 && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
+    uint64_t bl_state = *BL_STATE_PTR;
+    *BL_STATE_PTR = BL_STATE_INVALID;
+    if (BL_STATE_GET_KEY(bl_state) == BL_STATE_KEY && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
         // Reset by NVIC_SystemReset with bootloader data set -> branch to bootloader
         RCC->RCC_SR = RCC_SR_RMVF;
-        #if defined(STM32F0) || defined(STM32F4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F4) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
         __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
         #endif
-        uint32_t r0 = BL_STATE[0];
-        branch_to_bootloader(r0, bl_addr);
+        branch_to_bootloader(BL_STATE_GET_REG(bl_state), BL_STATE_GET_ADDR(bl_state));
     }
     #endif
 }
@@ -370,7 +378,7 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     #endif
 }
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
@@ -678,7 +686,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
+    #if !defined(STM32F0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -853,6 +861,9 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
+    #elif defined(STM32G4)
+    #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
+    #define ISR_BITS (RTC_MISR_ALRAMF | RTC_MISR_ALRBMF | RTC_MISR_WUTMF | RTC_MISR_TSMF)
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define SR_BITS (RTC_SR_ALRAF | RTC_SR_ALRBF | RTC_SR_WUTF | RTC_SR_TSF)
@@ -874,6 +885,8 @@ void powerctrl_enter_standby_mode(void) {
     // clear RTC wake-up flags
     #if defined(SR_BITS)
     RTC->SR &= ~SR_BITS;
+    #elif defined(STM32G4)
+    RTC->MISR &= ~ISR_BITS;
     #else
     RTC->ISR &= ~ISR_BITS;
     #endif
@@ -890,7 +903,7 @@ void powerctrl_enter_standby_mode(void) {
     #elif defined(STM32H7)
     EXTI_D1->PR1 = 0x3fffff;
     PWR->WKUPCR |= PWR_WAKEUP_FLAG1 | PWR_WAKEUP_FLAG2 | PWR_WAKEUP_FLAG3 | PWR_WAKEUP_FLAG4 | PWR_WAKEUP_FLAG5 | PWR_WAKEUP_FLAG6;
-    #elif defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     // clear all wake-up flags
     PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
     // TODO

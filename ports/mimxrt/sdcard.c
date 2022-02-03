@@ -725,24 +725,18 @@ static inline void sdcard_init_pin(const machine_pin_obj_t *pin, uint8_t af_idx,
 
 void sdcard_init_pins(mimxrt_sdcard_obj_t *card) {
     // speed and strength optimized for clock frequency < 100MHz
-    uint32_t speed = 1U;
-    uint32_t strength = 7U;
     const mimxrt_sdcard_obj_pins_t *pins = card->pins;
 
-    uint32_t default_config = IOMUXC_SW_PAD_CTL_PAD_SPEED(speed) |
-        IOMUXC_SW_PAD_CTL_PAD_SRE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PKE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_HYS_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUS(1) |
-        IOMUXC_SW_PAD_CTL_PAD_DSE(strength);
-    uint32_t no_cd_config = IOMUXC_SW_PAD_CTL_PAD_SPEED(speed) |
-        IOMUXC_SW_PAD_CTL_PAD_SRE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PKE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_HYS_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUS(0) |
-        IOMUXC_SW_PAD_CTL_PAD_DSE(strength);
+    uint32_t default_config = pin_generate_config(
+        PIN_PULL_UP_47K, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->clk.pin->configRegister);
+    #if USDHC_DATA3_PULL_DOWN_ON_BOARD
+    // Pull down on the board -> must not enable internal PD.
+    uint32_t no_cd_config = pin_generate_config(
+        PIN_PULL_DISABLED, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->data3.pin->configRegister);
+    #else
+    uint32_t no_cd_config = pin_generate_config(
+        PIN_PULL_DOWN_100K, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->data3.pin->configRegister);
+    #endif // USDHC_DATA3_PULL_DOWN_ON_BOARD
 
     sdcard_init_pin(card->pins->clk.pin, card->pins->clk.af_idx, default_config);  // USDHC1_CLK
     sdcard_init_pin(card->pins->cmd.pin, card->pins->cmd.af_idx, default_config);  // USDHC1_CMD

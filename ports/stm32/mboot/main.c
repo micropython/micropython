@@ -80,7 +80,7 @@
 #undef MICROPY_HW_CLK_PLLP
 #undef MICROPY_HW_CLK_PLLQ
 #undef MICROPY_HW_CLK_PLLR
-#define MICROPY_HW_CLK_PLLM (HSE_VALUE / 1000000)
+#define MICROPY_HW_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
 #define MICROPY_HW_CLK_PLLN (192)
 #define MICROPY_HW_CLK_PLLP (MICROPY_HW_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
 #define MICROPY_HW_CLK_PLLQ (4)
@@ -184,10 +184,12 @@ void SystemClock_Config(void) {
     // Reduce power consumption
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
+    #if !MICROPY_HW_CLK_USE_HSI
     // Turn HSE on
     __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
     while (__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET) {
     }
+    #endif
 
     // Disable PLL
     __HAL_RCC_PLL_DISABLE();
@@ -196,7 +198,11 @@ void SystemClock_Config(void) {
 
     // Configure PLL factors and source
     RCC->PLLCFGR =
+        #if MICROPY_HW_CLK_USE_HSI
+        0 << RCC_PLLCFGR_PLLSRC_Pos // HSI selected as PLL source
+        #else
         1 << RCC_PLLCFGR_PLLSRC_Pos // HSE selected as PLL source
+        #endif
         | MICROPY_HW_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
         | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
         | ((MICROPY_HW_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
@@ -265,25 +271,46 @@ void SystemClock_Config(void) {
     while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) != RESET) {
     }
 
-    // Configure PLL1 factors and source
-    RCC->PLLCKSELR =
-        MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos
-        | 2 << RCC_PLLCKSELR_PLLSRC_Pos; // HSE selected as PLL source
+    // Disable PLL3
+    __HAL_RCC_PLL3_DISABLE();
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) != RESET) {
+    }
+
+    // Select HSE as PLLx source
+    RCC->PLLCKSELR = 2 << RCC_PLLCKSELR_PLLSRC_Pos;
+    RCC->PLLCFGR = 0;
+
+    // Configure PLL1 for use by SYSCLK
+    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
+    RCC->PLLCFGR |= RCC_PLLCFGR_DIVP1EN;
+    RCC->PLL1FRACR = 0;
     RCC->PLL1DIVR =
         (MICROPY_HW_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
         | (MICROPY_HW_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
         | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
         | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
 
-    // Enable PLL1 outputs for SYSCLK and USB
-    RCC->PLLCFGR = RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN;
+    // Configure PLL3 for use by USB at Q=48MHz
+    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLL3M << RCC_PLLCKSELR_DIVM3_Pos;
+    RCC->PLLCFGR |= RCC_PLLCFGR_DIVQ3EN;
+    RCC->PLL3FRACR = 0;
+    RCC->PLL3DIVR =
+        (MICROPY_HW_CLK_PLL3N - 1) << RCC_PLL3DIVR_N3_Pos
+        | (MICROPY_HW_CLK_PLL3P - 1) << RCC_PLL3DIVR_P3_Pos // only even P allowed
+        | (MICROPY_HW_CLK_PLL3Q - 1) << RCC_PLL3DIVR_Q3_Pos
+        | (MICROPY_HW_CLK_PLL3R - 1) << RCC_PLL3DIVR_R3_Pos;
 
-    // Select PLL1-Q for USB clock source
-    RCC->D2CCIP2R |= 1 << RCC_D2CCIP2R_USBSEL_Pos;
+    // Select PLL3-Q for USB clock source
+    MODIFY_REG(RCC->D2CCIP2R, RCC_D2CCIP2R_USBSEL, RCC_D2CCIP2R_USBSEL_1);
 
     // Enable PLL1
     __HAL_RCC_PLL_ENABLE();
     while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+    }
+
+    // Enable PLL3
+    __HAL_RCC_PLL3_ENABLE();
+    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) == RESET) {
     }
 
     // Increase latency before changing SYSCLK
@@ -320,7 +347,7 @@ void SystemClock_Config(void) {
         ;
 
     // Update clock value and reconfigure systick now that the frequency changed
-    SystemCoreClock = CORE_PLL_FREQ;
+    SystemCoreClockUpdate();
     systick_init();
 }
 
@@ -1412,7 +1439,7 @@ static void leave_bootloader(void) {
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
-void stm32_main(int initial_r0) {
+void stm32_main(uint32_t initial_r0) {
     #if defined(STM32H7)
     // Configure write-once power options, and wait for voltage levels to be ready
     PWR->CR3 = PWR_CR3_LDOEN;
@@ -1486,12 +1513,19 @@ enter_bootloader:
     // set the system clock to be HSE
     SystemClock_Config();
 
+    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
+    __set_PRIMASK(0);
+
     #if USE_USB_POLLING
     // irqs with a priority value greater or equal to "pri" will be disabled
     // "pri" should be between 1 and 15 inclusive
     uint32_t pri = 2;
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    #endif
+
+    #if defined(MBOOT_BOARD_ENTRY_INIT)
+    MBOOT_BOARD_ENTRY_INIT(initial_r0);
     #endif
 
     #if defined(MBOOT_SPIFLASH_ADDR)

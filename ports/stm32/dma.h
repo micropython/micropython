@@ -62,6 +62,29 @@ extern const dma_descr_t dma_I2S_1_TX;
 extern const dma_descr_t dma_I2S_2_RX;
 extern const dma_descr_t dma_I2S_2_TX;
 
+#elif defined(STM32G4)
+
+extern const dma_descr_t dma_SPI_1_RX;
+extern const dma_descr_t dma_SPI_1_TX;
+extern const dma_descr_t dma_SPI_2_RX;
+extern const dma_descr_t dma_SPI_2_TX;
+extern const dma_descr_t dma_I2C_1_RX;
+extern const dma_descr_t dma_I2C_1_TX;
+extern const dma_descr_t dma_I2C_2_RX;
+extern const dma_descr_t dma_I2C_2_TX;
+extern const dma_descr_t dma_I2C_3_RX;
+extern const dma_descr_t dma_I2C_3_TX;
+extern const dma_descr_t dma_UART_3_RX;
+extern const dma_descr_t dma_UART_3_TX;
+extern const dma_descr_t dma_DAC_1_TX;
+extern const dma_descr_t dma_DAC_2_TX;
+extern const dma_descr_t dma_UART_1_RX;
+extern const dma_descr_t dma_UART_1_TX;
+extern const dma_descr_t dma_LPUART_1_RX;
+extern const dma_descr_t dma_LPUART_1_TX;
+extern const dma_descr_t dma_ADC_1;
+extern const dma_descr_t dma_MEM_2_MEM;
+
 #elif defined(STM32L0)
 
 extern const dma_descr_t dma_SPI_1_RX;

@@ -25,10 +25,18 @@
  */
 
 #include "tusb.h"
+#include "mphalport.h"
 
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID (0xf055)
+#endif
+
+#ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID (0x9802)
+#endif
+
+#ifndef MICROPY_HW_USB_STR_MANUF
+#define MICROPY_HW_USB_STR_MANUF ("MicroPython")
 #endif
 
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
@@ -77,9 +85,9 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 };
 
 static const char *const usbd_desc_str[] = {
-    [USBD_STR_MANUF] = "MicroPython",
-    [USBD_STR_PRODUCT] = "Board in FS mode", // Todo: fix string to indicate that product is running in High Speed mode
-    [USBD_STR_SERIAL] = "000000000000", // TODO
+    [USBD_STR_MANUF] = MICROPY_HW_USB_STR_MANUF,
+    [USBD_STR_PRODUCT] = MICROPY_HW_BOARD_NAME,
+    [USBD_STR_SERIAL] = "00000000000000000000",
     [USBD_STR_CDC] = "Board CDC",
 };
 
@@ -95,6 +103,9 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     #define DESC_STR_MAX (20)
     static uint16_t desc_str[DESC_STR_MAX];
+    static const char hexchr[16] = "0123456789ABCDEF";
+
+    memset(desc_str, 0, sizeof(desc_str));
 
     uint8_t len;
     if (index == 0) {
@@ -104,9 +115,19 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
         if (index >= sizeof(usbd_desc_str) / sizeof(usbd_desc_str[0])) {
             return NULL;
         }
-        const char *str = usbd_desc_str[index];
-        for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
-            desc_str[1 + len] = str[len];
+        if (index == USBD_STR_SERIAL) {
+            uint8_t uid[8];
+            mp_hal_get_unique_id(uid);
+            // store it as a hex string
+            for (len = 0; len < 16; len += 2) {
+                desc_str[1 + len] = hexchr[uid[len / 2] >> 4];
+                desc_str[1 + len + 1] = hexchr[uid[len / 2] & 0x0f];
+            }
+        } else {
+            const char *str = usbd_desc_str[index];
+            for (len = 0; len < DESC_STR_MAX - 1 && str[len]; ++len) {
+                desc_str[1 + len] = str[len];
+            }
         }
     }
 

@@ -213,6 +213,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
         uint8_t pull = PIN_PULL_DISABLED;
+        uint32_t drive = (uint32_t)args[PIN_INIT_ARG_DRIVE].u_int;
 
         // Generate pin configuration
         if ((args[PIN_INIT_ARG_VALUE].u_obj != MP_OBJ_NULL) && (mp_obj_is_true(args[PIN_INIT_ARG_VALUE].u_obj))) {
@@ -233,38 +234,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             pull = (uint8_t)mp_obj_get_int(args[PIN_INIT_ARG_PULL].u_obj);
         }
 
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);  // Slow Slew Rate
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);  // medium(100MHz)
-
-        if (mode == PIN_MODE_OPEN_DRAIN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
-        }
-
-        if (pull == PIN_PULL_DISABLED) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
-        } else if (pull == PIN_PULL_HOLD) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) |  // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(1) |            // Pull selected
-                IOMUXC_SW_PAD_CTL_PAD_PUS(pull);
-        }
-
-        if (mode == PIN_MODE_IN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
-                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
-        } else {
-            uint drive = args[PIN_INIT_ARG_DRIVE].u_int;
-            if (!IS_GPIO_DRIVE(drive)) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
-            }
-
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive) |
-                IOMUXC_SW_PAD_CTL_PAD_HYS(0U);  // Hysteresis disabled
-        }
+        pad_config = pin_generate_config(pull, mode, drive, self->configRegister);
 
         // Configure PAD as GPIO
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality

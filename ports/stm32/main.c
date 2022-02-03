@@ -654,6 +654,9 @@ soft_reset_exit:
     #if MICROPY_HW_ENABLE_CAN
     can_deinit_all();
     #endif
+    #if MICROPY_HW_ENABLE_DAC
+    dac_deinit_all();
+    #endif
     machine_deinit();
 
     #if MICROPY_PY_THREAD
