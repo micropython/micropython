@@ -1439,7 +1439,7 @@ static void leave_bootloader(void) {
 extern PCD_HandleTypeDef pcd_fs_handle;
 extern PCD_HandleTypeDef pcd_hs_handle;
 
-void stm32_main(int initial_r0) {
+void stm32_main(uint32_t initial_r0) {
     #if defined(STM32H7)
     // Configure write-once power options, and wait for voltage levels to be ready
     PWR->CR3 = PWR_CR3_LDOEN;
@@ -1522,6 +1522,10 @@ enter_bootloader:
     uint32_t pri = 2;
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    #endif
+
+    #if defined(MBOOT_BOARD_ENTRY_INIT)
+    MBOOT_BOARD_ENTRY_INIT(initial_r0);
     #endif
 
     #if defined(MBOOT_SPIFLASH_ADDR)
