@@ -274,3 +274,6 @@
 [submodule "ports/stm/st_driver/CMSIS_5"]
 	path = ports/stm/st_driver/CMSIS_5
 	url = https://github.com/ARM-software/CMSIS_5.git
+[submodule "ports/stm/st_driver/stm32f4xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f4xx_hal_driver
+	url = https://github.com/adafruit/stm32f4xx_hal_driver.git
