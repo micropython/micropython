@@ -1519,6 +1519,10 @@ msgstr "Nie powiodło się ustawienie pinu MISO."
 msgid "MOSI pin init failed."
 msgstr "Nie powiodło się ustawienie pinu MOSI."
 
+#: shared-bindings/is31fl3741/__init__.c
+msgid "Mapping must be a tuple"
+msgstr ""
+
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
