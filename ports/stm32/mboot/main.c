@@ -80,7 +80,7 @@
 #undef MICROPY_HW_CLK_PLLP
 #undef MICROPY_HW_CLK_PLLQ
 #undef MICROPY_HW_CLK_PLLR
-#define MICROPY_HW_CLK_PLLM (HSE_VALUE / 1000000)
+#define MICROPY_HW_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
 #define MICROPY_HW_CLK_PLLN (192)
 #define MICROPY_HW_CLK_PLLP (MICROPY_HW_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
 #define MICROPY_HW_CLK_PLLQ (4)
@@ -184,10 +184,12 @@ void SystemClock_Config(void) {
     // Reduce power consumption
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
+    #if !MICROPY_HW_CLK_USE_HSI
     // Turn HSE on
     __HAL_RCC_HSE_CONFIG(RCC_HSE_ON);
     while (__HAL_RCC_GET_FLAG(RCC_FLAG_HSERDY) == RESET) {
     }
+    #endif
 
     // Disable PLL
     __HAL_RCC_PLL_DISABLE();
@@ -196,7 +198,11 @@ void SystemClock_Config(void) {
 
     // Configure PLL factors and source
     RCC->PLLCFGR =
+        #if MICROPY_HW_CLK_USE_HSI
+        0 << RCC_PLLCFGR_PLLSRC_Pos // HSI selected as PLL source
+        #else
         1 << RCC_PLLCFGR_PLLSRC_Pos // HSE selected as PLL source
+        #endif
         | MICROPY_HW_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
         | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
         | ((MICROPY_HW_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
