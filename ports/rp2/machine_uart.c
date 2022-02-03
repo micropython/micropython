@@ -109,10 +109,10 @@ STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"
 /******************************************************************************/
 // IRQ and buffer handling
 
-// take all bytes from the fifo and store them, if possible, in the buffer
+// take all bytes from the fifo and store them in the buffer
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
-    while (uart_is_readable(self->uart)) {
-        // try to write the data, ignore the fail
+    while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
+        // get a byte from uart and put into the buffer
         ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
     }
 }
