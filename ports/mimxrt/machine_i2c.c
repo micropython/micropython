@@ -72,15 +72,14 @@ static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
 
 bool lpi2c_set_iomux(int8_t hw_i2c, uint8_t drive) {
     int index = (hw_i2c - 1) * 2;
+    uint16_t pad_config = pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OPEN_DRAIN, drive, SCL.configRegister);
 
     if (SCL.muxRegister != 0) {
         IOMUXC_SetPinMux(SCL.muxRegister, SCL.muxMode, SCL.inputRegister, SCL.inputDaisy, SCL.configRegister, 1U);
-        IOMUXC_SetPinConfig(SCL.muxRegister, SCL.muxMode, SCL.inputRegister, SCL.inputDaisy, SCL.configRegister,
-            0xF880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+        IOMUXC_SetPinConfig(SCL.muxRegister, SCL.muxMode, SCL.inputRegister, SCL.inputDaisy, SCL.configRegister, pad_config);
 
         IOMUXC_SetPinMux(SDA.muxRegister, SDA.muxMode, SDA.inputRegister, SDA.inputDaisy, SDA.configRegister, 1U);
-        IOMUXC_SetPinConfig(SDA.muxRegister, SDA.muxMode, SDA.inputRegister, SDA.inputDaisy, SDA.configRegister,
-            0xF880u | drive << IOMUXC_SW_PAD_CTL_PAD_DSE_SHIFT);
+        IOMUXC_SetPinConfig(SDA.muxRegister, SDA.muxMode, SDA.inputRegister, SDA.inputDaisy, SDA.configRegister, pad_config);
         return true;
     } else {
         return false;
@@ -109,7 +108,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Get I2C bus.
     int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
-    if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM) {
+    if (i2c_id < 0 || i2c_id >= MICROPY_HW_I2C_NUM || i2c_index_table[i2c_id] == 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C(%d) doesn't exist"), i2c_id);
     }
 

@@ -47,6 +47,13 @@
 // This current MicroPython implementation lacks some major features, notably receive pulses
 // and carrier output.
 
+// Last available RMT channel that can transmit.
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 4, 0)
+#define RMT_LAST_TX_CHANNEL (RMT_CHANNEL_MAX - 1)
+#else
+#define RMT_LAST_TX_CHANNEL (SOC_RMT_TX_CANDIDATES_PER_GROUP - 1)
+#endif
+
 // Forward declaration
 extern const mp_obj_type_t esp32_rmt_type;
 
@@ -62,7 +69,7 @@ typedef struct _esp32_rmt_obj_t {
 
 // Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
 // implementation.  A value of -1 means do not use RMT.
-int8_t esp32_rmt_bitstream_channel_id = RMT_CHANNEL_MAX - 1;
+int8_t esp32_rmt_bitstream_channel_id = RMT_LAST_TX_CHANNEL;
 
 #if MP_TASK_COREID == 0
 
@@ -336,7 +343,7 @@ STATIC mp_obj_t esp32_rmt_bitstream_channel(size_t n_args, const mp_obj_t *args)
             esp32_rmt_bitstream_channel_id = -1;
         } else {
             mp_int_t channel_id = mp_obj_get_int(args[0]);
-            if (channel_id < 0 || channel_id >= RMT_CHANNEL_MAX) {
+            if (channel_id < 0 || channel_id > RMT_LAST_TX_CHANNEL) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
             }
             esp32_rmt_bitstream_channel_id = channel_id;

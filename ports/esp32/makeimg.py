@@ -10,13 +10,27 @@ OFFSET_BOOTLOADER_DEFAULT = 0x1000
 OFFSET_PARTITIONS_DEFAULT = 0x8000
 
 
-def load_sdkconfig_hex_value(filename, value, default):
+def load_sdkconfig_value(filename, value, default):
     value = "CONFIG_" + value + "="
     with open(filename, "r") as f:
         for line in f:
             if line.startswith(value):
-                return int(line.split("=", 1)[1], 16)
+                return line.split("=", 1)[1]
     return default
+
+
+def load_sdkconfig_hex_value(filename, value, default):
+    value = load_sdkconfig_value(filename, value, None)
+    if value is None:
+        return default
+    return int(value, 16)
+
+
+def load_sdkconfig_str_value(filename, value, default):
+    value = load_sdkconfig_value(filename, value, None)
+    if value is None:
+        return default
+    return value.strip().strip('"')
 
 
 def load_partition_table(filename):
@@ -30,8 +44,10 @@ arg_bootloader_bin = sys.argv[2]
 arg_partitions_bin = sys.argv[3]
 arg_application_bin = sys.argv[4]
 arg_output_bin = sys.argv[5]
+arg_output_uf2 = sys.argv[6]
 
 # Load required sdkconfig values.
+idf_target = load_sdkconfig_str_value(arg_sdkconfig, "IDF_TARGET", "").upper()
 offset_bootloader = load_sdkconfig_hex_value(
     arg_sdkconfig, "BOOTLOADER_OFFSET_IN_FLASH", OFFSET_BOOTLOADER_DEFAULT
 )
@@ -85,3 +101,14 @@ with open(file_out, "wb") as fout:
                 )
                 sys.exit(1)
     print("%-22s% 8d" % ("total", cur_offset))
+
+# Generate .uf2 file if the SoC has native USB.
+if idf_target in ("ESP32S2", "ESP32S3"):
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../../tools"))
+    import uf2conv
+
+    families = uf2conv.load_families()
+    uf2conv.appstartaddr = 0
+    uf2conv.familyid = families[idf_target]
+    with open(arg_application_bin, "rb") as fin, open(arg_output_uf2, "wb") as fout:
+        fout.write(uf2conv.convert_to_uf2(fin.read()))
