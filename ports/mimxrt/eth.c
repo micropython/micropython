@@ -174,7 +174,7 @@ void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, enet_event_t event,
             }
         } while (status != kStatus_ENET_RxFrameEmpty);
     } else {
-        ENET_ClearInterruptStatus(base, kENET_TxFrameInterrupt);
+        ENET_ClearInterruptStatus(base, ENET_TX_INTERRUPT | ENET_ERR_INTERRUPT);
     }
 }
 
@@ -279,6 +279,7 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("PHY Init failed."));
     }
 
+    ENET_Reset(ENET);
     ENET_GetDefaultConfig(&enet_config);
     enet_config.miiSpeed = (enet_mii_speed_t)speed;
     enet_config.miiDuplex = (enet_mii_duplex_t)duplex;
@@ -311,6 +312,22 @@ void eth_set_trace(eth_t *self, uint32_t value) {
 /*******************************************************************************/
 // ETH-LwIP bindings
 
+STATIC err_t eth_send_frame_blocking(ENET_Type *base, enet_handle_t *handle, uint8_t *buffer, int len) {
+    status_t status;
+    int i;
+    #define XMIT_LOOP 10
+
+    // Try a few times to send the frame
+    for (i = XMIT_LOOP; i > 0; i--) {
+        status = ENET_SendFrame(base, handle, buffer, len);
+        if (status != kStatus_ENET_TxFrameBusy) {
+            break;
+        }
+        ticks_delay_us64(100);
+    }
+    return status;
+}
+
 STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     // This function should always be called from a context where PendSV-level IRQs are disabled
     status_t status;
@@ -319,7 +336,7 @@ STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     eth_trace(netif->state, (size_t)-1, p, NETUTILS_TRACE_IS_TX | NETUTILS_TRACE_NEWLINE);
 
     if (p->next == NULL) {
-        status = ENET_SendFrame(ENET, &g_handle, p->payload, p->len);
+        status = eth_send_frame_blocking(ENET, &g_handle, p->payload, p->len);
     } else {
         // frame consists of several parts. Copy them together and send them
         size_t length = 0;
@@ -330,8 +347,8 @@ STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
             length += p->len;
             p = p->next;
         }
-        status = ENET_SendFrame(ENET, &g_handle, tx_frame, length);
-    }
+        status = eth_send_frame_blocking(ENET, &g_handle, tx_frame, length);
+     }
     return status == kStatus_Success ? ERR_OK : ERR_BUF;
 }
 
