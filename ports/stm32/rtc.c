@@ -339,11 +339,7 @@ STATIC HAL_StatusTypeDef PYB_RTC_Init(RTC_HandleTypeDef *hrtc) {
         hrtc->Instance->PRER |= (uint32_t)(hrtc->Init.AsynchPrediv << 16);
 
         // Exit Initialization mode
-        #if defined(STM32G4) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
-        hrtc->Instance->ICSR &= (uint32_t) ~RTC_ICSR_INIT;
-        #else
-        hrtc->Instance->ISR &= (uint32_t) ~RTC_ISR_INIT;
-        #endif
+        LL_RTC_DisableInitMode(hrtc->Instance);
 
         #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         // do nothing
@@ -702,13 +698,8 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     RTC->CR &= ~RTC_CR_WUTE;
 
     // wait until WUTWF is set
-    #if defined(STM32G4) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
-    while (!(RTC->ICSR & RTC_ICSR_WUTWF)) {
+    while (!LL_RTC_IsActiveFlag_WUTW(RTC)) {
     }
-    #else
-    while (!(RTC->ISR & RTC_ISR_WUTWF)) {
-    }
-    #endif
 
     if (enable) {
         // program WUT
