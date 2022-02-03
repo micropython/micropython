@@ -105,10 +105,11 @@ class Flash:
             dev_id = 0
 
         # Configure flash parameters based on MCU.
-        if dev_id in (0x413, 0x419, 0x431, 0x451, 0x452):
+        if dev_id in (0x413, 0x419, 0x431, 0x434, 0x451, 0x452):
             # 0x413: STM32F405/407, STM32F415/417
             # 0x419: STM32F42x/43x
             # 0x431: STM32F411
+            # 0x434: STM32F469/479
             # 0x451: STM32F76x/77x
             # 0x452: STM32F72x/73x
             self._keyr = stm.FLASH + stm.FLASH_KEYR
@@ -155,7 +156,6 @@ class Flash:
         stm.mem32[self._cr] = self._cr_lock
 
     def erase_sector(self, sector):
-        assert 0 <= sector <= 7
         self.wait_not_busy()
         stm.mem32[self._cr] = self._cr_init_erase(sector)
         stm.mem32[self._cr] |= self._cr_start_erase
