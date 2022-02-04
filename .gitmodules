@@ -116,9 +116,6 @@
 [submodule "frozen/Adafruit_CircuitPython_Requests"]
 	path = frozen/Adafruit_CircuitPython_Requests
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Requests
-[submodule "ports/stm/st_driver"]
-	path = ports/stm/st_driver
-	url = https://github.com/hathach/st_driver.git
 [submodule "lib/protomatter"]
 	path = lib/protomatter
 	url = https://github.com/adafruit/Adafruit_Protomatter
@@ -199,3 +196,84 @@
 	url = https://github.com/raspberrypi/rpi-firmware.git
 	branch = master
 	shallow = true
+[submodule "ports/stm/st_driver/cmsis_device_f4"]
+	path = ports/stm/st_driver/cmsis_device_f4
+	url = https://github.com/STMicroelectronics/cmsis_device_f4.git
+[submodule "ports/stm/st_driver/cmsis_device_f0"]
+	path = ports/stm/st_driver/cmsis_device_f0
+	url = https://github.com/STMicroelectronics/cmsis_device_f0.git
+[submodule "ports/stm/st_driver/stm32f0xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f0xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32f0xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_f1"]
+	path = ports/stm/st_driver/cmsis_device_f1
+	url = https://github.com/STMicroelectronics/cmsis_device_f1.git
+[submodule "ports/stm/st_driver/stm32f1xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f1xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32f1xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_f2"]
+	path = ports/stm/st_driver/cmsis_device_f2
+	url = https://github.com/STMicroelectronics/cmsis_device_f2.git
+[submodule "ports/stm/st_driver/stm32f2xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f2xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32f2xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_f3"]
+	path = ports/stm/st_driver/cmsis_device_f3
+	url = https://github.com/STMicroelectronics/cmsis_device_f3.git
+[submodule "ports/stm/st_driver/stm32f3xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f3xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32f3xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_f7"]
+	path = ports/stm/st_driver/cmsis_device_f7
+	url = https://github.com/STMicroelectronics/cmsis_device_f7.git
+[submodule "ports/stm/st_driver/stm32f7xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f7xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32f7xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_h7"]
+	path = ports/stm/st_driver/cmsis_device_h7
+	url = https://github.com/STMicroelectronics/cmsis_device_h7.git
+[submodule "ports/stm/st_driver/stm32h7xx_hal_driver"]
+	path = ports/stm/st_driver/stm32h7xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32h7xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_l0"]
+	path = ports/stm/st_driver/cmsis_device_l0
+	url = https://github.com/STMicroelectronics/cmsis_device_l0.git
+[submodule "ports/stm/st_driver/stm32l0xx_hal_driver"]
+	path = ports/stm/st_driver/stm32l0xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32l0xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_l1"]
+	path = ports/stm/st_driver/cmsis_device_l1
+	url = https://github.com/STMicroelectronics/cmsis_device_l1.git
+[submodule "ports/stm/st_driver/stm32l1xx_hal_driver"]
+	path = ports/stm/st_driver/stm32l1xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32l1xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_l4"]
+	path = ports/stm/st_driver/cmsis_device_l4
+	url = https://github.com/STMicroelectronics/cmsis_device_l4.git
+[submodule "ports/stm/st_driver/stm32l4xx_hal_driver"]
+	path = ports/stm/st_driver/stm32l4xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32l4xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_g0"]
+	path = ports/stm/st_driver/cmsis_device_g0
+	url = https://github.com/STMicroelectronics/cmsis_device_g0.git
+[submodule "ports/stm/st_driver/stm32g0xx_hal_driver"]
+	path = ports/stm/st_driver/stm32g0xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32g0xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_g4"]
+	path = ports/stm/st_driver/cmsis_device_g4
+	url = https://github.com/STMicroelectronics/cmsis_device_g4.git
+[submodule "ports/stm/st_driver/stm32g4xx_hal_driver"]
+	path = ports/stm/st_driver/stm32g4xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32g4xx_hal_driver.git
+[submodule "ports/stm/st_driver/cmsis_device_l5"]
+	path = ports/stm/st_driver/cmsis_device_l5
+	url = https://github.com/STMicroelectronics/cmsis_device_l5.git
+[submodule "ports/stm/st_driver/stm32l5xx_hal_driver"]
+	path = ports/stm/st_driver/stm32l5xx_hal_driver
+	url = https://github.com/STMicroelectronics/stm32l5xx_hal_driver.git
+[submodule "ports/stm/st_driver/CMSIS_5"]
+	path = ports/stm/st_driver/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git
+[submodule "ports/stm/st_driver/stm32f4xx_hal_driver"]
+	path = ports/stm/st_driver/stm32f4xx_hal_driver
+	url = https://github.com/adafruit/stm32f4xx_hal_driver.git
