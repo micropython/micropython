@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "WHEELTEC_STM32F407VET6_1.0.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "STM32F407VET6 1.0",
+    "thumbnail": "",
+    "url": "https://wheeltec.net/",
+    "vendor": "WHEELTEC"
+}
