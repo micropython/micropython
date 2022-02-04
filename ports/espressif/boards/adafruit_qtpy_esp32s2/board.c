@@ -29,9 +29,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
 }
 
 bool board_requests_safe_mode(void) {

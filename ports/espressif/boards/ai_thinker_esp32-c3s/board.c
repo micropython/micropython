@@ -29,21 +29,11 @@
 #include "supervisor/board.h"
 
 void board_init(void) {
-
     // Debug UART
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO20);
     common_hal_never_reset_pin(&pin_GPIO21);
     #endif
-
-    // SPI Flash
-    common_hal_never_reset_pin(&pin_GPIO11);
-    common_hal_never_reset_pin(&pin_GPIO12);
-    common_hal_never_reset_pin(&pin_GPIO13);
-    common_hal_never_reset_pin(&pin_GPIO14);
-    common_hal_never_reset_pin(&pin_GPIO15);
-    common_hal_never_reset_pin(&pin_GPIO16);
-    common_hal_never_reset_pin(&pin_GPIO17);
 }
 
 bool board_requests_safe_mode(void) {

@@ -44,3 +44,5 @@
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
 #define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO34)

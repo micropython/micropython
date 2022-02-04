@@ -36,20 +36,6 @@
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
 
-STATIC void floating_gpio_reset(gpio_num_t pin_number) {
-    // This is the same as gpio_reset_pin(), but without the pullup.
-    // Note that gpio_config resets the iomatrix to GPIO_FUNC as well.
-    gpio_config_t cfg = {
-        .pin_bit_mask = BIT64(pin_number),
-        .mode = GPIO_MODE_DISABLE,
-        .pull_up_en = false,
-        .pull_down_en = false,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&cfg);
-    PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[pin_number], 0);
-}
-
 void never_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
@@ -64,6 +50,43 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pin_number(pin->number);
 }
 
+STATIC void _reset_pin(gpio_num_t pin_number) {
+    #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+    // Never ever reset pins used for flash and RAM.
+    if (26 <= pin_number && pin_number <= 32) {
+        return;
+    }
+    #ifdef CONFIG_SPIRAM_MODE_OCT
+    // Octal DQ4-DQ7 and DQS/DM
+    if (33 <= pin_number && pin_number <= 37) {
+        return;
+    }
+    #endif
+
+    #if CIRCUITPY_USB
+    // Never reset USB pins.
+    if (pin_number == 19 || pin_number == 20) {
+        return;
+    }
+    #endif
+    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+    // Never ever reset pins used for flash and RAM.
+    if (11 <= pin_number && pin_number <= 17) {
+        return;
+    }
+    #endif
+
+    gpio_reset_pin(pin_number);
+
+    #ifdef DOUBLE_TAP_PIN
+    // Pull the double tap pin down so that resets come back to CircuitPython.
+    if (pin_number == DOUBLE_TAP_PIN->number) {
+        gpio_pullup_dis(pin_number);
+        gpio_pulldown_en(pin_number);
+    }
+    #endif
+}
+
 // Mark pin as free and return it to a quiescent state.
 void reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
@@ -72,7 +95,7 @@ void reset_pin_number(gpio_num_t pin_number) {
     never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
     in_use[pin_number / 32] &= ~(1 << pin_number % 32);
 
-    floating_gpio_reset(pin_number);
+    _reset_pin(pin_number);
 }
 
 void common_hal_mcu_pin_reset_number(uint8_t i) {
@@ -93,7 +116,7 @@ void reset_all_pins(void) {
             (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
             continue;
         }
-        floating_gpio_reset(i);
+        _reset_pin(i);
     }
     in_use[0] = never_reset_pins[0];
     in_use[1] = never_reset_pins[1];

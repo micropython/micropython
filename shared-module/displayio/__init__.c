@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-
 #include <string.h>
 
 #include "shared-module/displayio/__init__.h"
@@ -143,8 +142,8 @@ void common_hal_displayio_release_displays(void) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&displays[i].rgbmatrix);
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (bus_type == &is31fl3741_IS31FL3741_type) {
-            common_hal_is31fl3741_IS31FL3741_deinit(&displays[i].is31fl3741);
+        } else if (bus_type == &is31fl3741_FrameBuffer_type) {
+            common_hal_is31fl3741_FrameBuffer_deinit(&displays[i].is31fl3741);
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         } else if (displays[i].bus_base.type == &sharpdisplay_framebuffer_type) {
@@ -169,11 +168,11 @@ void reset_displays(void) {
             if (((size_t)fourwire->bus) < ((size_t)&displays) ||
                 ((size_t)fourwire->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_spi_obj_t *original_spi = fourwire->bus;
-                #if BOARD_SPI
-                // We don't need to move original_spi if it is the board.SPI object because it is
+                #if CIRCUITPY_BOARD_SPI
+                // We don't need to move original_spi if it is a board.SPI object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (original_spi == common_hal_board_get_spi()) {
+                if (common_hal_board_is_spi(original_spi)) {
                     continue;
                 }
                 #endif
@@ -197,11 +196,11 @@ void reset_displays(void) {
             if (((size_t)i2c->bus) < ((size_t)&displays) ||
                 ((size_t)i2c->bus) > ((size_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
                 busio_i2c_obj_t *original_i2c = i2c->bus;
-                #if BOARD_I2C
-                // We don't need to move original_i2c if it is the board.I2C object because it is
+                #if CIRCUITPY_BOARD_I2C
+                // We don't need to move original_i2c if it is a board.I2C object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (original_i2c == common_hal_board_get_i2c()) {
+                if (common_hal_board_is_i2c(original_i2c)) {
                     continue;
                 }
                 #endif
@@ -225,34 +224,33 @@ void reset_displays(void) {
             }
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (displays[i].is31fl3741.base.type == &is31fl3741_IS31FL3741_type) {
-            is31fl3741_IS31FL3741_obj_t *is31 = &displays[i].is31fl3741;
-            if (((uint32_t)is31->i2c) < ((uint32_t)&displays) ||
-                ((uint32_t)is31->i2c) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
-                busio_i2c_obj_t *original_i2c = is31->i2c;
-                #if BOARD_I2C
+        } else if (displays[i].is31fl3741.base.type == &is31fl3741_FrameBuffer_type) {
+            is31fl3741_FrameBuffer_obj_t *is31fb = &displays[i].is31fl3741;
+
+            if (((uint32_t)is31fb->is31fl3741->i2c) < ((uint32_t)&displays) ||
+                ((uint32_t)is31fb->is31fl3741->i2c) > ((uint32_t)&displays + CIRCUITPY_DISPLAY_LIMIT)) {
+                #if CIRCUITPY_BOARD_I2C
                 // We don't need to move original_i2c if it is the board.I2C object because it is
                 // statically allocated already. (Doing so would also make it impossible to reference in
                 // a subsequent VM run.)
-                if (original_i2c == common_hal_board_get_i2c()) {
+                if (common_hal_board_is_i2c(is31fb->is31fl3741->i2c)) {
                     continue;
                 }
                 #endif
-                memcpy(&is31->inline_i2c, original_i2c, sizeof(busio_i2c_obj_t));
-                is31->i2c = &is31->inline_i2c;
-                // Check for other displays that use the same i2c bus and swap them too.
-                /*for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
-                    if (displays[i].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
-                        displays[i].i2cdisplay_bus.bus == original_i2c) {
-                        displays[i].i2cdisplay_bus.bus = &i2c->inline_bus;
-                    }
-                }*/
+
+                is31fl3741_IS31FL3741_obj_t *original_is31 = is31fb->is31fl3741;
+                memcpy(&is31fb->inline_is31fl3741, original_is31, sizeof(is31fl3741_IS31FL3741_obj_t));
+                is31fb->is31fl3741 = &is31fb->inline_is31fl3741;
+
+                busio_i2c_obj_t *original_i2c = is31fb->is31fl3741->i2c;
+                memcpy(&is31fb->is31fl3741->inline_i2c, original_i2c, sizeof(busio_i2c_obj_t));
+                is31fb->is31fl3741->i2c = &is31fb->is31fl3741->inline_i2c;
             }
 
-            if (!any_display_uses_this_framebuffer(&is31->base)) {
-                common_hal_is31fl3741_IS31FL3741_deinit(is31);
+            if (!any_display_uses_this_framebuffer(&is31fb->base)) {
+                common_hal_is31fl3741_FrameBuffer_deinit(is31fb);
             } else {
-                common_hal_is31fl3741_IS31FL3741_set_paused(is31, true);
+                common_hal_is31fl3741_FrameBuffer_set_paused(is31fb, true);
             }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
@@ -299,8 +297,8 @@ void displayio_gc_collect(void) {
         }
         #endif
         #if CIRCUITPY_IS31FL3741
-        if (displays[i].is31fl3741.base.type == &is31fl3741_IS31FL3741_type) {
-            is31fl3741_IS31FL3741_collect_ptrs(&displays[i].is31fl3741);
+        if (displays[i].is31fl3741.base.type == &is31fl3741_FrameBuffer_type) {
+            is31fl3741_FrameBuffer_collect_ptrs(&displays[i].is31fl3741);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY

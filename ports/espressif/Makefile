@@ -86,6 +86,16 @@ INC += \
 	-isystem esp-idf \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
+	-isystem esp-idf/components/bt/include/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/util/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/porting/nimble/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
+	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
@@ -94,6 +104,7 @@ INC += \
 	-isystem esp-idf/components/esp_event/include \
 	-isystem esp-idf/components/esp_hw_support/include \
 	-isystem esp-idf/components/esp_hw_support/include/soc \
+	-isystem esp-idf/components/esp_ipc/include \
 	-isystem esp-idf/components/esp_netif/include \
 	-isystem esp-idf/components/esp_pm/include \
 	-isystem esp-idf/components/esp_ringbuf/include \
@@ -132,6 +143,7 @@ endif
 
 CFLAGS += \
 	-DHAVE_CONFIG_H \
+	-DESP_PLATFORM=1 \
 	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
 	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
@@ -147,7 +159,12 @@ ifeq ($(DEBUG), 1)
   # CFLAGS += -fno-inline -fno-ipa-sra
 else
   CFLAGS += -DNDEBUG -ggdb3
-  OPTIMIZATION_FLAGS ?= -O2
+	ifeq ($(IDF_TARGET_ARCH),xtensa)
+	  OPTIMIZATION_FLAGS ?= -O2
+	else
+		# RISC-V is larger than xtensa so do -Os for it
+	  OPTIMIZATION_FLAGS ?= -Os
+	endif
   # TODO: Test with -flto
   ### CFLAGS += -flto
 endif
@@ -297,8 +314,10 @@ else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
 
-SDKCONFIGS = esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
-
+SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
+ifneq ($(CIRCUITPY_BLEIO),0)
+	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
+endif
 # create the config headers
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig | $(BUILD)/esp-idf
 	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
@@ -331,6 +350,12 @@ BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a l
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 
 ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ifneq ($(CIRCUITPY_BLEIO),0)
+	ESP_IDF_COMPONENTS_LINK += bt
+	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
+	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+endif
+
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
 MBEDTLS_COMPONENTS_LINK = crypto tls x509
@@ -349,6 +374,11 @@ else
 BOOTLOADER_OFFSET = 0x1000
 endif
 
+IDF_CMAKE_TARGETS = \
+		bootloader/bootloader.bin \
+		esp-idf/esp_system/__ldgen_output_sections.ld \
+		$(foreach component, $(ESP_IDF_COMPONENTS_LINK), esp-idf/$(component)/lib$(component).a)
+
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
@@ -366,41 +396,7 @@ endif
 
 .PHONY: esp-idf-stamp
 esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
-	$(Q)ninja -C $(BUILD)/esp-idf \
-		bootloader/bootloader.bin \
-		esp-idf/esp_system/__ldgen_output_sections.ld \
-		esp-idf/app_update/libapp_update.a \
-		esp-idf/bootloader_support/libbootloader_support.a \
-		esp-idf/driver/libdriver.a \
-		esp-idf/efuse/libefuse.a \
-		esp-idf/esp_adc_cal/libesp_adc_cal.a \
-		esp-idf/esp_common/libesp_common.a \
-		esp-idf/esp_event/libesp_event.a \
-		esp-idf/esp_hw_support/libesp_hw_support.a \
-		esp-idf/esp_ipc/libesp_ipc.a \
-		esp-idf/esp_netif/libesp_netif.a \
-		esp-idf/esp_phy/libesp_phy.a \
-		esp-idf/esp_pm/libesp_pm.a \
-		esp-idf/esp_ringbuf/libesp_ringbuf.a \
-		esp-idf/esp_rom/libesp_rom.a \
-		esp-idf/esp_system/libesp_system.a \
-		esp-idf/esp_timer/libesp_timer.a \
-		esp-idf/esp-tls/libesp-tls.a \
-		esp-idf/esp_wifi/libesp_wifi.a \
-		esp-idf/freertos/libfreertos.a \
-		esp-idf/hal/libhal.a \
-		esp-idf/heap/libheap.a \
-		esp-idf/log/liblog.a \
-		esp-idf/lwip/liblwip.a \
-		esp-idf/mbedtls/libmbedtls.a \
-		esp-idf/newlib/libnewlib.a \
-		esp-idf/nvs_flash/libnvs_flash.a \
-		esp-idf/pthread/libpthread.a \
-		esp-idf/soc/libsoc.a \
-		esp-idf/spi_flash/libspi_flash.a \
-		esp-idf/vfs/libvfs.a \
-		esp-idf/wpa_supplicant/libwpa_supplicant.a \
-		esp-idf/$(IDF_TARGET_ARCH)/lib$(IDF_TARGET_ARCH).a
+	$(Q)ninja -C $(BUILD)/esp-idf $(IDF_CMAKE_TARGETS)
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp
 	$(STEPECHO) "LINK $@"

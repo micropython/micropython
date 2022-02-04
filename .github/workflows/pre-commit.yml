@@ -8,6 +8,10 @@ on:
   pull_request:
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   pre-commit:
     runs-on: ubuntu-20.04

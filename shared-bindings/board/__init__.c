@@ -28,11 +28,14 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/board/__init__.h"
-#if BOARD_I2C
+#if CIRCUITPY_BOARD_I2C
 #include "shared-bindings/busio/I2C.h"
 #endif
-#if BOARD_SPI
+#if CIRCUITPY_BOARD_SPI
 #include "shared-bindings/busio/SPI.h"
+#endif
+#if CIRCUITPY_BOARD_UART
+#include "shared-bindings/busio/UART.h"
 #endif
 
 //| """Board specific pin names
@@ -47,84 +50,57 @@
 //| """Board ID string. The unique identifier for the board model in
 //| circuitpython, as well as on circuitpython.org.
 //| Example: "hallowing_m0_express"."""
-//|
 
 //| def I2C() -> busio.I2C:
-//|     """Returns the `busio.I2C` object for the board designated SDA and SCL pins. It is a singleton."""
+//|     """Returns the `busio.I2C` object for the board's designated I2C bus(es).
+//|     The object created is a singleton, and uses the default parameter values for `busio.I2C`."""
 //|     ...
 //|
-
-#if BOARD_I2C
-mp_obj_t board_i2c(void) {
-    mp_obj_t singleton = common_hal_board_get_i2c();
-    if (singleton != NULL && !common_hal_busio_i2c_deinited(singleton)) {
-        return singleton;
-    }
-    assert_pin_free(DEFAULT_I2C_BUS_SDA);
-    assert_pin_free(DEFAULT_I2C_BUS_SCL);
-    return common_hal_board_create_i2c();
+#if CIRCUITPY_BOARD_I2C
+STATIC mp_obj_t board_i2c_0(void) {
+    return common_hal_board_create_i2c(0);
 }
 #else
-mp_obj_t board_i2c(void) {
+STATIC mp_obj_t board_i2c_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_I2C);
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c);
-
+MP_DEFINE_CONST_FUN_OBJ_0(board_i2c_obj, board_i2c_0);
 
 //| def SPI() -> busio.SPI:
-//|     """Returns the `busio.SPI` object for the board designated SCK, MOSI and MISO pins. It is a
-//|     singleton."""
+//|     """Returns the `busio.SPI` object for the board's designated SPI bus(es).
+//|     The object created is a singleton, and uses the default parameter values for `busio.SPI`."""
 //|     ...
 //|
-#if BOARD_SPI
-mp_obj_t board_spi(void) {
-    mp_obj_t singleton = common_hal_board_get_spi();
-    if (singleton != NULL && !common_hal_busio_spi_deinited(singleton)) {
-        return singleton;
-    }
-    assert_pin_free(DEFAULT_SPI_BUS_SCK);
-    assert_pin_free(DEFAULT_SPI_BUS_MOSI);
-    assert_pin_free(DEFAULT_SPI_BUS_MISO);
-    return common_hal_board_create_spi();
+#if CIRCUITPY_BOARD_SPI
+STATIC mp_obj_t board_spi_0(void) {
+    return common_hal_board_create_spi(0);
 }
 #else
-mp_obj_t board_spi(void) {
+STATIC mp_obj_t board_spi_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_SPI);
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi);
+MP_DEFINE_CONST_FUN_OBJ_0(board_spi_obj, board_spi_0);
 
 //| def UART() -> busio.UART:
-//|     """Returns the `busio.UART` object for the board designated TX and RX pins. It is a singleton.
-//|
-//|     The object created uses the default parameter values for `busio.UART`. If you need to set
-//|     parameters that are not changeable after creation, such as ``receiver_buffer_size``,
-//|     do not use `board.UART()`; instead create a `busio.UART` object explicitly with the
-//|     desired parameters."""
+//|     """Returns the `busio.UART` object for the board's designated UART bus(es).
+//|     The object created is a singleton, and uses the default parameter values for `busio.UART`."""
 //|     ...
 //|
-#if BOARD_UART
-mp_obj_t board_uart(void) {
-    mp_obj_t singleton = common_hal_board_get_uart();
-    if (singleton != NULL) {
-        return singleton;
-    }
-
-    assert_pin_free(DEFAULT_UART_BUS_RX);
-    assert_pin_free(DEFAULT_UART_BUS_TX);
-
-    return common_hal_board_create_uart();
+#if CIRCUITPY_BOARD_UART
+STATIC mp_obj_t board_uart_0(void) {
+    return common_hal_board_create_uart(0);
 }
 #else
-mp_obj_t board_uart(void) {
+STATIC mp_obj_t board_uart_0(void) {
     mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_UART);
     return MP_ROM_NONE;
 }
 #endif
-MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart);
+MP_DEFINE_CONST_FUN_OBJ_0(board_uart_obj, board_uart_0);
 
 const mp_obj_module_t board_module = {
     .base = { &mp_type_module },

@@ -58,10 +58,7 @@
 //|         :param int frequency: The clock frequency in Hertz
 //|         :param int timeout: The maximum clock stretching timeut - (used only for
 //|             :class:`bitbangio.I2C`; ignored for :class:`busio.I2C`)
-//|
-//|         .. note:: On the nRF52840, only one I2C object may be created,
-//|            except on the Circuit Playground Bluefruit, which allows two,
-//|            one for the onboard accelerometer, and one for offboard use."""
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -191,23 +188,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(busio_i2c_unlock_obj, busio_i2c_obj_unlock);
 //|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``"""
 //|         ...
 //|
-// Shared arg parsing for readfrom_into and writeto_then_readfrom.
-STATIC void readfrom(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_WRITE);
-
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, end, &length);
-    if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
-    }
-
-    uint8_t status = common_hal_busio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
-}
-
 STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -219,11 +199,27 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
     check_lock(self);
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    readfrom(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-        args[ARG_end].u_int);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
+
+    size_t length = bufinfo.len;
+    int32_t start = args[ARG_start].u_int;
+    const int32_t end = args[ARG_end].u_int;
+    normalize_buffer_bounds(&start, end, &length);
+    if (length == 0) {
+        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_buffer);
+    }
+
+    uint8_t status =
+        common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t *)bufinfo.buf) + start, length);
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 1, busio_i2c_readfrom_into);
@@ -247,23 +243,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_readfrom_into_obj, 1, busio_i2c_readfrom_in
 //|         """
 //|         ...
 //|
-// Shared arg parsing for writeto and writeto_then_readfrom.
-STATIC void writeto(busio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffer, int32_t start, mp_int_t end, bool stop) {
-    // get the buffer to write the data from
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buffer, &bufinfo, MP_BUFFER_READ);
-
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, end, &length);
-
-    // do the transfer
-    uint8_t status = common_hal_busio_i2c_write(self, address, ((uint8_t *)bufinfo.buf) + start,
-        length, stop);
-    if (status != 0) {
-        mp_raise_OSError(status);
-    }
-}
-
 STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_address, ARG_buffer, ARG_start, ARG_end };
     static const mp_arg_t allowed_args[] = {
@@ -278,8 +257,23 @@ STATIC mp_obj_t busio_i2c_writeto(size_t n_args, const mp_obj_t *pos_args, mp_ma
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    writeto(self, args[ARG_address].u_int, args[ARG_buffer].u_obj, args[ARG_start].u_int,
-        args[ARG_end].u_int, true);
+    // get the buffer to write the data from
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+
+    size_t length = bufinfo.len;
+    int32_t start = args[ARG_start].u_int;
+    const int32_t end = args[ARG_end].u_int;
+    normalize_buffer_bounds(&start, end, &length);
+
+    // do the transfer
+    uint8_t status =
+        common_hal_busio_i2c_write(self, args[ARG_address].u_int, ((uint8_t *)bufinfo.buf) + start, length);
+
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(busio_i2c_writeto_obj, 1, busio_i2c_writeto);
@@ -314,10 +308,10 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
         { MP_QSTR_address,    MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_out_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_in_buffer,  MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_out_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_out_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_in_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_out_start,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_out_end,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_in_start,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_in_end,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
     };
     busio_i2c_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -325,10 +319,30 @@ STATIC mp_obj_t busio_i2c_writeto_then_readfrom(size_t n_args, const mp_obj_t *p
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    writeto(self, args[ARG_address].u_int, args[ARG_out_buffer].u_obj, args[ARG_out_start].u_int,
-        args[ARG_out_end].u_int, false);
-    readfrom(self, args[ARG_address].u_int, args[ARG_in_buffer].u_obj, args[ARG_in_start].u_int,
-        args[ARG_in_end].u_int);
+    mp_buffer_info_t out_bufinfo;
+    mp_get_buffer_raise(args[ARG_out_buffer].u_obj, &out_bufinfo, MP_BUFFER_READ);
+
+    size_t out_length = out_bufinfo.len;
+    int32_t out_start = args[ARG_out_start].u_int;
+    const int32_t out_end = args[ARG_out_end].u_int;
+    normalize_buffer_bounds(&out_start, out_end, &out_length);
+
+    mp_buffer_info_t in_bufinfo;
+    mp_get_buffer_raise(args[ARG_in_buffer].u_obj, &in_bufinfo, MP_BUFFER_WRITE);
+
+    size_t in_length = in_bufinfo.len;
+    int32_t in_start = args[ARG_in_start].u_int;
+    const int32_t in_end = args[ARG_in_end].u_int;
+    normalize_buffer_bounds(&in_start, in_end, &in_length);
+    if (in_length == 0) {
+        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_out_buffer);
+    }
+
+    uint8_t status = common_hal_busio_i2c_write_read(self, args[ARG_address].u_int,
+        ((uint8_t *)out_bufinfo.buf) + out_start, out_length,((uint8_t *)in_bufinfo.buf) + in_start, in_length);
+    if (status != 0) {
+        mp_raise_OSError(status);
+    }
 
     return mp_const_none;
 }

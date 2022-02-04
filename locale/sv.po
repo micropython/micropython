@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-03 05:53+0000\n"
+"PO-Revision-Date: 2022-02-02 20:18+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -107,7 +107,7 @@ msgstr "Indexet %q måste vara ett heltal, inte %s"
 msgid "%q length must be %d-%d"
 msgstr "längden på %q måste vara %d-%d"
 
-#: shared-bindings/usb_hid/Device.c
+#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
 msgstr "längden på %q måste vara >= 1"
 
@@ -454,6 +454,7 @@ msgstr "Alla timers för denna pinne är i bruk"
 msgid "All timers in use"
 msgstr "Alla timers används"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Annonserar redan."
@@ -640,7 +641,7 @@ msgstr "Buffertlängd måste vara en multipel av 512"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufferten måste vara en multipel av 512 byte"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Bufferten måste ha minst längd 1"
 
@@ -923,10 +924,12 @@ msgstr "Datapinne 0 måste vara bytejusterad"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Datasegmentet måste följa fmt-segmentet"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr "Data stöds inte med riktad annonsering"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Data för stor för annonseringspaket"
@@ -1007,6 +1010,7 @@ msgstr "Förväntade ett larm"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Förväntad tupel med längd %d, fick %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Utökad annonsering i kombination med skanningssvar stöds inte."
@@ -1060,6 +1064,7 @@ msgstr "Det gick inte att allokera minne för WiFi-scanning"
 msgid "Failed to buffer the sample"
 msgstr "Det gick inte att buffra samplingen"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Det gick inte att ansluta: internt fel"
@@ -1295,6 +1300,7 @@ msgstr "Ogiltigt ADC-enhetsvärde"
 msgid "Invalid AuthMode"
 msgstr "Ogiltig AuthMode"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Ogiltig BLE-parameter"
@@ -1388,6 +1394,10 @@ msgstr "Ogiltig formatsegmentstorlek"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ogiltig minnesåtkomst."
+
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr "Ogiltigt läge"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1517,6 +1527,10 @@ msgstr "init för MISO-pinne misslyckades."
 msgid "MOSI pin init failed."
 msgstr "init för MOSI-pinne misslyckades."
 
+#: shared-bindings/is31fl3741/__init__.c
+msgid "Mapping must be a tuple"
+msgstr ""
+
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
@@ -1600,6 +1614,10 @@ msgstr "NVS-fel"
 msgid "Name too long"
 msgstr "Name är för långt"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr "Nimble har inget minne kvar"
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Ingen CCCD för denna karaktäristik"
@@ -1622,8 +1640,8 @@ msgstr "Ingen DMA pacing timer hittades"
 
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
-msgid "No I2C device at address: %x"
-msgstr "Ingen I2C-enhet på adress: %x"
+msgid "No I2C device at address: 0x%x"
+msgstr "Ingen I2C-enhet på adress: 0x%x"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
@@ -1747,6 +1765,7 @@ msgstr "Nordic systemfirmware fick slut på minne"
 msgid "Not a valid IP string"
 msgstr "Inte en giltig IP-sträng"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2138,6 +2157,7 @@ msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 msgid "Scale dimensions must divide by 3"
 msgstr "Skaldimension måste vara delbar med 3"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Skanning pågår redan. Avsluta med stop_scan."
@@ -2306,6 +2326,7 @@ msgstr "Tile-bredd måste vara jämnt delbar med bredd på bitmap"
 msgid "Time is in the past."
 msgstr "Tid har passerats."
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2328,6 +2349,7 @@ msgstr "För många display-bussar"
 msgid "Too many displays"
 msgstr "För många displayer"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
@@ -2459,10 +2481,20 @@ msgstr "Okänd anledning."
 msgid "Unknown security error: 0x%04x"
 msgstr "Okänt säkerhetsfel: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr "Okänt fel i systemets firmware vid %s:%d: %d"
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Okänt systemfirmwarefel: %04x"
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
+msgstr "Okänt fel i systemets firmware: %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2503,11 +2535,13 @@ msgstr "Åtgärd som inte stöds"
 msgid "Update Failed"
 msgstr "Uppdateringen misslyckades"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Värdets längde ! = krävd fast längd"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2571,6 +2605,7 @@ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
 msgid "Woken up by alarm.\n"
 msgstr "Vaknade av larm.\n"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Skrivning stöds inte på karaktäristik"
@@ -2830,7 +2865,7 @@ msgstr "kan inte konvertera '%q' objekt implicit till %q"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
+msgstr "kan inte konvertera complex till float"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2930,11 +2965,11 @@ msgstr "kan inte casta utdata med regel"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "kan inte konvertera komplex till dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "kan inte konvertera complex typer"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3132,7 +3167,7 @@ msgstr "divisor måste vara 4"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype måste vara float eller complex"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3304,7 +3339,7 @@ msgstr "funktionen är enbart definierad för ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "funktionen är bara implementerad för ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3437,7 +3472,7 @@ msgstr "indata måste vara en iterable"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "indatatyp måste vara float eller complex"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3450,7 +3485,7 @@ msgstr "indatamatrisen är singulär"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "indata måste vara en 1D ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
@@ -3466,7 +3501,7 @@ msgstr "indata måste vara en ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "indata måste vara en ndarray eller en scalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3648,6 +3683,7 @@ msgstr "matematikdomänfel"
 msgid "matrix is not positive definite"
 msgstr "matrisen är inte positiv bestämd"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
@@ -3843,7 +3879,7 @@ msgstr "inte tillräckligt med argument för formatsträng"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "inte implementerat för complex dtype"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -4053,6 +4089,7 @@ msgstr "pow() 3: e argument kan inte vara 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() med 3 argument kräver heltal"
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
@@ -4060,15 +4097,18 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4094,7 +4134,10 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "trycka på startknappen vid start.\n"
 
@@ -4604,7 +4647,7 @@ msgstr "fel indatatyp"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
-msgstr ""
+msgstr "fel längd på villkorsmatrisen"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
@@ -4649,6 +4692,10 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Ingen I2C-enhet på adress: %x"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "Ogiltigt Pull-värde."

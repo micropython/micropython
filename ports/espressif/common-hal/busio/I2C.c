@@ -136,13 +136,19 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     self->scl_pin = NULL;
 }
 
-bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
+static esp_err_t i2c_zero_length_write(busio_i2c_obj_t *self, uint8_t addr, TickType_t timeout) {
+    // i2c_master_write_to_device() won't do zero-length writes, so we do it by hand.
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, addr << 1, true);
     i2c_master_stop(cmd);
-    esp_err_t result = i2c_master_cmd_begin(self->i2c_num, cmd, 10);
+    esp_err_t result = i2c_master_cmd_begin(self->i2c_num, cmd, timeout);
     i2c_cmd_link_delete(cmd);
+    return result;
+}
+
+bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
+    esp_err_t result = i2c_zero_length_write(self, addr, 1);
     return result == ESP_OK;
 }
 
@@ -163,45 +169,36 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
-    const uint8_t *data, size_t len, bool transmit_stop_bit) {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1, true);
-    i2c_master_write(cmd, (uint8_t *)data, len, true);
-    if (transmit_stop_bit) {
-        i2c_master_stop(cmd);
+static uint8_t convert_esp_err(esp_err_t result) {
+    switch (result) {
+        case ESP_OK:
+            return 0;
+        case ESP_FAIL:
+            return MP_ENODEV;
+        case ESP_ERR_TIMEOUT:
+            return MP_ETIMEDOUT;
+        default:
+            return MP_EIO;
     }
-    esp_err_t result = i2c_master_cmd_begin(self->i2c_num, cmd, 100 /* wait in ticks */);
-    i2c_cmd_link_delete(cmd);
-
-    if (result == ESP_OK) {
-        return 0;
-    } else if (result == ESP_FAIL) {
-        return MP_ENODEV;
-    }
-    return MP_EIO;
 }
 
-uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
-    uint8_t *data, size_t len) {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1 | 1, true); // | 1 to indicate read
-    if (len > 1) {
-        i2c_master_read(cmd, data, len - 1, 0);
-    }
-    i2c_master_read_byte(cmd, data + len - 1, 1);
-    i2c_master_stop(cmd);
-    esp_err_t result = i2c_master_cmd_begin(self->i2c_num, cmd, 100 /* wait in ticks */);
-    i2c_cmd_link_delete(cmd);
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len) {
+    return convert_esp_err(len == 0
+        ? i2c_zero_length_write(self, addr, 100)
+        : i2c_master_write_to_device(self->i2c_num, (uint8_t)addr, data, len, 100 /* wait in ticks */)
+        );
+}
 
-    if (result == ESP_OK) {
-        return 0;
-    } else if (result == ESP_FAIL) {
-        return MP_ENODEV;
-    }
-    return MP_EIO;
+uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t *data, size_t len) {
+    return convert_esp_err(
+        i2c_master_read_from_device(self->i2c_num, (uint8_t)addr, data, len, 100 /* wait in ticks */));
+}
+
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
+    return convert_esp_err(
+        i2c_master_write_read_device(self->i2c_num, (uint8_t)addr,
+            out_data, out_len, in_data, in_len, 100 /* wait in ticks */));
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {

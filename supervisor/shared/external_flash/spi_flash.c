@@ -105,12 +105,12 @@ bool spi_flash_sector_command(uint8_t command, uint32_t address) {
 
 bool spi_flash_write_data(uint32_t address, uint8_t *data, uint32_t data_length) {
     uint8_t request[4] = {CMD_PAGE_PROGRAM, 0x00, 0x00, 0x00};
+    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     // Write the SPI flash write address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
     if (!flash_enable()) {
         return false;
     }
-    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, request, 4);
     if (status) {
         status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, data, data_length);
@@ -126,12 +126,12 @@ bool spi_flash_read_data(uint32_t address, uint8_t *data, uint32_t data_length) 
         request[0] = CMD_FAST_READ_DATA;
         command_length = 5;
     }
+    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     // Write the SPI flash read address into the bytes following the command byte.
     address_to_bytes(address, request + 1);
     if (!flash_enable()) {
         return false;
     }
-    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
     bool status = common_hal_busio_spi_write(&supervisor_flash_spi_bus, request, command_length);
     if (status) {
         status = common_hal_busio_spi_read(&supervisor_flash_spi_bus, data, data_length, 0xff);
@@ -144,7 +144,6 @@ void spi_flash_init(void) {
     cs_pin.base.type = &digitalio_digitalinout_type;
     common_hal_digitalio_digitalinout_construct(&cs_pin, SPI_FLASH_CS_PIN);
 
-
     // Set CS high (disabled).
     common_hal_digitalio_digitalinout_switch_to_output(&cs_pin, true, DRIVE_MODE_PUSH_PULL);
     common_hal_digitalio_digitalinout_never_reset(&cs_pin);
@@ -152,6 +151,8 @@ void spi_flash_init(void) {
     supervisor_flash_spi_bus.base.type = &busio_spi_type;
     common_hal_busio_spi_construct(&supervisor_flash_spi_bus, SPI_FLASH_SCK_PIN, SPI_FLASH_MOSI_PIN, SPI_FLASH_MISO_PIN);
     common_hal_busio_spi_never_reset(&supervisor_flash_spi_bus);
+
+    return;
 }
 
 void spi_flash_init_device(const external_flash_device *device) {
@@ -160,4 +161,6 @@ void spi_flash_init_device(const external_flash_device *device) {
     if (spi_flash_baudrate > SPI_FLASH_MAX_BAUDRATE) {
         spi_flash_baudrate = SPI_FLASH_MAX_BAUDRATE;
     }
+    common_hal_busio_spi_configure(&supervisor_flash_spi_bus, spi_flash_baudrate, 0, 0, 8);
+    return;
 }

@@ -102,7 +102,7 @@ msgstr "%q indexen moeten integers zijn, niet %s"
 msgid "%q length must be %d-%d"
 msgstr ""
 
-#: shared-bindings/usb_hid/Device.c
+#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be >= 1"
 msgstr ""
 
@@ -449,6 +449,7 @@ msgstr "Alle timers voor deze pin zijn in gebruik"
 msgid "All timers in use"
 msgstr "Alle timers zijn in gebruik"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Advertising is al bezig."
@@ -635,7 +636,7 @@ msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 
-#: shared-bindings/bitbangio/I2C.c shared-bindings/busio/I2C.c
+#: shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
 msgstr "Buffer moet op zijn minst lengte 1 zijn"
 
@@ -917,10 +918,12 @@ msgstr "Data 0 pin moet byte uitgelijnd zijn"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Data chunk moet gevolgd worden door fmt chunk"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Data te groot voor advertisement pakket"
@@ -1001,6 +1004,7 @@ msgstr "Verwachtte een alarm"
 msgid "Expected tuple of length %d, got %d"
 msgstr "Verwachtte een tuple met lengte %d, maar kreeg %d"
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Extended advertisements met scan antwoord niet ondersteund."
@@ -1054,6 +1058,7 @@ msgstr "Kon WiFi scan geheugen niet toewijzen"
 msgid "Failed to buffer the sample"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Verbinding mislukt: interne fout"
@@ -1288,6 +1293,7 @@ msgstr "Ongeldige ADC Unit waarde"
 msgid "Invalid AuthMode"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr ""
@@ -1381,6 +1387,10 @@ msgstr "Ongeldig formaat stuk grootte"
 #: supervisor/shared/safe_mode.c
 msgid "Invalid memory access."
 msgstr "Ongeldig geheugen adres."
+
+#: extmod/vfs_fat_file.c
+msgid "Invalid mode"
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1510,6 +1520,10 @@ msgstr "MISO pin init mislukt."
 msgid "MOSI pin init failed."
 msgstr "MOSI pin init mislukt."
 
+#: shared-bindings/is31fl3741/__init__.c
+msgid "Mapping must be a tuple"
+msgstr ""
+
 #: shared-module/displayio/Shape.c
 #, c-format
 msgid "Maximum x value when mirrored is %d"
@@ -1592,6 +1606,10 @@ msgstr "NVS-fout"
 msgid "Name too long"
 msgstr "Naam te lang"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+msgid "Nimble out of memory"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "Geen CCCD voor deze Characteristic"
@@ -1614,8 +1632,8 @@ msgstr ""
 
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
-msgid "No I2C device at address: %x"
-msgstr "Geen I2C-apparaat op adres: %x"
+msgid "No I2C device at address: 0x%x"
+msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
@@ -1739,6 +1757,7 @@ msgstr ""
 msgid "Not a valid IP string"
 msgstr "Geen geldige IP string"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
@@ -2132,6 +2151,7 @@ msgstr "Sample rate is te hoog. Moet minder dan %d zijn"
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progess. Stop with stop_scan."
 msgstr "Scan wordt al uitvoerd. Stop met stop_scan."
@@ -2290,6 +2310,7 @@ msgstr "Tile breedte moet exact de bitmap breedte verdelen"
 msgid "Time is in the past."
 msgstr "Tijdstip ligt in het verleden."
 
+#: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2312,6 +2333,7 @@ msgstr "Teveel beeldscherm bussen"
 msgid "Too many displays"
 msgstr "Teveel beeldschermen"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr ""
@@ -2443,9 +2465,19 @@ msgstr "Onbekende reden."
 msgid "Unknown security error: 0x%04x"
 msgstr "Onbekende veiligheidsfout: 0x%04x"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error at %s:%d: %d"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown system firmware error: %d"
 msgstr ""
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
@@ -2487,11 +2519,13 @@ msgstr "Niet-ondersteunde operatie"
 msgid "Update Failed"
 msgstr "Update Mislukt"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Waarde lengte != vereist vaste lengte"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
@@ -2553,6 +2587,7 @@ msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
 msgid "Woken up by alarm.\n"
 msgstr "Gewekt door alarm.\n"
 
+#: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Schrijven niet ondersteund op Characteristic"
@@ -3628,6 +3663,7 @@ msgstr "fout in het wiskundig domein (math domain error)"
 msgid "matrix is not positive definite"
 msgstr "matrix is niet positief-definiet"
 
+#: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
@@ -4033,6 +4069,7 @@ msgstr "derde argument van pow() mag geen 0 zijn"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() met 3 argumenten vereist integers"
 
+#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
 #: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
@@ -4040,15 +4077,18 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
 #: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_nopsram/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4074,7 +4114,10 @@ msgstr "pow() met 3 argumenten vereist integers"
 #: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
+#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
 msgstr "druk bootknop in bij opstarten.\n"
 
@@ -4629,6 +4672,10 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Geen I2C-apparaat op adres: %x"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "Niet-ondersteunde pull-waarde."

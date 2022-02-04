@@ -1,0 +1,5 @@
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="ESP32-C3-DevKitM-1"
+# end of LWIP

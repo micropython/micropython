@@ -38,12 +38,17 @@
 
 #define AUTORESET_DELAY_MS 500
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO6)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO7)
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO7}, \
+                                     {.scl = &pin_GPIO40, .sda = &pin_GPIO41}}
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO36, .mosi = &pin_GPIO35, .miso = &pin_GPIO37}}
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO16)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO5)
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO5, .rx = &pin_GPIO16}}
+
+#define DOUBLE_TAP_PIN (&pin_GPIO10)
+
+#define DEBUG_UART_RX               (&pin_GPIO16)
+#define DEBUG_UART_TX               (&pin_GPIO5)

@@ -4,12 +4,12 @@
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO12)
 #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO11)
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO25)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO24)
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO25, .sda = &pin_GPIO24}, \
+                                     {.scl = &pin_GPIO23, .sda = &pin_GPIO22}}
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO6)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO3)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO4)
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO6, .mosi = &pin_GPIO3, .miso = &pin_GPIO4}}
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO5)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO20)
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO20, .rx = &pin_GPIO5}}

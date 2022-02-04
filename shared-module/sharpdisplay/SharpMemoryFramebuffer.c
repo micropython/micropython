@@ -71,8 +71,8 @@ STATIC bool common_hal_sharpdisplay_framebuffer_get_pixels_in_byte_share_row(sha
 
 void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *self) {
     if (self->bus != &self->inline_bus
-        #if BOARD_SPI
-        && self->bus != common_hal_board_get_spi()
+        #if CIRCUITPY_BOARD_SPI
+        && !common_hal_board_is_spi(self->bus)
         #endif
         ) {
         memcpy(&self->inline_bus, self->bus, sizeof(busio_spi_obj_t));

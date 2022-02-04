@@ -98,7 +98,8 @@ void board_init(void) {
         false, // busy_state
         5, // seconds_per_frame
         false, // chip_select (don't always toggle chip select)
-        false); // grayscale
+        false, // grayscale
+        false); // two_byte_sequence_length
 }
 
 bool board_requests_safe_mode(void) {

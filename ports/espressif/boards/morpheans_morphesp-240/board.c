@@ -139,10 +139,6 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     // Debug UART
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO6);
