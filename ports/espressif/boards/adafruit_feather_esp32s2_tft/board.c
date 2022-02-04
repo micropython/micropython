@@ -31,6 +31,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "shared-bindings/board/__init__.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -81,17 +82,7 @@ void board_init(void) {
     gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
     gpio_set_level(21, true);
 
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-
-    common_hal_busio_spi_construct(
-        spi,
-        &pin_GPIO36,    // CLK
-        &pin_GPIO35,    // MOSI
-        NULL            // MISO not connected
-        );
-
-    common_hal_busio_spi_never_reset(spi);
-
+    busio_spi_obj_t *spi = common_hal_board_create_spi();
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
 

@@ -15,7 +15,7 @@ https://learn.adafruit.com/building-circuitpython/
 
 ## Setup
 
-Please ensure you setup your build environment appropriately, as per the guide.  You will need:
+Please ensure you set up your build environment appropriately, as per the guide.  You will need:
 
 * Linux: https://learn.adafruit.com/building-circuitpython/linux
 * MacOS: https://learn.adafruit.com/building-circuitpython/macos
@@ -25,8 +25,9 @@ Please ensure you setup your build environment appropriately, as per the guide. 
 
 This project has a bunch of git submodules.  You will need to update them regularly.
 
-    git submodule sync
-    git submodule update --init
+In the root folder of the CircuitPython repository, execute the following:
+
+    make fetch-submodules
 
 ### Required Python Packages
 

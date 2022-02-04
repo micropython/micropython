@@ -2676,7 +2676,7 @@ msgstr "försök att få argmin/argmax för en tom sekvens"
 msgid "attributes not supported yet"
 msgstr "attribut stöds inte än"
 
-#: extmod/ulab/code/numpy/numerical.c
+#: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
 msgstr "axis är utanför gränsen"
 
@@ -2732,11 +2732,11 @@ msgstr "bits_per_sample måste vara 8 eller 16"
 msgid "branch not in range"
 msgstr "branch utanför räckvidd"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
 msgstr "bufferten är mindre än begärd storlek"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
 msgstr "buffertstorlek måste vara en multipel av elementstorlek"
 
@@ -2827,6 +2827,10 @@ msgstr "kan inte konvertera %s till komplex"
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "kan inte konvertera '%q' objekt implicit till %q"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "can't convert complex to float"
+msgstr ""
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2923,6 +2927,14 @@ msgstr "kan inte tilldela en ny form"
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
 msgstr "kan inte casta utdata med regel"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex to dtype"
+msgstr ""
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot convert complex type"
+msgstr ""
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3118,6 +3130,10 @@ msgstr "division med noll"
 msgid "divisor must be 4"
 msgstr "divisor måste vara 4"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "dtype must be float, or complex"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "tom"
@@ -3221,7 +3237,7 @@ msgstr "första argumentet måste vara en callable"
 msgid "first argument must be a function"
 msgstr "första argumentet måste vara en funktion"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
 msgstr "första argumentet måste vara en tupel av ndarray"
 
@@ -3285,6 +3301,10 @@ msgstr "funktionen har samma teckenvärden vid slutet av intervall"
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
 msgstr "funktionen är enbart definierad för ndarray"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "function is implemented for ndarrays only"
+msgstr ""
 
 #: py/argcheck.c
 #, c-format
@@ -3399,7 +3419,7 @@ msgstr "inline assembler måste vara en funktion"
 msgid "input and output shapes are not compatible"
 msgstr "indata- och utdataformer är inte kompatibla"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "indataargument måste vara integer, en tuple eller list"
 
@@ -3407,13 +3427,17 @@ msgstr "indataargument måste vara integer, en tuple eller list"
 msgid "input array length must be power of 2"
 msgstr "indataarraylängden måste vara en multipel av 2"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
 msgstr "indatamatriser är inte kompatibla"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
 msgstr "indata måste vara en iterable"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input dtype must be float or complex"
+msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3424,17 +3448,25 @@ msgstr "indatamatrisen är asymmetrisk"
 msgid "input matrix is singular"
 msgstr "indatamatrisen är singulär"
 
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be a 1D ndarray"
+msgstr ""
+
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
 msgstr "indata måste vara en dense ndarray"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
 msgstr "indata måste vara en tensor av rank 2"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr "indata måste vara en ndarray"
+
+#: extmod/ulab/code/numpy/carray/carray.c
+msgid "input must be an ndarray, or a scalar"
+msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3809,7 +3841,11 @@ msgstr "inte alla argument omvandlade under strängformatering"
 msgid "not enough arguments for format string"
 msgstr "inte tillräckligt med argument för formatsträng"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/carray/carray_tools.c
+msgid "not implemented for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
 msgstr "antal punkter måste vara minst 2"
 
@@ -3867,7 +3903,7 @@ msgstr "objekt med buffertprotokoll krävs"
 msgid "odd-length string"
 msgstr "sträng har udda längd"
 
-#: extmod/ulab/code/ulab_create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "offset är för stor"
 
@@ -3875,7 +3911,7 @@ msgstr "offset är för stor"
 msgid "offset must be >= 0"
 msgstr "offset måste vara >= 0"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr "offset måste vara icke-negativt och inte längre än buffertlängd"
 
@@ -4357,7 +4393,7 @@ msgstr "tobyte kan enbart anropas för täta matriser"
 msgid "too many arguments provided with the given format"
 msgstr "för många argument för det givna formatet"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "för många dimensioner"
 
@@ -4558,7 +4594,7 @@ msgstr "window måste vara <= interval"
 msgid "wrong axis index"
 msgstr "fel axelindex"
 
-#: extmod/ulab/code/ulab_create.c
+#: extmod/ulab/code/numpy/create.c
 msgid "wrong axis specified"
 msgstr "fel axel angiven"
 
@@ -4566,7 +4602,11 @@ msgstr "fel axel angiven"
 msgid "wrong input type"
 msgstr "fel indatatyp"
 
-#: extmod/ulab/code/ulab_create.c py/objarray.c py/objstr.c
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of condition array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
 msgstr "fel antal argument"
 
