@@ -187,7 +187,7 @@ SRC_SDK := \
 	src/rp2_common/pico_unique_id/unique_id.c \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
-$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes
+$(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK)): CFLAGS += -Wno-missing-prototypes -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \
