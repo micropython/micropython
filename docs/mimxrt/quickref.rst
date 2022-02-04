@@ -271,23 +271,23 @@ There are up to four hardware SPI channels that allow faster transmission
 rates (up to 90Mhz). The SPI signals are fixed assigned to GPIO pins.
 It depends on the board design, which SPI's signals are exposed to
 the user, as detailed in the table below.
-The signal order in the table is CS, MOSI, MISO and CLK.
+The signal order in the table is CS0, CS1, MOSI, MISO and CLK.
 
-=================  =======================  =======================  =============
-Board / Pin        SPI0                     SPI1                     SPI2
-=================  =======================  =======================  =============
-Teensy 4.0         10/11/12/13              0/26/1/27                     -
-Teensy 4.1         10/11/12/13              38/26/39/27              -/50/54/49
-MIXMXRT1010-EVK    D10/D11/D12/D13              -                        -
-MIXMXRT1015-EVK    D10/D11/D12/D13              -                        -
-MIXMXRT1020-EVK    D10/D11/D12/D13              -                        -
-MIXMXRT1050-EVK    D10/D11/D12/D13 (*)          -                        -
-MIXMXRT1050-EVKB   D10/D11/D12/D13 (*)          -                        -
-MIXMXRT1060-EVK    D10/D11/D12/D13 (*)          -                        -
-MIXMXRT1064-EVK    D10/D11/D12/D13 (*)          -                        -
-MIXMXRT1170-EVK    D10/D11/D12/D13          D28/D25/D24/D26          -/D14/D15/D24
-Seeed ARCH MIX     J4_12/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
-=================  =======================  =======================  =============
+=================  =========================  =======================  ===============
+Board / Pin        SPI0                       SPI1                     SPI2
+=================  =========================  =======================  ===============
+Teensy 4.0         10/-/11/12/13              0/-/26/1/27                    -
+Teensy 4.1         10/37/11/12/13             38/-/26/39/27            -/29/50/54/49
+MIXMXRT1010-EVK    D10/D7/D11/D12/D13                -                       -
+MIXMXRT1015-EVK    D10/-/D11/D12/D13                 -                       -
+MIXMXRT1020-EVK    D10/-/D11/D12/D13          A3/D0/A5/A4/A0                 -
+MIXMXRT1050-EVK    D10/-/D11/D12/D13 (*)            -                        -
+MIXMXRT1050-EVKB   D10/-/D11/D12/D13 (*)            -                        -
+MIXMXRT1060-EVK    D10/-/D11/D12/D13 (*)            -                        -
+MIXMXRT1064-EVK    D10/-/D11/D12/D13 (*)            -                        -
+MIXMXRT1170-EVK    D10/-/D11/D12/D13          D28/-/D25/D24/D26        -/-/D14/D15/D24
+Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
+=================  =========================  =======================  ===============
 
 Pins denoted with (*) are by default not wired at the board.
 
