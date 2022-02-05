@@ -304,8 +304,8 @@ def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, fil
             if c == b"\x1d":  # ctrl-], quit
                 break
             elif c == b"\x04":  # ctrl-D
-                # do a soft reset and reload the filesystem hook
-                pyb.soft_reset_with_mount(console_out_write)
+                # special handling needed for ctrl-D if filesystem is mounted
+                pyb.write_ctrl_d(console_out_write)
             elif c == b"\x0a" and code_to_inject is not None:  # ctrl-j, inject code
                 pyb.serial.write(code_to_inject)
             elif c == b"\x0b" and file_to_inject is not None:  # ctrl-k, inject script
