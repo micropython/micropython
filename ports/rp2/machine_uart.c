@@ -112,8 +112,13 @@ STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"
 // take all bytes from the fifo and store them, if possible, in the buffer
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
     while (uart_is_readable(self->uart)) {
-        // try to write the data, ignore the fail
-        ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+        // try to get & store the data, but only if space is available.
+        // If no space is available, wait for the buffer to get cleared.
+        if (ringbuf_free(&(self->read_buffer)) > 0) {
+            ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+        } else {
+            break;
+        }
     }
 }
 
