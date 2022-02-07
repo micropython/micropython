@@ -90,7 +90,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         mp_raise_ValueError(translate("SPI peripheral in use"));
     }
 
-    spi_init(self->peripheral, 250000);
+    self->target_frequency = 250000;
+    self->real_frequency = spi_init(self->peripheral, self->target_frequency);
 
     gpio_set_function(clock->number, GPIO_FUNC_SPI);
     claim_pin(clock);
