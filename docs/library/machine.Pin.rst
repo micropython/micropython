@@ -42,7 +42,7 @@ Usage Model::
 Constructors
 ------------
 
-.. class:: Pin(id, mode=-1, pull=-1, *, value, drive, alt)
+.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
 
    Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
    additional arguments are given in the constructor then they are used to initialise
@@ -108,7 +108,7 @@ Constructors
 Methods
 -------
 
-.. method:: Pin.init(mode=-1, pull=-1, *, value, drive, alt)
+.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
 
    Re-initialise the pin using the given parameters.  Only those arguments that
    are specified will be set.  The rest of the pin peripheral state will remain
