@@ -57,6 +57,7 @@
 #include "stm32h7xx_ll_lpuart.h"
 #include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_rtc.h"
+#include "stm32h7xx_ll_spi.h"
 #include "stm32h7xx_ll_usart.h"
 
 // Enable various HAL modules

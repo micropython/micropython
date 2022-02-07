@@ -155,12 +155,21 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
+#if defined(STM32H7)
+STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+    { -1, -1,  0,  1, -1, -1, -1, -1 },  // Mono, 16-bits
+    {  0,  1,  2,  3, -1, -1, -1, -1 },  // Mono, 32-bits
+    {  0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
+    {  0,  1,  2,  3,  4,  5,  6,  7 },  // Stereo, 32-bits
+};
+#else
 STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
     {  0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
     {  2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
     { -1, -1,  0,  1, -1, -1,  2,  3 },  // Stereo, 16-bits
     {  2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
+#endif
 
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
@@ -244,6 +253,7 @@ STATIC size_t ringbuf_available_space(ring_buf_t *rbuf) {
 //      LEFT Channel =  0x99, 0xBB, 0x11, 0x22
 //      RIGHT Channel = 0x44, 0x55, 0xAB, 0x77
 STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
+    #if !defined(STM32H7)
     int16_t sample_ms;
     int16_t sample_ls;
     for (uint32_t i = 0; i < num_samples; i++) {
@@ -251,6 +261,7 @@ STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
         sample_ms = sample[i] >> 16;
         sample[i] = (sample_ls << 16) + sample_ms;
     }
+    #endif
 }
 
 STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
@@ -269,14 +280,13 @@ STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     }
 }
 
-STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
+STATIC uint32_t get_dma_bits(uint16_t mode, int8_t bits) {
     if (mode == I2S_MODE_MASTER_TX) {
         if (bits == 16) {
             return I2S_DATAFORMAT_16B;
         } else {
             return I2S_DATAFORMAT_32B;
         }
-        return bits;
     } else { // Master Rx
         // always read 32 bit words for I2S e.g.  I2S MEMS microphones
         return I2S_DATAFORMAT_32B;
@@ -566,6 +576,21 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         const pin_af_obj_t *af = pin_find_af(self->sd, AF_FN_I2S, self->i2s_id);
         GPIO_InitStructure.Alternate = (uint8_t)af->idx;
         HAL_GPIO_Init(self->sd->gpio, &GPIO_InitStructure);
+
+        #if defined(STM32H7)
+        // Make sure IOSWP bit is set correctly based on pin and mode
+        const pin_af_obj_t *pin_af = pin_find_af(self->sd, AF_FN_I2S, self->i2s_id);
+        if (pin_af != NULL) {
+            if ((pin_af->type == AF_PIN_TYPE_I2S_SDI
+                    && (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_TX))
+                || (pin_af->type == AF_PIN_TYPE_I2S_SDO
+                    && (self->mode == I2S_MODE_MASTER_TX || self->mode == I2S_MODE_SLAVE_RX))) {
+                LL_I2S_DisableIOSwap(self->hi2s.Instance);
+            } else {
+                LL_I2S_EnableIOSwap(self->hi2s.Instance);
+            }
+        }
+        #endif
     }
 
     if (HAL_I2S_Init(&self->hi2s) == HAL_OK) {
@@ -580,7 +605,9 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
             self->hi2s.hdmatx = &self->hdma_tx;
         }
 
+        #if !defined(STM32H7)
         __HAL_RCC_PLLI2S_ENABLE();  // start I2S clock
+        #endif
 
         return true;
     } else {
@@ -730,7 +757,12 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is SD valid?
     if (mp_obj_is_type(args[ARG_sd].u_obj, &pin_type)) {
         pin_af = pin_find_af(MP_OBJ_TO_PTR(args[ARG_sd].u_obj), AF_FN_I2S, self->i2s_id);
-        if (pin_af->type != AF_PIN_TYPE_I2S_SD) {
+        if (!(pin_af != NULL && (
+            pin_af->type == AF_PIN_TYPE_I2S_SD
+            #if defined(STM32H7)
+            || pin_af->type == AF_PIN_TYPE_I2S_SDO || pin_af->type == AF_PIN_TYPE_I2S_SDI
+            #endif
+            ))) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid SD pin"));
         }
     } else {
@@ -792,7 +824,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
     init->AudioFreq = I2S_AUDIOFREQ_DEFAULT;
     init->CPOL = I2S_CPOL_LOW;
+    #if !defined(STM32H7)
     init->ClockSource = I2S_CLOCK_PLL;
+    #endif
     #if defined(STM32F4)
     init->FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
     #endif
