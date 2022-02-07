@@ -37,3 +37,7 @@
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)
 #define MICROPY_PY_BUILTINS_SLICE_INDICES       (1)
 #define MICROPY_PY_USELECT                      (1)
+
+#ifndef MICROPY_PY_UASYNCIO
+#define MICROPY_PY_UASYNCIO                     (1)
+#endif

@@ -7,6 +7,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pinbase.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pulse.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_signal.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduasyncio.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modubinascii.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moductypes.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduhashlib.c" />
