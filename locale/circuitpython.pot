@@ -156,6 +156,10 @@ msgstr ""
 msgid "%q out of bounds"
 msgstr ""
 
+#: shared-bindings/wifi/Monitor.c
+msgid "%d out of bounds"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
