@@ -133,4 +133,4 @@ Constants
 .. data:: DAC.CIRCULAR
 
    CIRCULAR mode does a transmission of the waveform in the data buffer, and wraps around 
-   to    the start of the data buffer every time it reaches the end of the table.
+   to the start of the data buffer every time it reaches the end of the table.
