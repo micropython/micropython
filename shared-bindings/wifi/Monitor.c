@@ -85,7 +85,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_get_channel_obj, wifi_monitor_obj_get_cha
 STATIC mp_obj_t wifi_monitor_obj_set_channel(mp_obj_t self_in, mp_obj_t channel) {
     mp_int_t c = mp_obj_get_int(channel);
     if (c < 1 || c > 13) {
-        mp_raise_ValueError_varg(translate("%d out of bounds"), c);
+        mp_raise_ValueError_varg(translate("%q out of bounds"), MP_QSTR_channel);
     }
     common_hal_wifi_monitor_set_channel(self_in, c);
     return mp_const_none;
