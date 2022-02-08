@@ -64,7 +64,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     // Use the state machine to manage pins.
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         pdmin, sizeof(pdmin) / sizeof(pdmin[0]),
-        44100 * 32 * 2, // Clock at 44.1 khz to warm the DAC up.
+        sample_rate * 32 * 2, // Frequency based on sample rate
         NULL, 0,
         NULL, 1, 0, 0xffffffff, // out pin
         data_pin, 1, // in pins
