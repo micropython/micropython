@@ -199,6 +199,25 @@ MATH_FUN_1(erfc, erfc)
 MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
+
+STATIC mp_float_t MICROPY_FLOAT_C_FUN(gcd_func)(mp_float_t x, mp_float_t y) {
+    printf("x is %f and y is %f", x, y);
+    //trivial case
+    if(x == 0)
+        return y;
+    if(y == 0)
+        return x;
+
+    //base case
+    if(x == y)
+        return x;
+
+    if (x > y)
+        return gcd_func(x-y, y);
+    return gcd_func(x, y-x);
+}
+
+MATH_FUN_2(gcd, gcd_func)
 #endif
 // TODO: fsum
 
@@ -426,6 +445,7 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_gamma), MP_ROM_PTR(&mp_math_gamma_obj) },
     { MP_ROM_QSTR(MP_QSTR_lgamma), MP_ROM_PTR(&mp_math_lgamma_obj) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_gcd), MP_ROM_PTR(&mp_math_gcd_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table);
