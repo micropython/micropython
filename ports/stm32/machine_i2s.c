@@ -537,18 +537,26 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         __SPI1_CLK_ENABLE();
         // configure DMA streams
         if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
-            self->dma_descr_rx = &dma_I2S_1_RX;
+            self->dma_descr_rx = &dma_I2S_1_RX_32; // always 32-bit
         } else {
-            self->dma_descr_tx = &dma_I2S_1_TX;
+            if (self->hi2s.Init.DataFormat == I2S_DATAFORMAT_16B) {
+                self->dma_descr_tx = &dma_I2S_1_TX_16;
+            } else {
+                self->dma_descr_tx = &dma_I2S_1_TX_32;
+            }
         }
     } else if (self->i2s_id == 2) {
         self->hi2s.Instance = I2S2;
         __SPI2_CLK_ENABLE();
         // configure DMA streams
         if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
-            self->dma_descr_rx = &dma_I2S_2_RX;
+            self->dma_descr_rx = &dma_I2S_2_RX_32; // always 32-bit
         } else {
-            self->dma_descr_tx = &dma_I2S_2_TX;
+            if (self->hi2s.Init.DataFormat == I2S_DATAFORMAT_16B) {
+                self->dma_descr_tx = &dma_I2S_1_TX_16;
+            } else {
+                self->dma_descr_tx = &dma_I2S_2_TX_32;
+            }
         }
     } else {
         // invalid id number; should not get here as i2s object should not
