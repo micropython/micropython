@@ -91,7 +91,19 @@ STATIC const madc_obj_t madc_obj[] = {
     #endif
 };
 
-STATIC adc_atten_t madc_obj_atten[MP_ARRAY_SIZE(madc_obj)];
+// These values are initialised to 0, which means the corresponding ADC channel is not initialised.
+// The madc_atten_get/madc_atten_set functions store (atten+1) here so that the uninitialised state
+// can be distinguished from the initialised state.
+STATIC uint8_t madc_obj_atten[MP_ARRAY_SIZE(madc_obj)];
+
+static inline adc_atten_t madc_atten_get(const madc_obj_t *self) {
+    uint8_t value = madc_obj_atten[self - &madc_obj[0]];
+    return value == 0 ? ADC_ATTEN_MAX : value - 1;
+}
+
+static inline void madc_atten_set(const madc_obj_t *self, adc_atten_t atten) {
+    madc_obj_atten[self - &madc_obj[0]] = atten + 1;
+}
 
 const madc_obj_t *madc_search_helper(madcblock_obj_t *block, adc_channel_t channel_id, gpio_num_t gpio_id) {
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
@@ -105,7 +117,7 @@ const madc_obj_t *madc_search_helper(madcblock_obj_t *block, adc_channel_t chann
 
 STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "ADC(Pin(%u), atten=%u)", self->gpio_id, madc_obj_atten[self - madc_obj]);
+    mp_printf(print, "ADC(Pin(%u), atten=%u)", self->gpio_id, madc_atten_get(self));
 }
 
 STATIC void madc_atten_helper(const madc_obj_t *self, mp_int_t atten) {
@@ -118,7 +130,7 @@ STATIC void madc_atten_helper(const madc_obj_t *self, mp_int_t atten) {
     if (err != ESP_OK) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid atten"));
     }
-    madc_obj_atten[self - madc_obj] = atten;
+    madc_atten_set(self, atten);
 }
 
 void madc_init_helper(const madc_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -136,7 +148,7 @@ void madc_init_helper(const madc_obj_t *self, size_t n_pos_args, const mp_obj_t 
     mp_int_t atten = args[ARG_atten].u_int;
     if (atten != -1) {
         madc_atten_helper(self, atten);
-    } else if (madc_obj_atten[self - madc_obj] == -1) {
+    } else if (madc_atten_get(self) == ADC_ATTEN_MAX) {
         madc_atten_helper(self, ADC_ATTEN_DB_0);
     }
 }
@@ -192,7 +204,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_u16_obj, madc_read_u16);
 
 STATIC mp_obj_t madc_read_uv(mp_obj_t self_in) {
     const madc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    adc_atten_t atten = madc_obj_atten[self - madc_obj];
+    adc_atten_t atten = madc_atten_get(self);
     return MP_OBJ_NEW_SMALL_INT(madcblock_read_uv_helper(self->block, self->channel_id, atten));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(madc_read_uv_obj, madc_read_uv);
