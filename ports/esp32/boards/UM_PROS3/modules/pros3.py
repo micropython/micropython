@@ -1,5 +1,5 @@
 # ProS3 MicroPython Helper Library
-# 2022 Seon Rozenblum - Unexpected Maker
+# MIT license; Copyright (c) 2022 Seon Rozenblum - Unexpected Maker
 #
 # Project home:
 # http://pros3.io

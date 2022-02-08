@@ -1,5 +1,5 @@
 # FeatherS3 MicroPython Helper Library
-# 2022 Seon Rozenblum - Unexpected Maker
+# MIT license; Copyright (c) 2022 Seon Rozenblum - Unexpected Maker
 #
 # Project home:
 # http://feathers3.io

@@ -1,5 +1,5 @@
 # TinyS3 Helper Library
-# 2022 Seon Rozenblum, Unexpected Maker
+# MIT license; Copyright (c) 2022 Seon Rozenblum - Unexpected Maker
 #
 # Project home:
 #   https://tinys3.io

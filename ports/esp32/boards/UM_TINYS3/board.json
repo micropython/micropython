@@ -16,7 +16,7 @@
     ],
     "id": "tinys3",
     "images": [
-        "photo_tinys3.jpg"
+        "unexpectedmaker_tinys3.jpg"
     ],
     "mcu": "esp32s3",
     "product": "TinyS3",
