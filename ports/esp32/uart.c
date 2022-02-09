@@ -94,11 +94,6 @@ STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
         #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
         uint8_t c = READ_PERI_REG(UART_FIFO_AHB_REG(0)); // UART0
         #endif
-        if (c == mp_interrupt_char) {
-            mp_sched_keyboard_interrupt();
-        } else {
-            // this is an inline function so will be in IRAM
-            ringbuf_put(&stdin_ringbuf, c);
-        }
+        mp_hal_stdin_rx_buff_put(c);
     }
 }

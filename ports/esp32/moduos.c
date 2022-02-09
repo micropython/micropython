@@ -93,7 +93,7 @@ STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
         if (c < 0) {
             break;
         }
-        ringbuf_put(&stdin_ringbuf, c);
+        mp_hal_stdin_rx_buff_put(c);
     }
     return mp_const_none;
 }

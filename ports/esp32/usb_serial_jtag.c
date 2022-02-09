@@ -48,17 +48,13 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-        size_t req_len = ringbuf_free(&stdin_ringbuf);
+        size_t req_len = mp_hal_stdin_rx_buff_free();
         if (req_len > USB_SERIAL_JTAG_BUF_SIZE) {
             req_len = USB_SERIAL_JTAG_BUF_SIZE;
         }
         size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
         for (size_t i = 0; i < len; ++i) {
-            if (rx_buf[i] == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put(&stdin_ringbuf, rx_buf[i]);
-            }
+            mp_hal_stdin_rx_buff_put(rx_buf[i]);
         }
         mp_hal_wake_main_task_from_isr();
     }

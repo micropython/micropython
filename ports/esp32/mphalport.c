@@ -48,9 +48,6 @@
 
 TaskHandle_t mp_main_task_handle;
 
-STATIC uint8_t stdin_ringbuf_array[260];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
-
 // Check the ESP-IDF error code and raise an OSError if it's not ESP_OK.
 void check_esp_err(esp_err_t code) {
     if (code != ESP_OK) {
@@ -84,20 +81,15 @@ void check_esp_err(esp_err_t code) {
 }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
-    uintptr_t ret = 0;
-    if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
-        ret |= MP_STREAM_POLL_RD;
-    }
-    return ret;
+    return mp_hal_stdin_rx_buff_poll(poll_flags);
 }
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        int c = ringbuf_get(&stdin_ringbuf);
+        int c = mp_hal_stdin_rx_buff_get();
         if (c != -1) {
             return c;
         }
-        MICROPY_EVENT_POLL_HOOK
         ulTaskNotifyTake(pdFALSE, 1);
     }
 }

@@ -50,11 +50,7 @@ static void usb_callback_rx(int itf, cdcacm_event_t *event) {
             break;
         }
         for (size_t i = 0; i < len; ++i) {
-            if (usb_rx_buf[i] == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put(&stdin_ringbuf, usb_rx_buf[i]);
-            }
+            mp_hal_stdin_rx_buff_put(usb_rx_buf[i]);
         }
     }
 }
