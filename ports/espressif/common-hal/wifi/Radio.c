@@ -36,6 +36,7 @@
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-bindings/wifi/AuthMode.h"
+#include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -399,7 +400,8 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
 
     uint32_t received = 0;
     uint32_t total_time_ms = 0;
-    while (received == 0 && total_time_ms < timeout_ms && !mp_hal_is_interrupted()) {
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    while (received == 0 && (common_hal_time_monotonic_ms() - start_time < timeout_ms) && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         esp_ping_get_profile(ping, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
         esp_ping_get_profile(ping, ESP_PING_PROF_REPLY, &received, sizeof(received));
