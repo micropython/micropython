@@ -82,7 +82,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const uint32_t mosi_count = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     bool spi_taken = false;
 
-    if (half_duplex == true) {
+    if (half_duplex) {
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 

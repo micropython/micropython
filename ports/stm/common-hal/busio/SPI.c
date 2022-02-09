@@ -209,7 +209,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
     // Direction change only required for RX-only, see RefMan RM0090:884
-    if (half_duplex == true) {
+    if (half_duplex) {
         self->handle.Init.Direction = SPI_DIRECTION_1LINE;
     } else {
         self->handle.Init.Direction = (self->mosi == NULL) ? SPI_DIRECTION_2LINES_RXONLY : SPI_DIRECTION_2LINES;
@@ -345,13 +345,13 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
-    if (self->miso == NULL && self->half_duplex == false) {
+    if (self->miso == NULL && !self->half_duplex) {
         mp_raise_ValueError(translate("No MISO Pin"));
-    } else if (self->half_duplex == true && self->mosi == NULL) {
+    } else if (self->half_duplex && self->mosi == NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
     HAL_StatusTypeDef result = HAL_OK;
-    if ((self->half_duplex == false && self->mosi == NULL) || (self->half_duplex == true && self->mosi != NULL && self->miso == NULL)) {
+    if ((!self->half_duplex && self->mosi == NULL) || (self->half_duplex && self->mosi != NULL && self->miso == NULL)) {
         result = HAL_SPI_Receive(&self->handle, data, (uint16_t)len, HAL_MAX_DELAY);
     } else {
         memset(data, write_value, len);

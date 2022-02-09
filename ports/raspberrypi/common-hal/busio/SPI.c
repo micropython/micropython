@@ -57,7 +57,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *miso, bool half_duplex) {
     size_t instance_index = NO_INSTANCE;
 
-    if (half_duplex == true) {
+    if (half_duplex) {
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 

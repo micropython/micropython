@@ -57,7 +57,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t miso_pad = 0;
     uint8_t dopo = 255;
 
-    if (half_duplex == true) {
+    if (half_duplex) {
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 

@@ -83,7 +83,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         .quadhd_io_num = -1,
     };
 
-    if (half_duplex == true) {
+    if (half_duplex) {
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 

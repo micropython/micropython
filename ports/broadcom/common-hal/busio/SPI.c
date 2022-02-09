@@ -83,7 +83,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     BP_Function_Enum mosi_alt = 0;
     BP_Function_Enum miso_alt = 0;
 
-    if (half_duplex == true) {
+    if (half_duplex) {
         mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
     }
 
