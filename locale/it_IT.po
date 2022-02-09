@@ -594,7 +594,7 @@ msgstr "Entrambi i pin devono supportare gli interrupt hardware"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "La luminosità deve essere tra 0-1.0"
@@ -1149,6 +1149,13 @@ msgstr ""
 msgid "Group already used"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "Half duplex SPI is not implemented"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1505,7 +1512,7 @@ msgstr ""
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr ""
 
-#: shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1533,7 +1540,7 @@ msgstr "inizializzazione del pin MISO fallita."
 msgid "MOSI pin init failed."
 msgstr "inizializzazione del pin MOSI fallita."
 
-#: shared-bindings/is31fl3741/__init__.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr ""
 
@@ -2160,7 +2167,7 @@ msgid "Sample rate too high. It must be less than %d"
 msgstr ""
 "Frequenza di campionamento troppo alta. Il valore deve essere inferiore a %d"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -4624,7 +4631,7 @@ msgstr ""
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
