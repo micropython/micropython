@@ -54,8 +54,13 @@ void reset_spi(void) {
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *miso, bool half_duplex) {
     size_t instance_index = NO_INSTANCE;
+
+    if (half_duplex == true) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
+
     if (clock->number % 4 == 2) {
         instance_index = (clock->number / 8) % 2;
     }
