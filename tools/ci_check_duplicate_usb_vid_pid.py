@@ -54,6 +54,7 @@ DEFAULT_IGNORELIST = [
     "espressif_esp32s3_devkitc_1_n8",
     "espressif_esp32s3_devkitc_1_n8r2",
     "espressif_esp32s3_devkitc_1_n8r8",
+    "espressif_esp32s2_devkitc_1_n4r2",
     "jpconstantineau_pykey18",
     "jpconstantineau_pykey44",
     "jpconstantineau_pykey60",
