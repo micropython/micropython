@@ -526,7 +526,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         self->hi2s.Instance = I2S1;
         __SPI1_CLK_ENABLE();
         // configure DMA streams
-        if (self->mode == I2S_MODE_MASTER_RX) {
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
             self->dma_descr_rx = &dma_I2S_1_RX;
         } else {
             self->dma_descr_tx = &dma_I2S_1_TX;
@@ -535,7 +535,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         self->hi2s.Instance = I2S2;
         __SPI2_CLK_ENABLE();
         // configure DMA streams
-        if (self->mode == I2S_MODE_MASTER_RX) {
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
             self->dma_descr_rx = &dma_I2S_2_RX;
         } else {
             self->dma_descr_tx = &dma_I2S_2_TX;
@@ -570,7 +570,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
 
     if (HAL_I2S_Init(&self->hi2s) == HAL_OK) {
         // Reset and initialize Tx and Rx DMA channels
-        if (self->mode == I2S_MODE_MASTER_RX) {
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
             dma_invalidate_channel(self->dma_descr_rx);
             dma_init(&self->hdma_rx, self->dma_descr_rx, DMA_PERIPH_TO_MEMORY, &self->hi2s);
             self->hi2s.hdmarx = &self->hdma_rx;
@@ -691,7 +691,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
         { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_INT,                     {.u_int = -1} },
         { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
     };
 
@@ -740,7 +740,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is Mode valid?
     uint16_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != (I2S_MODE_MASTER_RX)) &&
-        (i2s_mode != (I2S_MODE_MASTER_TX))) {
+        (i2s_mode != (I2S_MODE_MASTER_TX)) &&
+        (i2s_mode != (I2S_MODE_SLAVE_RX)) &&
+        (i2s_mode != (I2S_MODE_SLAVE_TX))) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
     }
 
@@ -777,7 +779,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->mode = i2s_mode;
     self->bits = i2s_bits;
     self->format = i2s_format;
-    self->rate = args[ARG_rate].u_int;
+    self->rate = -1;
     self->ibuf = ring_buffer_len;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->non_blocking_descriptor.copy_in_progress = false;
@@ -788,9 +790,18 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->Standard = I2S_STANDARD_PHILIPS;
     init->DataFormat = get_dma_bits(self->mode, self->bits);
     init->MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-    init->AudioFreq = args[ARG_rate].u_int;
+    init->AudioFreq = I2S_AUDIOFREQ_DEFAULT;
     init->CPOL = I2S_CPOL_LOW;
     init->ClockSource = I2S_CLOCK_PLL;
+
+    // set rate if not in passive mode
+    if (i2s_mode == I2S_MODE_MASTER_TX || i2s_mode == I2S_MODE_MASTER_RX) {
+        self->rate = args[ARG_rate].u_int;
+        if (self->rate < 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("rate required"));
+        }
+        init->AudioFreq = args[ARG_rate].u_int;
+    }
 
     // init the I2S bus
     if (!i2s_init(self)) {
@@ -806,7 +817,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     }
 
     HAL_StatusTypeDef status;
-    if (self->mode == I2S_MODE_MASTER_TX) {
+    if (self->mode == I2S_MODE_MASTER_TX || self->mode == I2S_MODE_SLAVE_TX) {
         status = HAL_I2S_Transmit_DMA(&self->hi2s, (void *)self->dma_buffer_dcache_aligned, number_of_samples);
     } else {  // RX
         status = HAL_I2S_Receive_DMA(&self->hi2s, (void *)self->dma_buffer_dcache_aligned, number_of_samples);
@@ -824,16 +835,18 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         "ws="MP_HAL_PIN_FMT ",\n"
         "sd="MP_HAL_PIN_FMT ",\n"
         "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
+        "bits=%u, format=%u,\n",
         self->i2s_id,
         mp_hal_pin_name(self->sck),
         mp_hal_pin_name(self->ws),
         mp_hal_pin_name(self->sd),
         self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
+        self->bits, self->format
         );
+    if (self->rate > 0) {
+        mp_printf(print, "rate=%d, ", self->rate);
+    }
+    mp_printf(print, "ibuf=%d)", self->ibuf);
 }
 
 STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
@@ -1000,6 +1013,8 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     // Constants
     { MP_ROM_QSTR(MP_QSTR_RX),              MP_ROM_INT(I2S_MODE_MASTER_RX) },
     { MP_ROM_QSTR(MP_QSTR_TX),              MP_ROM_INT(I2S_MODE_MASTER_TX) },
+    { MP_ROM_QSTR(MP_QSTR_RX_PASSIVE),      MP_ROM_INT(I2S_MODE_SLAVE_RX) },
+    { MP_ROM_QSTR(MP_QSTR_TX_PASSIVE),      MP_ROM_INT(I2S_MODE_SLAVE_TX) },
     { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
     { MP_ROM_QSTR(MP_QSTR_MONO),            MP_ROM_INT(MONO) },
 };
@@ -1008,7 +1023,7 @@ MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
 STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->mode != I2S_MODE_MASTER_RX) {
+    if (self->mode != I2S_MODE_MASTER_RX && self->mode != I2S_MODE_SLAVE_RX) {
         *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
@@ -1041,7 +1056,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
 STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->mode != I2S_MODE_MASTER_TX) {
+    if (self->mode != I2S_MODE_MASTER_TX && self->mode != I2S_MODE_SLAVE_TX) {
         *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
