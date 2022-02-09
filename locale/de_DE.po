@@ -590,7 +590,7 @@ msgstr "Beide pins müssen Hardware Interrupts unterstützen"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Die Helligkeit muss zwischen 0 und 1.0 liegen"
@@ -1147,6 +1147,13 @@ msgstr "Generischer Fehler"
 msgid "Group already used"
 msgstr "Gruppe schon benutzt"
 
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "Half duplex SPI is not implemented"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1500,7 +1507,7 @@ msgstr "Ungültige Wort- / Bitlänge"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Der Schlüssel muss 16, 24 oder 32 Byte lang sein"
 
-#: shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1528,7 +1535,7 @@ msgstr "MISO pin Initialisierung fehlgeschlagen."
 msgid "MOSI pin init failed."
 msgstr "MOSI pin Initialisierung fehlgeschlagen."
 
-#: shared-bindings/is31fl3741/__init__.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr ""
 
@@ -2153,7 +2160,7 @@ msgstr "Abtastrate muss positiv sein"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Abtastrate zu hoch. Wert muss unter %d liegen"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -4628,7 +4635,7 @@ msgstr "watchdog Zeitlimit muss größer als 0 sein"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "breite muss zwischen (inklusive) 2 und 8 liegen, nicht %d"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "breite muss größer als 0 sein"

@@ -584,7 +584,7 @@ msgstr "Beide pinnen moeten hardware interrupts ondersteunen"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Helderheid moet tussen de 0 en 1.0 liggen"
@@ -1139,6 +1139,13 @@ msgstr ""
 msgid "Group already used"
 msgstr "Groep al gebruikt"
 
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "Half duplex SPI is not implemented"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1492,7 +1499,7 @@ msgstr "Ongeldig woord/bit lengte"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Sleutel moet 16, 24, of 32 bytes lang zijn"
 
-#: shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1520,7 +1527,7 @@ msgstr "MISO pin init mislukt."
 msgid "MOSI pin init failed."
 msgstr "MOSI pin init mislukt."
 
-#: shared-bindings/is31fl3741/__init__.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr ""
 
@@ -2147,7 +2154,7 @@ msgstr "Sample rate moet positief zijn"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Sample rate is te hoog. Moet minder dan %d zijn"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -4600,7 +4607,7 @@ msgstr "watchdog time-out moet groter zijn dan 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "breedte moet groter dan nul zijn"

@@ -589,7 +589,7 @@ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
@@ -1144,6 +1144,13 @@ msgstr "Generiskt fel"
 msgid "Group already used"
 msgstr "Grupp används redan"
 
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "Half duplex SPI is not implemented"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1499,7 +1506,7 @@ msgstr "Ogiltig word-/bitlängd"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Nyckeln måste vara 16, 24 eller 32 byte lång"
 
-#: shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
 msgstr "LED-mappning måste matcha displaystorlek"
 
@@ -1527,7 +1534,7 @@ msgstr "init för MISO-pinne misslyckades."
 msgid "MOSI pin init failed."
 msgstr "init för MOSI-pinne misslyckades."
 
-#: shared-bindings/is31fl3741/__init__.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr ""
 
@@ -2153,7 +2160,7 @@ msgstr "Samplingsfrekvensen måste vara positiv"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
 msgstr "Skaldimension måste vara delbar med 3"
 
@@ -4620,7 +4627,7 @@ msgstr "watchdog timeout måste vara större än 0"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr "width måste vara mellan 2 och 8, inte %d"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr "width måste vara större än noll"
