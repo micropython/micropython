@@ -11,6 +11,4 @@ LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
 
 # There are many pin definitions on this board; it doesn't quite fit on very large translations.
-# Remove a couple of modules.
-CIRCUITPY_ONEWIREIO = 0
 CIRCUITPY_RAINBOWIO = 0

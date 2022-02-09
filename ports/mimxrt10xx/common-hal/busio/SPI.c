@@ -75,12 +75,16 @@ void spi_reset(void) {
 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi,
-    const mcu_pin_obj_t *miso) {
+    const mcu_pin_obj_t *miso, bool half_duplex) {
 
     const uint32_t sck_count = MP_ARRAY_SIZE(mcu_spi_sck_list);
     const uint32_t miso_count = MP_ARRAY_SIZE(mcu_spi_miso_list);
     const uint32_t mosi_count = MP_ARRAY_SIZE(mcu_spi_mosi_list);
     bool spi_taken = false;
+
+    if (half_duplex) {
+        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+    }
 
     for (uint i = 0; i < sck_count; i++) {
         if (mcu_spi_sck_list[i].pin != clock) {

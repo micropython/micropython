@@ -163,7 +163,8 @@ void status_led_init() {
     common_hal_busio_spi_construct(&status_apa102,
         MICROPY_HW_APA102_SCK,
         MICROPY_HW_APA102_MOSI,
-        NULL);
+        NULL,
+        false);
     #endif
     #if CIRCUITPY_BITBANG_APA102
     shared_module_bitbangio_spi_try_lock(&status_apa102);
