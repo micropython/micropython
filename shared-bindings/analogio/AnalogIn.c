@@ -126,7 +126,8 @@ const mp_obj_property_t analogio_analogin_value_obj = {
 
 //|     reference_voltage: float
 //|     """The maximum voltage measurable (also known as the reference voltage) as a
-//|     `float` in Volts."""
+//|     `float` in Volts.  Note the ADC value may not scale to the actual voltage linearly
+//|     at ends of the analog range."""
 //|
 STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
     analogio_analogin_obj_t *self = MP_OBJ_TO_PTR(self_in);
