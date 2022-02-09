@@ -47,6 +47,14 @@ CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
 
+# TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
+# We'd like a smoother transition, but we can't afford the space to have both
+# `busio.OneWire` and `onewireio.OneWire` present on these tiny builds.
+
+ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
+CIRCUITPY_ONEWIREIO ?= 0
+endif
+
 MICROPY_PY_ASYNC_AWAIT = 0
 
 # We don't have room for the fonts for terminalio for ja and ko
