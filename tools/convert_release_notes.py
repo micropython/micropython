@@ -16,9 +16,8 @@ html = mistune.create_markdown()
 print()
 print("HTML")
 print("=====================================")
-print('From the <a href="">GitHub release page</a>:\n<blockquote>')
+print('<p><em>From the <a href="">GitHub release page</a>:</em></p>\n')
 print(html(source))
-print("</blockquote>")
 
 
 class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
@@ -59,10 +58,13 @@ class AdafruitBBCodeRenderer(mistune.renderers.BaseRenderer):
         return "[b]{}[/b]".format(text)
 
     def emphasis(self, text):
-        return "[b]{}[/b]".format(text)
+        return "[i]{}[/i]".format(text)
 
     def strong(self, text):
-        return "[i]{}[/i]".format(text)
+        return "[b]{}[/b]".format(text)
+
+    def finalize(self, data):
+        return "".join(data)
 
 
 bbcode = mistune.create_markdown(renderer=AdafruitBBCodeRenderer())
@@ -70,6 +72,5 @@ bbcode = mistune.create_markdown(renderer=AdafruitBBCodeRenderer())
 print()
 print("BBCode")
 print("=====================================")
-print("From the [url=]GitHub release page[/url]:\n[quote]")
+print("[i]From the [url=]GitHub release page[/url]:[/i]\n")
 print(bbcode(source))
-print("[/quote]")
