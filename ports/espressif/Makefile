@@ -268,6 +268,10 @@ ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
 endif
 
+ifneq ($(CIRCUITPY_BLEIO),0)
+SRC_C += common-hal/_bleio/ble_events.c
+endif
+
 SRC_COMMON_HAL_EXPANDED = \
 	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 	$(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

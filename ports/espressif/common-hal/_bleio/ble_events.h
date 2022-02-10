@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  * Copyright (c) 2016 Glenn Ruben Bakke
  *
@@ -26,30 +26,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
 
-#include "py/obj.h"
+#include <stdbool.h>
 
-#include "common-hal/_bleio/UUID.h"
+#include "host/ble_gap.h"
 
-#include "host/ble_gatt.h"
+typedef struct ble_event_handler_entry {
+    struct ble_event_handler_entry *next;
+    void *param;
+    ble_gap_event_fn *func;
+} ble_event_handler_entry_t;
 
-// Forward declare characteristic because it includes a Descriptor.
-struct _bleio_characteristic_obj;
+void ble_event_reset(void);
+void ble_event_add_handler(ble_gap_event_fn *func, void *param);
+void ble_event_remove_handler(ble_gap_event_fn *func, void *param);
 
-typedef struct _bleio_descriptor_obj {
-    mp_obj_base_t base;
-    // Will be MP_OBJ_NULL before being assigned to a Characteristic.
-    struct _bleio_characteristic_obj *characteristic;
-    bleio_uuid_obj_t *uuid;
-    mp_obj_t initial_value;
-    uint16_t max_length;
-    bool fixed_length;
-    uint16_t handle;
-    struct ble_gatt_dsc_def def;
-    bleio_attribute_security_mode_t read_perm;
-    bleio_attribute_security_mode_t write_perm;
-} bleio_descriptor_obj_t;
+// Allow for user provided entries to prevent allocations outside the VM.
+void ble_event_add_handler_entry(ble_event_handler_entry_t *entry, ble_gap_event_fn *func, void *param);
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_BLEIO_DESCRIPTOR_H
+int ble_event_run_handlers(struct ble_gap_event *event);
+
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H

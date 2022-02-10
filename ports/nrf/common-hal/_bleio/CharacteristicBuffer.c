@@ -158,6 +158,7 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
         ble_drv_remove_event_handler(characteristic_buffer_on_ble_evt, self);
+        self->characteristic = NULL;
     }
 }
 
