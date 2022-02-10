@@ -143,9 +143,11 @@ Constants
    for initialising the SPI bus to controller; this is only used for the WiPy
 
 .. data:: SPI.MSB
+          SoftSPI.MSB
 
    set the first bit to be the most significant bit
 
 .. data:: SPI.LSB
+          SoftSPI.LSB
 
    set the first bit to be the least significant bit

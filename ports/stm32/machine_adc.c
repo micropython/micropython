@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "adc.h"
 
-#if defined(STM32F0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+#if defined(STM32F0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 #define ADC_V2 (1)
 #else
 #define ADC_V2 (0)
@@ -42,7 +42,7 @@
 #define ADCx_COMMON __LL_ADC_COMMON_INSTANCE(0)
 #endif
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32WL)
 #define ADC_STAB_DELAY_US (1)
 #define ADC_TEMPSENSOR_DELAY_US (10)
 #elif defined(STM32G4)
@@ -65,7 +65,7 @@
 #elif defined(STM32H7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_8CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_387CYCLES_5
-#elif defined(STM32L0)
+#elif defined(STM32L0) || defined(STM32WL)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_160CYCLES_5
 #elif defined(STM32L4) || defined(STM32WB)
@@ -105,7 +105,7 @@ STATIC const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 
 void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     // Configure ADC clock source and enable ADC clock
-    #if defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
     __HAL_RCC_ADC_CLK_ENABLE();
     #else
@@ -150,6 +150,8 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     ADC1_COMMON->CCR = 0; // ADCPR=PCLK/2
     #elif defined(STM32WB)
     ADC1_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos | 0 << ADC_CCR_CKMODE_Pos; // PRESC=1, MODE=ASYNC
+    #elif defined(STM32WL)
+    ADC_COMMON->CCR = 0 << ADC_CCR_PRESC_Pos; // PRESC=1
     #endif
 
     #if defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
@@ -158,7 +160,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     }
     #endif
 
-    #if defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     if (!(adc->CR & ADC_CR_ADVREGEN)) {
         adc->CR = ADC_CR_ADVREGEN; // enable VREG
         #if defined(STM32H7)
@@ -172,7 +174,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     #if ADC_V2
     if (!(adc->CR & ADC_CR_ADEN)) {
         // ADC isn't enabled so calibrate it now
-        #if defined(STM32F0) || defined(STM32L0)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32WL)
         LL_ADC_StartCalibration(adc);
         #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
         LL_ADC_StartCalibration(adc, LL_ADC_SINGLE_ENDED);
@@ -235,7 +237,7 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
 }
 
 STATIC int adc_get_bits(ADC_TypeDef *adc) {
-    #if defined(STM32F0) || defined(STM32L0)
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32WL)
     uint32_t res = (adc->CFGR1 & ADC_CFGR1_RES) >> ADC_CFGR1_RES_Pos;
     #elif defined(STM32F4) || defined(STM32F7)
     uint32_t res = (adc->CR1 & ADC_CR1_RES) >> ADC_CR1_RES_Pos;
@@ -409,7 +411,11 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     uint32_t sample_time = ADC_SAMPLETIME_DEFAULT;
     ADC_TypeDef *adc;
     if (mp_obj_is_int(source)) {
+        #if defined(STM32WL)
+        adc = ADC;
+        #else
         adc = ADC1;
+        #endif
         channel = mp_obj_get_int(source);
         if (channel == ADC_CHANNEL_VREFINT
             #if defined(STM32G4)
@@ -426,7 +432,11 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     } else {
         const pin_obj_t *pin = pin_find(source);
         if (pin->adc_num & PIN_ADC1) {
+            #if defined(STM32WL)
+            adc = ADC;
+            #else
             adc = ADC1;
+            #endif
         #if defined(ADC2)
         } else if (pin->adc_num & PIN_ADC2) {
             adc = ADC2;

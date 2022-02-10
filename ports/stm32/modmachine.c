@@ -63,7 +63,7 @@
 #define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
 #endif
 
-#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif

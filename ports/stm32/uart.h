@@ -102,7 +102,7 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len);
 static inline bool uart_tx_avail(pyb_uart_obj_t *self) {
     #if defined(STM32F4)
     return self->uartx->SR & USART_SR_TXE;
-    #elif defined(STM32H7)
+    #elif defined(STM32H7) || defined(STM32WL)
     return self->uartx->ISR & USART_ISR_TXE_TXFNF;
     #else
     return self->uartx->ISR & USART_ISR_TXE;

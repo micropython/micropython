@@ -23,7 +23,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: PWM(dest, \*, freq, duty_u16, duty_ns)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns)
 
    Construct and return a new PWM object using the following parameters:
 
@@ -42,7 +42,7 @@ Constructors
 Methods
 -------
 
-.. method:: PWM.init(\*, freq, duty_u16, duty_ns)
+.. method:: PWM.init(*, freq, duty_u16, duty_ns)
 
    Modify settings for the PWM object.  See the above constructor for details
    about the parameters.

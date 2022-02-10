@@ -163,7 +163,7 @@ void __fatal_error(const char *msg);
   *
   * Timers run from APBx if APBx_PRESC=1, else 2x APBx
   */
-void SystemClock_Config(void) {
+MP_WEAK void SystemClock_Config(void) {
     #if defined(STM32F7)
     // The DFU bootloader changes the clocksource register from its default power
     // on reset value, so we set it back here, so the clocksources are the same

@@ -104,8 +104,6 @@
 
 #elif defined(STM32G4)
 
-#define ADC_FIRST_GPIO_CHANNEL  (0)
-#define ADC_LAST_GPIO_CHANNEL   (18)
 #define ADC_SCALE_V             (((float)VREFINT_CAL_VREF) / 1000.0f)
 #define ADC_CAL_ADDRESS         VREFINT_CAL_ADDR
 #define ADC_CAL1                TEMPSENSOR_CAL1_ADDR
@@ -214,11 +212,7 @@ STATIC bool is_adcx_channel(int channel) {
     #elif defined(STM32H7)
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
            || IS_ADC_CHANNEL(__HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel));
-    #elif defined(STM32L4)
-    ADC_HandleTypeDef handle;
-    handle.Instance = ADCx;
-    return IS_ADC_CHANNEL(&handle, channel);
-    #elif defined(STM32G4) || defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     ADC_HandleTypeDef handle;
     handle.Instance = ADCx;
     return __HAL_ADC_IS_CHANNEL_INTERNAL(channel)
@@ -338,7 +332,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    #if defined(STM32G4) || defined(STM32H7) || defined(STM32WB)
+    #if defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
         channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
