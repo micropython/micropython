@@ -53,7 +53,7 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
+//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None, half_duplex: bool = False) -> None:
 //|
 //|         """Construct an SPI object on the given pins.
 //|
