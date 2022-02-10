@@ -157,3 +157,10 @@ Constants
    for initialising the I2S bus ``format`` to mono
 
 
+Some codec devices like the WM8960 or SGTL5000 require to be initialized properly for
+operation. For these, separate drivers are supplied, which next to initilization offer
+methods for controling the audio processing.
+
+References:
+
+WM8960  :ref:`wm8960`
