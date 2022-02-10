@@ -307,7 +307,14 @@ $(BUILD)/esp-idf:
 	$(Q)$(MKDIR) -p $@
 
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
-FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+
+UF2_BOOTLOADER ?= $(if $(filter $(IDF_TARGET),esp32s2 esp32s3),1)
+ifeq ($(UF2_BOOTLOADER), 1)
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+else
+	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+endif
+
 ifeq ($(DEBUG), 1)
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-debug.defaults
 else
@@ -388,10 +395,10 @@ FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_
 
 ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset
 
-ifeq ($(IDF_TARGET),esp32c3)
-all: $(BUILD)/firmware.bin
-else
+ifeq ($(UF2_BOOTLOADER),1)
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
+else
+all: $(BUILD)/firmware.bin
 endif
 
 .PHONY: esp-idf-stamp
