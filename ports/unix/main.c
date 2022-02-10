@@ -737,6 +737,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
 }
 
 void nlr_jump_fail(void *val) {
+    #if MICROPY_USE_READLINE == 1
+    mp_hal_stdio_mode_orig();
+    #endif
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
 }
