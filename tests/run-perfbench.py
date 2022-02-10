@@ -74,6 +74,8 @@ def run_feature_test(target, test):
 def run_benchmark_on_target(target, script):
     output, err = run_script_on_target(target, script)
     if err is None:
+        if output == "SKIP":
+            return -1, -1, "SKIP"
         time, norm, result = output.split(None, 2)
         try:
             return int(time), int(norm), result
@@ -133,7 +135,14 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
 
         # Check result against truth if needed
         if error is None and result_out != "None":
-            _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
+            test_file_expected = test_file + ".exp"
+            if os.path.isfile(test_file_expected):
+                # Expected result is given by a file, so read that in
+                with open(test_file_expected) as f:
+                    result_exp = f.read().strip()
+            else:
+                # Run CPython to work out the expected result
+                _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
             if result_out != result_exp:
                 error = "FAIL truth"
 
