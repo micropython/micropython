@@ -159,7 +159,7 @@ class ThreadSafeFlag
 .. method:: ThreadSafeFlag.wait()
 
     Wait for the flag to be set.  If the flag is already set then it returns
-    immediately.
+    immediately.  The flag is automatically reset upon return from ``wait``.
 
     A flag may only be waited on by a single task at a time.
 

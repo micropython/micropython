@@ -7,6 +7,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pinbase.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pulse.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_signal.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduasyncio.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modubinascii.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moductypes.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduhashlib.c" />
@@ -14,6 +15,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modujson.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modurandom.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modure.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduselect.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modutimeq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />

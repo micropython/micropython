@@ -614,40 +614,73 @@ class PyboardExtended(Pyboard):
 
     def mount_local(self, path):
         fout = self.serial
-        self.mounted = True
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
         self.exec_("__mount()")
+        self.mounted = True
         self.cmd = PyboardCommand(self.serial, fout, path)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
-    def soft_reset_with_mount(self, out_callback):
+    def write_ctrl_d(self, out_callback):
         self.serial.write(b"\x04")
         if not self.mounted:
             return
 
-        # Wait for a response to the soft-reset command.
-        for i in range(10):
-            if self.serial.inWaiting():
-                break
-            time.sleep(0.05)
+        # Read response from the device until it is quiet (with a timeout).
+        INITIAL_TIMEOUT = 0.5
+        QUIET_TIMEOUT = 0.2
+        FULL_TIMEOUT = 5
+        t_start = t_last_activity = time.monotonic()
+        data_all = b""
+        while True:
+            t = time.monotonic()
+            n = self.serial.inWaiting()
+            if n > 0:
+                data = self.serial.read(n)
+                out_callback(data)
+                data_all += data
+                t_last_activity = t
+            else:
+                if len(data_all) == 0:
+                    if t - t_start > INITIAL_TIMEOUT:
+                        return
+                else:
+                    if t - t_start > FULL_TIMEOUT:
+                        return
+                    if t - t_last_activity > QUIET_TIMEOUT:
+                        break
+
+        # Check if a soft reset occurred.
+        if data_all.find(b"MPY: soft reboot") == -1:
+            return
+        if data_all.endswith(b">>> "):
+            in_friendly_repl = True
+        elif data_all.endswith(b">"):
+            in_friendly_repl = False
         else:
-            # Device didn't respond so it wasn't in a state to do a soft reset.
             return
 
-        out_callback(self.serial.read(1))
+        # Clear state while board remounts, it will be re-set once mounted.
+        self.mounted = False
         self.serial = self.serial.orig_serial
-        n = self.serial.inWaiting()
-        while n > 0:
-            buf = self.serial.read(n)
-            out_callback(buf)
-            time.sleep(0.1)
-            n = self.serial.inWaiting()
+
+        # Provide a message about the remount.
+        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+
+        # Enter raw REPL and re-mount the remote filesystem.
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
         self.exec_("__mount()")
-        self.exit_raw_repl()
-        self.read_until(4, b">>> ")
+        self.mounted = True
+
+        # Exit raw REPL if needed, and wait for the friendly REPL prompt.
+        if in_friendly_repl:
+            self.exit_raw_repl()
+            prompt = b">>> "
+        else:
+            prompt = b">"
+        self.read_until(len(prompt), prompt)
+        out_callback(prompt)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def umount_local(self):

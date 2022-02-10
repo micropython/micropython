@@ -98,7 +98,7 @@ Class methods
 Methods
 -------
 
-.. method:: Pin.init(mode, pull=Pin.PULL_NONE, \*, value=None, alt=-1)
+.. method:: Pin.init(mode, pull=Pin.PULL_NONE, *, value=None, alt=-1)
 
    Initialise the pin:
 

@@ -264,82 +264,90 @@ See more examples in the :ref:`esp32_pwm` tutorial.
 ADC (analog to digital conversion)
 ----------------------------------
 
-On the ESP32 ADC functionality is available on pins 32-39 (ADC block 1) and pins
-0, 2, 4, 12-15 and 25-27 (ADC block 2).
+On the ESP32, ADC functionality is available on pins 32-39 (ADC block 1) and
+pins 0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object for pin 32
-    adc.read_u16()              # read raw value, 0-65535
+    adc = ADC(pin)        # create an ADC object acting on a pin
+    val = adc.read_u16()  # read a raw analog value in the range 0-65535
+    val = adc.read_uv()   # read an analog value in microvolts
 
-Note that the ESP32 uses an internal ADC reference voltage of 1.0v. To read
-voltages above this value, input attenuation can be applied with the optional
-``atten`` keyword argument to the constructor. Valid values are:
+ADC block 2 is also used by WiFi and so attempting to read analog values from
+block 2 pins when WiFi is active will raise an exception.
 
-  - ``ADC.ATTN_0DB``: No attenuation, this is the default
-  - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage of
-    approximately 1.33v
-  - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage of
-    approximately 2.00v
-  - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage of
-    approximately 3.55v
-
-E.g.::
-
-    adc = ADC(Pin(25), atten=ADC.ATTEN_11DB)  # 0.0v - 3.55v range
-
-.. Warning::
-   Note that, although 11dB attenuation allows for a voltage range up to 3.55v,
-   the absolute maximum voltage rating for input pins is 3.6v, and so going
-   near this boundary risks damage to the IC!
+The internal ADC reference voltage is typically 1.1V, but varies slightly from
+package to package. The ADC is less linear close to the reference voltage
+(particularly at higher attenuations) and has a minimum measurement voltage
+around 100mV, voltages at or below this will read as 0. To read voltages
+accurately, it is recommended to use the ``read_uv()`` method (see below).
 
 ESP32-specific ADC class method reference:
 
-.. method:: ADC.init(*, atten)
+.. class:: ADC(pin, *, atten)
 
-    Re-initialize the ADC pin with a different input attenuation.
+    Return the ADC object for the specified pin. ESP32 does not support
+    different timings for ADC sampling and so the ``sample_ns`` keyword argument
+    is not supported.
+
+    To read voltages above the reference voltage, apply input attenuation with
+    the ``atten`` keyword argument. Valid values (and approximate linear
+    measurement ranges) are:
+
+      - ``ADC.ATTN_0DB``: No attenuation (100mV - 950mV)
+      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation (100mV - 1250mV)
+      - ``ADC.ATTN_6DB``: 6dB attenuation (150mV - 1750mV)
+      - ``ADC.ATTN_11DB``: 11dB attenuation (150mV - 2450mV)
+
+.. Warning::
+   Note that the absolute maximum voltage rating for input pins is 3.6V. Going
+   near to this boundary risks damage to the IC!
 
 .. method:: ADC.read_uv()
 
-    This method uses internal per-package calibration values - set during
-    manufacture - to return the ADC input voltage in microvolts, taking into
-    account any input attenuation applied. Note that the calibration curves do
-    not guarantee that an input tied to ground will read as 0, and the returned
-    values have only millivolt resolution.
+    This method uses the known characteristics of the ADC and per-package eFuse
+    values - set during manufacture - to return a calibrated input voltage
+    (before attenuation) in microvolts. The returned value has only millivolt
+    resolution (i.e., will always be a multiple of 1000 microvolts).
 
-.. method:: ADC.block()
+    The calibration is only valid across the linear range of the ADC. In
+    particular, an input tied to ground will read as a value above 0 microvolts.
+    Within the linear range, however, more accurate and consistent results will
+    be obtained than using `read_u16()` and scaling the result with a constant.
 
-    Return the matching ``ADCBlock`` object.
+The ESP32 port also supports the :ref:`machine.ADC <machine.ADCBlock>` API:
 
 .. class:: ADCBlock(id, *, bits)
 
     Return the ADC block object with the given ``id`` (1 or 2) and initialize
-    it to the specified resolution (9 to 12-bits) or the default 12-bits.
+    it to the specified resolution (9 to 12-bits depending on the ESP32 series)
+    or the highest supported resolution if not specified.
 
-.. method:: ADCBlock.init(*, bits)
+.. method:: ADCBlock.connect(pin)
+            ADCBlock.connect(channel)
+            ADCBlock.connect(channel, pin)
 
-    Re-initialize the ADC block with a specific resolution.
+    Return the ``ADC`` object for the specified ADC pin or channel number.
+    Arbitrary connection of ADC channels to GPIO is not supported and so
+    specifying a pin that is not connected to this block, or specifying a
+    mismatched channel and pin, will raise an exception.
 
-.. method:: ADCBlock.connect(channel_or_pin)
-
-    Return the ``ADC`` object for the specified ADC channel number or Pin object.
-
-Legacy API methods:
+Legacy methods:
 
 .. method:: ADC.read()
 
     This method returns the raw ADC value ranged according to the resolution of
-    the ADC block, 0-4095 for the default 12-bit resolution.
+    the block, e.g., 0-4095 for 12-bit resolution.
 
-.. method:: ADC.atten(attenuation)
+.. method:: ADC.atten(atten)
 
-    Equivalent to ``ADC.init(atten=attenuation)``.
+    Equivalent to ``ADC.init(atten=atten)``.
 
-.. method:: ADC.width(width)
+.. method:: ADC.width(bits)
 
-    Equivalent to ``ADC.block().init(bits=width)``.
+    Equivalent to ``ADC.block().init(bits=bits)``.
 
 For compatibility, the ``ADC`` object also provides constants matching the
 supported ADC resolutions:
