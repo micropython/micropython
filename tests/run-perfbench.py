@@ -100,7 +100,7 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
             and test_file.find("viper_") != -1
         )
         if skip:
-            print("skip")
+            print("SKIP")
             continue
 
         # Create test script
@@ -171,7 +171,7 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if l.find(": ") != -1 and l.find(": skip") == -1 and l.find("CRASH: ") == -1:
+            if l.find(": ") != -1 and l.find(": SKIP") == -1 and l.find("CRASH: ") == -1:
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -193,7 +193,7 @@ def compute_diff(file1, file2, diff_score):
     else:
         hdr = "N={} M={} vs N={} M={}".format(n1, m1, n2, m2)
     print(
-        "{:24} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
+        "{:26} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
             hdr, file1, file2, "diff", "diff"
         )
     )
@@ -214,7 +214,7 @@ def compute_diff(file1, file2, diff_score):
             percent = 100 * av_diff / av1
             percent_sd = 100 * sd_diff / av1
             print(
-                "{:24} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
+                "{:26} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
                     name, av1, av2, av_diff, percent, percent_sd
                 )
             )
