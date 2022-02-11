@@ -42,5 +42,6 @@ int32_t colorwheel(mp_float_t pos) {
         shift2 = 0;
     }
     int p = (int)(pos * 3);
+    p = (p<256) ? p : 255;
     return (p << shift1) | ((255 - p) << shift2);
 }
