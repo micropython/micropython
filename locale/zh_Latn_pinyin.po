@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-01-11 14:56+0000\n"
+"PO-Revision-Date: 2022-02-13 00:57+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -1160,7 +1160,7 @@ msgstr "Jítuán yǐjīng shǐyòngguò"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
-msgstr ""
+msgstr "wèi shí xiàn bàn shuāng gōng SPI"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
@@ -1418,7 +1418,7 @@ msgstr "Wúxiào de nèicún fǎngwèn."
 
 #: extmod/vfs_fat_file.c
 msgid "Invalid mode"
-msgstr ""
+msgstr "wú xiào mó shì"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1550,7 +1550,7 @@ msgstr "MOSI yǐn jiǎo shūrù shībài."
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
-msgstr ""
+msgstr "yìng shè bì xū shì yuán zǔ"
 
 #: shared-module/displayio/Shape.c
 #, c-format
@@ -1637,7 +1637,7 @@ msgstr "Míngchēng tài zhǎng"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
-msgstr ""
+msgstr "líng huó de bǎi tuō jì yì"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -1662,7 +1662,7 @@ msgstr "wèi zhǎo dào DMA qǐ bó qì"
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: 0x%x"
-msgstr ""
+msgstr "dì zhǐ: 0x%x shí méi yǒu I2C qì jiàn"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
@@ -2503,7 +2503,7 @@ msgstr "Wèizhī de ānquán cuòwù: 0x%04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error at %s:%d: %d"
-msgstr ""
+msgstr "%s:%d: %d shí chū xiàn wèi zhī xì tǒng gù jiàn cuò wù"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2513,7 +2513,7 @@ msgstr "wèi zhī xì tǒng gù jiàn cuò wù: %04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr ""
+msgstr "wèi zhī de xì tǒng gù jiàn cuò wù: %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2884,7 +2884,7 @@ msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
+msgstr "wú fǎ jiāng fù zá zhuǎn huàn wéi fú dòng"
 
 #: py/obj.c
 msgid "can't convert to %q"
@@ -2983,11 +2983,11 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "wú fǎ jiāng fù zá zhuǎn huàn wéi dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "wú fǎ zhuǎn huàn fù zá lèi xíng"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -3187,7 +3187,7 @@ msgstr "èr chóng zòu bì xū shì 4"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype bì xū shì fú diǎn xíng huò fù shù"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3359,7 +3359,7 @@ msgstr "hán shù jǐn wéi ndarrays dìng yì"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "hán shù jǐn zhēn duì ndarray shí xiàn"
 
 #: py/argcheck.c
 #, c-format
@@ -3492,7 +3492,7 @@ msgstr "shūrù shùjù bìxū shì kě diédài de"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "shū rù dtype bì xū shì fú diǎn xíng huò fù shù"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3505,7 +3505,7 @@ msgstr "shūrù jǔzhèn shì qíyì de"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "shū rù bì xū shì 1D ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
@@ -3521,7 +3521,7 @@ msgstr "shū rù bì xū shì ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "shū rù bì xū shì ndarray huò biāo liàng"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3897,7 +3897,7 @@ msgstr "géshì zìfú chuàn cān shǔ bùzú"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "wèi zhēn duì fù zá de dtype shí xiàn"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -4667,7 +4667,7 @@ msgstr "shūrù lèixíng cuòwù"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
-msgstr ""
+msgstr "tiáo jiàn shù zǔ de cháng dù cuò wù"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
