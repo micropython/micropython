@@ -88,7 +88,7 @@ extern void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self)
 extern void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self);
 
-extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode);
+extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections);
 extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 
 extern wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len);
