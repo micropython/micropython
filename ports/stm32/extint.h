@@ -49,6 +49,9 @@
 #elif defined(STM32H7) || defined(STM32WB)
 #define EXTI_RTC_TIMESTAMP      (18)
 #define EXTI_RTC_WAKEUP         (19)
+#elif defined(STM32G0)
+#define EXTI_RTC_WAKEUP         (19)
+#define EXTI_RTC_TIMESTAMP      (21)
 #else
 #define EXTI_RTC_TIMESTAMP      (21)
 #define EXTI_RTC_WAKEUP         (22)

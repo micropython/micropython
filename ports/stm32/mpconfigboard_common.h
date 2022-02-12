@@ -319,6 +319,16 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+// Configuration for STM32G0 series
+#elif defined(STM32G0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (22) // previously 23
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_LPUART (2)
+
 // Configuration for STM32G4 series
 #elif defined(STM32G4)
 
@@ -505,7 +515,7 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#if defined(STM32G4) || defined(STM32H7)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
 #define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
 #endif
 #else

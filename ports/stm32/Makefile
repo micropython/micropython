@@ -323,14 +323,12 @@ SRC_CXX += \
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
-
-ifeq ($(MCU_SERIES),f0)
-SRC_O += \
-	resethandler_m0.o \
-	shared/runtime/gchelper_m0.o
-else
+    
 ifeq ($(MCU_SERIES),l0)
 CSUPEROPT = -Os # save some code space
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
 SRC_O += \
 	resethandler_m0.o \
 	shared/runtime/gchelper_m0.o
@@ -339,7 +337,6 @@ SRC_O += \
 	system_stm32.o \
 	resethandler.o \
 	shared/runtime/gchelper_m3.o
-endif
 endif
 
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
@@ -365,7 +362,7 @@ HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g4 h7 l0 l4 wb))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7 l0 l4 wb))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_pcd.c \
 	hal_pcd_ex.c \
@@ -385,7 +382,6 @@ ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_mmc.c \
 	hal_sdram.c \
-	hal_dma_ex.c \
 	hal_dcmi.c \
 	)
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
@@ -395,7 +391,13 @@ $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g4))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_dma_ex.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4))
     HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 endif
 
@@ -412,7 +414,7 @@ endif
 endif
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 l0))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 g0 l0))
 HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_i2s.c \
 	)
