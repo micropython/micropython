@@ -68,6 +68,12 @@
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif
 
+#if defined(STM32G0)
+// G0 has BOR and POR combined
+#define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
+#define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
+#endif
+
 #if defined(STM32H7)
 #define RCC_SR          RSR
 #define RCC_SR_IWDGRSTF RCC_RSR_IWDG1RSTF
@@ -167,7 +173,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         printf("S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
@@ -310,14 +316,14 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
             mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
             mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-            #if !defined(STM32F0)
+            #if !defined(STM32F0) && !defined(STM32G0)
             mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
             #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);

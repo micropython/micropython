@@ -130,7 +130,7 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
-#if defined(STM32F7) || defined(STM32G4) || defined(STM32L4) || defined(STM32H7)
+#if defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
 
 // The STM32F0, F3, F7, H7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
@@ -159,6 +159,16 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
         {PYB_I2C_SPEED_STANDARD, 0xb0420f13}, \
         {PYB_I2C_SPEED_FULL, 0x70330309}, \
         {PYB_I2C_SPEED_FAST, 0x50100103}, \
+}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
+
+#elif defined(STM32G0)
+// generated using CubeMX
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x10707DBC}, \
+        {PYB_I2C_SPEED_FULL, 0x00602173}, \
+        {PYB_I2C_SPEED_FAST, 0x00300B29}, \
 }
 #define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
 #define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
