@@ -240,10 +240,10 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|            If ``authmode`` is given, the access point will use that Authentication
 //|            mode. If a password is given, ``authmode`` must not be ``OPEN``.
 //|            If ``authmode`` isn't given, ``OPEN`` will be used when password isn't provided,
-//|            otherwise ``WPA_WPA2_PSK``."""
+//|            otherwise ``WPA_WPA2_PSK``.
 //|
 //|            If ``max_connections`` is given, the access point will allow up to
-//|            that number of stations to connect. Default is 4. Maximum is 10.
+//|            that number of stations to connect. Default is 4. Maximum is 10."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
