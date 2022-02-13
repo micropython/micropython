@@ -92,7 +92,7 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     }
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
-        parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
+        parallel_program, MP_ARRAY_SIZE(parallel_program),
         frequency * 2, // frequency multiplied by 2 as 2 PIO instructions
         NULL, 0, // init
         data0, 8, 0, 255, // first out pin, # out pins
@@ -106,7 +106,8 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
         false, // wait for TX stall
         false, 32, true, // RX setting we don't use
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        0, -1); // wrap settings
 
     common_hal_rp2pio_statemachine_never_reset(&self->state_machine);
 }

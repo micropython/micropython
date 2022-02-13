@@ -87,7 +87,10 @@
 //|                  auto_push: bool = False,
 //|                  push_threshold: int = 32,
 //|                  in_shift_right: bool = True,
-//|                  user_interruptible: bool = True) -> None:
+//|                  user_interruptible: bool = True,
+//|                  wrap_target: int = 0,
+//|                  wrap: int = -1,
+//|                 ) -> None:
 //|
 //|         """Construct a StateMachine object on the given pins with the given program.
 //|
@@ -136,6 +139,10 @@
 //|             that causes an infinite loop, you will be able to interrupt the loop.
 //|             However, if you are writing to a device that can get into a bad state if a read or write
 //|             is interrupted, you may want to set this to False after your program has been vetted.
+//|         :param int wrap_target The target instruction number of automatic wrap. Defaults to the first instruction of the program.
+//|         :param int wrap The instruction after which to wrap to the ``wrap``
+//|             instruction. As a special case, -1 (the default) indicates the
+//|             last instruction of the program.
 //|         """
 //|         ...
 //|
@@ -155,7 +162,9 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_auto_pull, ARG_pull_threshold, ARG_out_shift_right,
            ARG_wait_for_txstall,
            ARG_auto_push, ARG_push_threshold, ARG_in_shift_right,
-           ARG_user_interruptible,};
+           ARG_user_interruptible,
+           ARG_wrap_target,
+           ARG_wrap,};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -194,6 +203,9 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_push_threshold, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 32} },
         { MP_QSTR_in_shift_right, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_user_interruptible, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
+
+        { MP_QSTR_wrap_target, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_wrap, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -254,6 +266,9 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_ValueError(translate("Init program size invalid"));
     }
 
+    int wrap = args[ARG_wrap].u_int;
+    int wrap_target = args[ARG_wrap_target].u_int;
+
     common_hal_rp2pio_statemachine_construct(self,
         bufinfo.buf, bufinfo.len / 2,
         args[ARG_frequency].u_int,
@@ -269,7 +284,8 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_auto_pull].u_bool, pull_threshold, args[ARG_out_shift_right].u_bool,
         args[ARG_wait_for_txstall].u_bool,
         args[ARG_auto_push].u_bool, push_threshold, args[ARG_in_shift_right].u_bool,
-        args[ARG_user_interruptible].u_bool);
+        args[ARG_user_interruptible].u_bool,
+        wrap_target, wrap);
     return MP_OBJ_FROM_PTR(self);
 }
 

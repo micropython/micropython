@@ -74,7 +74,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
             true, 32, true, // RX auto-push every 32 bits
             false, // claim pins
             false, // Not user-interruptible.
-            false); // No sideset enable
+            false, // No sideset enable
+            0, -1); // wrap settings
 
     if (!ok) {
         mp_raise_RuntimeError(translate("All state machines in use"));
