@@ -8,6 +8,20 @@
 #include <string.h>
 #if ESP_IDF_VERSION_MINOR >= 3
 
+
+const char* log_tag = "modbus_slave";
+mb_param_info_t reg_info;
+
+STATIC void modbus_callback_task(void *params) {
+    while (true) {
+        mb_event_group_t event = mbc_slave_check_event(0x7B);   // callback on every event
+        ESP_ERROR_CHECK(mbc_slave_get_param_info(&reg_info, 1000));
+        ESP_LOGE(log_tag, "REGISTER %d (%u us), ADDR:%u, TYPE:%u, INST_ADDR:0x%.4x, SIZE:%u",
+            event, (uint32_t)reg_info.time_stamp, (uint32_t)reg_info.mb_offset, (uint32_t)reg_info.type,
+            (uint32_t)reg_info.address, (uint32_t)reg_info.size);
+    }
+}
+
 /****************************
  *
  *     Serial Slave
@@ -50,6 +64,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     if ((args[ARG_slave_address].u_int < 1) || (args[ARG_slave_address].u_int > 127)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Slave Adress must be in 1..127"));
     }
+    ESP_LOGE(log_tag, "  slave address: %d", args[ARG_slave_address].u_int);
 
     if ((args[ARG_uart_port].u_int < 0) || (args[ARG_uart_port].u_int > UART_NUM_MAX)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Uart Port not allowed"));
@@ -89,10 +104,22 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     self->rx = args[ARG_rx].u_int;
     self->rts = args[ARG_rts].u_int;
     self->serial_mode = args[ARG_serial_mode].u_int;
+    self->callbak_task_handle = NULL;
 
     void *mbc_slave_handler = NULL;
+    ESP_LOGE(log_tag, "call: mbc_slave_init");
     ESP_ERROR_CHECK(mbc_slave_init(MB_PORT_SERIAL_SLAVE, &mbc_slave_handler));
     slave_set = true;
+    
+    mb_communication_info_t comm_info;
+    comm_info.mode = self->serial_mode;
+    comm_info.slave_addr = self->slave_address;
+    comm_info.port = self->uart_port;
+    comm_info.baudrate = self->baudrate;
+    comm_info.parity = self->parity;
+    ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
+
+    ESP_LOGE(log_tag, "initialization done");
 
     return MP_OBJ_FROM_PTR(self);
 };
@@ -106,20 +133,31 @@ STATIC void modbus_serial_slave_print(const mp_print_t *print, mp_obj_t self_in,
 
 
 STATIC mp_obj_t modbus_serial_slave_run(mp_obj_t self_in) {
-    modbus_serial_slave_obj_t *self = self_in;
-    mb_communication_info_t comm_info;
-    comm_info.mode = self->serial_mode;
-    comm_info.slave_addr = self->slave_address;
-    comm_info.port = self->uart_port;
-    comm_info.baudrate = self->baudrate;
-    comm_info.parity = self->parity;
-    ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
+    if (!register_area_set) {
+        mp_raise_ValueError("No reigster area set. At least one has to be set.");
+    }
+    if (slave_running) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Serial Slave already running."));
+    }
+    slave_running = true;
 
+    ESP_LOGE(log_tag, "startring modbus serial slave");
+    modbus_serial_slave_obj_t *self = self_in;
+
+    ESP_LOGE(log_tag, "call: mbc_slave_start");
     mbc_slave_start();
+
+    ESP_LOGE(log_tag, "call: uart_set_pin");
     ESP_ERROR_CHECK(uart_set_pin(self->uart_port, self->tx,
         self->rx, self->rts, UART_PIN_NO_CHANGE));
 
+    ESP_LOGE(log_tag, "call: uart_set_mode");
     ESP_ERROR_CHECK(uart_set_mode(self->uart_port, UART_MODE_RS485_HALF_DUPLEX));
+    //vTaskDelay(5);
+    //ESP_ERROR_CHECK(uart_flush(self->uart_port));
+
+    ESP_LOGE(log_tag, "startring starting callback task");
+    xTaskCreate(modbus_callback_task, "modbus_callback_task", 2048, self, tskIDLE_PRIORITY, &self->callbak_task_handle);
 
     return mp_const_none;
 }
@@ -219,6 +257,14 @@ STATIC void modbus_tcp_slave_print(const mp_print_t *print, mp_obj_t self_in, mp
 
 
 STATIC mp_obj_t modbus_tcp_slave_run(mp_obj_t self_in) {
+    if (!register_area_set) {
+        mp_raise_ValueError("No reigster area set. At least one has to be set.");
+    }
+    if (slave_running) {
+        mp_raise_ValueError(MP_ERROR_TEXT("TCP Slave already running."));
+    }
+    slave_running = true;
+
     modbus_tcp_slave_obj_t *self = self_in;
     mb_communication_info_t comm_info;
     comm_info.ip_mode = MB_MODE_TCP;

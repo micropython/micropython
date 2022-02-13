@@ -14,6 +14,9 @@
 
 bool slave_set;
 bool master_set;
+bool slave_running;
+bool master_running;
+bool register_area_set;
 
 char area_names[4][9];
 char parity_names[4][6];
@@ -26,8 +29,10 @@ mp_obj_t param_descriptions;
 
 uint8_t get_length_of_type_in_registers(uint8_t type);
 
-void raise_VauleError_if_outside_area(uint16_t area_start_register, uint16_t area_length,
-    uint16_t var_start_register, uint16_t var_length);
+void raise_VauleError_if_outside_area(int16_t area_start_register, int16_t area_length,
+    int16_t var_start_register, int16_t var_length);
+
+uint32_t get_uint_checked(mp_obj_t data, uint8_t type, bool raise_exception);
 
 typedef struct _modbus_register_area_obj_t {
     mp_obj_base_t base;
@@ -69,6 +74,7 @@ typedef struct _modbus_serial_slave_obj_t {
     uint8_t rx;
     uint8_t rts;
     uint8_t serial_mode;
+    TaskHandle_t callbak_task_handle;
 } modbus_serial_slave_obj_t;
 
 const mp_obj_type_t modbus_serial_slave_type;
@@ -96,7 +102,7 @@ const mp_obj_type_t modbus_tcp_slave_type;
 
 typedef struct _modbus_tcp_master_obj_t {
     mp_obj_base_t base;
-    mp_obj_t ip4;
+    mp_obj_t ips;
     uint16_t port;
     mp_obj_t network_if;
 } modbus_tcp_master_obj_t;
