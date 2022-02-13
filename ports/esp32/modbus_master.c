@@ -11,6 +11,8 @@
 
 bool slave_set = false;
 bool master_set = false;
+bool slave_running = false;
+bool master_running = false;
 
 char area_names[4][9] = {"HOLDING", "INPUT", "COIL", "DISCRETE"};
 char parity_names[4][6] = {"NONE", "ERROR", "EVEN", "ODD"};
@@ -102,6 +104,13 @@ STATIC mp_obj_t modbus_serial_master_make_new(const mp_obj_type_t *type, size_t 
     ESP_ERROR_CHECK(mbc_master_init(MB_PORT_SERIAL_MASTER, &mbc_master_handler));
     master_set = true;
 
+    mb_communication_info_t comm_info;
+    comm_info.mode = self->serial_mode;
+    comm_info.port = self->uart_port;
+    comm_info.baudrate = self->baudrate;
+    comm_info.parity = self->parity;
+    ESP_ERROR_CHECK(mbc_master_setup((void *)&comm_info));
+
     return MP_OBJ_FROM_PTR(self);
 };
 
@@ -114,13 +123,12 @@ STATIC void modbus_serial_master_print(const mp_print_t *print, mp_obj_t self_in
 
 
 STATIC mp_obj_t modbus_serial_master_run(mp_obj_t self_in) {
+    if (master_running) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Serial Master already running."));
+    }
+    master_running = true;
+
     modbus_serial_master_obj_t *self = self_in;
-    mb_communication_info_t comm_info;
-    comm_info.mode = self->serial_mode;
-    comm_info.port = self->uart_port;
-    comm_info.baudrate = self->baudrate;
-    comm_info.parity = self->parity;
-    ESP_ERROR_CHECK(mbc_master_setup((void *)&comm_info));
 
     ESP_ERROR_CHECK(uart_set_pin(self->uart_port, self->tx,
         self->rx, self->rts, UART_PIN_NO_CHANGE));
@@ -147,6 +155,7 @@ STATIC mp_obj_t modbus_serial_master_run(mp_obj_t self_in) {
         device_parameters[i].access = element->access;
     }
     vTaskDelay(5);
+    //ESP_ERROR_CHECK(uart_flush(self->uart_port));
     ESP_ERROR_CHECK(mbc_master_set_descriptor(&device_parameters[0], list->len));
 
     return mp_const_none;
@@ -197,7 +206,7 @@ STATIC void modbus_serial_master_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
 STATIC mp_obj_t modbus_tcp_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *in_args) {
     mp_arg_check_num(n_args, n_kw, 3, 3, true);
 
-    enum { ARG_ip, ARG_port, ARG_interface };
+    enum { ARG_ips, ARG_port, ARG_interface };
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ip, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = mp_const_none}},
@@ -211,8 +220,12 @@ STATIC mp_obj_t modbus_tcp_master_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, in_args, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_ip].u_obj == mp_const_none) {
-        mp_raise_ValueError(MP_ERROR_TEXT("IP cannot be None"));
+    if (args[ARG_ips].u_obj == mp_const_none) {
+        mp_raise_ValueError(MP_ERROR_TEXT("IP addresses cannot be None"));
+    }
+
+    if (!mp_obj_is_type(args[ARG_ips].u_obj, &mp_type_list)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("IP addresses must be a list of IPs"));
     }
 
     if ((args[ARG_port].u_int < 1) || (args[ARG_port].u_int > 65535)) {
@@ -229,7 +242,7 @@ STATIC mp_obj_t modbus_tcp_master_make_new(const mp_obj_type_t *type, size_t n_a
 
     modbus_tcp_master_obj_t *self = m_new_obj(modbus_tcp_master_obj_t);
     self->base.type = &modbus_tcp_master_type;
-    self->ip4 = args[ARG_ip].u_obj;
+    self->ips = args[ARG_ips].u_obj;
     self->port = args[ARG_port].u_int;
     self->network_if = args[ARG_interface].u_obj;
 
@@ -250,17 +263,22 @@ STATIC void modbus_tcp_master_print(const mp_print_t *print, mp_obj_t self_in, m
 
 
 STATIC mp_obj_t modbus_tcp_master_run(mp_obj_t self_in) {
+    if (master_running) {
+        mp_raise_ValueError(MP_ERROR_TEXT("TCP Master already running."));
+    }
+    master_running = true;
     modbus_tcp_master_obj_t *self = self_in;
     mb_communication_info_t comm_info;
     comm_info.ip_mode = MB_MODE_TCP;
     comm_info.ip_addr_type = MB_IPV4;
     comm_info.ip_port = self->port;
-    char *slave_ip_address_table[2] = {
-        NULL,
-        NULL
-    };
+    mp_obj_list_t *ip_list = (mp_obj_list_t *)self->ips;
+    char *slave_ip_address_table[ip_list->len+1];
 
-    slave_ip_address_table[0] = mp_obj_str_get_str(self->ip4);
+    for (uint8_t i = 0; i < ip_list->len; i++) {
+        slave_ip_address_table[i] = mp_obj_str_get_str(ip_list->items[i]);
+    }
+    slave_ip_address_table[ip_list->len] = NULL;
 
     comm_info.ip_addr = slave_ip_address_table;
 
@@ -307,8 +325,8 @@ STATIC void modbus_tcp_master_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) 
         // Load
         if (attr == MP_QSTR_port) {
             dest[0] = mp_obj_new_int(self->port);
-        } else if (attr == MP_QSTR_ip) {
-            dest[0] = self->ip4;
+        } else if (attr == MP_QSTR_server_IPs) {
+            dest[0] = self->ips;
         } else if (attr == MP_QSTR_run) {
             dest[0] = MP_OBJ_FROM_PTR(&modbus_tcp_master_run_obj);
             dest[1] = self_in;
