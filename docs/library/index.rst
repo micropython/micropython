@@ -147,6 +147,7 @@ The following libraries are specific to the ESP8266 and ESP32.
 
   esp.rst
   esp32.rst
+  esp32.modbus.rst
 
 
 Libraries specific to the RP2040
