@@ -200,25 +200,26 @@ MATH_FUN_1(gamma, tgamma)
 // lgamma(x): return the natural logarithm of the gamma function of x
 MATH_FUN_1(lgamma, lgamma)
 
-STATIC mp_float_t MICROPY_FLOAT_C_FUN(gcd_func)(mp_float_t x, mp_float_t y) {
-    printf("x is %f and y is %f", x, y);
-    //trivial case
-    if(x == 0)
-        return y;
-    if(y == 0)
-        return x;
-
-    //base case
-    if(x == y)
-        return x;
-
-    if (x > y)
-        return gcd_func(x-y, y);
-    return gcd_func(x, y-x);
+// gcd(x, y): return the greatest common divisor
+STATIC mp_int_t gcd_func(mp_int_t x, mp_int_t y) {
+    if(x == 0) return y;
+    if(y == 0) return x;
+    if(x == y) return x;
+    if (x > y) return gcd_func(x - y, y);
+    return gcd_func(x, y - x);
 }
+STATIC mp_obj_t mp_math_gcd(mp_obj_t x_obj, mp_obj_t y_obj) {
+    mp_int_t x = mp_obj_get_int(x_obj);
+    mp_int_t y = mp_obj_get_int(y_obj);
+    // calc absolute value manually, makes it unnecessary to include stdlib
+    if (x < 0) x *= -1;
+    if (y < 0) y *= -1;
+    mp_int_t ans = gcd_func(x, y);
+    return mp_obj_new_int(ans);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_math_gcd_obj, mp_math_gcd);
 
-MATH_FUN_2(gcd, gcd_func)
-#endif
+#endif // MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 // TODO: fsum
 
 #if MICROPY_PY_MATH_ISCLOSE
@@ -444,8 +445,8 @@ STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_erfc), MP_ROM_PTR(&mp_math_erfc_obj) },
     { MP_ROM_QSTR(MP_QSTR_gamma), MP_ROM_PTR(&mp_math_gamma_obj) },
     { MP_ROM_QSTR(MP_QSTR_lgamma), MP_ROM_PTR(&mp_math_lgamma_obj) },
-    #endif
     { MP_ROM_QSTR(MP_QSTR_gcd), MP_ROM_PTR(&mp_math_gcd_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_math_globals, mp_module_math_globals_table);
