@@ -66,7 +66,7 @@ binary_functions = [
     ("atan2", atan2, ((1.0, 0.0), (0.0, 1.0), (2.0, 0.5), (-3.0, 5.0), (-3.0, -4.0))),
     ("fmod", fmod, ((1.0, 1.0), (0.0, 1.0), (2.0, 0.5), (-3.0, 5.0), (-3.0, -4.0))),
     ("ldexp", ldexp, ((1.0, 0), (0.0, 1), (2.0, 2), (3.0, -2), (-3.0, -4))),
-    ("gcd", gcd, ((1, 4), (2, 8), (0, 8), (-1, 19), (-5, 42), (-7, -7), (-9, -2), (0, 0))),
+    ("gcd", gcd, ((1, 4), (2, 8), (0, 8), (-1, 19), (-5, 42), (-7, -7), (-9, -2), (0, 0), (4.2, 3.3))),
     (
         "log",
         log,
@@ -83,12 +83,10 @@ binary_functions = [
     ),
 ]
 
-
 for function_name, function, test_vals in binary_functions:
     print(function_name)
     for value1, value2 in test_vals:
         try:
-            print("value is:")
             print("{:.5g}".format(function(value1, value2)))
-        except (ValueError, ZeroDivisionError) as e:
+        except (TypeError, ValueError, ZeroDivisionError) as e:
             print(type(e))
