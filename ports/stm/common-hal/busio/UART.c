@@ -337,8 +337,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
             RUN_BACKGROUND_TASKS;
             Status = HAL_UART_GetState(&self->handle);
         }
-    }
-    else {
+    } else {
         mp_raise_ValueError(translate("UART write error"));
     }
 
@@ -363,13 +362,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle) {
                 }
             }
 
-#if (1)
-           // TODO: Implement error handling here
-#else
+            #if (1)
+            // TODO: Implement error handling here
+            #else
             while (HAL_BUSY == errflag) {
                 errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
             }
-#endif
+            #endif
 
             return;
         }
@@ -450,7 +449,7 @@ STATIC void call_hal_irq(int uart_num) {
         HAL_UART_IRQHandler(&context->handle);
 
         if (HAL_UART_ERROR_NONE != context->handle.ErrorCode) {
-           // TODO: Implement error handling here
+            // TODO: Implement error handling here
         }
     }
 }
