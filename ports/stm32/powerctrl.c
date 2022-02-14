@@ -28,6 +28,7 @@
 #include "py/mphal.h"
 #include "powerctrl.h"
 #include "rtc.h"
+#include "usb.h"
 #include "genhdr/pllfreqtable.h"
 
 #if defined(STM32H7)
@@ -722,6 +723,13 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if MICROPY_HW_ENABLE_USB
+    bool usb_connected = pyb_usb_dev_connected();
+    if (usb_connected) {
+        pyb_usb_dev_disconnect();
+    }
+    #endif
+
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #else
@@ -852,6 +860,12 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32H7)
     // Enable SysTick Interrupt
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+    #endif
+
+    #if MICROPY_HW_ENABLE_USB
+    if (usb_connected) {
+        pyb_usb_dev_connect();
+    }
     #endif
 
     // Enable IRQs now that all clocks are reconfigured

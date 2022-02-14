@@ -349,6 +349,19 @@ void pyb_usb_dev_deinit(void) {
     }
 }
 
+bool pyb_usb_dev_connected(void) {
+    usb_device_t *usb_dev = &usb_device;
+    return usb_dev->hUSBDDevice.dev_state == USBD_STATE_CONFIGURED;
+}
+
+void pyb_usb_dev_disconnect(void) {
+    HAL_PCD_DevDisconnect(usb_device.hUSBDDevice.pData);
+}
+
+void pyb_usb_dev_connect(void) {
+    HAL_PCD_DevConnect(usb_device.hUSBDDevice.pData);
+}
+
 bool usb_vcp_is_enabled(void) {
     return usb_device.enabled;
 }
