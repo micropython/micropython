@@ -243,7 +243,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|            otherwise ``WPA_WPA2_PSK``.
 //|
 //|            If ``max_connections`` is given, the access point will allow up to
-//|            that number of stations to connect. Default is 4. Maximum is 10."""
+//|            that number of stations to connect."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -286,10 +286,6 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
         }
     } else {
         authmode = 1;
-    }
-
-    if (args[ARG_max_connections].u_int < 0 || args[ARG_max_connections].u_int > 10) {
-        mp_raise_ValueError(translate("max_connections must be between 0 and 10"));
     }
 
     common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmode, args[ARG_max_connections].u_int);

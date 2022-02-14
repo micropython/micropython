@@ -213,7 +213,12 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     config->ap.password[password_len] = 0;
     config->ap.channel = channel;
     config->ap.authmode = authmode;
+
+    if (max_connections < 0 || max_connections > 10) {
+        mp_raise_ValueError(translate("max_connections must be between 0 and 10"));
+    }
     config->ap.max_connection = max_connections;
+
     esp_wifi_set_config(WIFI_IF_AP, config);
 }
 
