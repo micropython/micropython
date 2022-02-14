@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-11 10:58+0000\n"
+"PO-Revision-Date: 2022-02-15 03:38+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3692,7 +3692,7 @@ msgstr "matrisen är inte positiv bestämd"
 
 #: shared-bindings/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
-msgstr ""
+msgstr "max_connections måste vara mellan 0 och 10"
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
