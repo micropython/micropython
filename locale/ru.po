@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2021-12-04 12:51+0000\n"
+"PO-Revision-Date: 2022-02-14 18:08+0000\n"
 "Last-Translator: Clay <code.clayt@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10-dev\n"
+"X-Generator: Weblate 4.11-dev\n"
 
 #: main.c
 msgid ""
@@ -77,12 +77,10 @@ msgid ""
 msgstr "%d адресные пины, %d rgb пины и %d плитки указывают высоту %d а не %d"
 
 #: shared-bindings/microcontroller/Pin.c
-#, fuzzy
 msgid "%q and %q contain duplicate pins"
 msgstr "%q и %q содержат пины-дупликаты"
 
 #: shared-bindings/microcontroller/Pin.c
-#, fuzzy
 msgid "%q contains duplicate pins"
 msgstr "%q содержит пины-дупликаты"
 
@@ -439,7 +437,7 @@ msgstr "Все каналы событий синхронизации уже и�
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr "Все таймеры для этого Пина уже используются"
+msgstr "Все таймеры для этого пина уже используются"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -702,12 +700,12 @@ msgstr "Сигнал из глубокого сна может подавать�
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
 "Сигнал из глубокого сна может подаваться по низкому уровню только на одном "
-"выводе, пока остальные сигналят по высокому уровню."
+"пане, пока остальные подают сигнал по высокому уровню."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
-"Сигнал из глубокого сна может подаваться только на двух выводах по низкому "
+"Сигнал из глубокого сна может подаваться только на двух пинах по низкому "
 "уровню."
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -748,16 +746,16 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Cannot output both channels on the same pin"
-msgstr "Невозможно вывести оба канала на один вывод"
+msgstr "Невозможно вывести оба канала на один пин"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr ""
-"Невозможно установить подтяжку на выводе, предназначенном только для ввода."
+"Невозможно установить подтяжку на пине, предназначенном только для ввода."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot read without MISO pin."
-msgstr "Считывание невозможно без вывода MISO."
+msgstr "Считывание невозможно без пина MISO."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
@@ -792,7 +790,7 @@ msgstr "Срез субкласса невозможен"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins."
-msgstr "Передача данных невозможна без выводов MOSI и MISO."
+msgstr "Передача данных невозможна без пинов MOSI и MISO."
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -801,11 +799,11 @@ msgstr "Невозможно изменить частоту на таймере
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr "Невозможно проснуться по pin edge. Только по уровню."
+msgstr "Невозможно проснуться по спаду/росту на пине. Только по уровню."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot write without MOSI pin."
-msgstr "Запись невозможна без вывода MOSI."
+msgstr "Запись невозможна без пина MOSI."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -821,7 +819,7 @@ msgstr "CircuitPython не смог выделить heap."
 
 #: shared-module/bitbangio/SPI.c
 msgid "Clock pin init failed."
-msgstr "Не удалось инициализировать тактовый вывод."
+msgstr "Не удалось инициализировать пин Clock."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
@@ -930,7 +928,7 @@ msgstr "ЦАП уже используется"
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
-msgstr "Вывод data 0 должен быть выровнен по байтам"
+msgstr "Пин data 0 должен быть байтово выровнен"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Data chunk must follow fmt chunk"
@@ -949,7 +947,8 @@ msgstr "Данные слишком велики для пакета объяв�
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
-"Выводы глубокого сна должны использовать rising edge с подтяжкой к земле"
+"Выводы глубокого сна должны использовать сигнал по возрастанию с подтяжкой к "
+"земле"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -961,7 +960,7 @@ msgstr "Устройство используется"
 
 #: ports/cxd56/common-hal/digitalio/DigitalInOut.c
 msgid "DigitalInOut not supported on given pin"
-msgstr "DigitalInOut не поддерживается на данном выводе"
+msgstr "DigitalInOut не поддерживается на данном пине"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -975,7 +974,6 @@ msgid "Display rotation must be in 90 degree increments"
 msgstr "Поворот дисплея должен осуществляться с шагом 90 градусов"
 
 #: shared-bindings/digitalio/DigitalInOut.c
-#, fuzzy
 msgid "Drive mode not used when direction is input."
 msgstr "Drive mode не используется, когда направление является входным."
 
@@ -1173,11 +1171,11 @@ msgstr ""
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware busy, try alternative pins"
-msgstr "Оборудование занято, попробуйте использовать другие выводы"
+msgstr "Оборудование занято, попробуйте использовать другие пины"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
-msgstr "Оборудование используется, попробуйте использовать другие выводы"
+msgstr "Оборудование используется, попробуйте использовать другие пины"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
@@ -1227,13 +1225,12 @@ msgstr "Неверный размер программы инициализац�
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direction conflicts with initial out pin direction"
 msgstr ""
-"Начальное направление вывода set конфликтует с начальным направлением вывода "
-"out"
+"Начальное направление пина set конфликтует с начальным направлением пина out"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
-"Начальное состояние вывода set конфликтует с начальным состоянием вывода out"
+"Начальное состояние пина set конфликтует с начальным состоянием пина out"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "Initialization failed due to lack of memory"
@@ -1256,20 +1253,19 @@ msgstr "Ошибка ввода/вывода"
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
 msgstr ""
-"Инструкция %d вводит (shifts in) большее количество бит, чем количество "
-"выводов"
+"Инструкция %d вводит (shifts in) большее количество бит, чем количество пинов"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
 msgstr ""
 "Инструкция %d выводит (shifts out) большее количество бит, чем количество "
-"выводов"
+"пинов"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d uses extra pin"
-msgstr "Инструкция %d использует дополнительный вывод"
+msgstr "Инструкция %d использует дополнительный пин"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1285,7 +1281,6 @@ msgid "Insufficient encryption"
 msgstr "Недостаточное шифрование"
 
 #: ports/espressif/common-hal/wifi/Radio.c
-#, fuzzy
 msgid "Interface must be started"
 msgstr "Интерфейс должен быть запущен"
 
@@ -1315,13 +1310,13 @@ msgstr "Недопустимый %q"
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Invalid %q pin"
-msgstr "Недопустимый вывод %q"
+msgstr "Недопустимый пин %q"
 
 #: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
 msgid "Invalid %q pin selection"
-msgstr "Неверный выбор вывода %q"
+msgstr "Неверный выбор пина %q"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
@@ -1347,7 +1342,7 @@ msgstr "Неверный BSSID"
 #: ports/espressif/common-hal/analogio/AnalogOut.c
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "Invalid DAC pin supplied"
-msgstr "Передан неверный вывод ЦАП"
+msgstr "Передан неверный пин ЦАП"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -1368,7 +1363,7 @@ msgstr "Недопустимая частота ШИМ"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "Invalid Pin"
-msgstr "Неверный вывод"
+msgstr "Неверный пин"
 
 #: ports/espressif/bindings/espidf/__init__.c
 #: ports/espressif/common-hal/busio/I2C.c
@@ -1450,15 +1445,15 @@ msgstr "Неверная фаза"
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Invalid pin"
-msgstr "Недопустимый вывод"
+msgstr "Недопустимый пин"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for left channel"
-msgstr "Недопустимый вывод для левого канала"
+msgstr "Недопустимый пин для левого канала"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Invalid pin for right channel"
-msgstr "Недопустимый вывод для правого канала"
+msgstr "Недопустимый пин для правого канала"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/atmel-samd/common-hal/busio/SPI.c
@@ -1478,7 +1473,7 @@ msgstr "Недопустимый вывод для правого канала"
 #: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
 #: shared-bindings/busio/UART.c
 msgid "Invalid pins"
-msgstr "Недопустимые выводы"
+msgstr "Недопустимые пины"
 
 #: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
 #: shared-bindings/displayio/FourWire.c
@@ -1552,11 +1547,11 @@ msgstr "MAC адрес был недействительным"
 
 #: shared-module/bitbangio/SPI.c
 msgid "MISO pin init failed."
-msgstr "Не удалось инициализировать вывод MISO."
+msgstr "Не удалось инициализировать пин MISO."
 
 #: shared-module/bitbangio/SPI.c
 msgid "MOSI pin init failed."
-msgstr "Не удалось инициализировать вывод MOSI."
+msgstr "Не удалось инициализировать пин MOSI."
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -1577,44 +1572,42 @@ msgstr "Задержка включения микрофона должна бы
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
-msgstr "Отсутствует вывод MISO или MOSI"
+msgstr "Отсутствует пин MISO или MOSI"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние вывода (-ов)"
+msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние пина (-ов)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
-"Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на вывод(ы)"
+msgstr "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, fuzzy, c-format
+#, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе вывода"
+msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе пина"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr ""
-"Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на вывод(ы)"
+msgstr "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, fuzzy, c-format
+#, c-format
 msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr "Отсутствует first_out_pin. Инструкция %d записывает вывод(ы)"
+msgstr "Отсутствует first_out_pin. Инструкция %d записывает пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает вывод(ы)"
+msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на вывод"
+msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
@@ -1627,12 +1620,12 @@ msgstr "Должен быть субклассом %q."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
-msgstr "Вывод MISO или MOSI должен быть предоставлен"
+msgstr "Пин MISO или MOSI должен быть предоставлен"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Must use a multiple of 6 rgb pins, not %d"
-msgstr "Количество используемых rgb-контактов должно быть кратно 6, а не %d."
+msgstr "Количество используемых rgb-пинов должно быть кратно 6, а не %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
@@ -1678,26 +1671,26 @@ msgstr ""
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MISO Pin"
-msgstr "Нет вывода MISO"
+msgstr "Нет пина MISO"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
-msgstr "Нет вывода MOSI"
+msgstr "Нет пина MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No RX pin"
-msgstr "Нет вывода RX"
+msgstr "Нет пина RX"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "No TX pin"
-msgstr "Нет вывода TX"
+msgstr "Нет пина TX"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -1725,13 +1718,13 @@ msgstr "Отсутствует аппаратный генератор случ�
 
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 msgid "No hardware support on clk pin"
-msgstr "Отсутствует аппаратная поддержка вывода clk"
+msgstr "Отсутствует аппаратная поддержка пина clk"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "No hardware support on pin"
-msgstr "Отсутствует аппаратная поддержка на выводе"
+msgstr "Отсутствует аппаратная поддержка на пине"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
@@ -1766,14 +1759,13 @@ msgstr "В программе отсутствует вывод"
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
-#, fuzzy
 msgid "No pull up found on SDA or SCL; check your wiring"
 msgstr ""
 "Подтяжка на выводах SDA или SCL не обнаружена; проверь схему подключения"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
-msgstr "Отсутствует подтяжка к земле на выводе; Рекомендуется 1 Мегаом"
+msgstr "Отсутствует подтяжка к земле на пине; Рекомендуется 1 Мегаом"
 
 #: py/moduerrno.c
 msgid "No space left on device"
@@ -1811,7 +1803,6 @@ msgid "Not playing"
 msgstr "Не играет"
 
 #: shared-bindings/_bleio/__init__.c
-#, fuzzy
 msgid "Not settable"
 msgstr "Не устанавливается"
 
@@ -1833,7 +1824,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-#, fuzzy
 msgid "Only 8 or 16 bit mono with "
 msgstr "Только 8- или 16-битное моно с "
 
@@ -1846,12 +1836,12 @@ msgid "Only IPv4 sockets supported"
 msgstr "Поддерживаются только сокеты IPv4"
 
 #: shared-module/displayio/OnDiskBitmap.c
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Only Windows format, uncompressed BMP supported: given header size is %d"
 msgstr ""
 "Поддерживается только формат Windows, несжатый BMP: заданный размер "
-"заголовка - %d."
+"заголовка - %d"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Only connectable advertisements can be directed"
@@ -1954,15 +1944,15 @@ msgstr ""
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "Пин не может вывести из глубокого сна"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Pin count must be at least 1"
-msgstr ""
+msgstr "Количество пинов должно быть не менее 1"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Слишком большое количество пинов"
 
 #: ports/atmel-samd/common-hal/analogio/AnalogIn.c
 #: ports/cxd56/common-hal/analogio/AnalogIn.c
@@ -1972,25 +1962,25 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogIn.c
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Pin does not have ADC capabilities"
-msgstr ""
+msgstr "Пин не имеет возможности АЦП"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "Прерывание пина уже используется"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Пин является только входом"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "Пин должен быть на канале ШИМ B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
-msgstr ""
+msgstr "Пин должен поддерживать аппаратные прерывания"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1999,18 +1989,21 @@ msgid ""
 "bytes.  If this cannot be avoided, pass allow_inefficient=True to the "
 "constructor"
 msgstr ""
+"Pinout использует %d байт на элемент, что потребляет больше, чем идеальные "
+"%d байт.   Если этого нельзя избежать, передайте allow_inefficient=True в "
+"конструктор"
 
 #: ports/raspberrypi/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Pins must be sequential"
-msgstr ""
+msgstr "Пины должны быть последовательными"
 
 #: ports/raspberrypi/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pins must be sequential GPIO pins"
-msgstr ""
+msgstr "Пины должны быть последовательными выводами GPIO"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Pins must share PWM slice"
-msgstr ""
+msgstr "Пины должны иметь общий срез ШИМ"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2203,7 +2196,7 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Set pin count must be between 1 and 5"
-msgstr ""
+msgstr "Число Set пинов должно быть от 1 до 5"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
@@ -2239,7 +2232,7 @@ msgstr ""
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr ""
+msgstr "Укажите точно один из data0 или data_pins"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2263,7 +2256,7 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Supply at least one UART pin"
-msgstr ""
+msgstr "Предоставьте хотяб один пин UART"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2291,7 +2284,7 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "Длина rgb_pins должна быть 6, 12, 18, 24 или 30"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2325,6 +2318,8 @@ msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
 msgstr ""
+"Этот микроконтроллер поддерживает только data0=, а не data_pins=, поскольку "
+"для него требуются смежные выводы."
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -3106,7 +3101,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "data-пин #%d уже используется"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
@@ -3825,7 +3820,7 @@ msgstr ""
 #: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "no reset pin available"
-msgstr ""
+msgstr "нет доступного контакта сброса"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
@@ -4202,12 +4197,12 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] duplicates another pin assignment"
-msgstr ""
+msgstr "rgb_pins[%d] дублирует другое назначение пинов"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "rgb_pins[%d] is not on the same port as clock"
-msgstr ""
+msgstr "rgb_pins[%d] не находится на том же порту, что и clock"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "roll argument must be an ndarray"
@@ -4685,7 +4680,6 @@ msgid "zi must be an ndarray"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c
-#, fuzzy
 msgid "zi must be of float type"
 msgstr "zi должно быть типа float"
 
