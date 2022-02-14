@@ -275,6 +275,7 @@ The event codes are::
     _IRQ_ENCRYPTION_UPDATE = const(28)
     _IRQ_GET_SECRET = const(29)
     _IRQ_SET_SECRET = const(30)
+    _IRQ_PASSKEY_ACTION = const(31)
 
 For the ``_IRQ_GATTS_READ_REQUEST`` event, the available return codes are::
 
@@ -759,3 +760,38 @@ Constructor
 
     - A 16-bit integer. e.g. ``0x2908``.
     - A 128-bit UUID string. e.g. ``'6E400001-B5A3-F393-E0A9-E50E24DCCA9E'``.
+
+
+Constants
+---------
+
+.. data:: FLAG_READ
+
+   Read operation is requested by the GATT client on a specific attribute exposed by 
+   the GATT server. The server then responds with the requested value.
+
+.. data:: FLAG_WRITE
+
+   This operation is requested by the GATT client on a specific attribute exposed by 
+   the GATT server, and a new value to write is provided at the same time. The server 
+   then stores the new value and acknowledges the write operation back to the client
+
+.. data:: FLAG_NOTIFY
+
+   This operation is initiated by the server when a new value is written to a 
+   notify-enabled characteristic.  If the client has subscribed to notifications on that
+   characteristic, the new value is pushed to the client when it is written. Notifications 
+   are not acknowledged, hence you may send more than one notification in a single connection 
+   interval, which can be helpful maximizing throughput. 
+
+.. data:: FLAG_INDICATE
+
+   An indicate operation is identical to a notify operation except that indications are
+   acknowledged, while notifications are not. This increases reliability at the expense of speed.
+
+.. data:: FLAG_WRITE_NO_RESPONSE
+
+   This operation is requested by the GATT client on a specific attribute exposed by the GATT server, 
+   and a new value to write is provided at the same time. The server then stores the new value.
+   No acknowledgement is sent back to the client.
+
