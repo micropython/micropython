@@ -1592,7 +1592,8 @@ msgstr "Отсутствует first_in_pin. Инструкция %d ожида�
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
+msgstr ""
+"Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -3678,6 +3679,10 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
+msgstr ""
+
+#: shared-bindings/wifi/Radio.c
+msgid "max_connections must be between 0 and 10"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
