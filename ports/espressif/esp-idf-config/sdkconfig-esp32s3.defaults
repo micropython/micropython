@@ -7,6 +7,12 @@ CONFIG_IDF_TARGET_ESP32S3=y
 CONFIG_IDF_FIRMWARE_CHIP_ID=0x0009
 # end of Espressif IoT Development Framework (ESP-IDF) Project Configuration
 
+#
+# LWIP sdkconfig.defaults override
+#
+CONFIG_LWIP_MAX_SOCKETS=8
+# end of LWIP sdkconfig.defaults override
+
 CONFIG_SDK_TOOLPREFIX="xtensa-esp32s3-elf-"
 #
 # Bootloader config
