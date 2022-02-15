@@ -139,8 +139,8 @@
 //|             that causes an infinite loop, you will be able to interrupt the loop.
 //|             However, if you are writing to a device that can get into a bad state if a read or write
 //|             is interrupted, you may want to set this to False after your program has been vetted.
-//|         :param int wrap_target The target instruction number of automatic wrap. Defaults to the first instruction of the program.
-//|         :param int wrap The instruction after which to wrap to the ``wrap``
+//|         :param int wrap_target: The target instruction number of automatic wrap. Defaults to the first instruction of the program.
+//|         :param int wrap: The instruction after which to wrap to the ``wrap``
 //|             instruction. As a special case, -1 (the default) indicates the
 //|             last instruction of the program.
 //|         """
