@@ -27,11 +27,8 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "supervisor/shared/board.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
@@ -77,8 +74,8 @@ static void display_init(void) {
         spi,
         &pin_GPIO2,     // CLK
         &pin_GPIO3,     // MOSI
-        NULL            // MISO not connected
-        );
+        NULL,           // MISO not connected
+        false);         // Not half-duplex
 
     common_hal_busio_spi_never_reset(spi);
 
