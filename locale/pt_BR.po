@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-11 10:58+0000\n"
+"PO-Revision-Date: 2022-02-15 18:42+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3729,7 +3729,7 @@ msgstr "a matriz não é definitiva positiva"
 
 #: shared-bindings/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
-msgstr ""
+msgstr "max_connections deve estar entre 0 e 10"
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
