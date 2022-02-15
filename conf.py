@@ -31,7 +31,7 @@ from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
 
-tools_describe = (pathlib.Path(__file__).parent / "tools/describe").str()
+tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
