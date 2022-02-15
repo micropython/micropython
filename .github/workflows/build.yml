@@ -42,8 +42,8 @@ jobs:
       run: python tools/ci_fetch_deps.py test ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -148,8 +148,8 @@ jobs:
       run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         brew install gettext
@@ -204,8 +204,8 @@ jobs:
       run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Set up Python 3
       uses: actions/setup-python@v2
       with:
@@ -379,7 +379,9 @@ jobs:
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
