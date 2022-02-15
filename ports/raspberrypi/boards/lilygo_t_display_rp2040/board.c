@@ -27,8 +27,11 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
+#include "supervisor/shared/board.h"
 
 displayio_fourwire_obj_t board_display_obj;
 
