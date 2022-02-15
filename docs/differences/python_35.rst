@@ -101,7 +101,7 @@ Changes to built-in modules:
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | A new function *isclose()* provides a way to test for approximate equality.                               |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
-   | A new *gcd()* function has been added. The *fractions.gcd()* function is now deprecated.                  |               |
+   | A new *gcd()* function has been added. The *fractions.gcd()* function is now deprecated.                  | Completed     |
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | `os <https://docs.python.org/3/whatsnew/3.5.html#os>`_                                                                    |
    +-----------------------------------------------------------------------------------------------------------+---------------+

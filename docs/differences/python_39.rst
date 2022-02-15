@@ -90,7 +90,7 @@ Changes to built-in modules:
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | `math`                                                                                                                        |
   +---------------------------------------------------------------------------------------------------------------+---------------+
-  | Expanded the *math.gcd()* function to handle multiple arguments. Formerly, it only supported two arguments    |               |
+  | Expanded the *math.gcd()* function to handle multiple arguments. Formerly, it only supported two arguments    | Completed     |
   +---------------------------------------------------------------------------------------------------------------+---------------+
   | Added *math.lcm()*: return the least common multiple of specified arguments                                   |               |
   +---------------------------------------------------------------------------------------------------------------+---------------+
