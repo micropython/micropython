@@ -77,8 +77,8 @@ jobs:
       run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
 
     - name: build mpy-cross
       run: make -j2 -C mpy-cross
