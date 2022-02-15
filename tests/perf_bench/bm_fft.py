@@ -15,7 +15,7 @@ def transform_radix2(vector, inverse):
 
     # Initialization
     n = len(vector)
-    levels = int(math.log2(n))
+    levels = int(math.log(n) / math.log(2))
     coef = (2 if inverse else -2) * cmath.pi / n
     exptable = [cmath.rect(1, i * coef) for i in range(n // 2)]
     vector = [vector[reverse(i, levels)] for i in range(n)]  # Copy with bit-reversed permutation

@@ -9,7 +9,7 @@ except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
-if not (sys.platform == "linux" and sys.maxsize > 2**32):
+if not (sys.platform == "linux" and sys.maxsize > 2 ** 32):
     print("SKIP")
     raise SystemExit
 
@@ -52,11 +52,11 @@ class UserFS:
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'C\x05\xff\x00\x10',
+    '/mod0.mpy': b'C\x05\xfe\x00\x10',
 
     # test loading of viper and asm
     '/mod1.mpy': (
-        b'C\x05\x0b\x1f\x20' # header
+        b'C\x05\x0a\x1f\x20' # header
 
         b'\x20' # n bytes, bytecode
             b'\x00\x08\x02m\x02m' # prelude
@@ -78,7 +78,7 @@ user_files = {
 
     # test loading viper with additional scope flags and relocation
     '/mod2.mpy': (
-        b'C\x05\x0b\x1f\x20' # header
+        b'C\x05\x0a\x1f\x20' # header
 
         b'\x20' # n bytes, bytecode
             b'\x00\x08\x02m\x02m' # prelude

@@ -112,7 +112,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                     def get(required=False):
                         rv = b""
                         while True:
-                            ready = select.select([emulator], [], [], 0.02)
+                            ready = select.select([emulator], [], [emulator], 0.02)
                             if ready[0] == [emulator]:
                                 rv += os.read(emulator, 1024)
                             else:
@@ -150,9 +150,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
                             p.kill()
                         except ProcessLookupError:
                             pass
-                        os.close(emulator)
                         os.close(subterminal)
+                        os.close(emulator)
                 else:
+                    print("subprocess", args + [test_file])
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
                     )
@@ -757,9 +758,7 @@ the last matching regex is used:
     cmd_parser.add_argument(
         "--via-mpy", action="store_true", help="compile .py files to .mpy first"
     )
-    cmd_parser.add_argument(
-        "--mpy-cross-flags", default="-mcache-lookup-bc", help="flags to pass to mpy-cross"
-    )
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument(
         "--keep-path", action="store_true", help="do not clear MICROPYPATH when running tests"
     )
@@ -871,7 +870,7 @@ the last matching regex is used:
 
     if not args.keep_path:
         # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = os.pathsep + base_path("../extmod")
+        os.environ["MICROPYPATH"] = os.pathsep + ".frozen" + os.pathsep + base_path("../extmod")
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)

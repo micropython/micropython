@@ -8,12 +8,12 @@ arg names:
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=3
-00 LOAD_NAME print (cache=0)
-04 LOAD_CONST_SMALL_INT 1
-05 CALL_FUNCTION n=1 nkw=0
-07 POP_TOP
-08 LOAD_CONST_NONE
-09 RETURN_VALUE
+00 LOAD_NAME print
+03 LOAD_CONST_SMALL_INT 1
+04 CALL_FUNCTION n=1 nkw=0
+06 POP_TOP
+07 LOAD_CONST_NONE
+08 RETURN_VALUE
 1
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+

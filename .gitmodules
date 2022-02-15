@@ -92,9 +92,6 @@
 [submodule "frozen/circuitpython-stage"]
 	path = frozen/circuitpython-stage
 	url = https://github.com/python-ugame/circuitpython-stage.git
-[submodule "ports/cxd56/spresense-exported-sdk"]
-	path = ports/cxd56/spresense-exported-sdk
-	url = https://github.com/sonydevworld/spresense-exported-sdk.git
 [submodule "frozen/Adafruit_CircuitPython_SD"]
 	path = frozen/Adafruit_CircuitPython_SD
 	url = https://github.com/adafruit/Adafruit_CircuitPython_SD.git

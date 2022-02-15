@@ -541,5 +541,16 @@ void supervisor_run_background_tasks_if_tick(void);
 #define USB_MIDI_EP_NUM_IN (0)
 #endif
 
+#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
+#define MICROPY_WRAP_MP_MAP_LOOKUP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_BINARY_OP
+#define MICROPY_WRAP_MP_BINARY_OP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
+#endif
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H
