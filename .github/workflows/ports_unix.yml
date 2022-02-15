@@ -41,6 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_standard_build
     - name: Run main test suite
@@ -53,6 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_dev_build
     - name: Run main test suite
@@ -65,8 +71,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Install packages
-      run: source tools/ci.sh && ci_unix_coverage_setup
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools pyelftools
+    - name: Print environment version
+      run: source tools/ci.sh && ci_unix_coverage_print_env
     - name: Build
       run: source tools/ci.sh && ci_unix_coverage_build
     - name: Run main test suite
@@ -92,6 +105,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    - name: Install python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools pyelftools
     - name: Install packages
       run: source tools/ci.sh && ci_unix_32bit_setup
     - name: Build
@@ -110,6 +130,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_32bit_setup
     - name: Build
@@ -124,6 +147,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_float_build
     - name: Run main test suite
@@ -136,6 +162,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_clang_setup
     - name: Build
@@ -150,6 +179,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_clang_setup
     - name: Build
@@ -164,6 +196,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_build
     - name: Run main test suite
@@ -176,6 +211,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_stackless_build
     - name: Run main test suite
@@ -190,7 +228,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.8'
+        python-version: '3.10'
     - name: Build
       run: source tools/ci.sh && ci_unix_macos_build
     - name: Run tests
@@ -203,6 +241,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_qemu_mips_setup
     - name: Build
@@ -217,6 +258,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
     - name: Install packages
       run: source tools/ci.sh && ci_unix_qemu_arm_setup
     - name: Build

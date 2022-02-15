@@ -1,10 +1,10 @@
-image: Visual Studio 2017
+image: Visual Studio 2019
 clone_depth: 1
 skip_tags: true
 
 environment:
   # Python version used
-  MICROPY_CPYTHON3: c:/python38/python.exe
+  MICROPY_CPYTHON3: c:/python310/python.exe
   # The variants.
   matrix:
     - PyVariant: dev
