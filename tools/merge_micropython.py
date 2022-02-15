@@ -172,7 +172,6 @@ top_delete = [
     "README.md",
     "CODEOFCONDUCT.md",
     "CODECONVENTIONS.md",
-    "examples",
 ]
 for t in top_delete:
     try:
