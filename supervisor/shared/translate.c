@@ -87,10 +87,14 @@ STATIC int put_utf8(char *buf, int u) {
 }
 
 uint16_t decompress_length(const compressed_string_t *compressed) {
+    #if defined(compress_max_length_bits)
     #if (compress_max_length_bits <= 8)
     return 1 + (compressed->data >> (8 - compress_max_length_bits));
     #else
     return 1 + ((compressed->data * 256 + compressed->tail[0]) >> (16 - compress_max_length_bits));
+    #endif
+    #else
+    // generating qstrs
     #endif
 }
 
