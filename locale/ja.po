@@ -3650,6 +3650,10 @@ msgstr "定義域エラー"
 msgid "matrix is not positive definite"
 msgstr "正定値行列ではありません"
 
+#: shared-bindings/wifi/Radio.c
+msgid "max_connections must be between 0 and 10"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c

@@ -3667,6 +3667,10 @@ msgstr "math domain error"
 msgid "matrix is not positive definite"
 msgstr "matrix is not positive definite"
 
+#: shared-bindings/wifi/Radio.c
+msgid "max_connections must be between 0 and 10"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
