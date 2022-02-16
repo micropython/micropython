@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
@@ -40,8 +42,11 @@ STATIC void *(*core1_entry)(void *) = NULL;
 STATIC void *core1_arg = NULL;
 STATIC uint32_t *core1_stack = NULL;
 STATIC size_t core1_stack_num_words = 0;
+// the mutex controls access to core1_stack
+STATIC mp_thread_mutex_t thread_mutex;
 
 void mp_thread_init(void) {
+    mp_thread_mutex_init(&thread_mutex);
     mp_thread_set_state(&mp_state_ctx.thread);
     core1_entry = NULL;
 }
@@ -54,7 +59,9 @@ void mp_thread_deinit(void) {
 void mp_thread_gc_others(void) {
     // GC collect on core1, regardless of which thread this is called from.
     if (core1_entry != NULL) {
+        mp_thread_mutex_lock(&thread_mutex, 1);
         gc_collect_root((void **)&core1_stack, core1_stack_num_words);
+        mp_thread_mutex_unlock(&thread_mutex);
     }
 }
 
