@@ -18,7 +18,7 @@ void *memmove(void *dest, const void *src, size_t n) {
 }
 
 void *malloc(size_t n) {
-    void *ptr = m_malloc(n);
+    void *ptr = m_malloc(n, false);
     return ptr;
 }
 void *realloc(void *ptr, size_t n) {
@@ -26,7 +26,7 @@ void *realloc(void *ptr, size_t n) {
     return NULL;
 }
 void *calloc(size_t n, size_t m) {
-    void *ptr = m_malloc(n * m);
+    void *ptr = m_malloc(n * m, false);
     // memory already cleared by conservative GC
     return ptr;
 }
@@ -51,7 +51,7 @@ int *__errno (void)
 
 ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
     mp_obj_base_t* o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = o->type->ext[0].protocol;
     mp_uint_t out_sz = stream_p->write(MP_OBJ_FROM_PTR(stream), buf, len, &native_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -62,7 +62,7 @@ ssize_t mp_stream_posix_write(void *stream, const void *buf, size_t len) {
 
 ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
     mp_obj_base_t* o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = o->type->ext[0].protocol;
     mp_uint_t out_sz = stream_p->read(MP_OBJ_FROM_PTR(stream), buf, len, &native_errno);
     if (out_sz == MP_STREAM_ERROR) {
         return -1;
@@ -73,7 +73,7 @@ ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
 
 off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
     const mp_obj_base_t* o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = o->type->ext[0].protocol;
     struct mp_stream_seek_t seek_s;
     seek_s.offset = offset;
     seek_s.whence = whence;
@@ -86,7 +86,7 @@ off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
 
 int mp_stream_posix_fsync(void *stream) {
     mp_obj_base_t* o = stream;
-    const mp_stream_p_t *stream_p = o->type->protocol;
+    const mp_stream_p_t *stream_p = o->type->ext[0].protocol;
     mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_FLUSH, 0, &native_errno);
     if (res == MP_STREAM_ERROR) {
         return -1;
@@ -94,7 +94,7 @@ int mp_stream_posix_fsync(void *stream) {
     return res;
 }
 
-mp_obj_type_t btree_type;
+mp_obj_full_type_t btree_type;
 
 #include "extmod/modbtree.c"
 
@@ -123,12 +123,13 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     MP_DYNRUNTIME_INIT_ENTRY
 
     btree_type.base.type = (void*)&mp_fun_table.type_type;
+    btree_type.flags = MP_TYPE_FLAG_EXTENDED;
     btree_type.name = MP_QSTR_btree;
     btree_type.print = btree_print;
-    btree_type.getiter = btree_getiter;
-    btree_type.iternext = btree_iternext;
-    btree_type.binary_op = btree_binary_op;
-    btree_type.subscr = btree_subscr;
+    btree_type.ext[0].getiter = btree_getiter;
+    btree_type.ext[0].iternext = btree_iternext;
+    btree_type.ext[0].binary_op = btree_binary_op;
+    btree_type.ext[0].subscr = btree_subscr;
     btree_locals_dict_table[0] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_close), MP_OBJ_FROM_PTR(&btree_close_obj) };
     btree_locals_dict_table[1] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_flush), MP_OBJ_FROM_PTR(&btree_flush_obj) };
     btree_locals_dict_table[2] = (mp_map_elem_t){ MP_OBJ_NEW_QSTR(MP_QSTR_get), MP_OBJ_FROM_PTR(&btree_get_obj) };

@@ -133,6 +133,10 @@ void claim_pin(const mcu_pin_obj_t *pin) {
     in_use[pin->number / 32] |= (1 << (pin->number % 32));
 }
 
+void free_pin_number(gpio_num_t pin_number) {
+    in_use[pin_number / 32] &= ~(1 << (pin_number % 32));
+}
+
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
     claim_pin(pin);
 }

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
+ * Copyright (c) 2021 skieast/Bruce Segal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +25,23 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "common-hal/microcontroller/Pin.h"
+// Board setup
+#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit_2M"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3"
 
-void board_init(void) {
-    reset_board();
-}
+// Status LED
+#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+// Default bus pins
+#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
+#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
 
-void reset_board(void) {
-    // Turn on I2C power by default.
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
-}
+// Serial over UART
+#define DEBUG_UART_RX               DEFAULT_UART_BUS_RX
+#define DEBUG_UART_TX               DEFAULT_UART_BUS_TX
 
-void board_deinit(void) {
-}
+// For entering safe mode
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")

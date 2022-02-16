@@ -43,6 +43,7 @@ setup(
         "root": "..",
         "relative_to": __file__,
         "local_scheme": local_scheme,
+        "git_describe_command": "tools/describe",
     },
     zip_safe=False,
 )
