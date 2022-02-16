@@ -1507,14 +1507,7 @@ void stm32_main(uint32_t initial_r0) {
 
 enter_bootloader:
 
-    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
-    led_init();
-
-    // set the system clock to be HSE
-    SystemClock_Config();
-
-    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
-    __set_PRIMASK(0);
+    MBOOT_BOARD_ENTRY_INIT(&initial_r0);
 
     #if USE_USB_POLLING
     // irqs with a priority value greater or equal to "pri" will be disabled
@@ -1522,10 +1515,6 @@ enter_bootloader:
     uint32_t pri = 2;
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
-    #endif
-
-    #if defined(MBOOT_BOARD_ENTRY_INIT)
-    MBOOT_BOARD_ENTRY_INIT(initial_r0);
     #endif
 
     #if defined(MBOOT_SPIFLASH_ADDR)
