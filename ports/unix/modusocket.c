@@ -223,15 +223,23 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int backlog = SOMAXCONN < 128 ? SOMAXCONN : 128;
+    if (n_args > 1) {
+        backlog = (int)mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     MP_THREAD_GIL_EXIT();
-    int r = listen(self->fd, MP_OBJ_SMALL_INT_VALUE(backlog_in));
+    int r = listen(self->fd, backlog);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
