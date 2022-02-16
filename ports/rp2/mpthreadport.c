@@ -52,14 +52,9 @@ void mp_thread_deinit(void) {
 }
 
 void mp_thread_gc_others(void) {
-    if (get_core_num() == 0) {
-        // GC running on core0, trace core1's stack, if it's running.
-        if (core1_entry != NULL) {
-            gc_collect_root((void **)core1_stack, core1_stack_num_words);
-        }
-    } else {
-        // GC running on core1, trace core0's stack.
-        gc_collect_root((void **)&__StackBottom, (&__StackTop - &__StackBottom) / sizeof(uintptr_t));
+    // GC collect on core1, regardless of which thread this is called from.
+    if (core1_entry != NULL) {
+        gc_collect_root((void **)&core1_stack, core1_stack_num_words);
     }
 }
 
