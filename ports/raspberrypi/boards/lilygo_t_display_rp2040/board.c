@@ -33,7 +33,7 @@
 displayio_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
-#define PWR_EN 22
+#define LCD_POWER 22
 
 // display init sequence according to LilyGO example app
 uint8_t display_init_sequence[] = {
@@ -132,7 +132,7 @@ static void display_init(void) {
 
 void board_init(void) {
     // Pin 22 has to be pulled high to turn on the LCD
-    const uint PWR_PIN = PWR_EN;
+    const uint PWR_PIN = LCD_POWER;
     gpio_init(PWR_PIN);
     gpio_set_dir(PWR_PIN, GPIO_OUT);
     gpio_put(PWR_PIN, 1);
