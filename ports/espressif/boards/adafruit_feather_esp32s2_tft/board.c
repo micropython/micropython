@@ -71,12 +71,13 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // I2C/TFT power pin
+    // Never reset the I2C/TFT power pin because doing so will reset the display.
+    // Instead, on reset set the default value and free the pin for user use.
+    // Relying on the normal pin reset would briefly float/pull the pin that
+    // could lead to a power brownout.
     common_hal_never_reset_pin(&pin_GPIO21);
 
-    // Turn on TFT and I2C
-    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(21, true);
+    reset_board();
 
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -138,8 +139,13 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    // Turn on TFT and I2C
+    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(21, true);
 
+    free_pin_number(21);
 }
 
 void board_deinit(void) {
+    // TODO: Should we turn off the display when asleep?
 }

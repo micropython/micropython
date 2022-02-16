@@ -32,10 +32,7 @@
 #include "common-hal/microcontroller/Pin.h"
 
 void board_init(void) {
-    // Turn on I2C
-    common_hal_never_reset_pin(&pin_GPIO7);
-    gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
+    reset_board();
 }
 
 bool board_requests_safe_mode(void) {
