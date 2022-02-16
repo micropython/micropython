@@ -28,7 +28,12 @@
 #include "py/smallint.h"
 #include "py/pairheap.h"
 #include "py/mphal.h"
+
+#if 0    // causes error for unix build
 #include "shared-bindings/supervisor/__init__.h"
+#else
+extern mp_obj_t supervisor_ticks_ms(void);
+#endif
 
 #if MICROPY_PY_UASYNCIO
 
