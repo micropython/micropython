@@ -60,31 +60,38 @@
 // Most values are defined in irq.h.
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
-// Configure PLL to give the desired CPU freq
-#undef MICROPY_HW_FLASH_LATENCY
-#if defined(STM32F4) || defined(STM32F7)
-  #if MBOOT_ENABLE_PACKING
-    // With encryption/signing/compression, a faster CPU makes processing much faster.
+#if defined(MBOOT_CLK_PLLM)
+  // The board specified the PLL values, flash latency and bus dividers
+  #define CORE_PLL_FREQ (1000000 * MBOOT_CLK_PLLN / MBOOT_CLK_PLLP)
+#else
+  // The board did not specify the clock values, so configure defaults
+  #if defined(STM32F4) || defined(STM32F7)
+    #if MBOOT_ENABLE_PACKING
+      // With encryption/signing/compression, a faster CPU makes processing much faster.
+      #define CORE_PLL_FREQ (96000000)
+      #define MBOOT_FLASH_LATENCY FLASH_LATENCY_3
+    #else
+      #define CORE_PLL_FREQ (48000000)
+      #define MBOOT_FLASH_LATENCY FLASH_LATENCY_1
+    #endif
+    #define MBOOT_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+    #define MBOOT_CLK_APB1_DIV (RCC_HCLK_DIV4)
+    #define MBOOT_CLK_APB2_DIV (RCC_HCLK_DIV2)
+  #elif defined(STM32H7)
     #define CORE_PLL_FREQ (96000000)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_3
-  #else
-    #define CORE_PLL_FREQ (48000000)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+    #define MBOOT_FLASH_LATENCY FLASH_LATENCY_2
+    #define MBOOT_CLK_AHB_DIV (RCC_HCLK_DIV2)
+    #define MBOOT_CLK_APB1_DIV (RCC_APB1_DIV2)
+    #define MBOOT_CLK_APB2_DIV (RCC_APB2_DIV2)
+    #define MBOOT_CLK_APB3_DIV (RCC_APB3_DIV2)
+    #define MBOOT_CLK_APB4_DIV (RCC_APB4_DIV2)
   #endif
-#elif defined(STM32H7)
-  #define CORE_PLL_FREQ (96000000)
-  #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
+  #define MBOOT_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
+  #define MBOOT_CLK_PLLN (192)
+  #define MBOOT_CLK_PLLP (MBOOT_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
+  #define MBOOT_CLK_PLLQ (4)
+  #define MBOOT_CLK_PLLR (2)
 #endif
-#undef MICROPY_HW_CLK_PLLM
-#undef MICROPY_HW_CLK_PLLN
-#undef MICROPY_HW_CLK_PLLP
-#undef MICROPY_HW_CLK_PLLQ
-#undef MICROPY_HW_CLK_PLLR
-#define MICROPY_HW_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
-#define MICROPY_HW_CLK_PLLN (192)
-#define MICROPY_HW_CLK_PLLP (MICROPY_HW_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
-#define MICROPY_HW_CLK_PLLQ (4)
-#define MICROPY_HW_CLK_PLLR (2)
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -203,10 +210,10 @@ void SystemClock_Config(void) {
         #else
         1 << RCC_PLLCFGR_PLLSRC_Pos // HSE selected as PLL source
         #endif
-        | MICROPY_HW_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
-        | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
-        | ((MICROPY_HW_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
-        | MICROPY_HW_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
+        | MBOOT_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
+        | MBOOT_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
+        | ((MBOOT_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
+        | MBOOT_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
         #ifdef RCC_PLLCFGR_PLLR
         | 2 << RCC_PLLCFGR_PLLR_Pos // default PLLR value of 2
         #endif
@@ -218,12 +225,12 @@ void SystemClock_Config(void) {
     }
 
     // Increase latency before changing clock
-    if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Configure AHB divider
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_SYSCLK_DIV1);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, MBOOT_CLK_AHB_DIV);
 
     // Configure SYSCLK source from PLL
     __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_PLLCLK);
@@ -231,13 +238,13 @@ void SystemClock_Config(void) {
     }
 
     // Decrease latency after changing clock
-    if (MICROPY_HW_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Set APB clock dividers
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_HCLK_DIV4);
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, RCC_HCLK_DIV2 << 3);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, MBOOT_CLK_APB1_DIV);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, MBOOT_CLK_APB2_DIV << 3);
 
     // Update clock value and reconfigure systick now that the frequency changed
     SystemCoreClock = CORE_PLL_FREQ;
@@ -281,14 +288,14 @@ void SystemClock_Config(void) {
     RCC->PLLCFGR = 0;
 
     // Configure PLL1 for use by SYSCLK
-    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
+    RCC->PLLCKSELR |= MBOOT_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
     RCC->PLLCFGR |= RCC_PLLCFGR_DIVP1EN;
     RCC->PLL1FRACR = 0;
     RCC->PLL1DIVR =
-        (MICROPY_HW_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
-        | (MICROPY_HW_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
-        | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
-        | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
+        (MBOOT_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
+        | (MBOOT_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
+        | (MBOOT_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
+        | (MBOOT_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
 
     // Configure PLL3 for use by USB at Q=48MHz
     RCC->PLLCKSELR |= MICROPY_HW_CLK_PLL3M << RCC_PLLCKSELR_DIVM3_Pos;
@@ -314,14 +321,14 @@ void SystemClock_Config(void) {
     }
 
     // Increase latency before changing SYSCLK
-    if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Configure AHB divider
     RCC->D1CFGR =
         0 << RCC_D1CFGR_D1CPRE_Pos // SYSCLK prescaler of 1
-        | 8 << RCC_D1CFGR_HPRE_Pos // AHB prescaler of 2
+        | MBOOT_CLK_AHB_DIV
         ;
 
     // Configure SYSCLK source from PLL
@@ -330,21 +337,14 @@ void SystemClock_Config(void) {
     }
 
     // Decrease latency after changing clock
-    if (MICROPY_HW_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Set APB clock dividers
-    RCC->D1CFGR |=
-        4 << RCC_D1CFGR_D1PPRE_Pos // APB3 prescaler of 2
-        ;
-    RCC->D2CFGR =
-        4 << RCC_D2CFGR_D2PPRE2_Pos // APB2 prescaler of 2
-        | 4 << RCC_D2CFGR_D2PPRE1_Pos // APB1 prescaler of 2
-        ;
-    RCC->D3CFGR =
-        4 << RCC_D3CFGR_D3PPRE_Pos // APB4 prescaler of 2
-        ;
+    RCC->D1CFGR |= MBOOT_CLK_APB3_DIV;
+    RCC->D2CFGR = MBOOT_CLK_APB2_DIV | MBOOT_CLK_APB1_DIV;
+    RCC->D3CFGR = MBOOT_CLK_APB4_DIV;
 
     // Update clock value and reconfigure systick now that the frequency changed
     SystemCoreClockUpdate();
