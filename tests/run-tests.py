@@ -153,7 +153,6 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         os.close(subterminal)
                         os.close(emulator)
                 else:
-                    print("subprocess", args + [test_file])
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
                     )
