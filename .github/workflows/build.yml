@@ -77,6 +77,19 @@ jobs:
     - name: Native mpy Tests
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
       working-directory: tests
+    - name: Build native modules
+      run: |
+        make -C examples/natmod/features1
+        make -C examples/natmod/features2
+        make -C examples/natmod/btree
+        make -C examples/natmod/framebuf
+        make -C examples/natmod/uheapq
+        make -C examples/natmod/urandom
+        make -C examples/natmod/ure
+        make -C examples/natmod/uzlib
+    - name: Test native modules
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
+      working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
     - uses: actions/upload-artifact@v2
