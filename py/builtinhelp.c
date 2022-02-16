@@ -79,12 +79,8 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 
 // These externs were originally declared inside mp_help_print_modules(),
 // but they triggered -Wnested-externs, so they were moved outside.
-#if MICROPY_MODULE_FROZEN_STR
-extern const char mp_frozen_str_names[];
-#endif
-
-#if MICROPY_MODULE_FROZEN_MPY
-extern const char mp_frozen_mpy_names[];
+#if MICROPY_MODULE_FROZEN
+extern const char mp_frozen_names[];
 #endif
 
 STATIC void mp_help_print_modules(void) {
@@ -93,7 +89,6 @@ STATIC void mp_help_print_modules(void) {
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
     #if MICROPY_MODULE_FROZEN
-    extern const char mp_frozen_names[];
     mp_help_add_from_names(list, mp_frozen_names);
     #endif
 

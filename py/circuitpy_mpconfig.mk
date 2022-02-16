@@ -489,6 +489,7 @@ CFLAGS += -DLONGINT_IMPL_LONGLONG
 else
 $(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
 endif
+MPY_TOOL_FLAGS += $(MPY_TOOL_LONGINT_IMPL)
 
 ###
 ifeq ($(LONGINT_IMPL),NONE)
@@ -496,4 +497,17 @@ else ifeq ($(LONGINT_IMPL),MPZ)
 else ifeq ($(LONGINT_IMPL),LONGLONG)
 else
 $(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
+endif
+
+PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
+ifneq ($(FROZEN_MPY_DIRS),)
+$(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
+	$(ECHO) FREEZE $(FROZEN_MPY_DIRS)
+	$(Q)$(MKDIR) -p $@
+	$(Q)$(PREPROCESS_FROZEN_MODULES) -o $@ $(FROZEN_MPY_DIRS)
+
+$(BUILD)/manifest.py: $(BUILD)/frozen_mpy | $(TOP)/py/circuitpy_mpconfig.mk mpconfigport.mk boards/$(BOARD)/mpconfigboard.mk
+	$(ECHO) MKMANIFEST $(FROZEN_MPY_DIRS)
+	(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
+FROZEN_MANIFEST=$(BUILD)/manifest.py
 endif
