@@ -28,6 +28,7 @@
 #include "py/smallint.h"
 #include "py/pairheap.h"
 #include "py/mphal.h"
+#include "shared-bindings/supervisor/__init__.h"
 
 #if MICROPY_PY_UASYNCIO
 
@@ -63,15 +64,16 @@ STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, si
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-STATIC mp_obj_t ticks(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
-}
+#define _TICKS_PERIOD (1lu << 29)
+#define _TICKS_MAX (_TICKS_PERIOD - 1)
+#define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
+
+#define ticks() supervisor_ticks_ms()
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
     mp_uint_t t1 = MP_OBJ_SMALL_INT_VALUE(t1_in);
-    mp_int_t diff = ((t1 - t0 + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
-        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
+    mp_int_t diff = ((t1 - t0 + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD;
     return diff;
 }
 
