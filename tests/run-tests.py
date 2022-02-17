@@ -109,6 +109,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         return b"SKIP\n"
                     import select
 
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
+
                     def get(required=False):
                         rv = b""
                         while True:
