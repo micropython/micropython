@@ -40,6 +40,7 @@
 
 #include "common-hal/_bleio/__init__.h"
 // #include "common-hal/_bleio/bonding.h"
+#include "common-hal/_bleio/ble_events.h"
 
 // Turn off BLE on a reset or reload.
 void bleio_reset() {
@@ -50,6 +51,7 @@ void bleio_reset() {
     }
 
     supervisor_stop_bluetooth();
+    ble_event_reset();
     bleio_adapter_reset(&common_hal_bleio_adapter_obj);
     common_hal_bleio_adapter_set_enabled(&common_hal_bleio_adapter_obj, false);
     supervisor_start_bluetooth();
@@ -95,5 +97,38 @@ void check_nimble_error(int rc, const char *file, size_t line) {
             #endif
 
             break;
+    }
+}
+
+void check_ble_error(int error_code, const char *file, size_t line) {
+    if (error_code == BLE_ERR_SUCCESS) {
+        return;
+    }
+    switch (error_code) {
+        default:
+            #if CIRCUITPY_VERBOSE_BLE
+            if (file) {
+                mp_raise_bleio_BluetoothError(translate("Unknown BLE error at %s:%d: %d"), file, line, error_code);
+            }
+            #else
+            (void)file;
+            (void)line;
+            mp_raise_bleio_BluetoothError(translate("Unknown BLE error: %d"), error_code);
+            #endif
+
+            break;
+    }
+}
+
+void check_notify(BaseType_t result) {
+    if (result == pdTRUE) {
+        return;
+    }
+    mp_raise_msg(&mp_type_TimeoutError, NULL);
+}
+
+void common_hal_bleio_check_connected(uint16_t conn_handle) {
+    if (conn_handle == BLEIO_HANDLE_INVALID) {
+        mp_raise_ConnectionError(translate("Not connected"));
     }
 }
