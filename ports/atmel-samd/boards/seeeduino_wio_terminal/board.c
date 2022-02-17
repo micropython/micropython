@@ -32,6 +32,7 @@
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#include "common-hal/alarm/__init__.h"
 
 displayio_fourwire_obj_t board_display_obj;
 digitalio_digitalinout_obj_t CTR_5V;
@@ -139,4 +140,14 @@ void reset_board(void) {
 }
 
 void board_deinit(void) {
+    common_hal_displayio_release_displays();
+    common_hal_digitalio_digitalinout_deinit(&CTR_5V);
+    common_hal_digitalio_digitalinout_deinit(&CTR_3V3);
+    common_hal_digitalio_digitalinout_deinit(&USB_HOST_ENABLE);
+}
+
+void board_deep_sleep_hook(void) {
+    // Pins are reset before entering deep sleep in cleanup_after_vm()
+    // This hook turn RTL_PWR off
+    gpio_set_pin_direction(pin_PA18.number, GPIO_DIRECTION_OUT);
 }

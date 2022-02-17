@@ -32,20 +32,24 @@
 #include "shared-bindings/nvm/ByteArray.h"
 
 void alarm_sleep_memory_reset(void) {
-
 }
 
 uint32_t common_hal_alarm_sleep_memory_get_length(alarm_sleep_memory_obj_t *self) {
-    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
-    return 0;
+    return BKUPRAM_SIZE;
 }
 
 bool common_hal_alarm_sleep_memory_set_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, const uint8_t *values, uint32_t len) {
-    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
-    return false;
+    if (start_index + len > BKUPRAM_SIZE) {
+        return false;
+    }
+    memcpy((uint8_t *)(BKUPRAM_ADDR + start_index), values, len);
+    return true;
 }
 
 void common_hal_alarm_sleep_memory_get_bytes(alarm_sleep_memory_obj_t *self, uint32_t start_index, uint8_t *values, uint32_t len) {
-    mp_raise_NotImplementedError(translate("Sleep Memory not available"));
+    if (start_index + len > BKUPRAM_SIZE) {
+        return;
+    }
+    memcpy(values, (uint8_t *)(BKUPRAM_ADDR + start_index), len);
     return;
 }
