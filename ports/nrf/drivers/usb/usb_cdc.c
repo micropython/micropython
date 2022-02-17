@@ -198,6 +198,7 @@ int mp_hal_stdin_rx_chr(void) {
         if (cdc_rx_any()) {
             return cdc_rx_char();
         }
+        MICROPY_EVENT_POLL_HOOK
     }
 
     return 0;
