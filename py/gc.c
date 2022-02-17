@@ -920,13 +920,13 @@ void gc_dump_alloc_table(void) {
                     // This code prints "Q" for qstr-pool data, and "q" for qstr-str
                     // data.  It can be useful to see how qstrs are being allocated,
                     // but is disabled by default because it is very slow.
-                    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
-                        if ((qstr_pool_t *)ptr == pool) {
+                    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
+                        if ((const qstr_pool_t *)ptr == pool) {
                             c = 'Q';
                             break;
                         }
-                        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-                            if ((const byte *)ptr == *q) {
+                        for (const char *const *q = pool->qstrs, *const *q_top = pool->qstrs + pool->len; q < q_top; q++) {
+                            if ((const char *)ptr == *q) {
                                 c = 'q';
                                 break;
                             }
