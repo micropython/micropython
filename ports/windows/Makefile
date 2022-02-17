@@ -91,6 +91,8 @@ ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
 endif
 
+CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
+
 include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
