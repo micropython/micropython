@@ -50,5 +50,7 @@
 
 #define DOUBLE_TAP_PIN (&pin_GPIO10)
 
+#ifdef DEBUG
 #define DEBUG_UART_RX               (&pin_GPIO16)
 #define DEBUG_UART_TX               (&pin_GPIO5)
+#endif
