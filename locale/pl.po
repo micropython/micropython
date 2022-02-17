@@ -2438,6 +2438,16 @@ msgstr "Nieoczekiwany typ nrfx uuid"
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error at %s:%d: %d"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error: %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2509,12 +2519,14 @@ msgstr "Zła operacja"
 msgid "Update Failed"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3800,6 +3812,7 @@ msgstr "nie ma takiego atrybutu"
 msgid "non-Device in %q"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""

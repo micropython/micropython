@@ -2489,6 +2489,16 @@ msgstr "Tipo de uuid nrfx inesperado"
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Error no manejado de ESP TLS %d %d %x %d"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error at %s:%d: %d"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error: %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2562,12 +2572,14 @@ msgstr "Operación no soportada"
 msgid "Update Failed"
 msgstr "La actualización fallo"
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Tamaño del valor != del tamaño fijo requerido"
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3868,6 +3880,7 @@ msgstr "no hay tal atributo"
 msgid "non-Device in %q"
 msgstr "hay un no-Device en %q"
 
+#: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "no UUID encontrado en service_uuids_whitelist"
