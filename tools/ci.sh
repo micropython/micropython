@@ -454,7 +454,7 @@ function ci_unix_coverage_run_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
 }
 
 function ci_unix_32bit_setup {
