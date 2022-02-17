@@ -68,6 +68,23 @@ function ci_code_size_build {
 }
 
 ########################################################################################
+# .mpy file format
+
+function ci_mpy_format_setup {
+    sudo pip3 install pyelftools
+}
+
+function ci_mpy_format_test {
+    # Test mpy-tool.py dump feature on bytecode
+    python2 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+
+    # Test mpy-tool.py dump feature on native code
+    make -C examples/natmod/features1
+    ./tools/mpy-tool.py -xd examples/natmod/features1/features1.mpy
+}
+
+########################################################################################
 # ports/cc3200
 
 function ci_cc3200_setup {
