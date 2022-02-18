@@ -26,7 +26,7 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "ESP32-S3-DevKitM-1"
+#define MICROPY_HW_BOARD_NAME       "ESP32-S3-DevKitM-1-N8"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO48)
