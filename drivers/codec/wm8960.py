@@ -101,49 +101,24 @@ _WM8960_IFACE1_ALRSWAP_SHIFT = const(0x08)
 # _WM8960_POWER1
 _WM8960_POWER1_VREF_MASK = const(0x40)
 _WM8960_POWER1_VREF_SHIFT = const(0x06)
-
 _WM8960_POWER1_AINL_MASK = const(0x20)
-_WM8960_POWER1_AINL_SHIFT = const(0x05)
-
 _WM8960_POWER1_AINR_MASK = const(0x10)
-_WM8960_POWER1_AINR_SHIFT = const(0x04)
-
 _WM8960_POWER1_ADCL_MASK = const(0x08)
-_WM8960_POWER1_ADCL_SHIFT = const(0x03)
-
 _WM8960_POWER1_ADCR_MASK = const(0x0)
-_WM8960_POWER1_ADCR_SHIFT = const(0x02)
-
 _WM8960_POWER1_MICB_MASK = const(0x02)
 _WM8960_POWER1_MICB_SHIFT = const(0x01)
 
 # _WM8960_POWER2
 _WM8960_POWER2_DACL_MASK = const(0x100)
-_WM8960_POWER2_DACL_SHIFT = const(0x08)
-
 _WM8960_POWER2_DACR_MASK = const(0x80)
-_WM8960_POWER2_DACR_SHIFT = const(0x07)
-
 _WM8960_POWER2_LOUT1_MASK = const(0x40)
-_WM8960_POWER2_LOUT1_SHIFT = const(0x06)
-
 _WM8960_POWER2_ROUT1_MASK = const(0x20)
-_WM8960_POWER2_ROUT1_SHIFT = const(0x05)
-
 _WM8960_POWER2_SPKL_MASK = const(0x10)
-_WM8960_POWER2_SPKL_SHIFT = const(0x04)
-
 _WM8960_POWER2_SPKR_MASK = const(0x08)
-_WM8960_POWER2_SPKR_SHIFT = const(0x03)
-
 _WM8960_POWER3_LMIC_MASK = const(0x20)
-_WM8960_POWER3_LMIC_SHIFT = const(0x05)
 _WM8960_POWER3_RMIC_MASK = const(0x10)
-_WM8960_POWER3_RMIC_SHIFT = const(0x04)
 _WM8960_POWER3_LOMIX_MASK = const(0x08)
-_WM8960_POWER3_LOMIX_SHIFT = const(0x03)
 _WM8960_POWER3_ROMIX_MASK = const(0x04)
-_WM8960_POWER3_ROMIX_SHIFT = const(0x02)
 
 # _WM8960_DACCTL1 .. 3
 _WM8960_DACCTL1_MONOMIX_MASK = const(0x10)
@@ -522,71 +497,56 @@ class WM8960:
         regs = self.regs
 
         if module == module_ADC:
-
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_ADCL_MASK | _WM8960_POWER1_ADCR_MASK,
-                (is_enabled << _WM8960_POWER1_ADCL_SHIFT)
-                | (is_enabled << _WM8960_POWER1_ADCR_SHIFT),
+                (_WM8960_POWER1_ADCL_MASK | _WM8960_POWER1_ADCR_MASK) * is_enabled
             )
 
         elif module == module_DAC:
-
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_DACL_MASK | _WM8960_POWER2_DACR_MASK,
-                (is_enabled << _WM8960_POWER2_DACL_SHIFT)
-                | (is_enabled << _WM8960_POWER2_DACR_SHIFT),
+                (_WM8960_POWER2_DACL_MASK | _WM8960_POWER2_DACR_MASK) * is_enabled
             )
 
         elif module == module_VREF:
-
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_VREF_MASK,
                 (is_enabled << _WM8960_POWER1_VREF_SHIFT),
             )
 
         elif module == module_line_in:
-
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_AINL_MASK | _WM8960_POWER1_AINR_MASK,
-                (is_enabled << _WM8960_POWER1_AINL_SHIFT)
-                | (is_enabled << _WM8960_POWER1_AINR_SHIFT),
+                (_WM8960_POWER1_AINL_MASK | _WM8960_POWER1_AINR_MASK) * is_enabled
             )
             regs[_WM8960_POWER3] = (
                 _WM8960_POWER3_LMIC_MASK | _WM8960_POWER3_RMIC_MASK,
-                (is_enabled << _WM8960_POWER3_LMIC_SHIFT)
-                | (is_enabled << _WM8960_POWER3_RMIC_SHIFT),
+                (_WM8960_POWER3_LMIC_MASK | _WM8960_POWER3_RMIC_MASK) * is_enabled
             )
 
         elif module == module_line_out:
-
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_LOUT1_MASK | _WM8960_POWER2_ROUT1_MASK,
-                (is_enabled << _WM8960_POWER2_LOUT1_SHIFT)
-                | (is_enabled << _WM8960_POWER2_ROUT1_SHIFT),
+                (_WM8960_POWER2_LOUT1_MASK | _WM8960_POWER2_ROUT1_MASK) * is_enabled
             )
 
         elif module == module_mic_bias:
-
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_MICB_MASK,
                 (is_enabled << _WM8960_POWER1_MICB_SHIFT),
             )
 
         elif module == module_speaker:
-
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_SPKL_MASK | _WM8960_POWER2_SPKR_MASK,
-                (is_enabled << _WM8960_POWER2_SPKL_SHIFT)
-                | (is_enabled << _WM8960_POWER2_SPKR_SHIFT),
+                (_WM8960_POWER2_SPKL_MASK | _WM8960_POWER2_SPKR_MASK) * is_enabled
             )
             regs[_WM8960_CLASSD1] = 0xF7
 
         elif module == module_omix:
-
             regs[_WM8960_POWER3] = (
                 _WM8960_POWER3_LOMIX_MASK | _WM8960_POWER3_ROMIX_MASK,
-                (is_enabled << _WM8960_POWER3_LOMIX_SHIFT)
-                | (is_enabled << _WM8960_POWER3_ROMIX_SHIFT),
+                (_WM8960_POWER3_LOMIX_MASK | _WM8960_POWER3_ROMIX_MASK) * is_enabled
             )
 
         elif module == module_mono_out:
