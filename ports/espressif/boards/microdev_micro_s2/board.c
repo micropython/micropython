@@ -28,6 +28,8 @@
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "components/driver/include/driver/gpio.h"
+
 void board_init(void) {
     // Debug UART
     #ifdef DEBUG
@@ -37,6 +39,17 @@ void board_init(void) {
 }
 
 bool board_requests_safe_mode(void) {
+    return false;
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pin 21 is a high side LED so pull it down to prevent lighting the LED.
+    if (pin_number == 21) {
+        gpio_reset_pin(21);
+        gpio_pullup_dis(21);
+        gpio_pulldown_en(21);
+        return true;
+    }
     return false;
 }
 
