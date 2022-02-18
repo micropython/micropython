@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "shared/runtime/interrupt_char.h"
+#include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 
@@ -37,14 +38,38 @@
 #include "common-hal/_bleio/CharacteristicBuffer.h"
 #include "shared-bindings/_bleio/CharacteristicBuffer.h"
 
+STATIC int characteristic_buffer_on_ble_evt(struct ble_gap_event *event, void *param) {
+    bleio_characteristic_buffer_obj_t *self = (bleio_characteristic_buffer_obj_t *)param;
+    switch (event->type) {
+        case BLE_GAP_EVENT_NOTIFY_RX: {
+            // A remote service wrote to this characteristic.
+
+            // Must be a notification, and event handle must match the handle for my characteristic.
+            if (event->notify_rx.indication == 0 &&
+                event->notify_rx.attr_handle == self->characteristic->handle) {
+                const struct os_mbuf *m = event->notify_rx.om;
+                while (m != NULL) {
+                    ringbuf_put_n(&self->ringbuf, m->om_data, m->om_len);
+                    m = SLIST_NEXT(m, om_next);
+                }
+            }
+            break;
+        }
+        default:
+            #if CIRCUITPY_VERBOSE_BLE
+            mp_printf(&mp_plat_print, "Unhandled gap event %d\n", event->type);
+            #endif
+            return 0;
+            break;
+    }
+    return 0;
+}
+
 void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffer_obj_t *self,
     bleio_characteristic_obj_t *characteristic,
     mp_float_t timeout,
     uint8_t *buffer, size_t buffer_size,
     void *static_handler_entry) {
-
-    mp_raise_NotImplementedError(NULL);
-
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
 
@@ -53,6 +78,11 @@ void _common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buff
     self->ringbuf.iget = 0;
     self->ringbuf.iput = 0;
 
+    if (static_handler_entry != NULL) {
+        ble_event_add_handler_entry((ble_event_handler_entry_t *)static_handler_entry, characteristic_buffer_on_ble_evt, self);
+    } else {
+        ble_event_add_handler(characteristic_buffer_on_ble_evt, self);
+    }
 }
 
 // Assumes that timeout and buffer_size have been validated before call.
@@ -65,17 +95,32 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
 }
 
 uint32_t common_hal_bleio_characteristic_buffer_read(bleio_characteristic_buffer_obj_t *self, uint8_t *data, size_t len, int *errcode) {
-    // TODO: Implement this.
-    return 0;
+    uint64_t start_ticks = supervisor_ticks_ms64();
+
+    // Wait for all bytes received or timeout
+    while ((ringbuf_num_filled(&self->ringbuf) < len) && (supervisor_ticks_ms64() - start_ticks < self->timeout_ms)) {
+        RUN_BACKGROUND_TASKS;
+        // Allow user to break out of a timeout with a KeyboardInterrupt.
+        if (mp_hal_is_interrupted()) {
+            return 0;
+        }
+    }
+
+    uint32_t num_bytes_read = ringbuf_get_n(&self->ringbuf, data, len);
+
+    return num_bytes_read;
 }
 
+// NOTE: The nRF port has protection around these operations because the ringbuf
+// is filled from an interrupt. On ESP the ringbuf is filled from the BLE host
+// task that won't interrupt us.
+
 uint32_t common_hal_bleio_characteristic_buffer_rx_characters_available(bleio_characteristic_buffer_obj_t *self) {
-    // TODO: Implement this.
-    return 0;
+    return ringbuf_num_filled(&self->ringbuf);
 }
 
 void common_hal_bleio_characteristic_buffer_clear_rx_buffer(bleio_characteristic_buffer_obj_t *self) {
-    // TODO: Implement this.
+    ringbuf_clear(&self->ringbuf);
 }
 
 bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer_obj_t *self) {
@@ -83,7 +128,10 @@ bool common_hal_bleio_characteristic_buffer_deinited(bleio_characteristic_buffer
 }
 
 void common_hal_bleio_characteristic_buffer_deinit(bleio_characteristic_buffer_obj_t *self) {
-    // TODO: Implement this.
+    if (!common_hal_bleio_characteristic_buffer_deinited(self)) {
+        ble_event_remove_handler(characteristic_buffer_on_ble_evt, self);
+        self->characteristic = NULL;
+    }
 }
 
 bool common_hal_bleio_characteristic_buffer_connected(bleio_characteristic_buffer_obj_t *self) {

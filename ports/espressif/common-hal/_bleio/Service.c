@@ -41,12 +41,6 @@ uint32_t _common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uu
     self->is_remote = false;
     self->connection = NULL;
     self->is_secondary = is_secondary;
-
-    // uint8_t service_type = BLE_GATT_SVC_TYPE_PRIMARY;
-    // if (is_secondary) {
-    //     service_type = BLE_GATT_SVC_TYPE_SECONDARY;
-    // }
-
     return 0;
 }
 
@@ -57,7 +51,7 @@ void common_hal_bleio_service_construct(bleio_service_obj_t *self, bleio_uuid_ob
 }
 
 void bleio_service_from_connection(bleio_service_obj_t *self, mp_obj_t connection) {
-    self->handle = 0xFFFF;
+    self->handle = BLEIO_HANDLE_INVALID;
     self->uuid = NULL;
     self->characteristic_list = mp_obj_new_list(0, NULL);
     self->is_remote = true;

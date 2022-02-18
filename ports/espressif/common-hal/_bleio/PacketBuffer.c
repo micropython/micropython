@@ -40,13 +40,113 @@
 
 #include "host/ble_att.h"
 
+STATIC void write_to_ringbuf(bleio_packet_buffer_obj_t *self, const struct os_mbuf *mbuf) {
+    size_t len = OS_MBUF_PKTLEN(mbuf);
+    if (len + sizeof(uint16_t) > ringbuf_capacity(&self->ringbuf)) {
+        // This shouldn't happen but can if our buffer size was much smaller than
+        // the writes the client actually makes.
+        return;
+    }
+    // Make room for the new value by dropping the oldest packets first.
+    while (ringbuf_capacity(&self->ringbuf) - ringbuf_num_filled(&self->ringbuf) < len + sizeof(uint16_t)) {
+        uint16_t packet_length;
+        ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
+        for (uint16_t i = 0; i < packet_length; i++) {
+            ringbuf_get(&self->ringbuf);
+        }
+        // set an overflow flag?
+    }
+    ringbuf_put_n(&self->ringbuf, (uint8_t *)&len, sizeof(uint16_t));
+    while (mbuf != NULL) {
+        ringbuf_put_n(&self->ringbuf, mbuf->om_data, mbuf->om_len);
+        mbuf = SLIST_NEXT(mbuf, om_next);
+    }
+}
+
+STATIC int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param);
+STATIC int queue_next_write(bleio_packet_buffer_obj_t *self);
+
+STATIC int _write_cb(uint16_t conn_handle,
+    const struct ble_gatt_error *error,
+    struct ble_gatt_attr *attr,
+    void *arg) {
+    if (error->status != 0) {
+        mp_printf(&mp_plat_print, "write failed %d\n", error->status);
+    }
+    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)arg;
+    queue_next_write(self);
+
+    return 0;
+}
+
+STATIC int queue_next_write(bleio_packet_buffer_obj_t *self) {
+    // Queue up the next outgoing buffer. We use two, one that has been passed to the SD for
+    // transmission (when packet_queued is true) and the other is `pending` and can still be
+    // modified. By primarily appending to the `pending` buffer we can reduce the protocol overhead
+    // of the lower level link and ATT layers.
+    self->packet_queued = false;
+    if (self->pending_size > 0) {
+        uint16_t conn_handle = self->conn_handle;
+        int err_code = NIMBLE_OK;
+        if (self->client) {
+            if (self->write_type == CHAR_PROP_WRITE_NO_RESPONSE) {
+                err_code = ble_gattc_write_no_rsp_flat(conn_handle,
+                    self->characteristic->handle,
+                    self->outgoing[self->pending_index],
+                    self->pending_size);
+                // We don't set packet_queued because we NimBLE will buffer our
+                // outgoing packets.
+            } else {
+                err_code = ble_gattc_write_flat(conn_handle,
+                    self->characteristic->handle,
+                    self->outgoing[self->pending_index],
+                    self->pending_size,
+                    _write_cb, self);
+                self->pending_index = (self->pending_index + 1) % 2;
+                self->packet_queued = true;
+            }
+            self->pending_size = 0;
+        } else {
+            // TODO: Notify because we're the server.
+        }
+        if (err_code != NIMBLE_OK) {
+            // On error, simply skip updating the pending buffers so that the next HVC or WRITE
+            // complete event triggers another attempt.
+            return err_code;
+        }
+    }
+    return NIMBLE_OK;
+}
+
+STATIC int packet_buffer_on_ble_client_evt(struct ble_gap_event *event, void *param) {
+    bleio_packet_buffer_obj_t *self = (bleio_packet_buffer_obj_t *)param;
+    if (event->type == BLE_GAP_EVENT_DISCONNECT && self->conn_handle == event->disconnect.conn.conn_handle) {
+        self->conn_handle = BLEIO_HANDLE_INVALID;
+    }
+
+    switch (event->type) {
+        case BLE_GAP_EVENT_NOTIFY_RX: {
+            if (event->notify_rx.conn_handle != self->conn_handle) {
+                return false;
+            }
+            // Must be a notification, and event handle must match the handle for my characteristic.
+            if (event->notify_rx.attr_handle == self->characteristic->handle) {
+                write_to_ringbuf(self, event->notify_rx.om);
+            }
+            break;
+        }
+        default:
+            return false;
+            break;
+    }
+    return true;
+}
+
 void _common_hal_bleio_packet_buffer_construct(
     bleio_packet_buffer_obj_t *self, bleio_characteristic_obj_t *characteristic,
     uint32_t *incoming_buffer, size_t incoming_buffer_size,
     uint32_t *outgoing_buffer1, uint32_t *outgoing_buffer2, size_t max_packet_size,
     void *static_handler_entry) {
-
-    mp_raise_NotImplementedError(NULL);
     self->characteristic = characteristic;
     self->client = self->characteristic->service->is_remote;
     self->max_packet_size = max_packet_size;
@@ -76,6 +176,29 @@ void _common_hal_bleio_packet_buffer_construct(
     self->outgoing[0] = outgoing_buffer1;
     self->outgoing[1] = outgoing_buffer2;
 
+    if (self->client) {
+        if (static_handler_entry != NULL) {
+            ble_event_add_handler_entry((ble_event_handler_entry_t *)static_handler_entry, packet_buffer_on_ble_client_evt, self);
+        } else {
+            ble_event_add_handler(packet_buffer_on_ble_client_evt, self);
+        }
+        if (incoming) {
+            // Prefer notify if both are available.
+            if (incoming & CHAR_PROP_NOTIFY) {
+                common_hal_bleio_characteristic_set_cccd(self->characteristic, true, false);
+            } else {
+                common_hal_bleio_characteristic_set_cccd(self->characteristic, false, true);
+            }
+        }
+        if (outgoing) {
+            self->write_type = CHAR_PROP_WRITE;
+            if (outgoing & CHAR_PROP_WRITE_NO_RESPONSE) {
+                self->write_type = CHAR_PROP_WRITE_NO_RESPONSE;
+            }
+        }
+    } else {
+        // TODO: Setup for server.
+    }
 }
 
 void common_hal_bleio_packet_buffer_construct(
@@ -104,7 +227,12 @@ void common_hal_bleio_packet_buffer_construct(
     uint32_t *outgoing2 = NULL;
     if (outgoing) {
         outgoing1 = m_malloc(max_packet_size, false);
-        outgoing2 = m_malloc(max_packet_size, false);
+        // Only allocate the second buffer if we are doing writes with responses.
+        // Without responses, we just write as quickly as we can.
+        if (outgoing == CHAR_PROP_WRITE) {
+            outgoing2 = m_malloc(max_packet_size, false);
+        }
+
     }
     _common_hal_bleio_packet_buffer_construct(self, characteristic,
         incoming_buffer, incoming_buffer_size,
@@ -117,9 +245,25 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
         return 0;
     }
 
-    // Copy received data. Lock out write interrupt handler while copying.
-    // TODO: Implement this.
-    return 0;
+    // Get packet length, which is in first two bytes of packet.
+    uint16_t packet_length;
+    ringbuf_get_n(&self->ringbuf, (uint8_t *)&packet_length, sizeof(uint16_t));
+
+    mp_int_t ret;
+    if (packet_length > len) {
+        // Packet is longer than requested. Return negative of overrun value.
+        ret = len - packet_length;
+        // Discard the packet if it's too large. Don't fill data.
+        while (packet_length--) {
+            (void)ringbuf_get(&self->ringbuf);
+        }
+    } else {
+        // Read as much as possible, but might be shorter than len.
+        ringbuf_get_n(&self->ringbuf, data, packet_length);
+        ret = packet_length;
+    }
+
+    return ret;
 }
 
 mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, const uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
@@ -172,10 +316,9 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
     self->pending_size += len;
     num_bytes_written += len;
 
-    // TODO: Implement this.
-
     // If no writes are queued then sneak in this data.
     if (!self->packet_queued) {
+        CHECK_NIMBLE_ERROR(queue_next_write(self));
     }
     return num_bytes_written;
 }
@@ -270,6 +413,6 @@ bool common_hal_bleio_packet_buffer_deinited(bleio_packet_buffer_obj_t *self) {
 
 void common_hal_bleio_packet_buffer_deinit(bleio_packet_buffer_obj_t *self) {
     if (!common_hal_bleio_packet_buffer_deinited(self)) {
+        ble_event_remove_handler(packet_buffer_on_ble_client_evt, self);
     }
-    // TODO: Implement this.
 }

@@ -3,7 +3,9 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
+ * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2018 Artur Pacholec
+ * Copyright (c) 2016 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,37 +26,26 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
+#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
+#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H
 
-#include "components/driver/include/driver/gpio.h"
+#include <stdbool.h>
 
-void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif
-}
+#include "host/ble_gap.h"
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+typedef struct ble_event_handler_entry {
+    struct ble_event_handler_entry *next;
+    void *param;
+    ble_gap_event_fn *func;
+} ble_event_handler_entry_t;
 
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    // Pin 21 is a high side LED so pull it down to prevent lighting the LED.
-    if (pin_number == 21) {
-        gpio_reset_pin(21);
-        gpio_pullup_dis(21);
-        gpio_pulldown_en(21);
-        return true;
-    }
-    return false;
-}
+void ble_event_reset(void);
+void ble_event_add_handler(ble_gap_event_fn *func, void *param);
+void ble_event_remove_handler(ble_gap_event_fn *func, void *param);
 
-void reset_board(void) {
-}
+// Allow for user provided entries to prevent allocations outside the VM.
+void ble_event_add_handler_entry(ble_event_handler_entry_t *entry, ble_gap_event_fn *func, void *param);
 
-void board_deinit(void) {
-}
+int ble_event_run_handlers(struct ble_gap_event *event);
+
+#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL__BLEIO_BLE_EVENTS_H

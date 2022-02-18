@@ -301,7 +301,8 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
-        serial_write_compressed(translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+        serial_write_compressed(
+            translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
         serial_write_compressed(translate("Auto-reload is off.\n"));
     }
@@ -401,7 +402,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // the options because it can be treated like any other reason-for-stickiness bit. The
         // source is different though: it comes from the options that will apply to the next run,
         // while the rest of next_code_options is what applied to this run.
-        if (next_code_allocation != NULL && (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
+        if (next_code_allocation != NULL &&
+            (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
@@ -527,9 +529,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // Sleep until our next interrupt.
         #if CIRCUITPY_ALARM
         if (result.return_code & PYEXEC_DEEP_SLEEP) {
-            // Make sure we have been awake long enough for USB to connect (enumeration delay).
-            int64_t connecting_delay_ticks = CIRCUITPY_USB_CONNECTED_SLEEP_DELAY * 1024 - port_get_raw_ticks(NULL);
-            // Until it's safe to decide whether we're real/fake sleeping
+            const bool awoke_from_true_deep_sleep =
+                common_hal_mcu_processor_get_reset_reason() == RESET_REASON_DEEP_SLEEP_ALARM;
+
             if (fake_sleeping) {
                 // This waits until a pretend deep sleep alarm occurs. They are set
                 // during common_hal_alarm_set_deep_sleep_alarms. On some platforms
@@ -537,18 +539,28 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
                 // for deep sleep alarms above. If it wasn't a deep sleep alarm,
                 // then we'll idle here again.
                 common_hal_alarm_pretending_deep_sleep();
-            } else if (connecting_delay_ticks < 0) {
-                // Entering deep sleep (may be fake or real.)
+            }
+            // The first time we go into a deep sleep, make sure we have been awake long enough
+            // for USB to connect (enumeration delay), or for the BLE workflow to start.
+            // We wait CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY seconds after a restart.
+            // But if we woke up from a real deep sleep, don't wait for connection. The user will need to
+            // do a hard reset to get out of the real deep sleep.
+            else if (awoke_from_true_deep_sleep ||
+                     port_get_raw_ticks(NULL) > CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY * 1024) {
+                // OK to start sleeping, real or fake.
                 status_led_deinit();
                 deinit_rxtx_leds();
                 board_deinit();
-                if (!supervisor_workflow_active()) {
+
+                // Continue with true deep sleep even if workflow is available.
+                if (awoke_from_true_deep_sleep || !supervisor_workflow_active()) {
                     // Enter true deep sleep. When we wake up we'll be back at the
                     // top of main(), not in this loop.
                     common_hal_alarm_enter_deep_sleep();
                     // Does not return.
                 } else {
-                    serial_write_compressed(translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                    serial_write_compressed(
+                        translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                     fake_sleeping = true;
                 }
             } else {

@@ -9,3 +9,14 @@ CHIP_FAMILY = samd51
 QSPI_FLASH_FILESYSTEM = 1
 EXTERNAL_FLASH_DEVICES = "S25FL116K, S25FL216K, GD25Q16C"
 LONGINT_IMPL = MPZ
+
+# Include these Python libraries in firmware.
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_PortalBase
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_ESP32SPI
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+
+CIRCUITPY_SHARPDISPLAY=0
+CIRCUITPY_SDCARDIO=0
+CIRCUITPY_BLEIO_HCI=0
+CIRCUITPY_BLEIO=0

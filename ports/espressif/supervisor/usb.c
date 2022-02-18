@@ -138,3 +138,10 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
         mp_sched_keyboard_interrupt();
     }
 }
+
+void tud_cdc_rx_cb(uint8_t itf) {
+    (void)itf;
+    // Workaround for "press any key to enter REPL" response being delayed on espressif.
+    // Wake main task when any key is pressed.
+    port_wake_main_task();
+}
