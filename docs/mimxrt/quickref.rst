@@ -364,6 +364,86 @@ has the same methods as software SPI above::
     i2c = I2C(0, 400_000)
     i2c.writeto(0x76, b"Hello World")
 
+I2S bus
+-------
+
+See :ref:`machine.I2S <machine.I2S>`. Example using a Teensy 4.1 board with a simple
+external Codec like UDA1334.::
+
+    from machine import I2S, Pin
+    i2s = I2S(2, sck=Pin(26), ws=Pin(27), sd=Pin(7),
+        mode=I2S.TX, bts=16,format=I2S.STEREO,
+        rate=44100,ibuf=40000)
+    i2s.write(buf)             # write buffer of audio samples to I2S device
+
+
+Example for using I2S with a MIMXRT10xx_DEV board::
+
+    from machine import I2S, I2C, Pin
+    import wm8960
+
+    i2c=I2C(0)
+
+    wm=wm8960.WM8960(i2c, sample_rate=SAMPLE_RATE_IN_HZ,
+        adc_sync=wm8960.sync_dac,
+        swap=wm8960.swap_input)
+
+    i2s = I2S(1, sck=Pin("SCK_TX"), ws=Pin("WS_TX"), sd=Pin("SD_RX"),
+        mck=Pin("MCK),mode=I2S.RX, bts=16,format=I2S.MONO,
+        rate=32000,ibuf=10000)
+    i2s.readinto(buf)          # fill buffer with audio samples from I2S device
+
+In this example, the input channels are swapped in the WM8960 driver, since the 
+on-board microphone is connected to the right channel, but Mono audio is taken
+from the left channel. Note, that the sck and ws pins are connected to the TX signals
+of the I2S bus. That is intentional, since at the MW8960 codec these signals are
+shared for RX and TX. 
+
+Example using the Teensy audio shield::
+
+    from machine import I2C, I2S, Pin
+    from sgtl5000 import CODEC
+    i2s = I2S(1, sck=Pin(21), ws=Pin(20), sd=Pin(7), mck=Pin(23),
+        mode=I2S.TX, bits=16,rate=44100,format=I2S.STEREO,
+        ibuf=40000,
+    )
+
+    # configure the SGTL5000 codec
+    i2c = I2C(0, freq=400000)
+    codec = CODEC(0x0A, i2c)
+    codec.mute_dac(False)
+    codec.dac_volume(0.9, 0.9)
+    codec.headphone_select(0)
+    codec.mute_headphone(False)
+    codec.volume(0.7, 0.7)
+
+    i2s.write(buf)             # write buffer of audio samples to I2S device
+
+The SGTL5000 codec used by the Teensy Audio shiel uses the RX signals for both RX and TX.
+Note that the codec is initialize after the I2S device. That is essential since MCK
+is needed for it's I2C operation and is provided by the I2S controller.
+
+MIMXRT boards may have 1 or 2 I2S buses available at the board connectors.
+At MIMXRT1010 devices the bus numbers as 1 and 3.
+
+Pin assignments for a few MIMXRT boards:
+
+==============  ==  =====  ======== ======= ======= ======== ======= =======
+Board           ID  MCK    SCK_TX   WS_TX   SD_TX   SCK_RX   WS_RX   SD_RX
+==============  ==  =====  ======== ======= ======= ======== ======= =======
+Teensy 4.0      1   23     26       27      7       21       20      8
+Teensy 4.0      2   33     4        3       2       -        -       5
+Teensy 4.1      1   23     26       27      7       21       20      8    
+Teensy 4.1      2   33     4        3       2       -        -       5
+Seeed Arch MIX  1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
+Olimex RT1010   1   D8     D6       D7      D4      D1       D2      D3
+Olimex RT1010   3   -      D10      D9      D11     -        -       -
+MIMXRT_DEV      1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
+==============  ==  =====  ======== ======= ======= ======== ======= =======
+
+Symbolic pin names are provided for the MIMXRT_10xx_DEV boards. These are provided
+for the other boards as well. 
+
 Real time clock (RTC)
 ---------------------
 
