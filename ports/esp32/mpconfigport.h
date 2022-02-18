@@ -30,12 +30,8 @@
 #define MICROPY_EMIT_XTENSAWIN              (1)
 #endif
 
-// compiler configuration
-#define MICROPY_COMP_RETURN_IF_EXPR         (0)
-
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
-#define MICROPY_OPT_MATH_FACTORIAL          (0)
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
@@ -58,8 +54,6 @@
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       esp32_help_text
-#define MICROPY_PY_MATH_CONSTANTS           (0)
-#define MICROPY_PY_MATH_FACTORIAL           (0)
 #define MICROPY_PY_IO_BUFFEREDWRITER        (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_THREAD                   (1)
