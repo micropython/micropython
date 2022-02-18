@@ -71,14 +71,6 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    // Never reset the I2C/TFT power pin because doing so will reset the display.
-    // Instead, on reset set the default value and free the pin for user use.
-    // Relying on the normal pin reset would briefly float/pull the pin that
-    // could lead to a power brownout.
-    common_hal_never_reset_pin(&pin_GPIO21);
-
-    reset_board();
-
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
@@ -98,7 +90,6 @@ void board_init(void) {
 
     // workaround as board_init() is called before reset_port() in main.c
     pwmout_reset();
-
 
     common_hal_displayio_display_construct(
         display,
@@ -138,12 +129,18 @@ bool board_requests_safe_mode(void) {
     return false;
 }
 
-void reset_board(void) {
-    // Turn on TFT and I2C
-    gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(21, true);
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Override the I2C/TFT power pin reset to prevent resetting the display.
+    if (pin_number == 21) {
+        // Turn on TFT and I2C
+        gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
+        gpio_set_level(21, true);
+        return true;
+    }
+    return false;
+}
 
-    free_pin_number(21);
+void reset_board(void) {
 }
 
 void board_deinit(void) {

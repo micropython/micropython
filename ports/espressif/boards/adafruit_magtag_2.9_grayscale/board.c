@@ -172,6 +172,25 @@ void reset_board(void) {
 
 }
 
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pin 16 is speaker enable and it's pulled down on the board. We don't want
+    // to pull it high because then we'll compete with the external pull down.
+    // So, reset without any pulls internally.
+    if (pin_number == 16) {
+        gpio_config_t cfg = {
+            .pin_bit_mask = BIT64(16),
+            .mode = GPIO_MODE_DISABLE,
+            // The pin is externally pulled down, so we don't need to pull it.
+            .pull_up_en = false,
+            .pull_down_en = false,
+            .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&cfg);
+        return true;
+    }
+    return false;
+}
+
 void board_deinit(void) {
     displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     if (display->base.type == &displayio_epaperdisplay_type) {
