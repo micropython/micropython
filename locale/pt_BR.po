@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-15 18:42+0000\n"
+"PO-Revision-Date: 2022-02-19 01:57+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2501,12 +2501,12 @@ msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
-msgstr ""
+msgstr "Houve um erro BLE desconhecido em %s:%d: %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error: %d"
-msgstr ""
+msgstr "Houve um erro BLE desconhecido: %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
