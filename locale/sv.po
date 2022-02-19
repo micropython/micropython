@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-19 01:57+0000\n"
+"PO-Revision-Date: 2022-02-19 20:22+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2940,7 +2940,7 @@ msgstr "kan inte ladda med '%q' index"
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "kan inte utföra relativ import"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -4086,7 +4086,7 @@ msgstr ""
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "filbevakning är inte tillgänglig på win32"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
