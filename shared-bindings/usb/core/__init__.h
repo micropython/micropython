@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
- * Copyright (c) 2021 skieast/Bruce Segal
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,31 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
+#pragma once
 
-// Status LED
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
+#include <stdbool.h>
 
-// Default bus pins
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
+#include "py/obj.h"
 
-// Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
+extern const mp_obj_module_t usb_core_module;
 
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+void usb_core_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+#define MP_DEFINE_USB_CORE_EXCEPTION(exc_name, base_name) \
+    const mp_obj_type_t mp_type_usb_core_##exc_name = { \
+        { &mp_type_type }, \
+        .name = MP_QSTR_##exc_name, \
+        .print = usb_core_exception_print, \
+        .make_new = mp_obj_exception_make_new, \
+        .attr = mp_obj_exception_attr, \
+        .parent = &mp_type_##base_name, \
+    };
+
+extern const mp_obj_type_t mp_type_usb_core_USBError;
+extern const mp_obj_type_t mp_type_usb_core_USBTimeoutError;
+
+NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_usb_core_USBTimeoutError(void);
+
+// Find is all Python object oriented so we don't need a separate common-hal API
+// for it. It uses the device common-hal instead.

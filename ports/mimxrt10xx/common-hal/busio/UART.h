@@ -41,14 +41,15 @@ typedef struct {
     LPUART_Type *uart;
     lpuart_handle_t handle;
     uint8_t *ringbuf;
-    bool rx_ongoing;
     uint32_t baudrate;
-    uint8_t character_bits;
     uint32_t timeout_ms;
-    const mcu_periph_obj_t *rx;
-    const mcu_periph_obj_t *tx;
-    const mcu_periph_obj_t *cts;
-    const mcu_periph_obj_t *rts;
+    bool rx_ongoing;
+    uint8_t character_bits;
+    uint8_t index;
+    const mcu_pin_obj_t *rx;
+    const mcu_pin_obj_t *tx;
+    const mcu_pin_obj_t *cts;
+    const mcu_pin_obj_t *rts;
 } busio_uart_obj_t;
 
 void uart_reset(void);

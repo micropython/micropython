@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <string.h>
 
 #include "py/mpconfig.h"
@@ -49,7 +50,8 @@
  * Enabling on another platform will cause a crash.
  */
 
-#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+#if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
+#include "py/mpprint.h"
 #include "shared-bindings/busio/UART.h"
 busio_uart_obj_t debug_uart;
 byte buf_array[64];
@@ -59,17 +61,51 @@ byte buf_array[64];
 bool tud_vendor_connected(void);
 #endif
 
+#if defined(CIRCUITPY_DEBUG_UART_TX)
+STATIC void debug_uart_print_strn(void *env, const char *str, size_t len) {
+    (void)env;
+    int uart_errcode;
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)str, len, &uart_errcode);
+}
+
+const mp_print_t debug_uart_print = {NULL, debug_uart_print_strn};
+#endif
+
+int debug_uart_printf(const char *fmt, ...) {
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(&debug_uart_print, fmt, ap);
+    va_end(ap);
+    return ret;
+    #else
+    return 0;
+    #endif
+}
+
 void serial_early_init(void) {
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
     debug_uart.base.type = &busio_uart_type;
 
-    const mcu_pin_obj_t *rx = MP_OBJ_TO_PTR(DEBUG_UART_RX);
-    const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(DEBUG_UART_TX);
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
+    const mcu_pin_obj_t *rx = MP_OBJ_TO_PTR(CIRCUITPY_DEBUG_UART_RX);
+    #else
+    const mcu_pin_obj_t *rx = NULL;
+    #endif
+
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
+    const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(CIRCUITPY_DEBUG_UART_TX);
+    #else
+    const mcu_pin_obj_t *tx = NULL;
+    #endif
 
     common_hal_busio_uart_construct(&debug_uart, tx, rx, NULL, NULL, NULL,
         false, 115200, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, 64,
         buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
+
+    // Do an initial print so that we can confirm the serial output is working.
+    debug_uart_printf("Serial debug setup\n");
     #endif
 }
 
@@ -84,7 +120,7 @@ bool serial_connected(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX) && defined(CIRCUITPY_DEBUG_UART_RX)
     return true;
     #endif
 
@@ -115,7 +151,7 @@ char serial_read(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
     if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
         int uart_errcode;
         char text;
@@ -148,7 +184,7 @@ bool serial_bytes_available(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
     if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
         return true;
     }
@@ -188,7 +224,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
     int uart_errcode;
 
     common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);

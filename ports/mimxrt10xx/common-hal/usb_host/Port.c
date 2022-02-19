@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
- * Copyright (c) 2021 skieast/Bruce Segal
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,36 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
+#include "shared-bindings/usb_host/Port.h"
 
-// Status LED
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
+#include "shared-bindings/microcontroller/Pin.h"
 
-// Default bus pins
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
+#include "py/runtime.h"
 
-// Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
+bool usb_host_init;
 
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm) {
+    const mcu_pin_obj_t *supported_dp;
+    const mcu_pin_obj_t *supported_dm;
+    if (CIRCUITPY_USB_HOST_INSTANCE == 0) {
+        supported_dp = &pin_USB_OTG1_DP;
+        supported_dm = &pin_USB_OTG1_DN;
+    } else if (CIRCUITPY_USB_HOST_INSTANCE == 1) {
+        supported_dp = &pin_USB_OTG2_DP;
+        supported_dm = &pin_USB_OTG2_DN;
+    }
+    if (dp != supported_dp || dm != supported_dm) {
+        mp_raise_ValueError(translate("Invalid pins"));
+    }
+    self->init = true;
+    usb_host_init = true;
+}
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+void common_hal_usb_host_port_deinit(usb_host_port_obj_t *self) {
+    self->init = false;
+    usb_host_init = false;
+}
+
+bool common_hal_usb_host_port_deinited(usb_host_port_obj_t *self) {
+    return !self->init;
+}

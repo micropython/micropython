@@ -37,8 +37,8 @@
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
 
 // Serial over UART
-#define DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define DEBUG_UART_TX               DEFAULT_UART_BUS_TX
+#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
+#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
 
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO2)

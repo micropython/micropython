@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
- * Copyright (c) 2021 skieast/Bruce Segal
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,30 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
+#include "py/obj.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 
-// Status LED
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
+#include "shared-bindings/usb_host/__init__.h"
+#include "shared-bindings/usb_host/Port.h"
 
-// Default bus pins
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
+//| """USB Host
+//|
+//| The `usb_host` module allows you to manage USB host ports. To communicate
+//| with devices use the `usb` module that is a subset of PyUSB's API.
+//| """
+//|
 
-// Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
+STATIC mp_map_elem_t usb_host_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__),        MP_OBJ_NEW_QSTR(MP_QSTR_usb_host) },
+    { MP_ROM_QSTR(MP_QSTR_Port),          MP_OBJ_FROM_PTR(&usb_host_port_type) },
+};
 
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+STATIC MP_DEFINE_CONST_DICT(usb_host_module_globals, usb_host_module_globals_table);
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+const mp_obj_module_t usb_host_module = {
+    .base = { &mp_type_module },
+    .globals = (mp_obj_dict_t *)&usb_host_module_globals,
+};
+
+MP_REGISTER_MODULE(MP_QSTR_usb_host, usb_host_module, CIRCUITPY_USB_HOST);

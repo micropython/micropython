@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
- * Copyright (c) 2021 skieast/Bruce Segal
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,19 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H
 
-// Status LED
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
+#include "py/objarray.h"
 
-// Default bus pins
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
+#include "shared-bindings/microcontroller/Pin.h"
 
-// Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
+#include "common-hal/usb_host/Port.h"
 
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+extern const mp_obj_type_t usb_host_port_type;
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm);
+void common_hal_usb_host_port_deinit(usb_host_port_obj_t *self);
+bool common_hal_usb_host_port_deinited(usb_host_port_obj_t *self);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H

@@ -140,6 +140,14 @@ else
       lib/tinyusb/src/class/vendor/vendor_device.c \
 
   endif
+
+  ifeq ($(CIRCUITPY_USB_HOST), 1)
+    SRC_SUPERVISOR += \
+      lib/tinyusb/src/host/hub.c \
+      lib/tinyusb/src/host/usbh.c \
+      lib/tinyusb/src/host/usbh_control.c \
+
+  endif
 endif
 
 SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))

@@ -1,10 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
- * Copyright (c) 2021 skieast/Bruce Segal
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,23 +24,4 @@
  * THE SOFTWARE.
  */
 
-// Board setup
-#define MICROPY_HW_BOARD_NAME       "AITHinker ESP32-C3S_Kit"
-#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
-
-// Status LED
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO19)
-
-// Default bus pins
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
-
-// Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX               DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX               DEFAULT_UART_BUS_TX
-
-// For entering safe mode
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
-
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+// Nothing
