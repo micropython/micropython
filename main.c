@@ -162,9 +162,9 @@ STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
     mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_)); // current dir (or base dir of the script)
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_));
-    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
-    // Prioritize .frozen over /lib.
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR));
+    #if MICROPY_MODULE_FROZEN
+    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
+    #endif
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
 
     mp_obj_list_init((mp_obj_list_t *)mp_sys_argv, 0);

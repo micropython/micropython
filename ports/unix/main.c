@@ -494,16 +494,10 @@ MP_NOINLINE int main_(int argc, char **argv) {
     char *home = getenv("HOME");
     char *path = getenv("MICROPYPATH");
     if (path == NULL) {
-        #ifdef MICROPY_PY_SYS_PATH_DEFAULT
         path = MICROPY_PY_SYS_PATH_DEFAULT;
-        #else
-        path = "~/.micropython/lib:/usr/lib/micropython";
-        #endif
     }
-    size_t path_num = 2; // [0] is for current dir (or base dir of the script)
-                         // [1] is for frozen files.
-    size_t builtin_path_count = path_num;
-    if (*path == ':') {
+    size_t path_num = 1; // [0] is for current dir (or base dir of the script)
+    if (*path == PATHLIST_SEP_CHAR) {
         path_num++;
     }
     for (char *p = path; p != NULL; p = strchr(p, PATHLIST_SEP_CHAR)) {
@@ -516,11 +510,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_obj_t *path_items;
     mp_obj_list_get(mp_sys_path, &path_num, &path_items);
     path_items[0] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    // Frozen modules are in their own pseudo-dir, e.g., ".frozen".
-    path_items[1] = MP_OBJ_NEW_QSTR(MP_FROZEN_FAKE_DIR_QSTR);
     {
         char *p = path;
-        for (mp_uint_t i = builtin_path_count; i < path_num; i++) {
+        for (mp_uint_t i = 1; i < path_num; i++) {
             char *p1 = strchr(p, PATHLIST_SEP_CHAR);
             if (p1 == NULL) {
                 p1 = p + strlen(p);
@@ -661,7 +653,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 break;
             }
 
-            // Set base dir of the script as first entry in sys.path
+            // Set base dir of the script as first entry in sys.path.
             char *p = strrchr(basedir, '/');
             path_items[0] = mp_obj_new_str_via_qstr(basedir, p - basedir);
             free(pathbuf);

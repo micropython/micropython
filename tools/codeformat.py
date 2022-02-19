@@ -40,7 +40,6 @@ PATHS = [
     # C
     "main.c",
     "devices/**/*.[ch]",
-    "drivers/bus/*.[ch]",
     "extmod/*.[ch]",
     "shared/netutils/*.[ch]",
     "shared/timeutils/*.[ch]",
