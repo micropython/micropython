@@ -1396,8 +1396,8 @@ def freeze_mpy(base_qstrs, compiled_modules):
         # don't add duplicates
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
-        new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
-    new = sorted(new.values(), key=lambda x: x[2])
+        new[q.qstr_esc] = qstrutil.Qstr(len(new), q.qstr_esc, q.str)
+    new = sorted(new.values(), key=lambda x: x.qstr)
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
@@ -1438,9 +1438,9 @@ def freeze_mpy(base_qstrs, compiled_modules):
         print("enum {")
         for i in range(len(new)):
             if i == 0:
-                print("    MP_QSTR_%s = MP_QSTRnumber_of," % new[i][1])
+                print("    MP_QSTR_%s = MP_QSTRnumber_of," % new[i].ident)
             else:
-                print("    MP_QSTR_%s," % new[i][1])
+                print("    MP_QSTR_%s," % new[i].ident)
         print("};")
 
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
@@ -1460,18 +1460,17 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print()
     print("const qstr_hash_t mp_qstr_frozen_const_hashes[] = {")
     qstr_size = {"metadata": 0, "data": 0}
-    for _, _, _, qbytes in new:
-        qhash = qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH)
-        print("    %d," % qhash)
+    for q in new:
+        print("    %d," % q.qhash)
     print("};")
     print()
     print("const qstr_len_t mp_qstr_frozen_const_lengths[] = {")
-    for _, _, _, qbytes in new:
-        print("    %d," % len(qbytes))
+    for q in new:
+        print("    %d," % len(q.qbytes))
         qstr_size["metadata"] += (
             config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
         )
-        qstr_size["data"] += len(qbytes)
+        qstr_size["data"] += len(q.qbytes)
     print("};")
     print()
     print("extern const qstr_pool_t mp_qstr_const_pool;")
@@ -1484,10 +1483,13 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("    (qstr_len_t *)mp_qstr_frozen_const_lengths,")
     print("    true, // entries are sorted")
     print("    {")
-    for _, _, qstr, qbytes in new:
-        print('        "%s",' % qstrutil.escape_bytes(qstr, qbytes))
+    for q in new:
+        print('        "%s",' % q.qdata)
         qstr_content += (
-            config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH + len(qbytes) + 1
+            config.MICROPY_QSTR_BYTES_IN_LEN
+            + config.MICROPY_QSTR_BYTES_IN_HASH
+            + len(q.qbytes)
+            + 1
         )
     print("    },")
     print("};")
@@ -1782,6 +1784,8 @@ def main():
 
     # Create initial list of global qstrs.
     global_qstrs = GlobalQStrList()
+    qstrutil.Qstr.cfg_bytes_len = config.MICROPY_QSTR_BYTES_IN_LEN
+    qstrutil.Qstr.cfg_bytes_hash = config.MICROPY_QSTR_BYTES_IN_HASH
 
     # Load all .mpy files.
     try:
@@ -1789,6 +1793,7 @@ def main():
     except MPYReadError as er:
         print(er, file=sys.stderr)
         sys.exit(1)
+        base_qstrs = {}
 
     if args.hexdump:
         hexdump_mpy(compiled_modules)
