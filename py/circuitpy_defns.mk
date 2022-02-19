@@ -321,6 +321,9 @@ endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
 endif
+ifeq ($(CIRCUITPY_UZLIB),1)
+SRC_PATTERNS += uzlib/%
+endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
 endif
@@ -578,6 +581,8 @@ SRC_SHARED_MODULE_ALL = \
 	traceback/__init__.c \
 	uheap/__init__.c \
 	ustack/__init__.c \
+	uzlib/__init__.c \
+	uzlib/DecompIO.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
@@ -632,6 +637,17 @@ SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
+endif
+
+ifeq ($(CIRCUITPY_UZLIB),1)
+SRC_MOD += $(addprefix lib/uzlib/, \
+	tinflate.c \
+	tinfzlib.c \
+	tinfgzip.c \
+	adler32.c \
+	crc32.c \
+)
+$(BUILD)/lib/uzlib/tinflate.o: CFLAGS += -Wno-missing-braces -Wno-missing-prototypes
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
