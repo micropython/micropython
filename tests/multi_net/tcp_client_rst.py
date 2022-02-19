@@ -38,6 +38,7 @@ def instance0():
     # TODO lwip raises here but apparently it shouldn't
     print(s2.recv(10))
     print(convert_poll_list(poll.poll(1000)))
+    s2.close()
     s.close()
 
 

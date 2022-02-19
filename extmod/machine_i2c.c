@@ -33,6 +33,8 @@
 #include "py/runtime.h"
 #include "extmod/machine_i2c.h"
 
+#define SOFT_I2C_DEFAULT_TIMEOUT_US (50000) // 50ms
+
 #if MICROPY_PY_MACHINE_SOFTI2C
 
 typedef mp_machine_soft_i2c_obj_t machine_i2c_obj_t;
@@ -651,7 +653,7 @@ STATIC void mp_machine_soft_i2c_init(mp_obj_base_t *self_in, size_t n_args, cons
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 400000} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 255} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = SOFT_I2C_DEFAULT_TIMEOUT_US} },
     };
 
     mp_machine_soft_i2c_obj_t *self = (mp_machine_soft_i2c_obj_t *)self_in;

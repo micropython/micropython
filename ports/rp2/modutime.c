@@ -45,7 +45,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(t.hour),
             mp_obj_new_int(t.min),
             mp_obj_new_int(t.sec),
-            mp_obj_new_int((t.dotw + 6) % 7), // convert 0=Sunday to 6=Sunday
+            mp_obj_new_int(t.dotw),
             mp_obj_new_int(timeutils_year_day(t.year, t.month, t.day)),
         };
         return mp_obj_new_tuple(8, tuple);

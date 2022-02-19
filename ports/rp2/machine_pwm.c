@@ -38,26 +38,37 @@ typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     uint8_t slice;
     uint8_t channel;
+    uint8_t duty_type;
+    mp_int_t duty;
 } machine_pwm_obj_t;
 
-STATIC machine_pwm_obj_t machine_pwm_obj[] = {
-    {{&machine_pwm_type}, 0, PWM_CHAN_A},
-    {{&machine_pwm_type}, 0, PWM_CHAN_B},
-    {{&machine_pwm_type}, 1, PWM_CHAN_A},
-    {{&machine_pwm_type}, 1, PWM_CHAN_B},
-    {{&machine_pwm_type}, 2, PWM_CHAN_A},
-    {{&machine_pwm_type}, 2, PWM_CHAN_B},
-    {{&machine_pwm_type}, 3, PWM_CHAN_A},
-    {{&machine_pwm_type}, 3, PWM_CHAN_B},
-    {{&machine_pwm_type}, 4, PWM_CHAN_A},
-    {{&machine_pwm_type}, 4, PWM_CHAN_B},
-    {{&machine_pwm_type}, 5, PWM_CHAN_A},
-    {{&machine_pwm_type}, 5, PWM_CHAN_B},
-    {{&machine_pwm_type}, 6, PWM_CHAN_A},
-    {{&machine_pwm_type}, 6, PWM_CHAN_B},
-    {{&machine_pwm_type}, 7, PWM_CHAN_A},
-    {{&machine_pwm_type}, 7, PWM_CHAN_B},
+enum {
+    DUTY_NOT_SET = 0,
+    DUTY_U16,
+    DUTY_NS
 };
+
+STATIC machine_pwm_obj_t machine_pwm_obj[] = {
+    {{&machine_pwm_type}, 0, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 0, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 1, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 1, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 2, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 2, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 3, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 3, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 4, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 4, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 5, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 5, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 6, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 6, PWM_CHAN_B, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 7, PWM_CHAN_A, DUTY_NOT_SET, 0},
+    {{&machine_pwm_type}, 7, PWM_CHAN_B, DUTY_NOT_SET, 0},
+};
+
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -75,7 +86,8 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Get static peripheral object.
     uint slice = pwm_gpio_to_slice_num(gpio);
     uint8_t channel = pwm_gpio_to_channel(gpio);
-    const machine_pwm_obj_t *self = &machine_pwm_obj[slice * 2 + channel];
+    machine_pwm_obj_t *self = &machine_pwm_obj[slice * 2 + channel];
+    self->duty_type = DUTY_NOT_SET;
 
     // Select PWM function for given GPIO.
     gpio_set_function(gpio, GPIO_FUNC_PWM);
@@ -84,6 +96,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+    self->duty_type = DUTY_NOT_SET;
     pwm_set_enabled(self->slice, false);
 }
 
@@ -91,7 +104,7 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     uint32_t source_hz = clock_get_hz(clk_sys);
     uint32_t div16 = pwm_hw->slice[self->slice].div;
     uint32_t top = pwm_hw->slice[self->slice].top;
-    uint32_t pwm_freq = 16 * source_hz / div16 / top;
+    uint32_t pwm_freq = 16 * source_hz / div16 / (top + 1);
     return MP_OBJ_NEW_SMALL_INT(pwm_freq);
 }
 
@@ -123,7 +136,12 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
     }
     pwm_hw->slice[self->slice].div = div16_top;
-    pwm_hw->slice[self->slice].top = top;
+    pwm_hw->slice[self->slice].top = top - 1;
+    if (self->duty_type == DUTY_U16) {
+        mp_machine_pwm_duty_set_u16(self, self->duty);
+    } else if (self->duty_type == DUTY_NS) {
+        mp_machine_pwm_duty_set_ns(self, self->duty);
+    }
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
@@ -138,6 +156,8 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
     uint32_t cc = duty_u16 * (top + 1) / 65535;
     pwm_set_chan_level(self->slice, self->channel, cc);
     pwm_set_enabled(self->slice, true);
+    self->duty = duty_u16;
+    self->duty_type = DUTY_U16;
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
@@ -157,4 +177,6 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
     }
     pwm_set_chan_level(self->slice, self->channel, cc);
     pwm_set_enabled(self->slice, true);
+    self->duty = duty_ns;
+    self->duty_type = DUTY_NS;
 }

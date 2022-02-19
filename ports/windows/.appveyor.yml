@@ -5,6 +5,10 @@ skip_tags: true
 environment:
   # Python version used
   MICROPY_CPYTHON3: c:/python38/python.exe
+  # The variants.
+  matrix:
+    - PyVariant: dev
+    - PyVariant: standard
 
 init:
   # Set build version number to commit to be travis-like
@@ -17,6 +21,12 @@ configuration:
 platform:
 - x86
 - x64
+
+matrix:
+  # One debug build is enough.
+  exclude:
+    - configuration: Debug
+      PyVariant: dev
 
 before_build:
 - ps: |
@@ -36,6 +46,7 @@ build:
 
 test_script:
 - ps: |
+    $env:MICROPY_MICROPYTHON=(msbuild ports\windows\micropython.vcxproj /nologo /v:m /t:ShowTargetPath).Trim()
     cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
     & $env:MICROPY_CPYTHON3 run-tests.py
     if ($LASTEXITCODE -ne 0) {
@@ -57,28 +68,19 @@ after_test:
     }
     $env:MSYSTEM = if ($platform -eq 'x86') {'MINGW32'} else {'MINGW64'}
     $env:CHERE_INVOKING = 'enabled_from_arguments'
-    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'ports/windows')
-    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1"
-    if ($LASTEXITCODE -ne 0) {
-      throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
-    }
     cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'mpy-cross')
     C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1"
     if ($LASTEXITCODE -ne 0) {
       throw "$env:MSYSTEM mpy_cross build exited with code $LASTEXITCODE"
     }
-    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
-    $testArgs = @('run-tests.py')
-    foreach ($skipTest in @('math_fun', 'float2int_double', 'float_parse', 'math_domain_special')) {
-      $testArgs = $testArgs + '-e' + $skipTest
-    }
-    & $env:MICROPY_CPYTHON3 $testArgs
+    cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'ports/windows')
+    C:\msys64\usr\bin\bash.exe -l -c "make -B -j4 V=1 MICROPY_MPYCROSS=../../mpy-cross/mpy-cross.exe VARIANT=$($env:PyVariant)"
     if ($LASTEXITCODE -ne 0) {
-      & $env:MICROPY_CPYTHON3 run-tests.py --print-failures
-      throw "Test failure"
+      throw "$env:MSYSTEM build exited with code $LASTEXITCODE"
     }
-    & $env:MICROPY_CPYTHON3 ($testArgs + @('--via-mpy', '-d', 'basics', 'float', 'micropython'))
+    C:\msys64\usr\bin\bash.exe -l -c "make V=1 test_full VARIANT=$($env:PyVariant)"
     if ($LASTEXITCODE -ne 0) {
+      cd (Join-Path $env:APPVEYOR_BUILD_FOLDER 'tests')
       & $env:MICROPY_CPYTHON3 run-tests.py --print-failures
       throw "Test failure"
     }

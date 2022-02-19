@@ -38,6 +38,15 @@
 #define MOD_NETWORK_STA_IF (0)
 #define MOD_NETWORK_AP_IF (1)
 
+// Socket level option.
+#define MOD_NETWORK_SOL_SOCKET      (0x0FFF)
+
+// Common option flags per-socket.
+#define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
+#define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
+#define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
+
 #if MICROPY_PY_LWIP
 struct netif;
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);

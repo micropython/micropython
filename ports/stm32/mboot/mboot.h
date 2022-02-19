@@ -26,8 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 #define MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include "py/mphal.h"
 
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
 #define SECTION_NOZERO_BSS __attribute__((section(".nozero_bss")))
@@ -38,6 +37,10 @@
 
 #define NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+#ifndef MBOOT_BOARD_ENTRY_INIT
+#define MBOOT_BOARD_ENTRY_INIT mboot_entry_init
+#endif
 
 enum {
     MBOOT_ERRNO_FLASH_ERASE_DISALLOWED = 200,
@@ -86,6 +89,8 @@ enum {
 extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
+void led_init(void);
+void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
 void led_state_all(unsigned int mask);
@@ -100,5 +105,18 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
+
+static inline void mboot_entry_init(uint32_t *initial_r0) {
+    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
+    led_init();
+
+    // set the system clock to be HSE
+    SystemClock_Config();
+
+    #if defined(STM32H7)
+    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
+    __set_PRIMASK(0);
+    #endif
+}
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H

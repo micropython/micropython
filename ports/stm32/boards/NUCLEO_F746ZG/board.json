@@ -4,7 +4,9 @@
     ],
     "docs": "",
     "features": [],
-    "images": [],
+    "images": [
+        "nucleo_f746zg.jpg"
+    ],
     "mcu": "stm32f7",
     "product": "Nucleo F746ZG",
     "thumbnail": "",

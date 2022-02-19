@@ -194,7 +194,8 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
     const machine_pin_af_obj_t *af_obj = pin_find_af(reset_pin, PIN_AF_MODE_ALT5);
 
     IOMUXC_SetPinMux(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0U);
-    IOMUXC_SetPinConfig(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister, 0xB0A9U);
+    IOMUXC_SetPinConfig(reset_pin->muxRegister, af_obj->af_mode, 0, 0, reset_pin->configRegister,
+        pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_POWER_5, reset_pin->configRegister));
     GPIO_PinInit(reset_pin->gpio, reset_pin->pin, &gpio_config);
     #endif
 
@@ -204,7 +205,8 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
     af_obj = pin_find_af(int_pin, PIN_AF_MODE_ALT5);
 
     IOMUXC_SetPinMux(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0U);
-    IOMUXC_SetPinConfig(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister, 0xB0A9U);
+    IOMUXC_SetPinConfig(int_pin->muxRegister, af_obj->af_mode, 0, 0, int_pin->configRegister,
+        pin_generate_config(PIN_PULL_UP_47K, PIN_MODE_IN, PIN_DRIVE_POWER_5, int_pin->configRegister));
     GPIO_PinInit(int_pin->gpio, int_pin->pin, &gpio_config);
     #endif
 

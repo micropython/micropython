@@ -1,0 +1,5 @@
+PROG ?= micropython-dev
+
+FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
+
+MICROPY_ROM_TEXT_COMPRESSION = 1

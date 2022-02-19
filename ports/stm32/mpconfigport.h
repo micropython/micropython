@@ -91,6 +91,7 @@
 #endif
 
 // extended modules
+#define MICROPY_PY_USSL_FINALISER   (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
@@ -168,7 +169,6 @@
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t pyb_module;
 extern const struct _mp_obj_module_t stm_module;
 extern const struct _mp_obj_module_t mp_module_ubinascii;
@@ -196,10 +196,10 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #endif
 
 #if MICROPY_PY_MACHINE
-#define MACHINE_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) },
-#define MACHINE_BUILTIN_MODULE_CONSTANTS    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) },
+#define MACHINE_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
-#define MACHINE_BUILTIN_MODULE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
 #endif
 
@@ -271,7 +271,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    MACHINE_BUILTIN_MODULE \
     PYB_BUILTIN_MODULE \
     STM_BUILTIN_MODULE \
     UOS_BUILTIN_MODULE \
@@ -282,7 +281,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    MACHINE_BUILTIN_MODULE \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
     PYB_BUILTIN_MODULE \
     STM_BUILTIN_MODULE \

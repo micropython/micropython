@@ -11,7 +11,9 @@
         "USB-C",
         "WiFi"
     ],
-    "images": [],
+    "images": [
+        "m5stack_atom.jpg"
+    ],
     "mcu": "esp32",
     "product": "M5 Stack Atom",
     "thumbnail": "",

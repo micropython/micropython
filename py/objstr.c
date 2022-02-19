@@ -1163,7 +1163,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 s++;
             }
             if (*s == '0') {
-                if (!align) {
+                if (!align && arg_looks_numeric(arg)) {
                     align = '=';
                 }
                 if (!fill) {

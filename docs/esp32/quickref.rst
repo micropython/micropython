@@ -264,54 +264,99 @@ See more examples in the :ref:`esp32_pwm` tutorial.
 ADC (analog to digital conversion)
 ----------------------------------
 
-On the ESP32 ADC functionality is available on Pins 32-39. Note that, when
-using the default configuration, input voltages on the ADC pin must be between
-0.0v and 1.0v (anything above 1.0v will just read as 4095).  Attenuation must
-be applied in order to increase this usable voltage range.
+On the ESP32, ADC functionality is available on pins 32-39 (ADC block 1) and
+pins 0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object on ADC pin
-    adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
+    adc = ADC(pin)        # create an ADC object acting on a pin
+    val = adc.read_u16()  # read a raw analog value in the range 0-65535
+    val = adc.read_uv()   # read an analog value in microvolts
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
-    adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
-    adc.read()                  # read value using the newly configured attenuation and width
+ADC block 2 is also used by WiFi and so attempting to read analog values from
+block 2 pins when WiFi is active will raise an exception.
 
-ESP32 specific ADC class method reference:
+The internal ADC reference voltage is typically 1.1V, but varies slightly from
+package to package. The ADC is less linear close to the reference voltage
+(particularly at higher attenuations) and has a minimum measurement voltage
+around 100mV, voltages at or below this will read as 0. To read voltages
+accurately, it is recommended to use the ``read_uv()`` method (see below).
 
-.. method:: ADC.atten(attenuation)
+ESP32-specific ADC class method reference:
 
-    This method allows for the setting of the amount of attenuation on the
-    input of the ADC. This allows for a wider possible input voltage range,
-    at the cost of accuracy (the same number of bits now represents a wider
-    range). The possible attenuation options are:
+.. class:: ADC(pin, *, atten)
 
-      - ``ADC.ATTN_0DB``: 0dB attenuation, gives a maximum input voltage
-        of 1.00v - this is the default configuration
-      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage
-        of approximately 1.34v
-      - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage
-        of approximately 2.00v
-      - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage
-        of approximately 3.6v
+    Return the ADC object for the specified pin. ESP32 does not support
+    different timings for ADC sampling and so the ``sample_ns`` keyword argument
+    is not supported.
+
+    To read voltages above the reference voltage, apply input attenuation with
+    the ``atten`` keyword argument. Valid values (and approximate linear
+    measurement ranges) are:
+
+      - ``ADC.ATTN_0DB``: No attenuation (100mV - 950mV)
+      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation (100mV - 1250mV)
+      - ``ADC.ATTN_6DB``: 6dB attenuation (150mV - 1750mV)
+      - ``ADC.ATTN_11DB``: 11dB attenuation (150mV - 2450mV)
 
 .. Warning::
-   Despite 11dB attenuation allowing for up to a 3.6v range, note that the
-   absolute maximum voltage rating for the input pins is 3.6v, and so going
-   near this boundary may be damaging to the IC!
+   Note that the absolute maximum voltage rating for input pins is 3.6V. Going
+   near to this boundary risks damage to the IC!
 
-.. method:: ADC.width(width)
+.. method:: ADC.read_uv()
 
-    This method allows for the setting of the number of bits to be utilised
-    and returned during ADC reads. Possible width options are:
+    This method uses the known characteristics of the ADC and per-package eFuse
+    values - set during manufacture - to return a calibrated input voltage
+    (before attenuation) in microvolts. The returned value has only millivolt
+    resolution (i.e., will always be a multiple of 1000 microvolts).
 
-      - ``ADC.WIDTH_9BIT``: 9 bit data
-      - ``ADC.WIDTH_10BIT``: 10 bit data
-      - ``ADC.WIDTH_11BIT``: 11 bit data
-      - ``ADC.WIDTH_12BIT``: 12 bit data - this is the default configuration
+    The calibration is only valid across the linear range of the ADC. In
+    particular, an input tied to ground will read as a value above 0 microvolts.
+    Within the linear range, however, more accurate and consistent results will
+    be obtained than using `read_u16()` and scaling the result with a constant.
+
+The ESP32 port also supports the :ref:`machine.ADC <machine.ADCBlock>` API:
+
+.. class:: ADCBlock(id, *, bits)
+
+    Return the ADC block object with the given ``id`` (1 or 2) and initialize
+    it to the specified resolution (9 to 12-bits depending on the ESP32 series)
+    or the highest supported resolution if not specified.
+
+.. method:: ADCBlock.connect(pin)
+            ADCBlock.connect(channel)
+            ADCBlock.connect(channel, pin)
+
+    Return the ``ADC`` object for the specified ADC pin or channel number.
+    Arbitrary connection of ADC channels to GPIO is not supported and so
+    specifying a pin that is not connected to this block, or specifying a
+    mismatched channel and pin, will raise an exception.
+
+Legacy methods:
+
+.. method:: ADC.read()
+
+    This method returns the raw ADC value ranged according to the resolution of
+    the block, e.g., 0-4095 for 12-bit resolution.
+
+.. method:: ADC.atten(atten)
+
+    Equivalent to ``ADC.init(atten=atten)``.
+
+.. method:: ADC.width(bits)
+
+    Equivalent to ``ADC.block().init(bits=bits)``.
+
+For compatibility, the ``ADC`` object also provides constants matching the
+supported ADC resolutions:
+
+  - ``ADC.WIDTH_9BIT`` = 9
+  - ``ADC.WIDTH_10BIT`` = 10
+  - ``ADC.WIDTH_11BIT`` = 11
+  - ``ADC.WIDTH_12BIT`` = 12
+
 
 Software SPI bus
 ----------------
@@ -509,7 +554,7 @@ The RMT is ESP32-specific and allows generation of accurate digital pulses with
     r = esp32.RMT(0, pin=Pin(18), clock_div=8)
     r   # RMT(channel=0, pin=18, source_freq=80000000, clock_div=8)
     # The channel resolution is 100ns (1/(source_freq/clock_div)).
-    r.write_pulses((1, 20, 2, 40), start=0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
+    r.write_pulses((1, 20, 2, 40), 0) # Send 0 for 100ns, 1 for 2000ns, 0 for 200ns, 1 for 4000ns
 
 OneWire driver
 --------------
@@ -562,16 +607,15 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
     ap = APA106(pin, 8)
     r, g, b = ap[0]
 
-For low-level driving of a NeoPixel::
-
-    import esp
-    esp.neopixel_write(pin, grb_buf, is800khz)
-
 .. Warning::
    By default ``NeoPixel`` is configured to control the more popular *800kHz*
    units. It is possible to use alternative timing to control other (typically
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
+
+For low-level driving of a NeoPixel see `machine.bitstream`.
+This low-level driver uses an RMT channel by default.  To configure this see
+`RMT.bitstream_channel`.
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.
 

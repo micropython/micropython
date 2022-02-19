@@ -7,7 +7,7 @@
 
 // Based on tinyusb/hw/bsp/teensy_40/evkmimxrt1010_flexspi_nor_config.c
 
-#include "flexspi_flash_config.h"
+#include BOARD_FLASH_CONFIG_HEADER_H
 
 /* Component ID definition, used by tools. */
 #ifndef FSL_COMPONENT_ID
@@ -24,12 +24,16 @@ __attribute__((section(".boot_hdr.conf")))
 #pragma location = ".boot_hdr.conf"
 #endif
 
+#ifndef MICROPY_HW_FLASH_DQS
+#define MICROPY_HW_FLASH_DQS kFlexSPIReadSampleClk_LoopbackFromDqsPad
+#endif
+
 const flexspi_nor_config_t qspiflash_config = {
     .memConfig =
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
-        .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
+        .readSampleClkSrc = MICROPY_HW_FLASH_DQS,
         .csHoldTime = 3u,
         .csSetupTime = 3u,
         .busyOffset = FLASH_BUSY_STATUS_OFFSET,         // Status bit 0 indicates busy.

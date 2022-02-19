@@ -80,7 +80,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, umachine; utime.sleep_ms(t_ms); umachine.reset()",
+            "import utime, machine; utime.sleep_ms(t_ms); machine.reset()",
         ],
         "help": "reset the device after delay",
     },
@@ -88,7 +88,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, umachine; utime.sleep_ms(t_ms); umachine.bootloader()",
+            "import utime, machine; utime.sleep_ms(t_ms); machine.bootloader()",
         ],
         "help": "make the device enter its bootloader",
     },
@@ -96,6 +96,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "exec",
         "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
     ],
+    "--help": "help",
 }
 
 for port_num in range(4):
@@ -268,7 +269,7 @@ def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
             for entry in os.listdir(path):
-                _list_recursive(files, os.path.join(path, entry))
+                _list_recursive(files, "/".join((path, entry)))
         else:
             files.append(os.path.split(path))
 
@@ -289,7 +290,7 @@ def do_filesystem(pyb, args):
                 if d not in known_dirs:
                     pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
                     known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", os.path.join(dir, file), ":" + dir + "/"])
+            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
     else:
         pyboard.filesystem_command(pyb, args)
     args.clear()
@@ -303,8 +304,8 @@ def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, fil
             if c == b"\x1d":  # ctrl-], quit
                 break
             elif c == b"\x04":  # ctrl-D
-                # do a soft reset and reload the filesystem hook
-                pyb.soft_reset_with_mount(console_out_write)
+                # special handling needed for ctrl-D if filesystem is mounted
+                pyb.write_ctrl_d(console_out_write)
             elif c == b"\x0a" and code_to_inject is not None:  # ctrl-j, inject code
                 pyb.serial.write(code_to_inject)
             elif c == b"\x0b" and file_to_inject is not None:  # ctrl-k, inject script

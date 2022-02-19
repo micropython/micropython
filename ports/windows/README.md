@@ -3,7 +3,7 @@ It is based on Unix port, and expected to remain so.
 The port requires additional testing, debugging, and patches. Please
 consider to contribute.
 
-All gcc-based builds use the gcc compiler from [Mingw-w64](mingw-w64.org),
+All gcc-based builds use the gcc compiler from [Mingw-w64](https://www.mingw-w64.org/),
 which is the advancement of the original mingw project. The latter is
 getting obsolete and is not actively supported by MicroPython.
 
@@ -70,6 +70,26 @@ To build from the command line:
 
     msbuild ../../mpy-cross/mpy-cross.vcxproj
     msbuild micropython.vcxproj
+
+__Variants__
+
+The msvc port supports variants (like the unix and windows mingw ports) and the one which gets built is
+controlled by the `PyVariant` msbuild property. It defaults to `standard`.
+The other variants can be built like:
+
+    msbuild micropython.vcxproj /p:PyVariant=dev
+
+Or by adding a file [Directory.build.props](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build#directorybuildprops-and-directorybuildtargets) in this directory or a parent directory:
+
+```xml
+<Project>
+  <PropertyGroup>
+    <PyVariant>dev</PyVariant>
+  </PropertyGroup>
+</Project>
+```
+
+See [paths.props](msvc/paths.props) for other related variables like build and variant directories.
 
 __Stack usage__
 

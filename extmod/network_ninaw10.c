@@ -58,25 +58,20 @@ typedef struct _nina_obj_t {
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
 const mod_network_nic_type_t mod_network_nic_type_nina;
-static nina_obj_t nina_obj = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
+static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
+static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_AP_IF};
 
 STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-
-    nina_obj.active = false;
-    if (n_args == 0) {
-        nina_obj.itf = MOD_NETWORK_STA_IF;
+    mp_obj_t nina_obj;
+    if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
+        nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_sta);
     } else {
-        nina_obj.itf = mp_obj_get_int(args[0]);
+        nina_obj = MP_OBJ_FROM_PTR(&network_nina_wl_ap);
     }
-
-    // Reset autobind port.
-    bind_port = BIND_PORT_RANGE_MIN;
-
     // Register with network module
-    mod_network_register_nic(MP_OBJ_FROM_PTR(&nina_obj));
-
-    return MP_OBJ_FROM_PTR(&nina_obj);
+    mod_network_register_nic(nina_obj);
+    return nina_obj;
 }
 
 STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
@@ -171,6 +166,11 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
+    }
+
+    // Disconnect active connections first.
+    if (nina_isconnected()) {
+        nina_disconnect();
     }
 
     if (self->itf == MOD_NETWORK_STA_IF) {
@@ -317,6 +317,15 @@ STATIC mp_obj_t network_ninaw10_status(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ninaw10_status_obj, 1, 2, network_ninaw10_status);
 
+STATIC mp_obj_t network_ninaw10_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t buf_in) {
+    nina_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_buffer_info_t buf;
+    mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ | MP_BUFFER_WRITE);
+    nina_ioctl(mp_obj_get_int(cmd_in), buf.len, buf.buf, self->itf);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(network_ninaw10_ioctl_obj, network_ninaw10_ioctl);
+
 STATIC int network_ninaw10_gethostbyname(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *out_ip) {
     return nina_gethostbyname(name, out_ip);
 }
@@ -350,9 +359,8 @@ STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *
         return -1;
     }
 
-    // store state of this socket
+    // set socket state
     socket->fileno = fd;
-    socket->timeout = 0; // blocking
     socket->bound = false;
     return 0;
 }
@@ -408,14 +416,16 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
     // Call accept.
     int ret = nina_socket_accept(socket->fileno, ip, (uint16_t *)port, &fd, socket->timeout);
     if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
 
-    // Set default socket timeout.
+    // set socket state
     socket2->fileno = fd;
-    socket2->timeout = 0;
     socket2->bound = false;
     return 0;
 }
@@ -423,8 +433,11 @@ STATIC int network_ninaw10_socket_accept(mod_network_socket_obj_t *socket,
 STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
     int ret = nina_socket_connect(socket->fileno, ip, port, socket->timeout);
     if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return 0;
@@ -432,29 +445,32 @@ STATIC int network_ninaw10_socket_connect(mod_network_socket_obj_t *socket, byte
 
 STATIC mp_uint_t network_ninaw10_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
     int ret = nina_socket_send(socket->fileno, buf, len, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return 0;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
 }
 
 STATIC mp_uint_t network_ninaw10_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
-    int ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return 0;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    int ret = 0;
+    if (socket->type == MOD_NETWORK_SOCK_DGRAM) {
+        byte ip[4];
+        uint16_t port;
+        ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, &port, socket->timeout);
+    } else {
+        ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
+    }
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -479,13 +495,12 @@ STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
     }
 
     int ret = nina_socket_sendto(socket->fileno, buf, len, ip, port, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return 0;
-    } else if (ret < 0) {
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -493,20 +508,24 @@ STATIC mp_uint_t network_ninaw10_socket_sendto(mod_network_socket_obj_t *socket,
 
 STATIC mp_uint_t network_ninaw10_socket_recvfrom(mod_network_socket_obj_t *socket,
     byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
-    // Auto-bind the socket first if the socket is unbound.
-    if (network_ninaw10_socket_auto_bind(socket, _errno) != 0) {
-        return -1;
+    int ret = 0;
+    if (socket->type == MOD_NETWORK_SOCK_STREAM) {
+        *port = 0;
+        *((uint32_t *)ip) = 0;
+        ret = nina_socket_recv(socket->fileno, buf, len, socket->timeout);
+    } else {
+        // Auto-bind the socket first if the socket is unbound.
+        if (network_ninaw10_socket_auto_bind(socket, _errno) != 0) {
+            return -1;
+        }
+        ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, (uint16_t *)port, socket->timeout);
     }
-
-    int ret = nina_socket_recvfrom(socket->fileno, buf, len, ip, (uint16_t *)port, socket->timeout);
-    if (ret == NINA_ERROR_TIMEOUT) {
-        // The socket is Not closed on timeout when calling functions that accept a timeout.
-        *_errno = MP_ETIMEDOUT;
-        return 0;
-    } else if (ret < 0) {
-        // Close the socket on any other errors.
-        *_errno = ret;
-        network_ninaw10_socket_close(socket);
+    if (ret < 0) {
+        *_errno = -ret;
+        // Close socket if not a timeout error.
+        if (*_errno != MP_ETIMEDOUT) {
+            network_ninaw10_socket_close(socket);
+        }
         return -1;
     }
     return ret;
@@ -524,17 +543,47 @@ STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, m
 }
 
 STATIC int network_ninaw10_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
-    if (timeout_ms == UINT32_MAX) {
-        // no timeout is given, set the socket to blocking mode.
-        timeout_ms = 0;
-    }
     socket->timeout = timeout_ms;
     return 0;
 }
 
 STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
-    *_errno = MP_EIO;
-    return -1;
+    mp_uint_t ret = 0;
+    uint8_t type;
+
+    switch (socket->type) {
+        case MOD_NETWORK_SOCK_STREAM:
+            type = NINA_SOCKET_TYPE_TCP;
+            break;
+
+        case MOD_NETWORK_SOCK_DGRAM:
+            type = NINA_SOCKET_TYPE_UDP;
+            break;
+
+        default:
+            *_errno = MP_EINVAL;
+            return MP_STREAM_ERROR;
+    }
+
+    if (request == MP_STREAM_POLL) {
+        if (arg & MP_STREAM_POLL_RD) {
+            uint16_t avail = 0;
+            if (nina_socket_avail(socket->fileno, type, &avail) != 0) {
+                *_errno = MP_EIO;
+                ret = MP_STREAM_ERROR;
+            } else if (avail) {
+                // Readable or accepted socket ready.
+                ret |= MP_STREAM_POLL_RD;
+            }
+        }
+        if (arg & MP_STREAM_POLL_WR) {
+            ret |= MP_STREAM_POLL_WR;
+        }
+    } else {
+        *_errno = MP_EINVAL;
+        ret = MP_STREAM_ERROR;
+    }
+    return ret;
 }
 
 static const mp_rom_map_elem_t nina_locals_dict_table[] = {
@@ -546,6 +595,7 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&network_ninaw10_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),              MP_ROM_PTR(&network_ninaw10_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_ninaw10_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ioctl),               MP_ROM_PTR(&network_ninaw10_ioctl_obj) },
 
     // Network is not secured.
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(NINA_SEC_OPEN) },

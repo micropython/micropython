@@ -33,8 +33,8 @@ def compute_stats(lst):
         avg += x
         var += x * x
     avg /= len(lst)
-    var = max(0, var / len(lst) - avg ** 2)
-    return avg, var ** 0.5
+    var = max(0, var / len(lst) - avg**2)
+    return avg, var**0.5
 
 
 def run_script_on_target(target, script):
@@ -74,6 +74,8 @@ def run_feature_test(target, test):
 def run_benchmark_on_target(target, script):
     output, err = run_script_on_target(target, script)
     if err is None:
+        if output == "SKIP":
+            return -1, -1, "SKIP"
         time, norm, result = output.split(None, 2)
         try:
             return int(time), int(norm), result
@@ -98,7 +100,7 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
             and test_file.find("viper_") != -1
         )
         if skip:
-            print("skip")
+            print("SKIP")
             continue
 
         # Create test script
@@ -133,7 +135,14 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
 
         # Check result against truth if needed
         if error is None and result_out != "None":
-            _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
+            test_file_expected = test_file + ".exp"
+            if os.path.isfile(test_file_expected):
+                # Expected result is given by a file, so read that in
+                with open(test_file_expected) as f:
+                    result_exp = f.read().strip()
+            else:
+                # Run CPython to work out the expected result
+                _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
             if result_out != result_exp:
                 error = "FAIL truth"
 
@@ -162,7 +171,7 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if l.find(": ") != -1 and l.find(": skip") == -1 and l.find("CRASH: ") == -1:
+            if l.find(": ") != -1 and l.find(": SKIP") == -1 and l.find("CRASH: ") == -1:
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -184,7 +193,7 @@ def compute_diff(file1, file2, diff_score):
     else:
         hdr = "N={} M={} vs N={} M={}".format(n1, m1, n2, m2)
     print(
-        "{:24} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
+        "{:26} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
             hdr, file1, file2, "diff", "diff"
         )
     )
@@ -201,11 +210,11 @@ def compute_diff(file1, file2, diff_score):
             sd1 *= av1 / 100  # convert from percent sd to absolute sd
             sd2 *= av2 / 100  # convert from percent sd to absolute sd
             av_diff = av2 - av1
-            sd_diff = (sd1 ** 2 + sd2 ** 2) ** 0.5
+            sd_diff = (sd1**2 + sd2**2) ** 0.5
             percent = 100 * av_diff / av1
             percent_sd = 100 * sd_diff / av1
             print(
-                "{:24} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
+                "{:26} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
                     name, av1, av2, av_diff, percent, percent_sd
                 )
             )

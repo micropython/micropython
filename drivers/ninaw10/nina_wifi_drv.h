@@ -61,11 +61,6 @@ typedef enum {
     NINA_SOCKET_TYPE_TLS_BEARSSL
 } nina_socket_type_t;
 
-typedef enum {
-    NINA_ERROR_IO       = -1,
-    NINA_ERROR_TIMEOUT  = -2,
-} nina_error_t;
-
 typedef struct {
     uint8_t ip_addr[NINA_IPV4_ADDR_LEN];
     uint8_t subnet_addr[NINA_IPV4_ADDR_LEN];
@@ -105,16 +100,18 @@ int nina_get_rssi(void);
 int nina_fw_version(uint8_t *fw_ver);
 int nina_set_hostname(const char *name);
 int nina_gethostbyname(const char *name, uint8_t *out_ip);
+int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface);
 int nina_socket_socket(uint8_t type);
 int nina_socket_close(int fd);
 int nina_socket_bind(int fd, uint8_t *ip, uint16_t port, int type);
 int nina_socket_listen(int fd, uint32_t backlog);
-int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, uint32_t timeout);
-int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, uint32_t timeout);
-int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, uint32_t timeout);
-int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, uint32_t timeout);
-int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, uint32_t timeout);
-int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, uint32_t timeout);
+int nina_socket_avail(int fd, int type, uint16_t *data);
+int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, int32_t timeout);
+int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, int32_t timeout);
+int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout);
+int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout);
+int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, int32_t timeout);
+int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, int32_t timeout);
 int nina_socket_setsockopt(int fd, uint32_t level, uint32_t opt, const void *optval, uint32_t optlen);
 
 #endif // MICROPY_INCLUDED_DRIVERS_NINAW10_NINA_WIFI_DRV_H

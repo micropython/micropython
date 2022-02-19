@@ -59,6 +59,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_pin.c
     ${PROJECT_DIR}/machine_touchpad.c
     ${PROJECT_DIR}/machine_adc.c
+    ${PROJECT_DIR}/machine_adcblock.c
     ${PROJECT_DIR}/machine_dac.c
     ${PROJECT_DIR}/machine_i2c.c
     ${PROJECT_DIR}/machine_i2s.c
@@ -101,6 +102,7 @@ set(IDF_COMPONENTS
     bootloader_support
     bt
     driver
+    esp_adc_cal
     esp_common
     esp_eth
     esp_event

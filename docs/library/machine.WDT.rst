@@ -31,7 +31,7 @@ Constructors
 Methods
 -------
 
-.. method:: wdt.feed()
+.. method:: WDT.feed()
 
    Feed the WDT to prevent it from resetting the system. The application
    should place this call in a sensible place ensuring that the WDT is

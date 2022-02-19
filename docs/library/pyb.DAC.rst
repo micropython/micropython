@@ -122,3 +122,15 @@ Methods
      dac2 = DAC(2)
      dac1.write_timed(buf1, pyb.Timer(6, freq=100), mode=DAC.CIRCULAR)
      dac2.write_timed(buf2, pyb.Timer(7, freq=200), mode=DAC.CIRCULAR)
+
+Constants
+---------
+
+.. data:: DAC.NORMAL
+
+   NORMAL mode does a single transmission of the waveform in the data buffer,
+
+.. data:: DAC.CIRCULAR
+
+   CIRCULAR mode does a transmission of the waveform in the data buffer, and wraps around
+   to the start of the data buffer every time it reaches the end of the table.

@@ -814,7 +814,7 @@ def freeze_mpy(base_qstrs, raw_codes):
         # don't add duplicates
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
-        new[q.qstr_esc] = (len(new), q.qstr_esc, q.str)
+        new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
     new = sorted(new.values(), key=lambda x: x[0])
 
     print('#include "py/mpconfig.h"')
@@ -865,20 +865,33 @@ def freeze_mpy(base_qstrs, raw_codes):
     qstr_pool_alloc = min(len(new), 10)
 
     print()
+    print("const qstr_hash_t mp_qstr_frozen_const_hashes[] = {")
+    qstr_size = {"metadata": 0, "data": 0}
+    for _, _, _, qbytes in new:
+        qhash = qstrutil.compute_hash(qbytes, config.MICROPY_QSTR_BYTES_IN_HASH)
+        print("    %d," % qhash)
+    print("};")
+    print()
+    print("const qstr_len_t mp_qstr_frozen_const_lengths[] = {")
+    for _, _, _, qbytes in new:
+        print("    %d," % len(qbytes))
+        qstr_size["metadata"] += (
+            config.MICROPY_QSTR_BYTES_IN_LEN + config.MICROPY_QSTR_BYTES_IN_HASH
+        )
+        qstr_size["data"] += len(qbytes)
+    print("};")
+    print()
     print("extern const qstr_pool_t mp_qstr_const_pool;")
     print("const qstr_pool_t mp_qstr_frozen_const_pool = {")
-    print("    (qstr_pool_t*)&mp_qstr_const_pool, // previous pool")
+    print("    &mp_qstr_const_pool, // previous pool")
     print("    MP_QSTRnumber_of, // previous pool size")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
+    print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
+    print("    (qstr_len_t *)mp_qstr_frozen_const_lengths,")
     print("    {")
-    for _, _, qstr in new:
-        print(
-            "        %s,"
-            % qstrutil.make_bytes(
-                config.MICROPY_QSTR_BYTES_IN_LEN, config.MICROPY_QSTR_BYTES_IN_HASH, qstr
-            )
-        )
+    for _, _, qstr, qbytes in new:
+        print('        "%s",' % qstrutil.escape_bytes(qstr, qbytes))
     print("    },")
     print("};")
 

@@ -145,7 +145,6 @@
     { MP_ROM_QSTR(MP_QSTR_open),  MP_ROM_PTR(&mp_builtin_open_obj) },   \
 
 // extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
 extern const struct _mp_obj_module_t wipy_module;
 extern const struct _mp_obj_module_t mp_module_ure;
 extern const struct _mp_obj_module_t mp_module_ujson;
@@ -158,7 +157,6 @@ extern const struct _mp_obj_module_t mp_module_ubinascii;
 extern const struct _mp_obj_module_t mp_module_ussl;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_umachine),    MP_ROM_PTR(&machine_module) },      \
     { MP_ROM_QSTR(MP_QSTR_wipy),        MP_ROM_PTR(&wipy_module) },         \
     { MP_ROM_QSTR(MP_QSTR_uos),         MP_ROM_PTR(&mp_module_uos) },       \
     { MP_ROM_QSTR(MP_QSTR_utime),       MP_ROM_PTR(&mp_module_utime) },     \
@@ -170,7 +168,7 @@ extern const struct _mp_obj_module_t mp_module_ussl;
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&machine_module) },      \
+    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_machine) },  \
 
 // vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM

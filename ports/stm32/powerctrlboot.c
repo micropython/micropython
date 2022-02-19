@@ -33,6 +33,11 @@ void powerctrl_config_systick(void) {
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
     SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
+
+    #if !BUILDING_MBOOT && (defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
+    // Set SysTick IRQ priority variable in case the HAL needs to use it
+    uwTickPrio = IRQ_PRI_SYSTICK;
+    #endif
 }
 
 #if defined(STM32F0)
@@ -202,6 +207,43 @@ void SystemClock_Config(void) {
 
     // Select PLLQ as 48MHz source for USB and RNG
     RCC->CCIPR = 2 << RCC_CCIPR_CLK48SEL_Pos;
+
+    SystemCoreClockUpdate();
+    powerctrl_config_systick();
+}
+
+#elif defined(STM32WL)
+
+#include "stm32wlxx_ll_utils.h"
+
+void SystemClock_Config(void) {
+    // Set flash latency
+    LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
+    while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2) {
+    }
+
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
+    // Enable MSI
+    LL_RCC_MSI_Enable();
+    while (!LL_RCC_MSI_IsReady()) {
+    }
+
+    // Configure MSI
+    LL_RCC_MSI_EnableRangeSelection();
+    LL_RCC_MSI_SetRange(LL_RCC_MSIRANGE_11);
+    LL_RCC_MSI_SetCalibTrimming(0);
+
+    // Select SYSCLK source
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI) {
+    }
+
+    // Set bus dividers
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAHB3Prescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();

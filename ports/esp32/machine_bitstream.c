@@ -26,12 +26,70 @@
 
 #include "py/mpconfig.h"
 #include "py/mphal.h"
+#include "modesp32.h"
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 
-#include "driver/rmt.h"
+/******************************************************************************/
+// Bit-bang implementation
 
-#include "modesp32.h"
+#define NS_TICKS_OVERHEAD (6)
+
+// This is a translation of the cycle counter implementation in ports/stm32/machine_bitstream.c.
+STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+    uint32_t pin_mask, gpio_reg_set, gpio_reg_clear;
+    #if !CONFIG_IDF_TARGET_ESP32C3
+    if (pin >= 32) {
+        pin_mask = 1 << (pin - 32);
+        gpio_reg_set = GPIO_OUT1_W1TS_REG;
+        gpio_reg_clear = GPIO_OUT1_W1TC_REG;
+    } else
+    #endif
+    {
+        pin_mask = 1 << pin;
+        gpio_reg_set = GPIO_OUT_W1TS_REG;
+        gpio_reg_clear = GPIO_OUT_W1TC_REG;
+    }
+
+    // Convert ns to cpu ticks [high_time_0, period_0, high_time_1, period_1].
+    uint32_t fcpu_mhz = ets_get_cpu_frequency();
+    for (size_t i = 0; i < 4; ++i) {
+        timing_ns[i] = fcpu_mhz * timing_ns[i] / 1000;
+        if (timing_ns[i] > NS_TICKS_OVERHEAD) {
+            timing_ns[i] -= NS_TICKS_OVERHEAD;
+        }
+        if (i % 2 == 1) {
+            // Convert low_time to period (i.e. add high_time).
+            timing_ns[i] += timing_ns[i - 1];
+        }
+    }
+
+    uint32_t irq_state = mp_hal_quiet_timing_enter();
+
+    for (size_t i = 0; i < len; ++i) {
+        uint8_t b = buf[i];
+        for (size_t j = 0; j < 8; ++j) {
+            GPIO_REG_WRITE(gpio_reg_set, pin_mask);
+            uint32_t start_ticks = mp_hal_ticks_cpu();
+            uint32_t *t = &timing_ns[b >> 6 & 2];
+            while (mp_hal_ticks_cpu() - start_ticks < t[0]) {
+                ;
+            }
+            GPIO_REG_WRITE(gpio_reg_clear, pin_mask);
+            b <<= 1;
+            while (mp_hal_ticks_cpu() - start_ticks < t[1]) {
+                ;
+            }
+        }
+    }
+
+    mp_hal_quiet_timing_exit(irq_state);
+}
+
+/******************************************************************************/
+// RMT implementation
+
+#include "driver/rmt.h"
 
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
 // This convenience macro was not available in earlier IDF versions.
@@ -93,15 +151,15 @@ STATIC void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32
 }
 
 // Use the reserved RMT channel to stream high/low data on the specified pin.
-void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
-    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin, MICROPY_HW_ESP32_RMT_CHANNEL_BITSTREAM);
+STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len, uint8_t channel_id) {
+    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin, channel_id);
 
     // Use 40MHz clock (although 2MHz would probably be sufficient).
     config.clk_div = 2;
 
     // Install the driver on this channel & pin.
     check_esp_err(rmt_config(&config));
-    check_esp_err(rmt_driver_install(config.channel, 0, 0));
+    check_esp_err(rmt_driver_install_core1(config.channel));
 
     // Get the tick rate in kHz (this will likely be 40000).
     uint32_t counter_clk_khz = 0;
@@ -133,6 +191,20 @@ void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const
 
     // Uninstall the driver.
     check_esp_err(rmt_driver_uninstall(config.channel));
+
+    // Cancel RMT output to GPIO pin.
+    gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
+}
+
+/******************************************************************************/
+// Interface to machine.bitstream
+
+void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+    if (esp32_rmt_bitstream_channel_id < 0) {
+        machine_bitstream_high_low_bitbang(pin, timing_ns, buf, len);
+    } else {
+        machine_bitstream_high_low_rmt(pin, timing_ns, buf, len, esp32_rmt_bitstream_channel_id);
+    }
 }
 
 #endif // MICROPY_PY_MACHINE_BITSTREAM

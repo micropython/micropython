@@ -391,10 +391,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev, int high_speed, const 
         pcd_fs_handle.Init.phy_itface = PCD_PHY_EMBEDDED;
         pcd_fs_handle.Init.Sof_enable = 0;
         pcd_fs_handle.Init.speed = PCD_SPEED_FULL;
-        #if defined(STM32L4)
         pcd_fs_handle.Init.lpm_enable = DISABLE;
         pcd_fs_handle.Init.battery_charging_enable = DISABLE;
-        #endif
         #if MICROPY_HW_USB_IS_MULTI_OTG
         pcd_fs_handle.Init.use_dedicated_ep1 = 0;
         pcd_fs_handle.Init.dma_enable = 0;

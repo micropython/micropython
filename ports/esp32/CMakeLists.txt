@@ -18,11 +18,21 @@ if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
 endif()
 
+# Include main IDF cmake file.
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
 # Define the output sdkconfig so it goes in the build directory.
 set(SDKCONFIG ${CMAKE_BINARY_DIR}/sdkconfig)
 
 # Include board config; this is expected to set SDKCONFIG_DEFAULTS (among other options).
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
+
+# Add sdkconfig fragments that depend on the IDF version.
+if(IDF_VERSION_MAJOR EQUAL 4 AND IDF_VERSION_MINOR LESS 2)
+    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} boards/sdkconfig.nimble_core0)
+else()
+    set(SDKCONFIG_DEFAULTS ${SDKCONFIG_DEFAULTS} boards/sdkconfig.nimble_core1)
+endif()
 
 # Concatenate all sdkconfig files into a combined one for the IDF to use.
 file(WRITE ${CMAKE_BINARY_DIR}/sdkconfig.combined.in "")
@@ -33,6 +43,5 @@ endforeach()
 configure_file(${CMAKE_BINARY_DIR}/sdkconfig.combined.in ${CMAKE_BINARY_DIR}/sdkconfig.combined COPYONLY)
 set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 
-# Include main IDF cmake file and define the project.
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+# Define the project.
 project(micropython)

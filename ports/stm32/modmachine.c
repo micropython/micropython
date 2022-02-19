@@ -63,7 +63,7 @@
 #define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
 #endif
 
-#if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
 #endif
@@ -464,7 +464,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
-const mp_obj_module_t machine_module = {
+const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
