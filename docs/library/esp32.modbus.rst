@@ -20,7 +20,7 @@ registers on the modbus slave. There are two types of modbus masters implemented
       ``modbus.SERIAL_MODE_ASCII`` and ``modbus.SERIAL_MODE_RTU``, which is the 
       default.
 
-    * The ``modbus.TCP_Master`` is a TCP server.
+    * The ``modbus.TCP_Master`` is a TCP client.
 
 The master reads or writes data to different types of registers, which are typically
 explained in the device manual. There are 4 different types of registers:
@@ -252,7 +252,7 @@ master, there are two types of slaves:
       You can choose between two modes: ``modbus.SERIAL_MODE_ASCII`` and 
       ``modbus.SERIAL_MODE_RTU``, which is the default.
 
-    * The ``modbus.TCP_Slave`` is a TCP client.
+    * The ``modbus.TCP_Slave`` is a TCP server.
 
 You have to define the registers with the ``modbus.Register_Area``. There can be multiple
 areas per type, but they have to be located at different addresses::
@@ -283,7 +283,7 @@ areas per type, but they have to be located at different addresses::
     Like for the master, you have to create the slave first, then define the register areas 
     and then start the slave. Defining register areas after you start the slave is not allowed.
 
-.. class:: modbus.Serial_Slave(slave_id, art_port, baudrate, parity, tx, rx, rts, serial_mode)
+.. class:: modbus.Serial_Slave(slave_id, art_port, baudrate, parity, tx, rx, rts, serial_mode, callback)
 
     The modbus serial slave. Provides registers, that can be read or written by the master.
 
@@ -305,8 +305,26 @@ areas per type, but they have to be located at different addresses::
 
         * *serial_mode*: default modbus.SERIAL_MODE_RTU, could also be SERIAL_MODE_ASCII
 
+        * *callback*: method, that is called, whenever a register is read or written. Only parameter of the callback
+          us a tuple ``(event, register, size)``. ``event`` is one of ``modbus.EVENT_...``::
 
-.. class:: modbus.TCP_Slave(port, network_interface)
+            import modbus
+
+            def cb(param):
+                if param[0] == modbus.EVENT_HOLDING_REG_RD:  print("HOLDING READ  - Reg: {}, Size: {}".format(param[1], param[2]))
+                if param[0] == modbus.EVENT_HOLDING_REG_WR:  print("HOLDING WRITE - Reg: {}, Size: {}".format(param[1], param[2]))
+                if param[0] == modbus.EVENT_INPUT_REG_RD:    print("INPUT READ    - Reg: {}, Size: {}".format(param[1], param[2]))
+                if param[0] == modbus.EVENT_COILS_REG_RD:    print("COILS READ    - Reg: {}, Size: {}".format(param[1], param[2]))
+                if param[0] == modbus.EVENT_COILS_REG_WR:    print("COILS WRITE   - Reg: {}, Size: {}".format(param[1], param[2]))
+                if param[0] == modbus.EVENT_DISCRETE_REG_RD: print("DISCRETE READ - Reg: {}, Size: {}".format(param[1], param[2]))
+
+            slave = modbus.Serial_Slave(1, 2, 9600, modbus.PARITY_EVEN, callback=cb)
+            area_1 = modbus.Register_Area( ... )
+            
+            slave.run()
+
+
+.. class:: modbus.TCP_Slave(port, network_interface, callback)
 
     The modbus TCP server. Provides registers, that can be read or written by the TCP client.
 
@@ -330,6 +348,9 @@ areas per type, but they have to be located at different addresses::
             area_1 = modbus.Register_Area( ... )
             
             slave.run()
+        
+        * *callback*: method, that is called, whenever a register is read or written. Only parameter of the callback
+          us a tuple ``(event, register, size)``. ``event`` is one of ``modbus.EVENT_...``. See ``Serial_Slave`` example.
 
 
 .. method:: slave.run()
