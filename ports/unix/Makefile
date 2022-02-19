@@ -13,6 +13,9 @@ include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(VARIANT_DIR)/mpconfigvariant.mk
 
+# Use the default frozen manifest, variants may override this.
+FROZEN_MANIFEST ?= variants/manifest.py
+
 # This should be configured by the mpconfigvariant.mk
 PROG ?= micropython
 
@@ -39,7 +42,7 @@ CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DI
 
 # Debugging/Optimization
 ifdef DEBUG
-COPT ?= -O0
+COPT ?= -Og
 else
 COPT ?= -Os
 COPT += -DNDEBUG
@@ -256,12 +259,14 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
-ifneq ($(FROZEN_MPY_DIR),)
+ifneq ($(FROZEN_MANIFEST),)
+# To use frozen code create a manifest.py file with a description of files to
+# freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
-MPY_CROSS_FLAGS += -mcache-lookup-bc
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
 HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
@@ -273,9 +278,7 @@ endif
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99 -std=gnu11,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc -march=x86'
-else
-RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-mcache-lookup-bc'
+RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
 endif
 
 ifeq ($(CROSS_COMPILE),arm-linux-gnueabi-)

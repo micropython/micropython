@@ -64,7 +64,7 @@ run("Submodule status", "git submodule status")
 submodules = []
 
 if target == "test":
-    submodules = ["extmod/", "lib/", "tools/"]
+    submodules = ["extmod/", "lib/", "tools/", "extmod/ulab", "lib/berkeley-db-1.xx"]
 elif target == "docs":
     submodules = ["extmod/ulab/"]
 elif target == "mpy-cross-mac":

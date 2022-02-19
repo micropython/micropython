@@ -55,7 +55,8 @@
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
 #define MICROPY_STREAMS_NON_BLOCK   (0)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (0)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (0)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (0)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
 #define MICROPY_CPYTHON_COMPAT      (0)
@@ -87,6 +88,9 @@
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_EXIT         (0)
 #define MICROPY_PY_SYS_PLATFORM     "linux"
+#ifndef MICROPY_PY_SYS_PATH_DEFAULT
+#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
+#endif
 #define MICROPY_PY_SYS_MAXSIZE      (0)
 #define MICROPY_PY_SYS_STDFILES     (0)
 #define MICROPY_PY_CMATH            (0)

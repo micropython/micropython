@@ -125,46 +125,18 @@ $(MICROPY_MPYCROSS_DEPENDENCY):
 	$(MAKE) -C $(dir $@)
 endif
 
-ifneq ($(FROZEN_MANIFEST),)
-# to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY)
-	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
-
 ifneq ($(FROZEN_DIR),)
-$(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
+$(error Support for FROZEN_DIR was removed. Please use manifest.py instead, see https://docs.micropython.org/en/latest/reference/manifest.html)
 endif
 
 ifneq ($(FROZEN_MPY_DIR),)
-$(error FROZEN_MPY_DIR cannot be used in conjunction with FROZEN_MANIFEST)
-endif
-endif
-
-ifneq ($(FROZEN_DIR),)
-$(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)
-$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
-	$(STEPECHO) "Generating $@"
-	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
+$(error Support for FROZEN_MPY_DIR was removed. Please use manifest.py instead, see https://docs.micropython.org/en/latest/reference/manifest.html)
 endif
 
-ifneq ($(FROZEN_MPY_DIRS),)
-# Copy all the modules and single python files to freeze to a common area, omitting top-level dirs (the repo names).
-# Do any preprocessing necessary: currently, this adds version information, removes examples, and
-# non-library .py files in the modules (setup.py and conf.py)
-# Then compile .mpy files from all the .py files, placing them in the same directories as the .py files.
-$(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
-	$(ECHO) FREEZE $(FROZEN_MPY_DIRS)
-	$(Q)$(MKDIR) -p $@
-	$(Q)$(PREPROCESS_FROZEN_MODULES) -o $@ $(FROZEN_MPY_DIRS)
-	$(Q)$(CD) $@ && \
-$(FIND) -L . -type f -name '*.py' | sed 's=^\./==' | \
-xargs -n1 "$(abspath $(MICROPY_MPYCROSS_DEPENDENCY))" $(MPY_CROSS_FLAGS)
-
-# to build frozen_mpy.c from all .mpy files
-# You need to define MPY_TOOL_LONGINT_IMPL in mpconfigport.mk
-# if the default will not work (mpz is the default).
-$(BUILD)/frozen_mpy.c: $(BUILD)/frozen_mpy $(BUILD)/genhdr/qstrdefs.generated.h $(TOP)/tools/mpy-tool.py
-	$(STEPECHO) "Creating $@"
-	$(Q)$(MPY_TOOL) $(MPY_TOOL_LONGINT_IMPL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(shell $(FIND) -L $(BUILD)/frozen_mpy -type f -name '*.mpy') > $@
+ifneq ($(FROZEN_MANIFEST),)
+# to build frozen_content.c from a manifest
+$(BUILD)/frozen_content.c: FORCE $(FROZEN_MANIFEST) $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY) $(TOP)/tools/makemanifest.py
+	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
 ifneq ($(PROG),)
@@ -219,27 +191,6 @@ lib $(LIBMICROPYTHON): $(OBJ)
 clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
-
-# Clean every non-git file from FROZEN_DIR/FROZEN_MPY_DIR, but making a backup.
-# We run rmdir below to avoid empty backup dir (it will silently fail if backup
-# is non-empty).
-clean-frozen:
-	if [ -n "$(FROZEN_MPY_DIR)" ]; then \
-	backup_dir=$(FROZEN_MPY_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
-	cd $(FROZEN_MPY_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
-	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
-	rmdir ../$$backup_dir 2>/dev/null || true; \
-	git clean -d -f .; \
-	fi
-
-	if [ -n "$(FROZEN_DIR)" ]; then \
-	backup_dir=$(FROZEN_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
-	cd $(FROZEN_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
-	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
-	rmdir ../$$backup_dir 2>/dev/null || true; \
-	git clean -d -f .; \
-	fi
-.PHONY: clean-frozen
 
 print-cfg:
 	$(ECHO) "PY_SRC = $(PY_SRC)"

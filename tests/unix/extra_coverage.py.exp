@@ -44,10 +44,10 @@ ime
 
 utime           utimeq
 
-argv            byteorder       exc_info        exit
-getsizeof       implementation  maxsize         modules
-path            platform        stderr          stdin
-stdout          version         version_info
+argv            atexit          byteorder       exc_info
+exit            getsizeof       implementation  maxsize
+modules         path            platform        stderr
+stdin           stdout          version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -165,15 +165,14 @@ cpp None
 frzstr1
 frzstr1.py
 frzmpy1
-.frozen/frzmpy1.py
+frzmpy1.py
 frzstr_pkg1.__init__
 frzstr_pkg1/__init__.py 1
 frzmpy_pkg1.__init__
-.frozen/frzmpy_pkg1/__init__.py 1
+frzmpy_pkg1/__init__.py 1
 frzstr_pkg2.mod
 1
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
-b'# test frozen package'
 NULL
