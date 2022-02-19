@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mpthread.h"
@@ -42,11 +40,8 @@ STATIC void *(*core1_entry)(void *) = NULL;
 STATIC void *core1_arg = NULL;
 STATIC uint32_t *core1_stack = NULL;
 STATIC size_t core1_stack_num_words = 0;
-// the mutex controls access to core1_stack
-STATIC mp_thread_mutex_t thread_mutex;
 
 void mp_thread_init(void) {
-    mp_thread_mutex_init(&thread_mutex);
     mp_thread_set_state(&mp_state_ctx.thread);
     core1_entry = NULL;
 }
@@ -57,13 +52,16 @@ void mp_thread_deinit(void) {
 }
 
 void mp_thread_gc_others(void) {
-    // trace core1's stack, regardless of which thread this is called from.
     if (core1_entry != NULL) {
-        mp_thread_mutex_lock(&thread_mutex, 1);
-        gc_collect_root((void **)&core1_stack, core1_stack_num_words);
-        mp_thread_mutex_unlock(&thread_mutex);
+        gc_collect_root((void **)&core1_stack, 1);
+        gc_collect_root((void **)&core1_arg, 1);
     }
-    if (get_core_num() == 1) {
+    if (get_core_num() == 0) {
+        // GC running on core0, trace core1's stack, if it's running.
+        if (core1_entry != NULL) {
+            gc_collect_root((void **)core1_stack, core1_stack_num_words);
+        }
+    } else {
         // GC running on core1, trace core0's stack.
         gc_collect_root((void **)&__StackBottom, (&__StackTop - &__StackBottom) / sizeof(uintptr_t));
     }
