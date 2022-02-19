@@ -2950,6 +2950,10 @@ msgstr "wúfǎ cóng '%q' jiāzài"
 msgid "can't load with '%q' index"
 msgstr "wúfǎ yòng '%q' ' suǒyǐn jiāzài"
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr ""
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr "wúfǎ xiàng gānggāng qǐdòng de shēngchéng qì fāsòng fēi zhí"
@@ -3012,10 +3016,6 @@ msgstr "wúfǎ chuàngjiàn shílì"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "wúfǎ dǎorù míngchēng %q"
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
-msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3713,7 +3713,7 @@ msgstr "shùxué yù cuòwù"
 msgid "matrix is not positive definite"
 msgstr "jǔzhèn bùshì zhèngdìng de"
 
-#: shared-bindings/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr ""
 
@@ -4094,6 +4094,10 @@ msgstr "xiàngsù zhí xūyào tài duō wèi"
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter"
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
@@ -4139,6 +4143,7 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
@@ -4729,6 +4734,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
 
 #, c-format
 #~ msgid "No I2C device at address: %x"
