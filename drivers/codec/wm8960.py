@@ -240,8 +240,7 @@ class Regs:
     def __setitem__(self, reg, value):
         if (type(value) is tuple):
             if len(value) >= 2:
-                reg_val = self.__getitem__(reg)
-                val = (reg_val & (~value[0]) & 0xFFFF) | value[1]
+                val = (self.cache[reg] & (~value[0] & 0xFFFF)) | value[1]
             else:
                 val = value[0]
         else:
@@ -421,14 +420,15 @@ class WM8960:
         self.set_module(module_speaker, False)
 
     def set_internal_pll_config(self, input_mclk, output_clk):
+        regs = self.regs
         pllF2 = output_clk * 4
         pll_prescale = 0
         sysclk_div = 1
         frac_mode = 0
 
         # disable PLL power
-        self.regs[_WM8960_POWER2] = (1, 0)
-        self.regs[_WM8960_CLOCK1] = (7, 0)
+        regs[_WM8960_POWER2] = (1, 0)
+        regs[_WM8960_CLOCK1] = (7, 0)
 
         pllN = pllF2 // input_mclk
         if pllN < _WM8960_PLL_N_MIN_VALUE:
@@ -447,13 +447,13 @@ class WM8960:
         if pllK != 0:
             frac_mode = 1
 
-        self.regs[_WM8960_PLL1] = (frac_mode << 5) | (pll_prescale << 4) | (pllN & 0x0F)
-        self.regs[_WM8960_PLL2] = (pllK >> 16) & 0xFF
-        self.regs[_WM8960_PLL3] = (pllK >> 8) & 0xFF
-        self.regs[_WM8960_PLL4] = pllK & 0xFF
+        regs[_WM8960_PLL1] = (frac_mode << 5) | (pll_prescale << 4) | (pllN & 0x0F)
+        regs[_WM8960_PLL2] = (pllK >> 16) & 0xFF
+        regs[_WM8960_PLL3] = (pllK >> 8) & 0xFF
+        regs[_WM8960_PLL4] = pllK & 0xFF
         # enable PLL power
-        self.regs[_WM8960_POWER2] = (1, 1)
-        self.regs[_WM8960_CLOCK1] = (7, ((0 if sysclk_div == 1 else sysclk_div) << 1) | 1)
+        regs[_WM8960_POWER2] = (1, 1)
+        regs[_WM8960_CLOCK1] = (7, ((0 if sysclk_div == 1 else sysclk_div) << 1) | 1)
 
     def set_master_clock(self, sysclk, sample_rate, bit_width):
         bit_clock_divider = (sysclk * 2) // (sample_rate * bit_width * 2)
@@ -497,24 +497,28 @@ class WM8960:
         regs = self.regs
 
         if module == module_ADC:
+
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_ADCL_MASK | _WM8960_POWER1_ADCR_MASK,
                 (_WM8960_POWER1_ADCL_MASK | _WM8960_POWER1_ADCR_MASK) * is_enabled
             )
 
         elif module == module_DAC:
+
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_DACL_MASK | _WM8960_POWER2_DACR_MASK,
                 (_WM8960_POWER2_DACL_MASK | _WM8960_POWER2_DACR_MASK) * is_enabled
             )
 
         elif module == module_VREF:
+
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_VREF_MASK,
                 (is_enabled << _WM8960_POWER1_VREF_SHIFT),
             )
 
         elif module == module_line_in:
+
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_AINL_MASK | _WM8960_POWER1_AINR_MASK,
                 (_WM8960_POWER1_AINL_MASK | _WM8960_POWER1_AINR_MASK) * is_enabled
@@ -525,18 +529,21 @@ class WM8960:
             )
 
         elif module == module_line_out:
+
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_LOUT1_MASK | _WM8960_POWER2_ROUT1_MASK,
                 (_WM8960_POWER2_LOUT1_MASK | _WM8960_POWER2_ROUT1_MASK) * is_enabled
             )
 
         elif module == module_mic_bias:
+
             regs[_WM8960_POWER1] = (
                 _WM8960_POWER1_MICB_MASK,
                 (is_enabled << _WM8960_POWER1_MICB_SHIFT),
             )
 
         elif module == module_speaker:
+
             regs[_WM8960_POWER2] = (
                 _WM8960_POWER2_SPKL_MASK | _WM8960_POWER2_SPKR_MASK,
                 (_WM8960_POWER2_SPKL_MASK | _WM8960_POWER2_SPKR_MASK) * is_enabled
@@ -544,6 +551,7 @@ class WM8960:
             regs[_WM8960_CLASSD1] = 0xF7
 
         elif module == module_omix:
+
             regs[_WM8960_POWER3] = (
                 _WM8960_POWER3_LOMIX_MASK | _WM8960_POWER3_ROMIX_MASK,
                 (_WM8960_POWER3_LOMIX_MASK | _WM8960_POWER3_ROMIX_MASK) * is_enabled
@@ -711,69 +719,74 @@ class WM8960:
 
     def set_volume(self, module, volume, volume_r=None):
 
+        regs = self.regs
         if volume_r is None:
             volume_r = volume
 
         if module == module_ADC:
             if volume <= _WM8960_ADC_MAX_VOLUME:
-                self.regs[_WM8960_LADC] = volume
-                self.regs[_WM8960_RADC] = volume_r
-                # Update volume
-                self.regs[_WM8960_LADC] = volume | 0x100
-                self.regs[_WM8960_RADC] = volume_r | 0x100
+                regs[_WM8960_LADC] = volume | 0x100
+                regs[_WM8960_RADC] = volume_r | 0x100
 
         elif module == module_DAC:
             if volume <= _WM8960_DAC_MAX_VOLUME:
-                self.regs[_WM8960_LDAC] = volume
-                self.regs[_WM8960_RDAC] = volume_r
-                # Update volume
-                self.regs[_WM8960_LDAC] = volume | 0x100
-                self.regs[_WM8960_RDAC] = volume_r | 0x100
+                regs[_WM8960_LDAC] = volume | 0x100
+                regs[_WM8960_RDAC] = volume_r | 0x100
 
         elif module == module_headphone:
             if volume <= _WM8960_HEADPHONE_MAX_VOLUME:
-                self.regs[_WM8960_LOUT1] = volume
-                self.regs[_WM8960_ROUT1] = volume_r
-                # Update volume
-                self.regs[_WM8960_LOUT1] = volume | 0x100
-                self.regs[_WM8960_ROUT1] = volume_r | 0x100
+                regs[_WM8960_LOUT1] = volume | 0x180
+                regs[_WM8960_ROUT1] = volume_r | 0x180
 
         elif module == module_line_in:
             if volume <= _WM8960_LINEIN_MAX_VOLUME:
-                self.regs[_WM8960_LINVOL] = volume
-                self.regs[_WM8960_RINVOL] = volume_r
-                # Update volume
-                self.regs[_WM8960_LINVOL] = volume | 0x100
-                self.regs[_WM8960_RINVOL] = volume_r | 0x100
+                regs[_WM8960_LINVOL] = volume | 0x140
+                regs[_WM8960_RINVOL] = volume_r | 0x140
 
         elif module == module_speaker:
             if volume <= _WM8960_SPEAKER_MAX_VOLUME:
-                self.regs[_WM8960_LOUT2] = volume
-                self.regs[_WM8960_ROUT2] = volume_r
-                # Update volume
-                self.regs[_WM8960_LOUT2] = volume | 0x100
-                self.regs[_WM8960_ROUT2] = volume_r | 0x100
+                regs[_WM8960_LOUT2] = volume | 0x180
+                regs[_WM8960_ROUT2] = volume_r | 0x180
         else:
             raise ValueError("Invalid module")
 
     def get_volume(self, module):
 
+        regs = self.regs
         if module == module_ADC:
-            vol_l, vol_r = self.regs[_WM8960_LADC], self.regs[_WM8960_RADC]
+            volume = (
+                regs[_WM8960_LADC] & _WM8960_ADC_MAX_VOLUME,
+                regs[_WM8960_RADC] & _WM8960_ADC_MAX_VOLUME
+            )
 
         elif module == module_DAC:
-            vol_l, vol_r = self.regs[_WM8960_LDAC], self.regs[_WM8960_RDAC]
+            volume = (
+                regs[_WM8960_LDAC] & _WM8960_DAC_MAX_VOLUME,
+                regs[_WM8960_RDAC] & _WM8960_DAC_MAX_VOLUME
+            )
 
         elif module == module_headphone:
-            vol_l, vol_r = self.regs[_WM8960_LOUT1], self.regs[_WM8960_ROUT1]
+            volume = (
+                regs[_WM8960_LOUT1] & _WM8960_HEADPHONE_MAX_VOLUME,
+                regs[_WM8960_ROUT1] & _WM8960_HEADPHONE_MAX_VOLUME
+            )
 
-        elif module == module_line_out:
-            vol_l, vol_r = self.regs[_WM8960_LINVOL], self.regs[_WM8960_RINVOL]
+        elif module == module_line_in:
+            volume = (
+                regs[_WM8960_LINVOL] & _WM8960_LINEIN_MAX_VOLUME,
+                regs[_WM8960_RINVOL] & _WM8960_LINEIN_MAX_VOLUME
+            )
+
+        elif module == module_speaker:
+            volume = (
+                regs[_WM8960_LOUT2] & _WM8960_SPEAKER_MAX_VOLUME,
+                regs[_WM8960_ROUT2] & _WM8960_SPEAKER_MAX_VOLUME
+            )
 
         else:
-            vol_l = vol_r = 0
+            volume = 0, 0
 
-        return (vol_l & 0xFF, vol_r & 0xFF)
+        return volume
 
     def volume(self, module, volume_l=None, volume_r=None):
         if volume_l is None:
