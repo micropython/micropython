@@ -9,7 +9,7 @@
 #if ESP_IDF_VERSION_MINOR >= 3
 
 
-const char* log_tag = "modbus_slave";
+const char *log_tag = "modbus_slave";
 mb_param_info_t reg_info;
 mp_obj_tuple_t *callback_param;
 
@@ -17,12 +17,8 @@ STATIC void modbus_callback_task(void *params) {
     while (true) {
         mb_event_group_t event = mbc_slave_check_event(0x7B);   // callback on every event
         ESP_ERROR_CHECK(mbc_slave_get_param_info(&reg_info, 1000));
-        //ESP_LOGE(log_tag, "REGISTER %d (%u us), ADDR:%u, TYPE:%u, INST_ADDR:0x%.4x, SIZE:%u",
-        //    event, (uint32_t)reg_info.time_stamp, (uint32_t)reg_info.mb_offset, (uint32_t)reg_info.type,
-        //    (uint32_t)reg_info.address, (uint32_t)reg_info.size);
-        mp_obj_t callback = (mp_obj_t) params;
+        mp_obj_t callback = (mp_obj_t)params;
         if (callback != mp_const_none) {
-            //callback_param->items[0] = mp_obj_new_int(event);
             callback_param->items[0] = mp_obj_new_int(reg_info.type);
             callback_param->items[1] = mp_obj_new_int(reg_info.mb_offset);
             callback_param->items[2] = mp_obj_new_int(reg_info.size);
@@ -74,7 +70,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     if ((args[ARG_slave_address].u_int < 1) || (args[ARG_slave_address].u_int > 127)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Slave Adress must be in 1..127"));
     }
-    //ESP_LOGE(log_tag, "  slave address: %d", args[ARG_slave_address].u_int);
+    // ESP_LOGE(log_tag, "  slave address: %d", args[ARG_slave_address].u_int);
 
     if ((args[ARG_uart_port].u_int < 0) || (args[ARG_uart_port].u_int > UART_NUM_MAX)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Uart Port not allowed"));
@@ -114,14 +110,14 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     self->rx = args[ARG_rx].u_int;
     self->rts = args[ARG_rts].u_int;
     self->serial_mode = args[ARG_serial_mode].u_int;
-    self->callback = (void *) args[ARG_callback].u_obj;
+    self->callback = (void *)args[ARG_callback].u_obj;
     callback_param = mp_obj_new_tuple(4, NULL);
 
     void *mbc_slave_handler = NULL;
-    //ESP_LOGE(log_tag, "call: mbc_slave_init");
+    // ESP_LOGE(log_tag, "call: mbc_slave_init");
     ESP_ERROR_CHECK(mbc_slave_init(MB_PORT_SERIAL_SLAVE, &mbc_slave_handler));
     slave_set = true;
-    
+
     mb_communication_info_t comm_info;
     comm_info.mode = self->serial_mode;
     comm_info.slave_addr = self->slave_address;
@@ -130,7 +126,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     comm_info.parity = self->parity;
     ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 
-    //ESP_LOGE(log_tag, "initialization done");
+    // ESP_LOGE(log_tag, "initialization done");
 
     return MP_OBJ_FROM_PTR(self);
 };
@@ -152,22 +148,22 @@ STATIC mp_obj_t modbus_serial_slave_run(mp_obj_t self_in) {
     }
     slave_running = true;
 
-    //ESP_LOGE(log_tag, "startring modbus serial slave");
+    // ESP_LOGE(log_tag, "startring modbus serial slave");
     modbus_serial_slave_obj_t *self = self_in;
 
-    //ESP_LOGE(log_tag, "call: mbc_slave_start");
+    // ESP_LOGE(log_tag, "call: mbc_slave_start");
     mbc_slave_start();
 
-    //ESP_LOGE(log_tag, "call: uart_set_pin");
+    // ESP_LOGE(log_tag, "call: uart_set_pin");
     ESP_ERROR_CHECK(uart_set_pin(self->uart_port, self->tx,
         self->rx, self->rts, UART_PIN_NO_CHANGE));
 
-    //ESP_LOGE(log_tag, "call: uart_set_mode");
+    // ESP_LOGE(log_tag, "call: uart_set_mode");
     ESP_ERROR_CHECK(uart_set_mode(self->uart_port, UART_MODE_RS485_HALF_DUPLEX));
-    //vTaskDelay(5);
-    //ESP_ERROR_CHECK(uart_flush(self->uart_port));
+    // vTaskDelay(5);
+    // ESP_ERROR_CHECK(uart_flush(self->uart_port));
 
-    //ESP_LOGE(log_tag, "startring starting callback task");
+    // ESP_LOGE(log_tag, "startring starting callback task");
     xTaskCreate(modbus_callback_task, "modbus_callback_task", 2048, self->callback, tskIDLE_PRIORITY, &self->callback_task_handle);
 
     return mp_const_none;
@@ -218,7 +214,7 @@ STATIC void modbus_serial_slave_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest
     interface=nw_interface
 ) */
 STATIC mp_obj_t modbus_tcp_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *in_args) {
-    mp_arg_check_num(n_args, n_kw, 2, 2, true);
+    mp_arg_check_num(n_args, n_kw, 0, 2, true);
 
     enum { ARG_port, ARG_interface };
 
@@ -236,9 +232,9 @@ STATIC mp_obj_t modbus_tcp_slave_make_new(const mp_obj_type_t *type, size_t n_ar
         mp_raise_ValueError(MP_ERROR_TEXT("Port must be in 1..65535"));
     }
 
-    if (args[ARG_interface].u_obj == mp_const_none) {
+    /*if (args[ARG_interface].u_obj == mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("Interface cannot be None"));
-    }
+    }*/
 
     if (slave_set) {
         mp_raise_ValueError(MP_ERROR_TEXT("TCP Slave already initialized. Only one is allowed."));
@@ -282,13 +278,20 @@ STATIC mp_obj_t modbus_tcp_slave_run(mp_obj_t self_in) {
     comm_info.ip_addr_type = MB_IPV4;
     comm_info.ip_port = self->port;
     comm_info.ip_addr = NULL;
-    if (mp_obj_get_type(self->network_if) == &wifi_network_if_type) {
+    /*if (mp_obj_get_type(self->network_if) == &wifi_network_if_type) {
         wifi_network_if_obj_t *interface = self->network_if;
         comm_info.ip_netif_ptr = interface->netif;
     }
     if (mp_obj_get_type(self->network_if) == &eth_network_if_type) {
         eth_network_if_obj_t *interface = self->network_if;
         comm_info.ip_netif_ptr = interface->netif;
+    }*/
+    if (mp_obj_is_str(self->network_if)) {
+        const char *netif_name = mp_obj_str_get_str(self->network_if);
+        comm_info.ip_netif_ptr = esp_netif_get_handle_from_ifkey(netif_name);
+        if (comm_info.ip_netif_ptr == NULL) {
+            ESP_LOGE("modbus", "Interface not found. Modbus Interface might not work as expected.");
+        }
     }
     ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 

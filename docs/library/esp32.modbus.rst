@@ -107,21 +107,22 @@ Here is a short example of a modbus RTU master, that reads a power meter::
 
         * *port*: default 502, the used TCP port
 
-        * *network_interface*: see example. Currently only possible with the ``network2`` 
-          module::
+        * *network_interface*: default None, can be used to specify a network interface:: 
 
-            import network2
+            import network
             import modbus
             import time
 
-            w = network2.Wifi()
+            w = network.WLAN()
             w.active(True)
             w.connect("SSID", "Password")
 
-            while not w.connected:
+            while not w.isconnected():
                 time.sleep(1)
 
-            master = modbus.TCP_Master(["192.168.178.76"], 502, w)
+            master = modbus.TCP_Master(["192.168.178.76"], 502, "WIFI_STA_DEF")     
+            # other options: "WIFI_AP_DEF", "WIFI_ETH_DEF", None
+
             voltage = modbus.Parameter_Descriptor( ... )
             
             master.run()
@@ -178,18 +179,18 @@ Here is a short example of a modbus RTU master, that reads a power meter::
 
 Here is a short example of a TCP client that reads from multiple TCP servers::
 
-    import network2
+    import network
     import modbus
     import time
 
-    w = network2.Wifi()
+    w = network.WLAN()
     w.active(True)
     w.connect("SSID", "Password")
 
-    while not w.connected:
+    while not w.isconnected():
         time.sleep(1)
 
-    master = modbus.TCP_Master(["192.168.178.76", "192.168.178.77"], 502, w)
+    master = modbus.TCP_Master(["192.168.178.76", "192.168.178.77"], 502, None)
     
     # version of server 1 (192.168.178.76)
     versionS1 = modbus.Parameter_Descriptor("Version_Server1", "", 1, # <- Note: slave ID = 1
@@ -330,21 +331,20 @@ areas per type, but they have to be located at different addresses::
 
         * *port*: default 502, the used TCP port
 
-        * *network_interface*: see example. Currently only possible with the ``network2`` 
-          module::
+        * *network_interface*: default None, can be used to specify a network interface:: 
 
-            import network2
+            import network
             import modbus
             import time
 
-            w = network2.Wifi()
+            w = network.WLAN()
             w.active(True)
             w.connect("SSID", "Password")
 
-            while not w.connected:
+            while not w.isconnected():
                 time.sleep(1)
 
-            slave = modbus.TCP_Slave(502, w)
+            slave = modbus.TCP_Slave(502, "WIFI_STA_DEF")
             area_1 = modbus.Register_Area( ... )
             
             slave.run()

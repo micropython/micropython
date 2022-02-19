@@ -231,7 +231,7 @@ STATIC mp_obj_t modbus_register_area_read_bits(size_t n_args, const mp_obj_t *ar
     portENTER_CRITICAL(&modbus_spinlock);
     mp_obj_t data = mp_obj_new_list(0, NULL);
     for (uint16_t i = first_reg; i <= last_reg; i++) {
-        uint8_t p = *(uint8_t*)(self->address + i);
+        uint8_t p = *(uint8_t *)(self->address + i);
         for (uint8_t j = first_bit; j < MIN(last_bit, 8); j++) {
             mp_obj_t item = mp_obj_new_bool((p & (1 << j)) > 0);
             mp_obj_list_append(data, item);
@@ -295,7 +295,7 @@ STATIC mp_obj_t modbus_register_area_write_bits(size_t n_args, const mp_obj_t *a
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(modbus_register_area_write_bits_obj, 3, modbus_register_area_write_bits);
 
 
-STATIC mp_obj_t modbus_register_area_read(size_t n_args, const mp_obj_t *args)  {
+STATIC mp_obj_t modbus_register_area_read(size_t n_args, const mp_obj_t *args) {
     mp_arg_check_num(n_args, 0, 3, 4, false);
     modbus_register_area_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     int16_t reg_start_addr = mp_obj_get_int(args[1]);
@@ -377,7 +377,7 @@ STATIC mp_obj_t modbus_register_area_write(size_t n_args, const mp_obj_t *args) 
     }
 
     if (type == PARAM_TYPE_FLOAT) {
-        if (mp_obj_is_float(args[3])||mp_obj_is_int(args[3])) {
+        if (mp_obj_is_float(args[3]) || mp_obj_is_int(args[3])) {
             float temp_data = mp_obj_get_float(args[3]);
 
             portENTER_CRITICAL(&modbus_spinlock);
@@ -402,7 +402,7 @@ STATIC mp_obj_t modbus_register_area_write(size_t n_args, const mp_obj_t *args) 
         portEXIT_CRITICAL(&modbus_spinlock);
         return mp_const_none;
     }
-    
+
     if (type == PARAM_TYPE_ASCII) {
         char *txt = mp_obj_str_get_str(args[3]);
         uint16_t reg_length = strlen(txt) / 2 + 1;
@@ -541,7 +541,7 @@ STATIC mp_obj_t modbus_parameter_discriptor_make_new(const mp_obj_type_t *type, 
     self->param_type = args[ARG_data_type].u_int;
 
     // relevant for string length
-    self->param_size = self->mb_size*2;
+    self->param_size = self->mb_size * 2;
     self->min = args[ARG_min].u_int;
     self->max = args[ARG_max].u_int;
     self->step = args[ARG_step].u_int;
@@ -571,7 +571,6 @@ STATIC mp_obj_t modbus_parameter_descriptor_read(mp_obj_t self_in) {
     modbus_parameter_descriptor_obj_t *self = self_in;
     const mb_parameter_descriptor_t *param_descriptor = NULL;
 
-    
     uint8_t type = 0;
 
     esp_err_t err = mbc_master_get_cid_info(self->cid, &param_descriptor);
@@ -579,11 +578,11 @@ STATIC mp_obj_t modbus_parameter_descriptor_read(mp_obj_t self_in) {
     if ((err != ESP_ERR_NOT_FOUND) && (param_descriptor != NULL)) {
         if ((self->mb_param_type == MB_PARAM_HOLDING) || (self->mb_param_type == MB_PARAM_INPUT)) {
             uint16_t temp_data[self->mb_size];
-            memset(temp_data, 0, self->mb_size*2);
+            memset(temp_data, 0, self->mb_size * 2);
             err = mbc_master_get_parameter(param_descriptor->cid, (char *)param_descriptor->param_key, (uint8_t *)temp_data, &type);
 
             if (err == ESP_OK) {
-            
+
                 if (self->param_type == PARAM_TYPE_U8) {
                     return mp_obj_new_int(temp_data[0] & 0xFF);
                 } else if (self->param_type == PARAM_TYPE_U16) {
@@ -600,7 +599,7 @@ STATIC mp_obj_t modbus_parameter_descriptor_read(mp_obj_t self_in) {
                     return mp_obj_new_str(temp_str, MIN(strlen(temp_str), self->mb_size * 2));
                 }
             }
-        }else{
+        } else {
             // mb_param_type is COIL or DISCRETE -> return bits
             uint8_t num_of_bytes_exp = self->mb_size / 8 + 2;
             uint8_t temp_data[num_of_bytes_exp];
@@ -618,7 +617,7 @@ STATIC mp_obj_t modbus_parameter_descriptor_read(mp_obj_t self_in) {
                     mask = 1 << j;
                     mp_obj_list_append(list, mp_obj_new_bool((temp_data[i] & mask) > 0));
                     total_bits_processed++;
-                    if (total_bits_processed == self->mb_size){
+                    if (total_bits_processed == self->mb_size) {
                         return list;
                     }
                 }
@@ -632,7 +631,6 @@ STATIC mp_obj_t modbus_parameter_descriptor_read(mp_obj_t self_in) {
             (char *)param_descriptor->param_key,
             (int)err,
             (char *)esp_err_to_name(err));
-        
     } else {
         ESP_LOGE("modbus", "Could not get information for characteristic %d.", param_descriptor->cid);
     }
@@ -769,13 +767,13 @@ void raise_VauleError_if_outside_area(int16_t area_start_register, int16_t area_
 }
 
 uint32_t get_uint_checked(mp_obj_t data, uint8_t type, bool raise_exception) {
-    if (!mp_obj_is_int(data)){
+    if (!mp_obj_is_int(data)) {
         if (raise_exception) {
             mp_raise_ValueError("value could not be converted to unsigned integer");
         }
     }
     int32_t value = mp_obj_get_int(data);
-    
+
     bool out_of_range = false;
 
     out_of_range |= value < 0;

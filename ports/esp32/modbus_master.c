@@ -155,7 +155,6 @@ STATIC mp_obj_t modbus_serial_master_run(mp_obj_t self_in) {
         device_parameters[i].access = element->access;
     }
     vTaskDelay(5);
-    //ESP_ERROR_CHECK(uart_flush(self->uart_port));
     ESP_ERROR_CHECK(mbc_master_set_descriptor(&device_parameters[0], list->len));
 
     return mp_const_none;
@@ -204,7 +203,7 @@ STATIC void modbus_serial_master_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     interface=nw_interface
 ) */
 STATIC mp_obj_t modbus_tcp_master_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *in_args) {
-    mp_arg_check_num(n_args, n_kw, 3, 3, true);
+    mp_arg_check_num(n_args, n_kw, 1, 3, true);
 
     enum { ARG_ips, ARG_port, ARG_interface };
 
@@ -232,9 +231,9 @@ STATIC mp_obj_t modbus_tcp_master_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_ValueError(MP_ERROR_TEXT("Port must be in 1..65535"));
     }
 
-    if (args[ARG_interface].u_obj == mp_const_none) {
+    /*if (args[ARG_interface].u_obj == mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("Interface cannot be None"));
-    }
+    }*/
 
     if (master_set) {
         mp_raise_ValueError(MP_ERROR_TEXT("TCP Master already initialized. Only one is allowed."));
@@ -273,7 +272,7 @@ STATIC mp_obj_t modbus_tcp_master_run(mp_obj_t self_in) {
     comm_info.ip_addr_type = MB_IPV4;
     comm_info.ip_port = self->port;
     mp_obj_list_t *ip_list = (mp_obj_list_t *)self->ips;
-    char *slave_ip_address_table[ip_list->len+1];
+    char *slave_ip_address_table[ip_list->len + 1];
 
     for (uint8_t i = 0; i < ip_list->len; i++) {
         slave_ip_address_table[i] = mp_obj_str_get_str(ip_list->items[i]);
@@ -282,13 +281,20 @@ STATIC mp_obj_t modbus_tcp_master_run(mp_obj_t self_in) {
 
     comm_info.ip_addr = slave_ip_address_table;
 
-    if (mp_obj_get_type(self->network_if) == &wifi_network_if_type) {
+    /*if (mp_obj_get_type(self->network_if) == &wifi_network_if_type) {
         wifi_network_if_obj_t *interface = self->network_if;
         comm_info.ip_netif_ptr = interface->netif;
     }
     if (mp_obj_get_type(self->network_if) == &eth_network_if_type) {
         eth_network_if_obj_t *interface = self->network_if;
         comm_info.ip_netif_ptr = interface->netif;
+    }*/
+    if (mp_obj_is_str(self->network_if)) {
+        const char *netif_name = mp_obj_str_get_str(self->network_if);
+        comm_info.ip_netif_ptr = esp_netif_get_handle_from_ifkey(netif_name);
+        if (comm_info.ip_netif_ptr == NULL) {
+            ESP_LOGE("modbus", "Interface not found. Modbus Interface might not work as expected.");
+        }
     }
     ESP_ERROR_CHECK(mbc_master_setup((void *)&comm_info));
 
