@@ -28,15 +28,38 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/board.h"
 
+#include "components/driver/include/driver/gpio.h"
+#include "soc/usb_serial_jtag_struct.h"
+
 void board_init(void) {
     // Debug UART
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO20);
     common_hal_never_reset_pin(&pin_GPIO21);
     #endif
+
+    // This board has LEDs connected to the USB pins
+    USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
+    USB_SERIAL_JTAG.conf0.dp_pullup = 0;
 }
 
 bool board_requests_safe_mode(void) {
+    return false;
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pull LEDs down on reset rather than the default up
+    if (pin_number == 3 || pin_number == 4 || pin_number == 5 || pin_number == 18 || pin_number == 19) {
+        gpio_config_t cfg = {
+            .pin_bit_mask = BIT64(pin_number),
+            .mode = GPIO_MODE_DISABLE,
+            .pull_up_en = false,
+            .pull_down_en = true,
+            .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&cfg);
+        return true;
+    }
     return false;
 }
 
