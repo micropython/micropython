@@ -11,14 +11,23 @@
 
 const char* log_tag = "modbus_slave";
 mb_param_info_t reg_info;
+mp_obj_tuple_t *callback_param;
 
 STATIC void modbus_callback_task(void *params) {
     while (true) {
         mb_event_group_t event = mbc_slave_check_event(0x7B);   // callback on every event
         ESP_ERROR_CHECK(mbc_slave_get_param_info(&reg_info, 1000));
-        ESP_LOGE(log_tag, "REGISTER %d (%u us), ADDR:%u, TYPE:%u, INST_ADDR:0x%.4x, SIZE:%u",
-            event, (uint32_t)reg_info.time_stamp, (uint32_t)reg_info.mb_offset, (uint32_t)reg_info.type,
-            (uint32_t)reg_info.address, (uint32_t)reg_info.size);
+        //ESP_LOGE(log_tag, "REGISTER %d (%u us), ADDR:%u, TYPE:%u, INST_ADDR:0x%.4x, SIZE:%u",
+        //    event, (uint32_t)reg_info.time_stamp, (uint32_t)reg_info.mb_offset, (uint32_t)reg_info.type,
+        //    (uint32_t)reg_info.address, (uint32_t)reg_info.size);
+        mp_obj_t callback = (mp_obj_t) params;
+        if (callback != mp_const_none) {
+            //callback_param->items[0] = mp_obj_new_int(event);
+            callback_param->items[0] = mp_obj_new_int(reg_info.type);
+            callback_param->items[1] = mp_obj_new_int(reg_info.mb_offset);
+            callback_param->items[2] = mp_obj_new_int(reg_info.size);
+            mp_sched_schedule(callback, callback_param);
+        }
     }
 }
 
@@ -42,7 +51,7 @@ STATIC void modbus_callback_task(void *params) {
 STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *in_args) {
     mp_arg_check_num(n_args, n_kw, 3, 8, true);
 
-    enum { ARG_slave_address, ARG_uart_port, ARG_baudrate, ARG_parity, ARG_tx, ARG_rx, ARG_rts, ARG_serial_mode };
+    enum { ARG_slave_address, ARG_uart_port, ARG_baudrate, ARG_parity, ARG_tx, ARG_rx, ARG_rts, ARG_serial_mode, ARG_callback };
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_slave_address, MP_ARG_INT | MP_ARG_REQUIRED, {.u_int = 0}},
@@ -53,6 +62,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_rx, MP_ARG_INT, {.u_int = 13}},
         { MP_QSTR_rts, MP_ARG_INT, {.u_int = 32}},
         { MP_QSTR_serial_mode, MP_ARG_INT, {.u_int = MB_MODE_RTU}},
+        { MP_QSTR_callback, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none}},
     };
 
     mp_map_t kw_args;
@@ -64,7 +74,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     if ((args[ARG_slave_address].u_int < 1) || (args[ARG_slave_address].u_int > 127)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Slave Adress must be in 1..127"));
     }
-    ESP_LOGE(log_tag, "  slave address: %d", args[ARG_slave_address].u_int);
+    //ESP_LOGE(log_tag, "  slave address: %d", args[ARG_slave_address].u_int);
 
     if ((args[ARG_uart_port].u_int < 0) || (args[ARG_uart_port].u_int > UART_NUM_MAX)) {
         mp_raise_ValueError(MP_ERROR_TEXT("Uart Port not allowed"));
@@ -104,10 +114,11 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     self->rx = args[ARG_rx].u_int;
     self->rts = args[ARG_rts].u_int;
     self->serial_mode = args[ARG_serial_mode].u_int;
-    self->callbak_task_handle = NULL;
+    self->callback = (void *) args[ARG_callback].u_obj;
+    callback_param = mp_obj_new_tuple(4, NULL);
 
     void *mbc_slave_handler = NULL;
-    ESP_LOGE(log_tag, "call: mbc_slave_init");
+    //ESP_LOGE(log_tag, "call: mbc_slave_init");
     ESP_ERROR_CHECK(mbc_slave_init(MB_PORT_SERIAL_SLAVE, &mbc_slave_handler));
     slave_set = true;
     
@@ -119,7 +130,7 @@ STATIC mp_obj_t modbus_serial_slave_make_new(const mp_obj_type_t *type, size_t n
     comm_info.parity = self->parity;
     ESP_ERROR_CHECK(mbc_slave_setup((void *)&comm_info));
 
-    ESP_LOGE(log_tag, "initialization done");
+    //ESP_LOGE(log_tag, "initialization done");
 
     return MP_OBJ_FROM_PTR(self);
 };
@@ -141,23 +152,23 @@ STATIC mp_obj_t modbus_serial_slave_run(mp_obj_t self_in) {
     }
     slave_running = true;
 
-    ESP_LOGE(log_tag, "startring modbus serial slave");
+    //ESP_LOGE(log_tag, "startring modbus serial slave");
     modbus_serial_slave_obj_t *self = self_in;
 
-    ESP_LOGE(log_tag, "call: mbc_slave_start");
+    //ESP_LOGE(log_tag, "call: mbc_slave_start");
     mbc_slave_start();
 
-    ESP_LOGE(log_tag, "call: uart_set_pin");
+    //ESP_LOGE(log_tag, "call: uart_set_pin");
     ESP_ERROR_CHECK(uart_set_pin(self->uart_port, self->tx,
         self->rx, self->rts, UART_PIN_NO_CHANGE));
 
-    ESP_LOGE(log_tag, "call: uart_set_mode");
+    //ESP_LOGE(log_tag, "call: uart_set_mode");
     ESP_ERROR_CHECK(uart_set_mode(self->uart_port, UART_MODE_RS485_HALF_DUPLEX));
     //vTaskDelay(5);
     //ESP_ERROR_CHECK(uart_flush(self->uart_port));
 
-    ESP_LOGE(log_tag, "startring starting callback task");
-    xTaskCreate(modbus_callback_task, "modbus_callback_task", 2048, self, tskIDLE_PRIORITY, &self->callbak_task_handle);
+    //ESP_LOGE(log_tag, "startring starting callback task");
+    xTaskCreate(modbus_callback_task, "modbus_callback_task", 2048, self->callback, tskIDLE_PRIORITY, &self->callback_task_handle);
 
     return mp_const_none;
 }

@@ -74,7 +74,8 @@ typedef struct _modbus_serial_slave_obj_t {
     uint8_t rx;
     uint8_t rts;
     uint8_t serial_mode;
-    TaskHandle_t callbak_task_handle;
+    TaskHandle_t callback_task_handle;
+    mp_obj_t callback;
 } modbus_serial_slave_obj_t;
 
 const mp_obj_type_t modbus_serial_slave_type;
