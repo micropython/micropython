@@ -42,7 +42,7 @@
 //|        negative, it's assumed to be raw DEFLATE stream. *wbits* values 24..31 (16 + 8..15)
 //|        mean that input stream has gzip header."""
 //|
-//|     def __init__(self, stream: IO[AnyStr], wbits: Optional[int] = 0) -> None:
+//|     def __init__(self, stream: typing.IO, wbits: Optional[int] = 0) -> None:
 //|         """Creates a DecompIO object to decompress stream data.
 //|         """
 //|         ...
