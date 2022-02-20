@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy_teensy.md"
+    ],
+    "docs": "",
+    "features": [
+        "MicroSD",
+        "Ethernet",
+        "Breadboard Friendly"
+    ],
+    "images": [
+        "teensy41_4.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "Teensy 4.1",
+    "thumbnail": "",
+    "url": "https://www.pjrc.com/store/teensy41.html",
+    "vendor": "PJRC"
+}

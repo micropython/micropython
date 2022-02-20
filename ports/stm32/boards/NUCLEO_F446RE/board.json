@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_f446re.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Nucleo F446RE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

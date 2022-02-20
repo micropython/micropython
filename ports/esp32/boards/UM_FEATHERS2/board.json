@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "Feather",
+        "RGB LED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
+        "USB-C",
+        "WiFi"
+    ],
+    "features_non_filterable": [
+        "Second LDO"
+    ],
+    "id": "featherS2",
+    "images": [
+        "unexpectedmaker_feathers2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "Feather S2",
+    "thumbnail": "",
+    "url": "https://feathers2.io/",
+    "vendor": "Unexpected Maker"
+}

@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nRF51-Dongle.jpg"
+    ],
+    "mcu": "nrf51",
+    "product": "pca10031",
+    "thumbnail": "",
+    "url": "https://www.nordicsemi.com/Products/Development-hardware/nRF51-Dongle",
+    "vendor": "Nordic Semiconductor"
+}

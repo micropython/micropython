@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "Pico_angled.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "Pico",
+    "thumbnail": "",
+    "url": "https://www.espruino.com/Pico",
+    "vendor": "Espruino"
+}

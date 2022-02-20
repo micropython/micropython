@@ -21,19 +21,19 @@ _minimum_heap_size = 16K;
 _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 
-_ram_fs_cache_end = ORIGIN(RAM) + LENGTH(RAM);
-_ram_fs_cache_start = _ram_fs_cache_end - 4K; /* fs cache = 4K */
+_micropy_hw_internal_flash_storage_ram_cache_end = ORIGIN(RAM) + LENGTH(RAM);
+_micropy_hw_internal_flash_storage_ram_cache_start = _micropy_hw_internal_flash_storage_ram_cache_end - 4K; /* fs cache = 4K */
 
 /* Define the stack.  The stack is full descending so begins at the bottom of FS cache.
    Note that EABI requires the stack to be 8-byte aligned for a call. */
-_estack = _ram_fs_cache_start - _estack_reserve;
+_estack = _micropy_hw_internal_flash_storage_ram_cache_start - _estack_reserve;
 _sstack = _estack - 16K;
 
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
-_flash_fs_start = ORIGIN(FLASH_FS);
-_flash_fs_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
+_micropy_hw_internal_flash_storage_start = ORIGIN(FLASH_FS);
+_micropy_hw_internal_flash_storage_end   = ORIGIN(FLASH_FS) + LENGTH(FLASH_FS);
 
 SECTIONS
 {

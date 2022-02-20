@@ -4,7 +4,7 @@ Getting Started
 ===============
 
 This guide covers a step-by-step process on setting up version control, obtaining and building
-a copy of the source code for a port, building the documentation, running tests, and a description of the 
+a copy of the source code for a port, building the documentation, running tests, and a description of the
 directory structure of the MicroPython code base.
 
 Source control with git
@@ -16,7 +16,7 @@ code is pulled and pushed to and from the main repository. Install the respectiv
 of Git for your operating system to follow through the rest of the steps.
 
 .. note::
-   For a reference on the installation instructions, please refer to 
+   For a reference on the installation instructions, please refer to
    the `Git installation instructions <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_.
    Learn about the basic git commands in this `Git Handbook <https://guides.github.com/introduction/git-handbook/>`_
    or any other sources on the internet.
@@ -58,12 +58,12 @@ MicroPython repository.
 After the above configuration, your setup should be similar to this:
 
 .. code-block:: bash
-   
+
    $ git remote -v
-   origin	https://github.com/<your-user-name>/micropython (fetch)
-   origin	https://github.com/<your-user-name>/micropython (push)
-   upstream	https://github.com/micropython/micropython (fetch)
-   upstream	https://github.com/micropython/micropython (push)
+   origin       https://github.com/<your-user-name>/micropython (fetch)
+   origin       https://github.com/<your-user-name>/micropython (push)
+   upstream     https://github.com/micropython/micropython (fetch)
+   upstream     https://github.com/micropython/micropython (push)
 
 You should now have a copy of the source code. By default, you are pointing
 to the master branch. To prepare for further development, it is recommended
@@ -73,7 +73,7 @@ to work on a development branch.
 
     $ git checkout -b dev-branch
 
-You can give it any name. You will have to compile MicroPython whenever you change 
+You can give it any name. You will have to compile MicroPython whenever you change
 to a different branch.
 
 Compile and build the code
@@ -140,8 +140,8 @@ If it built successfully, you should see a message similar to this:
 .. code-block:: bash
 
    LINK mpy-cross
-      text	   data	    bss	    dec	    hex	filename
-    279328	    776	    880	 280984	  44998	mpy-cross
+      text          data    bss     dec     hex filename
+    279328          776     880  280984   44998 mpy-cross
 
 .. note::
 
@@ -181,8 +181,8 @@ If MicroPython built correctly, you should see the following:
 .. code-block:: bash
 
    LINK micropython
-      text	   data	    bss	    dec	    hex	filename
-    412033	   5680	   2496	 420209	  66971	micropython
+      text         data     bss     dec     hex filename
+    412033         5680    2496  420209   66971 micropython
 
 Now run it:
 
@@ -215,7 +215,7 @@ as detailed in the :ref:`required_dependencies` section, then build:
    $ make submodules
    $ make
 
-Please refer to the `stm32 documentation <https://github.com/micropython/micropython/tree/master/ports/stm32>`_ 
+Please refer to the `stm32 documentation <https://github.com/micropython/micropython/tree/master/ports/stm32>`_
 for more details on flashing the firmware.
 
 .. note::
@@ -259,7 +259,7 @@ Build the docs:
 
    $ make html
 
-Open ``docs/build/html/index.html`` in your browser to view the docs locally. Refer to the 
+Open ``docs/build/html/index.html`` in your browser to view the docs locally. Refer to the
 documentation on `importing your documentation
 <https://docs.readthedocs.io/en/stable/intro/import-guide.html>`_ to use Read the Docs.
 

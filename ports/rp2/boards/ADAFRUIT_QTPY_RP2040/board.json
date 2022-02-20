@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Castellated Pads",
+        "RGB LED",
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
+    ],
+    "images": [
+        "4900-12.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "QT Py RP2040",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/4900",
+    "vendor": "Adafruit"
+}

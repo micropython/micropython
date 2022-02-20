@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy_s2.md"
+    ],
+    "docs": "",
+    "features": [
+        "SPIRAM",
+        "USB-C",
+        "WiFi"
+    ],
+    "images": [
+        "lolin_s2_mini.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "S2 mini",
+    "thumbnail": "",
+    "url": "https://www.wemos.cc/en/latest/s2/s2_mini.html",
+    "vendor": "Wemos"
+}

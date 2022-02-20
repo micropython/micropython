@@ -28,6 +28,11 @@
 
 #include "py/mpconfig.h"
 
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
 #ifndef MICROPY_BOARD_STARTUP
 #define MICROPY_BOARD_STARTUP powerctrl_check_enter_bootloader
 #endif
@@ -58,6 +63,24 @@
 
 #ifndef MICROPY_BOARD_END_SOFT_RESET
 #define MICROPY_BOARD_END_SOFT_RESET boardctrl_end_soft_reset
+#endif
+
+// Called when USBD CDC data is available.
+// Default function defined in usbd_cdc_interface.h.
+#ifndef MICROPY_BOARD_USBD_CDC_RX_EVENT
+#define MICROPY_BOARD_USBD_CDC_RX_EVENT usbd_cdc_rx_event_callback
+#endif
+
+// Called to poll Bluetooth HCI now.
+// Default function defined in mpbthciport.h.
+#ifndef MICROPY_BOARD_BT_HCI_POLL_NOW
+#define MICROPY_BOARD_BT_HCI_POLL_NOW mp_bluetooth_hci_poll_now_default
+#endif
+
+// Called to poll Bluetooth HCI after the given timeout.
+// Default function defined in mpbthciport.h.
+#ifndef MICROPY_BOARD_BT_HCI_POLL_IN_MS
+#define MICROPY_BOARD_BT_HCI_POLL_IN_MS mp_bluetooth_hci_poll_in_ms_default
 #endif
 
 // Constants to return from boardctrl_run_boot_py, boardctrl_run_main_py.

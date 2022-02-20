@@ -4,7 +4,7 @@
 .. module:: esp
     :synopsis: functions related to the ESP8266 and ESP32
 
-The ``esp`` module contains specific functions related to both the ESP8266 and 
+The ``esp`` module contains specific functions related to both the ESP8266 and
 ESP32 modules.  Some functions are only available on one or the other of these
 ports.
 

@@ -8,8 +8,8 @@ To do this we must first edit the ``boot.py`` file to change the USB
 configuration.  If you have not yet touched your ``boot.py`` file then it
 will look something like this::
 
-    # boot.py -- run on boot-up
-    # can run arbitrary Python, but best to keep it minimal
+    # boot.py -- run on boot to configure USB and filesystem
+    # Put app code in main.py
 
     import pyb
     #pyb.main('main.py') # main script to run after this one

@@ -1,0 +1,26 @@
+{
+    "deploy": [
+        "../deploy_mimxrt.md"
+    ],
+    "docs": "",
+    "features": [
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "OpenSDA",
+        "JLink"
+    ],
+    "images": [
+        "IMX_RT1050-EVKB_TOP-LR.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "MIMXRT1050_EVK",
+    "thumbnail": "",
+    "url": "https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1050-evaluation-kit:MIMXRT1050-EVK",
+    "vendor": "NXP"
+}

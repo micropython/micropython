@@ -318,7 +318,7 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
     ;
 
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
-    QUADSPI->AR = addr; // addres to read from
+    QUADSPI->AR = addr; // address to read from
 
     // Read in the data 4 bytes at a time if dest is aligned
     if (((uintptr_t)dest & 3) == 0) {

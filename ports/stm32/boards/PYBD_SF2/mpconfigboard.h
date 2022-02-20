@@ -33,14 +33,12 @@
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_ENABLE_TIMER     (1)
 #define MICROPY_HW_ENABLE_SERVO     (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
 #define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
 #define MICROPY_HW_ENABLE_MMCARD    (1)
 #define MICROPY_HW_ENABLE_RF_SWITCH (1)
-#define MICROPY_HW_ENABLE_I2S       (1)
 
 #define MICROPY_BOARD_EARLY_INIT    board_early_init
 #define MICROPY_BOARD_ENTER_STOP    board_sleep(1);
@@ -182,6 +180,9 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_PULLUP)
 #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT     (0)
+
+// MM card: the size is hard-coded to support the WBUS-EMMC add-on
+#define MICROPY_HW_MMCARD_LOG_BLOCK_NBR     (7469056 + 2048)
 
 // USB config
 #define MICROPY_HW_USB_FS           (1)

@@ -53,7 +53,6 @@
 #define MICROPY_LONGINT_IMPL                        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                          (MICROPY_FLOAT_IMPL_NONE)
 #define MICROPY_OPT_COMPUTED_GOTO                   (0)
-#define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE    (0)
 #define MICROPY_READER_VFS                          (1)
 #ifndef DEBUG // we need ram on the launchxl while debugging
 #define MICROPY_CPYTHON_COMPAT                      (1)

@@ -454,11 +454,16 @@ const mp_obj_module_t mp_module_ure = {
 // only if module is enabled by config setting.
 
 #define re1_5_fatal(x) assert(!x)
+
 #include "lib/re1.5/compilecode.c"
-#if MICROPY_PY_URE_DEBUG
-#include "lib/re1.5/dumpcode.c"
-#endif
 #include "lib/re1.5/recursiveloop.c"
 #include "lib/re1.5/charclass.c"
+
+#if MICROPY_PY_URE_DEBUG
+// Make sure the output print statements go to the same output as other Python output.
+#define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
+#include "lib/re1.5/dumpcode.c"
+#undef printf
+#endif
 
 #endif // MICROPY_PY_URE

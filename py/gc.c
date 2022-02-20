@@ -213,6 +213,7 @@ STATIC void gc_mark_subtree(size_t block) {
     // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
+        MICROPY_GC_HOOK_LOOP
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -222,6 +223,7 @@ STATIC void gc_mark_subtree(size_t block) {
         // check this block's children
         void **ptrs = (void **)PTR_FROM_BLOCK(block);
         for (size_t i = n_blocks * BYTES_PER_BLOCK / sizeof(void *); i > 0; i--, ptrs++) {
+            MICROPY_GC_HOOK_LOOP
             void *ptr = *ptrs;
             if (VERIFY_PTR(ptr)) {
                 // Mark and push this pointer
@@ -255,6 +257,7 @@ STATIC void gc_deal_with_stack_overflow(void) {
 
         // scan entire memory looking for blocks which have been marked but not their children
         for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+            MICROPY_GC_HOOK_LOOP
             // trace (again) if mark bit set
             if (ATB_GET_KIND(block) == AT_MARK) {
                 gc_mark_subtree(block);
@@ -270,6 +273,7 @@ STATIC void gc_sweep(void) {
     // free unmarked heads and their tails
     int free_tail = 0;
     for (size_t block = 0; block < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; block++) {
+        MICROPY_GC_HOOK_LOOP
         switch (ATB_GET_KIND(block)) {
             case AT_HEAD:
                 #if MICROPY_ENABLE_FINALISER
@@ -354,6 +358,7 @@ static void *gc_get_ptr(void **ptrs, int i) {
 
 void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
+        MICROPY_GC_HOOK_LOOP
         void *ptr = gc_get_ptr(ptrs, i);
         if (VERIFY_PTR(ptr)) {
             size_t block = BLOCK_FROM_PTR(ptr);

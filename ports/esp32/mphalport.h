@@ -35,6 +35,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
+
 // The core that the MicroPython task(s) are pinned to.
 // Until we move to IDF 4.2+, we need NimBLE on core 0, and for synchronisation
 // with the ringbuffer and scheduler MP needs to be on the same core.

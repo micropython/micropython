@@ -1,6 +1,6 @@
 name: Build Javascript v8 port
 env:
-  EM_VERSION: 2.0.4
+  EM_VERSION: 2.0.31
   EM_CACHE_FOLDER: 'emsdk-cache'
 on:
   push:
@@ -23,12 +23,18 @@ jobs:
         with:
           path: ${{env.EM_CACHE_FOLDER}}
           key: ${{env.EM_VERSION}}-${{ runner.os }}
-      - uses: mymindstorm/setup-emsdk@v7
+      - uses: mymindstorm/setup-emsdk@v10
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
       - name: Build SDL2
         run: embuilder build sdl2
+      - name: Build FreeType
+        run: ./build_freetype.sh
+        working-directory: ports/javascript/scripts
+      - name: Build Rlottie
+        run: ./build_rlottie.sh
+        working-directory: ports/javascript/scripts
       - name: Update submodules
         run: make -j $(nproc) -C ports/javascript submodules
       - name: Build mpy-cross

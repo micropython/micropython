@@ -142,43 +142,18 @@ $(MICROPY_MPYCROSS_DEPENDENCY):
 	$(MAKE) -C $(dir $@)
 endif
 
+ifneq ($(FROZEN_DIR),)
+$(error Support for FROZEN_DIR was removed. Please use manifest.py instead, see https://docs.micropython.org/en/latest/reference/manifest.html)
+endif
+
+ifneq ($(FROZEN_MPY_DIR),)
+$(error Support for FROZEN_MPY_DIR was removed. Please use manifest.py instead, see https://docs.micropython.org/en/latest/reference/manifest.html)
+endif
+
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
-
-ifneq ($(FROZEN_DIR),)
-$(error FROZEN_DIR cannot be used in conjunction with FROZEN_MANIFEST)
-endif
-
-ifneq ($(FROZEN_MPY_DIR),)
-$(error FROZEN_MPY_DIR cannot be used in conjunction with FROZEN_MANIFEST)
-endif
-endif
-
-ifneq ($(FROZEN_DIR),)
-$(info Warning: FROZEN_DIR is deprecated in favour of FROZEN_MANIFEST)
-$(BUILD)/frozen.c: $(wildcard $(FROZEN_DIR)/*) $(HEADER_BUILD) $(FROZEN_EXTRA_DEPS)
-	$(ECHO) "GEN $@"
-	$(Q)$(MAKE_FROZEN) $(FROZEN_DIR) > $@
-endif
-
-ifneq ($(FROZEN_MPY_DIR),)
-$(info Warning: FROZEN_MPY_DIR is deprecated in favour of FROZEN_MANIFEST)
-# make a list of all the .py files that need compiling and freezing
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py' | $(SED) -e 's=^$(FROZEN_MPY_DIR)/==')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/frozen_mpy/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-
-# to build .mpy files from .py files
-$(BUILD)/frozen_mpy/%.mpy: $(FROZEN_MPY_DIR)/%.py | $(MICROPY_MPYCROSS_DEPENDENCY)
-	@$(ECHO) "MPY $<"
-	$(Q)$(MKDIR) -p $(dir $@)
-	$(Q)$(MICROPY_MPYCROSS) -o $@ -s $(<:$(FROZEN_MPY_DIR)/%=%) $(MPY_CROSS_FLAGS) $<
-
-# to build frozen_mpy.c from all .mpy files
-$(BUILD)/frozen_mpy.c: $(FROZEN_MPY_MPY_FILES) $(BUILD)/genhdr/qstrdefs.generated.h
-	@$(ECHO) "GEN $@"
-	$(Q)$(MPY_TOOL) -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h $(FROZEN_MPY_MPY_FILES) > $@
 endif
 
 ifneq ($(PROG),)
@@ -233,27 +208,6 @@ lib $(LIBMICROPYTHON): $(OBJ)
 clean:
 	$(RM) -rf $(BUILD) $(CLEAN_EXTRA)
 .PHONY: clean
-
-# Clean every non-git file from FROZEN_DIR/FROZEN_MPY_DIR, but making a backup.
-# We run rmdir below to avoid empty backup dir (it will silently fail if backup
-# is non-empty).
-clean-frozen:
-	if [ -n "$(FROZEN_MPY_DIR)" ]; then \
-	backup_dir=$(FROZEN_MPY_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
-	cd $(FROZEN_MPY_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
-	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
-	rmdir ../$$backup_dir 2>/dev/null || true; \
-	git clean -d -f .; \
-	fi
-
-	if [ -n "$(FROZEN_DIR)" ]; then \
-	backup_dir=$(FROZEN_DIR).$$(date +%Y%m%dT%H%M%S); mkdir $$backup_dir; \
-	cd $(FROZEN_DIR); git status --ignored -u all -s . | awk ' {print $$2}' \
-	| xargs --no-run-if-empty cp --parents -t ../$$backup_dir; \
-	rmdir ../$$backup_dir 2>/dev/null || true; \
-	git clean -d -f .; \
-	fi
-.PHONY: clean-frozen
 
 print-cfg:
 	$(ECHO) "PY_SRC = $(PY_SRC)"

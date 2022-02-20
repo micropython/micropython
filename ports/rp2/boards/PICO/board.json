@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard friendly",
+        "Castellated Pads",
+        "Micro USB"
+    ],
+    "id": "rp2-pico",
+    "images": [
+        "rp2-pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Pico",
+    "thumbnail": "",
+    "url": "https://www.raspberrypi.org/products/raspberry-pi-pico/",
+    "vendor": "Raspberry Pi"
+}

@@ -66,8 +66,6 @@ If importing an .mpy file fails then try the following:
     print('mpy flags:', end='')
     if arch:
         print(' -march=' + arch, end='')
-    if sys_mpy & 0x100:
-        print(' -mcache-lookup-bc', end='')
     if not sys_mpy & 0x200:
         print(' -mno-unicode', end='')
     print()

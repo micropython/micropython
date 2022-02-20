@@ -43,8 +43,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_EMIT_THUMB                  (1)
 #define MICROPY_EMIT_INLINE_THUMB           (1)
 
-// Compiler configuration
-#define MICROPY_COMP_CONST                  (0)
+// Optimisations
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH     (1)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
@@ -71,6 +72,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_FUNCTION_ATTRS           (1)
 #define MICROPY_PY_DESCRIPTORS              (1)
 #define MICROPY_PY_DELATTR_SETATTR          (1)
+#define MICROPY_PY_FSTRINGS                 (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER      (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION   (1)
@@ -114,20 +116,62 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_URE_MATCH_GROUPS         (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_URE_SUB                  (1)
+#define MICROPY_PY_USSL_FINALISER           (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB                 (1)
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_PY_OS_DUPTERM               (3)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
 #define MICROPY_PY_USELECT                  (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
+#define MICROPY_PY_MACHINE_PWM              (1)
+#define MICROPY_PY_MACHINE_PWM_INIT         (1)
+#define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
+#define MICROPY_PY_ONEWIRE                  (1)
+#define MICROPY_PY_UPLATFORM                (1)
+
+// fatfs configuration used in ffconf.h
+#define MICROPY_FATFS_ENABLE_LFN            (1)
+#define MICROPY_FATFS_RPATH                 (2)
+#define MICROPY_FATFS_MAX_SS                (4096)
+#define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+
+// If MICROPY_PY_LWIP is defined, add network support
+#if MICROPY_PY_LWIP
+
+#define MICROPY_PY_NETWORK                  (1)
+#define MICROPY_PY_USOCKET                  (1)
+#define MICROPY_PY_UWEBSOCKET               (1)
+#define MICROPY_PY_WEBREPL                  (1)
+#define MICROPY_PY_UHASHLIB_SHA1            (1)
+#define MICROPY_PY_LWIP_SOCK_RAW            (1)
+#define MICROPY_HW_ETH_MDC                  (1)
+
+// Prevent the "LWIP task" from running.
+#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
+#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
+#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+
+#endif
+
+// For regular code that wants to prevent "background tasks" from running.
+// These background tasks (LWIP, Bluetooth) run in PENDSV context.
+// TODO: Check for the settings of the STM32 port in irq.h
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = disable_irq();
+#define MICROPY_PY_PENDSV_REENTER atomic_state = disable_irq();
+#define MICROPY_PY_PENDSV_EXIT    enable_irq(atomic_state);
 
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
@@ -135,6 +179,7 @@ uint32_t trng_random_u32(void);
 
 // Use VFS's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open mp_vfs_open
 #define mp_builtin_open_obj mp_vfs_open_obj
 
 // Hooks to add builtins
@@ -149,6 +194,23 @@ __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     return state;
 }
 
+static inline uint32_t raise_irq_pri(uint32_t pri) {
+    uint32_t basepri = __get_BASEPRI();
+    // If non-zero, the processor does not process any exception with a
+    // priority value greater than or equal to BASEPRI.
+    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
+    //   - Rn is non-zero and the current BASEPRI value is 0
+    //   - Rn is non-zero and less than the current BASEPRI value
+    pri <<= (8 - __NVIC_PRIO_BITS);
+    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
+    return basepri;
+}
+
+// "basepri" should be the value returned from raise_irq_pri
+static inline void restore_irq_pri(uint32_t basepri) {
+    __set_BASEPRI(basepri);
+}
+
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
@@ -160,6 +222,38 @@ extern const struct _mp_obj_module_t mp_module_mimxrt;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
+extern const struct _mp_obj_module_t mp_module_usocket;
+extern const struct _mp_obj_module_t mp_module_network;
+
+#if MICROPY_PY_NETWORK
+#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
+#else
+#define NETWORK_BUILTIN_MODULE
+#endif
+
+#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
+// usocket implementation provided by lwIP
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
+#elif MICROPY_PY_USOCKET
+// usocket implementation provided by skeleton wrapper
+#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
+#else
+// no usocket module
+#define SOCKET_BUILTIN_MODULE
+#endif
+
+#if MICROPY_SSL_MBEDTLS
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
+#else
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
+#endif
+
+#if defined(MICROPY_HW_ETH_MDC)
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+#else
+#define MICROPY_HW_NIC_ETH
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
@@ -167,6 +261,11 @@ extern const struct _mp_obj_module_t mp_module_utime;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
+    SOCKET_BUILTIN_MODULE \
+    NETWORK_BUILTIN_MODULE \
+
+#define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_ETH  \
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 
@@ -174,6 +273,10 @@ extern const struct _mp_obj_module_t mp_module_utime;
     const char *readline_hist[8]; \
     struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]; \
     void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]; \
+    /* list of registered NICs */ \
+    mp_obj_list_t mod_network_nic_list; \
+    /* root pointers for sub-systems */ \
+    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
 
 #define MP_STATE_PORT MP_STATE_VM
 

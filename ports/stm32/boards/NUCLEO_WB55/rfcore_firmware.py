@@ -89,7 +89,8 @@ _HCI_KIND_VENDOR_RESPONSE = const(0x11)
 _OBFUSCATION_KEY = const(0x0573B55AA)
 
 # On boards using the internal flash filesystem, this must match the
-# `_flash_fs_end` symbol defined by the linker script (boards/stm32wb55xg.ld).
+# `_micropy_hw_internal_flash_storage_end` symbol defined by the linker script
+# (see eg boards/stm32wb55xg.ld).
 # We erase everything from here until the start of the secure area (defined by
 # SFSA) just to ensure that no other fragments of firmware files are left
 # behind. On boards with external flash, this just needs to ensure that it
@@ -537,9 +538,13 @@ def resume():
             elif status == 0:
                 log("WS update successful")
                 _write_state(_STATE_WAITING_FOR_WS)
-            elif result == 0:
-                # We get a error response with no payload sometimes at the end
-                # of the update (this is not in AN5185). Re-try the GET_STATE.
+            elif result in (0, 0xFE):
+                # We get an error response with no payload sometimes at the end
+                # of the update (this is not in AN5185). Additionally during
+                # WS update, newer WS reports (status, result) of (255, 254)
+                # before eventually reporting the correct state of
+                # _STATE_INSTALLING_WS once again. In these cases, re-try the
+                # GET_STATE.
                 # The same thing happens transitioning from WS to FUS mode.
                 # The actual HCI response has no payload, the result=0 comes from
                 # _parse_vendor_response above when len=7.

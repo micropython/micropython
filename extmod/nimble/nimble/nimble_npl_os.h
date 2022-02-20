@@ -35,7 +35,11 @@
 // --- Configuration of NimBLE data structures --------------------------------
 
 // This is used at runtime to align allocations correctly.
-#define BLE_NPL_OS_ALIGNMENT (sizeof(uintptr_t))
+#if __WORDSIZE == 64
+#define BLE_NPL_OS_ALIGNMENT 8
+#else
+#define BLE_NPL_OS_ALIGNMENT 4
+#endif
 #define BLE_NPL_TIME_FOREVER (0xffffffff)
 
 // This is used at compile time to force struct member alignment. See

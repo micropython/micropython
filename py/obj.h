@@ -551,6 +551,7 @@ struct _mp_obj_type_t {
     //
     // dest[0] = MP_OBJ_NULL means load
     //  return: for fail, do nothing
+    //          for fail but continue lookup in locals_dict, dest[1] = MP_OBJ_SENTINEL
     //          for attr, dest[0] = value
     //          for method, dest[0] = method, dest[1] = self
     //

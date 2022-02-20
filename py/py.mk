@@ -43,7 +43,7 @@ CFLAGS_MOD += $(LV_CFLAGS)
 $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CPP) $(LV_CFLAGS) -DPYCPARSER -x c -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
+	$(Q)$(CPP) $(CFLAGS_MOD) -DPYCPARSER -x c -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
 	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M lvgl -MP lv -MD $(LVGL_MPY_METADATA) -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
 
 .PHONY: LVGL_MPY
@@ -74,10 +74,6 @@ $(LODEPNG_C): $(LODEPNG_DIR)/lodepng.cpp $(LODEPNG_DIR)/*
 	cp $< $@
 
 SRC_MOD += $(subst $(TOP)/,,$(LODEPNG_C) $(MP_LODEPNG_C) $(LODEPNG_MODULE))
-
-# Additional include paths
-CFLAGS_MOD += -I/usr/include/freetype2
-CFLAGS_MOD += -I/usr/local/include/freetype2
 
 # External modules written in C.
 ifneq ($(USER_C_MODULES),)
@@ -240,11 +236,13 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/machine_pinbase.o \
 	extmod/machine_signal.o \
 	extmod/machine_pulse.o \
+	extmod/machine_pwm.o \
 	extmod/machine_i2c.o \
 	extmod/machine_spi.o \
 	extmod/modbluetooth.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
+	extmod/moduplatform.o\
 	extmod/modurandom.o \
 	extmod/moduselect.o \
 	extmod/moduwebsocket.o \
@@ -274,16 +272,6 @@ PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
 PY_O += $(BUILD)/$(BUILD)/frozen_content.o
-endif
-
-# object file for frozen files
-ifneq ($(FROZEN_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen.o
-endif
-
-# object file for frozen bytecode (frozen .mpy files)
-ifneq ($(FROZEN_MPY_DIR),)
-PY_O += $(BUILD)/$(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings

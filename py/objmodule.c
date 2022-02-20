@@ -35,6 +35,10 @@
 
 #include "genhdr/moduledefs.h"
 
+#if MICROPY_MODULE_BUILTIN_INIT
+STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
+#endif
+
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
@@ -230,6 +234,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_BLUETOOTH
     { MP_ROM_QSTR(MP_QSTR_ubluetooth), MP_ROM_PTR(&mp_module_ubluetooth) },
     #endif
+    #if MICROPY_PY_UPLATFORM
+    { MP_ROM_QSTR(MP_QSTR_uplatform), MP_ROM_PTR(&mp_module_uplatform) },
+    #endif
 
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
@@ -242,47 +249,56 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-// returns MP_OBJ_NULL if not found
-mp_obj_t mp_module_get(qstr module_name) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    // lookup module
-    mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
+mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name) {
+    // First try loaded modules.
+    mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_dict).map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
-    if (el == NULL) {
-        // module not found, look for builtin module names
-        el = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-        if (el == NULL) {
+    if (!elem) {
+        #if MICROPY_MODULE_WEAK_LINKS
+        return mp_module_get_builtin(module_name);
+        #else
+        // Otherwise try builtin.
+        elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+        if (!elem) {
             return MP_OBJ_NULL;
         }
-        mp_module_call_init(module_name, el->value);
+
+        #if MICROPY_MODULE_BUILTIN_INIT
+        // If found, it's a newly loaded built-in, so init it.
+        mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
+        #endif
+        #endif
     }
 
-    // module found, return it
-    return el->value;
-}
-
-void mp_module_register(qstr qst, mp_obj_t module) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+    return elem->value;
 }
 
 #if MICROPY_MODULE_WEAK_LINKS
-// Search for u"foo" in built-in modules, return MP_OBJ_NULL if not found
-mp_obj_t mp_module_search_umodule(const char *module_str) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(mp_builtin_module_table); ++i) {
-        const mp_map_elem_t *entry = (const mp_map_elem_t *)&mp_builtin_module_table[i];
-        const char *key = qstr_str(MP_OBJ_QSTR_VALUE(entry->key));
-        if (key[0] == 'u' && strcmp(&key[1], module_str) == 0) {
-            return (mp_obj_t)entry->value;
-        }
-
+// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
+mp_obj_t mp_module_get_builtin(qstr module_name) {
+    // Try builtin.
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+    if (!elem) {
+        return MP_OBJ_NULL;
     }
-    return MP_OBJ_NULL;
+
+    #if MICROPY_MODULE_BUILTIN_INIT
+    // If found, it's a newly loaded built-in, so init it.
+    mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
+    #endif
+
+    return elem->value;
 }
 #endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
-void mp_module_call_init(qstr module_name, mp_obj_t module_obj) {
+STATIC void mp_module_register(mp_obj_t module_name, mp_obj_t module) {
+    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
+    mp_map_lookup(mp_loaded_modules_map, module_name, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+}
+
+STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj) {
     // Look for __init__ and call it if it exists
     mp_obj_t dest[2];
     mp_load_method_maybe(module_obj, MP_QSTR___init__, dest);

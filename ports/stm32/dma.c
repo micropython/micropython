@@ -42,6 +42,10 @@
 
 #define ENABLE_SDIO (MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD || MICROPY_PY_NETWORK_CYW43)
 
+// If the CYW43 driver is enabled then SDIO DMA can happen preemptively (on an
+// IRQ) and so the SDIO needs exclusive access to its DMA resource.
+#define SDIO_NEEDS_EXCLUSIVE_DMA_ACCESS (MICROPY_PY_NETWORK_CYW43 && MICROPY_HW_SDIO_SDMMC == 1)
+
 typedef enum {
     dma_id_not_defined=-1,
     dma_id_0,
@@ -298,11 +302,13 @@ const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma
 #if MICROPY_HW_ENABLE_I2S
 const dma_descr_t dma_I2S_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_i2s };
 #endif
-const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_CHANNEL_2, dma_id_11,  &dma_init_struct_spi_i2c };
 #if ENABLE_SDIO
 const dma_descr_t dma_SDIO_0 = { DMA2_Stream3, DMA_CHANNEL_4, dma_id_11,  &dma_init_struct_sdio };
 #endif
+#if !SDIO_NEEDS_EXCLUSIVE_DMA_ACCESS
+const dma_descr_t dma_SPI_5_RX = { DMA2_Stream3, DMA_CHANNEL_2, dma_id_11,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_4_RX = { DMA2_Stream3, DMA_CHANNEL_5, dma_id_11,  &dma_init_struct_spi_i2c };
+#endif
 const dma_descr_t dma_SPI_5_TX = { DMA2_Stream4, DMA_CHANNEL_2, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_4_TX = { DMA2_Stream4, DMA_CHANNEL_5, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { DMA2_Stream5, DMA_CHANNEL_1, dma_id_13,  &dma_init_struct_spi_i2c };
@@ -1233,3 +1239,13 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
 }
 
 #endif
+
+#define DMA_ID_FROM_CONTROLLER_STREAM(c, s) ((s) + (c) * NSTREAMS_PER_CONTROLLER)
+
+void dma_external_acquire(uint32_t controller, uint32_t stream) {
+    dma_enable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
+}
+
+void dma_external_release(uint32_t controller, uint32_t stream) {
+    dma_disable_clock(DMA_ID_FROM_CONTROLLER_STREAM(controller, stream));
+}

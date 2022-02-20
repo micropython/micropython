@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nRF51-DK.jpg"
+    ],
+    "mcu": "nrf51",
+    "product": "pca10001",
+    "thumbnail": "",
+    "url": "https://www.nordicsemi.com/Products/Development-hardware/nrf51-dk",
+    "vendor": "Nordic Semiconductor"
+}

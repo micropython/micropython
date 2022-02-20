@@ -58,6 +58,7 @@ __pycache__/
 GNUmakefile
 user.props
 ports/javascript/node_modules
+.vscode/
 
 # Generated rst files
 ######################

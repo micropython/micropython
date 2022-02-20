@@ -225,20 +225,20 @@ I2S bus
 See :ref:`machine.I2S <machine.I2S>`. ::
 
     from machine import I2S, Pin
-    
+
     i2s = I2S(2, sck=Pin('Y6'), ws=Pin('Y5'), sd=Pin('Y8'), mode=I2S.TX, bits=16, format=I2S.STEREO, rate=44100, ibuf=40000) # create I2S object
     i2s.write(buf)             # write buffer of audio samples to I2S device
-    
+
     i2s = I2S(1, sck=Pin('X5'), ws=Pin('X6'), sd=Pin('Y4'), mode=I2S.RX, bits=16, format=I2S.MONO, rate=22050, ibuf=40000) # create I2S object
     i2s.readinto(buf)          # fill buffer with audio samples from I2S device
-    
-The I2S class is currently available as a Technical Preview.  During the preview period, feedback from 
+
+The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
 
-PYBv1.0/v1.1 has one I2S bus with id=2.  
-PYBD-SFxW has two I2S buses with id=1 and id=2.  
-I2S is shared with SPI.  
-    
+PYBv1.0/v1.1 has one I2S bus with id=2.
+PYBD-SFxW has two I2S buses with id=1 and id=2.
+I2S is shared with SPI.
+
 CAN bus (controller area network)
 ---------------------------------
 

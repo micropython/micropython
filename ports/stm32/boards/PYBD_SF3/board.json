@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../PYBD_SF2/deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "id": "PYBD-SF3",
+    "images": [
+        "PYBD_SF3_W4F2.jpg",
+        "PYBD_SF3_W4F2_top.jpg",
+        "PYBD_SF2_W4F2_bot.jpg",
+        "PYBD_SF3_W4F2_ds1.jpg",
+        "PYBD_SF3_W4F2_ds2.jpg",
+        "PYBD_SF3_W4F2_ds3.jpg"
+    ],
+    "mcu": "stm32f7",
+    "product": "Pyboard D-series SF3",
+    "thumbnail": "",
+    "url": "https://store.micropython.org/product/PYBD-SF3-W4F2",
+    "vendor": "George Robotics"
+}

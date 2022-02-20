@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "STM32F407ZGT6.jpg"
+    ],
+    "mcu": "stm32f4",
+    "product": "F407ZG",
+    "thumbnail": "",
+    "url": "http://vcc-gnd.com/",
+    "vendor": "VCC-GND Studio"
+}

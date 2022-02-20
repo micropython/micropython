@@ -53,8 +53,6 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
        mp_stack_ctrl_init();
        gc_init(heap, heap + sizeof(heap));
        mp_init();
-       mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
-       mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_argv), 0);
 
        // Start a normal REPL; will exit when ctrl-D is entered on a blank line.
        pyexec_friendly_repl();

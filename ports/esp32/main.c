@@ -101,7 +101,7 @@ void mp_task(void *pvParameter) {
     #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
-    void *mp_task_heap = (void *)0x3f800000;
+    void *mp_task_heap = (void *)SOC_EXTRAM_DATA_LOW;
     switch (esp_spiram_get_chip_size()) {
         case ESP_SPIRAM_SIZE_16MBITS:
             mp_task_heap_size = 2 * 1024 * 1024;
@@ -120,7 +120,7 @@ void mp_task(void *pvParameter) {
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
     size_t esp_spiram_size = esp_spiram_get_size();
-    void *mp_task_heap = (void *)0x3ff80000 - esp_spiram_size;
+    void *mp_task_heap = (void *)SOC_EXTRAM_DATA_HIGH - esp_spiram_size;
     if (esp_spiram_size > 0) {
         mp_task_heap_size = esp_spiram_size;
     } else {
@@ -140,10 +140,7 @@ soft_reset:
     mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
     gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
-    mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
-    mp_obj_list_init(mp_sys_argv, 0);
     readline_init0();
 
     // initialise peripherals
@@ -193,6 +190,8 @@ soft_reset_exit:
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
 
     // deinitialise peripherals
+    machine_pwm_deinit_all();
+    // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
     machine_deinit();
     usocket_events_deinit();
@@ -202,12 +201,20 @@ soft_reset_exit:
     goto soft_reset;
 }
 
-void app_main(void) {
+void boardctrl_startup(void) {
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         nvs_flash_erase();
         nvs_flash_init();
     }
+}
+
+void app_main(void) {
+    // Hook for a board to run code at start up.
+    // This defaults to initialising NVS.
+    MICROPY_BOARD_STARTUP();
+
+    // Create and transfer control to the MicroPython task.
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_SIZE / sizeof(StackType_t), NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 

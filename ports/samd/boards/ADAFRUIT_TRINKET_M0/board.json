@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "Micro USB",
+        "RGB LED"
+    ],
+    "images": [
+        "trinket_m0.jpg"
+    ],
+    "mcu": "samd21",
+    "product": "Trinket M0",
+    "thumbnail": "",
+    "url": "https://www.adafruit.com/product/3500",
+    "vendor": "Adafruit"
+}

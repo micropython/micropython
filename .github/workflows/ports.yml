@@ -1,0 +1,18 @@
+name: Build ports metadata
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+      - ports/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build ports download metadata
+      run: mkdir boards && ./tools/autobuild/build-downloads.py . ./boards
