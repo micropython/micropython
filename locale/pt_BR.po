@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-19 01:57+0000\n"
+"PO-Revision-Date: 2022-02-21 08:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2972,7 +2972,7 @@ msgstr "não é possível carregar com o índice '%q'"
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "não é possível realizar a importação relativa"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -4129,7 +4129,7 @@ msgstr "o pixel_shader deve ser displayio.Palette ou displayio.ColorConverter"
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "a sondagem no arquivo não está disponível no win32"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
