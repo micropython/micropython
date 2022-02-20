@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHARED_MODULE_UZLIB_DECOMPIO_H
-#define SHARED_MODULE_UZLIB_DECOMPIO_H
+#ifndef SHARED_MODULE_ZLIB_DECOMPIO_H
+#define SHARED_MODULE_ZLIB_DECOMPIO_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -41,4 +41,4 @@ typedef struct _mp_obj_decompio_t {
     bool eof;
 } mp_obj_decompio_t;
 
-#endif /* SHARED_MODULE_UZLIB_DECOMPIO_H */
+#endif /* SHARED_MODULE_ZLIB_DECOMPIO_H */

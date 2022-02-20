@@ -37,7 +37,7 @@
 #include "py/binary.h"
 #include "py/parsenum.h"
 
-#include "shared-bindings/uzlib/__init__.h"
+#include "shared-bindings/zlib/__init__.h"
 
 #define UZLIB_CONF_PARANOID_CHECKS (1)
 #include "lib/uzlib/tinf.h"
@@ -48,7 +48,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-mp_obj_t common_hal_uzlib_decompress(mp_obj_t data, bool is_zlib) {
+mp_obj_t common_hal_zlib_decompress(mp_obj_t data, bool is_zlib) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
@@ -61,7 +61,7 @@ mp_obj_t common_hal_uzlib_decompress(mp_obj_t data, bool is_zlib) {
 
     decomp->dest = dest_buf;
     decomp->dest_limit = dest_buf + dest_buf_size;
-    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
+    DEBUG_printf("zlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
     decomp->source = bufinfo.buf;
     decomp->source_limit = (unsigned char *)bufinfo.buf + bufinfo.len;
     int st;
@@ -89,7 +89,7 @@ mp_obj_t common_hal_uzlib_decompress(mp_obj_t data, bool is_zlib) {
     }
 
     mp_uint_t final_sz = decomp->dest - dest_buf;
-    DEBUG_printf("uzlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
+    DEBUG_printf("zlib: Resizing from " UINT_FMT " to final size: " UINT_FMT " bytes\n", dest_buf_size, final_sz);
     dest_buf = (byte *)m_renew(byte, dest_buf, dest_buf_size, final_sz);
     mp_obj_t res = mp_obj_new_bytearray_by_ref(final_sz, dest_buf);
     m_del_obj(TINF_DATA, decomp);

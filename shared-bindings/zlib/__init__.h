@@ -24,14 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_UZLIB_DECOMPIO_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_UZLIB_DECOMPIO_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
 
-#include "shared-module/uzlib/DecompIO.h"
+mp_obj_t common_hal_zlib_decompress(mp_obj_t data, bool is_zlib);
 
-extern const mp_obj_type_t decompio_type;
-
-extern void common_hal_uzlib_decompio_construct(mp_obj_decompio_t *self, mp_obj_t src_stream, mp_int_t dict_opt);
-extern mp_uint_t common_hal_uzlib_decompio_read(mp_obj_decompio_t *self, void *buf, mp_uint_t size, int *errcode);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_UZLIB_DECOMPIO_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H

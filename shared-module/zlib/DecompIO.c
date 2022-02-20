@@ -37,9 +37,9 @@
 #include "py/binary.h"
 #include "py/parsenum.h"
 
-#include "shared-bindings/uzlib/__init__.h"
-#include "shared-bindings/uzlib/DecompIO.h"
-#include "shared-module/uzlib/DecompIO.h"
+#include "shared-bindings/zlib/__init__.h"
+#include "shared-bindings/zlib/DecompIO.h"
+#include "shared-module/zlib/DecompIO.h"
 
 STATIC int read_src_stream(TINF_DATA *data) {
     mp_obj_decompio_t *self = (mp_obj_decompio_t *)data->self;
@@ -58,7 +58,7 @@ STATIC int read_src_stream(TINF_DATA *data) {
     return c;
 }
 
-void common_hal_uzlib_decompio_construct(mp_obj_decompio_t *self, mp_obj_t src_stream, mp_int_t dict_opt) {
+void common_hal_zlib_decompio_construct(mp_obj_decompio_t *self, mp_obj_t src_stream, mp_int_t dict_opt) {
     self->decomp.self = self;
     self->decomp.readSource = read_src_stream;
     self->src_stream = src_stream;
@@ -86,7 +86,7 @@ void common_hal_uzlib_decompio_construct(mp_obj_decompio_t *self, mp_obj_t src_s
     uzlib_uncompress_init(&self->decomp, m_new(byte, dict_sz), dict_sz);
 }
 
-mp_uint_t common_hal_uzlib_decompio_read(mp_obj_decompio_t *self, void *buf, mp_uint_t size, int *errcode) {
+mp_uint_t common_hal_zlib_decompio_read(mp_obj_decompio_t *self, void *buf, mp_uint_t size, int *errcode) {
     self->decomp.dest = buf;
     self->decomp.dest_limit = (unsigned char *)buf + size;
     int st = uzlib_uncompress_chksum(&self->decomp);
