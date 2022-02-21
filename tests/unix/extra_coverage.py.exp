@@ -39,7 +39,7 @@ sys             termios         traceback       ubinascii
 uctypes         uerrno          uheapq          uio
 ujson           ulab            uos             urandom
 ure             uselect         ustruct         utime
-utimeq          uzlib
+utimeq          uzlib           zlib
 ime
 
 utime           utimeq
