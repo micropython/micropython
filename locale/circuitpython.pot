@@ -355,7 +355,6 @@ msgstr ""
 msgid "64 bit types"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
@@ -1683,7 +1682,6 @@ msgstr ""
 msgid "No hardware support on clk pin"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
@@ -1829,7 +1827,6 @@ msgstr ""
 msgid "Only one address is allowed"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/time/TimeAlarm.c
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
@@ -1901,7 +1898,6 @@ msgstr ""
 msgid "Permission denied"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
@@ -1933,10 +1929,6 @@ msgstr ""
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pin is input only"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-msgid "Pin is not free"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
@@ -2166,7 +2158,7 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/SleepMemory.c
+#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2327,7 +2319,6 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm.orig/touch/TouchAlarm.c
 #: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
@@ -2434,10 +2425,6 @@ msgstr ""
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-msgid "Unknown error"
 msgstr ""
 
 #: shared-bindings/wifi/Radio.c
@@ -3643,7 +3630,7 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
-#: ports/espressif/common-hal/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr ""
 
@@ -4061,7 +4048,6 @@ msgstr ""
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
@@ -4069,7 +4055,6 @@ msgstr ""
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
