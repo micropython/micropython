@@ -28,7 +28,7 @@ If you are only starting with Micropython+LVGL, it's recommended that you use `l
 
 ### Unix (Linux) port
 
-This script is designed to use asyncio which is currently only included in the dev branch of micropython.
+This script is designed to use asyncio which is currently only included in the dev variant of micropython.
 
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8 parallel`
 Python 3 is required, but you can install some other version of python3 instead of 3.8, if needed.
@@ -36,8 +36,11 @@ Python 3 is required, but you can install some other version of python3 instead 
 3. `cd espy_dive_micropython`
 4. `git submodule update --init --recursive lib/lv_bindings`
 5. `make -C mpy-cross`
-6. `make -C ports/unix submodules`
-7. `make -C ports/unix`
+6. `make -C ports/unix submodules VARIANT=dev`
+7. `make -C ports/unix VARIANT=dev`
+
+To test you can open up the REPL with:
+8. `./ports/unix/micropython_dev`
 
 ### ESP32 port
 
@@ -64,99 +67,11 @@ For more details please refer to [Micropython ESP32 README](https://github.com/m
 
 ### JavaScript port
 
-Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
+# This is still a work in progress
 
-### Raspberry Pi Pico port
+Refer to the README of the `PyDive_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
 
-This port uses [Micropython infrastructure for C modules](https://docs.micropython.org/en/latest/develop/cmodules.html#compiling-the-cmodule-into-micropython) and `USER_C_MODULES` must be given:
 
-```
-cd ports/rp2
-make USER_C_MODULES=../../lv_bindings/bindings.cmake
-```
-
-## Super Simple Example
-
-First, LVGL needs to be imported and initialized
-
-```python
-import lvgl as lv
-lv.init()
-```
-
-Then display driver and input driver needs to be registered.
-Refer to [Porting the library](https://docs.lvgl.io/8.0/porting/index.html) for more information.
-Here is an example of registering SDL drivers on Micropython unix port:
-
-```python
-import SDL
-SDL.init()
-
-# Register SDL display driver.
-
-draw_buf = lv.disp_draw_buf_t()
-buf1_1 = bytearray(480*10)
-draw_buf.init(buf1_1, None, len(buf1_1)//4)
-disp_drv = lv.disp_drv_t()
-disp_drv.init()
-disp_drv.draw_buf = draw_buf
-disp_drv.flush_cb = SDL.monitor_flush
-disp_drv.hor_res = 480
-disp_drv.ver_res = 320
-disp_drv.register()
-
-# Regsiter SDL mouse driver
-
-indev_drv = lv.indev_drv_t()
-indev_drv.init()
-indev_drv.type = lv.INDEV_TYPE.POINTER
-indev_drv.read_cb = SDL.mouse_read
-indev_drv.register()
-```
-
-Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
-
-```python
-import lvgl as lv
-
-# Import ILI9341 driver and initialized it
-
-from ili9341 import ili9341
-disp = ili9341()
-
-# Import XPT2046 driver and initalize it
-
-from xpt2046 import xpt2046
-touch = xpt2046()
-```
-
-By default, both ILI9341 and XPT2046 are initialized on the same SPI bus with the following parameters:
-
-- ILI9341: `miso=5, mosi=18, clk=19, cs=13, dc=12, rst=4, power=14, backlight=15, spihost=esp.HSPI_HOST, mhz=40, factor=4, hybrid=True`
-- XPT2046: `cs=25, spihost=esp.HSPI_HOST, mhz=5, max_cmds=16, cal_x0 = 3783, cal_y0 = 3948, cal_x1 = 242, cal_y1 = 423, transpose = True, samples = 3`
-
-You can change any of these parameters on ili9341/xpt2046 constructor.
-You can also initalize them on different SPI buses if you want, by providing miso/mosi/clk parameters. Set them to -1 to use existing (initialized) spihost bus.
-
-Now you can create the GUI itself:
-
-```python
-
-# Create a screen with a button and a label
-
-scr = lv.obj()
-btn = lv.btn(scr)
-btn.align_to(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)
-label = lv.label(btn)
-label.set_text("Hello World!")
-
-# Load the screen
-
-lv.scr_load(scr)
-
-```
-
-## More information
 
 More info about LVGL:
 - Website https://lvgl.io
