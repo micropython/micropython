@@ -61,6 +61,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     #if CIRCUITPY_TERMINALIO
     displayio_tilegrid_t *grid = &supervisor_terminal_text_grid;
     bool tall = height_px > width_px;
+    bool reset_tiles = false;
     uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
     uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px;
     uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
@@ -86,10 +87,12 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         if (get_allocation_length(tilegrid_tiles) != align32_size(total_tiles)) {
             free_memory(tilegrid_tiles);
             tilegrid_tiles = NULL;
+            reset_tiles = true;
         }
     }
     if (!tilegrid_tiles) {
         tilegrid_tiles = allocate_memory(align32_size(total_tiles), false, true);
+        reset_tiles = true;
         if (!tilegrid_tiles) {
             return;
         }
@@ -111,7 +114,7 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     grid->tiles = tiles;
     grid->full_change = true;
 
-    common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
+    common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font, reset_tiles);
     #endif
 
     circuitpython_splash.scale = scale;
