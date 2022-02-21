@@ -19,7 +19,7 @@
 	url = https://github.com/NordicSemiconductor/nrfx.git
 [submodule "lib/lv_bindings"]
 	path = lib/lv_bindings
-	url = git@github.com:minyiky/lv_binding_micropython.git
+	url = https://github.com/minyiky/lv_binding_micropython.git
 	branch = master
 	update = merge
 [submodule "lib/mbedtls"]

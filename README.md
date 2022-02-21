@@ -1,4 +1,4 @@
-# Micropython + lvgl
+# Micropython + lvgl for the PyDive System (WiP)
 
 [![Build lv_micropython unix port](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml)
 [![Build lv_micropython stm32 port](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml)
@@ -28,14 +28,16 @@ If you are only starting with Micropython+LVGL, it's recommended that you use `l
 
 ### Unix (Linux) port
 
+This script is designed to use asyncio which is currently only included in the dev branch of micropython.
+
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8 parallel`
 Python 3 is required, but you can install some other version of python3 instead of 3.8, if needed.
-2. `git clone https://github.com/lvgl/lv_micropython.git`
-3. `cd lv_micropython`
+2. `git clone https://github.com/minyiky/espy_dive_micropython.git`
+3. `cd espy_dive_micropython`
 4. `git submodule update --init --recursive lib/lv_bindings`
 5. `make -C mpy-cross`
 6. `make -C ports/unix submodules`
-7. `make -C ports/unix`
+7. `make -C ports/unix --variant=DEV`
 8. `./ports/unix/micropython`
 
 ### ESP32 port
