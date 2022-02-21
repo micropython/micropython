@@ -30,16 +30,18 @@
 #include "shared-bindings/displayio/TileGrid.h"
 #include "shared-bindings/terminalio/Terminal.h"
 
-void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t *tilegrid, const fontio_builtinfont_t *font) {
+void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self, displayio_tilegrid_t *tilegrid, const fontio_builtinfont_t *font, const bool reset_tiles) {
     self->cursor_x = 0;
     self->cursor_y = 0;
     self->font = font;
     self->tilegrid = tilegrid;
     self->first_row = 0;
 
-    for (uint16_t x = 0; x < self->tilegrid->width_in_tiles; x++) {
-        for (uint16_t y = 0; y < self->tilegrid->height_in_tiles; y++) {
-            common_hal_displayio_tilegrid_set_tile(self->tilegrid, x, y, 0);
+    if (reset_tiles) {
+        for (uint16_t x = 0; x < self->tilegrid->width_in_tiles; x++) {
+            for (uint16_t y = 0; y < self->tilegrid->height_in_tiles; y++) {
+                common_hal_displayio_tilegrid_set_tile(self->tilegrid, x, y, 0);
+            }
         }
     }
 
