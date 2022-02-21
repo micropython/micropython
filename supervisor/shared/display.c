@@ -82,6 +82,11 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
+    // check if the terminal tile dimensions are the same
+    if ((grid->width_in_tiles != width_in_tiles) ||
+        (grid->height_in_tiles != height_in_tiles)) {
+        reset_tiles = true;
+    }
     // Reuse the previous allocation if possible
     if (tilegrid_tiles) {
         if (get_allocation_length(tilegrid_tiles) != align32_size(total_tiles)) {
@@ -97,24 +102,28 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
             return;
         }
     }
-    uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
-    grid->y = tall ? blinka_bitmap.height : 0;
-    grid->x = tall ? 0 : blinka_bitmap.width;
-    grid->top_left_y = 0;
-    if (remaining_pixels > 0) {
-        grid->y -= (grid->tile_height - remaining_pixels);
+    if (reset_tiles) {
+        uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
+
+        grid->y = tall ? blinka_bitmap.height : 0;
+        grid->x = tall ? 0 : blinka_bitmap.width;
+        grid->top_left_y = 0;
+        if (remaining_pixels > 0) {
+            grid->y -= (grid->tile_height - remaining_pixels);
+        }
+        grid->width_in_tiles = width_in_tiles;
+        grid->height_in_tiles = height_in_tiles;
+        assert(width_in_tiles > 0);
+        assert(height_in_tiles > 0);
+        grid->pixel_width = width_in_tiles * grid->tile_width;
+        grid->pixel_height = height_in_tiles * grid->tile_height;
+        grid->tiles = tiles;
+
+        grid->full_change = true;
+
+        common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
     }
-    grid->width_in_tiles = width_in_tiles;
-    grid->height_in_tiles = height_in_tiles;
-    assert(width_in_tiles > 0);
-    assert(height_in_tiles > 0);
-    grid->pixel_width = width_in_tiles * grid->tile_width;
-    grid->pixel_height = height_in_tiles * grid->tile_height;
-    grid->tiles = tiles;
-    grid->full_change = true;
-
-    common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font, reset_tiles);
     #endif
 
     circuitpython_splash.scale = scale;
