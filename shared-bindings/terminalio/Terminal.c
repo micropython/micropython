@@ -62,7 +62,7 @@ STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
     self->base.type = &terminalio_terminal_type;
 
-    common_hal_terminalio_terminal_construct(self, tilegrid, font, true);
+    common_hal_terminalio_terminal_construct(self, tilegrid, font);
     return MP_OBJ_FROM_PTR(self);
 }
 
