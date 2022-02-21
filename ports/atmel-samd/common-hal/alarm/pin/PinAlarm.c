@@ -171,13 +171,14 @@ void alarm_pin_pinalarm_reset(void) {
 static void pinalarm_set_alarms_light(size_t n_alarms, const mp_obj_t *alarms) {
     int err = PINALARM_NOERR;
     size_t i;
+    const mcu_pin_obj_t *pin;
 
     for (i = 0; i < n_alarms; i++) {
         if (!mp_obj_is_type(alarms[i], &alarm_pin_pinalarm_type)) {
             continue;
         }
         alarm_pin_pinalarm_obj_t *alarm = MP_OBJ_TO_PTR(alarms[i]);
-        const mcu_pin_obj_t *pin = alarm->pin;
+        pin = alarm->pin;
 
         if (!pin_number_is_free(pin->number)) {
             err = PINALARM_ERR_NOT_FREE;
@@ -229,14 +230,15 @@ static void pinalarm_set_alarms_light(size_t n_alarms, const mp_obj_t *alarms) {
 
     switch (err) {
         case PINALARM_ERR_NOT_FREE:
-            mp_raise_RuntimeError(translate("Pin is not free"));
-            ;
+            assert_pin_free(pin);
+            // raise ValueError here
+            MP_FALLTHROUGH
         case PINALARM_ERR_NOEXTINT:
             mp_raise_RuntimeError(translate("No hardware support on pin"));
         case PINALARM_ERR_NOCHANNEL:
             mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
         default:
-            mp_raise_RuntimeError(translate("Unknown error"));
+            mp_raise_RuntimeError(translate("Unknown reason."));
     }
 }
 

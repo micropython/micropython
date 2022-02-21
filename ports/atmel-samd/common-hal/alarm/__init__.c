@@ -101,12 +101,10 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
     PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_STANDBY;
     while (PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_STANDBY_Val) {
     }
-    // Even though RAMCFG_OFF, SYSRAM seems to be retained.  Probably
-    // because RTC keeps sleepwalking.  Anyway, STDBYCFG should be
-    // left intact as 0 to retain SYSRAM.
-    #if 0
-    PM->STDBYCFG.reg = PM_STDBYCFG_RAMCFG_OFF;
-    #endif
+    // STDBYCFG is left to be 0 to retain SYSRAM.  Note that, even if
+    // RAMCFG_OFF is set here, SYSRAM seems to be retained, probably
+    // because RTC and/or USB keeps sleepwalking.
+
     while (!mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         // Detect if interrupt was alarm or ctrl-C interrupt.
@@ -153,11 +151,6 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     alarm_time_timealarm_prepare_for_deep_sleep();
     // port_disable_tick(); // TODO: Required for SAMD?
 
-    // Set pin state before the deep sleep, to turn off devices and reduce power.
-    // In case of Wio Terminal, set PA18 to 0 to turn off RTL8720DN.
-    // Pin state is kept during BACKUP sleep.
-    board_deep_sleep_hook();
-
     // cache alarm flag and etc since RTC about to be reset
     uint32_t _flag = SAMD_ALARM_FLAG;           // RTC->MODE0.BKUP[0].reg
     uint32_t _target = RTC->MODE0.COMP[1].reg;
@@ -193,13 +186,7 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     // Enable interrupts
     common_hal_mcu_enable_interrupts();
 
-    // Set-up Deep Sleep Mode & RAM retention
-    // Left BRAMCFG untouched as 0
-    #if 0
-    PM->BKUPCFG.reg = PM_BKUPCFG_BRAMCFG(0x2);       // No RAM retention 0x2 partial:0x1
-    while (PM->BKUPCFG.bit.BRAMCFG != 0x2) {         // Wait for synchronization
-    }
-    #endif
+    // Set-up Deep Sleep Mode with backup RAM retention
     PM->SLEEPCFG.reg = PM_SLEEPCFG_SLEEPMODE_BACKUP;
     while (PM->SLEEPCFG.bit.SLEEPMODE != PM_SLEEPCFG_SLEEPMODE_BACKUP_Val) {
     }
@@ -216,24 +203,10 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     }
 }
 
-// In case of fake deep sleep, event loop is mostly managed in main.c.
-// Default common_hal_alarm_pretending_deep_sleep is defined in shared-bindings.
-// Note that "pretending" does not work on REPL; it only works for main.py (or code.py, ...).
-//
-// In case of fake sleep, if pin state is modified in the hook, the pin is left dirty...
-#if 0
-void common_hal_alarm_pretending_deep_sleep(void) {
-    // RTC is already be furnished by common_hal_alarm_set_deep_sleep_alarms.
-    // fake_sleep = true;
-
-    board_deep_sleep_hook();
-    port_idle_until_interrupt();
-}
-#endif
+// Default common_hal_alarm_pretending_deep_sleep is defined in
+// shared-bindings, which is used here.  Note that "pretending" does
+// not work on REPL; it only works for main.py (or code.py, ...).
 
 void common_hal_alarm_gc_collect(void) {
     gc_collect_ptr(shared_alarm_get_wake_alarm());
-}
-
-MP_WEAK void board_deep_sleep_hook(void) {
 }

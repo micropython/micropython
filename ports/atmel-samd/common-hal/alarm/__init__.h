@@ -57,5 +57,4 @@ extern void alarm_set_wakeup_reason(samd_sleep_source_t reason);
 void alarm_get_wakeup_cause(void);
 extern void alarm_reset(void);
 
-extern void board_deep_sleep_hook(void);
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_ALARM__INIT__H
