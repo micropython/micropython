@@ -37,8 +37,7 @@ Python 3 is required, but you can install some other version of python3 instead 
 4. `git submodule update --init --recursive lib/lv_bindings`
 5. `make -C mpy-cross`
 6. `make -C ports/unix submodules`
-7. `make -C ports/unix --variant=DEV`
-8. `./ports/unix/micropython`
+7. `make -C ports/unix`
 
 ### ESP32 port
 
