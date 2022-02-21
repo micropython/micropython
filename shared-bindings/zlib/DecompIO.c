@@ -69,7 +69,7 @@
 //|         ...
 //|
 //|     def readline(self, nbytes: Optional[int] = None) -> Optional[bytes]:
-//|         """Read and return one line from the stream. The line terminator is always b'\n'.
+//|         """Read and return one line from the stream. The line terminator is always b'\\n'.
 //|         If ``nbytes`` is specified then read at most that many bytes.
 //|
 //|         :return: Data read
