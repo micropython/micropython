@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-15 18:42+0000\n"
+"PO-Revision-Date: 2022-02-21 08:55+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2501,12 +2501,12 @@ msgstr "Erro não tratado do ESP TLS %d %d %x %d"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
-msgstr ""
+msgstr "Houve um erro BLE desconhecido em %s:%d: %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error: %d"
-msgstr ""
+msgstr "Houve um erro BLE desconhecido: %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -2970,6 +2970,10 @@ msgstr "não é possível carregar a partir de '%q'"
 msgid "can't load with '%q' index"
 msgstr "não é possível carregar com o índice '%q'"
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr "não é possível realizar a importação relativa"
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
@@ -3035,10 +3039,6 @@ msgstr "não é possível criar instância"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "não pode importar nome %q"
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
-msgstr "não pode executar a importação relativa"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3739,7 +3739,7 @@ msgstr "erro de domínio matemático"
 msgid "matrix is not positive definite"
 msgstr "a matriz não é definitiva positiva"
 
-#: shared-bindings/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr "max_connections deve estar entre 0 e 10"
 
@@ -4127,6 +4127,10 @@ msgstr "o valor do pixel requer bits demais"
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "o pixel_shader deve ser displayio.Palette ou displayio.ColorConverter"
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr "a sondagem no arquivo não está disponível no win32"
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr "o polígono só pode ser registrado em um pai"
@@ -4172,6 +4176,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
@@ -4759,6 +4764,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "não pode executar a importação relativa"
 
 #, c-format
 #~ msgid "No I2C device at address: %x"

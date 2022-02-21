@@ -2979,6 +2979,10 @@ msgstr "impossible de charger depuis '%q'"
 msgid "can't load with '%q' index"
 msgstr "impossible de charger avec l'indice '%q'"
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr ""
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
@@ -3046,10 +3050,6 @@ msgstr "ne peut pas créer une instance"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "ne peut pas importer le nom %q"
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
-msgstr "ne peut pas réaliser un import relatif"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3751,7 +3751,7 @@ msgstr "erreur de domaine math"
 msgid "matrix is not positive definite"
 msgstr "la matrice n'est pas définie positive"
 
-#: shared-bindings/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr ""
 
@@ -4137,6 +4137,10 @@ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 "pixel_shader doit être un objet displayio.Palette ou displayio.ColorConverter"
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr "le polygone ne peut être enregistré que dans un parent"
@@ -4182,6 +4186,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
@@ -4770,6 +4775,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "ne peut pas réaliser un import relatif"
 
 #, c-format
 #~ msgid "No I2C device at address: %x"
