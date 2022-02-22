@@ -289,6 +289,12 @@ controlling the operation:
 
     Excess values are limited within the permitted ranges.
 
+.. method:: WM8960.deemphasis(True | False)
+
+    Enables or disables a deemphasis filter for playback. This filter is applied only for
+    sample rates of 32000, 44100 and 48000. For other sample rates, the filter setting
+    is silently ignored.
+
 .. method:: WM8960.deinit()
 
     Disable all modules.
