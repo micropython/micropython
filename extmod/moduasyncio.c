@@ -29,11 +29,8 @@
 #include "py/pairheap.h"
 #include "py/mphal.h"
 
-#if 0    // causes error for unix build
-#include "shared-bindings/supervisor/__init__.h"
-#else
+// Unix build does not have shared-bindings/supervisor/__init__.h
 extern mp_obj_t supervisor_ticks_ms(void);
-#endif
 
 #if MICROPY_PY_UASYNCIO
 
@@ -232,37 +229,6 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
-STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
-    if (dest[0] == MP_OBJ_NULL) {
-        // Load
-        if (attr == MP_QSTR_coro) {
-            dest[0] = self->coro;
-        } else if (attr == MP_QSTR_data) {
-            dest[0] = self->data;
-        } else if (attr == MP_QSTR_state) {
-            dest[0] = self->state;
-        } else if (attr == MP_QSTR_done) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
-            dest[1] = self_in;
-        } else if (attr == MP_QSTR_cancel) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
-            dest[1] = self_in;
-        } else if (attr == MP_QSTR_ph_key) {
-            dest[0] = self->ph_key;
-        }
-    } else if (dest[1] != MP_OBJ_NULL) {
-        // Store
-        if (attr == MP_QSTR_data) {
-            self->data = dest[1];
-            dest[0] = MP_OBJ_NULL;
-        } else if (attr == MP_QSTR_state) {
-            self->state = dest[1];
-            dest[0] = MP_OBJ_NULL;
-        }
-    }
-}
-
 STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
@@ -290,6 +256,46 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
         ((mp_obj_task_t *)MP_OBJ_TO_PTR(cur_task))->data = self_in;
     }
     return mp_const_none;
+}
+
+STATIC mp_obj_t task_await(mp_obj_t self_in) {
+    return task_getiter(self_in, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_await_obj, task_await);
+
+STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load
+        if (attr == MP_QSTR_coro) {
+            dest[0] = self->coro;
+        } else if (attr == MP_QSTR_data) {
+            dest[0] = self->data;
+        } else if (attr == MP_QSTR_state) {
+            dest[0] = self->state;
+        } else if (attr == MP_QSTR_done) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_cancel) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_ph_key) {
+            dest[0] = self->ph_key;
+        } else if (attr == MP_QSTR___await__) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
+            dest[1] = self_in;
+        }
+
+    } else if (dest[1] != MP_OBJ_NULL) {
+        // Store
+        if (attr == MP_QSTR_data) {
+            self->data = dest[1];
+            dest[0] = MP_OBJ_NULL;
+        } else if (attr == MP_QSTR_state) {
+            self->state = dest[1];
+            dest[0] = MP_OBJ_NULL;
+        }
+    }
 }
 
 STATIC const mp_obj_type_t task_type = {
