@@ -29,7 +29,7 @@
 #include "py/pairheap.h"
 #include "py/mphal.h"
 
-#ifndef __unix__
+#if !(defined(__unix__) || defined(__APPLE__))
 #include "shared-bindings/supervisor/__init__.h"
 #endif
 
@@ -67,7 +67,7 @@ STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, si
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-#ifdef __unix__
+#if (defined(__unix__) || defined(__APPLE__))
 STATIC mp_obj_t ticks(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
