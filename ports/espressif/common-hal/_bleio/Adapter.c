@@ -256,6 +256,17 @@ STATIC void _convert_address(const bleio_address_obj_t *address, ble_addr_t *nim
     memcpy(nimble_address->val, (uint8_t *)address_buf_info.buf, NUM_BLEIO_ADDRESS_BYTES);
 }
 
+STATIC int _mtu_reply(uint16_t conn_handle,
+    const struct ble_gatt_error *error,
+    uint16_t mtu, void *arg) {
+    bleio_connection_internal_t *connection = (bleio_connection_internal_t *)arg;
+    if (conn_handle != connection->conn_handle || error->status != 0) {
+        return 0;
+    }
+    connection->mtu = mtu;
+    return 0;
+}
+
 STATIC void _new_connection(uint16_t conn_handle) {
     // Set the tx_power for the connection higher than the advertisement.
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
@@ -275,12 +286,96 @@ STATIC void _new_connection(uint16_t conn_handle) {
     connection->pair_status = PAIR_NOT_PAIRED;
     connection->mtu = 0;
 
+    ble_gattc_exchange_mtu(conn_handle, _mtu_reply, connection);
+
     // Change the callback for the connection.
     ble_gap_set_event_cb(conn_handle, bleio_connection_event_cb, connection);
 }
 
+static int _connect_event(struct ble_gap_event *event, void *self_in) {
+    bleio_adapter_obj_t *self = (bleio_adapter_obj_t *)self_in;
+
+    #if CIRCUITPY_VERBOSE_BLE
+    mp_printf(&mp_plat_print, "Connect event: %d\n", event->type);
+    #endif
+    switch (event->type) {
+        case BLE_GAP_EVENT_CONNECT:
+            if (event->connect.status == 0) {
+                _new_connection(event->connect.conn_handle);
+                // Set connections objs back to NULL since we have a new
+                // connection and need a new tuple.
+                self->connection_objs = NULL;
+                xTaskNotify(cp_task, event->connect.conn_handle, eSetValueWithOverwrite);
+            } else {
+                xTaskNotify(cp_task, -event->connect.status, eSetValueWithOverwrite);
+            }
+            break;
+
+        default:
+            #if CIRCUITPY_VERBOSE_BLE
+            // For debugging.
+            mp_printf(&mp_plat_print, "Unhandled connect event: %d\n", event->type);
+            #endif
+            break;
+    }
+    return 0;
+}
+
 mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_address_obj_t *address, mp_float_t timeout) {
-    mp_raise_NotImplementedError(NULL);
+    // Stop any active scan.
+    if (self->scan_results != NULL) {
+        common_hal_bleio_adapter_stop_scan(self);
+    }
+
+    struct ble_gap_conn_params conn_params = {
+        .scan_itvl = MSEC_TO_UNITS(100, UNIT_0_625_MS),
+        .scan_window = MSEC_TO_UNITS(100, UNIT_0_625_MS),
+        .itvl_min = MSEC_TO_UNITS(15, UNIT_1_25_MS),
+        .itvl_max = MSEC_TO_UNITS(300, UNIT_1_25_MS),
+        .latency = 0,
+        .supervision_timeout = MSEC_TO_UNITS(4000, UNIT_10_MS),
+        .min_ce_len = BLE_GAP_INITIAL_CONN_MIN_CE_LEN,
+        .max_ce_len = BLE_GAP_INITIAL_CONN_MAX_CE_LEN
+    };
+
+    uint8_t own_addr_type;
+    // TODO: Use a resolvable address if the peer has our key.
+    CHECK_NIMBLE_ERROR(ble_hs_id_infer_auto(false, &own_addr_type));
+
+    ble_addr_t addr;
+    _convert_address(address, &addr);
+
+    cp_task = xTaskGetCurrentTaskHandle();
+    // Make sure we don't have a pending notification from a previous time. This
+    // can happen if a previous wait timed out before the notification was given.
+    xTaskNotifyStateClear(cp_task);
+    CHECK_NIMBLE_ERROR(
+        ble_gap_connect(own_addr_type, &addr,
+            SEC_TO_UNITS(timeout, UNIT_1_MS) + 0.5f,
+            &conn_params,
+            _connect_event, self));
+
+    int error_code;
+    CHECK_NOTIFY(xTaskNotifyWait(0, 0, (uint32_t *)&error_code, 200));
+    // Negative values are error codes, connection handle otherwise.
+    if (error_code < 0) {
+        CHECK_BLE_ERROR(-error_code);
+    }
+    uint16_t conn_handle = error_code;
+
+    // TODO: If we have keys, then try and encrypt the connection.
+
+    // TODO: Negotiate for better PHY and data lengths since we are the central. These are
+    // nice-to-haves so ignore any errors.
+
+    // Make the connection object and return it.
+    for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
+        bleio_connection_internal_t *connection = &bleio_connections[i];
+        if (connection->conn_handle == conn_handle) {
+            connection->is_central = true;
+            return bleio_connection_new_from_internal(connection);
+        }
+    }
 
     mp_raise_bleio_BluetoothError(translate("Failed to connect: internal error"));
 

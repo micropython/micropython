@@ -39,9 +39,13 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin);
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin);
 void claim_pin(const mcu_pin_obj_t *pin);
 void claim_pin_number(gpio_num_t pin_number);
-// Free the pin without resetting it.
-void free_pin_number(gpio_num_t pin_number);
 bool pin_number_is_free(gpio_num_t pin_number);
 void never_reset_pin_number(gpio_num_t pin_number);
+
+// Allow the board to reset a pin in a board-specific way. This can be used
+// for LEDs or enable pins to put them in a state beside the default pull-up.
+// Return true to indicate that the pin was reset. Returning false will lead to
+// the port-default reset behavior.
+bool espressif_board_reset_pin_number(gpio_num_t pin_number);
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_MICROCONTROLLER_PIN_H

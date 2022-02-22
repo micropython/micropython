@@ -2489,6 +2489,16 @@ msgstr "Tipo de uuid nrfx inesperado"
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr "Error no manejado de ESP TLS %d %d %x %d"
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error at %s:%d: %d"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error: %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2562,12 +2572,14 @@ msgstr "Operación no soportada"
 msgid "Update Failed"
 msgstr "La actualización fallo"
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Tamaño del valor != del tamaño fijo requerido"
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2943,6 +2955,10 @@ msgstr "no se puede cargar desde '%q'"
 msgid "can't load with '%q' index"
 msgstr "no se puede cargar con el índice '%q'"
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr ""
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
@@ -3009,10 +3025,6 @@ msgstr "no se puede crear instancia"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "no se puede importar name '%q'"
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
-msgstr "no se puedo realizar importación relativa"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3709,6 +3721,10 @@ msgstr "error de dominio matemático"
 msgid "matrix is not positive definite"
 msgstr "matrix no es definida positiva"
 
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "max_connections must be between 0 and 10"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -3864,6 +3880,7 @@ msgstr "no hay tal atributo"
 msgid "non-Device in %q"
 msgstr "hay un no-Device en %q"
 
+#: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "no UUID encontrado en service_uuids_whitelist"
@@ -4089,6 +4106,10 @@ msgstr "valor del pixel require demasiado bits"
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr "el polígono solo se puede registrar en uno de los padres"
@@ -4134,6 +4155,7 @@ msgstr "pow() con 3 argumentos requiere enteros"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
@@ -4722,6 +4744,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "no se puedo realizar importación relativa"
 
 #, c-format
 #~ msgid "No I2C device at address: %x"

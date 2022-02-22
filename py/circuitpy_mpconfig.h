@@ -87,6 +87,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
 #define MICROPY_OPT_LOAD_ATTR_FAST_PATH  (CIRCUITPY_OPT_LOAD_ATTR_FAST_PATH)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE  (CIRCUITPY_OPT_MAP_LOOKUP_CACHE)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
@@ -447,9 +448,9 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PYSTACK_SIZE 1536
 #endif
 
-// Wait this long imediately after startup to see if we are connected to USB.
-#ifndef CIRCUITPY_USB_CONNECTED_SLEEP_DELAY
-#define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
+// Wait this long before sleeping immediately after startup, to see if we are connected via USB or BLE.
+#ifndef CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY
+#define CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY 5
 #endif
 
 #ifndef CIRCUITPY_PROCESSOR_COUNT
@@ -541,5 +542,16 @@ void supervisor_run_background_tasks_if_tick(void);
 #define USB_MIDI_EP_NUM_IN (0)
 #endif
 
+#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
+#define MICROPY_WRAP_MP_MAP_LOOKUP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_BINARY_OP
+#define MICROPY_WRAP_MP_BINARY_OP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
+#endif
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

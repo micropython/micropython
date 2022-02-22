@@ -162,13 +162,8 @@ CFLAGS += -DCIRCUITPY_COMPUTED_GOTO_SAVE_SPACE=$(CIRCUITPY_COMPUTED_GOTO_SAVE_SP
 CIRCUITPY_OPT_LOAD_ATTR_FAST_PATH ?= 1
 CFLAGS += -DCIRCUITPY_OPT_LOAD_ATTR_FAST_PATH=$(CIRCUITPY_OPT_LOAD_ATTR_FAST_PATH)
 
-# This is disabled because it changes the bytecode format. We could choose to enable it
-# when we go to 8.x, but probably not for 7.1.
-CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE ?= 0
-CFLAGS += -DCIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE=$(CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
-ifeq ($(CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE),1)
-MPY_CROSS_FLAGS += -mcache-lookup-bc
-endif
+CIRCUITPY_OPT_MAP_LOOKUP_CACHE ?= $(CIRCUITPY_FULL_BUILD)
+CFLAGS += -DCIRCUITPY_OPT_MAP_LOOKUP_CACHE=$(CIRCUITPY_OPT_MAP_LOOKUP_CACHE)
 
 CIRCUITPY_CONSOLE_UART ?= 0
 CFLAGS += -DCIRCUITPY_CONSOLE_UART=$(CIRCUITPY_CONSOLE_UART)
@@ -489,6 +484,7 @@ CFLAGS += -DLONGINT_IMPL_LONGLONG
 else
 $(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
 endif
+MPY_TOOL_FLAGS += $(MPY_TOOL_LONGINT_IMPL)
 
 ###
 ifeq ($(LONGINT_IMPL),NONE)
@@ -496,4 +492,17 @@ else ifeq ($(LONGINT_IMPL),MPZ)
 else ifeq ($(LONGINT_IMPL),LONGLONG)
 else
 $(error LONGINT_IMPL set to surprising value: "$(LONGINT_IMPL)")
+endif
+
+PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
+ifneq ($(FROZEN_MPY_DIRS),)
+$(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
+	$(ECHO) FREEZE $(FROZEN_MPY_DIRS)
+	$(Q)$(MKDIR) -p $@
+	$(Q)$(PREPROCESS_FROZEN_MODULES) -o $@ $(FROZEN_MPY_DIRS)
+
+$(BUILD)/manifest.py: $(BUILD)/frozen_mpy | $(TOP)/py/circuitpy_mpconfig.mk mpconfigport.mk boards/$(BOARD)/mpconfigboard.mk
+	$(ECHO) MKMANIFEST $(FROZEN_MPY_DIRS)
+	(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
+FROZEN_MANIFEST=$(BUILD)/manifest.py
 endif

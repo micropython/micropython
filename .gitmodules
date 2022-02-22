@@ -277,3 +277,9 @@
 [submodule "ports/stm/st_driver/stm32f4xx_hal_driver"]
 	path = ports/stm/st_driver/stm32f4xx_hal_driver
 	url = https://github.com/adafruit/stm32f4xx_hal_driver.git
+[submodule "frozen/Adafruit_CircuitPython_PortalBase"]
+	path = frozen/Adafruit_CircuitPython_PortalBase
+	url = https://github.com/adafruit/Adafruit_CircuitPython_PortalBase.git
+[submodule "frozen/Adafruit_CircuitPython_FakeRequests"]
+	path = frozen/Adafruit_CircuitPython_FakeRequests
+	url = https://github.com/adafruit/Adafruit_CircuitPython_FakeRequests.git

@@ -2427,6 +2427,16 @@ msgstr ""
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error at %s:%d: %d"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error: %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2498,12 +2508,14 @@ msgstr ""
 msgid "Update Failed"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2874,6 +2886,10 @@ msgstr ""
 msgid "can't load with '%q' index"
 msgstr ""
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr ""
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
@@ -2934,10 +2950,6 @@ msgstr ""
 
 #: py/runtime.c
 msgid "cannot import name %q"
-msgstr ""
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
 msgstr ""
 
 #: extmod/moductypes.c
@@ -3630,7 +3642,7 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
-#: shared-bindings/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr ""
 
@@ -3788,6 +3800,7 @@ msgstr ""
 msgid "non-Device in %q"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
@@ -4010,6 +4023,10 @@ msgstr ""
 msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 msgstr ""
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr ""
@@ -4055,6 +4072,7 @@ msgstr ""
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
