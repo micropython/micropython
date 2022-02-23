@@ -536,6 +536,10 @@ void rfcore_init(void) {
     // Initialise IPCC and shared memory structures
     ipcc_init(IRQ_PRI_SDIO);
 
+    // When the device is out of standby, it is required to use the EXTI mechanism to wakeup CPU2
+    LL_C2_EXTI_EnableEvent_32_63( LL_EXTI_LINE_41 );
+    LL_EXTI_EnableRisingTrig_32_63( LL_EXTI_LINE_41 );
+
     // Boot the second core
     __SEV();
     __WFE();
@@ -585,16 +589,32 @@ static const struct {
 void rfcore_ble_init(void) {
     DEBUG_printf("rfcore_ble_init\n");
 
-    // Clear any outstanding messages from ipcc_init.
-    tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
-
     // Configure and reset the BLE controller.
-    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 0);
-    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+    if (!rfcore_ble_reset()) {
+        // Out of standby initial init can fail. Reset rfcode and retry.
+        rfcore_init();
+        rfcore_ble_reset();
+    }
 
     // Enable PES rather than SEM7 to moderate flash access between the cores.
     uint8_t buf = 0; // FLASH_ACTIVITY_CONTROL_PES
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_SET_FLASH_ACTIVITY_CONTROL), &buf, 1, 0);
+}
+
+bool rfcore_ble_reset(void) {
+    DEBUG_printf("rfcore_ble_reset\n");
+
+    // Clear any outstanding messages from ipcc_init.
+    tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
+
+    // Configure and reset the BLE controller.
+    int ret = tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 500);
+
+    if (ret == -MP_ETIMEDOUT) {
+        return false;
+    }
+    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+    return true;
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {

@@ -167,6 +167,11 @@ void SystemClock_Config(void) {
 #define CLK48_SEMID (5)
 
 void SystemClock_Config(void) {
+    // Enable HSI - needed briefly during setup when waking from standby.
+    RCC->CR |= RCC_CR_HSION;
+    while (!(RCC->CR & RCC_CR_HSIRDY)) {
+    }
+
     // Enable the 32MHz external oscillator
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
@@ -210,6 +215,9 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    // HSI no longer needed once other clocks configured.
+    RCC->CR &= ~(RCC_CR_HSION);
 }
 
 #elif defined(STM32WL)
