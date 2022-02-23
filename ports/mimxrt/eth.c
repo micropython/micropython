@@ -291,6 +291,7 @@ void eth_init(eth_t *self, int mac_idx, const phy_operations_t *phy_ops, int phy
 
     ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, CLOCK_GetFreq(kCLOCK_IpgClk));
     ENET_SetCallback(&g_handle, eth_irq_handler, (void *)self);
+    NVIC_SetPriority(ENET_IRQn, IRQ_PRI_PENDSV);
     ENET_EnableInterrupts(ENET, ENET_RX_INTERRUPT);
     ENET_ClearInterruptStatus(ENET, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
     ENET_ActiveRead(ENET);
@@ -348,7 +349,7 @@ STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
             p = p->next;
         }
         status = eth_send_frame_blocking(ENET, &g_handle, tx_frame, length);
-     }
+    }
     return status == kStatus_Success ? ERR_OK : ERR_BUF;
 }
 
