@@ -139,6 +139,7 @@
 #define MICROPY_PY_URANDOM          (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_TIMER    (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
@@ -211,7 +212,8 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50];
+    char *readline_hist[50]; \
+    struct _machine_timer_obj_t *machine_timer_obj_head; 
 #endif
 
 #define MP_STATE_PORT               MP_STATE_VM

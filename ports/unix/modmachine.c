@@ -36,6 +36,10 @@
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 
+#if MICROPY_PY_MACHINE_TIMER
+#include "machine_timer.h"
+#endif
+
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
 #include <fcntl.h>
@@ -100,6 +104,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
     #if MICROPY_PY_MACHINE_PULSE
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    #endif
+    #if MICROPY_PY_MACHINE_TIMER
+    { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
     #endif
 };
 
