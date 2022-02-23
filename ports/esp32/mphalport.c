@@ -98,7 +98,6 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         MICROPY_EVENT_POLL_HOOK
-        ulTaskNotifyTake(pdFALSE, 1);
     }
 }
 
