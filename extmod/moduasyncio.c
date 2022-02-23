@@ -29,7 +29,7 @@
 #include "py/pairheap.h"
 #include "py/mphal.h"
 
-#if !(defined(__unix__) || defined(__APPLE__))
+#if CIRCUITPY && !(defined(__unix__) || defined(__APPLE__))
 #include "shared-bindings/supervisor/__init__.h"
 #endif
 
@@ -63,11 +63,12 @@ STATIC const mp_obj_type_t task_queue_type;
 STATIC const mp_obj_type_t task_type;
 
 STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-#if (defined(__unix__) || defined(__APPLE__))
+#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
 STATIC mp_obj_t ticks(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
@@ -244,6 +245,45 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
+STATIC mp_obj_t task_await(mp_obj_t self_in) {
+    return task_getiter(self_in, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_await_obj, task_await);
+
+STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load
+        if (attr == MP_QSTR_coro) {
+            dest[0] = self->coro;
+        } else if (attr == MP_QSTR_data) {
+            dest[0] = self->data;
+        } else if (attr == MP_QSTR_state) {
+            dest[0] = self->state;
+        } else if (attr == MP_QSTR_done) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_cancel) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
+            dest[1] = self_in;
+        } else if (attr == MP_QSTR_ph_key) {
+            dest[0] = self->ph_key;
+        } else if (attr == MP_QSTR___await__) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
+            dest[1] = self_in;
+        }
+    } else if (dest[1] != MP_OBJ_NULL) {
+        // Store
+        if (attr == MP_QSTR_data) {
+            self->data = dest[1];
+            dest[0] = MP_OBJ_NULL;
+        } else if (attr == MP_QSTR_state) {
+            self->state = dest[1];
+            dest[0] = MP_OBJ_NULL;
+        }
+    }
+}
+
 STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
@@ -273,46 +313,6 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t task_await(mp_obj_t self_in) {
-    return task_getiter(self_in, NULL);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_await_obj, task_await);
-
-STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
-    if (dest[0] == MP_OBJ_NULL) {
-        // Load
-        if (attr == MP_QSTR_coro) {
-            dest[0] = self->coro;
-        } else if (attr == MP_QSTR_data) {
-            dest[0] = self->data;
-        } else if (attr == MP_QSTR_state) {
-            dest[0] = self->state;
-        } else if (attr == MP_QSTR_done) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_done_obj);
-            dest[1] = self_in;
-        } else if (attr == MP_QSTR_cancel) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_cancel_obj);
-            dest[1] = self_in;
-        } else if (attr == MP_QSTR_ph_key) {
-            dest[0] = self->ph_key;
-        } else if (attr == MP_QSTR___await__) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
-            dest[1] = self_in;
-        }
-
-    } else if (dest[1] != MP_OBJ_NULL) {
-        // Store
-        if (attr == MP_QSTR_data) {
-            self->data = dest[1];
-            dest[0] = MP_OBJ_NULL;
-        } else if (attr == MP_QSTR_state) {
-            self->state = dest[1];
-            dest[0] = MP_OBJ_NULL;
-        }
-    }
-}
-
 STATIC const mp_obj_type_t task_type = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_EXTENDED,
@@ -329,7 +329,11 @@ STATIC const mp_obj_type_t task_type = {
 // C-level uasyncio module
 
 STATIC const mp_rom_map_elem_t mp_module_uasyncio_globals_table[] = {
+    #if CIRCUITPY
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__asyncio) },
+    #else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__uasyncio) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_TaskQueue), MP_ROM_PTR(&task_queue_type) },
     { MP_ROM_QSTR(MP_QSTR_Task), MP_ROM_PTR(&task_type) },
 };
@@ -339,5 +343,7 @@ const mp_obj_module_t mp_module_uasyncio = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__asyncio, mp_module_uasyncio, MICROPY_PY_UASYNCIO);
 
 #endif // MICROPY_PY_UASYNCIO
