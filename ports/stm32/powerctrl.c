@@ -29,6 +29,7 @@
 #include "powerctrl.h"
 #include "rtc.h"
 #include "genhdr/pllfreqtable.h"
+#include "extmod/modbluetooth.h"
 
 #if defined(STM32H7)
 #define RCC_SR          RSR
@@ -945,6 +946,10 @@ void powerctrl_enter_standby_mode(void) {
         while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
         }
     }
+    #endif
+
+    #if defined(STM32WB) && MICROPY_PY_BLUETOOTH
+    mp_bluetooth_deinit();
     #endif
 
     // We need to clear the PWR wake-up-flag before entering standby, since
