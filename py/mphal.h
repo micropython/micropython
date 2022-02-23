@@ -55,6 +55,22 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len);
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len);
 #endif
 
+#ifndef mp_hal_stdin_rx_buff_poll
+uintptr_t mp_hal_stdin_rx_buff_poll(uintptr_t poll_flags);
+#endif
+
+#ifndef mp_hal_stdin_rx_buff_get
+int mp_hal_stdin_rx_buff_get(void);
+#endif
+
+#ifndef mp_hal_stdin_rx_buff_put
+int mp_hal_stdin_rx_buff_put(char c);
+#endif
+
+#ifndef mp_hal_stdin_rx_buff_free
+size_t mp_hal_stdin_rx_buff_free();
+#endif
+
 #ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms);
 #endif
