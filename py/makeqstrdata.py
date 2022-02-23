@@ -61,7 +61,12 @@ static_qstr_list = [
     " ",
     "*",
     "/",
+    "<dictcomp>",
+    "<genexpr>",
+    "<lambda>",
+    "<listcomp>",
     "<module>",
+    "<setcomp>",
     "_",
     "__call__",
     "__class__",
@@ -373,7 +378,7 @@ def print_qstr_data(qstrs):
         print('QDEF0(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
 
     # go through each qstr in pool 1 and print it out. pool1 is regularly sorted.
-    for q in sorted(q1_values, key=lambda x: x.qstr):
+    for q in sorted(q1_values, key=lambda x: (x.qhash, x.qlen)):
         print('QDEF1(MP_QSTR_%s, %d, %d, "%s")' % (q.ident, q.qhash, q.qlen, q.qdata))
 
 

@@ -1397,7 +1397,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = qstrutil.Qstr(len(new), q.qstr_esc, q.str)
-    new = sorted(new.values(), key=lambda x: x.qstr)
+    new = sorted(new.values(), key=lambda x: (x.qhash, x.qlen))
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
