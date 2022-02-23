@@ -34,15 +34,16 @@ typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *pin;
     bool value;
+    bool edge;
     bool pull;
-    uint8_t channel;
 } alarm_pin_pinalarm_obj_t;
 
 mp_obj_t alarm_pin_pinalarm_find_triggered_alarm(size_t n_alarms, const mp_obj_t *alarms);
-mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(void);
+mp_obj_t alarm_pin_pinalarm_create_wakeup_alarm(uint32_t TAMPID);
 
 void pin_alarm_callback(uint8_t num);
 void alarm_pin_pinalarm_reset(void);
+void alarm_pin_pinalarm_deinit_alarms(size_t n_alarms, const mp_obj_t *alarms);
 void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms);
 void alarm_pin_pinalarm_prepare_for_deep_sleep(void);
 bool alarm_pin_pinalarm_woke_this_cycle(void);
