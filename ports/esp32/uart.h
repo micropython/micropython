@@ -28,6 +28,7 @@
 #ifndef MICROPY_INCLUDED_ESP32_UART_H
 #define MICROPY_INCLUDED_ESP32_UART_H
 
-void uart_init(void);
+void uart_stdout_init(void);
+int uart_stdout_tx_strn(const char *str, size_t len);
 
 #endif // MICROPY_INCLUDED_ESP32_UART_H
