@@ -200,21 +200,14 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 
     // extmod modules
 
-    #if MICROPY_PY_UASYNCIO
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
+    // Modules included in CircuitPython are registered using MP_REGISTER_MODULE,
+    // and do not have the "u" prefix.
+
+    #if MICROPY_PY_UASYNCIO && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR__uasyncio), MP_ROM_PTR(&mp_module_uasyncio) },
     #endif
-    #endif
-    #if MICROPY_PY_UERRNO
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
+    #if MICROPY_PY_UERRNO && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
-    #endif
     #endif
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
@@ -222,29 +215,14 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_UZLIB
     { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
     #endif
-    #if MICROPY_PY_UJSON
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
+    #if MICROPY_PY_UJSON && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
     #endif
-    #endif
     #if CIRCUITPY_ULAB
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
     { MP_ROM_QSTR(MP_QSTR_ulab), MP_ROM_PTR(&ulab_user_cmodule) },
     #endif
-    #endif
-    #if MICROPY_PY_URE
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
+    #if MICROPY_PY_URE && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
-    #endif
     #endif
     #if MICROPY_PY_UHEAPQ
     { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
@@ -255,13 +233,8 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_UHASHLIB
     { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) },
     #endif
-    #if MICROPY_PY_UBINASCII
-    #if CIRCUITPY
-// CircuitPython: Defined in MICROPY_PORT_BUILTIN_MODULES, so not defined here.
-// TODO: move to shared-bindings/
-    #else
+    #if MICROPY_PY_UBINASCII && !CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
-    #endif
     #endif
     #if MICROPY_PY_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
