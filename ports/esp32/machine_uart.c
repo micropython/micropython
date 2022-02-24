@@ -35,6 +35,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "modmachine.h"
+#include "uart.h"
 
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
 #define UART_INV_TX UART_INVERSE_TXD
@@ -151,6 +152,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
         // must reinitialise driver to change the tx/rx buffer size
+        if (self->uart_num == MICROPY_HW_UART_REPL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("UART buffer size is fixed"));
+        }
+
         if (args[ARG_txbuf].u_int >= 0) {
             self->txbuf = args[ARG_txbuf].u_int;
         }
@@ -291,12 +296,6 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_num);
     }
 
-    // Attempts to use UART0 from Python has resulted in all sorts of fun errors.
-    // FIXME: UART0 is disabled for now.
-    if (uart_num == UART_NUM_0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) is disabled (dedicated to REPL)"), uart_num);
-    }
-
     // Defaults
     uart_config_t uartcfg = {
         .baud_rate = 115200,
@@ -338,14 +337,17 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         #endif
     }
 
-    // Remove any existing configuration
-    uart_driver_delete(self->uart_num);
+    // Only reset the driver if it's not the REPL UART.
+    if (uart_num != MICROPY_HW_UART_REPL) {
+        // Remove any existing configuration
+        uart_driver_delete(self->uart_num);
 
-    // init the peripheral
-    // Setup
-    uart_param_config(self->uart_num, &uartcfg);
+        // init the peripheral
+        // Setup
+        uart_param_config(self->uart_num, &uartcfg);
 
-    uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
+        uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
+    }
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);

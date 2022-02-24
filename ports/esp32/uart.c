@@ -35,14 +35,6 @@
 #include "py/mphal.h"
 #include "uart.h"
 
-#ifndef MICROPY_HW_UART_REPL
-#define MICROPY_HW_UART_REPL (UART_NUM_0)
-#endif
-
-#ifndef MICROPY_HW_UART_REPL_BAUD
-#define MICROPY_HW_UART_REPL_BAUD (115200)
-#endif
-
 STATIC void uart_irq_handler(void *arg);
 
 void uart_stdout_init(void) {
