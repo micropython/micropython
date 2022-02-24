@@ -82,7 +82,7 @@ def install_tar(f, prefix):
         # print(info)
         fname = info.name
         try:
-            fname = fname[fname.index("/") + 1 :]
+            fname = fname[fname.index("/") + 1:]
         except ValueError:
             fname = ""
 
@@ -171,8 +171,11 @@ def url_open(url):
     return s
 
 
-def get_pkg_metadata(name):
-    for url in index_urls:
+def get_pkg_metadata(name, urls=[]):
+    if not len(urls):
+        urls = index_urls
+
+    for url in urls:
         try:
             f = url_open("%s/%s/json" % (url, name))
         except NotFoundError:
@@ -191,9 +194,9 @@ def fatal(msg, exc=None):
     sys.exit(1)
 
 
-def install_pkg(pkg_spec, install_path):
+def install_pkg(pkg_spec, install_path, urls=[]):
     package = pkg_spec.split("==")
-    data = get_pkg_metadata(package[0])
+    data = get_pkg_metadata(package[0], urls)
 
     if len(package) == 1:
         latest_ver = data["info"]["version"]
@@ -205,7 +208,6 @@ def install_pkg(pkg_spec, install_path):
     assert len(packages) == 1
     package_url = packages[0]["url"]
     print("Installing %s %s from %s" % (pkg_spec, latest_ver, package_url))
-    package_fname = op_basename(package_url)
     f1 = url_open(package_url)
     try:
         f2 = uzlib.DecompIO(f1, gzdict_sz)
@@ -219,7 +221,7 @@ def install_pkg(pkg_spec, install_path):
     return meta
 
 
-def install(to_install, install_path=None):
+def install(to_install, install_path=None, urls=[]):
     # Calculate gzip dictionary size to use
     global gzdict_sz
     sz = gc.mem_free() + gc.mem_alloc()
@@ -242,7 +244,7 @@ def install(to_install, install_path=None):
             pkg_spec = to_install.pop(0)
             if pkg_spec in installed:
                 continue
-            meta = install_pkg(pkg_spec, install_path)
+            meta = install_pkg(pkg_spec, install_path, urls)
             installed.append(pkg_spec)
             if debug:
                 print(meta)
