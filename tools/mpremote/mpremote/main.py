@@ -39,6 +39,8 @@ _COMMANDS = {
         or any valid device name/path""",
     ),
     "disconnect": (False, False, 0, "disconnect current device"),
+    "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
+    "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
     "mount": (True, False, 1, "mount local directory on device"),
     "repl": (
         False,
@@ -434,6 +436,7 @@ def main():
 
     args = sys.argv[1:]
     pyb = None
+    auto_soft_reset = True
     did_action = False
 
     try:
@@ -460,13 +463,19 @@ def main():
             elif cmd == "help":
                 print_help()
                 sys.exit(0)
+            elif cmd == "resume":
+                auto_soft_reset = False
+                continue
+
+            # The following commands need a connection, and either a raw or friendly REPL.
 
             if pyb is None:
                 pyb = do_connect(["auto"])
 
             if need_raw_repl:
                 if not pyb.in_raw_repl:
-                    pyb.enter_raw_repl()
+                    pyb.enter_raw_repl(soft_reset=auto_soft_reset)
+                    auto_soft_reset = False
             else:
                 if pyb.in_raw_repl:
                     pyb.exit_raw_repl()
@@ -476,6 +485,10 @@ def main():
             if cmd == "disconnect":
                 do_disconnect(pyb)
                 pyb = None
+                auto_soft_reset = True
+            elif cmd == "soft-reset":
+                pyb.enter_raw_repl(soft_reset=True)
+                auto_soft_reset = False
             elif cmd == "mount":
                 path = args.pop(0)
                 pyb.mount_local(path)
