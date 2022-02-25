@@ -243,24 +243,16 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
             while (high - low > MP_QSTR_SEARCH_THRESHOLD) {
                 size_t mid = (low + high + 1) / 2;
                 int cmp = pool->hashes[mid] - str_hash;
-                if (cmp == 0) cmp = pool->lengths[mid] - str_len;
-                if (cmp < 0) {
-                    low = mid;
-                } else if (cmp > 0) {
+                if (cmp == 0) {
+                    cmp = pool->lengths[mid] - str_len;
+                }
+                if (cmp > 0) {
                     high = mid;
                 } else {
-                    // avoid a rare (hash,len) collisions
-                    while (MP_UNLIKELY(
-                        pool->lengths[mid] != str_len ||
-                        memcmp(pool->qstrs[mid], str, str_len) != 0)) {
-                        mid++;
-                        if (mid > high || 
-                            pool->hashes[mid] != str_hash ||
-                            pool->lengths[mid] != str_len) {
-                                return 0;
-                            }
-                        }
-                    return pool->total_prev_len + mid;
+                    low = mid;
+                    if (cmp == 0) {
+                        break;
+                    }
                 }
             }
         }
