@@ -42,6 +42,7 @@ _COMMANDS = {
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
     "mount": (True, False, 1, "mount local directory on device"),
+    "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
         False,
         True,
@@ -493,6 +494,8 @@ def main():
                 path = args.pop(0)
                 pyb.mount_local(path)
                 print(f"Local directory {path} is mounted at /remote")
+            elif cmd == "umount":
+                pyb.umount_local()
             elif cmd in ("exec", "eval", "run"):
                 follow = True
                 if args[0] == "--no-follow":

@@ -135,6 +135,12 @@ The full list of supported commands are:
 
       $ mpremote mount <local-dir>
 
+- unmount the local directory from the remote device:
+
+  .. code-block:: bash
+
+      $ mpremote umount
+
 Multiple commands can be specified and they will be run sequentially.
 
 
