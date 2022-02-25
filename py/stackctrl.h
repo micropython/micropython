@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_STACKCTRL_H
 #define MICROPY_INCLUDED_PY_STACKCTRL_H
 
-#include "py/mpconfig.h"
+#include "mpconfig.h"
 
 void mp_stack_ctrl_init(void);
 void mp_stack_set_top(void *top);

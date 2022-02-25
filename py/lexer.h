@@ -28,9 +28,9 @@
 
 #include <stdint.h>
 
-#include "py/mpconfig.h"
-#include "py/qstr.h"
-#include "py/reader.h"
+#include "mpconfig.h"
+#include "qstr.h"
+#include "reader.h"
 
 /* lexer.h -- simple tokeniser for MicroPython
  *

@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_VIRTPIN_H
 #define MICROPY_INCLUDED_EXTMOD_VIRTPIN_H
 
-#include "py/obj.h"
+#include "../py/obj.h"
 
 #define MP_PIN_READ   (1)
 #define MP_PIN_WRITE  (2)

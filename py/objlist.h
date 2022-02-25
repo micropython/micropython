@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_OBJLIST_H
 #define MICROPY_INCLUDED_PY_OBJLIST_H
 
-#include "py/obj.h"
+#include "obj.h"
 
 typedef struct _mp_obj_list_t {
     mp_obj_base_t base;

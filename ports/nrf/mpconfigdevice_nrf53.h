@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Paul Sokolovsky
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2020 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +23,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_PY_FROZENMOD_H
-#define MICROPY_INCLUDED_PY_FROZENMOD_H
 
-#include "lexer.h"
+// Board overridable build configuration.
 
-enum {
-    MP_FROZEN_NONE,
-    MP_FROZEN_STR,
-    MP_FROZEN_MPY,
-};
+#ifndef MICROPY_MBFS
+#define MICROPY_MBFS                       (1)
+#endif
 
-mp_import_stat_t mp_find_frozen_module(const char *str, int *frozen_type, void **data);
+#ifndef MICROPY_VFS
+#define MICROPY_VFS                        (0)
+#endif
 
-#endif // MICROPY_INCLUDED_PY_FROZENMOD_H
+// Board overridable feature configuration.
+
+#ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN      (1)
+#endif
+
+#ifndef MICROPY_PY_SYS_STDFILES
+#define MICROPY_PY_SYS_STDFILES            (1)
+#endif
+
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII               (1)
+#endif

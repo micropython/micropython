@@ -26,9 +26,9 @@
 
 #include <stdio.h>
 
-#include "py/mpstate.h"
-#include "py/gc.h"
-#include "shared/runtime/gchelper.h"
+#include "../../py/mpstate.h"
+#include "../../py/gc.h"
+#include "gchelper.h"
 
 #if MICROPY_ENABLE_GC
 

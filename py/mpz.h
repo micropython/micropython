@@ -28,8 +28,8 @@
 
 #include <stdint.h>
 
-#include "py/mpconfig.h"
-#include "py/misc.h"
+#include "mpconfig.h"
+#include "misc.h"
 
 // This mpz module implements arbitrary precision integers.
 //

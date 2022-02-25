@@ -32,7 +32,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "py/mpconfig.h"
+#include "mpconfig.h"
 
 #define MICROPY_NLR_NUM_REGS_X86            (6)
 #define MICROPY_NLR_NUM_REGS_X64            (8)

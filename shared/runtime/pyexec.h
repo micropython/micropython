@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 #define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
-#include "py/obj.h"
+#include "../../py/obj.h"
 
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,

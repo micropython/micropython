@@ -59,7 +59,7 @@
 #ifdef MP_CONFIGFILE
 #include MP_CONFIGFILE
 #else
-#include <mpconfigport.h>
+#include "mpconfigport.h"
 #endif
 
 // Disable all optional features (i.e. minimal port).

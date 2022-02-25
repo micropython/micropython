@@ -10,6 +10,7 @@ set(MICROPY_QSTRDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/qstrdefs.collected.h")
 set(MICROPY_QSTRDEFS_PREPROCESSED "${MICROPY_GENHDR_DIR}/qstrdefs.preprocessed.h")
 set(MICROPY_QSTRDEFS_GENERATED "${MICROPY_GENHDR_DIR}/qstrdefs.generated.h")
 
+
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
 if(MICROPY_FROZEN_MANIFEST)

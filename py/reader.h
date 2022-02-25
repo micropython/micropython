@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_READER_H
 #define MICROPY_INCLUDED_PY_READER_H
 
-#include "py/obj.h"
+#include "obj.h"
 
 // the readbyte function must return the next byte in the input stream
 // it must return MP_READER_EOF if end of stream

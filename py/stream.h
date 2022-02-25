@@ -27,8 +27,8 @@
 #ifndef MICROPY_INCLUDED_PY_STREAM_H
 #define MICROPY_INCLUDED_PY_STREAM_H
 
-#include "py/obj.h"
-#include "py/mperrno.h"
+#include "obj.h"
+#include "mperrno.h"
 
 #define MP_STREAM_ERROR ((mp_uint_t)-1)
 

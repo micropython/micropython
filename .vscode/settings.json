@@ -1,0 +1,12 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "mpconfigport.h": "c",
+        "mpconfig.h": "c",
+        "objint.h": "c",
+        "nativeglue.h": "c",
+        "persistentcode.h": "c",
+        "stream.h": "c",
+        "alloca.h": "c"
+    }
+}

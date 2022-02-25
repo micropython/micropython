@@ -26,8 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_OBJEXCEPT_H
 #define MICROPY_INCLUDED_PY_OBJEXCEPT_H
 
-#include "py/obj.h"
-#include "py/objtuple.h"
+#include "obj.h"
+#include "objtuple.h"
 
 typedef struct _mp_obj_exception_t {
     mp_obj_base_t base;

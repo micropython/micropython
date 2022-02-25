@@ -26,9 +26,9 @@
 #ifndef MICROPY_INCLUDED_PY_REPL_H
 #define MICROPY_INCLUDED_PY_REPL_H
 
-#include "py/mpconfig.h"
-#include "py/misc.h"
-#include "py/mpprint.h"
+#include "mpconfig.h"
+#include "misc.h"
+#include "mpprint.h"
 
 #if MICROPY_HELPER_REPL
 bool mp_repl_continue_with_input(const char *input);
