@@ -21,14 +21,16 @@ STATIC const mp_rom_obj_tuple_t camera_data_tuple = {
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
-    { MP_ROM_QSTR(MP_QSTR_TFT_MOSI), MP_ROM_PTR(&pin_GPIO35) },
-    { MP_ROM_QSTR(MP_QSTR_TFT_SCK), MP_ROM_PTR(&pin_GPIO36) },
+    { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO35) },
+    { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO36) },
+    { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO37) },
     { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT), MP_ROM_PTR(&pin_GPIO38) },
     { MP_ROM_QSTR(MP_QSTR_TFT_DC), MP_ROM_PTR(&pin_GPIO39) },
     { MP_ROM_QSTR(MP_QSTR_TFT_CS), MP_ROM_PTR(&pin_GPIO40) },
     { MP_ROM_QSTR(MP_QSTR_TFT_RESET), MP_ROM_PTR(&pin_GPIO41) },
 
     { MP_ROM_QSTR(MP_QSTR_CARD_CS), MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_CARD_POWER), MP_ROM_PTR(&pin_GPIO1) },
 
     { MP_ROM_QSTR(MP_QSTR_IRQ), MP_ROM_PTR(&pin_GPIO3) },
 

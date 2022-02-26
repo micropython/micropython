@@ -41,13 +41,13 @@ displayio_fourwire_obj_t board_display_obj;
 #define DELAY 0x80
 
 uint8_t display_init_sequence[] = {
-    0x01, 0 | DELAY, 150, // SWRESET
-    0x11, 0 | DELAY, 255, // SLPOUT
+    0x01, 0 | DELAY, 120, // SWRESET
+    0x11, 0 | DELAY, 5, // SLPOUT
     0x36, 1, 0b10100000,  // _MADCTL for rotation 0
     0x3a, 1, 0x55, // COLMOD - 16bit color
-    0x21, 0 | DELAY, 10,                 // _INVON
-    0x13, 0 | DELAY, 10,                 // _NORON
-    0x29, 0 | DELAY, 255,                // _DISPON
+    0x21, 0,                 // _INVON
+    0x13, 0,                 // _NORON
+    0x29, 0 | DELAY, 5,                // _DISPON
 };
 
 void board_init(void) {
@@ -59,7 +59,7 @@ void board_init(void) {
         &pin_GPIO39, // TFT_DC Command or data
         &pin_GPIO40, // TFT_CS Chip select
         &pin_GPIO41, // TFT_RESET Reset
-        5000000, // Baudrate
+        40000000, // Baudrate
         0, // Polarity
         0); // Phase
 
