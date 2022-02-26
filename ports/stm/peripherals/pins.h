@@ -82,6 +82,9 @@ extern const mp_obj_type_t mcu_pin_type;
 #ifdef STM32F411xE
 #include "stm32f4/stm32f411xe/pins.h"
 #endif
+#ifdef STM32F412Cx
+#include "stm32f4/stm32f412cx/pins.h"
+#endif
 #ifdef STM32F412Zx
 #include "stm32f4/stm32f412zx/pins.h"
 #endif
