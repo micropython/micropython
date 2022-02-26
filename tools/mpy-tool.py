@@ -865,7 +865,7 @@ class RawCodeBytecode(RawCode):
             elif fmt in (MP_BC_FORMAT_VAR_UINT, MP_BC_FORMAT_OFFSET):
                 opcode_name += " %u" % arg
             print(
-                "    %s, // %s" % (",".join("0x%02x" % b for b in bc[ip : ip + sz]), opcode_name)
+                "    %s, // %r" % (",".join("0x%02x" % b for b in bc[ip : ip + sz]), opcode_name)
             )
             ip += sz
 
