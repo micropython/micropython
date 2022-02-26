@@ -861,7 +861,7 @@ class RawCodeBytecode(RawCode):
             fmt, sz, arg = mp_opcode_decode(bc, ip)
             opcode_name = Opcodes.mapping[bc[ip]]
             if fmt == MP_BC_FORMAT_QSTR:
-                opcode_name += " " + self.qstr_table[arg].str
+                opcode_name += " " + repr(self.qstr_table[arg].str)
             elif fmt in (MP_BC_FORMAT_VAR_UINT, MP_BC_FORMAT_OFFSET):
                 opcode_name += " %u" % arg
             print(
