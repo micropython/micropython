@@ -139,10 +139,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -181,8 +181,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     uint32_t baudrate = 115200;
     if (args[ARG_baudrate].u_int > 0) {
         uart_set_baudrate(self->uart_num, args[ARG_baudrate].u_int);
-        uart_get_baudrate(self->uart_num, &baudrate);
     }
+    uart_get_baudrate(self->uart_num, &baudrate);
 
     uart_set_pin(self->uart_num, args[ARG_tx].u_int, args[ARG_rx].u_int, args[ARG_rts].u_int, args[ARG_cts].u_int);
     if (args[ARG_tx].u_int != UART_PIN_NO_CHANGE) {
@@ -262,28 +262,36 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
 
     // set timeout
-    self->timeout = args[ARG_timeout].u_int;
+    if (args[ARG_timeout].u_int != -1) {
+        self->timeout = args[ARG_timeout].u_int;
+    }
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
-    self->timeout_char = args[ARG_timeout_char].u_int;
-    uint32_t min_timeout_char = 13000 / baudrate + 1;
-    if (self->timeout_char < min_timeout_char) {
-        self->timeout_char = min_timeout_char;
+    if (args[ARG_timeout_char].u_int != -1) {
+        self->timeout_char = args[ARG_timeout_char].u_int;
+        uint32_t min_timeout_char = 13000 / baudrate + 1;
+        if (self->timeout_char < min_timeout_char) {
+            self->timeout_char = min_timeout_char;
+        }
     }
 
     // set line inversion
-    if (args[ARG_invert].u_int & ~UART_INV_MASK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
+    if (args[ARG_invert].u_int != -1) {
+        if (args[ARG_invert].u_int & ~UART_INV_MASK) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
+        }
+        self->invert = args[ARG_invert].u_int;
     }
-    self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
 
     // set hardware flow control
-    if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
+    if (args[ARG_flow].u_int != -1) {
+        if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
+        }
+        self->flowcontrol = args[ARG_flow].u_int;
     }
-    self->flowcontrol = args[ARG_flow].u_int;
     uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4);
 }
 
@@ -319,6 +327,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->rxbuf = 256; // IDF minimum
     self->timeout = 0;
     self->timeout_char = 0;
+    self->invert = 0;
+    self->flowcontrol = 0;
 
     switch (uart_num) {
         case UART_NUM_0:
