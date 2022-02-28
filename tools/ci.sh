@@ -68,6 +68,23 @@ function ci_code_size_build {
 }
 
 ########################################################################################
+# .mpy file format
+
+function ci_mpy_format_setup {
+    sudo pip3 install pyelftools
+}
+
+function ci_mpy_format_test {
+    # Test mpy-tool.py dump feature on bytecode
+    python2 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+
+    # Test mpy-tool.py dump feature on native code
+    make -C examples/natmod/features1
+    ./tools/mpy-tool.py -xd examples/natmod/features1/features1.mpy
+}
+
+########################################################################################
 # ports/cc3200
 
 function ci_cc3200_setup {
@@ -107,8 +124,7 @@ function ci_esp32_idf402_setup {
 }
 
 function ci_esp32_idf44_setup {
-    # This commit is just before v5.0-dev
-    ci_esp32_setup_helper 142bb32c50fa9875b8b69fa539a2d59559460d72
+    ci_esp32_setup_helper v4.4
 }
 
 function ci_esp32_build {
@@ -438,7 +454,7 @@ function ci_unix_coverage_run_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
 }
 
 function ci_unix_32bit_setup {

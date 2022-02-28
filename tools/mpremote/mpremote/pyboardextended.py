@@ -687,3 +687,4 @@ class PyboardExtended(Pyboard):
         if self.mounted:
             self.exec_('uos.umount("/remote")')
             self.mounted = False
+            self.serial = self.serial.orig_serial

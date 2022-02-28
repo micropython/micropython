@@ -328,6 +328,14 @@
 #define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
 #endif
 
+// Whether bytecode uses a qstr_table to map internal qstr indices in the bytecode
+// to global qstr values in the runtime (behaviour when feature is enabled), or
+// just stores global qstr values directly in the bytecode.  This must be enabled
+// if MICROPY_PERSISTENT_CODE is enabled.
+#ifndef MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+#define MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE (MICROPY_PERSISTENT_CODE)
+#endif
+
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)

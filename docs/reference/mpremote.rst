@@ -60,6 +60,25 @@ The full list of supported commands are:
 
       $ mpremote disconnect
 
+  After a disconnect, auto soft-reset is enabled.
+
+- resume a previous ``mpremote`` session:
+
+  .. code-block:: bash
+
+      $ mpremote resume
+
+  This disables auto soft-reset.
+
+- perform a soft-reset of the device:
+
+  .. code-block:: bash
+
+      $ mpremote soft-reset
+
+  This will clear out the Python heap and restart the interpreter.  It also
+  disables auto soft-reset.
+
 - enter the REPL on the connected device:
 
    .. code-block:: bash
@@ -116,11 +135,34 @@ The full list of supported commands are:
 
       $ mpremote mount <local-dir>
 
+- unmount the local directory from the remote device:
+
+  .. code-block:: bash
+
+      $ mpremote umount
+
 Multiple commands can be specified and they will be run sequentially.
+
+
+Auto connection and soft-reset
+------------------------------
+
 Connection and disconnection will be done automatically at the start and end of
 the execution of the tool, if such commands are not explicitly given.  Automatic
 connection will search for the first available serial device. If no action is
 specified then the REPL will be entered.
+
+Once connected to a device, ``mpremote`` will automatically soft-reset the
+device if needed.  This clears the Python heap and restarts the interpreter,
+making sure that subsequent Python code executes in a fresh environment.  Auto
+soft-reset is performed the first time one of the following commands are
+executed: ``mount``, ``eval``, ``exec``, ``run``, ``fs``.  After doing a
+soft-reset for the first time, it will not be done again automatically, until a
+``disconnect`` command is issued.
+
+Auto soft-reset behaviour can be controlled by the ``resume`` command.  And the
+``soft-reset`` command can be used to perform an explicit soft reset.
+
 
 Shortcuts
 ---------

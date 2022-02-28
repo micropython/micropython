@@ -30,6 +30,17 @@
 
 #if MICROPY_ENABLE_COMPILER
 
+#if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+qstr_short_t mp_emit_common_use_qstr(mp_emit_common_t *emit, qstr qst) {
+    mp_map_elem_t *elem = mp_map_lookup(&emit->qstr_map, MP_OBJ_NEW_QSTR(qst), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+    if (elem->value == MP_OBJ_NULL) {
+        assert(emit->pass == MP_PASS_SCOPE);
+        elem->value = MP_OBJ_NEW_SMALL_INT(emit->qstr_map.used - 1);
+    }
+    return MP_OBJ_SMALL_INT_VALUE(elem->value);
+}
+#endif
+
 void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     // name adding/lookup
     id_info_t *id = scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);

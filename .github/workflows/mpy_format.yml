@@ -1,0 +1,18 @@
+name: .mpy file format and tools
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'tools/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages
+      run: source tools/ci.sh && ci_mpy_format_setup
+    - name: Test mpy-tool.py
+      run: source tools/ci.sh && ci_mpy_format_test

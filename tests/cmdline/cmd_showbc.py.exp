@@ -1,51 +1,144 @@
-File cmdline/cmd_showbc.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 63 bytes)
+Raw bytecode (code_info_size=18, bytecode_size=45):
+ 10 20 01 60 20 84 7d 64 60 88 07 64 60 69 20 62
+ 64 20 32 00 16 02 32 01 16 02 81 2a 01 53 33 02
+ 16 02 32 03 16 02 54 32 04 10 03 34 02 16 03 19
+ 03 32 05 16 02 80 10 04 2a 01 1b 05 69 51 63
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
   bc=0 line=1
-########
-  bc=\\d\+ line=160
+  bc=0 line=4
+  bc=0 line=5
+  bc=4 line=130
+  bc=8 line=133
+  bc=8 line=136
+  bc=16 line=143
+  bc=20 line=146
+  bc=20 line=149
+  bc=29 line=152
+  bc=29 line=153
+  bc=31 line=156
+  bc=35 line=159
+  bc=35 line=160
 00 MAKE_FUNCTION \.\+
-\\d\+ STORE_NAME f
-\\d\+ MAKE_FUNCTION \.\+
-\\d\+ STORE_NAME f
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ BUILD_TUPLE 1
-\\d\+ LOAD_NULL
-\\d\+ MAKE_FUNCTION_DEFARGS \.\+
-\\d\+ STORE_NAME f
-\\d\+ MAKE_FUNCTION \.\+
-\\d\+ STORE_NAME f
-\\d\+ LOAD_BUILD_CLASS
-\\d\+ MAKE_FUNCTION \.\+
-\\d\+ LOAD_CONST_STRING 'Class'
-\\d\+ CALL_FUNCTION n=2 nkw=0
-\\d\+ STORE_NAME Class
-\\d\+ DELETE_NAME Class
-\\d\+ MAKE_FUNCTION \.\+
-\\d\+ STORE_NAME f
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ LOAD_CONST_STRING '*'
-\\d\+ BUILD_TUPLE 1
-\\d\+ IMPORT_NAME 'sys'
-\\d\+ IMPORT_STAR
-\\d\+ LOAD_CONST_NONE
-\\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
+02 STORE_NAME f
+04 MAKE_FUNCTION \.\+
+06 STORE_NAME f
+08 LOAD_CONST_SMALL_INT 1
+09 BUILD_TUPLE 1
+11 LOAD_NULL
+12 MAKE_FUNCTION_DEFARGS \.\+
+14 STORE_NAME f
+16 MAKE_FUNCTION \.\+
+18 STORE_NAME f
+20 LOAD_BUILD_CLASS
+21 MAKE_FUNCTION \.\+
+23 LOAD_CONST_STRING 'Class'
+25 CALL_FUNCTION n=2 nkw=0
+27 STORE_NAME Class
+29 DELETE_NAME Class
+31 MAKE_FUNCTION \.\+
+33 STORE_NAME f
+35 LOAD_CONST_SMALL_INT 0
+36 LOAD_CONST_STRING '*'
+38 BUILD_TUPLE 1
+40 IMPORT_NAME 'sys'
+42 IMPORT_STAR
+43 LOAD_CONST_NONE
+44 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 48\[24\] bytes)
+Raw bytecode (code_info_size=8\[46\], bytecode_size=398):
+ a8 12 9\[bf\] 03 02 60 60 26 22 24 64 22 26 25 25 24
+ 26 23 63 22 22 25 23 23 31 6d 25 65 25 25 69 68
+ 26 65 27 6a 62 20 23 62 2a 29 69 24 25 28 67 26
 ########
-\.\+rg names:
+\.\+81 63
+arg names:
 (N_STATE 22)
 (N_EXC_STACK 2)
 (INIT_CELL 14)
 (INIT_CELL 15)
 (INIT_CELL 16)
   bc=0 line=1
+  bc=0 line=4
+  bc=0 line=7
+  bc=6 line=8
+  bc=8 line=9
+  bc=12 line=10
+  bc=16 line=13
+  bc=18 line=14
+  bc=24 line=15
+  bc=29 line=16
+  bc=34 line=17
+  bc=38 line=18
+  bc=44 line=19
+  bc=47 line=20
+  bc=50 line=23
+  bc=52 line=24
+  bc=54 line=25
+  bc=59 line=26
+  bc=62 line=27
+  bc=65 line=28
+  bc=82 line=29
+  bc=95 line=32
+  bc=100 line=33
+  bc=105 line=36
+  bc=110 line=37
+  bc=115 line=38
+  bc=124 line=41
+  bc=132 line=44
+  bc=138 line=45
+  bc=143 line=48
+  bc=150 line=49
+  bc=160 line=52
+  bc=162 line=55
+  bc=162 line=56
+  bc=165 line=57
+  bc=167 line=60
+  bc=177 line=61
+  bc=186 line=62
+  bc=195 line=65
+  bc=199 line=66
+  bc=204 line=67
+  bc=212 line=68
+  bc=219 line=71
+  bc=225 line=72
+  bc=232 line=73
+  bc=242 line=74
+  bc=250 line=77
+  bc=254 line=78
+  bc=260 line=80
+  bc=263 line=81
+  bc=266 line=82
+  bc=273 line=83
+  bc=276 line=84
+  bc=283 line=85
+  bc=289 line=88
+  bc=296 line=89
+  bc=301 line=92
+  bc=307 line=93
+  bc=310 line=94
 ########
-  bc=\\d\+ line=127
+  bc=321 line=96
+  bc=329 line=98
+  bc=332 line=99
+  bc=335 line=100
+  bc=338 line=101
+########
+  bc=346 line=103
+  bc=354 line=106
+  bc=359 line=107
+  bc=365 line=110
+  bc=368 line=111
+  bc=374 line=114
+  bc=374 line=117
+  bc=379 line=118
+  bc=391 line=121
+  bc=391 line=122
+  bc=392 line=123
+  bc=394 line=126
+  bc=396 line=127
 00 LOAD_CONST_NONE
 01 LOAD_CONST_FALSE
 02 BINARY_OP 27 __add__
@@ -80,247 +173,251 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 42 STORE_MAP
 43 STORE_FAST 3
 44 LOAD_CONST_STRING 'a'
-47 STORE_FAST 4
-48 LOAD_CONST_OBJ \.\+
-\\d\+ STORE_FAST 5
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ STORE_FAST 6
-\\d\+ LOAD_CONST_SMALL_INT 2
-\\d\+ STORE_FAST 7
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_DEREF 14
-58 BINARY_OP 27 __add__
-\\d\+ STORE_FAST 8
-\\d\+ LOAD_FAST 0
-\\d\+ UNARY_OP 1 __neg__
-\\d\+ STORE_FAST 9
-\\d\+ LOAD_FAST 0
-\\d\+ UNARY_OP 3 
-\\d\+ STORE_FAST 10
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_DEREF 14
-\\d\+ DUP_TOP
-\\d\+ ROT_THREE
-\\d\+ BINARY_OP 2 __eq__
-\\d\+ JUMP_IF_FALSE_OR_POP \\d\+
-\\d\+ LOAD_FAST 1
-\\d\+ BINARY_OP 2 __eq__
-\\d\+ JUMP \\d\+
-\\d\+ ROT_TWO
-\\d\+ POP_TOP
-\\d\+ STORE_FAST 10
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_DEREF 14
-\\d\+ BINARY_OP 2 __eq__
-\\d\+ JUMP_IF_FALSE_OR_POP \\d\+
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_FAST 1
-\\d\+ BINARY_OP 2 __eq__
-\\d\+ UNARY_OP 3 
-\\d\+ STORE_FAST 10
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_ATTR c
-\\d\+ STORE_FAST 11
-\\d\+ LOAD_FAST 11
-\\d\+ LOAD_DEREF 14
-\\d\+ STORE_ATTR c
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ LOAD_SUBSCR
-\\d\+ STORE_FAST 12
-\\d\+ LOAD_FAST 12
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ STORE_SUBSCR
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ DUP_TOP_TWO
-\\d\+ LOAD_SUBSCR
-\\d\+ LOAD_FAST 12
-\\d\+ BINARY_OP 14 __iadd__
-\\d\+ ROT_THREE
-\\d\+ STORE_SUBSCR
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_CONST_NONE
-\\d\+ LOAD_CONST_NONE
-\\d\+ BUILD_SLICE 2
-\\d\+ LOAD_SUBSCR
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_FAST 1
-\\d\+ UNPACK_SEQUENCE 2
-\\d\+ STORE_FAST 0
-\\d\+ STORE_DEREF 14
-\\d\+ LOAD_FAST 0
-\\d\+ UNPACK_EX 1
-\\d\+ STORE_FAST 0
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_FAST 0
-\\d\+ ROT_TWO
-\\d\+ STORE_FAST 0
-\\d\+ STORE_DEREF 14
-\\d\+ LOAD_FAST 1
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_FAST 0
-\\d\+ ROT_THREE
-\\d\+ ROT_TWO
-\\d\+ STORE_FAST 0
-\\d\+ STORE_DEREF 14
-\\d\+ STORE_FAST 1
-\\d\+ DELETE_FAST 0
-\\d\+ LOAD_FAST 0
-\\d\+ STORE_GLOBAL gl
-\\d\+ DELETE_GLOBAL gl
-\\d\+ LOAD_FAST 14
-\\d\+ LOAD_FAST 15
-\\d\+ MAKE_CLOSURE \.\+ 2
-\\d\+ LOAD_FAST 2
-\\d\+ GET_ITER
-\\d\+ CALL_FUNCTION n=1 nkw=0
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_FAST 14
-\\d\+ LOAD_FAST 15
-\\d\+ MAKE_CLOSURE \.\+ 2
-\\d\+ LOAD_FAST 2
-\\d\+ CALL_FUNCTION n=1 nkw=0
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_FAST 14
-\\d\+ LOAD_FAST 15
-\\d\+ MAKE_CLOSURE \.\+ 2
-\\d\+ LOAD_FAST 2
-\\d\+ CALL_FUNCTION n=1 nkw=0
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_FAST 0
-\\d\+ CALL_FUNCTION n=0 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ CALL_FUNCTION n=1 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_CONST_STRING 'b'
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ CALL_FUNCTION n=0 nkw=1
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_DEREF 14
-\\d\+ LOAD_NULL
-\\d\+ CALL_FUNCTION_VAR_KW n=0 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_METHOD b
-\\d\+ CALL_METHOD n=0 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_METHOD b
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ CALL_METHOD n=1 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_METHOD b
-\\d\+ LOAD_CONST_STRING 'c'
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ CALL_METHOD n=0 nkw=1
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_METHOD b
-\\d\+ LOAD_FAST 1
-\\d\+ LOAD_NULL
-\\d\+ CALL_METHOD_VAR_KW n=0 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ POP_JUMP_IF_FALSE \\d\+
-\\d\+ LOAD_DEREF 16
-\\d\+ POP_TOP
-\\d\+ JUMP \\d\+
-\\d\+ LOAD_GLOBAL y
-\\d\+ POP_TOP
-\\d\+ JUMP \\d\+
-\\d\+ LOAD_DEREF 14
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ POP_JUMP_IF_TRUE \\d\+
-\\d\+ JUMP \\d\+
-\\d\+ LOAD_DEREF 14
-\\d\+ POP_TOP
-\\d\+ LOAD_FAST 0
-\\d\+ POP_JUMP_IF_FALSE \\d\+
-\\d\+ LOAD_FAST 0
-\\d\+ JUMP_IF_TRUE_OR_POP \\d\+
-\\d\+ LOAD_FAST 0
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_DEREF 14
-\\d\+ GET_ITER_STACK
-\\d\+ FOR_ITER \\d\+
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_FAST 1
-\\d\+ POP_TOP
-\\d\+ JUMP \\d\+
-\\d\+ SETUP_FINALLY \\d\+
-\\d\+ SETUP_EXCEPT \\d\+
-\\d\+ JUMP \\d\+
-\\d\+ JUMP \\d\+
-\\d\+ LOAD_FAST 0
-\\d\+ POP_JUMP_IF_TRUE \\d\+
-\\d\+ POP_EXCEPT_JUMP \\d\+
-\\d\+ POP_TOP
-\\d\+ LOAD_DEREF 14
-\\d\+ POP_TOP
-\\d\+ POP_EXCEPT_JUMP \\d\+
-\\d\+ END_FINALLY
-\\d\+ LOAD_CONST_NONE
-\\d\+ LOAD_FAST 1
-\\d\+ POP_TOP
-\\d\+ END_FINALLY
-\\d\+ JUMP \\d\+
-\\d\+ SETUP_EXCEPT \\d\+
-\\d\+ UNWIND_JUMP \\d\+ 1
-\\d\+ POP_EXCEPT_JUMP \\d\+
-\\d\+ POP_TOP
-\\d\+ POP_EXCEPT_JUMP \\d\+
-\\d\+ END_FINALLY
-\\d\+ LOAD_FAST 0
-\\d\+ POP_JUMP_IF_TRUE \\d\+
-\\d\+ LOAD_FAST 0
-\\d\+ SETUP_WITH \\d\+
-\\d\+ POP_TOP
-\\d\+ LOAD_DEREF 14
-\\d\+ POP_TOP
-\\d\+ LOAD_CONST_NONE
-\\d\+ WITH_CLEANUP
-\\d\+ END_FINALLY
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ STORE_DEREF 16
-\\d\+ LOAD_FAST_N 16
-\\d\+ MAKE_CLOSURE \.\+ 1
-\\d\+ STORE_FAST 13
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ LOAD_CONST_NONE
-\\d\+ IMPORT_NAME 'a'
-\\d\+ STORE_FAST 0
-\\d\+ LOAD_CONST_SMALL_INT 0
-\\d\+ LOAD_CONST_STRING 'b'
-\\d\+ BUILD_TUPLE 1
-\\d\+ IMPORT_NAME 'a'
-\\d\+ IMPORT_FROM 'b'
-\\d\+ STORE_DEREF 14
-\\d\+ POP_TOP
-\\d\+ RAISE_LAST
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ RAISE_OBJ
-\\d\+ LOAD_CONST_NONE
-\\d\+ RETURN_VALUE
-\\d\+ LOAD_CONST_SMALL_INT 1
-\\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+rg names:
+46 STORE_FAST 4
+47 LOAD_CONST_OBJ \.\+=b'a'
+49 STORE_FAST 5
+50 LOAD_CONST_SMALL_INT 1
+51 STORE_FAST 6
+52 LOAD_CONST_SMALL_INT 2
+53 STORE_FAST 7
+54 LOAD_FAST 0
+55 LOAD_DEREF 14
+57 BINARY_OP 27 __add__
+58 STORE_FAST 8
+59 LOAD_FAST 0
+60 UNARY_OP 1 __neg__
+61 STORE_FAST 9
+62 LOAD_FAST 0
+63 UNARY_OP 3 
+64 STORE_FAST 10
+65 LOAD_FAST 0
+66 LOAD_DEREF 14
+68 DUP_TOP
+69 ROT_THREE
+70 BINARY_OP 2 __eq__
+71 JUMP_IF_FALSE_OR_POP 79
+74 LOAD_FAST 1
+75 BINARY_OP 2 __eq__
+76 JUMP 81
+79 ROT_TWO
+80 POP_TOP
+81 STORE_FAST 10
+82 LOAD_FAST 0
+83 LOAD_DEREF 14
+85 BINARY_OP 2 __eq__
+86 JUMP_IF_FALSE_OR_POP 93
+89 LOAD_DEREF 14
+91 LOAD_FAST 1
+92 BINARY_OP 2 __eq__
+93 UNARY_OP 3 
+94 STORE_FAST 10
+95 LOAD_DEREF 14
+97 LOAD_ATTR c
+99 STORE_FAST 11
+100 LOAD_FAST 11
+101 LOAD_DEREF 14
+103 STORE_ATTR c
+105 LOAD_DEREF 14
+107 LOAD_CONST_SMALL_INT 0
+108 LOAD_SUBSCR
+109 STORE_FAST 12
+110 LOAD_FAST 12
+111 LOAD_DEREF 14
+113 LOAD_CONST_SMALL_INT 0
+114 STORE_SUBSCR
+115 LOAD_DEREF 14
+117 LOAD_CONST_SMALL_INT 0
+118 DUP_TOP_TWO
+119 LOAD_SUBSCR
+120 LOAD_FAST 12
+121 BINARY_OP 14 __iadd__
+122 ROT_THREE
+123 STORE_SUBSCR
+124 LOAD_DEREF 14
+126 LOAD_CONST_NONE
+127 LOAD_CONST_NONE
+128 BUILD_SLICE 2
+130 LOAD_SUBSCR
+131 STORE_FAST 0
+132 LOAD_FAST 1
+133 UNPACK_SEQUENCE 2
+135 STORE_FAST 0
+136 STORE_DEREF 14
+138 LOAD_FAST 0
+139 UNPACK_EX 1
+141 STORE_FAST 0
+142 STORE_FAST 0
+143 LOAD_DEREF 14
+145 LOAD_FAST 0
+146 ROT_TWO
+147 STORE_FAST 0
+148 STORE_DEREF 14
+150 LOAD_FAST 1
+151 LOAD_DEREF 14
+153 LOAD_FAST 0
+154 ROT_THREE
+155 ROT_TWO
+156 STORE_FAST 0
+157 STORE_DEREF 14
+159 STORE_FAST 1
+160 DELETE_FAST 0
+162 LOAD_FAST 0
+163 STORE_GLOBAL gl
+165 DELETE_GLOBAL gl
+167 LOAD_FAST 14
+168 LOAD_FAST 15
+169 MAKE_CLOSURE \.\+ 2
+172 LOAD_FAST 2
+173 GET_ITER
+174 CALL_FUNCTION n=1 nkw=0
+176 STORE_FAST 0
+177 LOAD_FAST 14
+178 LOAD_FAST 15
+179 MAKE_CLOSURE \.\+ 2
+182 LOAD_FAST 2
+183 CALL_FUNCTION n=1 nkw=0
+185 STORE_FAST 0
+186 LOAD_FAST 14
+187 LOAD_FAST 15
+188 MAKE_CLOSURE \.\+ 2
+191 LOAD_FAST 2
+192 CALL_FUNCTION n=1 nkw=0
+194 STORE_FAST 0
+195 LOAD_FAST 0
+196 CALL_FUNCTION n=0 nkw=0
+198 POP_TOP
+199 LOAD_FAST 0
+200 LOAD_CONST_SMALL_INT 1
+201 CALL_FUNCTION n=1 nkw=0
+203 POP_TOP
+204 LOAD_FAST 0
+205 LOAD_CONST_STRING 'b'
+207 LOAD_CONST_SMALL_INT 1
+208 CALL_FUNCTION n=0 nkw=1
+211 POP_TOP
+212 LOAD_FAST 0
+213 LOAD_DEREF 14
+215 LOAD_NULL
+216 CALL_FUNCTION_VAR_KW n=0 nkw=0
+218 POP_TOP
+219 LOAD_FAST 0
+220 LOAD_METHOD b
+222 CALL_METHOD n=0 nkw=0
+224 POP_TOP
+225 LOAD_FAST 0
+226 LOAD_METHOD b
+228 LOAD_CONST_SMALL_INT 1
+229 CALL_METHOD n=1 nkw=0
+231 POP_TOP
+232 LOAD_FAST 0
+233 LOAD_METHOD b
+235 LOAD_CONST_STRING 'c'
+237 LOAD_CONST_SMALL_INT 1
+238 CALL_METHOD n=0 nkw=1
+241 POP_TOP
+242 LOAD_FAST 0
+243 LOAD_METHOD b
+245 LOAD_FAST 1
+246 LOAD_NULL
+247 CALL_METHOD_VAR_KW n=0 nkw=0
+249 POP_TOP
+250 LOAD_FAST 0
+251 POP_JUMP_IF_FALSE 260
+254 LOAD_DEREF 16
+256 POP_TOP
+257 JUMP 263
+260 LOAD_GLOBAL y
+262 POP_TOP
+263 JUMP 269
+266 LOAD_DEREF 14
+268 POP_TOP
+269 LOAD_FAST 0
+270 POP_JUMP_IF_TRUE 266
+273 JUMP 279
+276 LOAD_DEREF 14
+278 POP_TOP
+279 LOAD_FAST 0
+280 POP_JUMP_IF_FALSE 276
+283 LOAD_FAST 0
+284 JUMP_IF_TRUE_OR_POP 288
+287 LOAD_FAST 0
+288 STORE_FAST 0
+289 LOAD_DEREF 14
+291 GET_ITER_STACK
+292 FOR_ITER 301
+295 STORE_FAST 0
+296 LOAD_FAST 1
+297 POP_TOP
+298 JUMP 292
+301 SETUP_FINALLY 329
+304 SETUP_EXCEPT 320
+307 JUMP 313
+310 JUMP 317
+313 LOAD_FAST 0
+314 POP_JUMP_IF_TRUE 310
+317 POP_EXCEPT_JUMP 328
+320 POP_TOP
+321 LOAD_DEREF 14
+323 POP_TOP
+324 POP_EXCEPT_JUMP 328
+327 END_FINALLY
+328 LOAD_CONST_NONE
+329 LOAD_FAST 1
+330 POP_TOP
+331 END_FINALLY
+332 JUMP 350
+335 SETUP_EXCEPT 345
+338 UNWIND_JUMP 354 1
+342 POP_EXCEPT_JUMP 350
+345 POP_TOP
+346 POP_EXCEPT_JUMP 350
+349 END_FINALLY
+350 LOAD_FAST 0
+351 POP_JUMP_IF_TRUE 335
+354 LOAD_FAST 0
+355 SETUP_WITH 363
+358 POP_TOP
+359 LOAD_DEREF 14
+361 POP_TOP
+362 LOAD_CONST_NONE
+363 WITH_CLEANUP
+364 END_FINALLY
+365 LOAD_CONST_SMALL_INT 1
+366 STORE_DEREF 16
+368 LOAD_FAST_N 16
+370 MAKE_CLOSURE \.\+ 1
+373 STORE_FAST 13
+374 LOAD_CONST_SMALL_INT 0
+375 LOAD_CONST_NONE
+376 IMPORT_NAME 'a'
+378 STORE_FAST 0
+379 LOAD_CONST_SMALL_INT 0
+380 LOAD_CONST_STRING 'b'
+382 BUILD_TUPLE 1
+384 IMPORT_NAME 'a'
+386 IMPORT_FROM 'b'
+388 STORE_DEREF 14
+390 POP_TOP
+391 RAISE_LAST
+392 LOAD_CONST_SMALL_INT 1
+393 RAISE_OBJ
+394 LOAD_CONST_NONE
+395 RETURN_VALUE
+396 LOAD_CONST_SMALL_INT 1
+397 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 59 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=51):
+ a8 10 0a 02 80 82 34 38 81 57 c0 57 c1 57 c2 57
+ c3 57 c4 57 c5 57 c6 57 c7 57 c8 c9 82 57 ca 57
+ cb 57 cc 57 cd 57 ce 57 cf 57 26 10 57 26 11 57
+ 26 12 26 13 b9 24 13 f2 59 51 63
+arg names:
 (N_STATE 22)
 (N_EXC_STACK 0)
   bc=0 line=1
-########
-  bc=\\d\+ line=133
+  bc=0 line=131
+  bc=20 line=132
+  bc=44 line=133
 00 LOAD_CONST_SMALL_INT 1
 01 DUP_TOP
 02 STORE_FAST 0
@@ -367,28 +464,29 @@ Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
 48 POP_TOP
 49 LOAD_CONST_NONE
 50 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 20 bytes)
+Raw bytecode (code_info_size=9, bytecode_size=11):
+ a1 01 0b 02 06 80 88 40 00 82 2a 01 53 b0 21 00
+ 01 c1 51 63
 arg names: a
 (N_STATE 5)
 (N_EXC_STACK 0)
 (INIT_CELL 0)
-########
-  bc=\\d\+ line=139
+  bc=0 line=1
+  bc=0 line=137
+  bc=0 line=139
 00 LOAD_CONST_SMALL_INT 2
 01 BUILD_TUPLE 1
 03 LOAD_NULL
 04 LOAD_FAST 0
 05 MAKE_CLOSURE_DEFARGS \.\+ 1
-\\d\+ STORE_FAST 1
-\\d\+ LOAD_CONST_NONE
-\\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+08 STORE_FAST 1
+09 LOAD_CONST_NONE
+10 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 21 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=13):
+ 88 40 0a 02 80 8f 23 23 51 67 59 81 67 59 81 5e
+ 51 68 59 51 63
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
@@ -409,49 +507,47 @@ arg names:
 10 POP_TOP
 11 LOAD_CONST_NONE
 12 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'Class' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block 'Class' (descriptor: \.\+, bytecode @\.\+ 1\[56\] bytes)
+Raw bytecode (code_info_size=\[56\], bytecode_size=10):
+ 00 \.\+ 11 0c 16 0d 10 03 16 0e 51 63
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
   bc=0 line=1
 ########
-  bc=12 line=150
+  bc=8 line=150
 00 LOAD_NAME __name__
-03 STORE_NAME __module__
-06 LOAD_CONST_STRING 'Class'
-09 STORE_NAME __qualname__
-12 LOAD_CONST_NONE
-13 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+02 STORE_NAME __module__
+04 LOAD_CONST_STRING 'Class'
+06 STORE_NAME __qualname__
+08 LOAD_CONST_NONE
+09 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 18 bytes)
+Raw bytecode (code_info_size=6, bytecode_size=12):
+ 19 08 02 0f 80 9c 12 10 12 11 b0 15 02 36 00 59
+ 51 63
 arg names: self
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=157
 00 LOAD_GLOBAL super
-\\d\+ LOAD_GLOBAL __class__
-\\d\+ LOAD_FAST 0
-\\d\+ LOAD_SUPER_METHOD f
-\\d\+ CALL_METHOD n=0 nkw=0
-\\d\+ POP_TOP
-\\d\+ LOAD_CONST_NONE
-\\d\+ RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+02 LOAD_GLOBAL __class__
+04 LOAD_FAST 0
+05 LOAD_SUPER_METHOD f
+07 CALL_METHOD n=0 nkw=0
+09 POP_TOP
+10 LOAD_CONST_NONE
+11 RETURN_VALUE
+File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ 31 bytes)
+Raw bytecode (code_info_size=9, bytecode_size=22):
+ c3 40 0c 12 04 04 04 80 3b 53 b2 53 53 4b 0d 00
+ c3 25 01 44 f7 7f 25 00 67 59 42 f0 7f 51 63
 arg names: * * *
 (N_STATE 9)
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=60
-########
 00 LOAD_NULL
 01 LOAD_FAST 2
 02 LOAD_NULL
@@ -466,16 +562,15 @@ arg names: * * *
 17 JUMP 4
 20 LOAD_CONST_NONE
 21 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ 29 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=21):
+ 4b 0c 14 04 04 04 80 3c 2b 00 b2 5f 4b 0d 00 c3
+ 25 01 44 f7 7f 25 00 2f 14 42 f0 7f 63
 arg names: * * *
 (N_STATE 10)
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=61
-########
 00 BUILD_LIST 0
 02 LOAD_FAST 2
 03 GET_ITER_STACK
@@ -487,15 +582,15 @@ arg names: * * *
 15 STORE_COMP 20
 17 JUMP 4
 20 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ 31 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=23):
+ 53 0c 15 04 04 04 80 3d 2c 00 b2 5f 4b 0f 00 c3
+ 25 01 44 f7 7f 25 00 25 00 2f 19 42 ee 7f 63
 arg names: * * *
 (N_STATE 11)
 (N_EXC_STACK 0)
   bc=0 line=1
-########
+  bc=0 line=62
 00 BUILD_MAP 0
 02 LOAD_FAST 2
 03 GET_ITER_STACK
@@ -508,16 +603,17 @@ arg names: * * *
 17 STORE_COMP 25
 19 JUMP 4
 22 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ 20 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=12):
+ 19 0c 16 04 80 6f 25 23 25 00 81 f2 c1 81 27 00
+ 29 00 51 63
 arg names: *
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=0 line=1
-########
-  bc=\\d\+ line=114
+  bc=0 line=112
+  bc=5 line=113
+  bc=8 line=114
 00 LOAD_DEREF 0
 02 LOAD_CONST_SMALL_INT 1
 03 BINARY_OP 27 __add__
@@ -527,16 +623,14 @@ arg names: *
 08 DELETE_DEREF 0
 10 LOAD_CONST_NONE
 11 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 13 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=5):
+ 9a 01 0a 02 04 09 80 8b b1 25 00 f2 63
 arg names: * b
 (N_STATE 4)
 (N_EXC_STACK 0)
   bc=0 line=1
-########
-  bc=\\d\+ line=140
+  bc=0 line=140
 00 LOAD_FAST 1
 01 LOAD_DEREF 0
 03 BINARY_OP 27 __add__

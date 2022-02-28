@@ -27,14 +27,16 @@
 #include "py/profile.h"
 #include "py/bc0.h"
 #include "py/gc.h"
+#include "py/objfun.h"
 
 #if MICROPY_PY_SYS_SETTRACE
 
 #define prof_trace_cb MP_STATE_THREAD(prof_trace_callback)
+#define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
 
 STATIC uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    return mp_bytecode_get_source_line(prelude->line_info, bc);
+    return mp_bytecode_get_source_line(prelude->line_info, prelude->line_info_top, bc);
 }
 
 void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelude) {
@@ -50,13 +52,14 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
 
     MP_BC_PRELUDE_SIZE_DECODE(ip);
 
-    prelude->line_info = ip + 4;
+    prelude->line_info_top = ip + n_info;
     prelude->opcodes = ip + n_info + n_cell;
 
-    qstr block_name = ip[0] | (ip[1] << 8);
-    qstr source_file = ip[2] | (ip[3] << 8);
-    prelude->qstr_block_name = block_name;
-    prelude->qstr_source_file = source_file;
+    prelude->qstr_block_name_idx = mp_decode_uint_value(ip);
+    for (size_t i = 0; i < 1 + n_pos_args + n_kwonly_args; ++i) {
+        ip = mp_decode_uint_skip(ip);
+    }
+    prelude->line_info = ip;
 }
 
 /******************************************************************************/
@@ -69,22 +72,19 @@ STATIC void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     mp_printf(print,
         "<code object %q at 0x%p, file \"%q\", line %d>",
-        prelude->qstr_block_name,
+        QSTR_MAP(o->context, prelude->qstr_block_name_idx),
         o,
-        prelude->qstr_source_file,
+        QSTR_MAP(o->context, 0),
         rc->line_of_definition
         );
 }
 
-STATIC mp_obj_tuple_t *code_consts(const mp_raw_code_t *rc) {
-    const mp_bytecode_prelude_t *prelude = &rc->prelude;
-    int start = prelude->n_pos_args + prelude->n_kwonly_args + rc->n_obj;
-    int stop = prelude->n_pos_args + prelude->n_kwonly_args + rc->n_obj + rc->n_raw_code;
-    mp_obj_tuple_t *consts = MP_OBJ_TO_PTR(mp_obj_new_tuple(stop - start + 1, NULL));
+STATIC mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_raw_code_t *rc) {
+    mp_obj_tuple_t *consts = MP_OBJ_TO_PTR(mp_obj_new_tuple(rc->n_children + 1, NULL));
 
     size_t const_no = 0;
-    for (int i = start; i < stop; ++i) {
-        mp_obj_t code = mp_obj_new_code((const mp_raw_code_t *)MP_OBJ_TO_PTR(rc->const_table[i]));
+    for (size_t i = 0; i < rc->n_children; ++i) {
+        mp_obj_t code = mp_obj_new_code(context, rc->children[i]);
         if (code == MP_OBJ_NULL) {
             m_malloc_fail(sizeof(mp_obj_code_t));
         }
@@ -149,16 +149,16 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 );
             break;
         case MP_QSTR_co_consts:
-            dest[0] = MP_OBJ_FROM_PTR(code_consts(rc));
+            dest[0] = MP_OBJ_FROM_PTR(code_consts(o->context, rc));
             break;
         case MP_QSTR_co_filename:
-            dest[0] = MP_OBJ_NEW_QSTR(prelude->qstr_source_file);
+            dest[0] = MP_OBJ_NEW_QSTR(QSTR_MAP(o->context, 0));
             break;
         case MP_QSTR_co_firstlineno:
             dest[0] = MP_OBJ_NEW_SMALL_INT(mp_prof_bytecode_lineno(rc, 0));
             break;
         case MP_QSTR_co_name:
-            dest[0] = MP_OBJ_NEW_QSTR(prelude->qstr_block_name);
+            dest[0] = MP_OBJ_NEW_QSTR(QSTR_MAP(o->context, prelude->qstr_block_name_idx));
             break;
         case MP_QSTR_co_names:
             dest[0] = MP_OBJ_FROM_PTR(o->dict_locals);
@@ -180,12 +180,13 @@ const mp_obj_type_t mp_type_settrace_codeobj = {
     .attr = code_attr,
 };
 
-mp_obj_t mp_obj_new_code(const mp_raw_code_t *rc) {
+mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t *rc) {
     mp_obj_code_t *o = m_new_obj_maybe(mp_obj_code_t);
     if (o == NULL) {
         return MP_OBJ_NULL;
     }
     o->base.type = &mp_type_settrace_codeobj;
+    o->context = context;
     o->rc = rc;
     o->dict_locals = mp_locals_get(); // this is a wrong! how to do this properly?
     o->lnotab = MP_OBJ_NULL;
@@ -204,9 +205,9 @@ STATIC void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_printf(print,
         "<frame at 0x%p, file '%q', line %d, code %q>",
         frame,
-        prelude->qstr_source_file,
+        QSTR_MAP(code->context, 0),
         frame->lineno,
-        prelude->qstr_block_name
+        QSTR_MAP(code->context, prelude->qstr_block_name_idx)
         );
 }
 
@@ -229,7 +230,7 @@ STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[0] = MP_OBJ_FROM_PTR(o->code);
             break;
         case MP_QSTR_f_globals:
-            dest[0] = MP_OBJ_FROM_PTR(o->code_state->fun_bc->globals);
+            dest[0] = MP_OBJ_FROM_PTR(o->code_state->fun_bc->context->module.globals);
             break;
         case MP_QSTR_f_lasti:
             dest[0] = MP_OBJ_NEW_SMALL_INT(o->lasti);
@@ -258,7 +259,7 @@ mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state) {
         return MP_OBJ_NULL;
     }
 
-    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(code_state->fun_bc->rc));
+    mp_obj_code_t *code = o->code = MP_OBJ_TO_PTR(mp_obj_new_code(code_state->fun_bc->context, code_state->fun_bc->rc));
     if (code == NULL) {
         return MP_OBJ_NULL;
     }

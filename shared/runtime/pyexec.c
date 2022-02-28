@@ -83,7 +83,11 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         #if MICROPY_MODULE_FROZEN_MPY
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
             // source is a raw_code object, create the function
-            module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
+            const mp_frozen_module_t *frozen = source;
+            mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+            ctx->module.globals = mp_globals_get();
+            ctx->constants = frozen->constants;
+            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
         } else
         #endif
         {
