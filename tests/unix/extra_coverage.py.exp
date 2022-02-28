@@ -174,4 +174,9 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+\
+
+X
+'\x1b'
+b'\x00\xff'
 NULL
