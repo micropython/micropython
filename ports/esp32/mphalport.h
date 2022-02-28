@@ -48,6 +48,10 @@
 #define MP_TASK_COREID (0)
 #endif
 
+#if MICROPY_UNICORE
+#define MP_TASK_COREID (0)
+#endif
+
 extern TaskHandle_t mp_main_task_handle;
 
 extern ringbuf_t stdin_ringbuf;
