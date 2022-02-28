@@ -628,10 +628,13 @@ class PyboardExtended(Pyboard):
 
         # Read response from the device until it is quiet (with a timeout).
         INITIAL_TIMEOUT = 0.5
-        QUIET_TIMEOUT = 0.2
+        BANNER_TIMEOUT = 2
+        QUIET_TIMEOUT = 0.1
         FULL_TIMEOUT = 5
         t_start = t_last_activity = time.monotonic()
         data_all = b""
+        soft_reboot_started = False
+        soft_reboot_banner = False
         while True:
             t = time.monotonic()
             n = self.serial.inWaiting()
@@ -646,13 +649,36 @@ class PyboardExtended(Pyboard):
                         return
                 else:
                     if t - t_start > FULL_TIMEOUT:
+                        if soft_reboot_started:
+                            break
                         return
-                    if t - t_last_activity > QUIET_TIMEOUT:
+
+                    next_data_timeout = QUIET_TIMEOUT
+
+                    if not soft_reboot_started and data_all.find(b"MPY: soft reboot") != -1:
+                        soft_reboot_started = True
+
+                    if soft_reboot_started and not soft_reboot_banner:
+                        # Once soft reboot has been initiated, give some more time for the startup
+                        # banner to be shown
+                        if data_all.find(b"\nMicroPython ") != -1:
+                            soft_reboot_banner = True
+                        elif data_all.find(b"\nraw REPL; CTRL-B to exit\r\n") != -1:
+                            soft_reboot_banner = True
+                        else:
+                            next_data_timeout = BANNER_TIMEOUT
+
+                    if t - t_last_activity > next_data_timeout:
                         break
 
-        # Check if a soft reset occurred.
-        if data_all.find(b"MPY: soft reboot") == -1:
+        if not soft_reboot_started:
             return
+
+        if not soft_reboot_banner:
+            out_callback(b"Warning: Could not remount local filesystem\r\n")
+            return
+
+        # Determine type of prompt
         if data_all.endswith(b">"):
             in_friendly_repl = False
             prompt = b">"
