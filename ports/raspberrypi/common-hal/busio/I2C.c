@@ -109,8 +109,11 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // set up as GPIO by the bitbangio.I2C object.
     //
     // Sets pins to open drain, high, and input.
+    //
+    // Do not use the default supplied clock stretching timeout here.
+    // It is too short for some devices. Use the busio timeout instead.
     shared_module_bitbangio_i2c_construct(&self->bitbangio_i2c, scl, sda,
-        frequency, timeout);
+        frequency, BUS_TIMEOUT_US);
 
     self->baudrate = i2c_init(self->peripheral, frequency);
 
@@ -142,7 +145,7 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
 }
 
 bool common_hal_busio_i2c_probe(busio_i2c_obj_t *self, uint8_t addr) {
-    return common_hal_busio_i2c_write(self, addr, NULL, 0, true) == 0;
+    return common_hal_busio_i2c_write(self, addr, NULL, 0) == 0;
 }
 
 bool common_hal_busio_i2c_try_lock(busio_i2c_obj_t *self) {
@@ -162,7 +165,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     const uint8_t *data, size_t len, bool transmit_stop_bit) {
     if (len == 0) {
         // The RP2040 I2C peripheral will not perform 0 byte writes.
@@ -200,6 +203,11 @@ uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
     }
 }
 
+uint8_t common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
+    const uint8_t *data, size_t len) {
+    return _common_hal_busio_i2c_write(self, addr, data, len, true);
+}
+
 uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
     uint8_t *data, size_t len) {
     int result = i2c_read_timeout_us(self->peripheral, addr, data, len, false, BUS_TIMEOUT_US);
@@ -214,6 +222,16 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr,
         default:
             return MP_EIO;
     }
+}
+
+uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t addr,
+    uint8_t *out_data, size_t out_len, uint8_t *in_data, size_t in_len) {
+    uint8_t result = _common_hal_busio_i2c_write(self, addr, out_data, out_len, false);
+    if (result != 0) {
+        return result;
+    }
+
+    return common_hal_busio_i2c_read(self, addr, in_data, in_len);
 }
 
 void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self) {

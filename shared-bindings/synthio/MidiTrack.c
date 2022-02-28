@@ -42,7 +42,7 @@
 //|         are supported; channel numbers and key velocities are ignored. Up to two notes may be on at the
 //|         same time.
 //|
-//|         :param ~_typing.ReadableBuffer buffer: Stream of MIDI events, as stored in a MIDI file track chunk
+//|         :param ~circuitpython_typing.ReadableBuffer buffer: Stream of MIDI events, as stored in a MIDI file track chunk
 //|         :param int tempo: Tempo of the streamed events, in MIDI ticks per second
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|

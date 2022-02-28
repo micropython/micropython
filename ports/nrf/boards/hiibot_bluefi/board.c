@@ -48,7 +48,7 @@ uint8_t display_init_sequence[] = {
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_P0_07, &pin_P1_08, NULL); // SCK, MOSI, MISO
+    common_hal_busio_spi_construct(spi, &pin_P0_07, &pin_P1_08, NULL, false); // SCK, MOSI, MISO, not half-duplex
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;

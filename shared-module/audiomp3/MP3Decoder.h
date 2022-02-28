@@ -54,6 +54,8 @@ typedef struct {
 
     int8_t other_channel;
     int8_t other_buffer_index;
+
+    uint32_t samples_decoded;
 } audiomp3_mp3file_obj_t;
 
 // These are not available from Python because it may be called in an interrupt.
@@ -70,5 +72,7 @@ void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool si
     uint32_t *max_buffer_length, uint8_t *spacing);
 
 float audiomp3_mp3file_get_rms_level(audiomp3_mp3file_obj_t *self);
+
+uint32_t common_hal_audiomp3_mp3file_get_samples_decoded(audiomp3_mp3file_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_AUDIOIO_MP3FILE_H

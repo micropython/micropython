@@ -35,7 +35,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
+#ifdef CONFIG_IDF_TARGET_ESP32S2
 #include "components/driver/include/driver/dac_common.h"
+#endif
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -56,7 +58,11 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
+    #ifdef CONFIG_IDF_TARGET_ESP32S2
     return self->channel == DAC_CHANNEL_MAX;
+    #else
+    return false;
+    #endif
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {

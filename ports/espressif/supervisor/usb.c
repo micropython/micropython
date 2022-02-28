@@ -109,13 +109,16 @@ void init_usb_hardware(void) {
     usb_hal_init(&hal);
     configure_pins(&hal);
 
-    (void)xTaskCreateStatic(usb_device_task,
+    // Pin the USB task to the same core as CircuitPython. This way we leave
+    // the other core for networking.
+    (void)xTaskCreateStaticPinnedToCore(usb_device_task,
         "usbd",
         USBD_STACK_SIZE,
         NULL,
         5,
         usb_device_stack,
-        &usb_device_taskdef);
+        &usb_device_taskdef,
+        xPortGetCoreID());
 }
 
 /**
@@ -134,4 +137,11 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
         tud_cdc_read_flush();    // flush read fifo
         mp_sched_keyboard_interrupt();
     }
+}
+
+void tud_cdc_rx_cb(uint8_t itf) {
+    (void)itf;
+    // Workaround for "press any key to enter REPL" response being delayed on espressif.
+    // Wake main task when any key is pressed.
+    port_wake_main_task();
 }

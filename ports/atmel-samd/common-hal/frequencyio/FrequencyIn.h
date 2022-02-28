@@ -46,14 +46,7 @@ typedef struct {
 } frequencyio_frequencyin_obj_t;
 
 void frequencyin_interrupt_handler(uint8_t index);
-void frequencyin_emergency_cancel_capture(uint8_t index);
-void frequencyin_reference_tc_init(void);
-void frequencyin_reference_tc_enable(bool enable);
-bool frequencyin_reference_tc_enabled(void);
-#ifdef SAM_D5X_E5X
-void frequencyin_samd51_start_dpll(void);
-void frequencyin_samd51_stop_dpll(void);
-#endif
+void frequencyin_reset(void);
 
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_FREQUENCYIO_FREQUENCYIN_H

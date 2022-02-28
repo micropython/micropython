@@ -37,6 +37,7 @@ typedef struct {
     uint8_t num_data;
     bool state_programming;
     bool has_lock;
+    bool init;
     uint8_t command_pin;
     uint8_t clock_pin;
     uint8_t data_pins[4];

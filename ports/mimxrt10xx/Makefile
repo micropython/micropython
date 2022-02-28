@@ -156,7 +156,7 @@ SRC_C += \
 	boards/$(BOARD)/flash_config.c \
 	boards/$(BOARD)/pins.c \
 	fatfs_port.c \
-	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c \
+	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
 	mphalport.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/clocks.c \
 	peripherals/mimxrt10xx/$(CHIP_FAMILY)/periph.c \

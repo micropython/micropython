@@ -39,4 +39,12 @@ void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self);
 ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t *self,
     socketpool_socket_obj_t *sock, bool server_side, const char *server_hostname);
 
+void common_hal_ssl_sslcontext_load_verify_locations(ssl_sslcontext_obj_t *self,
+    const char *cadata);
+
+void common_hal_ssl_sslcontext_set_default_verify_paths(ssl_sslcontext_obj_t *self);
+
+bool common_hal_ssl_sslcontext_get_check_hostname(ssl_sslcontext_obj_t *self);
+void common_hal_ssl_sslcontext_set_check_hostname(ssl_sslcontext_obj_t *self, bool value);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H

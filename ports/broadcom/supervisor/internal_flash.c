@@ -60,6 +60,7 @@ void supervisor_flash_init(void) {
         NULL, NULL,
         0, NULL, 8000000);
     #endif
+    common_hal_sdioio_sdcard_never_reset(&sd);
 
     uint32_t buffer[512 / sizeof(uint32_t)];
     mp_buffer_info_t bufinfo;

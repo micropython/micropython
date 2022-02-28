@@ -32,6 +32,7 @@ DFU = ("dfu",)
 BIN_DFU = ("bin", "dfu")
 COMBINED_HEX = ("combined.hex",)
 KERNEL8_IMG = ("disk.img.zip", "kernel8.img")
+KERNEL_IMG = ("disk.img.zip", "kernel.img")
 
 # Default extensions
 extension_by_port = {
@@ -69,7 +70,12 @@ extension_by_board = {
     "meowbit_v121": UF2,
     # esp32c3
     "ai_thinker_esp32-c3s": BIN,
+    "ai_thinker_esp32-c3s-2m": BIN,
+    "espressif_esp32c3_devkitm_1_n4": BIN,
     "microdev_micro_c3": BIN,
+    # broadcom
+    "raspberrypi_zero": KERNEL_IMG,
+    "raspberrypi_zero_w": KERNEL_IMG,
 }
 
 language_allow_list = set(
@@ -89,6 +95,7 @@ language_allow_list = set(
         "pt_BR",
         "ru",
         "sv",
+        "tr",
         "zh_Latn_pinyin",
     ]
 )
@@ -160,10 +167,10 @@ def get_version_info():
 
 
 def get_current_info():
-    response = github.get("/repos/adafruit/circuitpython-org/git/refs/heads/master")
+    response = github.get("/repos/adafruit/circuitpython-org/git/refs/heads/main")
     if not response.ok:
         print(response.text)
-        raise RuntimeError("cannot get master sha")
+        raise RuntimeError("cannot get main sha")
     commit_sha = response.json()["object"]["sha"]
 
     response = github.get(
@@ -235,7 +242,7 @@ def create_pr(changes, updated, git_info, user):
     pr_info = {
         "title": pr_title,
         "head": user + ":" + branch_name,
-        "base": "master",
+        "base": "main",
         "body": message,
         "maintainer_can_modify": True,
     }

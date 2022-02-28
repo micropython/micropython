@@ -37,6 +37,10 @@
 #include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
+#if CIRCUITPY_BLEIO_HCI
+#include "common-hal/_bleio/__init__.h"
+#endif
+
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
 #endif
@@ -68,6 +72,10 @@ static void supervisor_background_tasks(void *unused) {
     port_start_background_task();
 
     assert_heap_ok();
+
+    #if CIRCUITPY_BLEIO_HCI
+    bleio_hci_background();
+    #endif
 
     #if CIRCUITPY_DISPLAYIO
     displayio_background();

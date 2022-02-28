@@ -36,6 +36,7 @@
 #include "shared-bindings/ipaddress/IPv4Address.h"
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-bindings/wifi/AuthMode.h"
+#include "shared-bindings/time/__init__.h"
 #include "shared-module/ipaddress/__init__.h"
 
 #include "components/esp_wifi/include/esp_wifi.h"
@@ -184,7 +185,7 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
     set_mode_station(self, false);
 }
 
-void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode) {
+void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint8_t authmode, uint8_t max_connections) {
     set_mode_ap(self, true);
 
     switch (authmode) {
@@ -212,7 +213,12 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     config->ap.password[password_len] = 0;
     config->ap.channel = channel;
     config->ap.authmode = authmode;
-    config->ap.max_connection = 4; // kwarg?
+
+    if (max_connections < 0 || max_connections > 10) {
+        mp_raise_ValueError(translate("max_connections must be between 0 and 10"));
+    }
+    config->ap.max_connection = max_connections;
+
     esp_wifi_set_config(WIFI_IF_AP, config);
 }
 
@@ -399,7 +405,8 @@ mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address,
 
     uint32_t received = 0;
     uint32_t total_time_ms = 0;
-    while (received == 0 && total_time_ms < timeout_ms && !mp_hal_is_interrupted()) {
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    while (received == 0 && (common_hal_time_monotonic_ms() - start_time < timeout_ms) && !mp_hal_is_interrupted()) {
         RUN_BACKGROUND_TASKS;
         esp_ping_get_profile(ping, ESP_PING_PROF_DURATION, &total_time_ms, sizeof(total_time_ms));
         esp_ping_get_profile(ping, ESP_PING_PROF_REPLY, &received, sizeof(received));

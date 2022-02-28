@@ -49,7 +49,12 @@ def copy_and_process(in_dir, out_dir):
 
         # Skip library examples directory and subfolders.
         relative_path_parts = Path(root).relative_to(in_dir).parts
-        if relative_path_parts and relative_path_parts[0] in ["examples", "docs", "tests"]:
+        if relative_path_parts and relative_path_parts[0] in [
+            "examples",
+            "docs",
+            "tests",
+            "utils",
+        ]:
             del subdirs[:]
             continue
 

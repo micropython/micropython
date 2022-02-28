@@ -15,7 +15,7 @@ class GVector(object):
         self.z = z
 
     def Mag(self):
-        return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
+        return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
     def dist(self, other):
         return math.sqrt(

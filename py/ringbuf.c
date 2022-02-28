@@ -27,11 +27,20 @@
 
 #include "ringbuf.h"
 
+bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity) {
+    r->heap = false;
+    r->buf = buf;
+    r->size = capacity;
+    r->iget = r->iput = 0;
+    return r->buf != NULL;
+}
+
 // Dynamic initialization. This should be accessible from a root pointer.
 // capacity is the number of bytes the ring buffer can hold. The actual
 // size of the buffer is one greater than that, due to how the buffer
 // handles empty and full statuses.
 bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
+    r->heap = true;
     r->buf = gc_alloc(capacity + 1, false, long_lived);
     r->size = capacity + 1;
     r->iget = r->iput = 0;
@@ -39,7 +48,10 @@ bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
 }
 
 void ringbuf_free(ringbuf_t *r) {
-    gc_free(r->buf);
+    if (r->heap) {
+        gc_free(r->buf);
+    }
+    r->buf = (uint8_t *)NULL;
     r->size = 0;
     ringbuf_clear(r);
 }
@@ -102,7 +114,7 @@ size_t ringbuf_num_filled(ringbuf_t *r) {
 
 // If the ring buffer fills up, not all bytes will be written.
 // Returns how many bytes were successfully written.
-size_t ringbuf_put_n(ringbuf_t *r, uint8_t *buf, size_t bufsize) {
+size_t ringbuf_put_n(ringbuf_t *r, const uint8_t *buf, size_t bufsize) {
     for (size_t i = 0; i < bufsize; i++) {
         if (ringbuf_put(r, buf[i]) < 0) {
             // If ringbuf is full, give up and return how many bytes

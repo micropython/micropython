@@ -66,7 +66,7 @@
 #endif
 
 // Set by interrupt handler when DMA block has finished transferring.
-static bool pdmin_dma_block_done;
+static volatile bool pdmin_dma_block_done;
 // Event channel used to trigger interrupt. Set to invalid value EVSYS_SYNCH_NUM when not in use.
 static uint8_t pdmin_event_channel;
 
@@ -77,6 +77,7 @@ void pdmin_evsys_handler(void) {
 }
 
 void pdmin_reset(void) {
+    pdmin_dma_block_done = false;
     pdmin_event_channel = EVSYS_SYNCH_NUM;
 
     while (I2S->SYNCBUSY.reg & I2S_SYNCBUSY_ENABLE) {}
@@ -409,6 +410,20 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t* se
     init_event_channel_interrupt(pdmin_event_channel, CORE_GCLK, EVSYS_ID_GEN_DMAC_CH_0 + dma_channel);
     // Turn on serializer now to get it in sync with DMA.
     i2s_set_serializer_enable(self->serializer, true);
+
+    #ifdef SAM_D5X_E5X
+    int irq = pdmin_event_channel < 4 ? EVSYS_0_IRQn + pdmin_event_channel : EVSYS_4_IRQn;
+    // Only disable and clear on SAMD51 because the SAMD21 shares EVSYS with ticks.
+    NVIC_DisableIRQ(irq);
+    NVIC_ClearPendingIRQ(irq);
+    #endif
+
+    #ifdef SAMD21
+    int irq = EVSYS_IRQn;
+    #endif
+
+    // Don't bother to disable when done. It doesn't hurt to leave it on.
+    NVIC_EnableIRQ(irq);
     audio_dma_enable_channel(dma_channel);
 
     // Record

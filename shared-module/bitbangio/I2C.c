@@ -49,9 +49,11 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     uint32_t count = self->us_timeout;
     delay(self);
     // For clock stretching, wait for the SCL pin to be released, with timeout.
+    common_hal_digitalio_digitalinout_switch_to_input(&self->scl, PULL_UP);
     for (; !common_hal_digitalio_digitalinout_get_value(&self->scl) && count; --count) {
         common_hal_mcu_delay_us(1);
     }
+    common_hal_digitalio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
     // raise exception on timeout
     if (count == 0) {
         mp_raise_msg(&mp_type_TimeoutError, translate("Clock stretch too long"));

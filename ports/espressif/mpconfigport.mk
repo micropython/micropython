@@ -1,8 +1,3 @@
-# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
-# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
-# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
-
 # Internal math library is substantially smaller than toolchain one
 INTERNAL_LIBM = 1
 
@@ -26,7 +21,7 @@ CIRCUITPY_FRAMEBUFFERIO ?= 1
 CIRCUITPY_FREQUENCYIO ?= 1
 CIRCUITPY_IMAGECAPTURE ?= 1
 CIRCUITPY_I2CPERIPHERAL ?= 1
-CIRCUITPY_RGBMATRIX ?= 0
+CIRCUITPY_RGBMATRIX ?= 1
 CIRCUITPY_ROTARYIO ?= 1
 CIRCUITPY_NVM ?= 1
 CIRCUITPY_PS2IO ?= 1
@@ -41,6 +36,8 @@ CIRCUITPY_MODULE ?= none
 ifeq ($(IDF_TARGET),esp32c3)
 CIRCUITPY_USB = 0
 CIRCUITPY_ALARM = 0
+CIRCUITPY_BLEIO = 1
+CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_COUNTIO = 0
 CIRCUITPY_ROTARYIO = 0
 CIRCUITPY_AUDIOBUSIO = 0
@@ -50,8 +47,14 @@ CIRCUITPY_PARALLELDISPLAY = 0
 CIRCUITPY_TOUCHIO ?= 1
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 else ifeq ($(IDF_TARGET),esp32s3)
+CIRCUITPY_BLEIO = 1
+CIRCUITPY_BLEIO_HCI = 0
 CIRCUITPY_IMAGECAPTURE = 0
 CIRCUITPY_PARALLELDISPLAY = 0
+else ifeq ($(IDF_TARGET),esp32s2)
+# No BLE on S2
+CIRCUITPY_BLEIO = 0
+CIRCUITPY_BLEIO_HCI = 0
 endif
 
 # From ESP32-S2/S3 Technical Reference Manual:

@@ -420,7 +420,10 @@ static sdmmc_err_t cis_tuple_func_manfid(const void* p, uint8_t* data, FILE* fp)
     int size = *(data++);
     fprintf(fp, "TUPLE: %s, size: %d\n", tuple->name, size);
     CIS_CHECK_SIZE(size, 4);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     fprintf(fp, "  MANF: %04X, CARD: %04X\n", *(uint16_t*)(data), *(uint16_t*)(data+2));
+    #pragma GCC diagnostic pop
     return SDMMC_OK;
 }
 
@@ -480,7 +483,10 @@ static sdmmc_err_t cis_tuple_func_cftable_entry(const void* p, uint8_t* data, FI
         CIS_CHECK_SIZE(size, 2);
         size-=2;
         CIS_CHECK_UNSUPPORTED(mem_space==1); //other cases not handled yet
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wcast-align"
         int len = *(uint16_t*)data;
+        #pragma GCC diagnostic pop
         fprintf(fp, "  LEN: %04X\n", len);
         data+=2;
     }

@@ -62,6 +62,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
     if (mp_obj_is_type(shape, &vectorio_polygon_type)) {
         common_hal_vectorio_polygon_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (mp_obj_is_type(shape, &vectorio_rectangle_type)) {
+        common_hal_vectorio_rectangle_set_on_dirty(self->ishape.shape, on_dirty);
     } else if (mp_obj_is_type(shape, &vectorio_circle_type)) {
         common_hal_vectorio_circle_set_on_dirty(self->ishape.shape, on_dirty);
     } else {
@@ -79,6 +80,21 @@ vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl = {
     .draw_get_refresh_areas = (draw_get_refresh_areas_fun)vectorio_vector_shape_get_refresh_areas,
 };
 
+// Stub checker does not approve of these shared properties.
+//     x: int
+//     y: int
+//     """true if x,y lies inside the shape."""
+//
+STATIC mp_obj_t vectorio_vector_shape_obj_contains(mp_obj_t wrapper_shape, mp_obj_t x_obj, mp_obj_t y_obj) {
+    // Relies on the fact that only vector_shape impl gets matched with a VectorShape.
+    const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, wrapper_shape);
+    vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
+
+    mp_int_t x = mp_obj_get_int(x_obj);
+    mp_int_t y = mp_obj_get_int(y_obj);
+    return mp_obj_new_bool(common_hal_vectorio_vector_shape_contains(self, x, y));
+}
+MP_DEFINE_CONST_FUN_OBJ_3(vectorio_vector_shape_contains_obj, vectorio_vector_shape_obj_contains);
 
 // Stub checker does not approve of these shared properties.
 //     x: int

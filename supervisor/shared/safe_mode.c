@@ -175,6 +175,9 @@ void print_safe_mode_message(safe_mode_t reason) {
         case WATCHDOG_RESET:
             message = translate("Watchdog timer expired.");
             break;
+        case NO_CIRCUITPY:
+            message = translate("CIRCUITPY drive could not be found or created.");
+            break;
         default:
             break;
     }

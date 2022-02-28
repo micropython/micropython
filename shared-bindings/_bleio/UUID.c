@@ -48,7 +48,7 @@
 //|         temporary 16-bit UUID that can be used in place of the full 128-bit UUID.
 //|
 //|         :param value: The uuid value to encapsulate
-//|         :type value: int, ~_typing.ReadableBuffer or str"""
+//|         :type value: int, ~circuitpython_typing.ReadableBuffer or str"""
 //|         ...
 //|
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {

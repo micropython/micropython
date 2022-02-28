@@ -20,12 +20,12 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py website ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py website ${{ github.sha }}
     - name: Install deps
       run: |
         pip install -r requirements-dev.txt
@@ -34,7 +34,9 @@ jobs:
         gcc --version
         python3 --version
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Website
       run: python3 build_board_info.py
       working-directory: tools

@@ -12,6 +12,10 @@ on:
       - 'ports/unix/**'
       - 'ports/windows/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-2019
@@ -70,11 +74,11 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py windows ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py windows ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
 
     - name: build mpy-cross
       run: make -j2 -C mpy-cross

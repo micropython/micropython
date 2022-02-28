@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Pimoroni Tiny 2040"
+#define MICROPY_HW_BOARD_NAME "Pimoroni Tiny 2040 (8MB)"
 #define MICROPY_HW_MCU_NAME "rp2040"
 
 #define CIRCUITPY_RGB_STATUS_INVERTED_PWM

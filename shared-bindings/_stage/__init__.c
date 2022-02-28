@@ -48,7 +48,7 @@
 //|     :param int y1: Bottom edge of the fragment.
 //|     :param layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :type layers: list[Layer]
-//|     :param ~_typing.WriteableBuffer buffer: A buffer to use for rendering.
+//|     :param ~circuitpython_typing.WriteableBuffer buffer: A buffer to use for rendering.
 //|     :param ~displayio.Display display: The display to use.
 //|     :param int scale: How many times should the image be scaled up.
 //|     :param int background: What color to display when nothing is there.

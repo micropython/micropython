@@ -97,6 +97,8 @@ const mp_obj_property_t vectorio_circle_radius_obj = {
 //|
 
 STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
+    // Functions
+    { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&vectorio_vector_shape_contains_obj) },
     // Properties
     { MP_ROM_QSTR(MP_QSTR_radius), MP_ROM_PTR(&vectorio_circle_radius_obj) },
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },

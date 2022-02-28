@@ -50,10 +50,6 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     // Debug UART
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO37);
@@ -61,7 +57,7 @@ void board_init(void) {
     #endif /* DEBUG */
 
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
+    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;

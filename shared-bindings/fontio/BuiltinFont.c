@@ -36,6 +36,25 @@
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate.h"
 
+//| from typing_extensions import Protocol # for compat with python < 3.8
+//|
+//| class FontProtocol(Protocol):
+//|     """A protocol shared by `BuiltinFont` and classes in ``adafruit_bitmap_font``"""
+//|     def get_bounding_box(self) -> Union[Tuple[int, int], Tuple[int, int, int, int]]:
+//|         """Retrieve the maximum bounding box of any glyph in the font.
+//|
+//|         The four element version is ``(width, height, x_offset, y_offset)``.
+//|         The two element version is ``(width, height)``, in which
+//|         ``x_offset`` and ``y_offset`` are assumed to be zero."""
+//|         pass
+//|
+//|     def get_glyph(self, codepoint: int) -> Optional[Glyph]:
+//|         """Retrieve the Glyph for a given code point
+//|
+//|         If the code point is not present in the font, `None` is returned."""
+//|         pass
+//|
+
 //| class BuiltinFont:
 //|     """A font built into CircuitPython"""
 //|

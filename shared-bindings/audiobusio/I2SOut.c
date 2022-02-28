@@ -72,7 +72,6 @@
 //|         Playing a wave file from flash::
 //|
 //|           import board
-//|           import audioio
 //|           import audiocore
 //|           import audiobusio
 //|           import digitalio
@@ -155,7 +154,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj___exit__(size_t n_args, const mp_obj_t *ar
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(audiobusio_i2sout___exit___obj, 4, 4, audiobusio_i2sout_obj___exit__);
 
 
-//|     def play(self, sample: _typing.AudioSample, *, loop: bool = False) -> None:
+//|     def play(self, sample: circuitpython_typing.AudioSample, *, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|

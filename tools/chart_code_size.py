@@ -446,7 +446,7 @@ def do_all_the_things(elf_filename):
         if "size" not in symbol:
             print(symbol)
         size = symbol["size"] / 8
-        square_size = size ** 0.5
+        square_size = size**0.5
         if text_width_ish > square_size:
             w = text_width_ish
             h = size / text_width_ish

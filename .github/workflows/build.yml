@@ -12,6 +12,10 @@ on:
   check_suite:
     types: [rerequested]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-20.04
@@ -30,16 +34,16 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py test ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py test ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -68,10 +72,23 @@ jobs:
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy -d basics float micropython
       working-directory: tests
     - name: Native mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy --emit native -d basics float micropython
+      working-directory: tests
+    - name: Build native modules
+      run: |
+        make -C examples/natmod/features1
+        make -C examples/natmod/features2
+        make -C examples/natmod/btree
+        make -C examples/natmod/framebuf
+        make -C examples/natmod/uheapq
+        make -C examples/natmod/urandom
+        make -C examples/natmod/ure
+        make -C examples/natmod/uzlib
+    - name: Test native modules
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
       working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
@@ -136,16 +153,16 @@ jobs:
       with:
         submodules: false
         fetch-depth: 1
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         brew install gettext
@@ -197,15 +214,15 @@ jobs:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py docs ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -241,7 +258,7 @@ jobs:
         zip -9r circuitpython-stubs.zip circuitpython-stubs
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp circuitpython-stubs/dist/*.tar.gz s3://adafruit-circuit-python/bin/stubs/circuitpython-stubs-${{ env.CP_VERSION }}.zip --no-progress --region us-east-1
     - name: Upload stubs to PyPi
-      if: (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'adafruit') || (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
+      if: github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested')
       env:
         TWINE_USERNAME: ${{ secrets.pypi_username }}
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
@@ -260,16 +277,16 @@ jobs:
         board: ${{ fromJSON(needs.test.outputs.boards-arm) }}
     if: ${{ needs.test.outputs.boards-arm != '[]' }}
     steps:
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -312,16 +329,16 @@ jobs:
         board: ${{ fromJSON(needs.test.outputs.boards-riscv) }}
     if: ${{ needs.test.outputs.boards-riscv != '[]' }}
     steps:
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
@@ -364,18 +381,20 @@ jobs:
         board: ${{ fromJSON(needs.test.outputs.boards-espressif) }}
     if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
@@ -451,16 +470,16 @@ jobs:
         board: ${{ fromJSON(needs.test.outputs.boards-aarch) }}
     if: ${{ needs.test.outputs.boards-aarch != '[]' }}
     steps:
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: "3.x"
     - uses: actions/checkout@v2.2.0
       with:
         submodules: false
         fetch-depth: 1
     - name: Get CP deps
-      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.ref }}
+      run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext mtools

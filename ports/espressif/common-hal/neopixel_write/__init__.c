@@ -43,19 +43,22 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
+#include "supervisor/port.h"
 #include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
-#define WS2812_T0H_NS (350)
-#define WS2812_T0L_NS (1000)
-#define WS2812_T1H_NS (1000)
-#define WS2812_T1L_NS (350)
-#define WS2812_RESET_US (280)
+// 416 ns is 1/3 of the 1250ns period of a 800khz signal.
+#define WS2812_T0H_NS (416)
+#define WS2812_T0L_NS (416 * 2)
+#define WS2812_T1H_NS (416 * 2)
+#define WS2812_T1L_NS (416)
 
 static uint32_t ws2812_t0h_ticks = 0;
 static uint32_t ws2812_t1h_ticks = 0;
 static uint32_t ws2812_t0l_ticks = 0;
 static uint32_t ws2812_t1l_ticks = 0;
+
+static uint64_t next_start_raw_ticks = 0;
 
 static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size,
     size_t wanted_num, size_t *translated_size, size_t *item_num) {
@@ -91,7 +94,7 @@ static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, si
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // Reserve channel
     uint8_t number = digitalinout->pin->number;
-    rmt_channel_t channel = peripherals_find_and_reserve_rmt();
+    rmt_channel_t channel = peripherals_find_and_reserve_rmt(TRANSMIT_MODE);
     if (channel == RMT_CHANNEL_MAX) {
         mp_raise_RuntimeError(translate("All timers in use"));
     }
@@ -107,20 +110,28 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     if (rmt_get_counter_clock(config.channel, &counter_clk_hz) != ESP_OK) {
         mp_raise_RuntimeError(translate("Could not retrieve clock"));
     }
-    float ratio = (float)counter_clk_hz / 1e9;
-    ws2812_t0h_ticks = (uint32_t)(ratio * WS2812_T0H_NS);
-    ws2812_t0l_ticks = (uint32_t)(ratio * WS2812_T0L_NS);
-    ws2812_t1h_ticks = (uint32_t)(ratio * WS2812_T1H_NS);
-    ws2812_t1l_ticks = (uint32_t)(ratio * WS2812_T1L_NS);
+    size_t ns_per_tick = 1e9 / counter_clk_hz;
+    ws2812_t0h_ticks = WS2812_T0H_NS / ns_per_tick;
+    ws2812_t0l_ticks = WS2812_T0L_NS / ns_per_tick;
+    ws2812_t1h_ticks = WS2812_T1H_NS / ns_per_tick;
+    ws2812_t1l_ticks = WS2812_T1L_NS / ns_per_tick;
 
     // Initialize automatic timing translator
     rmt_translator_init(config.channel, ws2812_rmt_adapter);
+
+    // Wait to make sure we don't append onto the last transmission. This should only be a tick or
+    // two.
+    while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
+    }
 
     // Write and wait to finish
     if (rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
         mp_raise_RuntimeError(translate("Input/output error"));
     }
     rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));
+
+    // Update the next start to +2 ticks. It ensures that we've gone 300+ us.
+    next_start_raw_ticks = port_get_raw_ticks(NULL) + 2;
 
     // Free channel again
     peripherals_free_rmt(config.channel);

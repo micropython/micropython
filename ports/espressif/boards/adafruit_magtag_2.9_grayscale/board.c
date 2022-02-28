@@ -110,10 +110,6 @@ const uint8_t display_stop_sequence[] = {
 };
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
     // Debug UART
     #ifdef DEBUG
     common_hal_never_reset_pin(&pin_GPIO43);
@@ -121,7 +117,7 @@ void board_init(void) {
     #endif /* DEBUG */
 
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL);
+    common_hal_busio_spi_construct(spi, &pin_GPIO36, &pin_GPIO35, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
@@ -164,7 +160,8 @@ void board_init(void) {
         false,  // busy_state
         5.0, // seconds_per_frame
         false,  // always_toggle_chip_select
-        true);  // grayscale
+        true, // grayscale
+        false);  // two_byte_sequence_length
 }
 
 bool board_requests_safe_mode(void) {
@@ -173,6 +170,25 @@ bool board_requests_safe_mode(void) {
 
 void reset_board(void) {
 
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pin 16 is speaker enable and it's pulled down on the board. We don't want
+    // to pull it high because then we'll compete with the external pull down.
+    // So, reset without any pulls internally.
+    if (pin_number == 16) {
+        gpio_config_t cfg = {
+            .pin_bit_mask = BIT64(16),
+            .mode = GPIO_MODE_DISABLE,
+            // The pin is externally pulled down, so we don't need to pull it.
+            .pull_up_en = false,
+            .pull_down_en = false,
+            .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&cfg);
+        return true;
+    }
+    return false;
 }
 
 void board_deinit(void) {

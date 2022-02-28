@@ -71,6 +71,10 @@
 #include "common-hal/busio/__init__.h"
 #endif
 
+#if CIRCUITPY_FREQUENCYIO
+#include "common-hal/frequencyio/FrequencyIn.h"
+#endif
+
 #include "common-hal/microcontroller/Pin.h"
 
 #if CIRCUITPY_PULSEIO
@@ -382,10 +386,14 @@ void reset_port(void) {
     audioout_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO
-    // pdmin_reset();
+    pdmin_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     i2sout_reset();
+    #endif
+
+    #if CIRCUITPY_FREQUENCYIO
+    frequencyin_reset();
     #endif
 
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
@@ -399,7 +407,7 @@ void reset_port(void) {
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
-    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO
+    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO || CIRCUITPY_FREQUENCYIO
     reset_timers();
     #endif
 
@@ -490,21 +498,31 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 
 static uint32_t _get_count(uint64_t *overflow_count) {
-    #ifdef SAM_D5X_E5X
-    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
-    }
-    #endif
-    // SAMD21 does continuous sync so we don't need to wait here.
+    while(1) {
+        // Disable interrupts so we can grab the count and the overflow atomically.
+        common_hal_mcu_disable_interrupts();
 
-    // Disable interrupts so we can grab the count and the overflow.
-    common_hal_mcu_disable_interrupts();
-    uint32_t count = RTC->MODE0.COUNT.reg;
-    if (overflow_count != NULL) {
-        *overflow_count = overflowed_ticks;
-    }
-    common_hal_mcu_enable_interrupts();
+        #ifdef SAM_D5X_E5X
+        while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
+        }
+        #endif
+        // SAMD21 does continuous sync so we don't need to wait here.
 
-    return count;
+        uint32_t count = RTC->MODE0.COUNT.reg;
+        if (overflow_count != NULL) {
+            *overflow_count = overflowed_ticks;
+        }
+
+        bool overflow_pending = RTC->MODE0.INTFLAG.bit.OVF;
+
+        common_hal_mcu_enable_interrupts();
+
+        if (!overflow_pending) {
+            return count;
+        }
+
+    // Try again if overflow hasn't been processed yet.
+    }
 }
 
 volatile bool _woken_up;

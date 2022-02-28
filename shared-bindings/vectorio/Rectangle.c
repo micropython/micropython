@@ -60,6 +60,51 @@ STATIC const vectorio_draw_protocol_t rectangle_draw_protocol = {
     .draw_protocol_impl = &vectorio_vector_shape_draw_protocol_impl
 };
 
+//|     width : int
+//|     """The width of the rectangle in pixels."""
+//|
+STATIC mp_obj_t vectorio_rectangle_obj_get_width(mp_obj_t self_in) {
+    vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_vectorio_rectangle_get_width(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(vectorio_rectangle_get_width_obj, vectorio_rectangle_obj_get_width);
+
+STATIC mp_obj_t vectorio_rectangle_obj_set_width(mp_obj_t self_in, mp_obj_t width) {
+    vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_vectorio_rectangle_set_width(self, mp_obj_get_int(width));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(vectorio_rectangle_set_width_obj, vectorio_rectangle_obj_set_width);
+
+const mp_obj_property_t vectorio_rectangle_width_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&vectorio_rectangle_get_width_obj,
+              (mp_obj_t)&vectorio_rectangle_set_width_obj,
+              MP_ROM_NONE},
+};
+
+//|     height : int
+//|     """The height of the rectangle in pixels."""
+//|
+STATIC mp_obj_t vectorio_rectangle_obj_get_height(mp_obj_t self_in) {
+    vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_vectorio_rectangle_get_height(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(vectorio_rectangle_get_height_obj, vectorio_rectangle_obj_get_height);
+
+STATIC mp_obj_t vectorio_rectangle_obj_set_height(mp_obj_t self_in, mp_obj_t height) {
+    vectorio_rectangle_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_vectorio_rectangle_set_height(self, mp_obj_get_int(height));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(vectorio_rectangle_set_height_obj, vectorio_rectangle_obj_set_height);
+
+const mp_obj_property_t vectorio_rectangle_height_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&vectorio_rectangle_get_height_obj,
+              (mp_obj_t)&vectorio_rectangle_set_height_obj,
+              MP_ROM_NONE},
+};
 
 // Documentation for properties inherited from VectorShape.
 
@@ -77,9 +122,13 @@ STATIC const vectorio_draw_protocol_t rectangle_draw_protocol = {
 //|
 
 STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
+    // Functions
+    { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&vectorio_vector_shape_contains_obj) },
     // Properties
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&vectorio_vector_shape_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&vectorio_vector_shape_y_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&vectorio_rectangle_width_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&vectorio_rectangle_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_location), MP_ROM_PTR(&vectorio_vector_shape_location_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&vectorio_vector_shape_pixel_shader_obj) },
 };

@@ -35,8 +35,19 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+#if CIRCUITPY_BLEIO
+#include "common-hal/_bleio/ble_events.h"
+#endif
+
+#if CIRCUITPY_BLEIO
+#define MICROPY_PORT_ROOT_POINTERS                              \
+    CIRCUITPY_COMMON_ROOT_POINTERS                              \
+    ble_event_handler_entry_t *ble_event_handler_entries;
+#else
 #define MICROPY_PORT_ROOT_POINTERS \
     CIRCUITPY_COMMON_ROOT_POINTERS
+#endif
+
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
@@ -61,4 +72,5 @@
 #ifndef CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
 #endif
+
 #endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H

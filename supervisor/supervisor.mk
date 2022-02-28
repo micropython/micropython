@@ -5,7 +5,6 @@ SRC_SUPERVISOR = \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
 	supervisor/shared/cpu.c \
-	supervisor/shared/filesystem.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \
@@ -16,6 +15,12 @@ SRC_SUPERVISOR = \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate.c
+
+ifeq ($(DISABLE_FILESYSTEM),1)
+SRC_SUPERVISOR += supervisor/stub/filesystem.c
+else
+SRC_SUPERVISOR += supervisor/shared/filesystem.c
+endif
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 

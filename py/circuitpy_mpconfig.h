@@ -87,6 +87,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
 #define MICROPY_OPT_LOAD_ATTR_FAST_PATH  (CIRCUITPY_OPT_LOAD_ATTR_FAST_PATH)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE  (CIRCUITPY_OPT_MAP_LOOKUP_CACHE)
 #define MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE (CIRCUITPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE)
 #define MICROPY_PERSISTENT_CODE_LOAD     (1)
 
@@ -259,22 +260,41 @@ typedef long mp_off_t;
 #error No *_FLASH_FILESYSTEM set!
 #endif
 
+// Default board buses.
+
+#ifndef CIRCUITPY_BOARD_I2C
+#if defined(DEFAULT_I2C_BUS_SCL) && defined(DEFAULT_I2C_BUS_SDA)
+#define CIRCUITPY_BOARD_I2C     (1)
+#define CIRCUITPY_BOARD_I2C_PIN {{.scl = DEFAULT_I2C_BUS_SCL, .sda = DEFAULT_I2C_BUS_SDA}}
+#else
+#define CIRCUITPY_BOARD_I2C     (0)
+#endif
+#endif
+
+#ifndef CIRCUITPY_BOARD_SPI
+#if defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MOSI) && defined(DEFAULT_SPI_BUS_MISO)
+#define CIRCUITPY_BOARD_SPI     (1)
+#define CIRCUITPY_BOARD_SPI_PIN {{.clock = DEFAULT_SPI_BUS_SCK, .mosi = DEFAULT_SPI_BUS_MOSI, .miso = DEFAULT_SPI_BUS_MISO}}
+#else
+#define CIRCUITPY_BOARD_SPI     (0)
+#endif
+#endif
+
+#ifndef CIRCUITPY_BOARD_UART
+#if defined(DEFAULT_UART_BUS_TX) && defined(DEFAULT_UART_BUS_RX)
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = DEFAULT_UART_BUS_TX, .rx = DEFAULT_UART_BUS_RX}}
+#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
+#else
+#define CIRCUITPY_BOARD_UART        (0)
+#define BOARD_UART_ROOT_POINTER
+#endif
+#else
+#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
+#endif
+
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
 // So if any are not defined in *.mk, they'll throw an error here.
-
-#if CIRCUITPY_BOARD
-#define BOARD_I2C (defined(DEFAULT_I2C_BUS_SDA) && defined(DEFAULT_I2C_BUS_SCL))
-#define BOARD_SPI (defined(DEFAULT_SPI_BUS_SCK) && defined(DEFAULT_SPI_BUS_MISO) && defined(DEFAULT_SPI_BUS_MOSI))
-#define BOARD_UART (defined(DEFAULT_UART_BUS_RX) && defined(DEFAULT_UART_BUS_TX))
-// I2C and SPI are always allocated off the heap.
-#if BOARD_UART
-#define BOARD_UART_ROOT_POINTER mp_obj_t shared_uart_bus;
-#else
-#define BOARD_UART_ROOT_POINTER
-#endif
-#else
-#define BOARD_UART_ROOT_POINTER
-#endif
 
 #if CIRCUITPY_DISPLAYIO
 #ifndef CIRCUITPY_DISPLAY_LIMIT
@@ -335,6 +355,10 @@ extern const struct _mp_obj_module_t nvm_module;
 // We don't need MICROPY_PY_IO unless someone else wants it.
 #define MICROPY_PY_IO (0)
 #endif
+#endif
+
+#ifndef ULAB_SUPPORTS_COMPLEX
+#define ULAB_SUPPORTS_COMPLEX (0)
 #endif
 
 #if CIRCUITPY_ULAB
@@ -424,9 +448,9 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PYSTACK_SIZE 1536
 #endif
 
-// Wait this long imediately after startup to see if we are connected to USB.
-#ifndef CIRCUITPY_USB_CONNECTED_SLEEP_DELAY
-#define CIRCUITPY_USB_CONNECTED_SLEEP_DELAY 5
+// Wait this long before sleeping immediately after startup, to see if we are connected via USB or BLE.
+#ifndef CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY
+#define CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY 5
 #endif
 
 #ifndef CIRCUITPY_PROCESSOR_COUNT
@@ -518,5 +542,16 @@ void supervisor_run_background_tasks_if_tick(void);
 #define USB_MIDI_EP_NUM_IN (0)
 #endif
 
+#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
+#define MICROPY_WRAP_MP_MAP_LOOKUP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_BINARY_OP
+#define MICROPY_WRAP_MP_BINARY_OP PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
+#endif
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

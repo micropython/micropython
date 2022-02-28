@@ -1,4 +1,3 @@
-MPY_TOOL_LONGINT_IMPL ?= -mlongint-impl=mpz
 LONGINT_IMPL ?= MPZ
 INTERNAL_LIBM ?= 1
 

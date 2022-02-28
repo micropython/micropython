@@ -229,6 +229,14 @@ uint16_t common_hal_displayio_tilegrid_get_height(displayio_tilegrid_t *self) {
     return self->height_in_tiles;
 }
 
+uint16_t common_hal_displayio_tilegrid_get_tile_width(displayio_tilegrid_t *self) {
+    return self->tile_width;
+}
+
+uint16_t common_hal_displayio_tilegrid_get_tile_height(displayio_tilegrid_t *self) {
+    return self->tile_height;
+}
+
 uint8_t common_hal_displayio_tilegrid_get_tile(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
     uint8_t *tiles = self->tiles;
     if (self->inline_tiles) {

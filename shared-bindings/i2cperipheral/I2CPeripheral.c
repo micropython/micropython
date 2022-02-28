@@ -353,7 +353,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(i2cperipheral_i2c_peripheral_request_read_obj, 1, i2c
 //|     def write(self, buffer: ReadableBuffer) -> int:
 //|         """Write the data contained in buffer.
 //|
-//|         :param ~_typing.ReadableBuffer buffer: Write out the data in this buffer
+//|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :return: Number of bytes written"""
 //|         ...
 //|

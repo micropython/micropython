@@ -85,23 +85,6 @@ CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 endif
 
-
-###
-# Propagate longint choice from .mk to C. There's no easy string comparison
-# in cpp conditionals, so we #define separate names for each.
-ifeq ($(LONGINT_IMPL),NONE)
-CFLAGS += -DLONGINT_IMPL_NONE
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-CFLAGS += -DLONGINT_IMPL_MPZ
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-CFLAGS += -DLONGINT_IMPL_LONGLONG
-endif
-
-
 ###
 # Select which builtin modules to compile and include.
 
@@ -470,8 +453,7 @@ $(filter $(SRC_PATTERNS), \
 	_eve/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
-	qrio/PixelPolicy.c \
-	qrio/QRInfo.c \
+	countio/Edge.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \
 	digitalio/Pull.c \
@@ -485,6 +467,8 @@ $(filter $(SRC_PATTERNS), \
 	msgpack/ExtType.c \
 	paralleldisplay/__init__.c \
 	paralleldisplay/ParallelBus.c \
+	qrio/PixelPolicy.c \
+	qrio/QRInfo.c \
 	supervisor/RunReason.c \
 	wifi/AuthMode.c \
 	wifi/Packet.c \
@@ -524,8 +508,8 @@ SRC_SHARED_MODULE_ALL = \
 	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
-	adafruit_bus_device/I2CDevice.c \
-	adafruit_bus_device/SPIDevice.c \
+	adafruit_bus_device/i2c_device/I2CDevice.c \
+	adafruit_bus_device/spi_device/SPIDevice.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
@@ -555,6 +539,7 @@ SRC_SHARED_MODULE_ALL = \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
 	is31fl3741/IS31FL3741.c \
+	is31fl3741/FrameBuffer.c \
 	is31fl3741/__init__.c \
 	keypad/__init__.c \
 	keypad/Event.c \

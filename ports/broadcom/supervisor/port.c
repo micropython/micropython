@@ -106,7 +106,7 @@ void reset_port(void) {
     audio_dma_reset();
     #endif
 
-    // reset_all_pins();
+    reset_all_pins();
 }
 
 void reset_to_bootloader(void) {
@@ -116,42 +116,57 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-
+    // Don't actually reset because we can't store the safe mode info.
+    // PM->WDOG = 1 << PM_WDOG_TIME_Pos | PM_WDOG_PASSWD_PASSWD << PM_WDOG_PASSWD_Pos;
+    // PM->RSTC = PM_RSTC_WRCFG_FULL_RESET << PM_RSTC_WRCFG_Pos | PM_RSTC_PASSWD_PASSWD << PM_RSTC_PASSWD_Pos;
     while (true) {
     }
 }
 
 bool port_has_fixed_stack(void) {
+    #ifdef __aarch64__
     return true;
-}
-
-uint32_t *port_stack_get_limit(void) {
-    return (uint32_t *)0x4;
-}
-
-uint32_t *port_stack_get_top(void) {
-    return (uint32_t *)0x80000;
+    #else
+    return false;
+    #endif
 }
 
 // From the linker script
 extern uint32_t __bss_end;
+extern uint32_t _ld_ram_end;
+uint32_t *port_stack_get_limit(void) {
+    #ifdef __aarch64__
+    return (uint32_t *)0x4;
+    #else
+    return &__bss_end;
+    #endif
+}
+
+uint32_t *port_stack_get_top(void) {
+    #ifdef __aarch64__
+    return (uint32_t *)0x80000;
+    #else
+    return &_ld_ram_end;
+    #endif
+}
+
 uint32_t *port_heap_get_bottom(void) {
     return &__bss_end;
 }
 
 uint32_t *port_heap_get_top(void) {
     // 32M heap
-    return (uint32_t *)(((uint64_t)&__bss_end) + 32 * 1024 * 1024);
+    return (uint32_t *)(((size_t)&__bss_end) + 32 * 1024 * 1024);
 }
 
 void port_set_saved_word(uint32_t value) {
     // NOTE: This doesn't survive pressing the reset button (aka toggling RUN).
-    // watchdog_hw->scratch[0] = value;
+    __bss_end = value;
+    data_clean_and_invalidate(&__bss_end, sizeof(uint32_t));
 }
 
 uint32_t port_get_saved_word(void) {
-    // return watchdog_hw->scratch[0];
-    return 0;
+    return __bss_end;
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {

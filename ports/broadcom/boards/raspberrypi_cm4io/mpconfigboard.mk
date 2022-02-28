@@ -1,5 +1,5 @@
 USB_VID = 0x2E8A
-USB_PID = 0xf000
+USB_PID = 0x1012
 USB_PRODUCT = "Compute Module 4 IO Board"
 USB_MANUFACTURER = "Raspberry Pi"
 

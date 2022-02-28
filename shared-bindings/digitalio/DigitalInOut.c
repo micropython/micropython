@@ -166,15 +166,7 @@ STATIC mp_obj_t digitalio_digitalinout_switch_to_input(size_t n_args, const mp_o
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-
-    digitalio_pull_t pull = PULL_NONE;
-    if (args[ARG_pull].u_rom_obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
-        pull = PULL_UP;
-    } else if (args[ARG_pull].u_rom_obj == MP_ROM_PTR(&digitalio_pull_down_obj)) {
-        pull = PULL_DOWN;
-    }
-    // do the transfer
-    common_hal_digitalio_digitalinout_switch_to_input(self, pull);
+    common_hal_digitalio_digitalinout_switch_to_input(self, validate_pull(args[ARG_pull].u_rom_obj, MP_QSTR_pull));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(digitalio_digitalinout_switch_to_input_obj, 1, digitalio_digitalinout_switch_to_input);
@@ -320,9 +312,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     }
     digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(self);
     if (pull == PULL_UP) {
-        return (mp_obj_t)&digitalio_pull_up_obj;
+        return MP_OBJ_FROM_PTR(&digitalio_pull_up_obj);
     } else if (pull == PULL_DOWN) {
-        return (mp_obj_t)&digitalio_pull_down_obj;
+        return MP_OBJ_FROM_PTR(&digitalio_pull_down_obj);
     }
     return mp_const_none;
 }
@@ -335,15 +327,8 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
         mp_raise_AttributeError(translate("Pull not used when direction is output."));
         return mp_const_none;
     }
-    digitalio_pull_t pull = PULL_NONE;
-    if (pull_obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
-        pull = PULL_UP;
-    } else if (pull_obj == MP_ROM_PTR(&digitalio_pull_down_obj)) {
-        pull = PULL_DOWN;
-    } else if (pull_obj != mp_const_none) {
-        mp_raise_ValueError(translate("Unsupported pull value."));
-    }
-    common_hal_digitalio_digitalinout_set_pull(self, pull);
+
+    common_hal_digitalio_digitalinout_set_pull(self, validate_pull(pull_obj, MP_QSTR_pull));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_pull_obj, digitalio_digitalinout_obj_set_pull);

@@ -86,7 +86,7 @@ static void make_sample_code_file(FATFS *fatfs) {
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
-void filesystem_init(bool create_allowed, bool force_create) {
+bool filesystem_init(bool create_allowed, bool force_create) {
     // init the vfs object
     fs_user_mount_t *vfs_fat = &_internal_vfs;
     vfs_fat->blockdev.flags = 0;
@@ -102,11 +102,11 @@ void filesystem_init(bool create_allowed, bool force_create) {
         formats |= FM_EXFAT | FM_FAT32;
         #endif
         res = f_mkfs(&vfs_fat->fatfs, formats, 0, working_buf, sizeof(working_buf));
+        if (res != FR_OK) {
+            return false;
+        }
         // Flush the new file system to make sure it's repaired immediately.
         supervisor_flash_flush();
-        if (res != FR_OK) {
-            return;
-        }
 
         // set label
         #ifdef CIRCUITPY_DRIVE_LABEL
@@ -115,13 +115,13 @@ void filesystem_init(bool create_allowed, bool force_create) {
         res = f_setlabel(&vfs_fat->fatfs, "CIRCUITPY");
         #endif
         if (res != FR_OK) {
-            return;
+            return false;
         }
 
         // inhibit file indexing on MacOS
         res = f_mkdir(&vfs_fat->fatfs, "/.fseventsd");
         if (res != FR_OK) {
-            return;
+            return false;
         }
         make_empty_file(&vfs_fat->fatfs, "/.metadata_never_index");
         make_empty_file(&vfs_fat->fatfs, "/.Trashes");
@@ -132,13 +132,13 @@ void filesystem_init(bool create_allowed, bool force_create) {
         // create empty lib directory
         res = f_mkdir(&vfs_fat->fatfs, "/lib");
         if (res != FR_OK) {
-            return;
+            return false;
         }
 
         // and ensure everything is flushed
         supervisor_flash_flush();
     } else if (res != FR_OK) {
-        return;
+        return false;
     }
     mp_vfs_mount_t *vfs = &_mp_vfs;
     vfs->str = "/";
@@ -150,6 +150,8 @@ void filesystem_init(bool create_allowed, bool force_create) {
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
     MP_STATE_PORT(vfs_cur) = vfs;
+
+    return true;
 }
 
 void filesystem_flush(void) {

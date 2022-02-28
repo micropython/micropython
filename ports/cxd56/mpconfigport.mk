@@ -3,11 +3,6 @@ USB_HIGHSPEED = 1
 # Number of USB endpoint pairs.
 USB_NUM_ENDPOINT_PAIRS = 6
 
-# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
-# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
-# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
-
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 

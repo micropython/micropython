@@ -29,6 +29,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "common-hal/microcontroller/__init__.h"
+#include "peripherals/broadcom/defines.h"
 #include "peripherals/broadcom/interrupts.h"
 
 #include "mphalport.h"

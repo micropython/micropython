@@ -271,7 +271,7 @@ void common_hal_storage_erase_filesystem(void) {
     usb_disconnect();
     #endif
     mp_hal_delay_ms(1000);
-    filesystem_init(false, true); // Force a re-format.
+    (void)filesystem_init(false, true);  // Force a re-format. Ignore failure.
     common_hal_mcu_reset();
     // We won't actually get here, since we're resetting.
 }

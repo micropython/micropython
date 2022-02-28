@@ -222,7 +222,8 @@ STATIC mp_obj_t displayio_bitmap_obj_blit(size_t n_args, const mp_obj_t *pos_arg
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
-    displayio_bitmap_t *source = MP_OBJ_TO_PTR(args[ARG_source].u_obj);
+    displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
+
 
     // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
     if (self->bits_per_value < source->bits_per_value) {

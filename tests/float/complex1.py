@@ -27,15 +27,15 @@ print(1j * 2j)
 print(1j / 2)
 print((1j / 2j).real)
 print(1j / (1 + 2j))
-ans = 0j ** 0
+ans = 0j**0
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 0j ** 1
+ans = 0j**1
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 0j ** 0j
+ans = 0j**0j
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 1j ** 2.5
+ans = 1j**2.5
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 1j ** 2.5j
+ans = 1j**2.5j
 print("%.5g %.5g" % (ans.real, ans.imag))
 
 # comparison
@@ -116,10 +116,10 @@ except ZeroDivisionError:
 
 # zero division via power
 try:
-    0j ** -1
+    0j**-1
 except ZeroDivisionError:
     print("ZeroDivisionError")
 try:
-    0j ** 1j
+    0j**1j
 except ZeroDivisionError:
     print("ZeroDivisionError")

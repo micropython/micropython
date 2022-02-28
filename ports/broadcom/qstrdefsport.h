@@ -26,6 +26,9 @@
 
 // qstrs specific to this port, only needed if they aren't auto-generated
 
+// Prevent uncrustify from modifying these lines.
+// *FORMAT-OFF*
+
 // Entries for sys.path
 Q(/sd)
 Q(/sd/lib)

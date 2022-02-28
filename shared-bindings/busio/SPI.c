@@ -53,7 +53,7 @@
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
 //|     and therefore the hardware.)"""
 //|
-//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None) -> None:
+//|     def __init__(self, clock: microcontroller.Pin, MOSI: Optional[microcontroller.Pin] = None, MISO: Optional[microcontroller.Pin] = None, half_duplex: bool = False) -> None:
 //|
 //|         """Construct an SPI object on the given pins.
 //|
@@ -74,7 +74,8 @@
 //|
 //|         :param ~microcontroller.Pin clock: the pin to use for the clock.
 //|         :param ~microcontroller.Pin MOSI: the Main Out Selected In pin.
-//|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin."""
+//|         :param ~microcontroller.Pin MISO: the Main In Selected Out pin.
+//|         :param bool half_duplex: True when MOSI is used for bidirectional data. False when SPI is full-duplex or simplex."""
 //|         ...
 //|
 
@@ -84,11 +85,12 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     #if CIRCUITPY_BUSIO_SPI
     busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
     self->base.type = &busio_spi_type;
-    enum { ARG_clock, ARG_MOSI, ARG_MISO };
+    enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_half_duplex };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_MOSI, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_MISO, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_half_duplex, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -101,7 +103,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
     }
 
-    common_hal_busio_spi_construct(self, clock, mosi, miso);
+    common_hal_busio_spi_construct(self, clock, mosi, miso, args[ARG_half_duplex].u_bool);
     return MP_OBJ_FROM_PTR(self);
     #else
     mp_raise_ValueError(translate("Invalid pins"));

@@ -64,8 +64,10 @@
 //| This object is the sole instance of `alarm.SleepMemory`."""
 //|
 
-//| wake_alarm: Alarm
-//| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm the woke it from sleep."""
+//| wake_alarm: Optional[Alarm]
+//| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
+//| If no alarm occured since the last hard reset or soft restart, value is ``None``.
+//| """
 //|
 
 // wake_alarm is implemented as a dictionary entry, so there's no code here.
@@ -103,7 +105,9 @@ STATIC mp_obj_t alarm_light_sleep_until_alarms(size_t n_args, const mp_obj_t *ar
 
     validate_objs_are_alarms(n_args, args);
 
-    return common_hal_alarm_light_sleep_until_alarms(n_args, args);
+    mp_obj_t alarm = common_hal_alarm_light_sleep_until_alarms(n_args, args);
+    shared_alarm_save_wake_alarm(alarm);
+    return alarm;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OBJ_FUN_ARGS_MAX, alarm_light_sleep_until_alarms);
 
@@ -121,11 +125,15 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alarm_light_sleep_until_alarms_obj, 1, MP_OB
 //|
 //|     If no alarms are specified, the microcontroller will deep sleep until reset.
 //|
-//|     **If CircuitPython is connected to a host computer, the connection will be maintained,
-//|     and the system will not go into deep sleep.**
+//|     **If CircuitPython is connected to a host computer via USB or BLE
+//|     the first time a deep sleep is requested,
+//|     the connection will be maintained and the system will not go into deep sleep.**
 //|     This allows the user to interrupt an existing program with ctrl-C,
 //|     and to edit the files in CIRCUITPY, which would not be possible in true deep sleep.
-//|     Thus, to use deep sleep and save significant power, you will need to disconnect from the host.
+//|
+//|     If CircuitPython goes into a true deep sleep, and USB or BLE is reconnected,
+//|     the next deep sleep will still be a true deep sleep. You must do a hard reset
+//|     or power-cycle to exit a true deep sleep loop.
 //|
 //|     Here is skeletal example that deep-sleeps and restarts every 60 seconds:
 //|

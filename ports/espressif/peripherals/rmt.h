@@ -30,9 +30,11 @@
 #include "py/mphal.h"
 #include "components/driver/include/driver/rmt.h"
 #include <stdint.h>
+#define TRANSMIT_MODE true
+#define RECEIVE_MODE false
 
 void peripherals_rmt_reset(void);
-rmt_channel_t peripherals_find_and_reserve_rmt(void);
+rmt_channel_t peripherals_find_and_reserve_rmt(bool mode);
 void peripherals_free_rmt(rmt_channel_t chan);
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_RMT_H

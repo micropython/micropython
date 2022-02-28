@@ -34,6 +34,11 @@ PORT_TO_ARCH = {
     "stm": "arm",
 }
 
+IGNORE = [
+    "tools/ci_set_matrix.py",
+    "tools/ci_check_duplicate_usb_vid_pid.py",
+]
+
 changed_files = {}
 try:
     changed_files = json.loads(os.environ["CHANGED_FILES"])
@@ -63,8 +68,8 @@ def set_boards_to_build(build_all):
 
     if not build_all:
         boards_to_build = set()
-        board_pattern = re.compile(r"^ports\/[^/]+\/boards\/([^/]+)\/")
-        port_pattern = re.compile(r"^ports\/([^/]+)\/")
+        board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
+        port_pattern = re.compile(r"^ports/([^/]+)/")
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
@@ -79,6 +84,14 @@ def set_boards_to_build(build_all):
                 port = port_matches.group(1)
                 if port != "unix":
                     boards_to_build.update(port_to_boards[port])
+                continue
+
+            # Check the ignore list to see if the file isn't used on board builds.
+            if p in IGNORE:
+                continue
+
+            # Boards don't run tests so ignore those as well.
+            if p.startswith("tests"):
                 continue
 
             # Otherwise build it all
@@ -107,7 +120,7 @@ def set_docs_to_build(build_all):
     doc_match = build_all
     if not build_all:
         doc_pattern = re.compile(
-            r"^(?:docs|(?:(?:extmod\/ulab|ports\/\w+\/bindings|shared-bindings)\S+\.c|conf\.py|tools\/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
+            r"^(?:docs|extmod/ulab|(?:(?:ports/\w+/bindings|shared-bindings)\S+\.c|conf\.py|tools/extract_pyi\.py|requirements-doc\.txt)$)|(?:-stubs|\.(?:md|MD|rst|RST))$"
         )
         for p in changed_files:
             if doc_pattern.search(p):

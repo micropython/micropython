@@ -96,8 +96,18 @@ extern "C" {
 // --------------------------------------------------------------------+
 // USB RAM PLACEMENT
 // --------------------------------------------------------------------+
-#define CFG_TUSB_ATTR_USBRAM
-#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
+#if !defined(CIRCUITPY_TUSB_ATTR_USBRAM)
+#define CIRCUITPY_TUSB_ATTR_USBRAM        ".bss.usbram"
+#endif
+
+#define CFG_TUSB_ATTR_USBRAM        __attribute__((section(CIRCUITPY_TUSB_ATTR_USBRAM)))
+
+
+#if !defined(CIRCUITPY_TUSB_MEM_ALIGN)
+#define CIRCUITPY_TUSB_MEM_ALIGN 4
+#endif
+
+#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(CIRCUITPY_TUSB_MEM_ALIGN)))
 
 
 #ifdef __cplusplus

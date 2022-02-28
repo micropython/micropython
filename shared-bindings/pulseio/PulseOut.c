@@ -59,7 +59,7 @@
 //|           import board
 //|
 //|           # 50% duty cycle at 38kHz.
-//|           pwm = pulseio.PulseOut(board.LED, frequency=38000, duty_cycle=32768)
+//|           pulse = pulseio.PulseOut(board.LED, frequency=38000, duty_cycle=32768)
 //|           #                             on   off     on    off    on
 //|           pulses = array.array('H', [65000, 1000, 65000, 65000, 1000])
 //|           pulse.send(pulses)

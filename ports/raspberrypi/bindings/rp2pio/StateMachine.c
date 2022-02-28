@@ -78,6 +78,7 @@
 //|                  sideset_pin_count: int = 1,
 //|                  initial_sideset_pin_state: int = 0,
 //|                  initial_sideset_pin_direction: int = 0x1f,
+//|                  sideset_enable: bool = False,
 //|                  exclusive_pin_use: bool = True,
 //|                  auto_pull: bool = False,
 //|                  pull_threshold: int = 32,
@@ -107,9 +108,10 @@
 //|         :param int initial_set_pin_state: the initial output value for set pins starting at first_set_pin
 //|         :param int initial_set_pin_direction: the initial output direction for set pins starting at first_set_pin
 //|         :param ~microcontroller.Pin first_sideset_pin: the first pin to use with a side set
-//|         :param int sideset_pin_count: the count of consecutive pins to use with a side set starting at first_sideset_pin
+//|         :param int sideset_pin_count: the count of consecutive pins to use with a side set starting at first_sideset_pin. Does not include sideset enable
 //|         :param int initial_sideset_pin_state: the initial output value for sideset pins starting at first_sideset_pin
 //|         :param int initial_sideset_pin_direction: the initial output direction for sideset pins starting at first_sideset_pin
+//|         :param bool sideset_enable: True when the top sideset bit is to enable. This should be used with the ".side_set # opt" directive
 //|         :param ~microcontroller.Pin jmp_pin: the pin which determines the branch taken by JMP PIN instructions
 //|         :param bool exclusive_pin_use: When True, do not share any pins with other state machines. Pins are never shared with other peripherals
 //|         :param bool auto_pull: When True, automatically load data from the tx FIFO into the
@@ -147,6 +149,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_pull_in_pin_up, ARG_pull_in_pin_down,
            ARG_first_set_pin, ARG_set_pin_count, ARG_initial_set_pin_state, ARG_initial_set_pin_direction,
            ARG_first_sideset_pin, ARG_sideset_pin_count, ARG_initial_sideset_pin_state, ARG_initial_sideset_pin_direction,
+           ARG_sideset_enable,
            ARG_jmp_pin,
            ARG_exclusive_pin_use,
            ARG_auto_pull, ARG_pull_threshold, ARG_out_shift_right,
@@ -177,6 +180,8 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_sideset_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_initial_sideset_pin_state, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_initial_sideset_pin_direction, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0x1f} },
+
+        { MP_QSTR_sideset_enable, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
 
         { MP_QSTR_jmp_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 
@@ -257,6 +262,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         first_in_pin, args[ARG_in_pin_count].u_int, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
         first_set_pin, args[ARG_set_pin_count].u_int, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
         first_sideset_pin, args[ARG_sideset_pin_count].u_int, args[ARG_initial_sideset_pin_state].u_int, args[ARG_initial_sideset_pin_direction].u_int,
+        args[ARG_sideset_enable].u_bool,
         jmp_pin,
         0,
         args[ARG_exclusive_pin_use].u_bool,
@@ -354,7 +360,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
-//|         :param ~_typing.ReadableBuffer buffer: Write out the data in this buffer
+//|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
+//|         will perform 8 bit writes to the PIO FIFO. The RP2040's memory bus will duplicate the value into
+//|         the other byte positions. So, pulling more data in the PIO assembly will read the duplicated values.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
+//|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
@@ -400,9 +413,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 
 //|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
-//|            include any data added to the fifo even if it was added before this was called.
+//|         includes any data added to the fifo even if it was added before this was called.
 //|
-//|         :param ~_typing.WriteableBuffer buffer: Read data into this buffer
+//|         Reads from the FIFO will match the input buffer's element size. For example, bytearray elements
+//|         will perform 8 bit reads from the PIO FIFO. The alignment within the 32 bit value depends on
+//|         ``in_shift_right``. When ``in_shift_right`` is True, the upper N bits will be read. The lower
+//|         bits will be read when ``in_shift_right`` is False.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
 //|         ...
@@ -450,8 +471,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         may be different. The function will return once both are filled.
 //|         If buffer slice lengths are both 0, nothing happens.
 //|
-//|         :param ~_typing.ReadableBuffer buffer_out: Write out the data in this buffer
-//|         :param ~_typing.WriteableBuffer buffer_in: Read data into this buffer
+//|         Data transfers to and from the FIFOs will match the corresponding buffer's element size. See
+//|         `write` and `readinto` for details.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
+//|         :param ~circuitpython_typing.ReadableBuffer buffer_out: Write out the data in this buffer
+//|         :param ~circuitpython_typing.WriteableBuffer buffer_in: Read data into this buffer
 //|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``

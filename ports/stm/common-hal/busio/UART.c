@@ -259,7 +259,7 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
 }
 
 bool common_hal_busio_uart_deinited(busio_uart_obj_t *self) {
-    return self->tx->pin == NULL && self->rx->pin == NULL;
+    return self->tx == NULL && self->rx == NULL;
 }
 
 void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
@@ -325,19 +325,22 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     if (self->tx == NULL) {
         mp_raise_ValueError(translate("No TX pin"));
     }
-    bool write_err = false; // write error shouldn't disable interrupts
 
+    // Disable UART IRQ to avoid resource hazards in Rx IRQ handler
     HAL_NVIC_DisableIRQ(self->irq);
-    HAL_StatusTypeDef ret = HAL_UART_Transmit(&self->handle, (uint8_t *)data, len, HAL_MAX_DELAY);
-    if (ret != HAL_OK) {
-        write_err = true;
-    }
-    HAL_UART_Receive_IT(&self->handle, &self->rx_char, 1);
+    HAL_StatusTypeDef ret = HAL_UART_Transmit_IT(&self->handle, (uint8_t *)data, len);
     HAL_NVIC_EnableIRQ(self->irq);
 
-    if (write_err) {
+    if (HAL_OK == ret) {
+        HAL_UART_StateTypeDef Status = HAL_UART_GetState(&self->handle);
+        while ((Status & HAL_UART_STATE_BUSY_TX) == HAL_UART_STATE_BUSY_TX) {
+            RUN_BACKGROUND_TASKS;
+            Status = HAL_UART_GetState(&self->handle);
+        }
+    } else {
         mp_raise_ValueError(translate("UART write error"));
     }
+
     return len;
 }
 
@@ -358,6 +361,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *handle) {
                     mp_sched_keyboard_interrupt();
                 }
             }
+
+            #if (1)
+            // TODO: Implement error handling here
+            #else
+            while (HAL_BUSY == errflag) {
+                errflag = HAL_UART_Receive_IT(handle, &context->rx_char, 1);
+            }
+            #endif
 
             return;
         }
@@ -436,6 +447,10 @@ STATIC void call_hal_irq(int uart_num) {
     if (context != NULL) {
         HAL_NVIC_ClearPendingIRQ(context->irq);
         HAL_UART_IRQHandler(&context->handle);
+
+        if (HAL_UART_ERROR_NONE != context->handle.ErrorCode) {
+            // TODO: Implement error handling here
+        }
     }
 }
 

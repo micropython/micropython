@@ -24,11 +24,14 @@ import subprocess
 import sys
 import urllib.parse
 import time
+import pathlib
 from collections import defaultdict
 
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
+
+tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -129,7 +132,7 @@ copyright = f'2014-{current_date.tm_year}, MicroPython & CircuitPython contribut
 
 final_version = ""
 git_describe = subprocess.run(
-    ["git", "describe", "--dirty", "--tags"],
+    [tools_describe],
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     encoding="utf-8"

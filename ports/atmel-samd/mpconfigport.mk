@@ -2,22 +2,6 @@
 # parameters that vary based on chip and/or board.
 LD_TEMPLATE_FILE = boards/common.template.ld
 
-# Define an equivalent for MICROPY_LONGINT_IMPL, to pass to $(MPY-TOOL) in py/mkrules.mk
-# $(MPY-TOOL) needs to know what kind of longint to use (if any) to freeze long integers.
-# This should correspond to the MICROPY_LONGINT_IMPL definition in mpconfigport.h.
-
-ifeq ($(LONGINT_IMPL),NONE)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
-endif
-
 INTERNAL_LIBM = 1
 
 # Number of USB endpoint pairs.
@@ -36,6 +20,7 @@ ifeq ($(CHIP_FAMILY),samd21)
 # fit in 256kB of flash
 
 CIRCUITPY_AESIO ?= 0
+CIRCUITPY_ATEXIT ?= 0
 CIRCUITPY_AUDIOMIXER ?= 0
 CIRCUITPY_BINASCII ?= 0
 CIRCUITPY_BITBANGIO ?= 0
@@ -49,6 +34,7 @@ CIRCUITPY_COUNTIO ?= 0
 # Not enough RAM for framebuffers
 CIRCUITPY_FRAMEBUFFERIO ?= 0
 CIRCUITPY_FREQUENCYIO ?= 0
+CIRCUITPY_GETPASS ?= 0
 CIRCUITPY_GIFIO ?= 0
 CIRCUITPY_I2CPERIPHERAL ?= 0
 CIRCUITPY_JSON ?= 0
@@ -60,6 +46,14 @@ CIRCUITPY_SYNTHIO ?= 0
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
+
+# TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
+# We'd like a smoother transition, but we can't afford the space to have both
+# `busio.OneWire` and `onewireio.OneWire` present on these tiny builds.
+
+ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
+CIRCUITPY_ONEWIREIO ?= 0
+endif
 
 MICROPY_PY_ASYNC_AWAIT = 0
 

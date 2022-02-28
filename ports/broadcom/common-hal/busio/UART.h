@@ -39,6 +39,7 @@ typedef struct {
     uint8_t uart_id;
     uint32_t baudrate;
     uint32_t timeout_ms;
+    bool sigint_enabled;
     ringbuf_t ringbuf;
 } busio_uart_obj_t;
 

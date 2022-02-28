@@ -42,7 +42,7 @@
 //|         """Load a .mp3 file for playback with `audioio.AudioOut` or `audiobusio.I2SOut`.
 //|
 //|         :param typing.BinaryIO file: Already opened mp3 file
-//|         :param ~_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
 //|
 //|         Playing a mp3 file from flash::
@@ -232,6 +232,22 @@ const mp_obj_property_t audiomp3_mp3file_rms_level_obj = {
               MP_ROM_NONE},
 };
 
+//|     samples_decoded: int
+//|     """The number of audio samples decoded from the current file. (read only)"""
+//|
+STATIC mp_obj_t audiomp3_mp3file_obj_get_samples_decoded(mp_obj_t self_in) {
+    audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_audiomp3_mp3file_get_samples_decoded(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_samples_decoded_obj, audiomp3_mp3file_obj_get_samples_decoded);
+
+const mp_obj_property_t audiomp3_mp3file_samples_decoded_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_samples_decoded_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
 
 STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods
@@ -245,6 +261,7 @@ STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bits_per_sample), MP_ROM_PTR(&audiomp3_mp3file_bits_per_sample_obj) },
     { MP_ROM_QSTR(MP_QSTR_channel_count), MP_ROM_PTR(&audiomp3_mp3file_channel_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_rms_level), MP_ROM_PTR(&audiomp3_mp3file_rms_level_obj) },
+    { MP_ROM_QSTR(MP_QSTR_samples_decoded), MP_ROM_PTR(&audiomp3_mp3file_samples_decoded_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(audiomp3_mp3file_locals_dict, audiomp3_mp3file_locals_dict_table);
 

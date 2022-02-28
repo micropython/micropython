@@ -55,9 +55,7 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
 
 void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
-    esp_tls_cfg_t *tls_config = NULL;
-    tls_config = &self->ssl_context->ssl_config;
-    int result = esp_tls_conn_new_sync(host, hostlen, port, tls_config, self->tls);
+    int result = esp_tls_conn_new_sync(host, hostlen, port, &self->ssl_config, self->tls);
     self->sock->connected = result >= 0;
     if (result < 0) {
         int esp_tls_code;
@@ -66,7 +64,7 @@ void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
-        } else if (ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
+        } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
             mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
         } else {
             mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);

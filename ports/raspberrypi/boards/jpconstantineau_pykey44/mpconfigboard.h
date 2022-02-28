@@ -1,0 +1,4 @@
+#define MICROPY_HW_BOARD_NAME "PyKey 44 Ergo"
+#define MICROPY_HW_MCU_NAME "rp2040"
+
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO29)

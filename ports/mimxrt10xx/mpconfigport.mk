@@ -1,17 +1,5 @@
 LD_FILE = $(FLASH).ld $(CHIP_FAMILY).ld imxrt10xx.ld
 
-ifeq ($(LONGINT_IMPL),NONE)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=none
-endif
-
-ifeq ($(LONGINT_IMPL),MPZ)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=mpz
-endif
-
-ifeq ($(LONGINT_IMPL),LONGLONG)
-MPY_TOOL_LONGINT_IMPL = -mlongint-impl=longlong
-endif
-
 INTERNAL_LIBM = 1
 
 USB_HIGHSPEED = 1

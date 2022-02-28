@@ -22,7 +22,7 @@ port_deps = {
         "lib/tinyusb/",
         "data/nvm.toml/",
     ],
-    "broadcom": ["lib/tinyusb/"],
+    "broadcom": ["extmod/ulab/", "lib/tinyusb/"],
     "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
     "espressif": ["extmod/ulab/", "lib/tinyusb/", "lib/protomatter/", "lib/quirc/"],
     "litex": ["extmod/ulab/", "lib/tinyusb/"],
@@ -64,7 +64,7 @@ run("Submodule status", "git submodule status")
 submodules = []
 
 if target == "test":
-    submodules = ["extmod/", "lib/", "tools/"]
+    submodules = ["extmod/", "lib/", "tools/", "extmod/ulab", "lib/berkeley-db-1.xx"]
 elif target == "docs":
     submodules = ["extmod/ulab/"]
 elif target == "mpy-cross-mac":
@@ -73,8 +73,7 @@ elif target == "windows":
     # This builds one board from a number of ports so fill out a bunch of submodules
     submodules = ["extmod/", "lib/", "tools/", "ports/", "data/nvm.toml/"]
 elif target == "website":
-    # No submodules needed.
-    pass
+    submodules = ["tools/adabot/"]
 else:
     p = list(pathlib.Path(".").glob(f"ports/*/boards/{target}/mpconfigboard.mk"))
     if not p:

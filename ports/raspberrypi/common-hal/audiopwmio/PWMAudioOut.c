@@ -44,8 +44,6 @@
 #include "src/rp2040/hardware_structs/include/hardware/structs/dma.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 
-#define NUM_DMA_TIMERS 4
-
 // The PWM clock frequency is base_clock_rate / PWM_TOP, typically 125_000_000 / PWM_TOP.
 // We pick BITS_PER_SAMPLE so we get a clock frequency that is above what would cause aliasing.
 #define BITS_PER_SAMPLE 10
@@ -207,7 +205,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     uint32_t tx_register = (uint32_t)&pwm_hw->slice[self->left_pwm.slice].cc;
     if (self->stereo) {
         // Shift the destination if we are outputting to both PWM channels.
-        tx_register += self->left_pwm.channel * sizeof(uint16_t);
+        tx_register += self->left_pwm.ab_channel * sizeof(uint16_t);
     }
 
     self->pacing_timer = pacing_timer;

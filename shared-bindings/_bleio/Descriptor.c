@@ -61,7 +61,7 @@
 //|            is 512, or possibly 510 if ``fixed_length`` is False. The default, 20, is the maximum
 //|            number of data bytes that fit in a single BLE 4.x ATT packet.
 //|         :param bool fixed_length: True if the descriptor value is of fixed length.
-//|         :param ~_typing.ReadableBuffer initial_value: The initial value for this descriptor.
+//|         :param ~circuitpython_typing.ReadableBuffer initial_value: The initial value for this descriptor.
 //|
 //|         :return: the new Descriptor."""
 //|         ...

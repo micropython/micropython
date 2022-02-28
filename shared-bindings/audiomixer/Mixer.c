@@ -211,7 +211,7 @@ const mp_obj_property_t audiomixer_mixer_voice_obj = {
               MP_ROM_NONE},
 };
 
-//|     def play(self, sample: _typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
+//|     def play(self, sample: circuitpython_typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.
 //|         Does not block. Use `playing` to block.
 //|

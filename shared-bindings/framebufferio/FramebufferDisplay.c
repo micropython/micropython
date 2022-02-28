@@ -47,10 +47,10 @@
 //|     objects in CircuitPython, Display objects live until `displayio.release_displays()`
 //|     is called. This is done so that CircuitPython can use the display itself."""
 //|
-//|     def __init__(self, framebuffer: _typing.FrameBuffer, *, rotation: int = 0, auto_refresh: bool = True) -> None:
+//|     def __init__(self, framebuffer: circuitpython_typing.FrameBuffer, *, rotation: int = 0, auto_refresh: bool = True) -> None:
 //|         """Create a Display object with the given framebuffer (a buffer, array, ulab.array, etc)
 //|
-//|         :param ~_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
+//|         :param ~circuitpython_typing.FrameBuffer framebuffer: The framebuffer that the display is connected to
 //|         :param bool auto_refresh: Automatically refresh the screen
 //|         :param int rotation: The rotation of the display in degrees clockwise. Must be in 90 degree increments (0, 90, 180, 270)"""
 //|         ...
@@ -298,7 +298,7 @@ const mp_obj_property_t framebufferio_framebufferdisplay_rotation_obj = {
               MP_ROM_NONE},
 };
 
-//|     framebuffer: _typing.FrameBuffer
+//|     framebuffer: circuitpython_typing.FrameBuffer
 //|     """The framebuffer being used by the display"""
 //|
 //|
@@ -320,7 +320,7 @@ const mp_obj_property_t framebufferio_framebufferframebuffer_obj = {
 //|         """Extract the pixels from a single row
 //|
 //|         :param int y: The top edge of the area
-//|         :param ~_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
+//|         :param ~circuitpython_typing.WriteableBuffer buffer: The buffer in which to place the pixel data"""
 //|         ...
 //|
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

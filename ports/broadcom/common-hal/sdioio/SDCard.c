@@ -37,6 +37,7 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 
+#include "peripherals/broadcom/cpu.h"
 #include "peripherals/broadcom/defines.h"
 #include "peripherals/broadcom/gpio.h"
 
@@ -235,20 +236,28 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     if (clock != NULL) {
         gpio_set_function(clock->number, GPIO_GPFSEL4_FSEL48_SD1_CLK);
         gpio_set_pull(clock->number, BP_PULL_NONE);
+        self->clock_pin = clock->number;
         gpio_set_function(command->number, GPIO_GPFSEL4_FSEL49_SD1_CMD);
         gpio_set_pull(command->number, BP_PULL_UP);
+        self->command_pin = command->number;
         gpio_set_function(data[0]->number, GPIO_GPFSEL5_FSEL50_SD1_DAT0);
         gpio_set_pull(data[0]->number, BP_PULL_UP);
+        self->data_pins[0] = data[0]->number;
         gpio_set_function(data[1]->number, GPIO_GPFSEL5_FSEL51_SD1_DAT1);
         gpio_set_pull(data[1]->number, BP_PULL_UP);
+        self->data_pins[1] = data[1]->number;
         gpio_set_function(data[2]->number, GPIO_GPFSEL5_FSEL52_SD1_DAT2);
         gpio_set_pull(data[2]->number, BP_PULL_UP);
+        self->data_pins[2] = data[2]->number;
         gpio_set_function(data[3]->number, GPIO_GPFSEL5_FSEL53_SD1_DAT3);
         gpio_set_pull(data[3]->number, BP_PULL_UP);
+        self->data_pins[3] = data[3]->number;
     } else {
         // Switch the sdcard to use the old arasan interface.
         GPIO->EXTRA_MUX_b.SDIO = GPIO_EXTRA_MUX_SDIO_ARASAN;
     }
+
+    COMPLETE_MEMORY_READS;
 
     self->host_info = (sdmmc_host_t) {
         .flags = SDMMC_HOST_FLAG_1BIT | SDMMC_HOST_FLAG_4BIT | SDMMC_HOST_FLAG_DEINIT_ARG,
@@ -280,9 +289,22 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     // Start clocking the card.
     _set_card_clk(0, 400);
 
-    sdmmc_card_init(&self->host_info, &self->card_info);
+    sdmmc_err_t err = SDMMC_ERR_INVALID_RESPONSE;
+    size_t tries = 3;
+    while (err == SDMMC_ERR_INVALID_RESPONSE && tries > 0) {
+        err = sdmmc_card_init(&self->host_info, &self->card_info);
+        if (err != SDMMC_OK) {
+            mp_printf(&mp_plat_print, "SD card init failed %d\n", err);
+        } else if (tries < 3) {
+            mp_printf(&mp_plat_print, "SD card init success\n");
+        }
+        tries--;
+    }
+
+    self->init = err == SDMMC_OK;
 
     self->capacity = self->card_info.csd.capacity;
+    COMPLETE_MEMORY_READS;
 }
 
 uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
@@ -297,9 +319,6 @@ uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
     return self->num_data;
 }
 
-STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
-}
-
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
         mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
@@ -307,14 +326,16 @@ STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
 }
 
 int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
-    check_for_deinit(self);
+    if (!self->init) {
+        return -EIO;
+    }
     check_whole_block(bufinfo);
     self->state_programming = true;
 
-    // mp_printf(&mp_plat_print, "write %d %d %d %d\n", start_block, bufinfo->len / 512, self->card_info.csd.capacity, self->card_info.csd.sector_size);
+    COMPLETE_MEMORY_READS;
     sdmmc_err_t error = sdmmc_write_sectors(&self->card_info, bufinfo->buf,
         start_block, bufinfo->len / 512);
-
+    COMPLETE_MEMORY_READS;
 
     if (error != SDMMC_OK) {
         mp_printf(&mp_plat_print, "write sectors result %d\n", error);
@@ -325,10 +346,14 @@ int common_hal_sdioio_sdcard_writeblocks(sdioio_sdcard_obj_t *self, uint32_t sta
 }
 
 int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *bufinfo) {
-    check_for_deinit(self);
+    if (!self->init) {
+        return -EIO;
+    }
     check_whole_block(bufinfo);
+    COMPLETE_MEMORY_READS;
     sdmmc_err_t error = sdmmc_read_sectors(&self->card_info, bufinfo->buf,
         start_block, bufinfo->len / 512);
+    COMPLETE_MEMORY_READS;
 
     if (error != SDMMC_OK) {
         mp_printf(&mp_plat_print, "read sectors result %d when reading block %d for %d\n", error, start_block, bufinfo->len / 512);
@@ -339,7 +364,9 @@ int common_hal_sdioio_sdcard_readblocks(sdioio_sdcard_obj_t *self, uint32_t star
 }
 
 bool common_hal_sdioio_sdcard_configure(sdioio_sdcard_obj_t *self, uint32_t frequency, uint8_t bits) {
-    check_for_deinit(self);
+    if (!self->init) {
+        return false;
+    }
     return true;
 }
 
@@ -361,7 +388,14 @@ void common_hal_sdioio_sdcard_deinit(sdioio_sdcard_obj_t *self) {
     self->data_pins[1] = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[2] = COMMON_HAL_MCU_NO_PIN;
     self->data_pins[3] = COMMON_HAL_MCU_NO_PIN;
+    self->init = false;
 }
 
 void common_hal_sdioio_sdcard_never_reset(sdioio_sdcard_obj_t *self) {
+    never_reset_pin_number(self->command_pin);
+    never_reset_pin_number(self->clock_pin);
+    never_reset_pin_number(self->data_pins[0]);
+    never_reset_pin_number(self->data_pins[1]);
+    never_reset_pin_number(self->data_pins[2]);
+    never_reset_pin_number(self->data_pins[3]);
 }

@@ -40,9 +40,9 @@
 //|
 //|         :param int width: The width of the grid in tiles, or 1 for sprites.
 //|         :param int height: The height of the grid in tiles, or 1 for sprites.
-//|         :param ~_typing.ReadableBuffer graphic: The graphic data of the tiles.
-//|         :param ~_typing.ReadableBuffer palette: The color palette to be used.
-//|         :param ~_typing.ReadableBuffer grid: The contents of the grid map.
+//|         :param ~circuitpython_typing.ReadableBuffer graphic: The graphic data of the tiles.
+//|         :param ~circuitpython_typing.ReadableBuffer palette: The color palette to be used.
+//|         :param ~circuitpython_typing.ReadableBuffer grid: The contents of the grid map.
 //|
 //|         This class is intended for internal use in the ``stage`` library and
 //|         it shouldn't be used on its own."""
