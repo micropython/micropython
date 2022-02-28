@@ -287,8 +287,8 @@ static inline void mp_module_context_alloc_tables(mp_module_context_t *context, 
     size_t nq = (n_qstr * sizeof(qstr_short_t) + sizeof(mp_uint_t) - 1) / sizeof(mp_uint_t);
     size_t no = n_obj;
     mp_uint_t *mem = m_new(mp_uint_t, nq + no);
-    context->constants.qstr_table = (void *)(mem);
-    context->constants.obj_table = (void *)(mem + nq);
+    context->constants.qstr_table = (qstr_short_t *)(mem);
+    context->constants.obj_table = (mp_obj_t *)(mem + nq);
     #else
     if (n_obj == 0) {
         context->constants.obj_table = NULL;
