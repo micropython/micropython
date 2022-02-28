@@ -45,8 +45,6 @@ jobs:
       run: source tools/ci.sh && ci_unix_standard_build
     - name: Run main test suite
       run: source tools/ci.sh && ci_unix_standard_run_tests
-    - name: Run performance benchmarks
-      run: source tools/ci.sh && ci_unix_standard_run_perfbench
     - name: Print failures
       if: failure()
       run: tests/run-tests.py --print-failures

@@ -385,6 +385,7 @@ function ci_unix_run_tests_full_helper {
     fi
     make -C ports/unix VARIANT=$variant "$@" test_full
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-perfbench.py 1000 1000)
 }
 
 function ci_native_mpy_modules_build {
@@ -422,10 +423,6 @@ function ci_unix_standard_build {
 
 function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
-}
-
-function ci_unix_standard_run_perfbench {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
 }
 
 function ci_unix_dev_build {
