@@ -41,8 +41,16 @@ bool board_requests_safe_mode(void) {
 
 void reset_board(void) {
     // Turn on I2C power by default.
+
+    // set pin to input to find 'rest state'
+    gpio_set_direction(7, GPIO_MODE_DEF_INPUT);
+    // wait 1 millis for pull to activate
+    mp_hal_delay_ms(1);
+    // read rest state (off)
+    bool restlevel = gpio_get_level(7);
     gpio_set_direction(7, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(7, false);
+    // flip it!
+    gpio_set_level(7, !restlevel);
 }
 
 void board_deinit(void) {
