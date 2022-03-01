@@ -11,53 +11,45 @@ import os
 import re
 import sys
 import traceback
+import types
+import typing
 
 import isort
 import black
 
+import circuitpython_typing
+import circuitpython_typing.socket
+
 
 IMPORTS_IGNORE = frozenset(
     {
-        "int",
-        "float",
-        "bool",
-        "str",
-        "bytes",
-        "tuple",
-        "list",
-        "set",
-        "dict",
-        "bytearray",
-        "slice",
-        "file",
-        "buffer",
-        "range",
         "array",
+        "bool",
+        "buffer",
+        "bytearray",
+        "bytes",
+        "dict",
+        "file",
+        "float",
+        "int",
+        "list",
+        "range",
+        "set",
+        "slice",
+        "str",
         "struct_time",
+        "tuple",
     }
 )
-IMPORTS_TYPING = frozenset(
-    {
-        "Any",
-        "Dict",
-        "Optional",
-        "Union",
-        "Tuple",
-        "List",
-        "Sequence",
-        "NamedTuple",
-        "Iterable",
-        "Iterator",
-        "Callable",
-        "AnyStr",
-        "overload",
-        "Type",
-    }
-)
-IMPORTS_TYPES = frozenset({"TracebackType"})
-CPY_TYPING = frozenset(
-    {"ReadableBuffer", "WriteableBuffer", "AudioSample", "FrameBuffer", "Alarm"}
-)
+
+# Include all definitions in these type modules, minus some name conflicts.
+AVAILABLE_TYPE_MODULE_IMPORTS = {
+    "types": frozenset(types.__all__),
+    # Conflicts: countio.Counter, canio.Match
+    "typing": frozenset(typing.__all__) - set(["Counter", "Match"]),
+    "circuitpython_typing": frozenset(circuitpython_typing.__all__),
+    "circuitpython_typing.socket": frozenset(circuitpython_typing.socket.__all__),
+}
 
 
 def is_typed(node, allow_any=False):
@@ -116,9 +108,7 @@ def find_stub_issues(tree):
 
 def extract_imports(tree):
     modules = set()
-    typing = set()
-    types = set()
-    cpy_typing = set()
+    used_type_module_imports = {module: set() for module in AVAILABLE_TYPE_MODULE_IMPORTS.keys()}
 
     def collect_annotations(anno_tree):
         if anno_tree is None:
@@ -127,12 +117,9 @@ def extract_imports(tree):
             if isinstance(node, ast.Name):
                 if node.id in IMPORTS_IGNORE:
                     continue
-                elif node.id in IMPORTS_TYPING:
-                    typing.add(node.id)
-                elif node.id in IMPORTS_TYPES:
-                    types.add(node.id)
-                elif node.id in CPY_TYPING:
-                    cpy_typing.add(node.id)
+                for module, imports in AVAILABLE_TYPE_MODULE_IMPORTS.items():
+                    if node.id in imports:
+                        used_type_module_imports[module].add(node.id)
             elif isinstance(node, ast.Attribute):
                 if isinstance(node.value, ast.Name):
                     modules.add(node.value.id)
@@ -145,15 +132,12 @@ def extract_imports(tree):
         elif isinstance(node, ast.FunctionDef):
             collect_annotations(node.returns)
             for deco in node.decorator_list:
-                if isinstance(deco, ast.Name) and (deco.id in IMPORTS_TYPING):
-                    typing.add(deco.id)
+                if isinstance(deco, ast.Name) and (
+                    deco.id in AVAILABLE_TYPE_MODULE_IMPORTS["typing"]
+                ):
+                    used_type_module_imports["typing"].add(deco.id)
 
-    return {
-        "modules": sorted(modules),
-        "typing": sorted(typing),
-        "types": sorted(types),
-        "cpy_typing": sorted(cpy_typing),
-    }
+    return (modules, used_type_module_imports)
 
 
 def find_references(tree):
@@ -237,15 +221,11 @@ def convert_folder(top_level, stub_directory):
         ok += 1
 
     # Add import statements
-    imports = extract_imports(tree)
+    imports, type_imports = extract_imports(tree)
     import_lines = ["from __future__ import annotations"]
-    if imports["types"]:
-        import_lines.append("from types import " + ", ".join(imports["types"]))
-    if imports["typing"]:
-        import_lines.append("from typing import " + ", ".join(imports["typing"]))
-    if imports["cpy_typing"]:
-        import_lines.append("from circuitpython_typing import " + ", ".join(imports["cpy_typing"]))
-    import_lines.extend(f"import {m}" for m in imports["modules"])
+    for type_module, used_types in type_imports.items():
+        import_lines.append(f"from {type_module} import {', '.join(sorted(used_types))}")
+    import_lines.extend(f"import {m}" for m in sorted(imports))
     import_body = "\n".join(import_lines)
     m = re.match(r'(\s*""".*?""")', stub_contents, flags=re.DOTALL)
     if m:
