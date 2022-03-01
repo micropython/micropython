@@ -228,21 +228,23 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #define MICROPY_MPHALPORT_H         "windows_mphal.h"
 
-#if MICROPY_ENABLE_SCHEDULER
-#define MICROPY_EVENT_POLL_HOOK \
-    do { \
-        extern void mp_handle_pending(bool); \
-        mp_handle_pending(true); \
-        mp_hal_delay_us(500); \
-    } while (0);
-#endif
-
 // We need to provide a declaration/definition of alloca()
 #include <malloc.h>
 
 #include "realpath.h"
 #include "init.h"
 #include "sleep.h"
+
+#if MICROPY_ENABLE_SCHEDULER
+// Use 1mSec sleep to make sure there is effectively a wait period:
+// something like usleep(500) truncates and ends up calling Sleep(0).
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        msec_sleep(1.0); \
+    } while (0);
+#endif
 
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))
