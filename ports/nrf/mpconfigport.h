@@ -133,9 +133,23 @@
     #define MICROPY_FATFS_MAX_SS       (4096)
 #endif
 
-// TODO these should be generic, not bound to fatfs
+#if MICROPY_VFS
+// TODO these should be generic, not bound to a particular FS implementation
+#if MICROPY_VFS_FAT
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS1
+#define mp_type_fileio mp_type_vfs_lfs1_fileio
+#define mp_type_textio mp_type_vfs_lfs1_textio
+#elif MICROPY_VFS_LFS2
+#define mp_type_fileio mp_type_vfs_lfs2_fileio
+#define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
+
+#else // !MICROPY_VFS_FAT
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
+#endif
 
 // Use port specific uos module rather than extmod variant.
 #define MICROPY_PY_UOS              (0)
