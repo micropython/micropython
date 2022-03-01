@@ -31,7 +31,7 @@
 //| class Device:
 //|     """HID Device specification"""
 //|
-//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, report_ids: Sequence[int], in_report_lengths: Sequence[int], out_report_lengths: Sequence[int]) -> None:
+//|     def __init__(self, *, report_descriptor: ReadableBuffer, usage_page: int, usage: int, report_ids: Sequence[int], in_report_lengths: Sequence[int], out_report_lengths: Sequence[int]) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
 //|         pass a `Device` to `usb_hid.enable()`.
 //|
