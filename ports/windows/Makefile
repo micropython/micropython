@@ -55,7 +55,6 @@ SRC_C = \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
-	sleep.c \
 	fmode.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
