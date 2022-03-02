@@ -52,3 +52,8 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_P1_12)
 #define DEFAULT_UART_BUS_TX         (&pin_P1_11)
+
+#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
+#define CIRCUITPY_RGB_STATUS_R      (&pin_P0_26)
+#define CIRCUITPY_RGB_STATUS_G      (&pin_P0_30)
+#define CIRCUITPY_RGB_STATUS_B      (&pin_P0_06)
