@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPTHREAD_H
 #define MICROPY_INCLUDED_PY_MPTHREAD_H
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_PY_THREAD
 

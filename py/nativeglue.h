@@ -27,9 +27,9 @@
 #define MICROPY_INCLUDED_PY_NATIVEGLUE_H
 
 #include <stdarg.h>
-#include "obj.h"
-#include "persistentcode.h"
-#include "stream.h"
+#include "py/obj.h"
+#include "py/persistentcode.h"
+#include "py/stream.h"
 
 typedef enum {
     MP_F_CONST_NONE_OBJ = 0,

@@ -32,7 +32,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #define MICROPY_NLR_NUM_REGS_X86            (6)
 #define MICROPY_NLR_NUM_REGS_X64            (8)
@@ -154,7 +154,7 @@ NORETURN void nlr_jump_fail(void *val);
 #ifndef MICROPY_DEBUG_NLR
 #define nlr_raise(val) nlr_jump(MP_OBJ_TO_PTR(val))
 #else
-#include "mpstate.h"
+#include "py/mpstate.h"
 #define nlr_raise(val) \
     do { \
         /*printf("nlr_raise: nlr_top=%p\n", MP_STATE_THREAD(nlr_top)); \

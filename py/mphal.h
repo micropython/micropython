@@ -27,7 +27,7 @@
 #define MICROPY_INCLUDED_PY_MPHAL_H
 
 #include <stdint.h>
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #ifdef MICROPY_MPHALPORT_H
 #include MICROPY_MPHALPORT_H

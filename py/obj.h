@@ -28,11 +28,11 @@
 
 #include <assert.h>
 
-#include "mpconfig.h"
-#include "misc.h"
-#include "qstr.h"
-#include "mpprint.h"
-#include "runtime0.h"
+#include "py/mpconfig.h"
+#include "py/misc.h"
+#include "py/qstr.h"
+#include "py/mpprint.h"
+#include "py/runtime0.h"
 
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the

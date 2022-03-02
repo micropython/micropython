@@ -2,8 +2,8 @@
 #include "gc.h"
 #include "stackctrl.h"
 #include "mperrno.h"
-#include "runtime/gchelper.h"
-#include "runtime/pyexec.h"
+#include "shared/runtime/gchelper.h"
+#include "shared/runtime/pyexec.h"
 
 // Allocate memory for the MicroPython GC heap.
 static char heap[4096];

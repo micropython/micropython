@@ -26,9 +26,9 @@
 #ifndef MICROPY_INCLUDED_PY_COMPILE_H
 #define MICROPY_INCLUDED_PY_COMPILE_H
 
-#include "lexer.h"
-#include "parse.h"
-#include "emitglue.h"
+#include "py/lexer.h"
+#include "py/parse.h"
+#include "py/emitglue.h"
 
 // the compiler will raise an exception if an error occurred
 // the compiler will clear the parse tree before it returns

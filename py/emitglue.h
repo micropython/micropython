@@ -26,8 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_EMITGLUE_H
 #define MICROPY_INCLUDED_PY_EMITGLUE_H
 
-#include "obj.h"
-#include "bc.h"
+#include "py/obj.h"
+#include "py/bc.h"
 
 // These variables and functions glue the code emitters to the runtime.
 

@@ -29,7 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "obj.h"
+#include "py/obj.h"
 
 struct _mp_lexer_t;
 

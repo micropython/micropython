@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "stackctrl.h"
+#include "py/stackctrl.h"
 
 void mp_stack_ctrl_init(void) {
     volatile int stack_dummy;

@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPERRNO_H
 #define MICROPY_INCLUDED_PY_MPERRNO_H
 
-#include "mpconfig.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_USE_INTERNAL_ERRNO
 
