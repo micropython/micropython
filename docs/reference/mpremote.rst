@@ -78,6 +78,7 @@ The full list of supported commands are:
 - `mip <mpremote_command_mip>`
 - `mount <mpremote_command_mount>`
 - `unmount <mpremote_command_unmount>`
+- `romfs <mpremote_command_romfs>`
 - `rtc <mpremote_command_rtc>`
 - `sleep <mpremote_command_sleep>`
 - `reset <mpremote_command_reset>`
@@ -346,6 +347,29 @@ The full list of supported commands are:
 
   This happens automatically when ``mpremote`` terminates, but it can be used
   in a sequence to unmount an earlier mount before subsequent command are run.
+
+.. _mpremote_command_romfs:
+
+- **romfs** -- manage ROMFS partitions on the device:
+
+  .. code-block:: bash
+
+      $ mpremote romfs <sub-command>
+
+  ``<sub-command>`` may be:
+
+  - ``romfs query`` to list all the available ROMFS partitions and their size
+  - ``romfs [-o <output>] build <source>`` to create a ROMFS image from the given
+    source directory; the default output file is the source appended by ``.romfs``
+  - ``romfs [-p <partition>] deploy <source>`` to deploy a ROMFS image to the device;
+    will also create a temporary ROMFS image if the source is a directory
+
+  The ``build`` and ``deploy`` sub-commands both support the ``-m``/``--mpy`` option
+  to automatically compile ``.py`` files to ``.mpy`` when creating the ROMFS image.
+  This option is enabled by default, but only works if the ``mpy_cross`` Python
+  package has been installed (eg via ``pip install mpy_cross``).  If the package is
+  not installed then a warning is printed and ``.py`` files remain as is.  Compiling
+  of ``.py`` files can be disabled with the ``--no-mpy`` option.
 
 .. _mpremote_command_rtc:
 
