@@ -17,7 +17,8 @@
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 2048K
-    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 2016K   /* sectors 1-11 3x32K 1*128K 7*256K */
+    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 1504K   /* sectors 1-9 3x32K 1*128K 5*256K */
+    FLASH_ROMFS (rx): ORIGIN = 0x08180000, LENGTH = 512K    /* sectors 10-11 2*256k */
     FLASH_EXT (rx)  : ORIGIN = 0x90000000, LENGTH = 2048K   /* external QSPI */
     RAM (rwx)       : ORIGIN = 0x20000000, LENGTH = 512K    /* DTCM=128k, SRAM1=368K, SRAM2=16K */
 }
@@ -36,5 +37,8 @@ _ram_start = ORIGIN(RAM);
 _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
+
+_micropy_hw_romfs_start = ORIGIN(FLASH_ROMFS);
+_micropy_hw_romfs_size = LENGTH(FLASH_ROMFS);
 
 INCLUDE common_bl.ld
