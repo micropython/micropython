@@ -95,8 +95,9 @@
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
-#ifndef MICROPY_PY_UOS
-#define MICROPY_PY_UOS              (1)
+#define MICROPY_PY_UOS              (0)
+#ifndef MICROPY_PY_UOS_STM32
+#define MICROPY_PY_UOS_STM32        (1)
 #endif
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
@@ -203,7 +204,7 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
 #endif
 
-#if MICROPY_PY_UOS
+#if MICROPY_PY_UOS_STM32
 #define UOS_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
 #else
 #define UOS_BUILTIN_MODULE
