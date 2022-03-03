@@ -27,6 +27,7 @@
 #define MICROPY_HW_BOARD_NAME       "PYBD-SF2W"
 #define MICROPY_HW_MCU_NAME         "STM32F722IEK"
 
+#define MICROPY_VFS_ROM             (1)
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "PYBD"
 
 #define MICROPY_PY_PYB_LEGACY       (1)
