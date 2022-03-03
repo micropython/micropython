@@ -28,6 +28,7 @@
 
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "py/mperrno.h"
 #include "extmod/vfs.h"
 #include "modrp2.h"
 #include "hardware/flash.h"
@@ -43,6 +44,9 @@ static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size mu
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
 #define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
 #endif
+
+#define MICROPY_HW_ROMFS_BASE (512 * 1024) // leave 512k for firmware...
+#define MICROPY_HW_ROMFS_BYTES (MICROPY_HW_FLASH_STORAGE_BASE - MICROPY_HW_ROMFS_BASE)
 
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
 static_assert(MICROPY_HW_FLASH_STORAGE_BASE + MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
@@ -189,6 +193,8 @@ static mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             end_critical_flash_section(atomic_state);
             // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
+            case 0x100: // potential MP_BLOCKDEV_IOCTL_MEMMAP
+                return mp_obj_new_int(XIP_BASE + self->flash_base);
         }
         default:
             return mp_const_none;
@@ -210,3 +216,58 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, rp2_flash_make_new,
     locals_dict, &rp2_flash_locals_dict
     );
+
+static rp2_flash_obj_t rp2_flash_romfs_obj = {
+    .base = { &rp2_flash_type },
+    .flash_base = MICROPY_HW_ROMFS_BASE,
+    .flash_size = MICROPY_HW_ROMFS_BYTES,
+};
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    if (MICROPY_HW_ROMFS_BYTES <= 0) {
+        return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+    switch (mp_obj_get_int(args[0])) {
+        case -1: // request object-based capabilities
+            return MP_OBJ_FROM_PTR(&rp2_flash_romfs_obj);
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            return mp_obj_new_int(XIP_BASE + MICROPY_HW_ROMFS_BASE);
+        #if 0
+        case 2: // num blocks
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_ROMFS_BYTES / BLOCK_SIZE_BYTES);
+        case 3: // block_size
+            return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+        case 4: { // erase
+            if (n_args < 2) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+
+            // Erase sector.
+            mp_uint_t atomic_state = begin_critical_flash_section();
+            flash_range_erase(dest, BLOCK_SIZE_BYTES);
+            end_critical_flash_section(atomic_state);
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+        case 5: { // write
+            if (n_args < 3) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+
+            // Write data to flash.
+            mp_uint_t atomic_state = begin_critical_flash_section();
+            flash_range_program(dest, bufinfo.buf, bufinfo.len);
+            end_critical_flash_section(atomic_state);
+            mp_event_handle_nowait();
+            return MP_OBJ_NEW_SMALL_INT(0);
+        }
+        #endif
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
