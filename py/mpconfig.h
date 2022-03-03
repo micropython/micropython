@@ -1016,6 +1016,11 @@ typedef double mp_float_t;
 #define MICROPY_VFS_LFS2 (0)
 #endif
 
+// Support for ROMFS.
+#ifndef MICROPY_VFS_ROM
+#define MICROPY_VFS_ROM (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
