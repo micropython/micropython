@@ -28,9 +28,16 @@
 
 #include "drivers/bus/qspi.h"
 
+#define QSPI_MAP_ADDR (0x90000000)
+#define QSPI_MAP_ADDR_MAX (0xa0000000)
+
 extern const mp_qspi_proto_t qspi_proto;
 
 void qspi_init(void);
 void qspi_memory_map(void);
+
+static inline bool qspi_is_valid_addr(uint32_t addr) {
+    return QSPI_MAP_ADDR <= addr && addr < QSPI_MAP_ADDR_MAX;
+}
 
 #endif // MICROPY_INCLUDED_STM32_QSPI_H
