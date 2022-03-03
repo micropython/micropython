@@ -289,6 +289,7 @@ static mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_len,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
@@ -475,3 +476,57 @@ void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
 }
 
 #endif
+
+/******************************************************************************/
+// romfs partition
+
+#include "flash.h"
+
+#define MICROPY_HW_ROMFS_BASE (uintptr_t)(&_micropy_hw_romfs_start)
+#define MICROPY_HW_ROMFS_BYTES (uintptr_t)(&_micropy_hw_romfs_end - &_micropy_hw_romfs_start)
+
+extern uint8_t _micropy_hw_romfs_start;
+extern uint8_t _micropy_hw_romfs_end;
+
+mp_obj_t mp_vfs_rom_ioctl(size_t n_args, const mp_obj_t *args) {
+    switch (mp_obj_get_int(args[0])) {
+        case 0: // number of segments
+            return MP_OBJ_NEW_SMALL_INT(1);
+        case 1: // address
+            return mp_obj_new_int(MICROPY_HW_ROMFS_BASE);
+        case 2: { // num blocks
+            uint32_t sector_size = 0;
+            flash_get_sector_info(MICROPY_HW_ROMFS_BASE, NULL, &sector_size);
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_ROMFS_BYTES / sector_size);
+        }
+        case 3: { // block_size
+            uint32_t sector_size = 0;
+            flash_get_sector_info(MICROPY_HW_ROMFS_BASE, NULL, &sector_size);
+            return MP_OBJ_NEW_SMALL_INT(sector_size);
+        }
+        case 4: { // erase
+            if (n_args < 2) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+
+            // Erase sector.
+            int ret = flash_erase(dest);
+            return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+        case 5: { // write
+            if (n_args < 3) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t dest = MICROPY_HW_ROMFS_BASE + mp_obj_get_int(args[1]);
+            mp_buffer_info_t bufinfo;
+            mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
+
+            // Write data to flash.
+            int ret = flash_write(dest, bufinfo.buf, bufinfo.len / 4);
+            return MP_OBJ_NEW_SMALL_INT(ret);
+        }
+        default:
+            return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+    }
+}
