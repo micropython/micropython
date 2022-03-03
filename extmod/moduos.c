@@ -55,6 +55,13 @@
 #endif
 
 #if MICROPY_PY_UOS_UNAME
+
+#if MICROPY_PY_UOS_UNAME_RELEASE_DYNAMIC
+#define CONST_RELEASE
+#else
+#define CONST_RELEASE const
+#endif
+
 STATIC const qstr mp_uos_uname_info_fields[] = {
     MP_QSTR_sysname,
     MP_QSTR_nodename,
@@ -64,7 +71,7 @@ STATIC const qstr mp_uos_uname_info_fields[] = {
 };
 STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
 STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
-STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_release_obj, MICROPY_VERSION_STRING);
+STATIC CONST_RELEASE MP_DEFINE_STR_OBJ(mp_uos_uname_info_release_obj, MICROPY_VERSION_STRING);
 STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
 STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
 
@@ -80,9 +87,15 @@ STATIC MP_DEFINE_ATTRTUPLE(
     );
 
 STATIC mp_obj_t mp_uos_uname(void) {
+    #if MICROPY_PY_UOS_UNAME_RELEASE_DYNAMIC
+    const char *release = mp_uos_uname_release();
+    mp_uos_uname_info_release_obj.len = strlen(release);
+    mp_uos_uname_info_release_obj.data = (const byte *)release;
+    #endif
     return MP_OBJ_FROM_PTR(&mp_uos_uname_info_obj);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
+
 #endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {

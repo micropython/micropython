@@ -95,7 +95,14 @@
 #define MICROPY_PY_WEBREPL_DELAY    (20)
 #define MICROPY_PY_WEBREPL_STATIC_FILEBUF (1)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+#define MICROPY_PY_UOS              (1)
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/esp8266/moduos.c"
 #define MICROPY_PY_OS_DUPTERM       (2)
+#define MICROPY_PY_UOS_DUPTERM_NOTIFY (1)
+#define MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_UOS_UNAME        (1)
+#define MICROPY_PY_UOS_UNAME_RELEASE_DYNAMIC (1)
+#define MICROPY_PY_UOS_URANDOM      (1)
 #define MICROPY_CPYTHON_COMPAT      (1)
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
@@ -172,7 +179,6 @@ extern const struct _mp_print_t mp_debug_print;
 extern const struct _mp_obj_module_t esp_module;
 extern const struct _mp_obj_module_t network_module;
 extern const struct _mp_obj_module_t utime_module;
-extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t mp_module_lwip;
 extern const struct _mp_obj_module_t mp_module_onewire;
 
@@ -181,7 +187,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) }, \
     { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&network_module) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&utime_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&uos_module) }, \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
