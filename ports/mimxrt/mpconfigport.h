@@ -121,7 +121,12 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_PY_UOS                      (1)
+#define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
+#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
+#define MICROPY_PY_UOS_UNAME                (1)
+#define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
@@ -221,7 +226,6 @@ static inline void restore_irq_pri(uint32_t basepri) {
 
 extern const struct _mp_obj_module_t mp_module_mimxrt;
 extern const struct _mp_obj_module_t mp_module_onewire;
-extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
@@ -258,7 +262,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_ROM_QSTR(MP_QSTR_mimxrt), (mp_obj_t)&mp_module_mimxrt }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
     SOCKET_BUILTIN_MODULE \

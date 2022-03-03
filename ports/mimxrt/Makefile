@@ -238,7 +238,6 @@ SRC_C += \
 	mimxrt_sdram.c \
 	modmachine.c \
 	modmimxrt.c \
-	moduos.c \
 	modutime.c \
 	mphalport.c \
 	mpnetworkport.c \
@@ -409,7 +408,6 @@ SRC_QSTR += \
 	mimxrt_flash.c \
 	modmachine.c \
 	modmimxrt.c \
-	moduos.c \
 	modutime.c \
 	pin.c \
 	shared/runtime/mpirq.c \
