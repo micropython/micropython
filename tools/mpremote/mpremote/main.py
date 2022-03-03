@@ -36,6 +36,7 @@ from .commands import (
     do_resume,
     do_rtc,
     do_soft_reset,
+    do_deploy_romfs,
 )
 from .mip import do_mip
 from .repl import do_repl
@@ -228,6 +229,12 @@ def argparse_mip():
     return cmd_parser
 
 
+def argparse_deploy_romfs():
+    cmd_parser = argparse.ArgumentParser(description="deploy a directory to /romfs on the device")
+    cmd_parser.add_argument("path", nargs=1, help="path to directory to deploy")
+    return cmd_parser
+
+
 def argparse_none(description):
     return lambda: argparse.ArgumentParser(description=description)
 
@@ -301,6 +308,19 @@ _COMMANDS = {
     "version": (
         do_version,
         argparse_none("print version and exit"),
+    ),
+    # separate commands for each step:
+    # manifest -> directory -> romfs -> device
+    # then can have shortcuts that do everything at once
+    # can have auto-mpy-cross
+    # no need to do the first step (manifest) now
+    "build-romfs": (
+        do_deploy_romfs,
+        argparse_deploy_romfs,
+    ),
+    "deploy-romfs": (
+        do_deploy_romfs,
+        argparse_deploy_romfs,
     ),
 }
 
