@@ -191,55 +191,82 @@ MATH_FUN_2(pow, pow)
 MATH_FUN_1(exp, exp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 //| def expm1(x: float) -> float:
-//|     """Return ``exp(x) - 1``."""
+//|     """Return ``exp(x) - 1``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(expm1, expm1)
 
 //| def log2(x: float) -> float:
-//|     """Return the base-2 logarithm of ``x``."""
+//|     """Return the base-2 logarithm of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1_ERRCOND(log2, log2, (x <= (mp_float_t)0.0))
 
 //| def log10(x: float) -> float:
-//|     """Return the base-10 logarithm of ``x``."""
+//|     """Return the base-10 logarithm of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1_ERRCOND(log10, log10, (x <= (mp_float_t)0.0))
 
 //| def cosh(x: float) -> float:
-//|     """Return the hyperbolic cosine of ``x``."""
+//|     """Return the hyperbolic cosine of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(cosh, cosh)
 
 //| def sinh(x: float) -> float:
-//|     """Return the hyperbolic sine of ``x``."""
+//|     """Return the hyperbolic sine of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(sinh, sinh)
 
 //| def tanh(x: float) -> float:
-//|     """Return the hyperbolic tangent of ``x``."""
+//|     """Return the hyperbolic tangent of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(tanh, tanh)
 
 //| def acosh(x: float) -> float:
-//|     """Return the inverse hyperbolic cosine of ``x``."""
+//|     """Return the inverse hyperbolic cosine of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(acosh, acosh)
 
 //| def asinh(x: float) -> float:
-//|     """Return the inverse hyperbolic sine of ``x``."""
+//|     """Return the inverse hyperbolic sine of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(asinh, asinh)
 
 //| def atanh(x: float) -> float:
-//|     """Return the inverse hyperbolic tangent of ``x``."""
+//|     """Return the inverse hyperbolic tangent of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(atanh, atanh)
@@ -281,25 +308,37 @@ MATH_FUN_2(ldexp, ldexp)
 #if MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 
 //| def erf(x: float) -> float:
-//|     """Return the error function of ``x``."""
+//|     """Return the error function of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(erf, erf)
 
 //| def erfc(x: float) -> float:
-//|     """Return the complementary error function of ``x``."""
+//|     """Return the complementary error function of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(erfc, erfc)
 
 //| def gamma(x: float) -> float:
-//|     """Return the gamma function of ``x``."""
+//|     """Return the gamma function of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(gamma, tgamma)
 
 //| def lgamma(x: float) -> float:
-//|     """Return the natural logarithm of the gamma function of ``x``."""
+//|     """Return the natural logarithm of the gamma function of ``x``.
+//|
+//|     May not be available in some ports.
+//|     """
 //|     ...
 //|
 MATH_FUN_1(lgamma, lgamma)
