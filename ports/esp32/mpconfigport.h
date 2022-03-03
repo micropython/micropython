@@ -72,6 +72,7 @@
 #define MICROPY_PY_UHASHLIB_SHA256          (1)
 #define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (esp_random())
+#define MICROPY_PY_UOS                      (0)
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new

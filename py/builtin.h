@@ -108,6 +108,7 @@ extern const mp_obj_module_t mp_module_uerrno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_uzlib;
 extern const mp_obj_module_t mp_module_ujson;
+extern const mp_obj_module_t mp_module_uos;
 extern const mp_obj_module_t mp_module_ure;
 extern const mp_obj_module_t mp_module_uheapq;
 extern const mp_obj_module_t mp_module_uhashlib;

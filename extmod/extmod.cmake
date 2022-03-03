@@ -25,6 +25,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/moduhashlib.c
     ${MICROPY_EXTMOD_DIR}/moduheapq.c
     ${MICROPY_EXTMOD_DIR}/modujson.c
+    ${MICROPY_EXTMOD_DIR}/moduos.c
     ${MICROPY_EXTMOD_DIR}/moduplatform.c
     ${MICROPY_EXTMOD_DIR}/modurandom.c
     ${MICROPY_EXTMOD_DIR}/modure.c

@@ -97,7 +97,6 @@ set(MICROPY_SOURCE_PORT
     main.c
     modmachine.c
     modrp2.c
-    moduos.c
     modutime.c
     mphalport.c
     mpthreadport.c

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 NXP
+ * Copyright (c) 2016-2022 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/obj.h"
+#include "py/objstr.h"
+#include "py/runtime.h"
 
+#if MICROPY_PY_UOS
+
+#include "extmod/misc.h"
 #include "extmod/vfs.h"
 
 #if MICROPY_VFS_FAT
@@ -36,25 +40,79 @@
 #include "extmod/vfs_lfs.h"
 #endif
 
-#if MICROPY_PY_UOS_ZEPHYR
+#if MICROPY_PY_UOS_UNAME
+#include "genhdr/mpversion.h"
+#endif
 
-STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
+#ifdef MICROPY_PY_UOS_INCLUDEFILE
+#include MICROPY_PY_UOS_INCLUDEFILE
+#endif
+
+#ifdef MICROPY_BUILD_TYPE
+#define MICROPY_BUILD_TYPE_PAREN " (" MICROPY_BUILD_TYPE ")"
+#else
+#define MICROPY_BUILD_TYPE_PAREN
+#endif
+
+STATIC const qstr mp_uos_uname_info_fields[] = {
+    MP_QSTR_sysname,
+    MP_QSTR_nodename,
+    MP_QSTR_release,
+    MP_QSTR_version,
+    MP_QSTR_machine
+};
+STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_sysname_obj, MICROPY_PY_SYS_PLATFORM);
+STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_nodename_obj, MICROPY_PY_SYS_PLATFORM);
+STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_release_obj, MICROPY_VERSION_STRING);
+STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_version_obj, MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE MICROPY_BUILD_TYPE_PAREN);
+STATIC const MP_DEFINE_STR_OBJ(mp_uos_uname_info_machine_obj, MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME);
+
+STATIC MP_DEFINE_ATTRTUPLE(
+    mp_uos_uname_info_obj,
+    mp_uos_uname_info_fields,
+    5,
+    MP_ROM_PTR(&mp_uos_uname_info_sysname_obj),
+    MP_ROM_PTR(&mp_uos_uname_info_nodename_obj),
+    MP_ROM_PTR(&mp_uos_uname_info_release_obj),
+    MP_ROM_PTR(&mp_uos_uname_info_version_obj),
+    MP_ROM_PTR(&mp_uos_uname_info_machine_obj)
+    );
+
+STATIC mp_obj_t mp_uos_uname(void) {
+    return MP_OBJ_FROM_PTR(&mp_uos_uname_info_obj);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
+
+STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
+
+    { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_uos_uname_obj) },
+    #if MICROPY_PY_UOS_URANDOM
+    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_uos_urandom_obj) },
+    #endif
+
     #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rename),MP_ROM_PTR(&mp_vfs_rename_obj)},
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) },
+    #endif
+
+    // The following are MicroPython extensions.
+
+    #if MICROPY_PY_OS_DUPTERM
+    { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
+    #endif
+
+    #if MICROPY_VFS
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
-    #endif
     #if MICROPY_VFS_FAT
     { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
     #endif
@@ -64,12 +122,13 @@ STATIC const mp_rom_map_elem_t uos_module_globals_table[] = {
     #if MICROPY_VFS_LFS2
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
     #endif
+    #endif
 };
-STATIC MP_DEFINE_CONST_DICT(uos_module_globals, uos_module_globals_table);
+STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
 
 const mp_obj_module_t mp_module_uos = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&uos_module_globals,
+    .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-#endif // MICROPY_PY_UOS_ZEPHYR
+#endif // MICROPY_PY_UOS
