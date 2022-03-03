@@ -32,6 +32,12 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
+#ifndef MICROPY_VFS_ROM
+#if defined(STM32F091xC) || defined(STM32F405xx)
+#define MICROPY_VFS_ROM (1)
+#endif
+#endif
+
 // Whether to include the stm module
 #ifndef MICROPY_PY_STM
 #define MICROPY_PY_STM (1)
