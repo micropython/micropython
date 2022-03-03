@@ -67,6 +67,16 @@
 #endif
 #endif
 
+// Number of bytes of flash to allocate to the ROMFS partition.
+#ifndef MICROPY_HW_ROMFS_BYTES
+#define MICROPY_HW_ROMFS_BYTES (0)
+#endif
+
+// Number of bytes of flash to allocate to read/write filesystem storage.
+#ifndef MICROPY_HW_FLASH_STORAGE_BYTES
+#define MICROPY_HW_FLASH_STORAGE_BYTES (1408 * 1024)
+#endif
+
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 #endif
@@ -170,6 +180,7 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
+#define MICROPY_VFS_ROM                         (MICROPY_HW_ROMFS_BYTES > 0)
 #define MICROPY_SSL_MBEDTLS                     (1)
 #define MICROPY_PY_LWIP_PPP                     (MICROPY_PY_NETWORK_PPP_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
