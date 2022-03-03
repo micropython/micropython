@@ -7,6 +7,7 @@ import serial.tools.list_ports
 
 from .transport import TransportError, stdout_write_bytes
 from .transport_serial import SerialTransport
+from .romfs import make_romfs
 
 
 class CommandError(Exception):
@@ -478,3 +479,49 @@ def do_rtc(state, args):
         state.transport.exec("machine.RTC().datetime({})".format(timetuple))
     else:
         print(state.transport.eval("machine.RTC().datetime()"))
+
+
+def do_deploy_romfs(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    # Detect the romfs and get its associated device.
+    state.transport.exec("import vfs")
+    has_object = state.transport.eval("hasattr(vfs.rom_ioctl(-1), 'ioctl')")
+    if has_object:
+        state.transport.exec("dev = vfs.rom_ioctl(-1)")
+        block_count = state.transport.eval("dev.ioctl(4,0)")
+        block_size = state.transport.eval("dev.ioctl(5,0)")
+    else:
+        block_count = state.transport.eval("vfs.rom_ioctl(2)")
+        block_size = state.transport.eval("vfs.rom_ioctl(3)")
+    print(f"ROMFS partition has size {block_count}*{block_size}={block_count * block_size} bytes")
+
+    # Create the romfs filesystem.
+    romfs = make_romfs(args.path[0], "/")
+    print(f"Image size is {len(romfs)} bytes")
+
+    if len(romfs) > block_count * block_size:
+        print("ROMFS partition is too small for image")
+        sys.exit(1)
+
+    # Deploy the romfs filesystem to the device.
+    chunk_size = min(4096, block_size)
+    state.transport.exec(f"buf=bytearray({chunk_size})")
+    for offset in range(0, len(romfs), chunk_size):
+        romfs_chunk = romfs[offset : offset + chunk_size]
+        state.transport.exec(f"buf[:{len(romfs_chunk)}]=" + repr(romfs_chunk))
+        print(f"\rWriting at offset {offset}", end="")
+        if has_object:
+            if offset % block_size == 0:
+                state.transport.exec(f"dev.ioctl(6, {offset // block_size})")
+            state.transport.exec(
+                f"dev.writeblocks({offset // block_size},buf,{offset % block_size})"
+            )
+        else:
+            if offset % block_size == 0:
+                state.transport.exec(f"vfs.rom_ioctl(4, {offset // block_size})")
+            state.transport.exec(f"vfs.rom_ioctl(5,{offset},buf)")
+
+    print()
+    print("Image deployed")
