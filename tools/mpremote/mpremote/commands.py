@@ -1,12 +1,15 @@
+import binascii
 import hashlib
 import os
 import sys
 import tempfile
+import zlib
 
 import serial.tools.list_ports
 
-from .transport import TransportError, stdout_write_bytes
+from .transport import TransportError, TransportExecError, stdout_write_bytes
 from .transport_serial import SerialTransport
+from .romfs import make_romfs
 
 
 class CommandError(Exception):
@@ -478,3 +481,181 @@ def do_rtc(state, args):
         state.transport.exec("machine.RTC().datetime({})".format(timetuple))
     else:
         print(state.transport.eval("machine.RTC().datetime()"))
+
+
+def _do_romfs_query(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+
+    # Detect the romfs and get its associated device.
+    state.transport.exec("import vfs")
+    if not state.transport.eval("hasattr(vfs,'rom_ioctl')"):
+        print("ROMFS is not enabled on this device")
+        return
+    num_rom_partitions = state.transport.eval("vfs.rom_ioctl(1)")
+    if num_rom_partitions <= 0:
+        print("No ROMFS partitions available")
+        return
+
+    for rom_id in range(num_rom_partitions):
+        state.transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
+        has_object = state.transport.eval("hasattr(dev,'ioctl')")
+        if has_object:
+            rom_block_count = state.transport.eval("dev.ioctl(4,0)")
+            rom_block_size = state.transport.eval("dev.ioctl(5,0)")
+            rom_size = rom_block_count * rom_block_size
+            print(
+                f"ROMFS{rom_id} partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
+            )
+        else:
+            rom_size = state.transport.eval("len(dev)")
+            print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+        romfs = state.transport.eval("bytes(memoryview(dev)[:12])")
+        print(f"  Raw contents: {romfs.hex(':')} ...")
+        if not romfs.startswith(b"\xd2\xcd\x31"):
+            print("  Not a valid ROMFS")
+        else:
+            size = 0
+            for value in romfs[3:]:
+                size = (size << 7) | (value & 0x7F)
+                if not value & 0x80:
+                    break
+            print(f"  ROMFS image size: {size}")
+
+
+def _do_romfs_build(state, args):
+    state.did_action()
+
+    if args.path is None:
+        raise CommandError("romfs build: source path not given")
+
+    input_directory = args.path
+
+    if args.output is None:
+        output_file = input_directory + ".romfs"
+    else:
+        output_file = args.output
+
+    romfs = make_romfs(input_directory, mpy_cross=args.mpy)
+
+    print(f"Writing {len(romfs)} bytes to output file {output_file}")
+    with open(output_file, "wb") as f:
+        f.write(romfs)
+
+
+def _do_romfs_deploy(state, args):
+    state.ensure_raw_repl()
+    state.did_action()
+    transport = state.transport
+
+    if args.path is None:
+        raise CommandError("romfs deploy: source path not given")
+
+    rom_id = args.partition
+    romfs_filename = args.path
+
+    # Read in or create the ROMFS filesystem image.
+    if romfs_filename.endswith(".romfs"):
+        with open(romfs_filename, "rb") as f:
+            romfs = f.read()
+    else:
+        romfs = make_romfs(romfs_filename, mpy_cross=args.mpy)
+    print(f"Image size is {len(romfs)} bytes")
+
+    # Detect the ROMFS partition and get its associated device.
+    state.transport.exec("import vfs")
+    if not state.transport.eval("hasattr(vfs,'rom_ioctl')"):
+        raise CommandError("ROMFS is not enabled on this device")
+    transport.exec(f"dev=vfs.rom_ioctl(2,{rom_id})")
+    if transport.eval("isinstance(dev,int) and dev<0"):
+        raise CommandError(f"ROMFS{rom_id} partition not found on device")
+    has_object = transport.eval("hasattr(dev,'ioctl')")
+    if has_object:
+        rom_block_count = transport.eval("dev.ioctl(4,0)")
+        rom_block_size = transport.eval("dev.ioctl(5,0)")
+        rom_size = rom_block_count * rom_block_size
+        print(
+            f"ROMFS{rom_id} partition has size {rom_size} bytes ({rom_block_count} blocks of {rom_block_size} bytes each)"
+        )
+    else:
+        rom_size = transport.eval("len(dev)")
+        print(f"ROMFS{rom_id} partition has size {rom_size} bytes")
+
+    # Check if ROMFS filesystem image will fit in the target partition.
+    if len(romfs) > rom_size:
+        print("ROMFS image is too big for the target partition")
+        sys.exit(1)
+
+    # Prepare ROMFS partition for writing.
+    print(f"Preparing ROMFS{rom_id} partition for writing")
+    transport.exec("import vfs\ntry:\n vfs.umount('/rom')\nexcept:\n pass")
+    chunk_size = 4096
+    if has_object:
+        for offset in range(0, len(romfs), rom_block_size):
+            transport.exec(f"dev.ioctl(6,{offset // rom_block_size})")
+        chunk_size = min(chunk_size, rom_block_size)
+    else:
+        rom_min_write = transport.eval(f"vfs.rom_ioctl(3,{rom_id},{len(romfs)})")
+        chunk_size = max(chunk_size, rom_min_write)
+
+    # Detect capabilities of the device to use the fastest method of transfer.
+    has_bytes_fromhex = transport.eval("hasattr(bytes,'fromhex')")
+    try:
+        transport.exec("from binascii import a2b_base64")
+        has_a2b_base64 = True
+    except TransportExecError:
+        has_a2b_base64 = False
+    try:
+        transport.exec("from io import BytesIO")
+        transport.exec("from deflate import DeflateIO,RAW")
+        has_deflate_io = True
+    except TransportExecError:
+        has_deflate_io = False
+
+    # Deploy the ROMFS filesystem image to the device.
+    for offset in range(0, len(romfs), chunk_size):
+        romfs_chunk = romfs[offset : offset + chunk_size]
+        romfs_chunk += bytes(chunk_size - len(romfs_chunk))
+        if has_deflate_io:
+            # Needs: binascii.a2b_base64, io.BytesIO, deflate.DeflateIO.
+            romfs_chunk_compressed = zlib.compress(romfs_chunk, wbits=-9)
+            buf = binascii.b2a_base64(romfs_chunk_compressed).strip()
+            transport.exec(f"buf=DeflateIO(BytesIO(a2b_base64({buf})),RAW,9).read()")
+        elif has_a2b_base64:
+            # Needs: binascii.a2b_base64.
+            buf = binascii.b2a_base64(romfs_chunk)
+            transport.exec(f"buf=a2b_base64({buf})")
+        elif has_bytes_fromhex:
+            # Needs: bytes.fromhex.
+            buf = romfs_chunk.hex()
+            transport.exec(f"buf=bytes.fromhex('{buf}')")
+        else:
+            # Needs nothing special.
+            transport.exec("buf=" + repr(romfs_chunk))
+        print(f"\rWriting at offset {offset}", end="")
+        if has_object:
+            transport.exec(
+                f"dev.writeblocks({offset // rom_block_size},buf,{offset % rom_block_size})"
+            )
+        else:
+            transport.exec(f"vfs.rom_ioctl(4,{rom_id},{offset},buf)")
+
+    # Complete writing.
+    if not has_object:
+        transport.eval(f"vfs.rom_ioctl(5,{rom_id})")
+
+    print()
+    print("ROMFS image deployed")
+
+
+def do_romfs(state, args):
+    if args.command[0] == "query":
+        _do_romfs_query(state, args)
+    elif args.command[0] == "build":
+        _do_romfs_build(state, args)
+    elif args.command[0] == "deploy":
+        _do_romfs_deploy(state, args)
+    else:
+        raise CommandError(
+            f"romfs: '{args.command[0]}' is not a command; pass romfs --help for a list"
+        )
