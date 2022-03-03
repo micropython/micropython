@@ -79,6 +79,7 @@ typedef struct _scope_t {
     uint16_t scope_flags;  // see runtime0.h
     uint16_t emit_options; // see emitglue.h
     uint16_t num_pos_args;
+    uint16_t num_posonly_args;
     uint16_t num_kwonly_args;
     uint16_t num_def_pos_args;
     uint16_t num_locals;

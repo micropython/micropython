@@ -32,12 +32,13 @@
 // bytecode layout:
 //
 //  func signature  : var uint
-//      contains six values interleaved bit-wise as: xSSSSEAA [xFSSKAED repeated]
+//      contains six values interleaved bit-wise as: xSSSSEAA [xFSS(PorK)AED repeated]
 //          x = extension           another byte follows
 //          S = n_state - 1         number of entries in Python value stack
 //          E = n_exc_stack         number of entries in exception stack
 //          F = scope_flags         four bits of flags, MP_SCOPE_FLAG_xxx
 //          A = n_pos_args          number of arguments this function takes
+//          P = n_posonly_args      number of positional-only arguments this function takes
 //          K = n_kwonly_args       number of keyword-only arguments this function takes
 //          D = n_def_pos_args      number of default positional arguments
 //
@@ -74,6 +75,7 @@
         /*// Get values to store in prelude */                      \
         size_t F = scope->scope_flags & MP_SCOPE_FLAG_ALL_SIG;      \
         size_t A = scope->num_pos_args;                             \
+        size_t P = scope->num_posonly_args;                         \
         size_t K = scope->num_kwonly_args;                          \
         size_t D = scope->num_def_pos_args;                         \
                                                                 \
@@ -86,22 +88,30 @@
         S >>= 4;                                                    \
         E >>= 1;                                                    \
         A >>= 2;                                                    \
-        while (S | E | F | A | K | D) {                             \
+        uint8_t n = 0;                                              \
+        while (S | E | F | A | P | K | D) {                         \
             out_byte(out_env, 0x80 | z);                            \
-            /* xFSSKAED */                                          \
-            z = (F & 1) << 6 | (S & 3) << 4 | (K & 1) << 3          \
-                | (A & 1) << 2 | (E & 1) << 1 | (D & 1);            \
+            uint16_t PorK = n % 2 == 0 ? P : K;                     \
+            /* xFSS(PorK)AED */                                     \
+            z = (F & 1) << 6 | (S & 3) << 4 | (PorK & 1) << 3       \
+                | (A & 1) << 2 | (E & 1) << 1                       \
+                | (D & 1);                                          \
             S >>= 2;                                                \
             E >>= 1;                                                \
             F >>= 1;                                                \
             A >>= 1;                                                \
-            K >>= 1;                                                \
+            if (n % 2 == 0) {                                       \
+                P >>= 1;                                            \
+            } else {                                                \
+                K >>= 1;                                            \
+            }                                                       \
             D >>= 1;                                                \
+            n++;                                                    \
         }                                                           \
         out_byte(out_env, z);                                       \
     } while (0)
 
-#define MP_BC_PRELUDE_SIG_DECODE_INTO(ip, S, E, F, A, K, D)     \
+#define MP_BC_PRELUDE_SIG_DECODE_INTO(ip, S, E, F, A, P, K, D)      \
     do {                                                            \
         uint8_t z = *(ip)++;                                        \
         /* xSSSSEAA */                                              \
@@ -109,26 +119,31 @@
         E = (z >> 2) & 0x1;                                         \
         F = 0;                                                      \
         A = z & 0x3;                                                \
+        P = 0;                                                      \
         K = 0;                                                      \
         D = 0;                                                      \
         for (unsigned n = 0; z & 0x80; ++n) {                       \
             z = *(ip)++;                                            \
-            /* xFSSKAED */                                          \
-            S |= (z & 0x30) << (2 * n);                             \
-            E |= (z & 0x02) << n;                                   \
+            /* xFSS(PorK)AED */                                     \
             F |= ((z & 0x40) >> 6) << n;                            \
+            S |= (z & 0x30) << (2 * n);                             \
+            if (n % 2 == 0) {                                       \
+                P |= ((z & 0x08) >> 3) << (n >> 1);                 \
+            } else {                                                \
+                K |= ((z & 0x08) >> 3) << (n >> 1);                 \
+            }                                                       \
             A |= (z & 0x4) << n;                                    \
-            K |= ((z & 0x08) >> 3) << n;                            \
+            E |= (z & 0x02) << n;                                   \
             D |= (z & 0x1) << n;                                    \
         }                                                           \
         S += 1;                                                     \
     } while (0)
 
 #define MP_BC_PRELUDE_SIG_DECODE(ip) \
-    size_t n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args; \
-    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args); \
+    size_t n_state, n_exc_stack, scope_flags, n_pos_args, n_posonly_args, n_kwonly_args, n_def_pos_args; \
+    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack, scope_flags, n_pos_args, n_posonly_args, n_kwonly_args, n_def_pos_args); \
     (void)n_state; (void)n_exc_stack; (void)scope_flags; \
-    (void)n_pos_args; (void)n_kwonly_args; (void)n_def_pos_args
+    (void)n_pos_args; (void)n_kwonly_args; (void)n_def_pos_args; (void)n_posonly_args
 
 #define MP_BC_PRELUDE_SIZE_ENCODE(I, C, out_byte, out_env)      \
     do {                                                            \
@@ -178,6 +193,7 @@ typedef struct _mp_bytecode_prelude_t {
     uint n_exc_stack;
     uint scope_flags;
     uint n_pos_args;
+    uint n_posonly_args;
     uint n_kwonly_args;
     uint n_def_pos_args;
     qstr qstr_block_name_idx;

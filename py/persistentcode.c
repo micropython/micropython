@@ -53,6 +53,7 @@ typedef struct _bytecode_prelude_t {
     uint n_exc_stack;
     uint scope_flags;
     uint n_pos_args;
+    uint n_posonly_args;
     uint n_kwonly_args;
     uint n_def_pos_args;
     uint code_info_size;

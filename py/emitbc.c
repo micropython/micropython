@@ -323,7 +323,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
         // Note: there is some wasted RAM here for the case of storing a qstr
         // for each closed-over variable, and maybe there is a better way to do
         // it, but that would require changes to mp_setup_code_state.
-        for (int i = 0; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
+        for (int i = scope->num_posonly_args; i < scope->num_pos_args + scope->num_kwonly_args; i++) {
             qstr qst = MP_QSTR__star_;
             for (int j = 0; j < scope->id_info_len; ++j) {
                 id_info_t *id = &scope->id_info[j];

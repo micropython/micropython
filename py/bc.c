@@ -143,8 +143,8 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     size_t n_state = code_state->n_state;
 
     // Decode prelude
-    size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args;
-    MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args);
+    size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_posonly_args, n_kwonly_args, n_def_pos_args;
+    MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_posonly_args, n_kwonly_args, n_def_pos_args);
     MP_BC_PRELUDE_SIZE_DECODE(code_state->ip);
     (void)n_state_unused;
     (void)n_exc_stack_unused;
@@ -214,7 +214,8 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             const uint8_t *arg_names = code_state->ip;
             arg_names = mp_decode_uint_skip(arg_names);
 
-            for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
+            // Iterating the function definition keywords
+            for (size_t j = n_posonly_args; j < n_pos_args + n_kwonly_args; j++) {
                 qstr arg_qstr = mp_decode_uint(&arg_names);
                 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
                 arg_qstr = self->context->constants.qstr_table[arg_qstr];
@@ -267,7 +268,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         // Check that all mandatory keyword args are specified
         // Fill in default kw args if we have them
         const uint8_t *arg_names = mp_decode_uint_skip(code_state->ip);
-        for (size_t i = 0; i < n_pos_args; i++) {
+        for (size_t i = n_posonly_args; i < n_pos_args; i++) {
             arg_names = mp_decode_uint_skip(arg_names);
         }
         for (size_t i = 0; i < n_kwonly_args; i++) {

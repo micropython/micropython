@@ -683,6 +683,12 @@ STATIC void compile_funcdef_lambdef_param(compiler_t *comp, mp_parse_node_t pn) 
     int pn_kind;
     if (MP_PARSE_NODE_IS_ID(pn)) {
         pn_kind = -1;
+    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH)) {
+        if (comp->have_star) {
+            // Star cannot be in front of a positional only arguments.
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
+        }
+        return;
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pn_kind = MP_PARSE_NODE_STRUCT_KIND((mp_parse_node_struct_t *)pn);
@@ -2864,6 +2870,19 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             comp->scope_cur->num_pos_args += 1;
         }
         mp_emit_common_use_qstr(&comp->emit_common, param_name);
+    } else if (MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_OP_SLASH)) {
+        // if slash was used, but no args were detected, that is invalid by spec.
+        if (comp->scope_cur->num_pos_args == 0) {
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
+            return;
+        }
+        // slash may have appeared twice if posonly_args is already > 0, invalid by spec.
+        if (comp->scope_cur->num_posonly_args > 0) {
+            compile_syntax_error(comp, pn, MP_ERROR_TEXT("invalid syntax"));
+            return;
+        }
+        // comes before a slash, so counts as positional-only parameter
+        comp->scope_cur->num_posonly_args = comp->scope_cur->num_pos_args;
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;

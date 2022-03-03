@@ -374,21 +374,25 @@ def read_prelude_sig(read_byte):
     E = (z >> 2) & 0x1
     F = 0
     A = z & 0x3
+    P = 0
     K = 0
     D = 0
     n = 0
     while z & 0x80:
         z = read_byte()
-        # xFSSKAED
+        # xFSS(PorK)AED
         S |= (z & 0x30) << (2 * n)
         E |= (z & 0x02) << n
         F |= ((z & 0x40) >> 6) << n
         A |= (z & 0x4) << n
-        K |= ((z & 0x08) >> 3) << n
+        if n % 2 == 0:
+            P |= ((z & 0x08) >> 3) << (n >> 1)
+        else:
+            P |= ((z & 0x08) >> 3) << (n >> 1)
         D |= (z & 0x1) << n
         n += 1
     S += 1
-    return S, E, F, A, K, D
+    return S, E, F, A, P, K, D
 
 
 def read_prelude_size(read_byte):
@@ -418,6 +422,7 @@ def extract_prelude(bytecode, ip):
         n_exc_stack,
         scope_flags,
         n_pos_args,
+        n_posonly_args,
         n_kwonly_args,
         n_def_pos_args,
     ) = read_prelude_sig(local_read_byte)
@@ -445,7 +450,15 @@ def extract_prelude(bytecode, ip):
         ip2,
         ip,
         ip_ref[0],
-        (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args),
+        (
+            n_state,
+            n_exc_stack,
+            scope_flags,
+            n_pos_args,
+            n_posonly_args,
+            n_kwonly_args,
+            n_def_pos_args,
+        ),
         args,
     )
 
@@ -791,8 +804,9 @@ class RawCode(object):
             print("        .n_exc_stack = %u," % self.prelude[1])
             print("        .scope_flags = %u," % self.prelude[2])
             print("        .n_pos_args = %u," % self.prelude[3])
-            print("        .n_kwonly_args = %u," % self.prelude[4])
-            print("        .n_def_pos_args = %u," % self.prelude[5])
+            print("        .n_posonly_args = %u," % self.prelude[4])
+            print("        .n_kwonly_args = %u," % self.prelude[5])
+            print("        .n_def_pos_args = %u," % self.prelude[6])
             print("        .qstr_block_name_idx = %u," % self.names[0])
             print(
                 "        .line_info = fun_data_%s + %u,"

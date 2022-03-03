@@ -47,6 +47,7 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
     prelude->n_exc_stack = n_exc_stack;
     prelude->scope_flags = scope_flags;
     prelude->n_pos_args = n_pos_args;
+    prelude->n_posonly_args = n_posonly_args;
     prelude->n_kwonly_args = n_kwonly_args;
     prelude->n_def_pos_args = n_def_pos_args;
 
