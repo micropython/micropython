@@ -54,6 +54,7 @@
 #define MICROPY_BUILD_TYPE_PAREN
 #endif
 
+#if MICROPY_PY_UOS_UNAME
 STATIC const qstr mp_uos_uname_info_fields[] = {
     MP_QSTR_sysname,
     MP_QSTR_nodename,
@@ -82,11 +83,14 @@ STATIC mp_obj_t mp_uos_uname(void) {
     return MP_OBJ_FROM_PTR(&mp_uos_uname_info_obj);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
+#endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
 
+    #if MICROPY_PY_UOS_UNAME
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_uos_uname_obj) },
+    #endif
     #if MICROPY_PY_UOS_URANDOM
     { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_uos_urandom_obj) },
     #endif
@@ -101,6 +105,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
     #endif
 
     // The following are MicroPython extensions.
