@@ -95,12 +95,14 @@
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
-#define MICROPY_PY_UOS              (0)
-#ifndef MICROPY_PY_UOS_STM32
-#define MICROPY_PY_UOS_STM32        (1)
-#endif
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/stm32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
+#define MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_UOS_SEP          (1)
+#define MICROPY_PY_UOS_SYNC         (1)
+#define MICROPY_PY_UOS_UNAME        (1)
+#define MICROPY_PY_UOS_URANDOM      (MICROPY_HW_ENABLE_RNG)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_get())
 #ifndef MICROPY_PY_UTIME
 #define MICROPY_PY_UTIME            (1)
@@ -178,7 +180,6 @@ extern const struct _mp_obj_module_t mp_module_uzlib;
 extern const struct _mp_obj_module_t mp_module_ujson;
 extern const struct _mp_obj_module_t mp_module_uheapq;
 extern const struct _mp_obj_module_t mp_module_uhashlib;
-extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_utime;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_network;
@@ -202,12 +203,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
-#endif
-
-#if MICROPY_PY_UOS_STM32
-#define UOS_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
-#else
-#define UOS_BUILTIN_MODULE
 #endif
 
 #if MICROPY_PY_UTIME
@@ -274,7 +269,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #define MICROPY_PORT_BUILTIN_MODULES \
     PYB_BUILTIN_MODULE \
     STM_BUILTIN_MODULE \
-    UOS_BUILTIN_MODULE \
     UTIME_BUILTIN_MODULE \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \

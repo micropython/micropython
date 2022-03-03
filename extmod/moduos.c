@@ -88,6 +88,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
 
+    #if MICROPY_PY_UOS_SEP
+    { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
+    #endif
+    #if MICROPY_PY_UOS_SYNC
+    { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_uos_sync_obj) },
+    #endif
     #if MICROPY_PY_UOS_UNAME
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_uos_uname_obj) },
     #endif

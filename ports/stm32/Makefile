@@ -297,7 +297,6 @@ SRC_C += \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
-	moduos.c \
 	modutime.c \
 	network_lan.c \
 	extint.c \
