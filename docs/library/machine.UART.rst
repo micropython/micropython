@@ -63,6 +63,12 @@ Methods
      - *timeout* specifies the time to wait for the first character (in ms).
      - *timeout_char* specifies the time to wait between characters (in ms).
      - *invert* specifies which lines to invert.
+
+         - ``0`` will not invert lines (idle state of both lines stay to logic high).
+         - ``UART.INV_TX`` will invert TX line (idle state of TX line change to logic low).
+         - ``UART.INV_RX`` will invert RX line (idle state of RX line change to logic low).
+         - ``UART.INV_TX | UART.INV_RX`` will invert both lines (idle state of both lines change to logic low).
+
      - *flow* specifies which hardware flow control signals to use. The value
        is a bitmask.
 
