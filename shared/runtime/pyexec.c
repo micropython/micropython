@@ -174,12 +174,13 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
         } else if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(mp_obj_get_type((mp_obj_t)nlr.ret_val)), &mp_type_DeepSleepRequest)) {
             ret = PYEXEC_DEEP_SLEEP;
         #endif
+        } else if ((mp_obj_t)nlr.ret_val == MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
+            ret = PYEXEC_RELOAD;
         } else {
-            if ((mp_obj_t)nlr.ret_val != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-                mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-            }
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = PYEXEC_EXCEPTION;
         }
+
     }
     if (result != NULL) {
         result->return_code = ret;

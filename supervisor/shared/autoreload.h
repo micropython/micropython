@@ -41,8 +41,8 @@ enum {
 };
 
 enum {
-    AUTORELOAD_LOCK_REPL = 0x1,
-    AUTORELOAD_LOCK_BLE = 0x2
+    AUTORELOAD_SUSPEND_REPL = 0x1,
+    AUTORELOAD_SUSPEND_BLE = 0x2
 };
 
 typedef struct {
@@ -56,16 +56,16 @@ extern volatile bool reload_requested;
 
 void autoreload_tick(void);
 
-void autoreload_start(void);
-void autoreload_stop(void);
+void autoreload_start_countdown(void);
+void autoreload_reset(void);
 void autoreload_enable(void);
 void autoreload_disable(void);
 bool autoreload_is_enabled(void);
 
-// Temporarily turn it off. Used during the REPL.
-void autoreload_suspend(size_t lock_mask);
-void autoreload_resume(size_t lock_mask);
+// Temporarily turn autoreload off, for the given reason(s). Used during the REPL or during parts of BLE workflow.
+void autoreload_suspend(uint32_t suspend_reason_mask);
+// Allow autoreloads again, for the given reason(s).
+void autoreload_resume(uint32_t suspend_reason_mask);
 
-void autoreload_now(void);
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
