@@ -226,7 +226,7 @@ class HomeScreen(Screen):
         l_menu.set_grid_cell(lv.GRID_ALIGN.STRETCH, 0, 1, lv.GRID_ALIGN.STRETCH, 1, 1)
 
         self.l_time = lv.label(self)
-        self.l_time.set_style_text_font(lv.font_montserrat_14, lv.PART.MAIN)
+        self.l_time.set_style_text_font(lv.font_montserrat_48, lv.PART.MAIN)
         self.l_time.set_style_text_color(lv.color_white(), lv.PART.MAIN)
         self.l_time.set_text('')
         self.l_time.set_grid_cell(lv.GRID_ALIGN.CENTER, 0, 3, lv.GRID_ALIGN.CENTER, 1, 2)
