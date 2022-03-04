@@ -237,6 +237,8 @@ typedef struct _parser_t {
     mp_parse_tree_t tree;
     mp_parse_chunk_t *cur_chunk;
 
+    uint32_t cur_view;
+
     #if MICROPY_COMP_CONST
     mp_map_t consts;
     #endif
@@ -806,6 +808,9 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
             // need to keep parenthesis for ()
         } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_testlist_comp)) {
             // need to keep parenthesis for (a, b, ...)
+        } else if (MP_PARSE_NODE_IS_ID(pn) && MP_PARSE_IS_PARSING_ARGLIST(parser)) {
+            // Keep parentheses around single IDs that are function arguments
+            // since they may be keyword arguments.
         } else {
             // parenthesis around a single expression, so it's just the expression
             return;
@@ -882,6 +887,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.tree.chunk = NULL;
     parser.cur_chunk = NULL;
+
+    parser.cur_view = 0x0;
 
     #if MICROPY_COMP_CONST
     mp_map_init(&parser.consts, 0);
@@ -1073,12 +1080,21 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             default: {
                 assert((rule_act & RULE_ACT_KIND_MASK) == RULE_ACT_LIST);
 
+                if (rule_id == RULE_arglist && !MP_PARSE_IS_PARSING_ARGLIST(&parser)) {
+                    parser.cur_view |= MP_PARSE_PARSING_ARGLIST;
+                }
+
                 // n=2 is: item item*
                 // n=1 is: item (sep item)*
                 // n=3 is: item (sep item)* [sep]
                 bool had_trailing_sep;
                 if (backtrack) {
                 list_backtrack:
+
+                    if (rule_id == RULE_arglist) {
+                        parser.cur_view &= ~MP_PARSE_PARSING_ARGLIST;
+                    }
+
                     had_trailing_sep = false;
                     if (n == 2) {
                         if (i == 1) {

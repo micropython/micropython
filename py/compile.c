@@ -2505,6 +2505,9 @@ STATIC void compile_atom_paren(compiler_t *comp, mp_parse_node_struct_t *pns) {
     if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
         // an empty tuple
         EMIT_ARG(build, 0, MP_EMIT_BUILD_TUPLE);
+    } else if (MP_PARSE_NODE_IS_ID(pns->nodes[0])) {
+        // a lone ID
+        compile_node(comp, pns->nodes[0]);
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
         pns = (mp_parse_node_struct_t *)pns->nodes[0];
