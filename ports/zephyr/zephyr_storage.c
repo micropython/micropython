@@ -32,7 +32,7 @@
 #endif
 
 #ifdef CONFIG_DISK_ACCESS
-#include <disk/disk_access.h>
+#include <storage/disk_access.h>
 #endif
 
 #ifdef CONFIG_FLASH_MAP
