@@ -174,6 +174,10 @@ ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
 
+ifeq ($(CIRCUITPY_FUTURE),1)
+SRC_PATTERNS += __future__/%
+endif
+
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
@@ -451,6 +455,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	__future__/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
 	countio/Edge.c \
