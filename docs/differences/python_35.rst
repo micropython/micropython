@@ -33,7 +33,7 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ | improved Python zip application support         |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Laucher aware of virtual        |               |
+   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Launcher aware of virtual       | Not relevant  |
    |                                                        | environments                                    |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ | type hints (advisory only)                      | In Progress   |
