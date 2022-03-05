@@ -32,8 +32,8 @@
 
 typedef struct {
     mp_obj_base_t base;
-    int8_t read_pin_number;
-    int8_t reset_pin_number;
+    gpio_num_t read_pin_number;
+    gpio_num_t reset_pin_number;
     i2s_lcd_config_t config;
     i2s_lcd_handle_t handle;
 } paralleldisplay_parallelbus_obj_t;
