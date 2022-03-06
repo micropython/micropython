@@ -141,7 +141,7 @@ Methods
 
 Each FLEX submodule or QTMR module may run at different frequencies. The PWM signal
 is created by dividing the pwm_clk signal by an integral factor,
-according to the formula  
+according to the formula
 
     f = pwm_clk / (2**n * m)
 
@@ -282,6 +282,38 @@ LED_RED    F2/3/A
 LED_GREEN  F1/3/A
 LED_BLUE   F1/3/B
 =========  ==============
+
+|
+|
+
+=========  ===============
+Pin        Olimex RT1010PY
+=========  ===============
+D0           -
+D1         F1/0/B
+D2         F1/0/A
+D3         F1/1/B
+D4         F1/1/A
+D5         F1/2/B
+D6         F1/2/A
+D7         F1/3/B
+D8         F1/3/A
+D9            -
+D10        F1/0/B
+D11        F1/0/A
+D12        F1/1/B
+D13        F1/1/A
+D14           -
+A0            -
+A1         F1/2/B
+A2         F1/2/A
+A3         F1/3/B
+A4         F1/3/A
+SDI        F1/3/X
+SDO        F1/2/X
+CS0        F1/1/X
+SCK        F1/0/X
+=========  ===============
 
 Legend:
 

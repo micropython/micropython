@@ -104,7 +104,8 @@ Available Pins follow the ranges and labelling of the respective board, like:
 
 - 0-33 for Teensy 4.0,
 - 0-21 for the MIMXRT10xx-EVK board, or 'D0-Dxx', or 'A0-Ann',
-- 'J3_xx', 'J4_xx', 'J5_xx' for the ARCH MIX board,
+- 0-14 for the Olimex RT1010Py board, or 'D0'-'Dxx' and 'A0'-'Ann'
+- 'J3_xx', 'J4_xx', 'J5_xx' for the Seeed ARCH MIX board,
 
 or the pin names of the Pin.board or Pin.cpu classes.
 
@@ -153,6 +154,7 @@ MIMXRT1050-EVKB    Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1060-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1064-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
+Olimex RT1010Py       -          RxD/TxD       D5/D6           -
 Seeed ARCH MIX        -        J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
 ================  ===========  ===========  ===========  ===========
 
@@ -172,6 +174,7 @@ MIMXRT1050-EVKB      A1/A0          -         -        -        -
 MIMXRT1060-EVK       A1/A0          -         -        -        -
 MIMXRT1064-EVK       A1/A0          -         -        -        -
 MIMXRT1170-EVK      D15/D14      D25/D26    D33/D34  D35/D36    -
+Olimex RT1010Py        -            -         -        -        -
 Seeed ARCH MIX    J4_10/J4_11  J5_08/J5_12    -        -        -
 ================  ===========  ===========  =======  =======  =====
 
@@ -286,6 +289,7 @@ MIXMXRT1050-EVKB   D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1060-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1064-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1170-EVK    D10/-/D11/D12/D13          D28/-/D25/D24/D26        -/-/D14/D15/D24
+Olimex RT1010Py             -                 CS0/-/SDO/SDI/SCK        SDCARD with CS1
 Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
 =================  =========================  =======================  ===============
 
@@ -352,6 +356,7 @@ MIXMXRT1050-EVKB   A4/A5        D1/D0         -            -        -
 MIXMXRT1060-EVK    A4/A5        D1/D0         -            -        -
 MIXMXRT1064-EVK    A4/A5        D1/D0         -            -        -
 MIXMXRT1170-EVK    D14/D15      D1/D0        A4/A5        D26/D25  D19/D18
+Olimex RT1010Py      -          SDA1/SCL1    SDA2/SCL2     -        -
 Seeed ARCH MIX     J3_17/J3_16  J4_06/J4_07  J5_05/J5_04   -        -
 =================  ===========  ===========  ===========  =======  =======
 
@@ -428,18 +433,18 @@ At MIMXRT1010 devices the bus numbers as 1 and 3.
 
 Pin assignments for a few MIMXRT boards:
 
-==============  ==  =====  ======== ======= ======= ======== ======= =======
-Board           ID  MCK    SCK_TX   WS_TX   SD_TX   SCK_RX   WS_RX   SD_RX
-==============  ==  =====  ======== ======= ======= ======== ======= =======
-Teensy 4.0      1   23     26       27      7       21       20      8
-Teensy 4.0      2   33     4        3       2       -        -       5
-Teensy 4.1      1   23     26       27      7       21       20      8    
-Teensy 4.1      2   33     4        3       2       -        -       5
-Seeed Arch MIX  1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
-Olimex RT1010   1   D8     D6       D7      D4      D1       D2      D3
-Olimex RT1010   3   -      D10      D9      D11     -        -       -
-MIMXRT_DEV      1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
-==============  ==  =====  ======== ======= ======= ======== ======= =======
+===============  ==  =====  ======== ======= ======= ======== ======= =======
+Board            ID  MCK    SCK_TX   WS_TX   SD_TX   SCK_RX   WS_RX   SD_RX
+===============  ==  =====  ======== ======= ======= ======== ======= =======
+Teensy 4.0       1   23     26       27      7       21       20      8
+Teensy 4.0       2   33     4        3       2       -        -       5
+Teensy 4.1       1   23     26       27      7       21       20      8    
+Teensy 4.1       2   33     4        3       2       -        -       5
+Seeed Arch MIX   1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
+Olimex RT1010Py  1   D8     D6       D7      D4      D1       D2      D3
+Olimex RT1010Py  3   -      D10      D9      D11     -        -       -
+MIMXRT_DEV       1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"
+===============  ==  =====  ======== ======= ======= ======== ======= =======
 
 Symbolic pin names are provided for the MIMXRT_10xx_DEV boards. These are provided
 for the other boards as well. 
