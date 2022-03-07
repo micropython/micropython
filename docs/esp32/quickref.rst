@@ -177,6 +177,14 @@ safe maximum source/sink currents and approximate internal driver resistances:
  - ``Pin.DRIVE_2``: 20mA / 30 ohm (default strength if not configured)
  - ``Pin.DRIVE_3``: 40mA / 15 ohm
 
+The ``hold=`` keyword argument to ``Pin()`` and ``Pin.init()`` will enable the
+ESP32 "pad hold" feature. When set to ``True``, the pin configuration
+(direction, pull resistors and output value) will be held and any further
+changes (including changing the output level) will not be applied. Setting
+``hold=False`` will immediately apply any outstanding pin configuration changes
+and release the pin. Using ``hold=True`` while a pin is already held will apply
+any configuration changes and then immediately reapply the hold.
+
 Notes:
 
 * Pins 1 and 3 are REPL UART TX and RX respectively
@@ -548,6 +556,10 @@ deep-sleep mode::
     # disable pull-up and put the device to sleep for 10 seconds
     pin.init(pull=None)
     machine.deepsleep(10000)
+
+Output-configured RTC pins will also retain their output direction and level in
+deep-sleep if pad hold is enabled with the ``hold=True`` argument to
+``Pin.init()``.
 
 Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
 
