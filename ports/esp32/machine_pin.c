@@ -253,13 +253,14 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mp_printf(print, "Pin(%u)", self->id);
 }
 
-// pin.init(mode, pull=None, *, value)
+// pin.init(mode=None, pull=-1, *, value, drive)
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_mode, ARG_pull, ARG_value };
+    enum { ARG_mode, ARG_pull, ARG_value, ARG_drive };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = mp_const_none}},
         { MP_QSTR_pull, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)}},
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+        { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
     };
 
     // parse args
@@ -287,6 +288,14 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // set initial value (do this before configuring mode/pull)
     if (args[ARG_value].u_obj != MP_OBJ_NULL) {
         gpio_set_level(self->id, mp_obj_is_true(args[ARG_value].u_obj));
+    }
+
+    // set drive capability (do this before configuring mode)
+    if (args[ARG_drive].u_obj != MP_OBJ_NULL && GPIO_IS_VALID_OUTPUT_GPIO(self->id)) {
+        mp_int_t strength = mp_obj_get_int(args[ARG_drive].u_obj);
+        if (0 <= strength && strength < GPIO_DRIVE_CAP_MAX) {
+            gpio_set_drive_capability(self->id, strength);
+        }
     }
 
     // configure mode
@@ -476,6 +485,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_PIN_INTR_NEGEDGE) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_LOW), MP_ROM_INT(GPIO_PIN_INTR_LOLEVEL) },
     { MP_ROM_QSTR(MP_QSTR_WAKE_HIGH), MP_ROM_INT(GPIO_PIN_INTR_HILEVEL) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0), MP_ROM_INT(GPIO_DRIVE_CAP_0) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1), MP_ROM_INT(GPIO_DRIVE_CAP_1) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2), MP_ROM_INT(GPIO_DRIVE_CAP_2) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3), MP_ROM_INT(GPIO_DRIVE_CAP_3) },
 };
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
