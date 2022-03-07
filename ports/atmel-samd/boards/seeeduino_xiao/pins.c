@@ -45,7 +45,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_LED_INVERTED),   MP_ROM_PTR(&pin_PA17) },
     { MP_ROM_QSTR(MP_QSTR_YELLOW_LED_INVERTED),   MP_ROM_PTR(&pin_PA17) },
-    
+
     { MP_ROM_QSTR(MP_QSTR_RX_LED_INVERTED),   MP_ROM_PTR(&pin_PA18) },
     { MP_ROM_QSTR(MP_QSTR_BLUE_LED1_INVERTED),   MP_ROM_PTR(&pin_PA18) },
 
