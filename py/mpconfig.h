@@ -1455,6 +1455,25 @@ typedef double mp_float_t;
 #define MICROPY_PY_UJSON_SEPARATORS (1)
 #endif
 
+// Original behavior: don't load special numbers, dump them as str(number),
+// resulting in JSON format which won't be parsed by CPython.
+#define MICROPY_PY_UJSON_FLOAT_MODE_MICROPYTHON (0)
+
+// Don't load special numbers, raise ValueError when trying to dump them.
+// This is compliant with the JSON standard, but deviates from CPython which
+// by default dumps these numbers.
+#define MICROPY_PY_UJSON_FLOAT_MODE_STRICT (1)
+
+// Support load and dump of nan/inf as NaN/Infinity.
+// Not compliant with the JSON standard, but the same as default CPython behavior,
+// except that we do not support the allow_nan keyword for dump nor parse_constant for load.
+#define MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT (2)
+
+// How to treat nan and inf for JSON.
+#ifndef MICROPY_PY_UJSON_FLOAT_MODE
+#define MICROPY_PY_UJSON_FLOAT_MODE (MICROPY_PY_UJSON_FLOAT_MODE_MICROPYTHON)
+#endif
+
 #ifndef MICROPY_PY_URE
 #define MICROPY_PY_URE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif

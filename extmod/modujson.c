@@ -245,6 +245,10 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                 next = mp_obj_new_str(vstr.buf, vstr.len);
                 break;
             case '-':
+            #if MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT
+            case 'N':
+            case 'I':
+            #endif
             case '0':
             case '1':
             case '2':
@@ -256,10 +260,33 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
             case '8':
             case '9': {
                 bool flt = false;
+                #if MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT
+                bool append = true;
+                #endif
                 vstr_reset(&vstr);
                 for (;;) {
-                    vstr_add_byte(&vstr, cur);
+                    #if MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT
+                    if (append) {
+                    #else
+                    if (1) {
+                    #endif
+                        vstr_add_byte(&vstr, cur);
+                    }
                     cur = S_CUR(s);
+                    #if MICROPY_PY_UJSON_FLOAT_MODE == MICROPY_PY_UJSON_FLOAT_MODE_JAVASCRIPT
+                    // String should be NaN or Infinity but just consume all alhpabetic characters: this
+                    // should stop once we encounter a comma or closing bracket or 0, and then we offload
+                    // handling of bad text to mp_parse_num_decimal.
+                    // Stop appending once we get to the first 'i' of 'Infinity' because we can only parse 'inf'.
+                    // Cpython/JavaScript difference: this simple implementation is largely case-insensitive
+                    // (only not encountering that first 'i' will lead to an exception).
+                    if (unichar_isalpha(cur)) {
+                        flt = true;
+                        if (cur == 'i') {
+                            append = false;
+                        }
+                    } else
+                    #endif
                     if (cur == '.' || cur == 'E' || cur == 'e') {
                         flt = true;
                     } else if (cur == '+' || cur == '-' || unichar_isdigit(cur)) {
