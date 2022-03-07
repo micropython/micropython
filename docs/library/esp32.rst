@@ -68,7 +68,7 @@ Flash partitions
 This class gives access to the partitions in the device's flash memory and includes
 methods to enable over-the-air (OTA) updates.
 
-.. class:: Partition(id, block_size=4096)
+.. class:: Partition(id, block_size=4096, /)
 
     Create an object representing a partition.  *id* can be a string which is the label
     of the partition to retrieve, or one of the constants: ``BOOT`` or ``RUNNING``.
