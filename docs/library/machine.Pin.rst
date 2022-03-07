@@ -87,9 +87,9 @@ Constructors
        output pin value if given, otherwise the state of the pin peripheral remains
        unchanged.
 
-     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.LOW_POWER``,
-       ``Pin.MED_POWER`` or ``Pin.HIGH_POWER``.  The actual current driving capabilities
-       are port dependent.  Not all ports implement this argument.
+     - ``drive`` specifies the output power of the pin and can be one of: ``Pin.DRIVE_0``,
+       ``Pin.DRIVE_1``, etc., increasing in drive strength.  The actual current driving
+       capabilities are port dependent.  Not all ports implement this argument.
 
      - ``alt`` specifies an alternate function for the pin and the values it can take are
        port dependent.  This argument is valid only for ``Pin.ALT`` and ``Pin.ALT_OPEN_DRAIN``
