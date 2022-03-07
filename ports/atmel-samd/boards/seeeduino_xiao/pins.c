@@ -44,7 +44,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PA09) },
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PA08) },
 
-    // LED pins
+    // LED pins  ... note XIAO is wired so high/1/True turns LED OFF
+    //                                     low/0/False turns LED ON
     //    duplicate names for test LED ... see D13
     { MP_ROM_QSTR(MP_QSTR_LED),   MP_ROM_PTR(&pin_PA17) }, // 
     { MP_ROM_QSTR(MP_QSTR_YELLOW_LED),   MP_ROM_PTR(&pin_PA17) }, 
