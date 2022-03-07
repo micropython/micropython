@@ -480,6 +480,11 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
 #endif
 
+// Display the Blinka logo in the REPL on displayio displays.
+#ifndef CIRCUITPY_REPL_LOGO
+#define CIRCUITPY_REPL_LOGO (1)
+#endif
+
 // USB settings
 
 // If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
