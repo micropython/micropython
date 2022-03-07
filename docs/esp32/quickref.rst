@@ -562,6 +562,23 @@ deep-sleep if pad hold is enabled with the ``hold=True`` argument to
 ``Pin.init()``.
 
 Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
+Configuration of non-RTC pins - including output level - can be retained by
+enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep::
+
+    from machine import Pin, deepsleep
+    import esp32
+
+    opin = Pin(19, Pin.OUT, value=1, hold=True) # hold output level
+    ipin = Pin(21, Pin.IN, Pin.PULL_UP, hold=True) # hold pull-up
+
+    # enable pad hold in deep-sleep for non-RTC GPIO
+    esp32.gpio_deep_sleep_hold(True)
+
+    # put the device to sleep for 10 seconds
+    deepsleep(10000)
+
+The pin configuration - including the pad hold - will be retained on wake from
+sleep. See :ref:`Pins_and_GPIO` above for a further discussion of pad holding.
 
 SD card
 -------
