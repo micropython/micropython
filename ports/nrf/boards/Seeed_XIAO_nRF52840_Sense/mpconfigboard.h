@@ -30,8 +30,6 @@
 #define MICROPY_HW_BOARD_NAME       "Seeed XIAO nRF52840 Sense"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define MICROPY_HW_LED_STATUS       (&pin_P0_26)
-
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 24)
