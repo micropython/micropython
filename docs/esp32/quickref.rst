@@ -186,8 +186,7 @@ Notes:
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
 
-* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
-  consumption during deepsleep.
+* See :ref:`Deep_sleep_Mode` for a discussion of pin behaviour during sleep
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
@@ -508,6 +507,8 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
+.. _Deep_sleep_mode:
+
 Deep-sleep mode
 ---------------
 
@@ -527,15 +528,28 @@ Notes:
 * Calling ``deepsleep()`` without an argument will put the device to sleep
   indefinitely
 * A software reset does not change the reset cause
-* There may be some leakage current flowing through enabled internal pullups.
-  To further reduce power consumption it is possible to disable the internal pullups::
 
-    p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
+Some ESP32 pins (0, 2, 4, 12-15, 25-27, 32-39) are connected to the RTC during
+deep-sleep and can be used to wake the device with the ``wake_on_`` functions in
+the :mod:`esp32` module. The output-capable RTC pins (all except 34-39) will
+also retain their pull-up or pull-down resistor configuration when entering
+deep-sleep.
 
-  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
-  it is an output pin) via::
+If the pull resistors are not actively required during deep-sleep and are likely
+to cause current leakage (for example a pull-up resistor is connected to ground
+through a switch), then they should be disabled to save power before entering
+deep-sleep mode::
 
-    p1 = Pin(4, Pin.OUT, None)
+    from machine import Pin, deepsleep
+
+    # configure input RTC pin with pull-up on boot
+    pin = Pin(2, Pin.IN, Pin.PULL_UP)
+
+    # disable pull-up and put the device to sleep for 10 seconds
+    pin.init(pull=None)
+    machine.deepsleep(10000)
+
+Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
 
 SD card
 -------
