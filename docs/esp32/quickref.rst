@@ -160,12 +160,22 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_3) # set maximum drive strength
 
 Available Pins are from the following ranges (inclusive): 0-19, 21-23, 25-27, 32-39.
 These correspond to the actual GPIO pin numbers of ESP32 chip.  Note that many
 end-user boards use their own adhoc pin numbering (marked e.g. D0, D1, ...).
 For mapping between board logical pins and physical chip pins consult your board
 documentation.
+
+Four drive strengths are supported, using the ``drive`` keyword argument to the
+``Pin()`` constructor or ``Pin.init()`` method, with different corresponding
+safe maximum source/sink currents and approximate internal driver resistances:
+
+ - ``Pin.DRIVE_0``: 5mA / 130 ohm
+ - ``Pin.DRIVE_1``: 10mA / 60 ohm
+ - ``Pin.DRIVE_2``: 20mA / 30 ohm (default strength if not configured)
+ - ``Pin.DRIVE_3``: 40mA / 15 ohm
 
 Notes:
 
