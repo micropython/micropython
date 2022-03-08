@@ -42,6 +42,10 @@
 
 #define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 
+// flags for readline_t.auto_indent_state
+#define AUTO_INDENT_ENABLED (0x01)
+#define AUTO_INDENT_JUST_ADDED (0x02)
+
 enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
 void readline_init0(void) {
@@ -94,6 +98,9 @@ typedef struct _readline_t {
     int hist_cur;
     size_t cursor_pos;
     char escape_seq_buf[1];
+    #if MICROPY_REPL_AUTO_INDENT
+    uint8_t auto_indent_state;
+    #endif
     const char *prompt;
 } readline_t;
 
@@ -218,6 +225,17 @@ int readline_process_char(int c) {
                 redraw_step_back = nspace;
                 redraw_from_cursor = true;
             }
+        #if MICROPY_REPL_AUTO_INDENT
+        } else if ((rl.auto_indent_state & AUTO_INDENT_JUST_ADDED) && (c == 9 || c == ' ')) {
+            // tab/space after auto-indent: disable auto-indent
+            //  - if it's a tab then leave existing indent
+            //  - if it's a space then remove 3 spaces from existing indent
+            rl.auto_indent_state = 0;
+            if (c == ' ') {
+                redraw_step_back = 3;
+                vstr_cut_tail_bytes(rl.line, 3);
+            }
+        #endif
         #if MICROPY_HELPER_REPL
         } else if (c == 9) {
             // tab magic
@@ -452,11 +470,18 @@ redraw:
         rl.cursor_pos += redraw_step_forward;
     }
 
+    #if MICROPY_REPL_AUTO_INDENT
+    rl.auto_indent_state &= ~AUTO_INDENT_JUST_ADDED;
+    #endif
+
     return -1;
 }
 
 #if MICROPY_REPL_AUTO_INDENT
 STATIC void readline_auto_indent(void) {
+    if (!(rl.auto_indent_state & AUTO_INDENT_ENABLED)) {
+        return;
+    }
     vstr_t *line = rl.line;
     if (line->len > 1 && line->buf[line->len - 1] == '\n') {
         int i;
@@ -492,6 +517,7 @@ STATIC void readline_auto_indent(void) {
             vstr_add_strn(line, "    ", 4);
             mp_hal_stdout_tx_strn("    ", 4);
             rl.cursor_pos += 4;
+            rl.auto_indent_state |= AUTO_INDENT_JUST_ADDED;
         }
     }
 }
@@ -517,6 +543,10 @@ void readline_init(vstr_t *line, const char *prompt) {
     rl.prompt = prompt;
     mp_hal_stdout_tx_str(prompt);
     #if MICROPY_REPL_AUTO_INDENT
+    if (vstr_len(line) == 0) {
+        // start with auto-indent enabled
+        rl.auto_indent_state = AUTO_INDENT_ENABLED;
+    }
     readline_auto_indent();
     #endif
 }
