@@ -50,6 +50,8 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     gpio_set_direction(sda->number, GPIO_MODE_DEF_INPUT);
     gpio_set_direction(scl->number, GPIO_MODE_DEF_INPUT);
 
+    gpio_pullup_dis(sda->number);
+    gpio_pullup_dis(scl->number);
     gpio_pulldown_en(sda->number);
     gpio_pulldown_en(scl->number);
 
