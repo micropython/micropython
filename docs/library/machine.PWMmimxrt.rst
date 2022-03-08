@@ -145,11 +145,13 @@ according to the formula
 
     f = pwm_clk / (2**n * m)
 
-with n being in the range of 0..7 and m in the range of 3..65536. pmw_clk is 125Mhz
+with n being in the range of 0..7 and m in the range of 2..65536. pmw_clk is 125Mhz
 for MIMXRT1010/1015/1020, 150 MHz for MIMXRT1050/1060/1064 and 160MHz for MIMXRT1170.
 The lowest frequency is pwm_clk/2**23 (15, 18, 20Hz). The highest frequency with
 U16 resolution is pwm_clk/2**16 (1907, 2288, 2441 Hz), the highest frequency
-with 1 percent resolution is pwm_clk/100 (1.25, 1.5, 1.6 MHz).
+with 1 percent resolution is pwm_clk/100 (1.25, 1.5, 1.6 MHz). The highest achievable
+frequency is pwm_clk/3 for the A/B channels, and pwm_clk/2 for the X channels and QTMR
+signal.
 
 
 Pin Assignment
@@ -318,15 +320,14 @@ SCK        F1/0/X
 Legend:
 
 * Qm/n:    QTMR module m, channel n
-* Fm/n/l:  FLEXPWM module m, submodule n, channel l. The X-Channels duty cycle is not
-  independent from the A and B channels of the same submodule. The pulse at an X channel
+* Fm/n/l:  FLEXPWM module m, submodule n, channel l. The pulse at a X channel
   is always aligned to the period start.
 
 Pins without a PWM signal are not listed. A signal may be available at more than one Pin.
 FlexPWM pins may also be pure CPU pin, not assigned to a board signal. In that case, the PWM
 output is disabled. The PWM channel of a submodule 0 may still be used as
 synchronization source for other channels of the same module,
-unless used for other peripheral.
+unless used by another peripheral.
 
 Submodule 0 pins for i.MX RT1011:
 
@@ -396,4 +397,4 @@ Pin.cpu.GPIO_AD_24      FLEXPWM2 Channel A
 Pin.cpu.GPIO_AD_25      FLEXPWM2 Channel B
 ======================  ======================
 
-(*) Pin used primarily for the SDRAM
+(*) Pin used for SDRAM
