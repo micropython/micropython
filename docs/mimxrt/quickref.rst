@@ -280,7 +280,7 @@ The signal order in the table is CS0, CS1, MOSI, MISO and CLK.
 Board / Pin        SPI0                       SPI1                     SPI2
 =================  =========================  =======================  ===============
 Teensy 4.0         10/-/11/12/13              0/-/26/1/27                    -
-Teensy 4.1         10/37/11/12/13             38/-/26/39/27            -/29/50/54/49
+Teensy 4.1         10/37/11/12/13             0/-/26/1/27              -/29/50/54/49
 MIXMXRT1010-EVK    D10/D7/D11/D12/D13                -                       -
 MIXMXRT1015-EVK    D10/-/D11/D12/D13                 -                       -
 MIXMXRT1020-EVK    D10/-/D11/D12/D13          A3/D0/A5/A4/A0                 -
