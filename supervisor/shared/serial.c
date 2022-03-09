@@ -105,7 +105,7 @@ void serial_early_init(void) {
     common_hal_busio_uart_never_reset(&debug_uart);
 
     // Do an initial print so that we can confirm the serial output is working.
-    debug_uart_printf("Serial debug setup\n");
+    debug_uart_printf("Serial debug setup\r\n");
     #endif
 }
 
