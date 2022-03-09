@@ -197,7 +197,11 @@ CFLAGS += \
 	-DSAM_D5X_E5X -DSAME51
 endif
 
-
+# GCC 11 adds stringop bounds checks that trigger when writing a memory region
+# we know is ok. It's not clear how to give the compiler the info it needs so
+# disable the checks for now.
+# See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
+CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 LDFLAGS += -flto=$(shell $(NPROC))
