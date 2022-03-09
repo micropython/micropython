@@ -73,6 +73,11 @@ const mp_print_t debug_uart_print = {NULL, debug_uart_print_strn};
 
 int debug_uart_printf(const char *fmt, ...) {
     #if defined(CIRCUITPY_DEBUG_UART_TX)
+    // Skip prints that occur before debug serial is started. It's better than
+    // crashing.
+    if (common_hal_busio_uart_deinited(&debug_uart)) {
+        return 0;
+    }
     va_list ap;
     va_start(ap, fmt);
     int ret = mp_vprintf(&debug_uart_print, fmt, ap);
