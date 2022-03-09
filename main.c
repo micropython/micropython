@@ -124,7 +124,7 @@ static void reset_devices(void) {
 }
 
 STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
-    autoreload_stop();
+    autoreload_reset();
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -329,7 +329,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     result.exception = MP_OBJ_NULL;
     result.exception_line = 0;
 
-    bool skip_repl;
+    bool skip_repl = false;
     bool skip_wait = false;
     bool found_main = false;
     uint8_t next_code_options = 0;
@@ -389,13 +389,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
-        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
+        if (result.return_code == PYEXEC_RELOAD) {
             serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
         }
 
-        // Finished executing python code. Cleanup includes a board reset.
+        // Finished executing python code. Cleanup includes filesystem flush and a board reset.
         cleanup_after_vm(heap, result.exception);
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
@@ -407,8 +407,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
-        if (reload_requested) {
+        if (result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+            skip_repl = true;
+            skip_wait = true;
         } else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
@@ -426,7 +428,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             }
         }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
-            skip_repl = reload_requested;
+            skip_repl = false;
             skip_wait = true;
         }
     }
@@ -473,7 +475,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         RUN_BACKGROUND_TASKS;
 
         // If a reload was requested by the supervisor or autoreload, return
-        if (reload_requested) {
+        if (result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
@@ -627,13 +629,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         }
     }
 
+    // Done waiting, start the board back up.
+
     // free code allocation if unused
     if ((next_code_options & next_code_stickiness_situation) == 0) {
         free_memory(next_code_allocation);
         next_code_allocation = NULL;
     }
 
-    // Done waiting, start the board back up.
     #if CIRCUITPY_STATUS_LED
     if (led_active) {
         new_status_color(BLACK);
@@ -757,7 +760,7 @@ STATIC int run_repl(bool first_run) {
     usb_setup_with_vm();
     #endif
 
-    autoreload_suspend(AUTORELOAD_LOCK_REPL);
+    autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -787,7 +790,7 @@ STATIC int run_repl(bool first_run) {
     status_led_deinit();
     #endif
 
-    autoreload_resume(AUTORELOAD_LOCK_REPL);
+    autoreload_resume(AUTORELOAD_SUSPEND_REPL);
     return exit_code;
 }
 

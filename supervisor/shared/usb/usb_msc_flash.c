@@ -170,7 +170,6 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buffer, uint32_t bufsize) {
-    (void)lun;
     (void)offset;
 
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
@@ -216,7 +215,7 @@ void tud_msc_write10_complete_cb(uint8_t lun) {
     (void)lun;
 
     // This write is complete, start the autoreload clock.
-    autoreload_start();
+    autoreload_start_countdown();
 }
 
 // Invoked when received SCSI_CMD_INQUIRY
