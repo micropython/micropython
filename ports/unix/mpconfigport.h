@@ -64,6 +64,7 @@
 // check stdout a chance to pass, etc.
 #define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_READER_POSIX        (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
@@ -88,7 +89,8 @@
 #define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
-#define MICROPY_VFS_POSIX_FILE      (1)
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_POSIX           (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_DELATTR_SETATTR  (1)
@@ -146,7 +148,13 @@
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
-#define MICROPY_PY_OS_STATVFS       (1)
+#define MICROPY_PY_UOS              (1)
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/unix/moduos.c"
+#define MICROPY_PY_UOS_ERRNO        (1)
+#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV (1)
+#define MICROPY_PY_UOS_SEP          (1)
+#define MICROPY_PY_UOS_SYSTEM       (1)
+#define MICROPY_PY_UOS_URANDOM      (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
 #define MICROPY_PY_UERRNO           (1)
@@ -201,11 +209,11 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
+#define mp_import_stat mp_vfs_import_stat
+#define mp_builtin_open_obj mp_vfs_open_obj
 #define mp_type_fileio mp_type_vfs_posix_fileio
 #define mp_type_textio mp_type_vfs_posix_textio
 
-extern const struct _mp_obj_module_t mp_module_os;
-extern const struct _mp_obj_module_t mp_module_uos_vfs;
 extern const struct _mp_obj_module_t mp_module_uselect;
 extern const struct _mp_obj_module_t mp_module_time;
 extern const struct _mp_obj_module_t mp_module_termios;
@@ -213,11 +221,6 @@ extern const struct _mp_obj_module_t mp_module_socket;
 extern const struct _mp_obj_module_t mp_module_ffi;
 extern const struct _mp_obj_module_t mp_module_jni;
 
-#if MICROPY_PY_UOS_VFS
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
-#else
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) },
-#endif
 #if MICROPY_PY_FFI
 #define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
 #else
@@ -254,7 +257,6 @@ extern const struct _mp_obj_module_t mp_module_jni;
     MICROPY_PY_JNI_DEF \
     MICROPY_PY_UTIME_DEF \
     MICROPY_PY_SOCKET_DEF \
-    MICROPY_PY_UOS_DEF \
     MICROPY_PY_USELECT_DEF \
     MICROPY_PY_TERMIOS_DEF \
 

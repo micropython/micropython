@@ -27,14 +27,10 @@
 // This config enables almost all possible features such that it can be used
 // for coverage testing.
 
-#define MICROPY_VFS                    (1)
-#define MICROPY_PY_UOS_VFS             (1)
-
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
 #define MICROPY_OPT_MATH_FACTORIAL     (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ENABLE_SCHEDULER       (1)
-#define MICROPY_READER_VFS             (1)
 #define MICROPY_REPL_EMACS_WORDS_MOVE  (1)
 #define MICROPY_REPL_EMACS_EXTRA_WORDS_MOVE (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
@@ -57,14 +53,8 @@
 #define MICROPY_PY_URE_MATCH_GROUPS    (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
 #define MICROPY_PY_URE_SUB             (1)
-#define MICROPY_VFS_POSIX              (1)
 #define MICROPY_PY_FRAMEBUF            (1)
 #define MICROPY_PY_COLLECTIONS_NAMEDTUPLE__ASDICT (1)
 #define MICROPY_PY_UCRYPTOLIB          (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
-
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj

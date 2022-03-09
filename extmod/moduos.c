@@ -40,6 +40,10 @@
 #include "extmod/vfs_lfs.h"
 #endif
 
+#if MICROPY_VFS_POSIX
+#include "extmod/vfs_posix.h"
+#endif
+
 #if MICROPY_PY_UOS_UNAME
 #include "genhdr/mpversion.h"
 #endif
@@ -101,11 +105,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_uname_obj, mp_uos_uname);
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
 
+    #if MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV
+    { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mp_uos_getenv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_uos_putenv_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_uos_unsetenv_obj) },
+    #endif
     #if MICROPY_PY_UOS_SEP
     { MP_ROM_QSTR(MP_QSTR_sep), MP_ROM_QSTR(MP_QSTR__slash_) },
     #endif
     #if MICROPY_PY_UOS_SYNC
     { MP_ROM_QSTR(MP_QSTR_sync), MP_ROM_PTR(&mp_uos_sync_obj) },
+    #endif
+    #if MICROPY_PY_UOS_SYSTEM
+    { MP_ROM_QSTR(MP_QSTR_system), MP_ROM_PTR(&mp_uos_system_obj) },
     #endif
     #if MICROPY_PY_UOS_UNAME
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&mp_uos_uname_obj) },
@@ -135,6 +147,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_PY_UOS_DUPTERM_NOTIFY
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&mp_uos_dupterm_notify_obj) },
     #endif
+    #if MICROPY_PY_UOS_ERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_uos_errno_obj) },
+    #endif
 
     #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
@@ -148,6 +163,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #endif
     #if MICROPY_VFS_LFS2
     { MP_ROM_QSTR(MP_QSTR_VfsLfs2), MP_ROM_PTR(&mp_type_vfs_lfs2) },
+    #endif
+    #if MICROPY_VFS_POSIX
+    { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
     #endif
 };
