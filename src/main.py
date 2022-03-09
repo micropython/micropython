@@ -10,6 +10,12 @@ import SDL
 
 import uasyncio
 
+from decotengu.engine import Engine
+from decotengu.model import ZH_L16B_GF
+
+model = ZH_L16B_GF(gf_low=0.30, gf_high=0.80)
+engine = Engine(model=model)
+engine.add_gas(depth=0, o2=21)
 
 lv.init()
 '''
@@ -159,6 +165,12 @@ class lv_obj_extended(lv.obj):
     def toggle_scrollability(self):
         self.scrollable = not self.scrollable
 
+    def set_style_pad(self, top=0, bottom=0, right=0, left=0):
+        self.set_style_pad_top(top, lv.PART.MAIN)
+        self.set_style_pad_bottom(bottom, lv.PART.MAIN)
+        self.set_style_pad_right(right, lv.PART.MAIN)
+        self.set_style_pad_left(left, lv.PART.MAIN)
+
 
 class labled_btn(lv.btn):
     def __init__(self, parent, name, id=0):
@@ -172,8 +184,18 @@ class labled_btn(lv.btn):
 
     def set_size(self, width, height):
         super(labled_btn, self).set_size(width, height)
-        self.label.set_size(width, height)
+        # self.label.set_size(width, height)
         self.label.align_to(self, lv.ALIGN.CENTER, 0, 0)
+
+    def highlight(self, val):
+        if val: self.set_style_bg_color(lv.palette_main(lv.PALETTE.RED), lv.PART.MAIN)
+        else: self.set_style_bg_color(lv.palette_main(lv.PALETTE.BLUE), lv.PART.MAIN)
+
+    def set_style_pad(self, top=0, bottom=0, right=0, left=0):
+        self.set_style_pad_top(top, lv.PART.MAIN)
+        self.set_style_pad_bottom(bottom, lv.PART.MAIN)
+        self.set_style_pad_right(right, lv.PART.MAIN)
+        self.set_style_pad_left(left, lv.PART.MAIN)
 
 
 class Screen(lv_obj_extended):
@@ -267,13 +289,13 @@ class GasScreen(Screen):
         self.edit_btns.append(btn)
 
         self.focus_index = 0
-        self.edit_btns[self.focus_index].add_state(lv.STATE.CHECKED)
+        self.edit_btns[self.focus_index].highlight(True)
 
     def _cb_next(self, inc):
         def cb(event):
-            self.edit_btns[self.focus_index % (self.num_gasses+1)].clear_state(lv.STATE.CHECKED)
+            self.edit_btns[self.focus_index % (self.num_gasses+1)].highlight(False)
             self.focus_index += inc
-            self.edit_btns[self.focus_index % (self.num_gasses+1)].add_state(lv.STATE.CHECKED)
+            self.edit_btns[self.focus_index % (self.num_gasses+1)].highlight(True)
         return cb
 
     def _cb_select(self, event):
@@ -345,7 +367,7 @@ class GasScreen(Screen):
     def show(self, focus=0):
         super(GasScreen, self).show()
         self.focus_index = focus
-        self.edit_btns[self.focus_index].add_state(lv.STATE.CHECKED)
+        self.edit_btns[self.focus_index].highlight(True)
         self._draw_gas_table_row(self.gas_table, self.focus_index)
         self.parent.btn_top_left.remove_event_dsc(self.parent.cb_tl)
         self.parent.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
@@ -356,7 +378,7 @@ class GasScreen(Screen):
         self.cb_br = self.parent.btn_bottom_right.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
 
     def _cb_menu_btn(self, event):
-        self.edit_btns[-1].clear_state(lv.STATE.CHECKED)
+        self.edit_btns[-1].highlight(False)
         self.parent.menu_bar.toggle_visibility()
         self.parent.btn_top_left.remove_event_dsc(self.cb_tl)
         self.parent.btn_bottom_left.remove_event_dsc(self.cb_bl)
@@ -414,9 +436,9 @@ class GasEdit(lv_obj_extended):
 
     def _cb_next(self, inc):
         def cb(event):
-            self.edit_btns[self.focus_index % (5)].clear_state(lv.STATE.CHECKED)
+            self.edit_btns[self.focus_index % (5)].highlight(False)
             self.focus_index = (inc + self.focus_index) % 5
-            self.edit_btns[self.focus_index % (5)].add_state(lv.STATE.CHECKED)
+            self.edit_btns[self.focus_index % (5)].highlight(True)
         return cb
 
     def _cb_edit(self, event):
@@ -451,7 +473,7 @@ class GasEdit(lv_obj_extended):
 
     def show(self, focus=0):
         self.focus_index = focus
-        self.edit_btns[self.focus_index].add_state(lv.STATE.CHECKED)
+        self.edit_btns[self.focus_index].highlight(True)
         self.controller.btn_top_left.remove_event_dsc(self.parent.cb_tl)
         self.controller.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
         self.controller.btn_bottom_right.remove_event_dsc(self.parent.cb_br)
@@ -459,6 +481,191 @@ class GasEdit(lv_obj_extended):
         self.cb_tl = self.controller.btn_top_left.add_event_cb(self._cb_edit, lv.EVENT.CLICKED, None)
         self.cb_bl = self.controller.btn_bottom_left.add_event_cb(self._cb_next(-1), lv.EVENT.CLICKED, None)
         self.cb_br = self.controller.btn_bottom_right.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
+
+
+class PlanningScreen(Screen):
+    def __init__(self, parent, type_, gas_list, *args, **kwargs):
+        super(PlanningScreen, self).__init__(parent, type_, *args, **kwargs)
+        col_dsc = [58, 58, 58, 58, 88, lv.GRID_TEMPLATE.LAST]
+        row_dsc = [30, 35, 35, 35, 35, 35, 35, lv.GRID_TEMPLATE.LAST]
+        self.set_style_grid_column_dsc_array(col_dsc, 0)
+        self.set_style_grid_row_dsc_array(row_dsc, 0)
+        self.set_style_pad_column(0, lv.PART.MAIN)
+        self.set_style_pad_row(0, lv.PART.MAIN)
+        self.center()
+        self.set_layout(lv.LAYOUT_GRID.value)
+        self.update_layout()
+        self.x_size = 320//5
+        self.y_size = 240//6
+
+        self.letter_colour = ['#ffffff ', '#00ffff ']
+        self.letter_index = [8, 18, 28]
+        
+        self.depth_val = [0,3,0]
+        self.time_val = [0,2,5]
+        self.plan_setting = [self.depth_val, self.time_val]
+
+        self.btn_plan = labled_btn(self, 'Plan')
+        self.btn_plan.set_grid_cell(lv.GRID_ALIGN.CENTER, 4, 1, lv.GRID_ALIGN.CENTER, 1, 1)
+        self.btn_plan.set_size(70, 29)
+
+        self.c_bottom = lv_obj_extended(self)
+        self.c_bottom.set_grid_cell(lv.GRID_ALIGN.CENTER, 0, 5, lv.GRID_ALIGN.CENTER, 6, 1)
+        self.c_bottom.set_width(lv.pct(100))
+        self.c_bottom.set_height(40)
+        self.c_bottom.set_style_pad(2,2,2,2)
+
+        btn_right = labled_btn(self.c_bottom, lv.SYMBOL.RIGHT)
+        btn_right.set_size(50, 29)
+        btn_right.align_to(btn_right.get_parent(), lv.ALIGN.TOP_RIGHT, 0, 0)
+
+        btn_left = labled_btn(self.c_bottom, lv.SYMBOL.LEFT)
+        btn_left.align(lv.ALIGN.TOP_LEFT, 0, 0)
+        btn_left.set_size(50, 29)
+
+        self.btn_menu = labled_btn(self.c_bottom, 'Menu')
+        self.btn_menu.align(lv.ALIGN.TOP_MID, 0, 0)
+        self.btn_menu.set_size(100, 29)
+
+        self.chart = lv.chart(self)
+        self.chart.set_grid_cell(lv.GRID_ALIGN.CENTER, 0, 5, lv.GRID_ALIGN.CENTER, 2, 4)
+        self.chart.set_size(300, 120)
+
+        self.setting_grid()
+
+
+    def setting_grid(self):
+        self.l_settings = []
+        self.focus_index = 0
+
+        l_depth = lv.label(self)
+        l_depth.set_text('Depth: ')
+        l_depth.set_style_text_font(lv.font_montserrat_14, lv.PART.MAIN)
+        l_depth.set_style_text_color(lv.color_make(255, 0, 0), lv.PART.MAIN)
+        l_depth.set_grid_cell(lv.GRID_ALIGN.END, 0, 1, lv.GRID_ALIGN.CENTER, 1, 1)
+
+        self.l_depth_set = lv.label(self)
+        self.l_depth_set.set_style_text_font(lv.font_montserrat_14, lv.PART.MAIN)
+        self.l_depth_set.set_recolor(True)
+        self.l_depth_set.set_grid_cell(lv.GRID_ALIGN.START, 1, 1, lv.GRID_ALIGN.CENTER, 1, 1)
+        self.l_settings.append(self.l_depth_set)
+
+        l_time = lv.label(self)
+        l_time.set_text('Time: ')
+        l_time.set_style_text_font(lv.font_montserrat_14, lv.PART.MAIN)
+        l_time.set_style_text_color(lv.color_make(255, 0, 0), lv.PART.MAIN)
+        l_time.set_grid_cell(lv.GRID_ALIGN.END, 2, 1, lv.GRID_ALIGN.CENTER, 1, 1)
+
+        self.l_time_set = lv.label(self)
+        self.l_time_set.set_style_text_font(lv.font_montserrat_14, lv.PART.MAIN)
+        self.l_time_set.set_recolor(True)
+        self.l_time_set.set_grid_cell(lv.GRID_ALIGN.START, 3, 1, lv.GRID_ALIGN.CENTER, 1, 1)
+        self.l_settings.append(self.l_time_set)
+
+        self.setting_text()
+
+    def inc_val(self):
+        reduced_focus = self.focus_index % 8
+        if reduced_focus < 6:
+            setting_index = reduced_focus // 3
+            val_index = reduced_focus % 3
+
+            current = self.plan_setting[setting_index][val_index]
+
+            new_val = current + 1 if current < 9 else 0
+            self.plan_setting[setting_index][val_index] = new_val
+
+        self.setting_text()
+
+    def setting_text(self):
+        reduced_focus = self.focus_index % 8
+
+        if reduced_focus == 6:
+            self.btn_plan.highlight(True)
+        else:
+            self.btn_plan.highlight(False)
+
+        if reduced_focus == 7:
+            self.btn_menu.highlight(True)
+        else:
+            self.btn_menu.highlight(False)
+
+        self.l_depth_set.set_text(f'{self.letter_colour[reduced_focus==0]}{self.plan_setting[0][0]}#' +
+                                  f'{self.letter_colour[reduced_focus==1]}{self.plan_setting[0][1]}#' +
+                                  f'{self.letter_colour[reduced_focus==2]}{self.plan_setting[0][2]}#')
+
+        self.l_time_set.set_text(f'{self.letter_colour[reduced_focus==3]}{self.plan_setting[1][0]}#' +
+                                 f'{self.letter_colour[reduced_focus==4]}{self.plan_setting[1][1]}#' +
+                                 f'{self.letter_colour[reduced_focus==5]}{self.plan_setting[1][2]}#')
+
+    def limits(self, points):
+        x = 0
+        y = 0
+        for p in points:
+            x = p[0] if p[0] > x else x
+            y = p[1] if p[1] > y else y
+        return (x, y)
+
+    def draw_chart(self, chart, points):
+        limit = self.limits(points)
+        chart_points = []
+        for p in points:
+            x = round(p[0] * 260/limit[0])
+            y = round(p[1] * 85/limit[1])
+            chart_points.append({'x': x, 'y': y})
+
+
+        chart_line = lv.line(chart)
+        chart_line.set_points(chart_points, len(chart_points))
+        chart_line.set_style_line_width(2, lv.PART.MAIN)
+        chart_line.set_style_line_color(lv.color_hex(0xff0000), lv.PART.MAIN)
+        chart_line.align(lv.ALIGN.TOP_LEFT, 5, 5)
+        return chart_line
+
+    def plan(self):
+        depth = self.plan_setting[0][0] * 100 + self.plan_setting[0][1] * 10 + self.plan_setting[0][2]
+        time = self.plan_setting[1][0] * 100 + self.plan_setting[1][1] * 10 + self.plan_setting[1][2]
+        profile = [step for step in engine.calculate(depth, time)]
+        points = [[item.time, round((item.abs_p-1)*10)] for item in profile]
+        line = self.draw_chart(self.chart, points)
+
+    def _cb_next(self, event):
+        self.focus_index += 1
+        self.setting_text()
+
+    def _cb_prev(self, event):
+        self.focus_index -= 1
+        self.setting_text()
+
+    def _cb_inc(self, event):
+        reduced_focus = self.focus_index % 8
+
+        if reduced_focus == 7:
+            self._cb_menu_btn(event)
+        elif reduced_focus == 6:
+            self.plan()
+        else:
+            self.inc_val()
+
+    def show(self, focus=0):
+        super(PlanningScreen, self).show()
+        self.focus_index = focus
+        self.parent.btn_top_left.remove_event_dsc(self.parent.cb_tl)
+        self.parent.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
+        self.parent.btn_bottom_right.remove_event_dsc(self.parent.cb_br)
+
+        self.cb_tl = self.parent.btn_top_left.add_event_cb(self._cb_inc, lv.EVENT.CLICKED, None)
+        self.cb_bl = self.parent.btn_bottom_left.add_event_cb(self._cb_prev, lv.EVENT.CLICKED, None)
+        self.cb_br = self.parent.btn_bottom_right.add_event_cb(self._cb_next, lv.EVENT.CLICKED, None)
+
+    def _cb_menu_btn(self, event):
+        self.c_bottom.toggle_visibility()
+        self.parent.menu_bar.toggle_visibility()
+        self.parent.btn_top_left.remove_event_dsc(self.cb_tl)
+        self.parent.btn_bottom_left.remove_event_dsc(self.cb_bl)
+        self.parent.btn_bottom_right.remove_event_dsc(self.cb_br)
+        self.parent.cb_tl = self.parent.btn_top_left.add_event_cb(self.parent._cb_centre_btn, lv.EVENT.CLICKED, None)
+        self.parent.define_nav_cb()
 
 
 class Controller(lv.obj):
@@ -520,7 +727,6 @@ class Controller(lv.obj):
 
         self.menu_bar.set_parent(self._active_screen)
         self.menu_bar.set_alignment()
-        
 
 
 class MenuBar(lv_obj_extended):
@@ -598,13 +804,10 @@ class MenuBar(lv_obj_extended):
         return _cb_btn
 
     def _create_btn(self, button):
-        new_button = lv.btn(self)
+        new_button = labled_btn(self, button)
         new_button.set_size(80, 20)
         new_button.add_flag(lv.obj.FLAG.HIDDEN)
         new_button.add_event_cb(self._cb_btn_name(button), lv.EVENT.CLICKED, None)
-        label = lv.label(new_button)
-        label.set_text(button)
-        label.align(lv.ALIGN.CENTER,0,0)
         return [new_button, button]
 
     def _del(self):
@@ -620,9 +823,9 @@ class MenuBar(lv_obj_extended):
             btn.clear_flag(lv.obj.FLAG.HIDDEN)
             btn.align(lv.ALIGN.TOP_MID, i*85, -13)
             if i == 0: 
-                btn.add_state(lv.STATE.CHECKED)
+                btn.highlight(True)
                 self.centre_name = self.buttons[(i+index)%num_buttons][1]
-            else: btn.clear_state(lv.STATE.CHECKED)
+            else: btn.highlight(False)
 
         for i in range(2, num_buttons-1):
             btn = self.buttons[(i+index)%num_buttons][0]
@@ -814,7 +1017,7 @@ ean80 = Gas(0.80, 0, enabled=False)
 gas_list = [air, ean32, ean36, ean50, ean80]
 
 scr_home = HomeScreen(base, Screen.INFO, gas_list)
-scr_plan = Screen(base, Screen.SETTING)
+scr_plan = PlanningScreen(base, Screen.SETTING, gas_list)
 scr_set_time = Screen(base, Screen.SETTING)
 scr_set_gas = GasScreen(base, Screen.SETTING, gas_list)
 scr_set_model = Screen(base, Screen.SETTING)
@@ -832,8 +1035,6 @@ screens = {
 }
 
 base.set_screens(screens)
-
-scr_plan.set_style_bg_color(lv.color_make(100,100,100), lv.PART.MAIN)
 
 lv.scr_load(base)
 
