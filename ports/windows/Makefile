@@ -49,7 +49,6 @@ SRC_C = \
 	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
-	ports/unix/modos.c \
 	ports/unix/modmachine.c \
 	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
