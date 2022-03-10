@@ -1,0 +1,26 @@
+name: Package mpremote
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Version is determined from git,
+        # should be deep enough to get to latest tag
+        fetch-depth: '500'
+    - run: |
+        git fetch --prune --unshallow --tags
+    - uses: actions/setup-python@v1
+    - name: Install build tool
+      run: pip install build
+    - name: Build mpremote wheel
+      run: cd tools/mpremote && python -m build --wheel
+    - name: Archive mpremote wheel
+      uses: actions/upload-artifact@v2
+      with:
+        name: mpremote
+        path: |
+          tools/mpremote/mpremote*.whl

@@ -1,0 +1,5 @@
+/mpremote/makemanifest.py
+/mpremote/pyboard.py
+/mpremote.egg-info
+/dist
+*.whl
