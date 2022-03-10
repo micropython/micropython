@@ -34,6 +34,74 @@
 // If we're building the minimal variant, ignore the rest of this file.
 #ifndef MICROPY_UNIX_MINIMAL
 
+// If the variant did not set a feature level then configure a set of features.
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_COMP_MODULE_CONST               (1)
+#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN        (1)
+#define MICROPY_COMP_RETURN_IF_EXPR             (1)
+#ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH         (1)
+#endif
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE            (1)
+#endif
+#define MICROPY_ENABLE_FINALISER                (1)
+#define MICROPY_STACK_CHECK                     (1)
+#define MICROPY_KBD_EXCEPTION                   (1)
+#define MICROPY_HELPER_REPL                     (1)
+#define MICROPY_REPL_EMACS_KEYS                 (1)
+#define MICROPY_REPL_AUTO_INDENT                (1)
+#define MICROPY_ENABLE_SOURCE_LINE              (1)
+#ifndef MICROPY_STREAMS_NON_BLOCK
+#define MICROPY_STREAMS_NON_BLOCK               (1)
+#endif
+#define MICROPY_MODULE_WEAK_LINKS               (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS           (1)
+#define MICROPY_PY_FUNCTION_ATTRS               (1)
+#define MICROPY_PY_DESCRIPTORS                  (1)
+#define MICROPY_PY_DELATTR_SETATTR              (1)
+#define MICROPY_PY_FSTRINGS                     (1)
+#define MICROPY_PY_BUILTINS_STR_UNICODE         (1)
+#define MICROPY_PY_BUILTINS_STR_CENTER          (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION       (1)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES      (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW          (1)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS         (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES       (1)
+#define MICROPY_PY_BUILTINS_FROZENSET           (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT           (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS          (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS      (1)
+#define MICROPY_PY_BUILTINS_COMPILE             (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (1)
+#define MICROPY_PY_BUILTINS_INPUT               (1)
+#define MICROPY_PY_BUILTINS_POW3                (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO         (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN           (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE            (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT      (1)
+#ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (1)
+#endif
+#define MICROPY_PY_MATH_ISCLOSE                 (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
+#define MICROPY_PY_CMATH                        (1)
+#define MICROPY_PY_IO_IOBASE                    (1)
+#define MICROPY_PY_IO_FILEIO                    (1)
+#define MICROPY_PY_SYS_MAXSIZE                  (1)
+#define MICROPY_PY_SYS_STDFILES                 (1)
+#define MICROPY_PY_UERRNO                       (1)
+#define MICROPY_PY_UCTYPES                      (1)
+#define MICROPY_PY_UZLIB                        (1)
+#define MICROPY_PY_UJSON                        (1)
+#define MICROPY_PY_UOS                          (1)
+#define MICROPY_PY_URE                          (1)
+#define MICROPY_PY_UHEAPQ                       (1)
+#define MICROPY_PY_UHASHLIB                     (1)
+#define MICROPY_PY_UBINASCII                    (1)
+#define MICROPY_PY_UBINASCII_CRC32              (1)
+#define MICROPY_PY_URANDOM                      (1)
+#endif
+
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
@@ -51,12 +119,7 @@
 #if !defined(MICROPY_EMIT_ARM) && defined(__arm__) && !defined(__thumb2__)
     #define MICROPY_EMIT_ARM        (1)
 #endif
-#define MICROPY_COMP_MODULE_CONST   (1)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-#define MICROPY_COMP_RETURN_IF_EXPR (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_STACK_CHECK         (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
@@ -66,52 +129,16 @@
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
-#define MICROPY_HELPER_REPL         (1)
-#define MICROPY_REPL_EMACS_KEYS     (1)
-#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
 #ifndef MICROPY_FLOAT_IMPL
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #endif
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#ifndef MICROPY_STREAMS_NON_BLOCK
-#define MICROPY_STREAMS_NON_BLOCK   (1)
-#endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
-#ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (1)
-#endif
-#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
-#define MICROPY_OPT_MAP_LOOKUP_CACHE (1)
-#endif
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
 #define MICROPY_VFS                 (1)
 #define MICROPY_VFS_POSIX           (1)
-#define MICROPY_PY_FUNCTION_ATTRS   (1)
-#define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_DELATTR_SETATTR  (1)
-#define MICROPY_PY_FSTRINGS         (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
-#define MICROPY_PY_BUILTINS_STR_CENTER (1)
-#define MICROPY_PY_BUILTINS_STR_PARTITION (1)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
-#define MICROPY_PY_BUILTINS_FROZENSET (1)
-#define MICROPY_PY_BUILTINS_COMPILE (1)
-#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
-#define MICROPY_PY_BUILTINS_INPUT   (1)
-#define MICROPY_PY_BUILTINS_POW3    (1)
-#define MICROPY_PY_BUILTINS_ROUND_INT    (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
-#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
@@ -129,18 +156,7 @@
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
 #define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
 #endif
-#define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
-#define MICROPY_PY_COLLECTIONS_DEQUE (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
-#ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
-#endif
-#define MICROPY_PY_MATH_ISCLOSE     (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
-#define MICROPY_PY_CMATH            (1)
-#define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 
 #ifndef MICROPY_STACKLESS
@@ -148,7 +164,6 @@
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
-#define MICROPY_PY_UOS              (1)
 #define MICROPY_PY_UOS_INCLUDEFILE  "ports/unix/moduos.c"
 #define MICROPY_PY_UOS_ERRNO        (1)
 #define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV (1)
@@ -157,22 +172,12 @@
 #define MICROPY_PY_UOS_URANDOM      (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_UZLIB            (1)
-#define MICROPY_PY_UJSON            (1)
-#define MICROPY_PY_URE              (1)
-#define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
-#define MICROPY_PY_UHASHLIB         (1)
 #if MICROPY_PY_USSL
 #define MICROPY_PY_UHASHLIB_MD5     (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_UBINASCII_CRC32  (1)
-#define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_POSIX    (1)
 #endif
@@ -206,7 +211,6 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
-#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
 #define mp_import_stat mp_vfs_import_stat
