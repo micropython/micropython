@@ -52,8 +52,8 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
     const countio_edge_t edge = validate_edge(args[ARG_edge].u_obj, MP_QSTR_edge);
     const digitalio_pull_t pull = validate_pull(args[ARG_pull].u_obj, MP_QSTR_pull);
-
-    countio_counter_obj_t *self = m_new_obj(countio_counter_obj_t);
+    // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
+    countio_counter_obj_t *self = m_new_ll_obj(countio_counter_obj_t);
     self->base.type = &countio_counter_type;
 
     common_hal_countio_counter_construct(self, pin, edge, pull);
