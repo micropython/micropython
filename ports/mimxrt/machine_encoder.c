@@ -94,6 +94,8 @@ static encoder_xbar_signal_t xbar_signal_table[FSL_FEATURE_SOC_ENC_COUNT] = {
       kXBARA1_OutputEnc1Trigger,
       kXBARA1_InputEnc1PosMatch },
 
+    #if FSL_FEATURE_SOC_ENC_COUNT > 1
+
     { kXBARA1_OutputEnc2PhaseAInput,
       kXBARA1_OutputEnc2PhaseBInput,
       kXBARA1_OutputEnc2Index,
@@ -117,6 +119,7 @@ static encoder_xbar_signal_t xbar_signal_table[FSL_FEATURE_SOC_ENC_COUNT] = {
       kXBARA1_OutputEnc4Trigger,
       kXBARA1_InputEnc4PosMatch },
 
+    #endif
     #endif
 };
 
@@ -144,6 +147,8 @@ __attribute__((section(".ram_functions"))) void ENC1_IRQHandler(void) {
     irq_callback(0);
 }
 
+#if FSL_FEATURE_SOC_ENC_COUNT > 1
+
 __attribute__((section(".ram_functions"))) void ENC2_IRQHandler(void) {
     irq_callback(1);
 }
@@ -156,6 +161,7 @@ __attribute__((section(".ram_functions"))) void ENC3_IRQHandler(void) {
 __attribute__((section(".ram_functions"))) void ENC4_IRQHandler(void) {
     irq_callback(3);
 }
+#endif
 #endif
 
 STATIC void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
