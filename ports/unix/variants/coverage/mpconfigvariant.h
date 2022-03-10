@@ -31,7 +31,6 @@
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
 // Disable some features that come enabled by default with the feature level.
-#define MICROPY_OPT_MPZ_BITWISE                 (0)
 #define MICROPY_MODULE_BUILTIN_INIT             (0)
 #define MICROPY_PY_BUILTINS_EXECFILE            (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER             (0)
