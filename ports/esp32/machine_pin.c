@@ -93,7 +93,7 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     #endif
     {{&machine_pin_type}, GPIO_NUM_18},
     {{&machine_pin_type}, GPIO_NUM_19},
-    {{NULL}, -1},
+    {{&machine_pin_type}, GPIO_NUM_20},
     {{&machine_pin_type}, GPIO_NUM_21},
     {{&machine_pin_type}, GPIO_NUM_22},
     {{&machine_pin_type}, GPIO_NUM_23},
