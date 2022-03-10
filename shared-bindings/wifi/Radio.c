@@ -76,7 +76,7 @@ const mp_obj_property_t wifi_radio_enabled_obj = {
                MP_ROM_NONE },
 };
 
-//|     hostname: ReadableBuffer
+//|     hostname: Union[str | ReadableBuffer]
 //|     """Hostname for wifi interface. When the hostname is altered after interface started/connected
 //|        the changes would only be reflected once the interface restarts/reconnects."""
 //|
@@ -226,8 +226,8 @@ STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 
 //|     def start_ap(self,
-//|                  ssid: ReadableBuffer,
-//|                  password: ReadableBuffer = b"",
+//|                  ssid: Union[str | ReadableBuffer],
+//|                  password: Union[str | ReadableBuffer] = "",
 //|                  *,
 //|                  channel: Optional[int] = 1,
 //|                  authmode: Optional[AuthMode],
@@ -304,11 +304,11 @@ STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 
 //|     def connect(self,
-//|                 ssid: ReadableBuffer,
-//|                 password: ReadableBuffer = b"",
+//|                 ssid: Union[str | ReadableBuffer],
+//|                 password: Union[str | ReadableBuffer] = "",
 //|                 *,
 //|                 channel: Optional[int] = 0,
-//|                 bssid: Optional[ReadableBuffer] = b"",
+//|                 bssid: Optional[Union[str | ReadableBuffer]] = "",
 //|                 timeout: Optional[float] = None) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|            automatically once one connection succeeds.
