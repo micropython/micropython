@@ -16,7 +16,9 @@ import isort
 import black
 
 
-IMPORTS_IGNORE = frozenset(
+PATHS_IGNORE = frozenset({"shared-bindings/__future__"})
+
+TYPE_MODULE_IMPORTS_IGNORE = frozenset(
     {
         "int",
         "float",
@@ -125,7 +127,7 @@ def extract_imports(tree):
             return
         for node in ast.walk(anno_tree):
             if isinstance(node, ast.Name):
-                if node.id in IMPORTS_IGNORE:
+                if node.id in TYPE_MODULE_IMPORTS_IGNORE:
                     continue
                 elif node.id in IMPORTS_TYPING:
                     typing.add(node.id)
@@ -174,6 +176,9 @@ def convert_folder(top_level, stub_directory):
 
     for filename in filenames:
         full_path = os.path.join(top_level, filename)
+        if full_path in PATHS_IGNORE:
+            continue
+
         file_lines = []
         if os.path.isdir(full_path):
             (mok, mtotal) = convert_folder(full_path, os.path.join(stub_directory, filename))
