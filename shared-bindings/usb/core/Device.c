@@ -163,7 +163,7 @@ const mp_obj_property_t usb_core_device_manufacturer_obj = {
 STATIC mp_obj_t usb_core_device_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_endpoint, ARG_data, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 0} },
     };
@@ -191,7 +191,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_device_write_obj, 2, usb_core_device_write);
 STATIC mp_obj_t usb_core_device_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_endpoint, ARG_size_or_buffer, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_endpoint, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_size_or_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 0} },
     };

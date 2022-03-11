@@ -646,6 +646,7 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+	usb/utf16le.c \
 )
 
 SRC_COMMON_HAL_INTERNAL = \

@@ -13,7 +13,7 @@ h = usb_host.Port(board.USB_HOST_DP, board.USB_HOST_DM)
 
 while True:
     for device in usb.core.find(find_all=True):
-        print(device.idVendor, device.idProduct)
+        print(f"{device.idVendor:04x}:{device.idProduct:04x}")
         print(device.manufacturer, device.product)
         print(device.serial_number)
     print()

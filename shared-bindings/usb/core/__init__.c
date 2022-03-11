@@ -25,6 +25,7 @@
  */
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "py/obj.h"
 #include "py/objexcept.h"
@@ -97,8 +98,6 @@ STATIC mp_obj_t _next_device(usb_core_devices_obj_t *iter) {
         usb_core_device_obj_t *self = m_new_obj(usb_core_device_obj_t);
         self->base.type = &usb_core_device_type;
 
-        mp_printf(&mp_plat_print, "USB device %d matches\n", i);
-
         common_hal_usb_core_device_construct(self, i);
         iter->next_index = i + 1;
         return MP_OBJ_FROM_PTR(self);
@@ -132,29 +131,31 @@ STATIC mp_obj_t usb_core_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     enum { ARG_find_all, ARG_idVendor, ARG_idProduct };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_find_all, MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_idVendor, MP_ARG_INT, {.u_int = 0x10000} },
-        { MP_QSTR_idProduct, MP_ARG_INT, {.u_int = 0x10000} },
+        { MP_QSTR_idVendor, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_idProduct, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    bool find_all = args[ARG_find_all].u_bool;
+    const bool find_all = args[ARG_find_all].u_bool;
     usb_core_devices_obj_t temp_iter;
-    usb_core_devices_obj_t *iter;
+    temp_iter.base.type = &usb_core_devices_type;
+    temp_iter.next_index = 1;
+    if (!mp_obj_get_int_maybe(args[ARG_idVendor].u_obj, &temp_iter.vid)) {
+        temp_iter.vid = 0x10000;
+    }
+    if (!mp_obj_get_int_maybe(args[ARG_idProduct].u_obj, &temp_iter.pid)) {
+        temp_iter.pid = 0x10000;
+    }
     if (find_all) {
-        iter = m_new_obj(usb_core_devices_obj_t);
-        iter->base.type = &usb_core_devices_type;
-    } else {
-        iter = &temp_iter;
+        // Copy the temp iter contents to a heap object before we return it.
+        // We could do this up front but GCC falsely detects that we may return
+        // the stack copy.
+        usb_core_devices_obj_t *iter = m_new_obj(usb_core_devices_obj_t);
+        memcpy(iter, &temp_iter, sizeof(usb_core_devices_obj_t));
+        return MP_OBJ_FROM_PTR(iter);
     }
-    iter->next_index = 1;
-    iter->vid = args[ARG_idVendor].u_int;
-    iter->pid = args[ARG_idProduct].u_int;
-    if (!find_all) {
-        return _next_device(iter);
-    }
-
-    return MP_OBJ_FROM_PTR(iter);
+    return _next_device(&temp_iter);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(usb_core_find_obj, 0, usb_core_find);
 

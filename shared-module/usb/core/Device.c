@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/usb/core/__init__.h"
+#include "shared-module/usb/utf16le.h"
 #include "supervisor/shared/tick.h"
 
 bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t device_number) {
@@ -49,7 +50,6 @@ uint16_t common_hal_usb_core_device_get_idVendor(usb_core_device_obj_t *self) {
     uint16_t vid;
     uint16_t pid;
     tuh_vid_pid_get(self->device_number, &vid, &pid);
-    mp_printf(&mp_plat_print, "%d vid %04x pid %04x\n", self->device_number, vid, pid);
     return vid;
 }
 
@@ -62,58 +62,11 @@ uint16_t common_hal_usb_core_device_get_idProduct(usb_core_device_obj_t *self) {
 
 STATIC xfer_result_t _get_string_result;
 STATIC bool _transfer_done_cb(uint8_t daddr, tusb_control_request_t const *request, xfer_result_t result) {
+    // Store the result so we stop waiting for the transfer. We don't need the other data for now.
     (void)daddr;
     (void)request;
     _get_string_result = result;
     return true;
-}
-
-
-STATIC void _convert_utf16le_to_utf8(const uint16_t *utf16, size_t utf16_len, uint8_t *utf8, size_t utf8_len) {
-    // TODO: Check for runover.
-    (void)utf8_len;
-
-    for (size_t i = 0; i < utf16_len; i++) {
-        uint16_t chr = utf16[i];
-        if (chr < 0x80) {
-            *utf8++ = chr & 0xff;
-        } else if (chr < 0x800) {
-            *utf8++ = (uint8_t)(0xC0 | (chr >> 6 & 0x1F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        } else if (chr < 0x10000) {
-            // TODO: Verify surrogate.
-            *utf8++ = (uint8_t)(0xE0 | (chr >> 12 & 0x0F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        } else {
-            // TODO: Handle UTF-16 code points that take two entries.
-            uint32_t hc = ((chr & 0xFFFF0000) - 0xD8000000) >> 6;    /* Get high 10 bits */
-            chr = (chr & 0xFFFF) - 0xDC00;                  /* Get low 10 bits */
-            chr = (hc | chr) + 0x10000;
-            *utf8++ = (uint8_t)(0xF0 | (chr >> 18 & 0x07));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 12 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        }
-    }
-}
-
-// Count how many bytes a utf-16-le encoded string will take in utf-8.
-STATIC mp_int_t _count_utf8_bytes(const uint16_t *buf, size_t len) {
-    size_t total_bytes = 0;
-    for (size_t i = 0; i < len; i++) {
-        uint16_t chr = buf[i];
-        if (chr < 0x80) {
-            total_bytes += 1;
-        } else if (chr < 0x800) {
-            total_bytes += 2;
-        } else if (chr < 0x10000) {
-            total_bytes += 3;
-        } else {
-            total_bytes += 4;
-        }
-    }
-    return total_bytes;
 }
 
 STATIC void _wait_for_callback(void) {
@@ -130,14 +83,7 @@ STATIC mp_obj_t _get_string(const uint16_t *temp_buf) {
     if (utf16_len == 0) {
         return mp_const_none;
     }
-    size_t size = _count_utf8_bytes(temp_buf + 1, utf16_len);
-    vstr_t vstr;
-    vstr_init_len(&vstr, size + 1);
-    byte *p = (byte *)vstr.buf;
-    // Null terminate.
-    p[size] = '\0';
-    _convert_utf16le_to_utf8(temp_buf + 1, utf16_len, p, size);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return utf16le_to_string(temp_buf + 1, utf16_len);
 }
 
 mp_obj_t common_hal_usb_core_device_get_serial_number(usb_core_device_obj_t *self) {
