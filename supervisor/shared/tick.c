@@ -34,7 +34,6 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
 #if CIRCUITPY_BLEIO_HCI
@@ -101,10 +100,6 @@ bool supervisor_background_tasks_ok(void) {
 void supervisor_tick(void) {
     #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
-    #endif
-
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
-    autoreload_tick();
     #endif
 
     #ifdef CIRCUITPY_GAMEPAD_TICKS

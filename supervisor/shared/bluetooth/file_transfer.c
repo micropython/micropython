@@ -43,7 +43,7 @@
 #include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/fatfs_port.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/bluetooth/file_transfer.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
 #include "supervisor/shared/tick.h"
@@ -326,7 +326,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_start_countdown();
+        autoreload_start();
         return ANY_COMMAND;
     }
 
@@ -384,7 +384,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_start_countdown();
+        autoreload_start();
         return ANY_COMMAND;
     }
     return WRITE_DATA;
@@ -466,7 +466,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_start_countdown();
+        autoreload_start();
     }
     return ANY_COMMAND;
 }
@@ -521,7 +521,7 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_start_countdown();
+        autoreload_start();
     }
     return ANY_COMMAND;
 }
@@ -669,7 +669,7 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         // Trigger an autoreload
-        autoreload_start_countdown();
+        autoreload_start();
     }
     return ANY_COMMAND;
 }

@@ -29,7 +29,6 @@
 #include "shared-module/displayio/__init__.h"
 
 #include "shared/runtime/interrupt_char.h"
-#include "py/reload.h"
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
@@ -37,8 +36,8 @@
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-module/displayio/area.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/display.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/memory.h"
 
 #include "supervisor/spi_flash_api.h"

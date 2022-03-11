@@ -36,7 +36,7 @@
 
 #include "shared-module/storage/__init__.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
@@ -214,8 +214,8 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
 void tud_msc_write10_complete_cb(uint8_t lun) {
     (void)lun;
 
-    // This write is complete, start the autoreload clock.
-    autoreload_start_countdown();
+    // This write is complete; initiate an autoreload.
+    autoreload_start();
 }
 
 // Invoked when received SCSI_CMD_INQUIRY

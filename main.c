@@ -52,7 +52,7 @@
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
@@ -389,11 +389,27 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
-        if (result.return_code == PYEXEC_RELOAD) {
+        if ((result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
             serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+
+            // Wait for autoreload interval before reloading
+            uint64_t start_ticks = 0;
+            do {
+                // Start waiting, or restart interval if another reload request was initiated
+                // while we were waiting.
+                if (reload_requested) {
+                    reload_requested = false;
+                    start_ticks = supervisor_ticks_ms64();
+                }
+                RUN_BACKGROUND_TASKS;
+            } while (supervisor_ticks_ms64() - start_ticks < CIRCUITPY_AUTORELOAD_DELAY_MS);
+
+            // Restore request for use below.
+            reload_requested = true;
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
         }
+
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
         cleanup_after_vm(heap, result.exception);
@@ -474,8 +490,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
-        // If a reload was requested by the supervisor or autoreload, return
-        if (result.return_code & PYEXEC_RELOAD) {
+        // If a reload was requested by the supervisor or autoreload, return.
+        if (reload_requested) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding

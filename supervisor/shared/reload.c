@@ -24,16 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "autoreload.h"
+#include "reload.h"
 
 #include "py/mphal.h"
-#include "py/reload.h"
+#include "py/mpstate.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/tick.h"
 
 supervisor_allocation *next_code_allocation;
 #include "shared-bindings/supervisor/Runtime.h"
-
-static volatile uint32_t autoreload_countdown_ms = 0;
 
 // True if user has disabled autoreload.
 static bool autoreload_enabled = false;
@@ -41,48 +40,33 @@ static bool autoreload_enabled = false;
 // Non-zero if autoreload is temporarily off, due to an AUTORELOAD_SUSPEND_... reason.
 static uint32_t autoreload_suspended = 0;
 
-// True if autoreload has been triggered. Wait for CIRCUITPY_AUTORELOAD_DELAY_MS before doing the
-// autoreload, in case further writes arrive.
-static bool autoreload_countdown = false;
-
 // True if something has requested a reload/restart.
 volatile bool reload_requested = false;
 
-void autoreload_reset() {
-    if (autoreload_countdown) {
-        supervisor_disable_tick();
-        autoreload_countdown = false;
+void reload_initiate(supervisor_run_reason_t run_reason) {
+    reload_requested = true;
+    supervisor_set_run_reason(run_reason);
+
+    // Raise reload exception, in case code is running.
+    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception));
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
-    autoreload_countdown_ms = 0;
-    reload_requested = false;
+    #endif
 }
 
-inline void autoreload_tick() {
-    if (!autoreload_countdown) {
-        return;
-    }
-    if (autoreload_countdown_ms > 0) {
-        autoreload_countdown_ms--;
-    }
-    if (autoreload_countdown_ms == 0 && autoreload_enabled &&
-        autoreload_suspended == 0 && !reload_requested) {
-        reload_requested = true;
-        autoreload_countdown = false;
-        supervisor_disable_tick();
-        supervisor_set_run_reason(RUN_REASON_AUTO_RELOAD);
-        mp_raise_reload_exception();
-    }
+void autoreload_reset() {
+    reload_requested = false;
 }
 
 void autoreload_enable() {
     autoreload_enabled = true;
     reload_requested = false;
-    autoreload_countdown = false;
 }
 
 void autoreload_disable() {
     autoreload_enabled = false;
-    autoreload_countdown = false;
 }
 
 void autoreload_suspend(uint32_t suspend_reason_mask) {
@@ -97,12 +81,8 @@ inline bool autoreload_is_enabled() {
     return autoreload_enabled;
 }
 
-void autoreload_start_countdown() {
-    // Avoid multiple tick enables.
-    if (!autoreload_countdown) {
-        supervisor_enable_tick();
-        autoreload_countdown = true;
+void autoreload_start() {
+    if (autoreload_enabled && autoreload_suspended == 0) {
+        reload_initiate(RUN_REASON_AUTO_RELOAD);
     }
-    // Start or restart the countdown interval.
-    autoreload_countdown_ms = CIRCUITPY_AUTORELOAD_DELAY_MS;
 }
