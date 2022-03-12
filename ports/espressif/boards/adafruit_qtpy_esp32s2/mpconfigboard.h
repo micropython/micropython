@@ -49,8 +49,3 @@
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO5, .rx = &pin_GPIO16}}
 
 #define DOUBLE_TAP_PIN (&pin_GPIO10)
-
-#ifdef DEBUG
-#define DEBUG_UART_RX               (&pin_GPIO16)
-#define DEBUG_UART_TX               (&pin_GPIO5)
-#endif

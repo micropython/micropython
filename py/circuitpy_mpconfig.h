@@ -487,6 +487,20 @@ void supervisor_run_background_tasks_if_tick(void);
 
 // USB settings
 
+// Debug level for TinyUSB. Only outputs over debug UART so it doesn't cause
+// additional USB logging.
+#ifndef CIRCUITPY_DEBUG_TINYUSB
+#define CIRCUITPY_DEBUG_TINYUSB 0
+#endif
+
+#ifndef CIRCUITPY_USB_DEVICE_INSTANCE
+#define CIRCUITPY_USB_DEVICE_INSTANCE 0
+#endif
+
+#ifndef CIRCUITPY_USB_HOST_INSTANCE
+#define CIRCUITPY_USB_HOST_INSTANCE -1
+#endif
+
 // If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
 
 #ifndef USB_CDC_EP_NUM_NOTIFICATION
