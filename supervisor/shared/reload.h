@@ -27,9 +27,9 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
 #define MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
 
-#include <stdbool.h>
-
 #include "supervisor/memory.h"
+#include "py/obj.h"
+#include "shared-bindings/supervisor/RunReason.h"
 
 enum {
     SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS = 0x1,
@@ -54,18 +54,18 @@ extern supervisor_allocation *next_code_allocation;
 
 extern volatile bool reload_requested;
 
-void autoreload_tick(void);
+void reload_initiate(supervisor_run_reason_t run_reason);
 
-void autoreload_start_countdown(void);
+void autoreload_start(void);
 void autoreload_reset(void);
 void autoreload_enable(void);
 void autoreload_disable(void);
 bool autoreload_is_enabled(void);
 
-// Temporarily turn autoreload off, for the given reason(s). Used during the REPL or during parts of BLE workflow.
+// Temporarily turn autoreload off, for the given reason(s).
+// Used during the REPL or during parts of BLE workflow.
 void autoreload_suspend(uint32_t suspend_reason_mask);
 // Allow autoreloads again, for the given reason(s).
 void autoreload_resume(uint32_t suspend_reason_mask);
-
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H

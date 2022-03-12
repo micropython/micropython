@@ -436,7 +436,7 @@ void supervisor_run_background_tasks_if_tick(void);
 
 // CIRCUITPY_AUTORELOAD_DELAY_MS = 0 will completely disable autoreload.
 #ifndef CIRCUITPY_AUTORELOAD_DELAY_MS
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 750
 #endif
 
 #ifndef CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS
