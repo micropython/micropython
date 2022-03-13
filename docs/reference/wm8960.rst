@@ -68,98 +68,128 @@ Constructor
 Tables of parameter constants
 -----------------------------
 
-    **Swap Parameter**
+.. table:: **Swap Parameter**
+   :widths: auto
+   :align: left
 
-    ===== ====
-    Value Name
-    ===== ====
-    0     swap_none
-    1     swap_input
-    2     swap_output
-    ===== ====
+   ===== ====
+   Value Name
+   ===== ====
+   0     swap_none
+   1     swap_input
+   2     swap_output
+   ===== ====
 
-    **Protocol Parameter**
+|
 
-    ===== ====
-    Value Name
-    ===== ====
-    2     bus_I2S
-    1     bus_left_justified
-    0     bus_right_justified
-    3     bus_PCMA
-    19    bus_PCMB
-    ===== ====
+.. table:: **Protocol Parameter**
+   :widths: auto
+   :align: left
 
-    **Input Source Parameter**
+   ===== ====
+   Value Name
+   ===== ====
+   2     bus_I2S
+   1     bus_left_justified
+   0     bus_right_justified
+   3     bus_PCMA
+   19    bus_PCMB
+   ===== ====
 
-    ===== ============ ====
-    Value Name         Type
-    ===== ============ ====
-    0     input_closed
-    1     input_mic1   Single ended
-    2     input_mic2   Differential
-    3     input_mic3   Differential
-    4     input_line2
-    5     input_line3
-    ===== ============ ====
+|
 
-    **Route Parameter**
+.. table:: **Input Source Parameter**
+   :widths: auto
+   :align: left
 
-    ===== ====
-    Value Name
-    ===== ====
-    0     route_bypass
-    1     route_playback
-    2     route_playback_record
-    5     route_record
-    ===== ====
+   ===== ============ ====
+   Value Name         Type
+   ===== ============ ====
+   0     input_closed
+   1     input_mic1   Single ended
+   2     input_mic2   Differential
+   3     input_mic3   Differential
+   4     input_line2
+   5     input_line3
+   ===== ============ ====
 
-    **Master Clock Source Parameter**
+|
 
-    ===== ====
-    Value Name
-    ===== ====
-    0     sysclk_mclk
-    1     sysclk_PLL
-    ===== ====
+.. table:: **Route Parameter**
+   :widths: auto
+   :align: left
 
-    **Module Names**
+   ===== ====
+   Value Name
+   ===== ====
+   0     route_bypass
+   1     route_playback
+   2     route_playback_record
+   5     route_record
+   ===== ====
 
-    ===== ====
-    Value Name
-    ===== ====
-    0     module_ADC
-    1     module_DAC
-    2     module_VREF
-    3     module_headphone
-    4     module_mic_bias
-    5     module_mic
-    6     module_line_in
-    7     module_line_out
-    8     module_speaker
-    9     module_omix
-    10    module_mono_out
-    ===== ====
+|
 
-    **Play Channel Names**
+.. table:: **Master Clock Source Parameter**
+   :widths: auto
+   :align: left
 
-    ===== ====
-    Value Name
-    ===== ====
-    1     play_headphone_left
-    2     play_headphone_right
-    4     play_speaker_left
-    8     play_speaker_right
-    ===== ====
+   ===== ====
+   Value Name
+   ===== ====
+   0     sysclk_mclk
+   1     sysclk_PLL
+   ===== ====
 
-    **adc_sync Parameters**
+|
 
-    ===== ====
-    Value Name
-    ===== ====
-    0     sync_adc
-    1     sync_dac
-    ===== ====
+.. table:: **Module Names**
+   :widths: auto
+   :align: left
+
+   ===== ====
+   Value Name
+   ===== ====
+   0     module_ADC
+   1     module_DAC
+   2     module_VREF
+   3     module_headphone
+   4     module_mic_bias
+   5     module_mic
+   6     module_line_in
+   7     module_line_out
+   8     module_speaker
+   9     module_omix
+   10    module_mono_out
+   ===== ====
+
+|
+
+.. table:: **Play Channel Names**
+   :widths: auto
+   :align: left
+
+   ===== ====
+   Value Name
+   ===== ====
+   1     play_headphone_left
+   2     play_headphone_right
+   4     play_speaker_left
+   8     play_speaker_right
+   ===== ====
+
+|
+
+.. table::**adc_sync Parameters**
+   :widths: auto
+   :align: left
+
+   ===== ====
+   Value Name
+   ===== ====
+   0     sync_adc
+   1     sync_dac
+   ===== ====
 
 
 Methods
@@ -180,20 +210,23 @@ controlling the operation:
 .. method:: WM8960.set_volume(module, value [, value_r])
 
     Sets the volume of a certain module. If two values are given, the first one is used
-    for the left channel, the second for the right channel.
-    For a list of suitable modules and highest values, see the table below.
+    for the left channel, the second for the right channel. The value range is normalized
+    to 0.0-100.0 with a logarithmic scale.
+    For a list of suitable modules and db/step, see the table below.
 
-    **Module Names and value ranges**
+.. table:: **Module Names and dB steps**
+   :widths: auto
+   :align: center
 
-    ===== ====
-    Value Name
-    ===== ====
-    0-255 module_ADC
-    0-255 module_DAC
-    0-127 module_headphone
-    0-63  module_line_in
-    0-127 module_speaker
-    ===== ====
+   ======= ====
+   dB/Step Name
+   ======= ====
+   1.28    module_ADC
+   1.28    module_DAC
+   0.8     module_headphone
+   0.475   module_line_in
+   0.8     module_speaker
+   ======= ====
 
 
 .. method:: WM8960.get_volume(module)

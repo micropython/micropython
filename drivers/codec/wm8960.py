@@ -215,7 +215,7 @@ class Regs:
     ))
 # fmt: on
 
-    def __init__(self, i2c, i2c_address):
+    def __init__(self, i2c, i2c_address=_I2C_ADDR):
         self.value_buffer = bytearray(2)
         self.i2c = i2c
         self.i2c_address = i2c_address
@@ -287,6 +287,14 @@ class WM8960:
         12000: 4,
         11025: 4,
         8000: 5,
+    }
+
+    _volume_config_table = {
+        module_ADC: (_MAX_VOLUME_ADC, _LADC, 0x100),
+        module_DAC: (_MAX_VOLUME_DAC, _LDAC, 0x100),
+        module_headphone: (_MAX_VOLUME_HEADPHONE, _LOUT1, 0x180),
+        module_line_in: (_MAX_VOLUME_LINEIN, _LINVOL, 0x140),
+        module_speaker: (_MAX_VOLUME_SPEAKER, _LOUT2, 0x180),
     }
 
     def __init__(
@@ -580,26 +588,17 @@ class WM8960:
 
         elif input == input_mic1:
             # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x138
             regs[_LINVOL] = 0x117
 
         elif input == input_mic2:
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x178
             regs[_LINVOL] = 0x117
 
         elif input == input_mic3:
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x1B8
             regs[_LINVOL] = 0x117
 
@@ -623,26 +622,17 @@ class WM8960:
 
         elif input == input_mic1:
             # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x138
             regs[_RINVOL] = 0x117
 
         elif input == input_mic2:
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x178
             regs[_RINVOL] = 0x117
 
         elif input == input_mic3:
-            regs[_POWER1] = (
-                0,
-                _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK,
-            )
+            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x1B8
             regs[_RINVOL] = 0x117
 
@@ -676,54 +666,26 @@ class WM8960:
 
     def set_volume(self, module, volume, volume_r=None):
 
-        regs = self.regs
         if volume_r is None:
             volume_r = volume
 
-        if module == module_ADC:
-            if volume <= _MAX_VOLUME_ADC:
-                regs[_LADC, _RADC] = volume | 0x100, volume_r | 0x100
-
-        elif module == module_DAC:
-            if volume <= _MAX_VOLUME_DAC:
-                regs[_LDAC, _RDAC] = volume | 0x100, volume_r | 0x100
-
-        elif module == module_headphone:
-            if volume <= _MAX_VOLUME_HEADPHONE:
-                regs[_LOUT1, _ROUT1] = volume | 0x180, volume_r | 0x180
-
-        elif module == module_line_in:
-            if volume <= _MAX_VOLUME_LINEIN:
-                regs[_LINVOL, _LINVOL] = volume | 0x140, volume_r | 0x140
-
-        elif module == module_speaker:
-            if volume <= _MAX_VOLUME_SPEAKER:
-                regs[_LOUT2, _LOUT2] = volume | 0x180,  volume_r | 0x180
-        else:
+        if not ((0 <= volume <= 100) and (0 <= volume_r <= 100)):
+            raise ValueError("Invalid value for volume")
+        elif not module in self._volume_config_table.keys():
             raise ValueError("Invalid module")
+
+        vol_max, regnum, flags = self._volume_config_table[module]
+        self.regs[regnum] = int(volume * vol_max / 100 + 0.5) | flags
+        self.regs[regnum + 1] = int(volume_r * vol_max / 100 + 0.5) | flags
 
     def get_volume(self, module):
 
-        regs = self.regs
-        if module == module_ADC:
-            volume = (regs[_LADC] & _MAX_VOLUME_ADC, regs[_RADC] & _MAX_VOLUME_ADC)
+        if not module in self._volume_config_table.keys():
+            raise ValueError("Invalid module")
 
-        elif module == module_DAC:
-            volume = (regs[_LDAC] & _MAX_VOLUME_DAC, regs[_RDAC] & _MAX_VOLUME_DAC)
-
-        elif module == module_headphone:
-            volume = (regs[_LOUT1] & _MAX_VOLUME_HEADPHONE, regs[_ROUT1] & _MAX_VOLUME_HEADPHONE)
-
-        elif module == module_line_in:
-            volume = (regs[_LINVOL] & _MAX_VOLUME_LINEIN, regs[_RINVOL] & _MAX_VOLUME_LINEIN)
-
-        elif module == module_speaker:
-            volume = (regs[_LOUT2] & _MAX_VOLUME_SPEAKER, regs[_ROUT2] & _MAX_VOLUME_SPEAKER)
-
-        else:
-            volume = 0, 0
-
-        return volume
+        vol_max, regnum, _ = self._volume_config_table[module]
+        return (int((self.regs[regnum] & vol_max) * 100 / vol_max + 0.5),
+                int((self.regs[regnum + 1] & vol_max) * 100 / vol_max + 0.5))
 
     def volume(self, module, volume_l=None, volume_r=None):
         if volume_l is None:
@@ -742,8 +704,7 @@ class WM8960:
         )
 
     def expand_3d(self, depth=0):
-        if depth > 15:
-            depth = 15
+        depth &= 0x0f
         cutoff = 0 if self.sample_rate >= 32000 else 0b1100000
         self.regs[_3D] = cutoff | depth << 1 | (1 if depth > 0 else 0)
 
