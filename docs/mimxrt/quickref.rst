@@ -311,7 +311,7 @@ setting a baud rate will not always result in exactly that
 frequency, especially at high baud rates.
 
 2. Sending at 90 MHz is possible, but in the tests receiving
-only worked up to 45 MHz.
+only worked up to 60 MHz.
 
 
 Software I2C bus
@@ -424,8 +424,8 @@ Example using the Teensy audio shield::
 
     i2s.write(buf)             # write buffer of audio samples to I2S device
 
-The SGTL5000 codec used by the Teensy Audio shiel uses the RX signals for both RX and TX.
-Note that the codec is initialize after the I2S device. That is essential since MCK
+The SGTL5000 codec used by the Teensy Audio shield uses the RX signals for both RX and TX.
+Note that the codec is initialized after the I2S device. That is essential since MCK
 is needed for it's I2C operation and is provided by the I2S controller.
 
 MIMXRT boards may have 1 or 2 I2S buses available at the board connectors.
