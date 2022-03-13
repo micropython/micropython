@@ -35,59 +35,7 @@
 #include "storage.h"
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
-
-// Here we try to automatically configure the location and size of the flash
-// pages to use for the internal storage.  We also configure the location of the
-// cache used for writing.
-
-#if defined(STM32F405xx) || defined(STM32F415xx) || defined(STM32F407xx)
-
-#define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
-#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
-#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
-
-// enable this to get an extra 64k of storage (uses the last sector of the flash)
-#if 0
-#define FLASH_MEM_SEG2_START_ADDR (0x080e0000) // sector 11
-#define FLASH_MEM_SEG2_NUM_BLOCKS (128) // sector 11: 128k
-#endif
-
-#elif defined(STM32F401xE) || defined(STM32F411xE) || defined(STM32F412Zx) || defined(STM32F446xx)
-
-STATIC byte flash_cache_mem[0x4000] __attribute__((aligned(4))); // 16k
-#define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
-#define FLASH_SECTOR_SIZE_MAX (0x4000) // 16k max due to size of cache buffer
-#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (128) // sectors 1,2,3,4: 16k+16k+16k+16k(of 64k)=64k
-
-#elif defined(STM32F427xx) || defined(STM32F429xx)
-
-#define CACHE_MEM_START_ADDR (0x10000000) // CCM data RAM, 64k
-#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max, size of CCM
-#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
-
-#elif defined(STM32F722xx) || defined(STM32F723xx) || defined(STM32F732xx) || defined(STM32F733xx)
-
-#define CACHE_MEM_START_ADDR (0x20000000) // DTCM data RAM, 64k
-#define FLASH_SECTOR_SIZE_MAX (0x10000) // 64k max
-#define FLASH_MEM_SEG1_START_ADDR (0x08004000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (224) // sectors 1,2,3,4: 16k+16k+16k+64k=112k
-
-#elif defined(STM32F746xx) || defined(STM32F765xx) || defined(STM32F767xx) || defined(STM32F769xx)
-
-// The STM32F746 doesn't really have CCRAM, so we use the 64K DTCM for this.
-
-#define CACHE_MEM_START_ADDR (0x20000000) // DTCM data RAM, 64k
-#define FLASH_SECTOR_SIZE_MAX (0x08000) // 32k max
-#define FLASH_MEM_SEG1_START_ADDR (0x08008000) // sector 1
-#define FLASH_MEM_SEG1_NUM_BLOCKS (192) // sectors 1,2,3: 32k+32k+32=96k
-
-#else
-
-// Generic configuration where the linker script specifies flash storage and RAM cache locations.
-
+// The linker script specifies flash storage and RAM cache locations.
 extern uint8_t _micropy_hw_internal_flash_storage_start;
 extern uint8_t _micropy_hw_internal_flash_storage_end;
 extern uint8_t _micropy_hw_internal_flash_storage2_start;
@@ -109,8 +57,6 @@ extern uint8_t _micropy_hw_internal_flash_storage_ram_cache_end[];
     ((long)&_micropy_hw_internal_flash_storage2_start)
 #define FLASH_MEM_SEG2_NUM_BLOCKS \
     ((&_micropy_hw_internal_flash_storage2_end - &_micropy_hw_internal_flash_storage2_start) / 512)
-#endif
-
 #endif
 
 #if !defined(FLASH_MEM_SEG2_START_ADDR)
