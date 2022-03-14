@@ -292,7 +292,7 @@ void board_init(void) {
         NO_COMMAND,  // set_current_column_command
         NO_COMMAND,  // set_current_row_command
         DTM2,  // write_black_ram_command
-        false,  // black_bits_inverted
+        true,  // black_bits_inverted
         DTM1,  // write_color_ram_command
         false,  // color_bits_inverted
         0x000000,  // highlight_color
