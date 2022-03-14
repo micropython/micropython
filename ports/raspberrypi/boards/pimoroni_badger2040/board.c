@@ -77,7 +77,7 @@ enum reg {
     PWS      = 0xe3,
     TSSET    = 0xe5
 };
-  
+
 enum PSR_FLAGS {
     RES_96x230   = 0b00000000,
     RES_96x252   = 0b01000000,
