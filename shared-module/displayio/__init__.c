@@ -82,7 +82,7 @@ void displayio_background(void) {
     if (mp_hal_is_interrupted()) {
         return;
     }
-    if (reload_requested) {
+    if (autoreload_ready()) {
         // Reload is about to happen, so don't redisplay.
         return;
     }

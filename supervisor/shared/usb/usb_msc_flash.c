@@ -185,6 +185,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *buffer, uint32_t bufsize) {
     (void)lun;
     (void)offset;
+    autoreload_suspend(AUTORELOAD_SUSPEND_USB);
 
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
@@ -215,7 +216,8 @@ void tud_msc_write10_complete_cb(uint8_t lun) {
     (void)lun;
 
     // This write is complete; initiate an autoreload.
-    autoreload_start();
+    autoreload_trigger();
+    autoreload_resume(AUTORELOAD_SUSPEND_USB);
 }
 
 // Invoked when received SCSI_CMD_INQUIRY

@@ -25,7 +25,7 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code stopped by auto-reload.\n"
+"Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -584,10 +584,6 @@ msgstr ""
 msgid "Brightness must be 0-1.0"
 msgstr ""
 
-#: shared-bindings/supervisor/__init__.c
-msgid "Brightness must be between 0 and 255"
-msgstr ""
-
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
@@ -688,6 +684,7 @@ msgstr ""
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
@@ -1605,6 +1602,7 @@ msgstr ""
 msgid "Nimble out of memory"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -3642,7 +3640,7 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
-#: shared-bindings/wifi/Radio.c
+#: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
 msgstr ""
 
@@ -4061,6 +4059,7 @@ msgstr ""
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
@@ -4068,6 +4067,7 @@ msgstr ""
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
@@ -4083,6 +4083,7 @@ msgstr ""
 #: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
