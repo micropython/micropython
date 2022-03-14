@@ -133,14 +133,153 @@ methods to enable over-the-air (OTA) updates.
 
 .. classmethod:: Partition.mark_app_valid_cancel_rollback()
 
-    Signals that the current boot is considered successful.
-    Calling ``mark_app_valid_cancel_rollback`` is required on the first boot of a new
-    partition to avoid an automatic rollback at the next boot.
+    Signals that the current boot is considered successful by writing to the "otadata"
+    partition. Calling ``mark_app_valid_cancel_rollback`` is required on the first boot of a
+    new partition to avoid an automatic rollback at the next boot.
     This uses the ESP-IDF "app rollback" feature with "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
     and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
     feature enabled.
     It is OK to call ``mark_app_valid_cancel_rollback`` on every boot and it is not
     necessary when booting firmware that was loaded using esptool.
+
+.. classmethod:: Partition.mark_app_invalid_rollback_and_reboot()
+
+    Mark the current app partition invalid by writing to the "otadata"
+    partition, rollback to the previous workable app and then reboots.
+    If the rollback is sucessfull, the device will reset.  If the flash does not have 
+    at least one valid app (except the running app) then rollback is not possible.
+    If the "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE" option is set, and a reset occurs without
+    calling either 
+    ``mark_app_valid_cancel_rollback()`` or ``mark_app_invalid_rollback_and_reboot()``
+    function then the application is rolled back.
+    This uses the ESP-IDF "app rollback" feature with "CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE"
+    and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
+    feature enabled.
+
+.. classmethod:: Partition.check_rollback_is_possible()
+
+    Returns True if at least one valid app is found(except the running one)
+    Returns False otherwise.
+
+    Checks if there is a bootable application on the slots which can be booted in case of 
+    rollback. For an application to be considered bootable, the following conditions 
+    must be met: the app must be marked to be valid(marked in otadata as not UNDEFINED,
+    INVALID or ABORTED and crc is good); must be marked bootable; secure_version of 
+    app >= secure_version of efuse (if anti-rollback is enabled).
+
+.. method:: Partition.app_description()
+
+    Returns a 7-tuple ``(secure_version, version, project_name, compile_time, compile_date,
+    idf_version, elf_sha256)`` which is a description of the app partition pointed by the 
+    object. 
+   
+    If the object does not contain an app partition, OsError exception will be raised:
+    ``ESP_ERR_NOT_FOUND`` no app description structure is found. Magic word is incorrect.
+    ``ESP_ERR_NOT_SUPPORTED`` Partition is not application.
+    ``ESP_ERR_INVALID_ARG`` Partition’s offset exceeds partition size.
+    ``ESP_ERR_INVALID_SIZE`` Read would go out of bounds of the partition.
+
+.. method:: Partition.app_state()
+
+    Returns the app state of a valid ota partition. It can be one of the following strings:
+    ``new``: Monitor the first boot. In bootloader this state is changed to "pending verify"
+    ``verify``: First boot for this app. If this state persists during second boot, then it 
+    will be changed to ``aborted``
+    ``valid``: App was confirmed as workable. App can boot and work without limits
+    ``invalid``: App was confirmed as non-workable. This app will not be selected to 
+    boot at all
+    ``aborted``: App could not confirmed as workable or non-workable. In bootloader 
+    "pending verify" state will be changed to ``aborted``. This app will not be selected 
+    to boot at all
+    ``undefined``: App can boot and work without limits
+    
+    One of the following OsError can be raised:
+    ``ESP_ERR_NOT_SUPPORTED``: Partition is not ota.
+    ``ESP_ERR_NOT_FOUND``: Partition table does not have otadata or state was not found for
+    given partition. 
+
+.. method:: Partition.ota_begin(image_size)
+
+    Prepares the partition for an OTA update and start the process of updating. 
+    The target partition is erased to the specified image size. If the size of the 
+    artition is not known in advance, the entire partition is eraesd.
+
+    Note: This function is available since ESP-IDF version 4.3
+
+    Note: If the rollback option is enabled and the running application has the 
+    "pending verify" state then it will lead to the ESP_ERR_OTA_ROLLBACK_INVALID_STATE error.
+    Confirm the running app before to run download a new app, use 
+    mark_app_valid_cancel_rollback() function
+
+    ``image_size``: The size of the image to be written. 0 indicates a partition of unknown
+    size. If you know the size of the partition in advance, you can pass the size in bytes.
+    The default value is "0"
+
+    Returns an integer handle, associated with the ota update process. The update
+    process must be ended by calling ``ota_end()`. Since ESP-IDF version 4.3,
+    an update process can also be ended by ``ota_abort()``.
+
+    An OsError can be raised if there is an error with the update process:
+    ``ESP_ERR_INVALID_ARG``: Partition doesn’t point to an OTA app partition
+    ``ESP_ERR_NO_MEM``: Cannot allocate memory for OTA operation
+    ``ESP_ERR_OTA_PARTITION_CONFLICT``: Partition holds the currently running firmware, 
+    cannot update in place
+    ``ESP_ERR_NOT_FOUND``: Partition argument not found in partition table
+    ``ESP_ERR_OTA_SELECT_INFO_INVALID``: The OTA data partition contains invalid data
+    ``ESP_ERR_INVALID_SIZE``: Partition doesn’t fit in configured flash size
+    ``ESP_ERR_FLASH_OP_TIMEOUT`` or ``ESP_ERR_FLASH_OP_FAIL``: Flash write failed
+    ``ESP_ERR_OTA_ROLLBACK_INVALID_STATE``: If the running app has not confirmed state. Before
+    performing an update, the application must be valid
+
+.. method:: Partition.ota_write(handle, buf)
+
+    Write OTA update data to the target partition. This function can be called multiple times
+    as data is received during the OTA operation. Data is written sequentially to the partition.
+
+    ``handle``: The handle returned by ``ota_begin()``
+    ``buf``: Data buffer to write
+
+    An OsError can be raised if there is an error with the update process:
+    ``ESP_ERR_INVALID_ARG``: Handle is invalid
+    ``ESP_ERR_OTA_VALIDATE_FAILED``: First byte of image contains invalid app image magic byte
+    ``ESP_ERR_FLASH_OP_TIMEOUT`` or ``ESP_ERR_FLASH_OP_FAIL``: Flash write failed
+    ``ESP_ERR_OTA_SELECT_INFO_INVALID``: OTA data partition has invalid contents
+
+.. method:: Partition.ota_write_with_offset(handle, buffer, offset)
+
+    Write OTA update data to the target partition. This function writes data in non contiguous 
+    manner. If flash encryption is enabled, data should be 16 byte aligned.
+
+    Note: This function is available since ESP-IDF version 4.2
+
+    Note: While performing OTA, if the packets arrive out of order, esp_ota_write_with_offset()
+    can be used to write data in non contiguous manner. Use of esp_ota_write_with_offset() in
+    combination with esp_ota_write() is not recommended.
+
+    An OsError can be raised if there is an error with the update process:
+    ``ESP_ERR_INVALID_ARG``: handle is invalid
+    ``ESP_ERR_OTA_VALIDATE_FAILED``: First byte of image contains invalid app image magic byte
+    ``ESP_ERR_FLASH_OP_TIMEOUT`` or ``ESP_ERR_FLASH_OP_FAIL``: Flash write failed
+    ``ESP_ERR_OTA_SELECT_INFO_INVALID``: OTA data partition has invalid contents
+
+.. method:: Partition.ota_end(handle)
+    
+    Finish the OTA update process and validate newly written app image.
+
+    An OsError can be raised if there is an error with the update process:
+    ``ESP_ERR_NOT_FOUND``: OTA handle was not found
+    ``ESP_ERR_INVALID_ARG``: Handle was never written to
+    ``ESP_ERR_OTA_VALIDATE_FAILED``: OTA image is invalid (either not a valid app image, or
+    if secure boot is enabled - signature failed to verify)
+    ``ESP_ERR_INVALID_STATE``: If flash encryption is enabled, this result indicates an internal 
+    error writing the final encrypted bytes to flash
+
+.. method:: Partition.ota_abort(handle)
+    
+    Aborts the OTA process and frees resources
+
+    An OsError can be raised if there is an error:
+    ``ESP_ERR_NOT_FOUND``: OTA handle was not found
 
 Constants
 ~~~~~~~~~
