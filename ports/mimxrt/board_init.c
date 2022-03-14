@@ -100,6 +100,8 @@ void board_init(void) {
     #if MICROPY_PY_MACHINE_I2S
     machine_i2s_init0();
     #endif
+    // RTC
+    machine_rtc_start();
 }
 
 void USB_OTG1_IRQHandler(void) {
