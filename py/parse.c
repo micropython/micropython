@@ -463,16 +463,21 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-STATIC mp_parse_node_t mp_parse_node_new_small_int_checked(parser_t *parser, mp_obj_t o_val) {
-    (void)parser;
-    mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_val);
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-    // A parse node is only 32-bits and the small-int value must fit in 31-bits
-    if (((val ^ (val << 1)) & 0xffffffff80000000) != 0) {
-        return make_node_const_object(parser, 0, o_val);
+// Create a parse node represeting a constant integer value, possibly optimising
+// it by putting the (small) integer value directly in the parse node itself.
+STATIC mp_parse_node_t make_node_const_int(parser_t *parser, size_t src_line, mp_obj_t obj) {
+    if (mp_obj_is_small_int(obj)) {
+        mp_int_t val = MP_OBJ_SMALL_INT_VALUE(obj);
+        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+        // A parse node is only 32-bits and the small-int value must fit in 31-bits
+        if (((val ^ (val << 1)) & 0xffffffff80000000) != 0) {
+            return make_node_const_object(parser, src_line, obj);
+        }
+        #endif
+        return mp_parse_node_new_small_int(val);
+    } else {
+        return make_node_const_object(parser, src_line, obj);
     }
-    #endif
-    return mp_parse_node_new_small_int(val);
 }
 
 STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
@@ -485,11 +490,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_map_elem_t *elem;
         if (rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            if (mp_obj_is_small_int(elem->value)) {
-                pn = mp_parse_node_new_small_int_checked(parser, elem->value);
-            } else {
-                pn = make_node_const_object(parser, lex->tok_line, elem->value);
-            }
+            pn = make_node_const_int(parser, lex->tok_line, elem->value);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
@@ -499,11 +500,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
-        if (mp_obj_is_small_int(o)) {
-            pn = mp_parse_node_new_small_int_checked(parser, o);
-        } else {
-            pn = make_node_const_object(parser, lex->tok_line, o);
-        }
+        pn = make_node_const_int(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
         mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
@@ -784,12 +781,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     for (size_t i = num_args; i > 0; i--) {
         pop_result(parser);
     }
-    if (mp_obj_is_small_int(arg0)) {
-        push_result_node(parser, mp_parse_node_new_small_int_checked(parser, arg0));
-    } else {
-        // TODO reuse memory for parse node struct?
-        push_result_node(parser, make_node_const_object(parser, 0, arg0));
-    }
+    push_result_node(parser, make_node_const_int(parser, 0, arg0));
 
     return true;
 }
