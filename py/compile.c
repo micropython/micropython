@@ -219,7 +219,7 @@ STATIC void mp_emit_common_start_pass(mp_emit_common_t *emit, pass_kind_t pass) 
     } else if (pass > MP_PASS_STACK_SIZE) {
         emit->ct_cur_obj = emit->ct_cur_obj_base;
     }
-    if (pass == MP_PASS_EMIT) {
+    if (pass == MP_PASS_CODE_SIZE) {
         if (emit->ct_cur_child == 0) {
             emit->children = NULL;
         } else {
@@ -3020,7 +3020,7 @@ STATIC void check_for_doc_string(compiler_t *comp, mp_parse_node_t pn) {
     #endif
 }
 
-STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
+STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
     comp->pass = pass;
     comp->scope_cur = scope;
     comp->next_label = 0;
@@ -3187,10 +3187,12 @@ STATIC void compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         EMIT(return_value);
     }
 
-    EMIT(end_pass);
+    bool pass_complete = EMIT(end_pass);
 
     // make sure we match all the exception levels
     assert(comp->cur_except_level == 0);
+
+    return pass_complete;
 }
 
 #if MICROPY_EMIT_INLINE_ASM
@@ -3600,8 +3602,10 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
             }
 
             // final pass: emit code
+            // the emitter can request multiple of these passes
             if (comp->compile_error == MP_OBJ_NULL) {
-                compile_scope(comp, s, MP_PASS_EMIT);
+                while (!compile_scope(comp, s, MP_PASS_EMIT)) {
+                }
             }
         }
     }

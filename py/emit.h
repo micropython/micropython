@@ -43,7 +43,7 @@ typedef enum {
     MP_PASS_SCOPE = 1,      // work out id's and their kind, and number of labels
     MP_PASS_STACK_SIZE = 2, // work out maximum stack size
     MP_PASS_CODE_SIZE = 3,  // work out code size and label offsets
-    MP_PASS_EMIT = 4,       // emit code
+    MP_PASS_EMIT = 4,       // emit code (may be run multiple times if the emitter requests it)
 } pass_kind_t;
 
 #define MP_EMIT_STAR_FLAG_SINGLE (0x01)
@@ -116,7 +116,7 @@ typedef struct _emit_method_table_t {
     #endif
 
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
-    void (*end_pass)(emit_t *emit);
+    bool (*end_pass)(emit_t *emit);
     bool (*last_emit_was_return_value)(emit_t *emit);
     void (*adjust_stack_size)(emit_t *emit, mp_int_t delta);
     void (*set_source_line)(emit_t *emit, mp_uint_t line);
@@ -233,7 +233,7 @@ void emit_native_xtensa_free(emit_t *emit);
 void emit_native_xtensawin_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
-void mp_emit_bc_end_pass(emit_t *emit);
+bool mp_emit_bc_end_pass(emit_t *emit);
 bool mp_emit_bc_last_emit_was_return_value(emit_t *emit);
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta);
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t line);

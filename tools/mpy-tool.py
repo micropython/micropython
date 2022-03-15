@@ -242,17 +242,17 @@ class Opcodes:
     MP_BC_ROT_TWO                     = (MP_BC_BASE_BYTE_O + 0x0a)
     MP_BC_ROT_THREE                   = (MP_BC_BASE_BYTE_O + 0x0b)
 
-    MP_BC_JUMP                        = (MP_BC_BASE_JUMP_E + 0x02) # rel byte code offset, 16-bit signed, in excess
-    MP_BC_POP_JUMP_IF_TRUE            = (MP_BC_BASE_JUMP_E + 0x03) # rel byte code offset, 16-bit signed, in excess
-    MP_BC_POP_JUMP_IF_FALSE           = (MP_BC_BASE_JUMP_E + 0x04) # rel byte code offset, 16-bit signed, in excess
-    MP_BC_JUMP_IF_TRUE_OR_POP         = (MP_BC_BASE_JUMP_E + 0x05) # rel byte code offset, 16-bit signed, in excess
-    MP_BC_JUMP_IF_FALSE_OR_POP        = (MP_BC_BASE_JUMP_E + 0x06) # rel byte code offset, 16-bit signed, in excess
-    MP_BC_UNWIND_JUMP                 = (MP_BC_BASE_JUMP_E + 0x00) # rel byte code offset, 16-bit signed, in excess; then a byte
-    MP_BC_SETUP_WITH                  = (MP_BC_BASE_JUMP_E + 0x07) # rel byte code offset, 16-bit unsigned
-    MP_BC_SETUP_EXCEPT                = (MP_BC_BASE_JUMP_E + 0x08) # rel byte code offset, 16-bit unsigned
-    MP_BC_SETUP_FINALLY               = (MP_BC_BASE_JUMP_E + 0x09) # rel byte code offset, 16-bit unsigned
-    MP_BC_POP_EXCEPT_JUMP             = (MP_BC_BASE_JUMP_E + 0x0a) # rel byte code offset, 16-bit unsigned
-    MP_BC_FOR_ITER                    = (MP_BC_BASE_JUMP_E + 0x0b) # rel byte code offset, 16-bit unsigned
+    MP_BC_UNWIND_JUMP                 = (MP_BC_BASE_JUMP_E + 0x00) # signed relative bytecode offset; then a byte
+    MP_BC_JUMP                        = (MP_BC_BASE_JUMP_E + 0x02) # signed relative bytecode offset
+    MP_BC_POP_JUMP_IF_TRUE            = (MP_BC_BASE_JUMP_E + 0x03) # signed relative bytecode offset
+    MP_BC_POP_JUMP_IF_FALSE           = (MP_BC_BASE_JUMP_E + 0x04) # signed relative bytecode offset
+    MP_BC_JUMP_IF_TRUE_OR_POP         = (MP_BC_BASE_JUMP_E + 0x05) # signed relative bytecode offset
+    MP_BC_JUMP_IF_FALSE_OR_POP        = (MP_BC_BASE_JUMP_E + 0x06) # signed relative bytecode offset
+    MP_BC_SETUP_WITH                  = (MP_BC_BASE_JUMP_E + 0x07) # unsigned relative bytecode offset
+    MP_BC_SETUP_EXCEPT                = (MP_BC_BASE_JUMP_E + 0x08) # unsigned relative bytecode offset
+    MP_BC_SETUP_FINALLY               = (MP_BC_BASE_JUMP_E + 0x09) # unsigned relative bytecode offset
+    MP_BC_POP_EXCEPT_JUMP             = (MP_BC_BASE_JUMP_E + 0x0a) # unsigned relative bytecode offset
+    MP_BC_FOR_ITER                    = (MP_BC_BASE_JUMP_E + 0x0b) # unsigned relative bytecode offset
     MP_BC_WITH_CLEANUP                = (MP_BC_BASE_BYTE_O + 0x0c)
     MP_BC_END_FINALLY                 = (MP_BC_BASE_BYTE_O + 0x0d)
     MP_BC_GET_ITER                    = (MP_BC_BASE_BYTE_O + 0x0e)
@@ -289,6 +289,16 @@ class Opcodes:
     MP_BC_IMPORT_STAR                 = (MP_BC_BASE_BYTE_E + 0x09)
     # fmt: on
 
+    # Create sets of related opcodes.
+    ALL_OFFSET_SIGNED = (
+        MP_BC_UNWIND_JUMP,
+        MP_BC_JUMP,
+        MP_BC_POP_JUMP_IF_TRUE,
+        MP_BC_POP_JUMP_IF_FALSE,
+        MP_BC_JUMP_IF_TRUE_OR_POP,
+        MP_BC_JUMP_IF_FALSE_OR_POP,
+    )
+
     # Create a dict mapping opcode value to opcode name.
     mapping = ["unknown" for _ in range(256)]
     for op_name in list(locals()):
@@ -323,7 +333,10 @@ def mp_opcode_format(bytecode, ip, count_var_uint):
                     ip += 1
                 ip += 1
         elif f == MP_BC_FORMAT_OFFSET:
-            ip += 2
+            if bytecode[ip] & 0x80 == 0:
+                ip += 1
+            else:
+                ip += 2
         ip += extra_byte
     return f, ip - ip_start
 
@@ -342,8 +355,16 @@ def mp_opcode_decode(bytecode, ip):
             arg = arg << 7 | bytecode[ip] & 0x7F
         ip += 1
     elif f == MP_BC_FORMAT_OFFSET:
-        arg = bytecode[ip] | bytecode[ip + 1] << 8
-        ip += 2
+        if bytecode[ip] & 0x80 == 0:
+            arg = bytecode[ip]
+            ip += 1
+            if opcode in Opcodes.ALL_OFFSET_SIGNED:
+                arg -= 0x40
+        else:
+            arg = bytecode[ip] & 0x7F | bytecode[ip + 1] << 7
+            ip += 2
+            if opcode in Opcodes.ALL_OFFSET_SIGNED:
+                arg -= 0x4000
     ip += extra_byte
     return f, ip - ip_start, arg
 

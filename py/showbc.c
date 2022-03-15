@@ -38,8 +38,28 @@
             unum = (unum << 7) + (*ip & 0x7f); \
         } while ((*ip++ & 0x80) != 0); \
 }
-#define DECODE_ULABEL do { unum = (ip[0] | (ip[1] << 8)); ip += 2; } while (0)
-#define DECODE_SLABEL do { unum = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2; } while (0)
+
+#define DECODE_ULABEL \
+    do { \
+        if (ip[0] & 0x80) { \
+            unum = ((ip[0] & 0x7f) | (ip[1] << 7)); \
+            ip += 2; \
+        } else { \
+            unum = ip[0]; \
+            ip += 1; \
+        } \
+    } while (0)
+
+#define DECODE_SLABEL \
+    do { \
+        if (ip[0] & 0x80) { \
+            unum = ((ip[0] & 0x7f) | (ip[1] << 7)) - 0x4000; \
+            ip += 2; \
+        } else { \
+            unum = ip[0] - 0x40; \
+            ip += 1; \
+        } \
+    } while (0)
 
 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
 

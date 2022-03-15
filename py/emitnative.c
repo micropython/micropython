@@ -652,7 +652,7 @@ static inline void emit_native_write_code_info_qstr(emit_t *emit, qstr qst) {
     mp_encode_uint(&emit->as->base, mp_asm_base_get_cur_to_write_bytes, mp_emit_common_use_qstr(emit->emit_common, qst));
 }
 
-STATIC void emit_native_end_pass(emit_t *emit) {
+STATIC bool emit_native_end_pass(emit_t *emit) {
     emit_native_global_exc_exit(emit);
 
     if (!emit->do_viper_types) {
@@ -736,6 +736,8 @@ STATIC void emit_native_end_pass(emit_t *emit) {
             #endif
             emit->scope->scope_flags, 0, 0);
     }
+
+    return true;
 }
 
 STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {

@@ -61,8 +61,30 @@
     do { \
         unum = (unum << 7) + (*ip & 0x7f); \
     } while ((*ip++ & 0x80) != 0)
-#define DECODE_ULABEL size_t ulab = (ip[0] | (ip[1] << 8)); ip += 2
-#define DECODE_SLABEL size_t slab = (ip[0] | (ip[1] << 8)) - 0x8000; ip += 2
+
+#define DECODE_ULABEL \
+    size_t ulab; \
+    do { \
+        if (ip[0] & 0x80) { \
+            ulab = ((ip[0] & 0x7f) | (ip[1] << 7)); \
+            ip += 2; \
+        } else { \
+            ulab = ip[0]; \
+            ip += 1; \
+        } \
+    } while (0)
+
+#define DECODE_SLABEL \
+    size_t slab; \
+    do { \
+        if (ip[0] & 0x80) { \
+            slab = ((ip[0] & 0x7f) | (ip[1] << 7)) - 0x4000; \
+            ip += 2; \
+        } else { \
+            slab = ip[0] - 0x40; \
+            ip += 1; \
+        } \
+    } while (0)
 
 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
 

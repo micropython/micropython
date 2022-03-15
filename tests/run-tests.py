@@ -527,6 +527,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "micropython/opt_level_lineno.py"
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
+        skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")

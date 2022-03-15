@@ -335,7 +335,11 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
                 }
             }
         } else if (f == MP_BC_FORMAT_OFFSET) {
-            ip += 2;
+            if ((*ip & 0x80) == 0) {
+                ip += 1;
+            } else {
+                ip += 2;
+            }
         }
         ip += extra_byte;
     }
