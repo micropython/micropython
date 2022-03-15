@@ -388,9 +388,6 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
             case MP_PARSE_NODE_STRING:
                 mp_printf(print, "str(%s)\n", qstr_str(arg));
                 break;
-            case MP_PARSE_NODE_BYTES:
-                mp_printf(print, "bytes(%s)\n", qstr_str(arg));
-                break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
                 mp_printf(print, "tok(%u)\n", (uint)arg);
@@ -504,8 +501,8 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
         mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
-    } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
-        // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
+    } else if (lex->tok_kind == MP_TOKEN_STRING) {
+        // Don't automatically intern all strings.  Doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
         qstr qst = MP_QSTRnull;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
@@ -517,14 +514,16 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         }
         if (qst != MP_QSTRnull) {
             // qstr exists, make a leaf node
-            pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qst);
         } else {
-            // not interned, make a node holding a pointer to the string/bytes object
-            mp_obj_t o = mp_obj_new_str_copy(
-                lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
-                (const byte *)lex->vstr.buf, lex->vstr.len);
+            // not interned, make a node holding a pointer to the string object
+            mp_obj_t o = mp_obj_new_str_copy(&mp_type_str, (const byte *)lex->vstr.buf, lex->vstr.len);
             pn = make_node_const_object(parser, lex->tok_line, o);
         }
+    } else if (lex->tok_kind == MP_TOKEN_BYTES) {
+        // make a node holding a pointer to the bytes object
+        mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
+        pn = make_node_const_object(parser, lex->tok_line, o);
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }

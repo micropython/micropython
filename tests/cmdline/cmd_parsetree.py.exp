@@ -18,7 +18,7 @@
 [   8]     literal \.\+
 [   9]   \(rule\|expr_stmt\)(5) (n=2)
            id(d)
-           bytes(bytes)
+[   9]     literal \.\+
 [  10]   \(rule\|expr_stmt\)(5) (n=2)
            id(e)
 [  10]     literal \.\+

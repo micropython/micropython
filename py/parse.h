@@ -39,15 +39,13 @@ struct _mp_lexer_t;
 //  - xxxx...xx00: pointer to mp_parse_node_struct_t
 //  - xx...xx0010: an identifier; bits 4 and above are the qstr
 //  - xx...xx0110: a string; bits 4 and above are the qstr holding the value
-//  - xx...xx1010: a string of bytes; bits 4 and above are the qstr holding the value
-//  - xx...xx1110: a token; bits 4 and above are mp_token_kind_t
+//  - xx...xx1010: a token; bits 4 and above are mp_token_kind_t
 
 #define MP_PARSE_NODE_NULL      (0)
 #define MP_PARSE_NODE_SMALL_INT (0x1)
 #define MP_PARSE_NODE_ID        (0x02)
 #define MP_PARSE_NODE_STRING    (0x06)
-#define MP_PARSE_NODE_BYTES     (0x0a)
-#define MP_PARSE_NODE_TOKEN     (0x0e)
+#define MP_PARSE_NODE_TOKEN     (0x0a)
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 

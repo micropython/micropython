@@ -2816,16 +2816,6 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
             case MP_PARSE_NODE_STRING:
                 EMIT_ARG(load_const_str, arg);
                 break;
-            case MP_PARSE_NODE_BYTES:
-                // only create and load the actual bytes object on the last pass
-                if (comp->pass != MP_PASS_EMIT) {
-                    EMIT_ARG(load_const_obj, mp_const_none);
-                } else {
-                    size_t len;
-                    const byte *data = qstr_data(arg, &len);
-                    EMIT_ARG(load_const_obj, mp_obj_new_bytes(data, len));
-                }
-                break;
             case MP_PARSE_NODE_TOKEN:
             default:
                 if (arg == MP_TOKEN_NEWLINE) {
