@@ -1,5 +1,5 @@
 USB_VID = 0x2786
-USB_PID = 0x920D
+USB_PID = 0x920F
 USB_PRODUCT = "SSCI ISP1807 Micro Board"
 USB_MANUFACTURER = "Switch Science, Inc."
 
