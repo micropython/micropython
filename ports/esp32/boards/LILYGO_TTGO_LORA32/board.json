@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "LoRa",
+        "OLED",
+        "SDCard",
+        "USB-MICRO",
+        "WiFi"
+    ],
+    "id": "esp32",
+    "images": [
+        "lilygo-ttgo-lora-32-v1-6.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "LILYGO TTGO LoRa32",
+    "thumbnail": "",
+    "url": "http://www.lilygo.cn/prod_view.aspx?TypeId=50060&Id=1270&FId=t3:50060:3",
+    "vendor": "LILYGO"
+}
