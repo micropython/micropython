@@ -471,6 +471,13 @@ STATIC mp_parse_node_t make_node_const_int(parser_t *parser, size_t src_line, mp
             return make_node_const_object(parser, src_line, obj);
         }
         #endif
+        #if MICROPY_DYNAMIC_COMPILER
+        // Check that the integer value fits in target runtime's small-int
+        mp_uint_t sign_mask = -((mp_uint_t)1 << (mp_dynamic_compiler.small_int_bits - 1));
+        if (!((val & sign_mask) == 0 || (val & sign_mask) == sign_mask)) {
+            return make_node_const_object(parser, src_line, obj);
+        }
+        #endif
         return mp_parse_node_new_small_int(val);
     } else {
         return make_node_const_object(parser, src_line, obj);

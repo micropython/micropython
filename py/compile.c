@@ -2790,23 +2790,7 @@ STATIC void compile_node(compiler_t *comp, mp_parse_node_t pn) {
         // pass
     } else if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
-        #if MICROPY_DYNAMIC_COMPILER
-        mp_uint_t sign_mask = -((mp_uint_t)1 << (mp_dynamic_compiler.small_int_bits - 1));
-        if ((arg & sign_mask) == 0 || (arg & sign_mask) == sign_mask) {
-            // integer fits in target runtime's small-int
-            EMIT_ARG(load_const_small_int, arg);
-        } else {
-            // integer doesn't fit, so create a multi-precision int object
-            // (but only create the actual object on the last pass)
-            if (comp->pass != MP_PASS_EMIT) {
-                EMIT_ARG(load_const_obj, mp_const_none);
-            } else {
-                EMIT_ARG(load_const_obj, mp_obj_new_int_from_ll(arg));
-            }
-        }
-        #else
         EMIT_ARG(load_const_small_int, arg);
-        #endif
     } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
         uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
         switch (MP_PARSE_NODE_LEAF_KIND(pn)) {

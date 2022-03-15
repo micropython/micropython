@@ -536,7 +536,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         // we save numbers using a simplistic text representation
         // TODO could be improved
         byte obj_type;
-        if (mp_obj_is_type(o, &mp_type_int)) {
+        if (mp_obj_is_int(o)) {
             obj_type = 'i';
         #if MICROPY_PY_BUILTINS_COMPLEX
         } else if (mp_obj_is_type(o, &mp_type_complex)) {
