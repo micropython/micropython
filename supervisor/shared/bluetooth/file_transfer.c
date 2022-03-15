@@ -325,8 +325,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     if (chunk_size == 0) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        // Trigger an autoreload
-        autoreload_start();
+        autoreload_trigger();
         return ANY_COMMAND;
     }
 
@@ -383,8 +382,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         #endif
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        // Trigger an autoreload
-        autoreload_start();
+        autoreload_trigger();
         return ANY_COMMAND;
     }
     return WRITE_DATA;
@@ -465,8 +463,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        // Trigger an autoreload
-        autoreload_start();
+        autoreload_trigger();
     }
     return ANY_COMMAND;
 }
@@ -520,8 +517,7 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        // Trigger an autoreload
-        autoreload_start();
+        autoreload_trigger();
     }
     return ANY_COMMAND;
 }
@@ -668,8 +664,7 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        // Trigger an autoreload
-        autoreload_start();
+        autoreload_trigger();
     }
     return ANY_COMMAND;
 }

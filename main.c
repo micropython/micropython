@@ -124,7 +124,6 @@ static void reset_devices(void) {
 }
 
 STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
-    autoreload_reset();
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -336,7 +335,13 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     // Collects stickiness bits that apply in the current situation.
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
+    // Do the filesystem flush check before reload in case another write comes
+    // in while we're doing the flush.
     if (safe_mode == NO_SAFE_MODE) {
+        stack_resize();
+        filesystem_flush();
+    }
+    if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
         static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -345,8 +350,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
-        stack_resize();
-        filesystem_flush();
         supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state. Includes an alarm check/reset for sleep.
@@ -390,22 +393,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
         if ((result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
-
-            // Wait for autoreload interval before reloading
-            uint64_t start_ticks = 0;
-            do {
-                // Start waiting, or restart interval if another reload request was initiated
-                // while we were waiting.
-                if (reload_requested) {
-                    reload_requested = false;
-                    start_ticks = supervisor_ticks_ms64();
-                }
-                RUN_BACKGROUND_TASKS;
-            } while (supervisor_ticks_ms64() - start_ticks < CIRCUITPY_AUTORELOAD_DELAY_MS);
-
-            // Restore request for use below.
-            reload_requested = true;
+            serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
         }
@@ -425,8 +413,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         if (result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
-            skip_repl = true;
-            skip_wait = true;
         } else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
@@ -484,6 +470,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     size_t total_time = blink_time + LED_SLEEP_TIME_MS;
     #endif
 
+    // This loop is waits after code completes. It waits for fake sleeps to
+    // finish, user input or autoreloads.
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
     #endif
@@ -491,15 +479,18 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         RUN_BACKGROUND_TASKS;
 
         // If a reload was requested by the supervisor or autoreload, return.
-        if (reload_requested) {
+        if (autoreload_ready()) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
             // "no" for now, mainly because it's a bit less code. At this point, we have both a
             // success or error and a reload, so let's have both of the respective options take
             // effect (in OR combination).
-            reload_requested = false;
             skip_repl = true;
+            // We're kicking off the autoreload process so reset now. If any
+            // other reloads trigger after this, then we'll want another wait
+            // period.
+            autoreload_reset();
             break;
         }
 
@@ -526,7 +517,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         #endif
 
         // If messages haven't been printed yet, print them
-        if (!printed_press_any_key && serial_connected()) {
+        if (!printed_press_any_key && serial_connected() && !autoreload_pending()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
