@@ -49,6 +49,7 @@ extern int pyexec_system_exit;
 #define PYEXEC_FORCED_EXIT (0x100)
 #define PYEXEC_EXCEPTION   (0x200)
 #define PYEXEC_DEEP_SLEEP  (0x400)
+#define PYEXEC_RELOAD      (0x800)
 
 int pyexec_raw_repl(void);
 int pyexec_friendly_repl(void);

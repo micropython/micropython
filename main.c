@@ -52,7 +52,7 @@
 #include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/safe_mode.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
@@ -124,7 +124,6 @@ static void reset_devices(void) {
 }
 
 STATIC void start_mp(supervisor_allocation *heap, bool first_run) {
-    autoreload_stop();
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -329,14 +328,20 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     result.exception = MP_OBJ_NULL;
     result.exception_line = 0;
 
-    bool skip_repl;
+    bool skip_repl = false;
     bool skip_wait = false;
     bool found_main = false;
     uint8_t next_code_options = 0;
     // Collects stickiness bits that apply in the current situation.
     uint8_t next_code_stickiness_situation = SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
 
+    // Do the filesystem flush check before reload in case another write comes
+    // in while we're doing the flush.
     if (safe_mode == NO_SAFE_MODE) {
+        stack_resize();
+        filesystem_flush();
+    }
+    if (safe_mode == NO_SAFE_MODE && !autoreload_pending()) {
         static const char *const supported_filenames[] = STRING_LIST(
             "code.txt", "code.py", "main.py", "main.txt");
         #if CIRCUITPY_FULL_BUILD
@@ -345,8 +350,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py");
         #endif
 
-        stack_resize();
-        filesystem_flush();
         supervisor_allocation *heap = allocate_remaining_memory();
 
         // Prepare the VM state. Includes an alarm check/reset for sleep.
@@ -389,13 +392,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
-        if (reload_requested && result.return_code == PYEXEC_EXCEPTION) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload.\n"));
+        if ((result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
+            serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
         }
 
-        // Finished executing python code. Cleanup includes a board reset.
+
+        // Finished executing python code. Cleanup includes filesystem flush and a board reset.
         cleanup_after_vm(heap, result.exception);
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
@@ -407,7 +411,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
-        if (reload_requested) {
+        if (result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
         } else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
@@ -426,7 +430,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             }
         }
         if (result.return_code & PYEXEC_FORCED_EXIT) {
-            skip_repl = reload_requested;
+            skip_repl = false;
             skip_wait = true;
         }
     }
@@ -466,22 +470,27 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     size_t total_time = blink_time + LED_SLEEP_TIME_MS;
     #endif
 
+    // This loop is waits after code completes. It waits for fake sleeps to
+    // finish, user input or autoreloads.
     #if CIRCUITPY_ALARM
     bool fake_sleeping = false;
     #endif
     while (!skip_wait) {
         RUN_BACKGROUND_TASKS;
 
-        // If a reload was requested by the supervisor or autoreload, return
-        if (reload_requested) {
+        // If a reload was requested by the supervisor or autoreload, return.
+        if (autoreload_ready()) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Should the STICKY_ON_SUCCESS and STICKY_ON_ERROR bits be cleared in
             // next_code_stickiness_situation? I can see arguments either way, but I'm deciding
             // "no" for now, mainly because it's a bit less code. At this point, we have both a
             // success or error and a reload, so let's have both of the respective options take
             // effect (in OR combination).
-            reload_requested = false;
             skip_repl = true;
+            // We're kicking off the autoreload process so reset now. If any
+            // other reloads trigger after this, then we'll want another wait
+            // period.
+            autoreload_reset();
             break;
         }
 
@@ -508,7 +517,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         #endif
 
         // If messages haven't been printed yet, print them
-        if (!printed_press_any_key && serial_connected()) {
+        if (!printed_press_any_key && serial_connected() && !autoreload_pending()) {
             if (!serial_connected_at_start) {
                 print_code_py_status_message(safe_mode);
             }
@@ -627,13 +636,14 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         }
     }
 
+    // Done waiting, start the board back up.
+
     // free code allocation if unused
     if ((next_code_options & next_code_stickiness_situation) == 0) {
         free_memory(next_code_allocation);
         next_code_allocation = NULL;
     }
 
-    // Done waiting, start the board back up.
     #if CIRCUITPY_STATUS_LED
     if (led_active) {
         new_status_color(BLACK);
@@ -757,7 +767,7 @@ STATIC int run_repl(bool first_run) {
     usb_setup_with_vm();
     #endif
 
-    autoreload_suspend(AUTORELOAD_LOCK_REPL);
+    autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -787,7 +797,7 @@ STATIC int run_repl(bool first_run) {
     status_led_deinit();
     #endif
 
-    autoreload_resume(AUTORELOAD_LOCK_REPL);
+    autoreload_resume(AUTORELOAD_SUSPEND_REPL);
     return exit_code;
 }
 

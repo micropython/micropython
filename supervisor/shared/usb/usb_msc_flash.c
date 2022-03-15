@@ -36,7 +36,7 @@
 
 #include "shared-module/storage/__init__.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/shared/autoreload.h"
+#include "supervisor/shared/reload.h"
 
 #define MSC_FLASH_BLOCK_SIZE    512
 
@@ -170,7 +170,6 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buffer, uint32_t bufsize) {
-    (void)lun;
     (void)offset;
 
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
@@ -186,6 +185,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *buffer, uint32_t bufsize) {
     (void)lun;
     (void)offset;
+    autoreload_suspend(AUTORELOAD_SUSPEND_USB);
 
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
@@ -215,8 +215,9 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
 void tud_msc_write10_complete_cb(uint8_t lun) {
     (void)lun;
 
-    // This write is complete, start the autoreload clock.
-    autoreload_start();
+    // This write is complete; initiate an autoreload.
+    autoreload_trigger();
+    autoreload_resume(AUTORELOAD_SUSPEND_USB);
 }
 
 // Invoked when received SCSI_CMD_INQUIRY

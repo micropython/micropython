@@ -34,7 +34,6 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/stack.h"
 
 #if CIRCUITPY_BLEIO_HCI
@@ -66,7 +65,9 @@ static volatile uint64_t PLACE_IN_DTCM_BSS(background_ticks);
 
 static background_callback_t tick_callback;
 
-volatile uint64_t last_finished_tick = 0;
+static volatile uint64_t last_finished_tick = 0;
+
+static volatile size_t tick_enable_count = 0;
 
 static void supervisor_background_tasks(void *unused) {
     port_start_background_task();
@@ -99,10 +100,6 @@ bool supervisor_background_tasks_ok(void) {
 void supervisor_tick(void) {
     #if CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS > 0
     filesystem_tick();
-    #endif
-
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
-    autoreload_tick();
     #endif
 
     #ifdef CIRCUITPY_GAMEPAD_TICKS
@@ -160,8 +157,7 @@ void mp_hal_delay_ms(mp_uint_t delay_ms) {
     }
 }
 
-volatile size_t tick_enable_count = 0;
-extern void supervisor_enable_tick(void) {
+void supervisor_enable_tick(void) {
     common_hal_mcu_disable_interrupts();
     if (tick_enable_count == 0) {
         port_enable_tick();
@@ -170,7 +166,7 @@ extern void supervisor_enable_tick(void) {
     common_hal_mcu_enable_interrupts();
 }
 
-extern void supervisor_disable_tick(void) {
+void supervisor_disable_tick(void) {
     common_hal_mcu_disable_interrupts();
     if (tick_enable_count > 0) {
         tick_enable_count--;
