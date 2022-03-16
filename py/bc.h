@@ -265,9 +265,9 @@ const byte *mp_decode_uint_skip(const byte *ptr);
 mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
-void mp_bytecode_print(const mp_print_t *print, const void *descr, const byte *code, mp_uint_t len, const mp_module_constants_t *cm);
-void mp_bytecode_print2(const mp_print_t *print, const byte *code, size_t len, const mp_module_constants_t *cm);
-const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip);
+void mp_bytecode_print(const mp_print_t *print, const struct _mp_raw_code_t *rc, const mp_module_constants_t *cm);
+void mp_bytecode_print2(const mp_print_t *print, const byte *ip, size_t len, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
+const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start, const byte *ip, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
 #define mp_bytecode_print_inst(print, code, x_table) mp_bytecode_print2(print, code, 1, x_table)
 
 // Helper macros to access pointer with least significant bits holding flags

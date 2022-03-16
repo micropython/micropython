@@ -3632,7 +3632,7 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
         if (mp_verbose_flag >= 2) {
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
-                mp_bytecode_print(&mp_plat_print, rc, rc->fun_data, rc->fun_data_len, &cm.context->constants);
+                mp_bytecode_print(&mp_plat_print, rc, &cm.context->constants);
             }
         }
         #endif
