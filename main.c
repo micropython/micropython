@@ -413,6 +413,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         if (result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
+            // Reload immediately unless the reload is due to autoreload. In that
+            // case, we wait below to see if any other writes occur.
+            if (supervisor_get_run_reason() != RUN_REASON_AUTO_RELOAD) {
+                skip_repl = true;
+                skip_wait = true;
+            }
         } else if (result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
