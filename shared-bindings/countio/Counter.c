@@ -14,14 +14,14 @@
 //|     """Count the number of rising- and/or falling-edge transitions on a given pin.
 //|     """
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull]) -> None:
+//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull] = None) -> None:
 //|         """Create a Counter object associated with the given pin that counts
 //|         rising- and/or falling-edge transitions. At least one of ``rise`` and ``fall`` must be True.
 //|         The default is to count only falling edges, and is for historical backward compatibility.
 //|
 //|         :param ~microcontroller.Pin pin: pin to monitor
-//|         :param Edge: which edge transitions to count
-//|         :param digitalio.Pull: enable a pull-up or pull-down if not None
+//|         :param Edge edge: which edge transitions to count
+//|         :param Optional[digitalio.Pull] pull: enable a pull-up or pull-down if not None
 //|
 //|
 //|         For example::
