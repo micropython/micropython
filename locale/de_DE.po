@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-25 21:58+0000\n"
+"PO-Revision-Date: 2022-03-18 00:02+0000\n"
 "Last-Translator: Fabian Affolter <mail@fabian-affolter.ch>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.11.1-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: main.c
 msgid ""
@@ -71,7 +71,8 @@ msgstr "%%c erwartet Int oder Char"
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
-"%d Adress-Pins, %d RGB-Pins und %d Tiles indiziert eine Höhe von %d, nicht %d"
+"%d Adress-Pins, %d RGB-Pins und %d Kacheln indizieren eine Höhe von %d, "
+"nicht %d"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -928,7 +929,7 @@ msgstr "Dem fmt Block muss ein Datenblock folgen"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
-msgstr ""
+msgstr "Daten werden nicht mit direkter Ankündigung unsterstützt"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -937,7 +938,7 @@ msgstr "Zu vielen Daten für das advertisement packet"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
+msgstr "Deep Sleep Pins müssen eine steigende Flanke mit Pulldown verwenden"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1015,7 +1016,7 @@ msgstr "Habe ein Tupel der Länge %d erwartet aber %d erhalten"
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr ""
-"Erweiterte Werbung (advertising) mit Scanantwort wird nicht unterstützt."
+"Erweiterte Ankündigung (advertising) mit Scan-Antwort wird nicht unterstützt."
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
@@ -1112,11 +1113,11 @@ msgstr "Firmware Image ist ungültig"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
-msgstr ""
+msgstr "Für den L8-Farbraum muss die Eingabe-Bitmap 8 Bit pro Pixel aufweisen"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr ""
+msgstr "Für RGB-Farbräume muss die Eingabe-Bitmap 16 Bit pro Pixel haben"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1163,7 +1164,7 @@ msgstr "Hardware beschäftigt, versuchen Sie alternative Pins"
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "Hardware in use, try alternative pins"
-msgstr "Hardware in benutzung, probiere alternative Pins"
+msgstr "Hardware in Benutzung, probiere alternative Pins"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Hostname must be between 1 and 253 characters"
@@ -1242,12 +1243,12 @@ msgstr "Eingabe-/Ausgabefehler"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
+msgstr "Anweisung %d verschiebt mehr Bits als die Anzahl der Pins"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
+msgstr "Der Befehl %d verschiebt mehr Bits als die Anzahl der Pins"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1257,7 +1258,7 @@ msgstr "Instruktion %d benötigt extra Pin"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Instruction %d waits on input outside of count"
-msgstr ""
+msgstr "Anweisung %d wartet auf Eingaben außerhalb der vorhandenen Anzahl"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1371,7 +1372,7 @@ msgstr "Ungültige Puffergröße"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 msgid "Invalid byteorder string"
-msgstr "Ungültige Byteorder String"
+msgstr "Ungültige Byteorder-String"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -1570,17 +1571,17 @@ msgstr "Fehlender first_in_pin. Instruktion %d liest Pin(s)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr ""
+msgstr "Fehlende first_in_pin. Anweisung %d verschiebt sich um Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr ""
+msgstr "Fehlende first_in_pin. Anweisung %d wartet basierend auf Pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr ""
+msgstr "First_out_pin fehlt. Befehl %d verschiebt sich zu Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1595,12 +1596,12 @@ msgstr "Fehlender first_set_pin. Instruktion %d setzt Pin(s)"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr ""
+msgstr "jmp_pin fehlt. Befehl %d springt auf Pin"
 
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "More than %d report ids not supported"
-msgstr ""
+msgstr "Mehr als %d Berichts-IDs werden nicht unterstützt"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1617,7 +1618,7 @@ msgstr "Muss ein Vielfaches von 6 RGB-Pins verwenden, nicht %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr "NLR-Sprung fehlgeschlagen. Mögliche Speicherbeschädigung"
+msgstr "NLR-Sprung fehlgeschlagen. Mögliche Speicher-Beschädigung."
 
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1629,7 +1630,7 @@ msgstr "Name zu lang"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
-msgstr ""
+msgstr "Kein Speicher mehr für Nible vorhanden"
 
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
@@ -2004,7 +2005,7 @@ msgstr "Polygone brauchen mindestens 3 Punkte"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
-msgstr "Der Präfixbuffer muss sich auf dem Heap befinden"
+msgstr "Der Präfix-Puffer muss sich auf dem Heap befinden"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
@@ -2221,7 +2222,7 @@ msgstr "Quell- und Zielbuffer müssen gleich lang sein"
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr ""
+msgstr "Geben Sie genau einen von data0 oder data_pins an"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
@@ -2233,11 +2234,11 @@ msgstr "Die Stackgröße sollte mindestens 256 sein"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
-msgstr ""
+msgstr "Stereo links muss sich auf PWM-Kanal A befinden"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
-msgstr ""
+msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
 
 #: shared-bindings/multiterminal/__init__.c
 msgid "Stream missing readinto() or write() method."
@@ -2249,7 +2250,7 @@ msgstr "Geben Sie mindestens einen UART-Pin an"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Geben Sie entweder monotonic_time oder epoch_time an"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
@@ -2264,6 +2265,8 @@ msgid ""
 "The CircuitPython heap was corrupted because the stack was too small.\n"
 "Increase the stack size if you know how. If not:"
 msgstr ""
+"Der Heap von CircuitPython wurde beschädigt, weil der Stack zu klein war.\n"
+"Vergrößern Sie den Stack, wenn Sie wissen, wie. Wenn nicht:"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -2315,6 +2318,8 @@ msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
 msgstr ""
+"Dieser Mikrocontroller unterstützt nur data0=, nicht data_pins=, da er "
+"zusammenhängende Pins benötigt."
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "Tile height must exactly divide bitmap height"
@@ -2334,7 +2339,7 @@ msgstr "Die Kachelbreite muss die Bitmap-Breite genau teilen"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr "Zeit liegt in der Vergangenheit"
+msgstr "Zeit liegt in der Vergangenheit."
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -2405,11 +2410,11 @@ msgstr "USB beschäftigt"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr "USB Geräte brauchen mehr Endpunkte als verfügbar sind"
+msgstr "USB-Geräte brauchen mehr Endpunkte als verfügbar sind."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr "USB Geräte haben zu viele Schnittstellennamen festgelegt"
+msgstr "USB-Geräte haben zu viele Schnittstellen-Namen festgelegt."
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
@@ -2590,6 +2595,8 @@ msgstr ""
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
+"WatchDogTimer kann nicht deinitialisiert werden, wenn der Modus auf RESET "
+"gesetzt ist"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer is not currently running"
@@ -2850,7 +2857,7 @@ msgstr "Kalibrierwert nicht im Bereich von +/-127"
 
 #: shared-module/vectorio/Rectangle.c
 msgid "can only be registered in one parent"
-msgstr ""
+msgstr "kann nur bei einem Elternteil registriert werden"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -2998,11 +3005,11 @@ msgstr "Kann neue shape nicht zuweisen"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr ""
+msgstr "Kann die Ausgabe nicht mit der Umwandlungsregel umwandeln"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "kann Komplex nicht in dtype konvertieren"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
@@ -3300,15 +3307,15 @@ msgstr "Das Dateisystem muss eine Mount-Methode bereitstellen"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "das erste Argument muss ein aufrufbares sein"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "das erste Argument muss eine Funktion sein"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "das erste Argument muss ein Tupel von ndarrays sein"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
@@ -3320,7 +3327,7 @@ msgstr "Das erste Argument für super() muss type sein"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "first two arguments must be ndarrays"
-msgstr ""
+msgstr "die ersten beiden Argumente müssen ndarrays sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -3352,7 +3359,7 @@ msgstr "voll"
 
 #: py/argcheck.c
 msgid "function doesn't take keyword arguments"
-msgstr ""
+msgstr "Funktion nimmt keine Schlüsselwortargumente an"
 
 #: py/argcheck.c
 #, c-format
@@ -3365,15 +3372,15 @@ msgstr "Funktion hat mehrere Werte für Argument '%q'"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "function has the same sign at the ends of interval"
-msgstr ""
+msgstr "Funktion hat an den Enden des Intervalls das gleiche Vorzeichen"
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "Funktion ist nur für ndarrays definiert"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "Funktion ist nur für ndarrays implementiert"
 
 #: py/argcheck.c
 #, c-format
@@ -3414,7 +3421,7 @@ msgstr "Generator ignoriert GeneratorExit"
 
 #: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "Generator hat StopIteration ausgelöst"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3422,7 +3429,7 @@ msgstr "graphic muss 2048 Byte lang sein"
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "Hash ist endgültig"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -3438,11 +3445,11 @@ msgstr "Bezeichner als nonlocal definiert"
 
 #: py/compile.c
 msgid "import * not at module level"
-msgstr ""
+msgstr "import * nicht auf Modulebene"
 
 #: py/persistentcode.c
 msgid "incompatible native .mpy architecture"
-msgstr ""
+msgstr "inkompatible native .mpy-Architektur"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3488,7 +3495,7 @@ msgstr "inline assembler muss eine function sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "input and output shapes are not compatible"
-msgstr ""
+msgstr "Eingabe- und Ausgabeformen sind nicht kompatibel"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3508,7 +3515,7 @@ msgstr "Eingabedaten müssen iterierbar sein"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "Eingabe dtype muss float oder complex sein"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3521,23 +3528,23 @@ msgstr "Eingabematrix ist singulär"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "Eingabe muss ein 1D ndarray sein"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "Eingabe muss ein dichtes ndarray sein"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be a tensor of rank 2"
-msgstr ""
+msgstr "Eingabe muss ein Tensor von Rang 2 sein"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "Eingabe muss ein ndarray sein"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "Eingabe muss ein ndarray oder ein Skalar sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3557,7 +3564,7 @@ msgstr "Eingabevektoren müssen gleich lang sein"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "inputs are not iterable"
-msgstr ""
+msgstr "Eingaben sind nicht iterierbar"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
@@ -3565,7 +3572,7 @@ msgstr "int() arg 2 muss >= 2 und <= 36 sein"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
-msgstr ""
+msgstr "interp ist für 1D-Iterables gleicher Länge definiert"
 
 #: shared-bindings/_bleio/Adapter.c
 #, c-format
@@ -3579,21 +3586,21 @@ msgstr "ungültige Architektur"
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "ungültige Bits_pro_Pixel %d, muss 1, 2, 4, 8, 16, 24 oder 32 sein"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element size %d for bits_per_pixel %d\n"
-msgstr ""
+msgstr "Ungültige Elementgröße %d für bits_per_pixel %d\n"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "ungültige Elementgröße %d, muss 1, 2 oder 4 sein"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "ungültige Ausnahme"
 
 #: extmod/modframebuf.c
 msgid "invalid format"
@@ -3605,7 +3612,7 @@ msgstr "ungültiger Formatbezeichner"
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "ungültiger Hostname"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3634,7 +3641,7 @@ msgstr "ungültige Syntax für number"
 
 #: py/objexcept.c
 msgid "invalid traceback"
-msgstr ""
+msgstr "ungültiger Traceback"
 
 #: py/objtype.c
 msgid "issubclass() arg 1 must be a class"
@@ -3704,7 +3711,7 @@ msgstr "long int wird in diesem Build nicht unterstützt"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "loopback + silent mode not supported by peripheral"
-msgstr ""
+msgstr "Loopback + Silent Mode wird vom Peripheriegerät nicht unterstützt"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3724,7 +3731,7 @@ msgstr "Matrix ist nicht positiv definitiv"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
-msgstr ""
+msgstr "max_connections muss zwischen 0 und 10 liegen"
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -3735,11 +3742,11 @@ msgstr "max_length muss 0-%d sein, wenn fixed_length %s ist"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "max_length must be >= 0"
-msgstr ""
+msgstr "max_length muss >= 0 sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is 4"
-msgstr ""
+msgstr "die maximale Anzahl der Dimensionen beträgt 4"
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3747,15 +3754,15 @@ msgstr "maximale Rekursionstiefe überschritten"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
-msgstr ""
+msgstr "maxiter muss > 0 sein"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
-msgstr ""
+msgstr "maxiter sollte > 0 sein"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "median argument must be an ndarray"
-msgstr ""
+msgstr "Median-Argument muss ein ndarray sein"
 
 #: py/runtime.c
 #, c-format
@@ -3768,11 +3775,11 @@ msgstr "Speicherzuweisung fehlgeschlagen, der Heap ist gesperrt"
 
 #: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
-msgstr ""
+msgstr "memoryview: length ist kein Vielfaches von itemize"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
-msgstr ""
+msgstr "Modus muss vollständig oder reduziert sein"
 
 #: py/builtinimport.c
 msgid "module not found"
@@ -3780,7 +3787,7 @@ msgstr "Modul nicht gefunden"
 
 #: ports/espressif/common-hal/wifi/Monitor.c
 msgid "monitor init failed"
-msgstr ""
+msgstr "monitor init fehlgeschlagen"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "more degrees of freedom than data points"
@@ -3816,7 +3823,7 @@ msgstr "Dieser Name ist nirgends definiert worden (Schreibweise kontrollieren)"
 
 #: py/asmthumb.c
 msgid "native method too big"
-msgstr ""
+msgstr "native Methode zu groß"
 
 #: py/emitnative.c
 msgid "native yield"
@@ -3829,7 +3836,7 @@ msgstr "Zum Entpacken sind mehr als %d Werte erforderlich"
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "negative Fakultät"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3841,7 +3848,7 @@ msgstr "Negative shift Anzahl"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "keine SD-Karte"
 
 #: py/vm.c
 msgid "no active exception to reraise"
@@ -3853,11 +3860,11 @@ msgstr "Kein Binding für nonlocal gefunden"
 
 #: shared-module/msgpack/__init__.c
 msgid "no default packer"
-msgstr ""
+msgstr "kein Standard-Packer"
 
 #: extmod/modurandom.c
 msgid "no default seed"
-msgstr ""
+msgstr "kein Standard-Seed"
 
 #: py/builtinimport.c
 msgid "no module named '%q'"
@@ -3870,7 +3877,7 @@ msgstr "kein Reset Pin verfügbar"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "keine Antwort von der SD-Karte"
 
 #: py/objobject.c py/runtime.c
 msgid "no such attribute"
@@ -3878,7 +3885,7 @@ msgstr "kein solches Attribut"
 
 #: shared-bindings/usb_hid/__init__.c
 msgid "non-Device in %q"
-msgstr ""
+msgstr "Nicht-Gerät in %q"
 
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
@@ -3903,11 +3910,11 @@ msgstr "Nicht-Schlüsselwort Argument nach Schlüsselwort Argument"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
-msgstr ""
+msgstr "Timeout ungleich Null muss > 0,01 sein"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "non-zero timeout must be >= interval"
-msgstr ""
+msgstr "Timeout ungleich Null muss >= Intervall sein"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3924,7 +3931,7 @@ msgstr "Nicht genügend Argumente für den Formatierungs-String"
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "nicht implementiert für komplexe dtype"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3932,20 +3939,20 @@ msgstr "Die Anzahl der Punkte muss mindestens 2 betragen"
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "Objekt "
 
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "Objekt '%s' ist'kein Tupel oder Liste"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
-msgstr ""
+msgstr "Das Objekt unterstützt keine Elementzuweisung"
 
 #: py/obj.c
 msgid "object doesn't support item deletion"
-msgstr ""
+msgstr "Objekt unterstützt das Löschen von Elementen nicht"
 
 #: py/obj.c
 msgid "object has no len"
@@ -3953,7 +3960,7 @@ msgstr "Objekt hat keine len"
 
 #: py/obj.c
 msgid "object isn't subscriptable"
-msgstr ""
+msgstr "Objekt ist nicht subskribierbar"
 
 #: py/runtime.c
 msgid "object not an iterator"
@@ -3986,15 +3993,16 @@ msgstr "String mit ungerader Länge"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
-msgstr ""
+msgstr "Offset ist zu groß"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
-msgstr ""
+msgstr "Offset muss >= 0 sein"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr ""
+"Offset muss nicht negativ sein und darf nicht größer als die Pufferlänge sein"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -4016,7 +4024,7 @@ msgstr ""
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "Opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
 #: extmod/ulab/code/numpy/vector.c
@@ -4025,15 +4033,15 @@ msgstr "Operanden konnten nicht zusammen gesendet werden"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for 2D arrays only"
-msgstr ""
+msgstr "Operation ist nur für 2D-Arrays definiert"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr ""
+msgstr "Operation ist nur für ndarrays definiert"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "Operation wird nur für boolesche 1D-Arrays implementiert"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -4056,11 +4064,11 @@ msgstr ""
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "Ausgabe-Array ist zu klein"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
-msgstr ""
+msgstr "Ausgabe muss ein floatdichtes Array sein"
 
 #: shared-bindings/displayio/Bitmap.c
 msgid "out of range of source"
@@ -4077,7 +4085,7 @@ msgstr "Überlauf beim konvertieren von long int zu machine word"
 #: py/modstruct.c
 #, c-format
 msgid "pack expected %d items for packing (got %d)"
-msgstr ""
+msgstr "pack erwartete %d Artikel zum Packen (erhalten %d)"
 
 #: shared-bindings/_stage/Layer.c shared-bindings/_stage/Text.c
 msgid "palette must be 32 bytes long"
@@ -4109,7 +4117,7 @@ msgstr "pixel_shader muss displayio.Palette oder displayio.ColorConverter sein"
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "Abfrage der Datei unter Win32 nicht verfügbar"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
@@ -4126,11 +4134,11 @@ msgstr "pop von einem leeren PulseIn"
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
-msgstr ""
+msgstr "Pop aus leerem %q"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
-msgstr ""
+msgstr "Port muss >= 0 sein"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4191,7 +4199,7 @@ msgstr "pow() mit 3 Argumenten erfordert Integer"
 #: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
 #: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
 msgid "pressing boot button at start up.\n"
-msgstr ""
+msgstr "Drücken der Boot-Taste beim Start.\n"
 
 #: ports/atmel-samd/boards/circuitplayground_express/mpconfigboard.h
 #: ports/atmel-samd/boards/circuitplayground_express_crickit/mpconfigboard.h
@@ -4199,23 +4207,23 @@ msgstr ""
 #: ports/atmel-samd/boards/escornabot_makech/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "pressing both buttons at start up.\n"
-msgstr ""
+msgstr "Drücken Sie beim Start beide Tasten.\n"
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "pressing the left button at start up\n"
-msgstr ""
+msgstr "Drücken der linken Taste beim Einschalten\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
-msgstr ""
+msgstr "Pull-Masken kollidieren mit Richtungsmasken"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "pull_threshold must be between 1 and 32"
-msgstr ""
+msgstr "pull_threshold muss zwischen 1 und 32 liegen"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "push_threshold must be between 1 and 32"
-msgstr ""
+msgstr "push_threshold muss zwischen 1 und 32 liegen"
 
 #: extmod/modutimeq.c
 msgid "queue overflow"
@@ -4223,7 +4231,7 @@ msgstr "Warteschlangenüberlauf"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "unformatierte F-Strings werden nicht unterstützt"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -4240,7 +4248,7 @@ msgstr "die ersuchte Länge ist %d, aber das Objekt hat eine Länge von %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
-msgstr ""
+msgstr "Ergebnisse können nicht in den angegebenen Typ umgewandelt werden"
 
 #: py/compile.c
 msgid "return annotation must be an identifier"
@@ -4262,7 +4270,7 @@ msgstr "rgb_pins [%d] befindet sich nicht am selben Port wie clock"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr ""
+msgstr "Roll-Argument muss ein ndarray sein"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -4283,7 +4291,7 @@ msgstr "Abtastrate außerhalb der Reichweite"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
-msgstr ""
+msgstr "Warteschlange voll"
 
 #: py/builtinimport.c
 msgid "script compilation not supported"
@@ -4291,15 +4299,15 @@ msgstr "kompilieren von Skripten nicht unterstützt"
 
 #: py/nativeglue.c
 msgid "set unsupported"
-msgstr ""
+msgstr "nicht unterstützt"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be a tuple"
-msgstr ""
+msgstr "Form muss ein Tupel sein"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
-msgstr ""
+msgstr "kurze Lektüre"
 
 #: py/objstr.c
 msgid "sign not allowed in string format specifier"
@@ -4323,7 +4331,7 @@ msgstr "Die Schlafdauer darf nicht negativ sein"
 
 #: extmod/ulab/code/ndarray.c
 msgid "slice step can't be zero"
-msgstr ""
+msgstr "Slice-Schritt darf nicht Null sein"
 
 #: py/objslice.c
 msgid "slice step cannot be zero"
@@ -4331,7 +4339,7 @@ msgstr "Der Slice-Schritt kann nicht Null sein"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
-msgstr ""
+msgstr "Slice nicht unterstützt"
 
 #: py/objint.c py/sequence.c
 msgid "small int overflow"
@@ -4347,15 +4355,15 @@ msgstr "sortierungs Argument muss ein ndarray sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr ""
+msgstr "sos-Array muss die Form haben (n_section, 6)"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
-msgstr ""
+msgstr "sos[:, 3] sollten alle Einsen sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sosfilt requires iterable arguments"
-msgstr ""
+msgstr "sosfilt erfordert iterierbare Argumente"
 
 #: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
 msgid "source palette too large"
@@ -4363,19 +4371,19 @@ msgstr "Quell-Palette zu groß"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 2 or 65536"
-msgstr ""
+msgstr "source_bitmap muss value_count von 2 oder 65536 haben"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 65536"
-msgstr ""
+msgstr "source_bitmap muss value_count von 65536 haben"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
-msgstr ""
+msgstr "source_bitmap muss value_count von 8 haben"
 
 #: shared-bindings/wifi/Radio.c
 msgid "ssid can't be more than 32 bytes"
-msgstr ""
+msgstr "ssid kann nicht mehr als 32 Bytes lang sein"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4412,7 +4420,7 @@ msgstr ""
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
-msgstr ""
+msgstr "struct: kann nicht indiziert werden"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
@@ -4444,7 +4452,7 @@ msgstr "threshold muss im Intervall 0-65536 liegen"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "tile must be greater than zero"
-msgstr ""
+msgstr "Kachel muss größer als Null sein"
 
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
@@ -4483,7 +4491,7 @@ msgstr "Zeitstempel außerhalb des Bereichs für Plattform time_t"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
-msgstr ""
+msgstr "tobytes kann nur für dichte Arrays aufgerufen werden"
 
 #: shared-module/struct/__init__.c
 msgid "too many arguments provided with the given format"
@@ -4499,7 +4507,7 @@ msgstr "zu viele Indizes"
 
 #: py/asmthumb.c
 msgid "too many locals for native method"
-msgstr ""
+msgstr "zu viele Lokale für die native Methode"
 
 #: py/runtime.c
 #, c-format
@@ -4508,11 +4516,11 @@ msgstr "zu viele Werte zum Auspacken (erwartet %d)"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D arrays of equal length"
-msgstr ""
+msgstr "trapz ist für 1D-Arrays gleicher Länge definiert"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
-msgstr ""
+msgstr "trapz ist für 1D-Iterables definiert"
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
@@ -4521,12 +4529,12 @@ msgstr "tupel/list hat falsche Länge"
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_driver_install gab esp-idf-Fehler zurück #%d"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_start returned esp-idf error #%d"
-msgstr ""
+msgstr "twai_start gab esp-idf-Fehler zurück #%d"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
@@ -4582,7 +4590,7 @@ msgstr "Unicode Name ausgebrochen (escaped)"
 
 #: py/parse.c
 msgid "unindent doesn't match any outer indent level"
-msgstr ""
+msgstr "unindent stimmt mit keiner äußeren Einrückungsebene überein"
 
 #: py/objstr.c
 #, c-format
@@ -4746,7 +4754,7 @@ msgstr "zi muss eine Gleitkommazahl sein"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
-msgstr ""
+msgstr "zi muss die Form (n_section, 2) haben"
 
 #~ msgid "cannot perform relative import"
 #~ msgstr "kann keinen relativen Import durchführen"
