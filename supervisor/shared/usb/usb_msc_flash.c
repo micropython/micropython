@@ -216,8 +216,8 @@ void tud_msc_write10_complete_cb(uint8_t lun) {
     (void)lun;
 
     // This write is complete; initiate an autoreload.
-    autoreload_trigger();
     autoreload_resume(AUTORELOAD_SUSPEND_USB);
+    autoreload_trigger();
 }
 
 // Invoked when received SCSI_CMD_INQUIRY

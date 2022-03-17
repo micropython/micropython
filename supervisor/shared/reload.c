@@ -80,7 +80,7 @@ inline bool autoreload_is_enabled() {
 }
 
 void autoreload_trigger() {
-    if (autoreload_enabled) {
+    if (autoreload_enabled & !autoreload_suspended) {
         last_autoreload_trigger = supervisor_ticks_ms32();
         // Guard against the rare time that ticks is 0;
         if (last_autoreload_trigger == 0) {
