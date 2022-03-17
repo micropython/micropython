@@ -200,6 +200,14 @@ void sdcard_init(void) {
     #endif
 }
 
+void sdcard_select_sd(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_SD;
+}
+
+void sdcard_select_mmc(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_MMC;
+}
+
 STATIC void sdmmc_msp_init(void) {
     // enable SDIO clock
     SDMMC_CLK_ENABLE();
