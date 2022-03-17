@@ -788,7 +788,15 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     if (buf[0] == I2C_CMD_ECHO) {
         ++len;
     } else if (buf[0] == I2C_CMD_GETID && len == 0) {
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Warray-bounds"
+        #pragma GCC diagnostic ignored "-Wstringop-overread"
+        #endif
         memcpy(buf, (uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS, 12);
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic pop
+        #endif
         memcpy(buf + 12, MICROPY_HW_MCU_NAME, sizeof(MICROPY_HW_MCU_NAME));
         memcpy(buf + 12 + sizeof(MICROPY_HW_MCU_NAME), MICROPY_HW_BOARD_NAME, sizeof(MICROPY_HW_BOARD_NAME) - 1);
         len = 12 + sizeof(MICROPY_HW_MCU_NAME) + sizeof(MICROPY_HW_BOARD_NAME) - 1;
