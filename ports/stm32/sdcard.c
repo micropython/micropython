@@ -249,7 +249,7 @@ bool sdcard_is_present(void) {
     }
     #endif
     #if defined(MICROPY_HW_SDCARD_DETECT_PIN)
-    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN->gpio, MICROPY_HW_SDCARD_DETECT_PIN->pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    return mp_hal_pin_read(MICROPY_HW_SDCARD_DETECT_PIN) == MICROPY_HW_SDCARD_DETECT_PRESENT;
     #else
     return true;
     #endif
