@@ -1539,8 +1539,8 @@ enter_bootloader:
     mboot_pack_init();
     #endif
 
-    #if MBOOT_FSLOAD
     if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+        #if MBOOT_FSLOAD
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
@@ -1553,11 +1553,11 @@ enter_bootloader:
                 *status_ptr = ret;
             }
         }
+        #endif
         // Always reset because the application is expecting to resume
         led_state_all(0);
         leave_bootloader();
     }
-    #endif
 
     dfu_init();
 
