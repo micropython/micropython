@@ -110,6 +110,7 @@ SRC_C += \
 	fsload.c \
 	gzstream.c \
 	pack.c \
+	sdcard.c \
 	vfs_fat.c \
 	vfs_lfs.c \
 	drivers/bus/softspi.c \
@@ -142,6 +143,7 @@ endif
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
+	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
@@ -150,6 +152,14 @@ SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_rcc_ex.c \
 	ll_usb.c \
 	)
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_mmc.c \
+	hal_sd.c \
+	ll_sdmmc.c \
+	)
+endif
 
 SRC_USBDEV += $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	core/src/usbd_core.c \

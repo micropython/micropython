@@ -37,6 +37,7 @@
 #include "irq.h"
 #include "mboot.h"
 #include "powerctrl.h"
+#include "sdcard.h"
 #include "dfu.h"
 #include "pack.h"
 
@@ -651,6 +652,16 @@ void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     #if defined(MBOOT_SPIFLASH2_ADDR)
     if (MBOOT_SPIFLASH2_ADDR <= addr && addr < MBOOT_SPIFLASH2_ADDR + MBOOT_SPIFLASH2_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, buf);
+    } else
+    #endif
+    #if defined(MBOOT_SDCARD_ADDR)
+    if (MBOOT_SDCARD_ADDR <= addr && addr < MBOOT_SDCARD_ADDR + MBOOT_SDCARD_BYTE_SIZE) {
+        // Read address and length must be aligned.
+        if (addr % SDCARD_BLOCK_SIZE == 0 && len % SDCARD_BLOCK_SIZE == 0) {
+            sdcard_read_blocks(buf, (addr - MBOOT_SDCARD_ADDR) / SDCARD_BLOCK_SIZE, len / SDCARD_BLOCK_SIZE);
+        } else {
+            memset(buf, 0xff, len);
+        }
     } else
     #endif
     {
@@ -1538,6 +1549,12 @@ enter_bootloader:
     #if defined(MBOOT_SPIFLASH2_ADDR)
     MBOOT_SPIFLASH2_SPIFLASH->config = MBOOT_SPIFLASH2_CONFIG;
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
+    #endif
+
+    #if defined(MBOOT_SDCARD_ADDR)
+    sdcard_init();
+    sdcard_select_sd();
+    sdcard_power_on();
     #endif
 
     #if MBOOT_ENABLE_PACKING
