@@ -1,7 +1,6 @@
 SRC_SUPERVISOR = \
 	main.c \
 	supervisor/port.c \
-	supervisor/shared/autoreload.c \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
 	supervisor/shared/cpu.c \
@@ -9,6 +8,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
+	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \

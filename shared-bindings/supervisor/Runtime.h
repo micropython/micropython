@@ -34,6 +34,7 @@
 
 extern const mp_obj_type_t supervisor_runtime_type;
 
+supervisor_run_reason_t supervisor_get_run_reason(void);
 void supervisor_set_run_reason(supervisor_run_reason_t run_reason);
 
 bool common_hal_supervisor_runtime_get_serial_connected(void);

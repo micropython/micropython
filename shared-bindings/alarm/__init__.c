@@ -25,7 +25,6 @@
  */
 
 #include "py/obj.h"
-#include "py/reload.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/alarm/__init__.h"
@@ -35,7 +34,6 @@
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/supervisor/Runtime.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/workflow.h"
 
 //| """Alarms and sleep
