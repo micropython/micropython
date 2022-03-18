@@ -64,6 +64,7 @@ struct _emit_t {
     size_t bytecode_offset;
     size_t bytecode_size;
     byte *code_base; // stores both byte code and code info
+    bool overflow;
 
     size_t n_info;
     size_t n_cell;
@@ -260,6 +261,9 @@ STATIC void emit_write_bytecode_byte_label(emit_t *emit, int stack_adj, byte b1,
         if (is_signed) {
             bytecode_offset += 0x4000;
         }
+        if (emit->pass == MP_PASS_EMIT && !(0 <= bytecode_offset && bytecode_offset <= 0x7fff)) {
+            emit->overflow = true;
+        }
         c[1] = 0x80 | (bytecode_offset & 0x7f);
         c[2] = bytecode_offset >> 7;
     }
@@ -274,6 +278,7 @@ void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->last_source_line = 1;
     emit->bytecode_offset = 0;
     emit->code_info_offset = 0;
+    emit->overflow = false;
 
     // Write local state size, exception stack size, scope flags and number of arguments
     {
@@ -371,6 +376,10 @@ bool mp_emit_bc_end_pass(emit_t *emit) {
             emit->code_info_size = emit->code_info_offset;
             emit->bytecode_size = emit->bytecode_offset;
             return false;
+        }
+
+        if (emit->overflow) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("bytecode overflow"));
         }
 
         // Bytecode is finalised, assign it to the raw code object.

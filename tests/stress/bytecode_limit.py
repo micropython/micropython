@@ -24,3 +24,10 @@ x = [1 if x else 123]
 print(x)
 """
 )
+
+# Test overflow of jump offset.
+for n in (430, 431, 432, 433):
+    try:
+        exec("cond = 0\nif cond:\n" + body * n + "else:\n print('cond false')\n")
+    except RuntimeError:
+        print("RuntimeError")
