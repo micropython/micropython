@@ -27,7 +27,7 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code stopped by auto-reload.\n"
+"Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -591,10 +591,6 @@ msgstr "Obie nóżki muszą wspierać przerwania sprzętowe"
 msgid "Brightness must be 0-1.0"
 msgstr "Jasność musi wynosić 0-1,0"
 
-#: shared-bindings/supervisor/__init__.c
-msgid "Brightness must be between 0 and 255"
-msgstr "Jasność musi być pomiędzy 0 a 255"
-
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
@@ -695,6 +691,7 @@ msgstr ""
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr ""
@@ -1440,7 +1437,8 @@ msgstr "Zła nóżka dla prawego kanału"
 #: ports/espressif/common-hal/canio/CAN.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
@@ -1616,6 +1614,7 @@ msgstr "Za długa nazwa"
 msgid "Nimble out of memory"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -2169,7 +2168,6 @@ msgstr ""
 msgid "Size not supported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2458,6 +2456,7 @@ msgstr ""
 msgid "Unknown gatt error: 0x%04x"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
 msgstr ""
@@ -4078,6 +4077,7 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
@@ -4090,6 +4090,7 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitm_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4101,6 +4102,10 @@ msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 #: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/hexky_s2/mpconfigboard.h
+#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_esp32_s2_wroom/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_s2/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
@@ -4672,6 +4677,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Jasność musi być pomiędzy 0 a 255"
 
 #~ msgid "cannot perform relative import"
 #~ msgstr "nie można wykonać relatywnego importu"
