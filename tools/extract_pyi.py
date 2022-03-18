@@ -20,7 +20,6 @@ import black
 import circuitpython_typing
 import circuitpython_typing.socket
 
-
 PATHS_IGNORE = frozenset({"shared-bindings/__future__"})
 
 TYPE_MODULE_IMPORTS_IGNORE = frozenset(
