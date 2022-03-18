@@ -28,10 +28,8 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code stopped by auto-reload.\n"
+"Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
-"\n"
-"Code stopped by auto-reload.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -595,10 +593,6 @@ msgstr "Both pins must support hardware interrupts"
 msgid "Brightness must be 0-1.0"
 msgstr "Brightness must be 0-1.0"
 
-#: shared-bindings/supervisor/__init__.c
-msgid "Brightness must be between 0 and 255"
-msgstr "Brightness must be between 0 and 255"
-
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
@@ -699,6 +693,7 @@ msgstr "Can only alarm on one low pin while others alarm high from deep sleep."
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr "Can only alarm on two low pins from deep sleep."
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Can't set CCCD on local Characteristic"
@@ -1444,7 +1439,8 @@ msgstr "Invalid pin for right channel"
 #: ports/espressif/common-hal/canio/CAN.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
@@ -1620,6 +1616,7 @@ msgstr "Name too long"
 msgid "Nimble out of memory"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "No CCCD for this Characteristic"
@@ -2182,7 +2179,6 @@ msgstr "Side set pin count must be between 1 and 5"
 msgid "Size not supported"
 msgstr "Size not supported"
 
-#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr "Sleep Memory not available"
@@ -2478,6 +2474,7 @@ msgstr "Unknown failure %d"
 msgid "Unknown gatt error: 0x%04x"
 msgstr "Unknown gatt error: 0x%04x"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
 msgstr "Unknown reason."
@@ -4102,6 +4099,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
@@ -4114,6 +4112,7 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitm_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4125,6 +4124,10 @@ msgstr "pow() with 3 arguments requires integers"
 #: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/hexky_s2/mpconfigboard.h
+#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_esp32_s2_wroom/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_s2/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
@@ -4697,6 +4700,16 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Brightness must be between 0 and 255"
 
 #~ msgid "cannot perform relative import"
 #~ msgstr "can't perform relative import"
