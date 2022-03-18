@@ -42,6 +42,10 @@
 #define MBOOT_BOARD_ENTRY_INIT mboot_entry_init
 #endif
 
+#ifndef MBOOT_ADDRESS_SPACE_64BIT
+#define MBOOT_ADDRESS_SPACE_64BIT (0)
+#endif
+
 enum {
     MBOOT_ERRNO_FLASH_ERASE_DISALLOWED = 200,
     MBOOT_ERRNO_FLASH_ERASE_FAILED,
@@ -86,6 +90,13 @@ enum {
     ELEM_MOUNT_LFS2,
 };
 
+// Configure the type used to hold an address in the mboot address space.
+#if MBOOT_ADDRESS_SPACE_64BIT
+typedef uint64_t mboot_addr_t;
+#else
+typedef uint32_t mboot_addr_t;
+#endif
+
 extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
@@ -93,14 +104,15 @@ void led_init(void);
 void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
+uint64_t get_le64(const uint8_t *b);
 void led_state_all(unsigned int mask);
 
 int hw_page_erase(uint32_t addr, uint32_t *next_addr);
-void hw_read(uint32_t addr, int len, uint8_t *buf);
+void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf);
 int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
-void do_read(uint32_t addr, int len, uint8_t *buf);
+void do_read(mboot_addr_t addr, size_t len, uint8_t *buf);
 int do_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);

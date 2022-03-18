@@ -222,20 +222,29 @@ int fsload_process(void) {
             // End of elements.
             return -MBOOT_ERRNO_FSLOAD_NO_MOUNT;
         }
-        uint32_t block_size;
-        if (elem[-1] == 10) {
-            // No block size given, use default.
-            block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
-        } else if (elem[-1] == 14) {
-            // Block size given, extract it.
-            block_size = get_le32(&elem[10]);
+        mboot_addr_t base_addr;
+        mboot_addr_t byte_len;
+        uint32_t block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+        if (elem[-1] == 10 || elem[-1] == 14) {
+            // 32-bit base and length given, extract them.
+            base_addr = get_le32(&elem[2]);
+            byte_len = get_le32(&elem[6]);
+            if (elem[-1] == 14) {
+                // Block size given, extract it.
+                block_size = get_le32(&elem[10]);
+            }
+        #if MBOOT_ADDRESS_SPACE_64BIT
+        } else if (elem[-1] == 22) {
+            // 64-bit base and length given, and block size, so extract them.
+            base_addr = get_le64(&elem[2]);
+            byte_len = get_le64(&elem[10]);
+            block_size = get_le32(&elem[18]);
+        #endif
         } else {
             // Invalid MOUNT element.
             return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
         }
         if (elem[0] == mount_point) {
-            uint32_t base_addr = get_le32(&elem[2]);
-            uint32_t byte_len = get_le32(&elem[6]);
             int ret;
             union {
                 #if MBOOT_VFS_FAT

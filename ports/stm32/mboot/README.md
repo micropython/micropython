@@ -137,9 +137,13 @@ are located and what filename to program.  The elements to use are:
 
 * MOUNT: type=2, len=10, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32>)
 
+* MOUNT: type=2, len=14, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32> <block-size:u32>)
+
+* MOUNT: type=2, len=22, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u64> <byte-len:u64> <block-size:u32>)
+
 * FSLOAD: type=3, len=1+n, payload=(<mount-point:u8> <filename...>)
 
-`u32` means unsigned 32-bit little-endian integer.
+`u32`/`u64` mean unsigned 32-bit/64-bit little-endian integers.
 
 The firmware to load must be a gzip'd DfuSe file (.dfu.gz) and stored within a
 FAT or littlefs formatted partition.

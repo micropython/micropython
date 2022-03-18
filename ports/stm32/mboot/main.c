@@ -117,6 +117,11 @@ uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
 }
 
+uint64_t get_le64(const uint8_t *b) {
+    return (uint64_t)b[0] | (uint64_t)b[1] << 8 | (uint64_t)b[2] << 16 | (uint64_t)b[3] << 24
+        | (uint64_t)b[4] << 32 | (uint64_t)b[5] << 40 | (uint64_t)b[6] << 48 | (uint64_t)b[7] << 56;
+}
+
 mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
@@ -636,7 +641,7 @@ int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
     return ret;
 }
 
-void hw_read(uint32_t addr, int len, uint8_t *buf) {
+void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -650,7 +655,7 @@ void hw_read(uint32_t addr, int len, uint8_t *buf) {
     #endif
     {
         // Other addresses, just read directly from memory
-        memcpy(buf, (void*)addr, len);
+        memcpy(buf, (void *)(uintptr_t)addr, len);
     }
     led0_state(LED0_STATE_SLOW_FLASH);
 }
@@ -688,7 +693,7 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     #endif
 }
 
-void do_read(uint32_t addr, int len, uint8_t *buf) {
+void do_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     #if MBOOT_ENABLE_PACKING
     // Read disabled on packed (encrypted) mode.
     dfu_context.status = DFU_STATUS_ERROR_FILE;
