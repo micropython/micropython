@@ -33,12 +33,12 @@
 #include "shared-bindings/mdns/RemoteService.h"
 
 //| class RemoteService:
-//|     """Encapsulates information about a remote service that was found during a query. This
+//|     """Encapsulates information about a remote service that was found during a search. This
 //|     object may only be created by a `mdns.Server`. It has no user-visible constructor."""
 //|
 
 //|     def __init__(self) -> None:
-//|         """Cannot be instantiated directly. Use `mdns.Server.query`."""
+//|         """Cannot be instantiated directly. Use `mdns.Server.find`."""
 //|         ...
 //|
 

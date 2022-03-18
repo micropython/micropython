@@ -135,7 +135,7 @@ const mp_obj_property_t mdns_server_instance_name_obj = {
 //|         """Find all locally available remote services with the given service type and protocol.
 //|
 //|         This doesn't allow for direct hostname lookup. To do that, use
-//|         `socketpool.SocketPool.getaddrinfo()`
+//|         `socketpool.SocketPool.getaddrinfo()`.
 //|
 //|         :param str service_type: The service type such as "_http"
 //|         :param str protocol: The service protocol such as "_tcp"
