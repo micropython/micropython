@@ -140,7 +140,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_deinit_obj, mdns_remoteservi
 STATIC const mp_rom_map_elem_t mdns_remoteservice_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hostname),       MP_ROM_PTR(&mdns_remoteservice_hostname_obj) },
     { MP_ROM_QSTR(MP_QSTR_instance_name),  MP_ROM_PTR(&mdns_remoteservice_instance_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ipv4_address),   MP_ROM_PTR(&mdns_remoteservice_instance_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_service_type),   MP_ROM_PTR(&mdns_remoteservice_service_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_protocol),       MP_ROM_PTR(&mdns_remoteservice_protocol_obj) },
     { MP_ROM_QSTR(MP_QSTR_port),           MP_ROM_PTR(&mdns_remoteservice_port_obj) },

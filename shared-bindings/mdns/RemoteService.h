@@ -33,9 +33,9 @@
 
 extern const mp_obj_type_t mdns_remoteservice_type;
 
-const char * common_hal_mdns_remoteservice_get_service_type(mdns_remoteservice_obj_t *self);
-const char * common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t *self);
-const char * common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self);
-const char * common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self);
+const char *common_hal_mdns_remoteservice_get_service_type(mdns_remoteservice_obj_t *self);
+const char *common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t *self);
+const char *common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self);
+const char *common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self);
 mp_int_t common_hal_mdns_remoteservice_get_port(mdns_remoteservice_obj_t *self);
 void common_hal_mdns_remoteservice_deinit(mdns_remoteservice_obj_t *self);

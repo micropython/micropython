@@ -26,19 +26,19 @@
 
 #include "shared-bindings/mdns/RemoteService.h"
 
-const char * common_hal_mdns_remoteservice_get_service_type(mdns_remoteservice_obj_t *self) {
+const char *common_hal_mdns_remoteservice_get_service_type(mdns_remoteservice_obj_t *self) {
     return self->result->service_type;
 }
 
-const char * common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t *self) {
+const char *common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t *self) {
     return self->result->proto;
 }
 
-const char * common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self) {
+const char *common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self) {
     return self->result->instance_name;
 }
 
-const char * common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self) {
+const char *common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self) {
     return self->result->hostname;
 }
 

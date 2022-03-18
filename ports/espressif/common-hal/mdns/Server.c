@@ -76,7 +76,7 @@ bool common_hal_mdns_server_deinited(mdns_server_obj_t *self) {
     return mdns_instance_name_set(NULL) == ESP_ERR_INVALID_STATE;
 }
 
-const char * common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {
+const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {
     return self->hostname;
 }
 
@@ -85,7 +85,7 @@ void common_hal_mdns_server_set_hostname(mdns_server_obj_t *self, const char *ho
     self->hostname = hostname;
 }
 
-const char * common_hal_mdns_server_get_instance_name(mdns_server_obj_t *self) {
+const char *common_hal_mdns_server_get_instance_name(mdns_server_obj_t *self) {
     if (self->instance_name == NULL) {
         return self->hostname;
     }
@@ -121,7 +121,7 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     // Don't error if we're out of memory. Instead, truncate the tuple.
     uint8_t added = 0;
     while (next != NULL) {
-        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), true, false);
+        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), GC_ALLOC_FLAG_HAS_FINALISER, false);
         if (service == NULL) {
             if (added == 0) {
                 m_malloc_fail(sizeof(mdns_remoteservice_obj_t));
