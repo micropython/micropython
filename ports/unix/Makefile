@@ -1,5 +1,5 @@
 # Select the variant to build for.
-VARIANT ?= standard
+VARIANT ?= margol
 
 # If the build directory is not given, make it reflect the variant name.
 BUILD ?= build-$(VARIANT)
@@ -217,9 +217,16 @@ CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 SRC_MOD += modjni.c
 endif
 
+ifeq ($(MICROPY_LIB_PROGRAM),1)
+SRC_C += \
+	minimal_main.c
+else
+SRC_C += \
+	main.c
+endif
+
 # source files
 SRC_C += \
-	main.c \
 	gccollect.c \
 	unix_mphal.c \
 	mpthreadport.c \
