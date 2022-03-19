@@ -7,7 +7,7 @@
 
 extern const mp_obj_type_t vectorio_polygon_type;
 
-void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t points_list);
+void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t points_list, uint16_t color_index);
 void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio_event_t notification);
 
 
@@ -19,6 +19,9 @@ void common_hal_vectorio_polygon_get_area(void *polygon, displayio_area_t *out_a
 
 mp_obj_t common_hal_vectorio_polygon_get_points(vectorio_polygon_t *self);
 void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t points_list);
+
+uint16_t common_hal_vectorio_polygon_get_color_index(void *obj);
+void common_hal_vectorio_polygon_set_color_index(void *obj, uint16_t color_index);
 
 mp_obj_t common_hal_vectorio_polygon_get_draw_protocol(void *polygon);
 

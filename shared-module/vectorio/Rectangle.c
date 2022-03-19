@@ -6,10 +6,10 @@
 #include "stdlib.h"
 
 
-void common_hal_vectorio_rectangle_construct(vectorio_rectangle_t *self, uint32_t width, uint32_t height, uint32_t color_number) {
+void common_hal_vectorio_rectangle_construct(vectorio_rectangle_t *self, uint32_t width, uint32_t height, uint16_t color_index) {
     self->width = width;
     self->height = height;
-    self->color_number = color_number;
+    self->color_index = color_index + 1;
 }
 
 void common_hal_vectorio_rectangle_set_on_dirty(vectorio_rectangle_t *self, vectorio_event_t on_dirty) {
@@ -22,7 +22,7 @@ void common_hal_vectorio_rectangle_set_on_dirty(vectorio_rectangle_t *self, vect
 uint32_t common_hal_vectorio_rectangle_get_pixel(void *obj, int16_t x, int16_t y) {
     vectorio_rectangle_t *self = obj;
     if (x >= 0 && y >= 0 && x < self->width && y < self->height) {
-        return self->color_number;
+        return self->color_index;
     }
     return 0;
 }
@@ -68,14 +68,14 @@ void common_hal_vectorio_rectangle_set_height(void *obj, int16_t height) {
     }
 }
 
-int16_t common_hal_vectorio_rectangle_get_color_number(void *obj) {
+uint16_t common_hal_vectorio_rectangle_get_color_index(void *obj) {
     vectorio_rectangle_t *self = obj;
-    return self->color_number;
+    return self->color_index - 1;
 }
 
-void common_hal_vectorio_rectangle_set_color_number(void *obj, int16_t color_number) {
+void common_hal_vectorio_rectangle_set_color_index(void *obj, uint16_t color_index) {
     vectorio_rectangle_t *self = obj;
-    self->color_number = abs(color_number);
+    self->color_index = abs(color_index + 1);
     if (self->on_dirty.obj != NULL) {
         self->on_dirty.event(self->on_dirty.obj);
     }
