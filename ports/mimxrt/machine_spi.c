@@ -277,6 +277,10 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         LPSPI_MasterTransferCreateHandleEDMA(self->spi_inst, &g_master_edma_handle, LPSPI_EDMAMasterCallback, self,
             &lpspiEdmaMasterRxRegToRxDataHandle,
             &lpspiEdmaMasterTxDataToTxRegHandle);
+
+        // Wait a short while for a previous transfer to finish, but not forever
+        for (volatile int j = 0; (j < 5000) && ((LPSPI_GetStatusFlags(self->spi_inst) & kLPSPI_ModuleBusyFlag) != 0); j++) {}
+
         // Start master transfer
         lpspi_transfer_t masterXfer;
         masterXfer.txData = (uint8_t *)src;
@@ -297,12 +301,15 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         } else if (src) {
             DCACHE_CleanByRange((uint32_t)src, len);
         }
-        LPSPI_MasterTransferEDMA(self->spi_inst, &g_master_edma_handle, &masterXfer);
-
-        while (self->transfer_busy) {
-            MICROPY_EVENT_POLL_HOOK
+        if (LPSPI_MasterTransferEDMA(self->spi_inst, &g_master_edma_handle, &masterXfer) != kStatus_Success) {
+            L1CACHE_EnableDCache();
+            mp_raise_OSError(EIO);
+        } else {
+            while (self->transfer_busy) {
+                MICROPY_EVENT_POLL_HOOK
+            }
+            L1CACHE_EnableDCache();
         }
-        L1CACHE_EnableDCache();
     }
     // Release DMA channels, even if never allocated.
     if (chan_rx >= 0) {
@@ -313,10 +320,9 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
 
     if (!use_dma) {
-        // Wait until a previous Transfer is finished
-        while (LPSPI_GetTxFifoCount(self->spi_inst) > 0) {
-            MICROPY_EVENT_POLL_HOOK
-        }
+        // Wait a short while for a previous transfer to finish, but not forever
+        for (volatile int j = 0; (j < 5000) && ((LPSPI_GetStatusFlags(self->spi_inst) & kLPSPI_ModuleBusyFlag) != 0); j++) {}
+
         // Reconfigure the TCR, required after switch between DMA vs. non-DMA
         LPSPI_Enable(self->spi_inst, false);  // Disable first before new settings are applied
         self->spi_inst->TCR = LPSPI_TCR_CPOL(self->master_config->cpol) | LPSPI_TCR_CPHA(self->master_config->cpha) |
@@ -330,7 +336,9 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
         masterXfer.dataSize = len;
         masterXfer.configFlags = (self->master_config->whichPcs << LPSPI_MASTER_PCS_SHIFT) | kLPSPI_MasterPcsContinuous | kLPSPI_MasterByteSwap;
 
-        LPSPI_MasterTransferBlocking(self->spi_inst, &masterXfer);
+        if (LPSPI_MasterTransferBlocking(self->spi_inst, &masterXfer) != kStatus_Success) {
+            mp_raise_OSError(EIO);
+        }
     }
 }
 
