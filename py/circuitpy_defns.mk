@@ -174,6 +174,10 @@ ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
 
+ifeq ($(CIRCUITPY_FUTURE),1)
+SRC_PATTERNS += __future__/%
+endif
+
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
@@ -312,6 +316,9 @@ endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
+ifeq ($(CIRCUITPY_USB_HOST),1)
+SRC_PATTERNS += usb_host/% usb/%
+endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
 endif
@@ -422,6 +429,8 @@ SRC_COMMON_HAL_ALL = \
 	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
+	usb_host/__init__.c \
+	usb_host/Port.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
@@ -451,6 +460,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	__future__/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
 	countio/Edge.c \
@@ -577,6 +587,9 @@ SRC_SHARED_MODULE_ALL = \
 	time/__init__.c \
 	traceback/__init__.c \
 	uheap/__init__.c \
+	usb/__init__.c \
+	usb/core/__init__.c \
+	usb/core/Device.c \
 	ustack/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
@@ -638,6 +651,7 @@ endif
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+	usb/utf16le.c \
 )
 
 SRC_COMMON_HAL_INTERNAL = \

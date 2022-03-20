@@ -293,6 +293,15 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = (polarity) ? SPI_POLARITY_HIGH : SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = (phase) ? SPI_PHASE_2EDGE : SPI_PHASE_1EDGE;
 
+    // Set SCK pull up or down based on SPI CLK Polarity
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = pin_mask(self->sck->pin->number);
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = (polarity) ? GPIO_PULLUP : GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = self->sck->altfn_index;
+    HAL_GPIO_Init(pin_port(self->sck->pin->port), &GPIO_InitStruct);
+
     self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(baudrate, &self->prescaler,
         get_busclock(self->handle.Instance));
 

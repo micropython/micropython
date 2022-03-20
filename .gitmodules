@@ -145,8 +145,8 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_RFM69.git
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
-	url = https://github.com/adafruit/esp-idf.git
-	branch = circuitpython-v4.4
+	url = https://github.com/espressif/esp-idf.git
+	branch = release/v4.4
 [submodule "ports/espressif/certificates/nina-fw"]
 	path = ports/espressif/certificates/nina-fw
 	url = https://github.com/adafruit/nina-fw.git
@@ -277,3 +277,9 @@
 [submodule "ports/stm/st_driver/stm32f4xx_hal_driver"]
 	path = ports/stm/st_driver/stm32f4xx_hal_driver
 	url = https://github.com/adafruit/stm32f4xx_hal_driver.git
+[submodule "frozen/Adafruit_CircuitPython_PortalBase"]
+	path = frozen/Adafruit_CircuitPython_PortalBase
+	url = https://github.com/adafruit/Adafruit_CircuitPython_PortalBase.git
+[submodule "frozen/Adafruit_CircuitPython_FakeRequests"]
+	path = frozen/Adafruit_CircuitPython_FakeRequests
+	url = https://github.com/adafruit/Adafruit_CircuitPython_FakeRequests.git

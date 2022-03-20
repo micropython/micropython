@@ -42,8 +42,6 @@
 #define SPI_FLASH_SCK_PIN           (&pin_PB13)
 #define SPI_FLASH_CS_PIN            (&pin_PB12)
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS (500)
-
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x2000 - 0xC000)
 
 #define AUTORESET_DELAY_MS (500)

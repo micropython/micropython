@@ -21,3 +21,9 @@ black
 
 # for combining the Nordic SoftDevice with CircuitPython
 intelhex
+
+# for building & testing natmods
+pyelftools
+
+# for stubs and annotations
+adafruit-circuitpython-typing

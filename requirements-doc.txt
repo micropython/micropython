@@ -15,3 +15,6 @@ sphinx-rtd-theme
 sphinxcontrib-svg2pdfconverter
 readthedocs-sphinx-search
 myst-parser
+
+# For stubs and annotations
+adafruit-circuitpython-typing

@@ -51,11 +51,16 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t *self,
     self->polarity = polarity;
     self->phase = phase;
 
-    common_hal_digitalio_digitalinout_construct(&self->command, command);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
+    self->command.base.type = &mp_type_NoneType;
+    if (command != NULL) {
+        self->command.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->command, command);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->command, true, DRIVE_MODE_PUSH_PULL);
+        common_hal_never_reset_pin(command);
+    }
     self->reset.base.type = &mp_type_NoneType;
     if (reset != NULL) {
         self->reset.base.type = &digitalio_digitalinout_type;
@@ -65,7 +70,6 @@ void common_hal_displayio_fourwire_construct(displayio_fourwire_obj_t *self,
         common_hal_displayio_fourwire_reset(self);
     }
 
-    common_hal_never_reset_pin(command);
     common_hal_never_reset_pin(chip_select);
 }
 
@@ -114,18 +118,57 @@ bool common_hal_displayio_fourwire_begin_transaction(mp_obj_t obj) {
 void common_hal_displayio_fourwire_send(mp_obj_t obj, display_byte_type_t data_type,
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length) {
     displayio_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
-    common_hal_digitalio_digitalinout_set_value(&self->command, data_type == DISPLAY_DATA);
-    if (chip_select == CHIP_SELECT_TOGGLE_EVERY_BYTE) {
-        // Toggle chip select after each command byte in case the display driver
-        // IC latches commands based on it.
+    if (self->command.base.type == &mp_type_NoneType) {
+        // When the data/command pin is not specified, we simulate a 9-bit SPI mode, by
+        // adding a data/command bit to every byte, and then splitting the resulting data back
+        // into 8-bit chunks for transmission. If the length of the data being transmitted
+        // is not a multiple of 8, there will be additional bits at the end of the
+        // transmission. We toggle the CS pin to make the receiver discard them.
+        uint8_t buffer = 0;
+        uint8_t bits = 0;
+        uint8_t dc = (data_type == DISPLAY_DATA);
+
         for (size_t i = 0; i < data_length; i++) {
-            common_hal_busio_spi_write(self->bus, &data[i], 1);
+            bits = (bits + 1) % 8;
+
+            if (bits == 0) {
+                // send the previous byte and the dc bit
+                // we will send the current byte later
+                buffer = (buffer << 1) | dc;
+                common_hal_busio_spi_write(self->bus, &buffer, 1);
+                // send the current byte, because previous byte already filled all bits
+                common_hal_busio_spi_write(self->bus, &data[i], 1);
+            } else {
+                // send remaining bits from previous byte, dc and beginning of current byte
+                buffer = (buffer << (9 - bits)) | (dc << (8 - bits)) | (data[i] >> bits);
+                common_hal_busio_spi_write(self->bus, &buffer, 1);
+            }
+            // save the current byte
+            buffer = data[i];
+        }
+        // send any remaining bits
+        if (bits > 0) {
+            buffer = buffer << (8 - bits);
+            common_hal_busio_spi_write(self->bus, &buffer, 1);
+            // toggle CS to discard superfluous bits
             common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
             common_hal_mcu_delay_us(1);
             common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
         }
     } else {
-        common_hal_busio_spi_write(self->bus, data, data_length);
+        common_hal_digitalio_digitalinout_set_value(&self->command, data_type == DISPLAY_DATA);
+        if (chip_select == CHIP_SELECT_TOGGLE_EVERY_BYTE) {
+            // Toggle chip select after each command byte in case the display driver
+            // IC latches commands based on it.
+            for (size_t i = 0; i < data_length; i++) {
+                common_hal_busio_spi_write(self->bus, &data[i], 1);
+                common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
+                common_hal_mcu_delay_us(1);
+                common_hal_digitalio_digitalinout_set_value(&self->chip_select, false);
+            }
+        } else {
+            common_hal_busio_spi_write(self->bus, data, data_length);
+        }
     }
 }
 

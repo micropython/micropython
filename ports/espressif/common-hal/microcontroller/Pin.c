@@ -50,6 +50,10 @@ void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
     never_reset_pin_number(pin->number);
 }
 
+MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    return false;
+}
+
 STATIC void _reset_pin(gpio_num_t pin_number) {
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used for flash and RAM.
@@ -75,6 +79,11 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
         return;
     }
     #endif
+
+    // Give the board a chance to reset the pin in a particular way.
+    if (espressif_board_reset_pin_number(pin_number)) {
+        return;
+    }
 
     gpio_reset_pin(pin_number);
 

@@ -43,6 +43,7 @@
 // arrays use 0 based numbering: UART1 is stored at index 0
 #define MAX_UART 8
 STATIC bool reserved_uart[MAX_UART];
+STATIC bool never_reset_uart[MAX_UART];
 
 #define UART_CLOCK_FREQ (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U)
 
@@ -75,9 +76,20 @@ STATIC void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, stat
 
 void uart_reset(void) {
     for (uint i = 0; i < MP_ARRAY_SIZE(mcu_uart_banks); i++) {
+        if (never_reset_uart[i]) {
+            continue;
+        }
         reserved_uart[i] = false;
         LPUART_Deinit(mcu_uart_banks[i]);
     }
+}
+
+void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
+    never_reset_uart[self->index] = true;
+    common_hal_never_reset_pin(self->tx);
+    common_hal_never_reset_pin(self->rx);
+    common_hal_never_reset_pin(self->rts);
+    common_hal_never_reset_pin(self->cts);
 }
 
 void common_hal_busio_uart_construct(busio_uart_obj_t *self,
@@ -103,6 +115,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     const uint32_t rx_count = MP_ARRAY_SIZE(mcu_uart_rx_list);
     const uint32_t tx_count = MP_ARRAY_SIZE(mcu_uart_tx_list);
 
+    const mcu_periph_obj_t *tx_config = NULL;
+    const mcu_periph_obj_t *rx_config = NULL;
+    const mcu_periph_obj_t *rts_config = NULL;
+    const mcu_periph_obj_t *cts_config = NULL;
+
     // RX loop handles rx only, or both rx and tx
     if (rx != NULL) {
         for (uint32_t i = 0; i < rx_count; ++i) {
@@ -121,11 +138,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                         uart_taken = true;
                         break;
                     }
-                    self->rx = &mcu_uart_rx_list[i];
-                    self->tx = &mcu_uart_tx_list[j];
+                    rx_config = &mcu_uart_rx_list[i];
+                    tx_config = &mcu_uart_tx_list[j];
                     break;
                 }
-                if (self->tx != NULL || uart_taken) {
+                if (tx_config != NULL || uart_taken) {
                     break;
                 }
             } else {
@@ -133,7 +150,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                     uart_taken = true;
                     break;
                 }
-                self->rx = &mcu_uart_rx_list[i];
+                rx_config = &mcu_uart_rx_list[i];
             }
         }
     } else if (tx != NULL) {
@@ -146,17 +163,17 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 uart_taken = true;
                 break;
             }
-            self->tx = &mcu_uart_tx_list[i];
+            tx_config = &mcu_uart_tx_list[i];
             break;
         }
     } else {
         mp_raise_ValueError(translate("Supply at least one UART pin"));
     }
 
-    if (rx && !self->rx) {
+    if (rx && !rx_config) {
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
     }
-    if (tx && !self->tx) {
+    if (tx && !tx_config) {
         mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
     }
 
@@ -187,52 +204,58 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (rts != NULL) {
         for (uint32_t i = 0; i < rts_count; ++i) {
-            if (mcu_uart_rts_list[i].bank_idx == self->rx->bank_idx) {
+            if (mcu_uart_rts_list[i].bank_idx == rx_config->bank_idx) {
                 if (mcu_uart_rts_list[i].pin == rts) {
-                    self->rts = &mcu_uart_rts_list[i];
+                    rts_config = &mcu_uart_rts_list[i];
                     break;
                 }
             }
         }
-        if (self->rts == NULL) {
+        if (rts_config == NULL) {
             mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
         }
     }
 
     if (cts != NULL) {
         for (uint32_t i = 0; i < cts_count; ++i) {
-            if (mcu_uart_cts_list[i].bank_idx == self->rx->bank_idx) {
+            if (mcu_uart_cts_list[i].bank_idx == tx_config->bank_idx) {
                 if (mcu_uart_cts_list[i].pin == cts) {
-                    self->cts = &mcu_uart_cts_list[i];
+                    cts_config = &mcu_uart_cts_list[i];
                     break;
                 }
             }
         }
-        if (self->cts == NULL) {
+        if (cts == NULL) {
             mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
         }
     }
 
+
     if (self->rx) {
-        self->uart = mcu_uart_banks[self->rx->bank_idx - 1];
+        self->index = rx_config->bank_idx - 1;
     } else {
         assert(self->tx);
-        self->uart = mcu_uart_banks[self->tx->bank_idx - 1];
+        self->index = tx_config->bank_idx - 1;
     }
+    self->uart = mcu_uart_banks[self->index];
 
     assert(self->uart);
 
-    if (self->rx) {
-        config_periph_pin(self->rx);
+    if (rx_config) {
+        config_periph_pin(rx_config);
+        self->rx = rx;
     }
-    if (self->tx) {
-        config_periph_pin(self->tx);
+    if (tx_config) {
+        config_periph_pin(tx_config);
+        self->tx = tx;
     }
-    if (self->rts) {
-        config_periph_pin(self->rts);
+    if (rts_config) {
+        config_periph_pin(rts_config);
+        self->rts = rts;
     }
-    if (self->cts) {
-        config_periph_pin(self->cts);
+    if (cts_config) {
+        config_periph_pin(cts_config);
+        self->cts = cts;
     }
 
     lpuart_config_t config = { 0 };
@@ -245,10 +268,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     config.enableRxRTS = self->rts != NULL;
     config.enableTxCTS = self->cts != NULL;
     if (self->rts != NULL) {
-        claim_pin(self->rts->pin);
+        claim_pin(self->rts);
     }
     if (self->cts != NULL) {
-        claim_pin(self->cts->pin);
+        claim_pin(self->cts);
     }
 
     LPUART_Init(self->uart, &config, UART_CLOCK_FREQ);
@@ -265,12 +288,16 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->uart->MODIR = modir;
 
     if (self->tx != NULL) {
-        claim_pin(self->tx->pin);
+        claim_pin(self->tx);
     }
 
     if (self->rx != NULL) {
-        // The LPUART ring buffer wastes one byte to distinguish between full and empty.
-        self->ringbuf = gc_alloc(receiver_buffer_size + 1, false, true /*long-lived*/);
+        if (receiver_buffer == NULL) {
+            self->ringbuf = gc_alloc(receiver_buffer_size, false, true /*long-lived*/);
+        } else {
+            self->ringbuf = receiver_buffer;
+        }
+
 
         if (!self->ringbuf) {
             LPUART_Deinit(self->uart);
@@ -280,9 +307,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);
         // Pass actual allocated size; the LPUART routines are cognizant that
         // the capacity is one less than the size.
-        LPUART_TransferStartRingBuffer(self->uart, &self->handle, self->ringbuf, receiver_buffer_size + 1);
+        LPUART_TransferStartRingBuffer(self->uart, &self->handle, self->ringbuf, receiver_buffer_size);
 
-        claim_pin(self->rx->pin);
+        claim_pin(self->rx);
     }
 }
 
@@ -294,19 +321,15 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
-    if (self->rx) {
-        reserved_uart[self->rx->bank_idx - 1] = false;
-    } else {
-        reserved_uart[self->tx->bank_idx - 1] = false;
-    }
+
+    reserved_uart[self->index] = false;
+    never_reset_uart[self->index] = false;
 
     LPUART_Deinit(self->uart);
     gc_free(self->ringbuf);
 
-
-    common_hal_reset_pin(self->rx->pin);
-    common_hal_reset_pin(self->tx->pin);
-
+    common_hal_reset_pin(self->rx);
+    common_hal_reset_pin(self->tx);
 
     self->rx = NULL;
     self->tx = NULL;

@@ -34,7 +34,9 @@ jobs:
         gcc --version
         python3 --version
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Website
       run: python3 build_board_info.py
       working-directory: tools

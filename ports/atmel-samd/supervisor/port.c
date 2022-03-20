@@ -129,8 +129,9 @@
 #include "common-hal/_pew/PewPew.h"
 #endif
 static volatile bool sleep_ok = true;
+
 #ifdef SAMD21
-static uint8_t _tick_event_channel = 0;
+uint8_t _tick_event_channel;
 
 // Sleeping requires a register write that can stall interrupt handling. Turning
 // off sleeps allows for more accurate interrupt timing. (Python still thinks
@@ -142,7 +143,13 @@ void rtc_start_pulse(void) {
 void rtc_end_pulse(void) {
     sleep_ok = true;
 }
-#endif
+#endif // SAMD21
+
+static void reset_ticks(void) {
+    #ifdef SAMD21
+    _tick_event_channel = EVSYS_SYNCH_NUM;
+    #endif
+}
 
 extern volatile bool mp_msc_enabled;
 
@@ -426,9 +433,7 @@ void reset_port(void) {
     #endif
 
     reset_event_system();
-    #ifdef SAMD21
-    _tick_event_channel = EVSYS_SYNCH_NUM;
-    #endif
+    reset_ticks();
 
     reset_all_pins();
 
@@ -498,7 +503,7 @@ uint32_t port_get_saved_word(void) {
 static volatile uint64_t overflowed_ticks = 0;
 
 static uint32_t _get_count(uint64_t *overflow_count) {
-    while(1) {
+    while (1) {
         // Disable interrupts so we can grab the count and the overflow atomically.
         common_hal_mcu_disable_interrupts();
 
@@ -521,7 +526,7 @@ static uint32_t _get_count(uint64_t *overflow_count) {
             return count;
         }
 
-    // Try again if overflow hasn't been processed yet.
+        // Try again if overflow hasn't been processed yet.
     }
 }
 
@@ -620,7 +625,7 @@ void port_enable_tick(void) {
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_PER2;
     #endif
     #ifdef SAMD21
-    // SAMD21 ticks won't survive port_reset(). This *should* be ok since it'll
+    // SAMD21 ticks won't survive reset_port(). This *should* be ok since it'll
     // be triggered by ticks and no Python will be running.
     if (_tick_event_channel >= EVSYS_SYNCH_NUM) {
         turn_on_event_system();
@@ -653,6 +658,7 @@ void port_disable_tick(void) {
         uint8_t value = 1 << _tick_event_channel;
         EVSYS->INTENCLR.reg = EVSYS_INTENSET_EVD(value);
     }
+    _tick_event_channel = EVSYS_SYNCH_NUM;
     #endif
 }
 

@@ -164,6 +164,13 @@ SRC_C += \
 	reset.c \
 	supervisor/flexspi_nor_flash_ops.c
 
+ifeq ($(CIRCUITPY_USB_HOST), 1)
+SRC_C += \
+	lib/tinyusb/src/portable/chipidea/ci_hs/hcd_ci_hs.c \
+	lib/tinyusb/src/portable/ehci/ehci.c \
+
+endif
+
 # TODO
 #ifeq ($(CIRCUITPY_AUDIOBUSIO),1)
 #SRC_C += peripherals/samd/i2s.c peripherals/samd/$(CHIP_FAMILY)/i2s.c
@@ -219,3 +226,13 @@ include $(TOP)/py/mkrules.mk
 # https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
 print-%:
 	@echo $* = $($*)
+
+ifeq ($(CHIP_FAMILY), MIMXRT1062)
+PYOCD_TARGET = mimxrt1060
+endif
+
+# Flash using pyocd
+PYOCD_OPTION ?=
+flash: $(BUILD)/firmware.hex
+	pyocd flash -t $(PYOCD_TARGET) $(PYOCD_OPTION) $<
+	pyocd reset -t $(PYOCD_TARGET)

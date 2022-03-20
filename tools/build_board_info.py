@@ -70,7 +70,9 @@ extension_by_board = {
     "meowbit_v121": UF2,
     # esp32c3
     "ai_thinker_esp32-c3s": BIN,
+    "ai_thinker_esp32-c3s-2m": BIN,
     "espressif_esp32c3_devkitm_1_n4": BIN,
+    "lilygo_ttgo_t-01c3": BIN,
     "microdev_micro_c3": BIN,
     # broadcom
     "raspberrypi_zero": KERNEL_IMG,

@@ -67,9 +67,13 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
-    self->read.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->read, read);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
+    self->read.base.type = &mp_type_NoneType;
+    if (read != NULL) {
+        self->read.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->read, read);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
+        never_reset_pin_number(read->number);
+    }
 
     self->data0_pin = data_pin;
     self->write = write_pin;
@@ -86,7 +90,6 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
     never_reset_pin_number(write_pin);
-    never_reset_pin_number(read->number);
     for (uint8_t i = 0; i < 8; i++) {
         never_reset_pin_number(data_pin + i);
     }
@@ -121,8 +124,12 @@ void common_hal_paralleldisplay_parallelbus_deinit(paralleldisplay_parallelbus_o
     reset_pin_number(self->command.pin->number);
     reset_pin_number(self->chip_select.pin->number);
     reset_pin_number(self->write);
-    reset_pin_number(self->read.pin->number);
-    reset_pin_number(self->reset.pin->number);
+    if (self->read.base.type != &mp_type_NoneType) {
+        reset_pin_number(self->read.pin->number);
+    }
+    if (self->reset.base.type != &mp_type_NoneType) {
+        reset_pin_number(self->reset.pin->number);
+    }
 }
 
 bool common_hal_paralleldisplay_parallelbus_reset(mp_obj_t obj) {

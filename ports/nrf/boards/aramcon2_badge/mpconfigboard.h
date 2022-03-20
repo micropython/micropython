@@ -54,8 +54,6 @@
 
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing the left button at start up\n")
 
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
-
 #define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
 
 #define BOARD_FLASH_SIZE (FLASH_SIZE - 0x4000 - CIRCUITPY_INTERNAL_NVM_SIZE)
