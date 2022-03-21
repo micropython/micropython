@@ -42,6 +42,10 @@
 #include "components/esp_wifi/include/esp_wifi.h"
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
+#if CIRCUITPY_MDNS
+#include "components/mdns/include/mdns.h"
+#endif
+
 #define MAC_ADDRESS_LENGTH 6
 
 static void set_mode_station(wifi_radio_obj_t *self, bool state) {
@@ -91,6 +95,9 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
         if (self->current_scan != NULL) {
             common_hal_wifi_radio_stop_scanning_networks(self);
         }
+        #if CIRCUITPY_MDNS
+        mdns_free();
+        #endif
         ESP_ERROR_CHECK(esp_wifi_stop());
         self->started = false;
         return;

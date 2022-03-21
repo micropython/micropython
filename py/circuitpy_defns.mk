@@ -214,6 +214,9 @@ endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
 endif
+ifeq ($(CIRCUITPY_MDNS),1)
+SRC_PATTERNS += mdns/%
+endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
 SRC_PATTERNS += neopixel_write/%
 endif
@@ -401,6 +404,9 @@ SRC_COMMON_HAL_ALL = \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
+	mdns/__init__.c \
+	mdns/Server.c \
+	mdns/RemoteService.c \
 	neopixel_write/__init__.c \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
