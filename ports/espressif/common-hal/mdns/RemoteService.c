@@ -27,22 +27,37 @@
 #include "shared-bindings/mdns/RemoteService.h"
 
 const char *common_hal_mdns_remoteservice_get_service_type(mdns_remoteservice_obj_t *self) {
+    if (self->result == NULL) {
+        return "";
+    }
     return self->result->service_type;
 }
 
 const char *common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t *self) {
+    if (self->result == NULL) {
+        return "";
+    }
     return self->result->proto;
 }
 
 const char *common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self) {
+    if (self->result == NULL) {
+        return "";
+    }
     return self->result->instance_name;
 }
 
 const char *common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self) {
+    if (self->result == NULL) {
+        return "";
+    }
     return self->result->hostname;
 }
 
 mp_int_t common_hal_mdns_remoteservice_get_port(mdns_remoteservice_obj_t *self) {
+    if (self->result == NULL) {
+        return 0;
+    }
     return self->result->port;
 }
 
