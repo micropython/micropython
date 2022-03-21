@@ -93,7 +93,11 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     #endif
     {{&machine_pin_type}, GPIO_NUM_18},
     {{&machine_pin_type}, GPIO_NUM_19},
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
     {{&machine_pin_type}, GPIO_NUM_20},
+    #else
+    {{NULL}, -1},
+    #endif
     {{&machine_pin_type}, GPIO_NUM_21},
     {{&machine_pin_type}, GPIO_NUM_22},
     {{&machine_pin_type}, GPIO_NUM_23},
