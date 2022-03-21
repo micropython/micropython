@@ -2450,6 +2450,10 @@ msgstr "Kan inte initiera tolken"
 msgid "Unable to read color palette data"
 msgstr "Det går inte att läsa färgpalettdata"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "Unable to start mDNS query"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Det gick inte att skriva till nvm."
@@ -3685,6 +3689,14 @@ msgstr "long int stöds inte i denna build"
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "loopback + tyst läge stöds inte av kringutrustning"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS already initialized"
+msgstr ""
+
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS only works with built-in WiFi"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "f-sträng har felaktigt format"
@@ -4133,6 +4145,7 @@ msgstr "pow() med 3 argument kräver heltal"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
