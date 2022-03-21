@@ -246,8 +246,8 @@ class Opcodes:
     MP_BC_JUMP                        = (MP_BC_BASE_JUMP_E + 0x02) # signed relative bytecode offset
     MP_BC_POP_JUMP_IF_TRUE            = (MP_BC_BASE_JUMP_E + 0x03) # signed relative bytecode offset
     MP_BC_POP_JUMP_IF_FALSE           = (MP_BC_BASE_JUMP_E + 0x04) # signed relative bytecode offset
-    MP_BC_JUMP_IF_TRUE_OR_POP         = (MP_BC_BASE_JUMP_E + 0x05) # signed relative bytecode offset
-    MP_BC_JUMP_IF_FALSE_OR_POP        = (MP_BC_BASE_JUMP_E + 0x06) # signed relative bytecode offset
+    MP_BC_JUMP_IF_TRUE_OR_POP         = (MP_BC_BASE_JUMP_E + 0x05) # unsigned relative bytecode offset
+    MP_BC_JUMP_IF_FALSE_OR_POP        = (MP_BC_BASE_JUMP_E + 0x06) # unsigned relative bytecode offset
     MP_BC_SETUP_WITH                  = (MP_BC_BASE_JUMP_E + 0x07) # unsigned relative bytecode offset
     MP_BC_SETUP_EXCEPT                = (MP_BC_BASE_JUMP_E + 0x08) # unsigned relative bytecode offset
     MP_BC_SETUP_FINALLY               = (MP_BC_BASE_JUMP_E + 0x09) # unsigned relative bytecode offset
@@ -295,8 +295,6 @@ class Opcodes:
         MP_BC_JUMP,
         MP_BC_POP_JUMP_IF_TRUE,
         MP_BC_POP_JUMP_IF_FALSE,
-        MP_BC_JUMP_IF_TRUE_OR_POP,
-        MP_BC_JUMP_IF_FALSE_OR_POP,
     )
 
     # Create a dict mapping opcode value to opcode name.

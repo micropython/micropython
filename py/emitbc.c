@@ -224,7 +224,7 @@ STATIC void emit_write_bytecode_byte_label(emit_t *emit, int stack_adj, byte b1,
     mp_emit_bc_adjust_stack_size(emit, stack_adj);
 
     // Determine if the jump offset is signed or unsigned, based on the opcode.
-    const bool is_signed = b1 <= MP_BC_JUMP_IF_FALSE_OR_POP;
+    const bool is_signed = b1 <= MP_BC_POP_JUMP_IF_FALSE;
 
     // Default to a 2-byte encoding (the largest) with an unknown jump offset.
     unsigned int jump_encoding_size = 1;

@@ -560,9 +560,9 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_JUMP_IF_TRUE_OR_POP): {
-                    DECODE_SLABEL;
+                    DECODE_ULABEL;
                     if (mp_obj_is_true(TOP())) {
-                        ip += slab;
+                        ip += ulab;
                     } else {
                         sp--;
                     }
@@ -570,11 +570,11 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_JUMP_IF_FALSE_OR_POP): {
-                    DECODE_SLABEL;
+                    DECODE_ULABEL;
                     if (mp_obj_is_true(TOP())) {
                         sp--;
                     } else {
-                        ip += slab;
+                        ip += ulab;
                     }
                     DISPATCH_WITH_PEND_EXC_CHECK();
                 }

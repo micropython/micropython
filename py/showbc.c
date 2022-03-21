@@ -338,12 +338,12 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
             break;
 
         case MP_BC_JUMP_IF_TRUE_OR_POP:
-            DECODE_SLABEL;
+            DECODE_ULABEL;
             mp_printf(print, "JUMP_IF_TRUE_OR_POP " UINT_FMT, (mp_uint_t)(ip + unum - ip_start));
             break;
 
         case MP_BC_JUMP_IF_FALSE_OR_POP:
-            DECODE_SLABEL;
+            DECODE_ULABEL;
             mp_printf(print, "JUMP_IF_FALSE_OR_POP " UINT_FMT, (mp_uint_t)(ip + unum - ip_start));
             break;
 
