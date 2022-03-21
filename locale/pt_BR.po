@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-19 16:56+0000\n"
+"PO-Revision-Date: 2022-03-21 22:57+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2481,7 +2481,7 @@ msgstr "Não foi possível ler os dados da paleta de cores"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
-msgstr ""
+msgstr "Não é possível iniciar a consulta mDNS"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -3728,11 +3728,11 @@ msgstr "o loopback + o modo silencioso não é suportado pelo periférico"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
-msgstr ""
+msgstr "O mDNS já foi inicializado"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr ""
+msgstr "O mDNS só funciona com WiFi integrado"
 
 #: py/parse.c
 msgid "malformed f-string"
