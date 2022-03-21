@@ -82,7 +82,9 @@ ifeq ($(CIRCUITPY_USB),0)
                       supervisor/shared/workflow.c \
 
   else
-    SRC_SUPERVISOR += supervisor/serial.c
+    SRC_SUPERVISOR += supervisor/serial.c \
+                      supervisor/workflow.c \
+
   endif
 else
   SRC_SUPERVISOR += \
