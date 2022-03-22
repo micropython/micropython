@@ -75,12 +75,10 @@ def dfu_read(filename):
         return None
 
     hdr = f.read(16)
-    crc = crc32(hdr[:-4], crc)
-    hdr = struct.unpack("<HHHH3sBI", hdr)
-
+    crc = crc32(hdr, crc)
     crc = ~crc & 0xFFFFFFFF
-    if crc != hdr[-1]:
-        print("CRC failed", crc, hdr[-1])
+    if crc != 0:
+        print("CRC failed", crc)
         return None
 
     return elems
