@@ -29,11 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "S2Mini"
 #define MICROPY_HW_MCU_NAME         "ESP32S2-S2FN4R2" // from Wemos MP
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
-
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO35) // no I2C labels on S2 Mini, def from Wemos MP
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO33) // no I2C labels on S2 Mini, def from Wemos MP
 

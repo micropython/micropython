@@ -29,11 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "S2Pico"
 #define MICROPY_HW_MCU_NAME         "ESP32S2-S2FN4R2" // from Wemos MP
 
-#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
-
-#define AUTORESET_DELAY_MS 500
-
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO9) // JST SH Connector Pin 3 NOT STEMMA QT / Feather pinout
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8) // JST SH Connector Pin 2 NOT STEMMA QT / Feather pinout
 
