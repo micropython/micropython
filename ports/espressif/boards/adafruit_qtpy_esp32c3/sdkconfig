@@ -1,3 +1,5 @@
+# Automatically generated file. DO NOT EDIT.
+# Espressif IoT Development Framework (ESP-IDF) Project Configuration
 #
 # Bootloader config
 #
@@ -6,7 +8,12 @@ CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
 CONFIG_BOOTLOADER_LOG_LEVEL=0
 # end of Bootloader config
 
+#
+# Serial flasher config
+#
 # CONFIG_ESPTOOLPY_FLASHFREQ_26M is not set
+# end of Serial flasher config
+
 #
 # Partition Table
 #
@@ -14,95 +21,42 @@ CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv
 CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv"
 # end of Partition Table
 
+#
+# Compiler options
+#
 # CONFIG_COMPILER_SAVE_RESTORE_LIBCALLS is not set
-#
-# Bluetooth
-#
-CONFIG_BT_SOC_SUPPORT_5_0=y
-# end of Bluetooth
+# end of Compiler options
 
-CONFIG_BT_CTRL_HW_CCA_VAL=20
 #
-# NimBLE Options
+# Component config
 #
-CONFIG_BT_NIMBLE_PINNED_TO_CORE=0
-# end of NimBLE Options
-
-# CONFIG_BLE_MESH is not set
 #
 # ESP System Settings
 #
 # CONFIG_ESP_SYSTEM_USE_EH_FRAME is not set
-# CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG is not set
 CONFIG_ESP_CONSOLE_SECONDARY_NONE=y
 # CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG is not set
 # CONFIG_ESP_DEBUG_STUBS_ENABLE is not set
 # end of ESP System Settings
 
-CONFIG_ESP32_WIFI_SW_COEXIST_ENABLE=y
 #
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="Adafruit-QTPy-ESP32C3"
 # end of LWIP
 
-# CONFIG_MBEDTLS_SSL_VARIABLE_BUFFER_LENGTH is not set
 #
-# mbedTLS v2.28.x related
+# SPI Flash driver
 #
-CONFIG_MBEDTLS_ECDH_LEGACY_CONTEXT=y
-# CONFIG_MBEDTLS_X509_TRUSTED_CERT_CALLBACK is not set
-# CONFIG_MBEDTLS_SSL_CONTEXT_SERIALIZATION is not set
-CONFIG_MBEDTLS_SSL_KEEP_PEER_CERTIFICATE=y
-# end of mbedTLS v2.28.x related
-
-# CONFIG_MBEDTLS_SSL_DTLS_CONNECTION_ID is not set
-#
-# DTLS-based configurations
-#
-# CONFIG_MBEDTLS_SSL_DTLS_SRTP is not set
-# end of DTLS-based configurations
-
-CONFIG_MBEDTLS_ECP_RESTARTABLE=y
-#
-# mbedTLS
-#
-CONFIG_MBEDTLS_CMAC_C=y
-# end of mbedTLS
-
-CONFIG_MDNS_MAX_SERVICES=10
-#
-# mDNS
-#
-CONFIG_MDNS_TASK_PRIORITY=1
-CONFIG_MDNS_TASK_STACK_SIZE=4096
-# CONFIG_MDNS_TASK_AFFINITY_NO_AFFINITY is not set
-CONFIG_MDNS_TASK_AFFINITY_CPU0=y
-CONFIG_MDNS_TASK_AFFINITY=0x0
-CONFIG_MDNS_SERVICE_ADD_TIMEOUT_MS=2000
-# CONFIG_MDNS_STRICT_MODE is not set
-CONFIG_MDNS_TIMER_PERIOD_MS=100
-# CONFIG_MDNS_NETWORKING_SOCKET is not set
-CONFIG_MDNS_MULTIPLE_INSTANCE=y
-# end of mDNS
-
 # CONFIG_SPI_FLASH_AUTO_SUSPEND is not set
-#
-# Auto-detect flash chips
-#
-CONFIG_SPI_FLASH_SUPPORT_TH_CHIP=y
-# end of Auto-detect flash chips
+# end of SPI Flash driver
 
-CONFIG_LOG_BOOTLOADER_LEVEL_NONE=y
+# end of Component config
+
 #
 # Deprecated options for backward compatibility
 #
 # CONFIG_LOG_BOOTLOADER_LEVEL_INFO is not set
 CONFIG_LOG_BOOTLOADER_LEVEL=0
 # CONFIG_COMPILER_OPTIMIZATION_LEVEL_DEBUG is not set
-CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y
-CONFIG_ESP32S2_PANIC_PRINT_HALT=y
-# CONFIG_ESP32S2_PANIC_SILENT_REBOOT is not set
-CONFIG_CONSOLE_UART=y
-# CONFIG_ESP32_DEBUG_STUBS_ENABLE is not set
 # end of Deprecated options for backward compatibility
