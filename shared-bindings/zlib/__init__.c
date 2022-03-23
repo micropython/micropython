@@ -37,7 +37,6 @@
 #include "py/binary.h"
 #include "py/parsenum.h"
 
-#include "shared-bindings/zlib/DecompIO.h"
 #include "shared-bindings/zlib/__init__.h"
 
 #include "supervisor/shared/translate.h"
@@ -76,7 +75,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(zlib_decompress_obj, 1, 3, zlib_decom
 STATIC const mp_rom_map_elem_t zlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zlib) },
     { MP_ROM_QSTR(MP_QSTR_decompress), MP_ROM_PTR(&zlib_decompress_obj) },
-    { MP_ROM_QSTR(MP_QSTR_DecompIO), MP_ROM_PTR(&decompio_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(zlib_globals, zlib_globals_table);

@@ -582,7 +582,6 @@ SRC_SHARED_MODULE_ALL = \
 	uheap/__init__.c \
 	ustack/__init__.c \
 	zlib/__init__.c \
-	zlib/DecompIO.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
