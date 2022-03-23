@@ -40,8 +40,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_P0_15) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_P0_17) },
 
-    { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P0_26) },
     { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_P0_26) },
+    { MP_ROM_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_P0_26) },
     { MP_ROM_QSTR(MP_QSTR_BLUE_LED), MP_ROM_PTR(&pin_P0_12) },
 
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
