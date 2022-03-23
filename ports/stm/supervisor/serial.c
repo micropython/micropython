@@ -31,9 +31,11 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4/gpio.h"
 
+// TODO: Switch this to using DEBUG_UART.
+
 UART_HandleTypeDef huart2;
 
-void serial_init(void) {
+void port_serial_init(void) {
     huart2.Instance = USART2;
     huart2.Init.BaudRate = 115200;
     huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -47,25 +49,21 @@ void serial_init(void) {
     }
 }
 
-bool serial_connected(void) {
+bool port_serial_connected(void) {
     return true;
 }
 
-char serial_read(void) {
+char port_serial_read(void) {
     uint8_t data;
     HAL_UART_Receive(&huart2, &data, 1,500);
     return data;
 }
 
-bool serial_bytes_available(void) {
+bool port_serial_bytes_available(void) {
     return __HAL_UART_GET_FLAG(&huart2, UART_FLAG_RXNE);
 }
 
-void serial_write(const char *text) {
-    serial_write_substring(text, strlen(text));
-}
-
-void serial_write_substring(const char *text, uint32_t len) {
+void port_serial_write_substring(const char *text, uint32_t len) {
     if (len == 0) {
         return;
     }
