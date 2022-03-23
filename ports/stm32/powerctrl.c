@@ -676,6 +676,58 @@ int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t 
     return 0;
 }
 
+static void powerctrl_switch_on_HSI(void) {
+    LL_RCC_HSI_Enable();
+    while (!LL_RCC_HSI_IsReady()) {
+    }
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSI);
+    LL_RCC_SetSMPSClockSource(LL_RCC_SMPS_CLKSOURCE_HSI);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {
+    }
+    return;
+}
+
+static void powerctrl_low_power_prep_wb55() {
+    // See WB55 specific documentation in AN5289 Rev 6, and in particular, Figure 6.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+    if (!LL_HSEM_1StepLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID)) {
+        if (LL_PWR_IsActiveFlag_C2DS() || LL_PWR_IsActiveFlag_C2SB()) {
+            // Release ENTRY_STOP_MODE semaphore
+            LL_HSEM_ReleaseLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID, 0);
+
+            powerctrl_switch_on_HSI();
+        }
+    } else {
+        powerctrl_switch_on_HSI();
+    }
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+}
+
+static void powerctrl_low_power_exit_wb55() {
+    // Ensure the HSE/HSI clock configuration is correct so core2 can wake properly again.
+    // See WB55 specific documentation in AN5289 Rev 6, and in particular, Figure 7.
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_ENTRY_STOP_MODE_SEMID, 0);
+    // Acquire RCC semaphore before adjusting clocks.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+
+    if (LL_RCC_GetSysClkSource() == LL_RCC_SYS_CLKSOURCE_STATUS_HSI) {
+        // Restore the clock configuration of the application
+        LL_RCC_HSE_Enable();
+        __HAL_FLASH_SET_LATENCY(FLASH_LATENCY_1);
+        while (!LL_RCC_HSE_IsReady()) {
+        }
+        LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_HSE);
+        while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_HSE) {
+        }
+    }
+
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
+}
+
 #endif
 
 #endif // !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
@@ -729,6 +781,10 @@ void powerctrl_enter_stop_mode(void) {
     }
     #endif
 
+    #if defined(STM32WB)
+    powerctrl_low_power_prep_wb55();
+    #endif
+
     #if defined(STM32F7)
     HAL_PWR_EnterSTOPMode((PWR_CR1_LPDS | PWR_CR1_LPUDS | PWR_CR1_FPDS | PWR_CR1_UDEN), PWR_STOPENTRY_WFI);
     #else
@@ -760,6 +816,10 @@ void powerctrl_enter_stop_mode(void) {
         while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
         }
     }
+    #endif
+
+    #if defined(STM32WB)
+    powerctrl_low_power_exit_wb55();
     #endif
 
     #if !defined(STM32L4)
@@ -975,6 +1035,10 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(NDEBUG) && defined(DBGMCU)
     // Disable Debug MCU.
     DBGMCU->CR = 0;
+    #endif
+
+    #if defined(STM32WB)
+    powerctrl_low_power_prep_wb55();
     #endif
 
     // enter standby mode

@@ -534,11 +534,22 @@ void rfcore_init(void) {
     // Ensure LSE is running
     rtc_init_finalise();
 
+    // In case we're waking from deepsleep, enforce core synchronisation
+    __HAL_RCC_HSEM_CLK_ENABLE();
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
+    }
+
     // Select LSE as RF wakeup source
     RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 1 << RCC_CSR_RFWKPSEL_Pos;
 
     // Initialise IPCC and shared memory structures
     ipcc_init(IRQ_PRI_SDIO);
+
+    // When the device is out of standby, it is required to use the EXTI mechanism to wakeup CPU2
+    LL_C2_EXTI_EnableEvent_32_63(LL_EXTI_LINE_41);
+    LL_EXTI_EnableRisingTrig_32_63(LL_EXTI_LINE_41);
+
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_PWR_STANDBY_SEMID, 0);
 
     // Boot the second core
     __SEV();
