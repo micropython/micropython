@@ -793,6 +793,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->AudioFreq = I2S_AUDIOFREQ_DEFAULT;
     init->CPOL = I2S_CPOL_LOW;
     init->ClockSource = I2S_CLOCK_PLL;
+    #if defined(STM32F4)
+    init->FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+    #endif
 
     // set rate if not in passive mode
     if (i2s_mode == I2S_MODE_MASTER_TX || i2s_mode == I2S_MODE_MASTER_RX) {
