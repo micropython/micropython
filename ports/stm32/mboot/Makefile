@@ -111,6 +111,7 @@ SRC_C += \
 	gzstream.c \
 	pack.c \
 	sdcard.c \
+	ui.c \
 	vfs_fat.c \
 	vfs_lfs.c \
 	drivers/bus/softspi.c \

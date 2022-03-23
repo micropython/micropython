@@ -118,6 +118,7 @@ static int fsload_program_file(bool write_to_flash) {
     uint32_t num_elems = get_le32(buf + 270);
 
     size_t file_offset_target = file_offset;
+    size_t bytes_processed = 0;
 
     // Parse each element
     for (size_t elem = 0; elem < num_elems; ++elem) {
@@ -163,6 +164,8 @@ static int fsload_program_file(bool write_to_flash) {
             }
             elem_addr += l;
             s -= l;
+            bytes_processed += l;
+            mboot_state_change(MBOOT_STATE_FSLOAD_PROGRESS, write_to_flash << 31 | bytes_processed);
         }
 
         file_offset += elem_size;
@@ -295,17 +298,6 @@ int fsload_process(void) {
                 ret = fsload_validate_and_program_file(&ctx, methods, fname);
             }
 
-            // Flash LEDs based on success/failure of update
-            for (int i = 0; i < 4; ++i) {
-                if (ret == 0) {
-                    led_state_all(7);
-                } else {
-                    led_state_all(1);
-                }
-                mp_hal_delay_ms(100);
-                led_state_all(0);
-                mp_hal_delay_ms(100);
-            }
             return ret;
         }
         elem += elem[-1];

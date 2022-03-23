@@ -46,9 +46,31 @@
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
 
+// These enum values are passed as the first argument to mboot_state_change() to
+// notify of a change in state of the bootloader activity.  This function has a
+// default implementation in ui.c but can be overridden by a board.  Some states
+// have an argument passed along as the second argument to mboot_state_change().
+// If this argument is unused then 0 is passed in.  A result of an operation is
+// 0 for success and <0 for failure, with a failure being either an MP_Exxx code
+// or MBOOT_ERRNO_xxx code.
+typedef enum {
+    MBOOT_STATE_DFU_START,          // arg: unused
+    MBOOT_STATE_DFU_END,            // arg: unused
+    MBOOT_STATE_FSLOAD_START,       // arg: unused
+    MBOOT_STATE_FSLOAD_END,         // arg: result of fsload operation
+    MBOOT_STATE_FSLOAD_PROGRESS,    // arg: total bytes processed so far, high bit set when doing write pass
+    MBOOT_STATE_ERASE_START,        // arg: address of erase
+    MBOOT_STATE_ERASE_END,          // arg: result of erase
+    MBOOT_STATE_READ_START,         // arg: address of read
+    MBOOT_STATE_READ_END,           // arg: result of read
+    MBOOT_STATE_WRITE_START,        // arg: address of write
+    MBOOT_STATE_WRITE_END,          // arg: result of write
+} mboot_state_t;
+
 enum {
     MBOOT_ERRNO_FLASH_ERASE_DISALLOWED = 200,
     MBOOT_ERRNO_FLASH_ERASE_FAILED,
+    MBOOT_ERRNO_FLASH_READ_DISALLOWED,
     MBOOT_ERRNO_FLASH_WRITE_DISALLOWED,
 
     MBOOT_ERRNO_DFU_INVALID_HEADER = 210,
@@ -98,10 +120,12 @@ typedef uint64_t mboot_addr_t;
 typedef uint32_t mboot_addr_t;
 #endif
 
+extern volatile uint32_t systick_ms;
 extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
 void led_init(void);
+void led0_update(void);
 void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
@@ -131,5 +155,21 @@ static inline void mboot_entry_init(uint32_t *initial_r0) {
     __set_PRIMASK(0);
     #endif
 }
+
+#if defined(MBOOT_BOARD_GET_RESET_MODE)
+static inline int mboot_get_reset_mode(void) {
+    return MBOOT_BOARD_GET_RESET_MODE();
+}
+#else
+int mboot_get_reset_mode(void);
+#endif
+
+#if defined(MBOOT_BOARD_STATE_CHANGE)
+static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
+    return MBOOT_BOARD_STATE_CHANGE(state, arg);
+}
+#else
+void mboot_state_change(mboot_state_t state, uint32_t arg);
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H

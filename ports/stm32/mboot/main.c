@@ -109,7 +109,7 @@
 #define APP_VALIDITY_BITS (0x00000003)
 
 // For 1ms system ticker.
-static volatile uint32_t systick_ms;
+volatile uint32_t systick_ms;
 
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
@@ -398,112 +398,6 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 }
 
 /******************************************************************************/
-// LED
-
-#if defined(MBOOT_LED1)
-#define LED0 MBOOT_LED1
-#elif defined(MICROPY_HW_LED1)
-#define LED0 MICROPY_HW_LED1
-#endif
-
-#if defined(MBOOT_LED2)
-#define LED1 MBOOT_LED2
-#elif defined(MICROPY_HW_LED2)
-#define LED1 MICROPY_HW_LED2
-#endif
-
-#if defined(MBOOT_LED3)
-#define LED2 MBOOT_LED3
-#elif defined(MICROPY_HW_LED3)
-#define LED2 MICROPY_HW_LED3
-#endif
-
-#if defined(MBOOT_LED4)
-#define LED3 MBOOT_LED4
-#elif defined(MICROPY_HW_LED4)
-#define LED3 MICROPY_HW_LED4
-#endif
-
-// For flashing states: bit 0 is "active", bit 1 is "inactive", bits 2-6 are flash rate.
-typedef enum {
-    LED0_STATE_OFF = 0,
-    LED0_STATE_ON = 1,
-    LED0_STATE_SLOW_FLASH = (20 << 2) | 1,
-    LED0_STATE_FAST_FLASH = (2 << 2) | 1,
-    LED0_STATE_SLOW_INVERTED_FLASH = (20 << 2) | 2,
-} led0_state_t;
-
-static led0_state_t led0_cur_state = LED0_STATE_OFF;
-static uint32_t led0_ms_interval = 0;
-static int led0_toggle_count = 0;
-
-MP_WEAK void led_init(void) {
-    #if defined(MBOOT_BOARD_LED_INIT)
-    // Custom LED init function provided by the board.
-    MBOOT_BOARD_LED_INIT();
-    #else
-    // Init LEDs using GPIO calls.
-    mp_hal_pin_output(LED0);
-    #ifdef LED1
-    mp_hal_pin_output(LED1);
-    #endif
-    #ifdef LED2
-    mp_hal_pin_output(LED2);
-    #endif
-    #ifdef LED3
-    mp_hal_pin_output(LED3);
-    #endif
-    #endif
-
-    led0_cur_state = LED0_STATE_OFF;
-}
-
-MP_WEAK void led_state(uint32_t led, int val) {
-    #if defined(MBOOT_BOARD_LED_STATE)
-    // Custom LED state function provided by the board.
-    return MBOOT_BOARD_LED_STATE(led, val);
-    #else
-    // Set LEDs using GPIO calls.
-    if (val) {
-        MICROPY_HW_LED_ON(led);
-    } else {
-        MICROPY_HW_LED_OFF(led);
-    }
-    #endif
-}
-
-void led_state_all(unsigned int mask) {
-    led_state(LED0, mask & 1);
-    #ifdef LED1
-    led_state(LED1, mask & 2);
-    #endif
-    #ifdef LED2
-    led_state(LED2, mask & 4);
-    #endif
-    #ifdef LED3
-    led_state(LED3, mask & 8);
-    #endif
-}
-
-void led0_state(led0_state_t state) {
-    led0_cur_state = state;
-    if (state == LED0_STATE_OFF || state == LED0_STATE_ON) {
-        led_state(LED0, state);
-    }
-}
-
-void led0_update() {
-    if (led0_cur_state != LED0_STATE_OFF && systick_ms - led0_ms_interval > 50) {
-        uint8_t rate = (led0_cur_state >> 2) & 0x1f;
-        led0_ms_interval += 50;
-        if (++led0_toggle_count >= rate) {
-            led0_toggle_count = 0;
-        }
-        led_state(LED0, (led0_cur_state & (led0_toggle_count == 0 ? 1 : 2)));
-    }
-}
-
-/******************************************************************************/
 // FLASH
 
 #if defined(STM32WB)
@@ -617,8 +511,9 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 #endif
 
 int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
+    mboot_state_change(MBOOT_STATE_ERASE_START, addr);
+
     int ret = -1;
-    led0_state(LED0_STATE_ON);
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -638,12 +533,14 @@ int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
         ret = mboot_flash_page_erase(addr, next_addr);
     }
 
-    led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_ERASE_END, ret);
+
     return ret;
 }
 
 void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
-    led0_state(LED0_STATE_FAST_FLASH);
+    mboot_state_change(MBOOT_STATE_READ_START, addr);
+
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, buf);
@@ -668,12 +565,14 @@ void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
         // Other addresses, just read directly from memory
         memcpy(buf, (void *)(uintptr_t)addr, len);
     }
-    led0_state(LED0_STATE_SLOW_FLASH);
+
+    mboot_state_change(MBOOT_STATE_READ_END, 0);
 }
 
 int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    mboot_state_change(MBOOT_STATE_WRITE_START, addr);
+
     int ret = -1;
-    led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         ret = mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, src8);
@@ -691,7 +590,8 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
         dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
     }
 
-    led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_WRITE_END, ret);
+
     return ret;
 }
 
@@ -707,9 +607,10 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
 void do_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     #if MBOOT_ENABLE_PACKING
     // Read disabled on packed (encrypted) mode.
+    mboot_state_change(MBOOT_STATE_READ_START, addr);
     dfu_context.status = DFU_STATUS_ERROR_FILE;
     dfu_context.error = MBOOT_ERROR_STR_INVALID_READ_IDX;
-    led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_READ_END, -MBOOT_ERRNO_FLASH_READ_DISALLOWED);
     #else
     hw_read(addr, len, buf);
     #endif
@@ -1360,71 +1261,6 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
-#if defined(MBOOT_BOARD_GET_RESET_MODE)
-
-static inline int mboot_get_reset_mode(void) {
-    return MBOOT_BOARD_GET_RESET_MODE();
-}
-
-#else
-
-#define RESET_MODE_NUM_STATES (4)
-#define RESET_MODE_TIMEOUT_CYCLES (8)
-#ifdef LED2
-#ifdef LED3
-#define RESET_MODE_LED_STATES 0x8421
-#else
-#define RESET_MODE_LED_STATES 0x7421
-#endif
-#else
-#define RESET_MODE_LED_STATES 0x3210
-#endif
-
-static void usrbtn_init(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
-}
-
-static int usrbtn_state(void) {
-    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
-}
-
-static int mboot_get_reset_mode(void) {
-    usrbtn_init();
-    int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
-    if (usrbtn_state()) {
-        // Cycle through reset modes while USR is held
-        // Timeout is roughly 20s, where reset_mode=1
-        systick_init();
-        led_init();
-        reset_mode = 0;
-        for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
-            if (i % 32 == 0) {
-                if (++reset_mode > RESET_MODE_NUM_STATES) {
-                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
-                }
-                uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-                led_state_all(l);
-            }
-            if (!usrbtn_state()) {
-                break;
-            }
-            mp_hal_delay_ms(19);
-        }
-        // Flash the selected reset mode
-        for (int i = 0; i < 6; i++) {
-            led_state_all(0);
-            mp_hal_delay_ms(50);
-            uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-            led_state_all(l);
-            mp_hal_delay_ms(50);
-        }
-        mp_hal_delay_ms(300);
-    }
-    return reset_mode;
-}
-
-#endif
-
 NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
@@ -1566,11 +1402,13 @@ enter_bootloader:
     #endif
 
     if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+        mboot_state_change(MBOOT_STATE_FSLOAD_START, 0);
+        int ret = -1;
         #if MBOOT_FSLOAD
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            int ret = fsload_process();
+            ret = fsload_process();
             // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
             const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
             if (elem_status != NULL && elem_status[-1] == 4) {
@@ -1580,8 +1418,8 @@ enter_bootloader:
             }
         }
         #endif
+        mboot_state_change(MBOOT_STATE_FSLOAD_END, ret);
         // Always reset because the application is expecting to resume
-        led_state_all(0);
         leave_bootloader();
     }
 
@@ -1598,8 +1436,7 @@ enter_bootloader:
     i2c_init(initial_r0);
     #endif
 
-    led_state_all(0);
-    led0_state(LED0_STATE_SLOW_FLASH);
+    mboot_state_change(MBOOT_STATE_DFU_START, 0);
 
     #if MBOOT_USB_RESET_ON_DISCONNECT
     bool has_connected = false;
@@ -1633,8 +1470,9 @@ enter_bootloader:
         #endif
     }
 
+    mboot_state_change(MBOOT_STATE_DFU_END, 0);
+
     // Shutdown and leave the bootloader.
-    led_state_all(0);
     mp_hal_delay_ms(50);
     pyb_usbdd_shutdown();
     #if defined(MBOOT_I2C_SCL)
