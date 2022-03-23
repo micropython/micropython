@@ -791,6 +791,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->AudioFreq = args[ARG_rate].u_int;
     init->CPOL = I2S_CPOL_LOW;
     init->ClockSource = I2S_CLOCK_PLL;
+    #if defined(STM32F4)
+    init->FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+    #endif
 
     // init the I2S bus
     if (!i2s_init(self)) {
