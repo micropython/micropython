@@ -184,16 +184,16 @@ void common_hal_is31fl3741_FrameBuffer_refresh(is31fl3741_FrameBuffer_obj_t *sel
                 }
 
                 if ((dirty_row_flags >> (y % 8)) & 0x1) {
-                    uint32_t color = 0;
-                    if (self->auto_gamma) {
-                        color = IS31GammaTable[((*buffer) >> 16 & 0xFF)] +
-                            IS31GammaTable[((*buffer) >> 8 & 0xFF)] +
-                            IS31GammaTable[((*buffer) & 0xFF)];
-                    } else {
-                        color = *buffer;
-                    }
-
                     for (int x = 0; x < self->width; x++) {
+                        uint32_t color = 0;
+                        if (self->auto_gamma) {
+                            color = (IS31GammaTable[((*buffer) >> 16 & 0xFF)] << 16) +
+                                (IS31GammaTable[((*buffer) >> 8 & 0xFF)] << 8) +
+                                IS31GammaTable[((*buffer) & 0xFF)];
+                        } else {
+                            color = *buffer;
+                        }
+
                         common_hal_is31fl3741_draw_pixel(self->is31fl3741, x, y, color, self->mapping);
                         buffer++;
                     }
