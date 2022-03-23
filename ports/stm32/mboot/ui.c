@@ -103,15 +103,15 @@ MP_WEAK void led_state(uint32_t led, int val) {
 }
 
 void led_state_all(unsigned int mask) {
-    led_state(LED0, mask & 1);
+    led_state(LED0, mask & MBOOT_LED_STATE_LED0);
     #ifdef LED1
-    led_state(LED1, mask & 2);
+    led_state(LED1, mask & MBOOT_LED_STATE_LED1);
     #endif
     #ifdef LED2
-    led_state(LED2, mask & 4);
+    led_state(LED2, mask & MBOOT_LED_STATE_LED2);
     #endif
     #ifdef LED3
-    led_state(LED3, mask & 8);
+    led_state(LED3, mask & MBOOT_LED_STATE_LED3);
     #endif
 }
 
@@ -218,9 +218,9 @@ void mboot_state_change(mboot_state_t state, uint32_t arg) {
             // Flash LEDs based on success/failure of update
             for (int i = 0; i < 4; ++i) {
                 if (arg == 0) {
-                    led_state_all(7);
+                    led_state_all(MBOOT_LED_STATE_LED0 | MBOOT_LED_STATE_LED1 | MBOOT_LED_STATE_LED2);
                 } else {
-                    led_state_all(1);
+                    led_state_all(MBOOT_LED_STATE_LED0);
                 }
                 mp_hal_delay_ms(100);
                 led_state_all(0);

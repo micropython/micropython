@@ -46,6 +46,12 @@
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
 
+// These are for led_state_all() and can be or'd together.
+#define MBOOT_LED_STATE_LED0 (0x01)
+#define MBOOT_LED_STATE_LED1 (0x02)
+#define MBOOT_LED_STATE_LED2 (0x04)
+#define MBOOT_LED_STATE_LED3 (0x08)
+
 // These enum values are passed as the first argument to mboot_state_change() to
 // notify of a change in state of the bootloader activity.  This function has a
 // default implementation in ui.c but can be overridden by a board.  Some states
