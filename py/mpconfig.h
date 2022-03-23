@@ -893,6 +893,11 @@ typedef double mp_float_t;
 #define MICROPY_ENABLE_SCHEDULER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
+// Whether the scheduler supports scheduling static nodes with C callbacks
+#ifndef MICROPY_SCHEDULER_STATIC_NODES
+#define MICROPY_SCHEDULER_STATIC_NODES (0)
+#endif
+
 // Maximum number of entries in the scheduler
 #ifndef MICROPY_SCHEDULER_DEPTH
 #define MICROPY_SCHEDULER_DEPTH (4)
