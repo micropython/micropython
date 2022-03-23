@@ -51,6 +51,15 @@
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
+// Nearly all boards have this because it is used to enter the ROM bootloader.
+#ifndef CIRCUITPY_BOOT_BUTTON
+#ifdef CONFIG_IDF_TARGET_ESP32C3
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
+#else
+#define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
+#endif
+#endif
+
 #define CIRCUITPY_INTERNAL_NVM_START_ADDR (0x9000)
 
 // 20kB is statically allocated to nvs, but when overwriting an existing
