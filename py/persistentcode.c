@@ -48,21 +48,6 @@
 #define MPY_FEATURE_ARCH_DYNAMIC MPY_FEATURE_ARCH
 #endif
 
-#if MICROPY_PERSISTENT_CODE_LOAD || (MICROPY_PERSISTENT_CODE_SAVE && !MICROPY_DYNAMIC_COMPILER)
-// The bytecode will depend on the number of bits in a small-int, and
-// this function computes that (could make it a fixed constant, but it
-// would need to be defined in mpconfigport.h).
-STATIC int mp_small_int_bits(void) {
-    mp_int_t i = MP_SMALL_INT_MAX;
-    int n = 1;
-    while (i != 0) {
-        i >>= 1;
-        ++n;
-    }
-    return n;
-}
-#endif
-
 typedef struct _bytecode_prelude_t {
     uint n_state;
     uint n_exc_stack;
@@ -420,7 +405,7 @@ mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *
     if (header[0] != 'M'
         || header[1] != MPY_VERSION
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
-        || header[3] > mp_small_int_bits()) {
+        || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
@@ -609,7 +594,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
         #if MICROPY_DYNAMIC_COMPILER
         mp_dynamic_compiler.small_int_bits,
         #else
-        mp_small_int_bits(),
+        MP_SMALL_INT_BITS,
         #endif
     };
     if (cm->has_native) {
