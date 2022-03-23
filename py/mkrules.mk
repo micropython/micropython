@@ -146,6 +146,11 @@ $(HEADER_BUILD)/compressed.collected: $(HEADER_BUILD)/compressed.split
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress _ $(HEADER_BUILD)/compress $@
 
+$(HEADER_BUILD)/mpconfig.cfg: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) $(HEADER_BUILD)/moduledefs.h $(GEN_PINS_HDR) | $(QSTR_GLOBAL_REQUIREMENTS)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/mpconfig.py mpy $(TOP) debug $(DEBUG) pp $(CPP) output $(HEADER_BUILD)/mpconfig.cfg cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^
+
+
 # $(sort $(var)) removes duplicates
 #
 # The net effect of this, is it causes the objects to depend on the
@@ -243,5 +248,9 @@ print-def:
 	$(TOUCH) __empty__.c
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
+
+show-config: $(HEADER_BUILD)/mpconfig.cfg
+	@echo "Build configuration recorded in: $(HEADER_BUILD)/mpconfig.cfg"
+.PHONY: show-config
 
 -include $(OBJ:.o=.P)
