@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
+ * Copyright (c) 2021 skieast/Bruce Segal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +25,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+// Board setup
+#define MICROPY_HW_BOARD_NAME       "Adafruit QT Py ESP32C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+// Status LED
+#define MICROPY_HW_NEOPIXEL         (&pin_GPIO2)
 
-#include "py/mpconfig.h"
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO5}}
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "py/misc.h"
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO10, .mosi = &pin_GPIO7, .miso = &pin_GPIO8}}
 
-extern vstr_t *boot_output;
-#endif
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
 
+// For entering safe mode
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char *text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char *text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-// These have no-op versions that are weak and the port can override. They work
-// in tandem with the cross-port mechanics like USB and BLE.
-void port_serial_init(void);
-bool port_serial_connected(void);
-char port_serial_read(void);
-bool port_serial_bytes_available(void);
-void port_serial_write_substring(const char *text, uint32_t length);
-
-int debug_uart_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

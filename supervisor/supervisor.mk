@@ -10,11 +10,13 @@ SRC_SUPERVISOR = \
 	supervisor/shared/micropython.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
+  supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
-	supervisor/shared/translate.c
+	supervisor/shared/translate.c \
+  supervisor/shared/workflow.c
 
 ifeq ($(DISABLE_FILESYSTEM),1)
 SRC_SUPERVISOR += supervisor/stub/filesystem.c
@@ -76,23 +78,17 @@ $(BUILD)/supervisor/shared/external_flash/external_flash.o: $(HEADER_BUILD)/devi
 
 endif
 
-ifeq ($(CIRCUITPY_USB),0)
-  ifeq ($(wildcard supervisor/serial.c),)
-    SRC_SUPERVISOR += supervisor/shared/serial.c \
-                      supervisor/shared/workflow.c \
+ifneq ($(wildcard supervisor/serial.c),)
+  SRC_SUPERVISOR += supervisor/serial.c
+endif
 
-  else
-    SRC_SUPERVISOR += supervisor/serial.c
-  endif
-else
+ifeq ($(CIRCUITPY_USB),1)
   SRC_SUPERVISOR += \
     lib/tinyusb/src/class/cdc/cdc_device.c \
     lib/tinyusb/src/common/tusb_fifo.c \
     lib/tinyusb/src/device/usbd.c \
     lib/tinyusb/src/device/usbd_control.c \
     lib/tinyusb/src/tusb.c \
-    supervisor/shared/serial.c \
-    supervisor/shared/workflow.c \
     supervisor/usb.c \
     supervisor/shared/usb/usb_desc.c \
     supervisor/shared/usb/usb.c \

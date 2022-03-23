@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 microDev
+ * Copyright (c) 2021 skieast/Bruce Segal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +25,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
-#define MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/board.h"
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "components/driver/include/driver/gpio.h"
+#include "soc/usb_serial_jtag_struct.h"
 
-#include "py/mpconfig.h"
+void board_init(void) {
+}
 
-#ifdef CIRCUITPY_BOOT_OUTPUT_FILE
-#include "py/misc.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern vstr_t *boot_output;
-#endif
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    return false;
+}
 
+void reset_board(void) {
+}
 
-void serial_early_init(void);
-void serial_init(void);
-void serial_write(const char *text);
-// Only writes up to given length. Does not check for null termination at all.
-void serial_write_substring(const char *text, uint32_t length);
-char serial_read(void);
-bool serial_bytes_available(void);
-bool serial_connected(void);
-
-// These have no-op versions that are weak and the port can override. They work
-// in tandem with the cross-port mechanics like USB and BLE.
-void port_serial_init(void);
-bool port_serial_connected(void);
-char port_serial_read(void);
-bool port_serial_bytes_available(void);
-void port_serial_write_substring(const char *text, uint32_t length);
-
-int debug_uart_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_SERIAL_H
+void board_deinit(void) {
+}

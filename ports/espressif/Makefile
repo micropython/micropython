@@ -262,6 +262,11 @@ SRC_C += \
 endif
 endif
 
+ifeq ($(IDF_TARGET),esp32c3)
+SRC_C += \
+	supervisor/usb_serial_jtag.c
+endif
+
 $(BUILD)/i2s_lcd_esp32s2_driver.o: CFLAGS += -Wno-sign-compare
 
 ifneq ($(CIRCUITPY_USB),0)

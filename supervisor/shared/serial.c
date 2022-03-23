@@ -88,6 +88,26 @@ int debug_uart_printf(const char *fmt, ...) {
     #endif
 }
 
+MP_WEAK void port_serial_init(void) {
+}
+
+MP_WEAK bool port_serial_connected(void) {
+    return false;
+}
+
+MP_WEAK char port_serial_read(void) {
+    return -1;
+}
+
+MP_WEAK bool port_serial_bytes_available(void) {
+    return false;
+}
+
+MP_WEAK void port_serial_write_substring(const char *text, uint32_t length) {
+    (void)text;
+    (void)length;
+}
+
 void serial_early_init(void) {
     #if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
     debug_uart.base.type = &busio_uart_type;
@@ -115,7 +135,7 @@ void serial_early_init(void) {
 }
 
 void serial_init(void) {
-    // USB serial is set up separately.
+    port_serial_init();
 }
 
 bool serial_connected(void) {
@@ -144,6 +164,10 @@ bool serial_connected(void) {
         return true;
     }
     #endif
+
+    if (port_serial_connected()) {
+        return true;
+    }
     return false;
 }
 
@@ -179,6 +203,10 @@ char serial_read(void) {
     #if CIRCUITPY_USB
     return (char)tud_cdc_read_char();
     #endif
+
+    if (port_serial_bytes_available() > 0) {
+        return port_serial_read();
+    }
     return -1;
 }
 
@@ -211,6 +239,10 @@ bool serial_bytes_available(void) {
         return true;
     }
     #endif
+
+    if (port_serial_bytes_available() > 0) {
+        return true;
+    }
     return false;
 }
 
@@ -256,6 +288,8 @@ void serial_write_substring(const char *text, uint32_t length) {
         usb_background();
     }
     #endif
+
+    port_serial_write_substring(text, length);
 }
 
 void serial_write(const char *text) {
