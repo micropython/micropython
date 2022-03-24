@@ -108,6 +108,14 @@ const mp_obj_property_t supervisor_runtime_serial_bytes_available_obj = {
               MP_ROM_NONE},
 };
 
+supervisor_run_reason_t supervisor_get_run_reason(void) {
+    return _run_reason;
+}
+
+void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
+    _run_reason = run_reason;
+}
+
 //|     run_reason: RunReason
 //|     """Returns why CircuitPython started running this particular time."""
 //|
@@ -122,10 +130,6 @@ const mp_obj_property_t supervisor_runtime_run_reason_obj = {
               MP_ROM_NONE,
               MP_ROM_NONE},
 };
-
-void supervisor_set_run_reason(supervisor_run_reason_t run_reason) {
-    _run_reason = run_reason;
-}
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },

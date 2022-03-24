@@ -147,12 +147,17 @@ void print_safe_mode_message(safe_mode_t reason) {
     switch (reason) {
         case USER_SAFE_MODE:
             #ifdef BOARD_USER_SAFE_MODE_ACTION
-            // Output a user safe mode string if it's set.
-            serial_write_compressed(translate("You requested starting safe mode by "));
-            serial_write_compressed(BOARD_USER_SAFE_MODE_ACTION);
-            serial_write_compressed(translate("To exit, please reset the board without "));
             message = BOARD_USER_SAFE_MODE_ACTION;
+            #elif defined(CIRCUITPY_BOOT_BUTTON)
+            message = translate("pressing boot button at start up.\n");
             #endif
+            if (message != NULL) {
+                // Output a user safe mode string if it's set.
+                serial_write_compressed(translate("You requested starting safe mode by "));
+                serial_write_compressed(message);
+                serial_write_compressed(translate("To exit, please reset the board without "));
+                // The final piece is printed below.
+            }
             break;
         case MANUAL_SAFE_MODE:
             message = translate("You pressed the reset button during boot. Press again to exit safe mode.");

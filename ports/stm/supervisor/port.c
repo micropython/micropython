@@ -346,8 +346,6 @@ void port_enable_tick(void) {
     stm32_peripherals_rtc_assign_wkup_callback(supervisor_tick);
     stm32_peripherals_rtc_enable_wakeup_timer();
 }
-// TODO: what is this? can I get rid of it?
-extern volatile uint32_t autoreload_delay_ms;
 
 // Disable 1/1024 second tick.
 void port_disable_tick(void) {

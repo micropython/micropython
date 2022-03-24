@@ -64,7 +64,7 @@ void isr(void) {
     nesting_count += 1;
     #ifdef CFG_TUSB_MCU
     if (irqs & (1 << USB_INTERRUPT)) {
-        usb_irq_handler();
+        usb_irq_handler(0);
     }
     #endif
     if (irqs & (1 << TIMER0_INTERRUPT)) {

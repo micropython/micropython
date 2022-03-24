@@ -42,7 +42,7 @@
 //|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|
-//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: microcontroller.Pin, reset: microcontroller.Pin, frequency: int = 30_000_000) -> None:
+//|     def __init__(self, *, data0: microcontroller.Pin, command: microcontroller.Pin, chip_select: microcontroller.Pin, write: microcontroller.Pin, read: Optional[microcontroller.Pin], reset: Optional[microcontroller.Pin] = None, frequency: int = 30_000_000) -> None:
 //|         """Create a ParallelBus object associated with the given pins. The bus is inferred from data0
 //|         by implying the next 7 additional pins on a given GPIO port.
 //|
@@ -56,8 +56,8 @@
 //|         :param microcontroller.Pin command: Data or command pin
 //|         :param microcontroller.Pin chip_select: Chip select pin
 //|         :param microcontroller.Pin write: Write pin
-//|         :param microcontroller.Pin read: Read pin
-//|         :param microcontroller.Pin reset: Reset pin
+//|         :param microcontroller.Pin read: Read pin, optional
+//|         :param microcontroller.Pin reset: Reset pin, optional
 //|         :param int frequency: The communication frequency in Hz for the display on the bus"""
 //|         ...
 //|
@@ -69,8 +69,8 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
         { MP_QSTR_command, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_chip_select, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
         { MP_QSTR_write, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
-        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED },
+        { MP_QSTR_read, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
+        { MP_QSTR_reset, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_frequency, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 30000000 } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -79,8 +79,8 @@ STATIC mp_obj_t paralleldisplay_parallelbus_make_new(const mp_obj_type_t *type, 
     const mcu_pin_obj_t *command = validate_obj_is_free_pin(args[ARG_command].u_obj);
     const mcu_pin_obj_t *chip_select = validate_obj_is_free_pin(args[ARG_chip_select].u_obj);
     const mcu_pin_obj_t *write = validate_obj_is_free_pin(args[ARG_write].u_obj);
-    const mcu_pin_obj_t *read = validate_obj_is_free_pin(args[ARG_read].u_obj);
-    const mcu_pin_obj_t *reset = validate_obj_is_free_pin(args[ARG_reset].u_obj);
+    const mcu_pin_obj_t *read = validate_obj_is_free_pin_or_none(args[ARG_read].u_obj);
+    const mcu_pin_obj_t *reset = validate_obj_is_free_pin_or_none(args[ARG_reset].u_obj);
 
     paralleldisplay_parallelbus_obj_t *self = &allocate_display_bus_or_raise()->parallel_bus;
     self->base.type = &paralleldisplay_parallelbus_type;
