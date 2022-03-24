@@ -1,6 +1,7 @@
 LD_FILE = boards/samd51x20-bootloader-external-flash.ld
 USB_VID = 0x1b4f
-USB_PID = 0x0016 # Used by uf2 bootloader
+# Used by uf2 bootloader
+USB_PID = 0x0016
 USB_PRODUCT = "SparkFun  SAMD51 Thing+"
 USB_MANUFACTURER = "SparkFun Electronics"
 
