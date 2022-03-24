@@ -2484,6 +2484,10 @@ msgstr "Impossible d'initialiser le parser"
 msgid "Unable to read color palette data"
 msgstr "Impossible de lire les données de la palette de couleurs"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "Unable to start mDNS query"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Écriture impossible vers nvm."
@@ -3732,6 +3736,14 @@ msgstr "entiers longs non supportés dans cette build"
 msgid "loopback + silent mode not supported by peripheral"
 msgstr "loopback + silent mode non pris en charge par le périphérique"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS already initialized"
+msgstr ""
+
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS only works with built-in WiFi"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "f-string mal formé"
@@ -4184,6 +4196,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h

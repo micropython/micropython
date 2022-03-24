@@ -51,6 +51,7 @@ DEFAULT_IGNORELIST = [
     "unexpectedmaker_feathers2_prerelease",
     "espressif_kaluga_1",
     "espressif_kaluga_1.3",
+    "espressif_esp32s2_devkitc_1_n4",
     "espressif_esp32s2_devkitc_1_n4r2",
     "espressif_esp32s3_devkitc_1_n8",
     "espressif_esp32s3_devkitc_1_n8r2",

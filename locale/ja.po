@@ -2423,6 +2423,10 @@ msgstr "パーザを初期化できません"
 msgid "Unable to read color palette data"
 msgstr "カラーパレットデータを読み込めません"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "Unable to start mDNS query"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "nvmに書き込みできません"
@@ -3645,6 +3649,14 @@ msgstr "このビルドはlong intに非対応"
 msgid "loopback + silent mode not supported by peripheral"
 msgstr ""
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS already initialized"
+msgstr ""
+
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS only works with built-in WiFi"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "不正な形式のf-string"
@@ -4094,6 +4106,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
