@@ -165,102 +165,103 @@ def read_stream(stream, q):
             q.put(data)
         data_prec = data
 
-class ProcessToSerial:
-    "Execute a process and emulate serial connection using its stdin/stdout."
+class ProcessToSerialThreading:
+    "Execute a process and emulate serial connection using its stdin/stdout. Communication with stdout is done through the read_stream thread"
 
-    def __init__(self, cmd):
-        # Verify if we are on Windows
-        import platform
-        if (platform.system() == 'Windows'):
-            self.ON_WINDOWS = True
-        else:
-            self.ON_WINDOWS = False
-        
+    def __init__(self, cmd):       
         import subprocess
         
-        #If on Windows, preexec_fn parameter should be replaced by start_new_session
-        if (self.ON_WINDOWS):
-            self.subp = subprocess.Popen(
-                cmd,
-                bufsize=0,
-                shell=True,
-                start_new_session=True,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-            )
-        else:
-            self.subp = subprocess.Popen(
-                cmd,
-                bufsize=0,
-                shell=True,
-                preexec_fn=os.setsid,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-            )
-        
-        if (self.ON_WINDOWS):
-            #If on Windows, select can not be used, a thread is used instead 
-            # that constantly reads from subp.stdout
-            import threading
-            import queue
-            self.q = queue.Queue()
-            self.t = threading.Thread(target=read_stream, args=(self.subp.stdout, self.q))
-            self.t.daemon=True # Makes thread exit when main script exits
-            self.t.start()
-        else:
-            # Initially was implemented with selectors, but that adds Python3
-            # dependency. However, there can be race conditions communicating
-            # with a particular child process (like QEMU), and selectors may
-            # still work better in that case, so left inplace for now.
-            #
-            # import selectors
-            # self.sel = selectors.DefaultSelector()
-            # self.sel.register(self.subp.stdout, selectors.EVENT_READ)
+        # On Windows, preexec_fn parameter should be replaced by start_new_session
+        self.subp = subprocess.Popen(
+            cmd,
+            bufsize=0,
+            shell=True,
+            start_new_session=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
 
-            import select
-
-            self.poll = select.poll()
-            self.poll.register(self.subp.stdout.fileno())
+        # On Windows, select can not be used, a thread is used instead 
+        # that constantly reads from subp.stdout and completes a queue
+        import threading
+        import queue
+        self.q = queue.Queue()
+        self.t = threading.Thread(target=read_stream, args=(self.subp.stdout, self.q))
+        self.t.daemon=True # Makes thread exit when main script exits
+        self.t.start()
 
     def close(self):
         import signal
-        #os.killpg can not be used on Windows, os.kill is used instead
-        if (self.ON_WINDOWS):
-            os.kill(self.subp.pid, signal.SIGTERM)
-        else:
-            os.killpg(os.getpgid(self.subp.pid), signal.SIGTERM)
+        os.kill(self.subp.pid, signal.SIGTERM)
 
     def read(self, size=1):
         data = b""
-        # If on Windows, data will be read from the queue that is completed by the thread
-        if (self.ON_WINDOWS):
-            i = 0
-            while i != size:
-                data += self.q.get()
-                i += 1
-            return data
-        else:
-            while len(data) < size:
-                data += self.subp.stdout.read(size - len(data))
-            return data
+        # On Windows, data will be read from the queue that is completed by the thread
+        i = 0
+        while i != size:
+            data += self.q.get()
+            i += 1
+        return data
 
     def write(self, data):
         self.subp.stdin.write(data)
         return len(data)
 
     def inWaiting(self):
-        # If on Windows, inWaiting will return (1 or 0) based on the emptiness of the queue
-        if (self.ON_WINDOWS):
-            if self.q.empty():
-                return 0
-            else:
-                return 1
-        else:
-            # res = self.sel.select(0)
-            res = self.poll.poll(0)
-            if res:
-                return 1
+        if self.q.empty():
             return 0
+        else:
+            return 1
+
+class ProcessToSerialPosix:
+    "Execute a process and emulate serial connection using its stdin/stdout. Using select to check if any data available on stdout"
+
+    def __init__(self, cmd):      
+        import subprocess
+        
+        self.subp = subprocess.Popen(
+            cmd,
+            bufsize=0,
+            shell=True,
+            preexec_fn=os.setsid,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        
+        # Initially was implemented with selectors, but that adds Python3
+        # dependency. However, there can be race conditions communicating
+        # with a particular child process (like QEMU), and selectors may
+        # still work better in that case, so left inplace for now.
+        #
+        # import selectors
+        # self.sel = selectors.DefaultSelector()
+        # self.sel.register(self.subp.stdout, selectors.EVENT_READ)
+
+        import select
+
+        self.poll = select.poll()
+        self.poll.register(self.subp.stdout.fileno())
+
+    def close(self):
+        import signal
+        os.killpg(os.getpgid(self.subp.pid), signal.SIGTERM)
+
+    def read(self, size=1):
+        data = b""
+        while len(data) < size:
+            data += self.subp.stdout.read(size - len(data))
+        return data
+
+    def write(self, data):
+        self.subp.stdin.write(data)
+        return len(data)
+
+    def inWaiting(self):
+        # res = self.sel.select(0)
+        res = self.poll.poll(0)
+        if res:
+            return 1
+        return 0
 
 
 class ProcessPtyToTerminal:
@@ -315,7 +316,12 @@ class Pyboard:
         self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
-            self.serial = ProcessToSerial(device[len("exec:") :])
+            # Class selector based on select module platform dependancy (available on Unix, but not on Windows)
+            import select
+            if hasattr(select, "poll"):
+                self.serial = ProcessToSerialPosix(device[len("exec:") :])
+            else:
+                self.serial = ProcessToSerialThreading(device[len("exec:") :])
         elif device.startswith("execpty:"):
             self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
