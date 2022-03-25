@@ -1,0 +1,193 @@
+--- instance0 ---
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 6400 True
+read 6400 True
+read 6400 True
+read 6400 True
+rx end
+rx start
+read 3200 True
+read 3200 True
+read 3200 True
+read 3200 True
+rx end
+rx start
+read 3200 True
+read 3200 True
+read 3200 True
+read 3200 True
+rx end
+rx start
+read 3200 True
+read 3200 True
+read 3200 True
+read 3200 True
+rx end
+rx start
+read 3200 True
+read 3200 True
+read 3200 True
+read 3200 True
+rx end
+rx start
+read 1600 True
+read 1600 True
+read 1600 True
+read 1600 True
+rx end
+rx start
+read 1600 True
+read 1600 True
+read 1600 True
+read 1600 True
+rx end
+--- instance1 ---
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+tx end
+tx start
+write 3200
+write 3200
+write 3200
+write 3200
+tx end
+tx start
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+tx end
+tx start
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+write 3200
+tx end
+tx start
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+tx end
+tx start
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+write 1600
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
+tx start
+write 6400
+write 6400
+write 6400
+write 6400
+tx end
