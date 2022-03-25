@@ -76,6 +76,9 @@
 #define OCF_C2_FLASH_ERASE_ACTIVITY       (0x69)
 #define OCF_C2_SET_FLASH_ACTIVITY_CONTROL (0x73)
 
+#define FLASH_ACTIVITY_CONTROL_PES        (0)
+#define FLASH_ACTIVITY_CONTROL_SEM7       (1)
+
 #define HCI_OPCODE(ogf, ocf) ((ogf) << 10 | (ocf))
 
 #define HCI_KIND_BT_CMD (0x01) // <kind=1>...?
@@ -615,8 +618,8 @@ void rfcore_ble_init(void) {
         rfcore_ble_reset();
     }
 
-    // Enable PES rather than SEM7 to moderate flash access between the cores.
-    uint8_t buf = 0; // FLASH_ACTIVITY_CONTROL_PES
+    // Enable SEM7 rather than PES to moderate flash access between the cores.
+    uint8_t buf = FLASH_ACTIVITY_CONTROL_SEM7;
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_SET_FLASH_ACTIVITY_CONTROL), &buf, 1, 0);
 }
 
