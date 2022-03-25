@@ -32,6 +32,10 @@
 #include "components/hal/include/hal/uart_types.h"
 #include "py/obj.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *rx_pin;
