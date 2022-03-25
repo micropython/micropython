@@ -653,12 +653,12 @@ class PyboardExtended(Pyboard):
         # Check if a soft reset occurred.
         if data_all.find(b"MPY: soft reboot") == -1:
             return
-        if data_all.endswith(b">>> "):
-            in_friendly_repl = True
-        elif data_all.endswith(b">"):
+        if data_all.endswith(b">"):
             in_friendly_repl = False
+            prompt = b">"
         else:
-            return
+            in_friendly_repl = True
+            prompt = data_all.rsplit(b"\r\n", 1)[-1]
 
         # Clear state while board remounts, it will be re-set once mounted.
         self.mounted = False
@@ -676,9 +676,6 @@ class PyboardExtended(Pyboard):
         # Exit raw REPL if needed, and wait for the friendly REPL prompt.
         if in_friendly_repl:
             self.exit_raw_repl()
-            prompt = b">>> "
-        else:
-            prompt = b">"
         self.read_until(len(prompt), prompt)
         out_callback(prompt)
         self.serial = SerialIntercept(self.serial, self.cmd)
