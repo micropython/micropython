@@ -373,6 +373,10 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             qstr umodule_name = qstr_from_str(umodule_buf);
             module_obj = mp_module_get_builtin(umodule_name);
         }
+        #elif MICROPY_PY_SYS
+        if (stat == MP_IMPORT_STAT_NO_EXIST && module_obj == MP_OBJ_NULL && level_mod_name == MP_QSTR_sys) {
+            module_obj = MP_OBJ_FROM_PTR(&mp_module_sys);
+        }
         #endif
     } else {
         DEBUG_printf("Searching for sub-module\n");
