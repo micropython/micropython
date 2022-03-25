@@ -156,10 +156,10 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
 STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
-    { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
-    { 2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
-    { 0,  1,  4,  5, -1, -1, -1, -1 },  // Stereo, 16-bits
-    { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
+    {  0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
+    {  2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
+    { -1, -1,  0,  1, -1, -1,  2,  3 },  // Stereo, 16-bits
+    {  2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
 void machine_i2s_init0() {
