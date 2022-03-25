@@ -900,24 +900,26 @@ STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
 STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    dma_deinit(self->dma_descr_tx);
-    dma_deinit(self->dma_descr_rx);
-    HAL_I2S_DeInit(&self->hi2s);
+    if (self->ring_buffer_storage != NULL) {
+        dma_deinit(self->dma_descr_tx);
+        dma_deinit(self->dma_descr_rx);
+        HAL_I2S_DeInit(&self->hi2s);
 
-    if (self->hi2s.Instance == I2S1) {
-        __SPI1_FORCE_RESET();
-        __SPI1_RELEASE_RESET();
-        __SPI1_CLK_DISABLE();
-    } else if (self->hi2s.Instance == I2S2) {
-        __SPI2_FORCE_RESET();
-        __SPI2_RELEASE_RESET();
-        __SPI2_CLK_DISABLE();
+        if (self->hi2s.Instance == I2S1) {
+            __SPI1_FORCE_RESET();
+            __SPI1_RELEASE_RESET();
+            __SPI1_CLK_DISABLE();
+        } else if (self->hi2s.Instance == I2S2) {
+            __SPI2_FORCE_RESET();
+            __SPI2_RELEASE_RESET();
+            __SPI2_CLK_DISABLE();
+        }
+
+        m_free(self->ring_buffer_storage);
+        self->ring_buffer_storage = NULL;
     }
-
-    m_free(self->ring_buffer_storage);
 
     return mp_const_none;
 }
