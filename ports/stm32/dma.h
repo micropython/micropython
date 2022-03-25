@@ -57,10 +57,28 @@ extern const dma_descr_t dma_SDMMC_2;
 extern const dma_descr_t dma_SPI_6_RX;
 extern const dma_descr_t dma_SDIO_0;
 extern const dma_descr_t dma_DCMI_0;
-extern const dma_descr_t dma_I2S_1_RX;
-extern const dma_descr_t dma_I2S_1_TX;
-extern const dma_descr_t dma_I2S_2_RX;
-extern const dma_descr_t dma_I2S_2_TX;
+
+#if defined(STM32H7)
+// H7 requires different DMA settings for 16-bit transfers.
+extern const dma_descr_t dma_I2S_1_RX_16;
+extern const dma_descr_t dma_I2S_1_RX_32;
+extern const dma_descr_t dma_I2S_1_TX_16;
+extern const dma_descr_t dma_I2S_1_TX_32;
+extern const dma_descr_t dma_I2S_2_RX_16;
+extern const dma_descr_t dma_I2S_2_RX_32;
+extern const dma_descr_t dma_I2S_2_TX_16;
+extern const dma_descr_t dma_I2S_2_TX_32;
+#else
+// F4/F7 uses the same DMA settings for 16-bit and 32-bit transfers.
+extern const dma_descr_t dma_I2S_1_RX_16;
+#define dma_I2S_1_RX_32 dma_I2S_1_RX_16
+extern const dma_descr_t dma_I2S_1_TX_16;
+#define dma_I2S_1_TX_32 dma_I2S_1_TX_16
+extern const dma_descr_t dma_I2S_2_RX_16;
+#define dma_I2S_2_RX_32 dma_I2S_2_RX_16
+extern const dma_descr_t dma_I2S_2_TX_16;
+#define dma_I2S_2_TX_32 dma_I2S_2_TX_16
+#endif
 
 #elif defined(STM32G4)
 

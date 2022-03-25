@@ -56,7 +56,7 @@ import csv
 SUPPORTED_FN = {
     "TIM": ["CH1", "CH2", "CH3", "CH4", "CH1N", "CH2N", "CH3N", "CH1_ETR", "ETR", "BKIN"],
     "I2C": ["SDA", "SCL"],
-    "I2S": ["CK", "MCK", "SD", "WS", "EXTSD"],
+    "I2S": ["CK", "MCK", "SD", "SDO", "SDI", "WS", "EXTSD"],
     "USART": ["RX", "TX", "CTS", "RTS", "CK"],
     "UART": ["RX", "TX", "CTS", "RTS"],
     "LPUART": ["RX", "TX", "CTS", "RTS"],

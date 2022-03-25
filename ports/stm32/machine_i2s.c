@@ -155,12 +155,21 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 // The frame map is used with the readinto() method to transform the audio sample data coming
 // from DMA memory (32-bit stereo) to the format specified
 // in the I2S constructor.  e.g.  16-bit mono
+#if defined(STM32H7)
 STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
-    { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
-    { 2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
-    { 0,  1,  4,  5, -1, -1, -1, -1 },  // Stereo, 16-bits
-    { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
+    { -1, -1,  0,  1, -1, -1, -1, -1 },  // Mono, 16-bits
+    {  0,  1,  2,  3, -1, -1, -1, -1 },  // Mono, 32-bits
+    {  0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
+    {  0,  1,  2,  3,  4,  5,  6,  7 },  // Stereo, 32-bits
 };
+#else
+STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
+    {  0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
+    {  2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
+    { -1, -1,  0,  1, -1, -1,  2,  3 },  // Stereo, 16-bits
+    {  2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
+};
+#endif
 
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
@@ -244,6 +253,7 @@ STATIC size_t ringbuf_available_space(ring_buf_t *rbuf) {
 //      LEFT Channel =  0x99, 0xBB, 0x11, 0x22
 //      RIGHT Channel = 0x44, 0x55, 0xAB, 0x77
 STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
+    #if !defined(STM32H7)
     int16_t sample_ms;
     int16_t sample_ls;
     for (uint32_t i = 0; i < num_samples; i++) {
@@ -251,6 +261,7 @@ STATIC void reformat_32_bit_samples(int32_t *sample, uint32_t num_samples) {
         sample_ms = sample[i] >> 16;
         sample[i] = (sample_ls << 16) + sample_ms;
     }
+    #endif
 }
 
 STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
@@ -269,14 +280,13 @@ STATIC int8_t get_frame_mapping_index(int8_t bits, format_t format) {
     }
 }
 
-STATIC int8_t get_dma_bits(uint16_t mode, int8_t bits) {
+STATIC uint32_t get_dma_bits(uint16_t mode, int8_t bits) {
     if (mode == I2S_MODE_MASTER_TX) {
         if (bits == 16) {
             return I2S_DATAFORMAT_16B;
         } else {
             return I2S_DATAFORMAT_32B;
         }
-        return bits;
     } else { // Master Rx
         // always read 32 bit words for I2S e.g.  I2S MEMS microphones
         return I2S_DATAFORMAT_32B;
@@ -526,19 +536,27 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         self->hi2s.Instance = I2S1;
         __SPI1_CLK_ENABLE();
         // configure DMA streams
-        if (self->mode == I2S_MODE_MASTER_RX) {
-            self->dma_descr_rx = &dma_I2S_1_RX;
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
+            self->dma_descr_rx = &dma_I2S_1_RX_32; // always 32-bit
         } else {
-            self->dma_descr_tx = &dma_I2S_1_TX;
+            if (self->hi2s.Init.DataFormat == I2S_DATAFORMAT_16B) {
+                self->dma_descr_tx = &dma_I2S_1_TX_16;
+            } else {
+                self->dma_descr_tx = &dma_I2S_1_TX_32;
+            }
         }
     } else if (self->i2s_id == 2) {
         self->hi2s.Instance = I2S2;
         __SPI2_CLK_ENABLE();
         // configure DMA streams
-        if (self->mode == I2S_MODE_MASTER_RX) {
-            self->dma_descr_rx = &dma_I2S_2_RX;
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
+            self->dma_descr_rx = &dma_I2S_2_RX_32; // always 32-bit
         } else {
-            self->dma_descr_tx = &dma_I2S_2_TX;
+            if (self->hi2s.Init.DataFormat == I2S_DATAFORMAT_16B) {
+                self->dma_descr_tx = &dma_I2S_1_TX_16;
+            } else {
+                self->dma_descr_tx = &dma_I2S_2_TX_32;
+            }
         }
     } else {
         // invalid id number; should not get here as i2s object should not
@@ -566,11 +584,26 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         const pin_af_obj_t *af = pin_find_af(self->sd, AF_FN_I2S, self->i2s_id);
         GPIO_InitStructure.Alternate = (uint8_t)af->idx;
         HAL_GPIO_Init(self->sd->gpio, &GPIO_InitStructure);
+
+        #if defined(STM32H7)
+        // Make sure IOSWP bit is set correctly based on pin and mode
+        const pin_af_obj_t *pin_af = pin_find_af(self->sd, AF_FN_I2S, self->i2s_id);
+        if (pin_af != NULL) {
+            if ((pin_af->type == AF_PIN_TYPE_I2S_SDI
+                    && (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_TX))
+                || (pin_af->type == AF_PIN_TYPE_I2S_SDO
+                    && (self->mode == I2S_MODE_MASTER_TX || self->mode == I2S_MODE_SLAVE_RX))) {
+                LL_I2S_DisableIOSwap(self->hi2s.Instance);
+            } else {
+                LL_I2S_EnableIOSwap(self->hi2s.Instance);
+            }
+        }
+        #endif
     }
 
     if (HAL_I2S_Init(&self->hi2s) == HAL_OK) {
         // Reset and initialize Tx and Rx DMA channels
-        if (self->mode == I2S_MODE_MASTER_RX) {
+        if (self->mode == I2S_MODE_MASTER_RX || self->mode == I2S_MODE_SLAVE_RX) {
             dma_invalidate_channel(self->dma_descr_rx);
             dma_init(&self->hdma_rx, self->dma_descr_rx, DMA_PERIPH_TO_MEMORY, &self->hi2s);
             self->hi2s.hdmarx = &self->hdma_rx;
@@ -580,7 +613,9 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
             self->hi2s.hdmatx = &self->hdma_tx;
         }
 
+        #if !defined(STM32H7)
         __HAL_RCC_PLLI2S_ENABLE();  // start I2S clock
+        #endif
 
         return true;
     } else {
@@ -691,7 +726,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
         { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
         { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_INT,                     {.u_int = -1} },
         { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
     };
 
@@ -730,7 +765,12 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is SD valid?
     if (mp_obj_is_type(args[ARG_sd].u_obj, &pin_type)) {
         pin_af = pin_find_af(MP_OBJ_TO_PTR(args[ARG_sd].u_obj), AF_FN_I2S, self->i2s_id);
-        if (pin_af->type != AF_PIN_TYPE_I2S_SD) {
+        if (!(pin_af != NULL && (
+            pin_af->type == AF_PIN_TYPE_I2S_SD
+            #if defined(STM32H7)
+            || pin_af->type == AF_PIN_TYPE_I2S_SDO || pin_af->type == AF_PIN_TYPE_I2S_SDI
+            #endif
+            ))) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid SD pin"));
         }
     } else {
@@ -740,7 +780,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is Mode valid?
     uint16_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != (I2S_MODE_MASTER_RX)) &&
-        (i2s_mode != (I2S_MODE_MASTER_TX))) {
+        (i2s_mode != (I2S_MODE_MASTER_TX)) &&
+        (i2s_mode != (I2S_MODE_SLAVE_RX)) &&
+        (i2s_mode != (I2S_MODE_SLAVE_TX))) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
     }
 
@@ -777,7 +819,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->mode = i2s_mode;
     self->bits = i2s_bits;
     self->format = i2s_format;
-    self->rate = args[ARG_rate].u_int;
+    self->rate = -1;
     self->ibuf = ring_buffer_len;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->non_blocking_descriptor.copy_in_progress = false;
@@ -788,9 +830,23 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->Standard = I2S_STANDARD_PHILIPS;
     init->DataFormat = get_dma_bits(self->mode, self->bits);
     init->MCLKOutput = I2S_MCLKOUTPUT_DISABLE;
-    init->AudioFreq = args[ARG_rate].u_int;
+    init->AudioFreq = I2S_AUDIOFREQ_DEFAULT;
     init->CPOL = I2S_CPOL_LOW;
+    #if !defined(STM32H7)
     init->ClockSource = I2S_CLOCK_PLL;
+    #endif
+    #if defined(STM32F4)
+    init->FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+    #endif
+
+    // set rate if not in passive mode
+    if (i2s_mode == I2S_MODE_MASTER_TX || i2s_mode == I2S_MODE_MASTER_RX) {
+        self->rate = args[ARG_rate].u_int;
+        if (self->rate < 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("rate required"));
+        }
+        init->AudioFreq = args[ARG_rate].u_int;
+    }
 
     // init the I2S bus
     if (!i2s_init(self)) {
@@ -806,7 +862,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     }
 
     HAL_StatusTypeDef status;
-    if (self->mode == I2S_MODE_MASTER_TX) {
+    if (self->mode == I2S_MODE_MASTER_TX || self->mode == I2S_MODE_SLAVE_TX) {
         status = HAL_I2S_Transmit_DMA(&self->hi2s, (void *)self->dma_buffer_dcache_aligned, number_of_samples);
     } else {  // RX
         status = HAL_I2S_Receive_DMA(&self->hi2s, (void *)self->dma_buffer_dcache_aligned, number_of_samples);
@@ -824,16 +880,18 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         "ws="MP_HAL_PIN_FMT ",\n"
         "sd="MP_HAL_PIN_FMT ",\n"
         "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
+        "bits=%u, format=%u,\n",
         self->i2s_id,
         mp_hal_pin_name(self->sck),
         mp_hal_pin_name(self->ws),
         mp_hal_pin_name(self->sd),
         self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
+        self->bits, self->format
         );
+    if (self->rate > 0) {
+        mp_printf(print, "rate=%d, ", self->rate);
+    }
+    mp_printf(print, "ibuf=%d)", self->ibuf);
 }
 
 STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
@@ -884,24 +942,26 @@ STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
 STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    dma_deinit(self->dma_descr_tx);
-    dma_deinit(self->dma_descr_rx);
-    HAL_I2S_DeInit(&self->hi2s);
+    if (self->ring_buffer_storage != NULL) {
+        dma_deinit(self->dma_descr_tx);
+        dma_deinit(self->dma_descr_rx);
+        HAL_I2S_DeInit(&self->hi2s);
 
-    if (self->hi2s.Instance == I2S1) {
-        __SPI1_FORCE_RESET();
-        __SPI1_RELEASE_RESET();
-        __SPI1_CLK_DISABLE();
-    } else if (self->hi2s.Instance == I2S2) {
-        __SPI2_FORCE_RESET();
-        __SPI2_RELEASE_RESET();
-        __SPI2_CLK_DISABLE();
+        if (self->hi2s.Instance == I2S1) {
+            __SPI1_FORCE_RESET();
+            __SPI1_RELEASE_RESET();
+            __SPI1_CLK_DISABLE();
+        } else if (self->hi2s.Instance == I2S2) {
+            __SPI2_FORCE_RESET();
+            __SPI2_RELEASE_RESET();
+            __SPI2_CLK_DISABLE();
+        }
+
+        m_free(self->ring_buffer_storage);
+        self->ring_buffer_storage = NULL;
     }
-
-    m_free(self->ring_buffer_storage);
 
     return mp_const_none;
 }
@@ -1000,6 +1060,8 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     // Constants
     { MP_ROM_QSTR(MP_QSTR_RX),              MP_ROM_INT(I2S_MODE_MASTER_RX) },
     { MP_ROM_QSTR(MP_QSTR_TX),              MP_ROM_INT(I2S_MODE_MASTER_TX) },
+    { MP_ROM_QSTR(MP_QSTR_RX_PASSIVE),      MP_ROM_INT(I2S_MODE_SLAVE_RX) },
+    { MP_ROM_QSTR(MP_QSTR_TX_PASSIVE),      MP_ROM_INT(I2S_MODE_SLAVE_TX) },
     { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
     { MP_ROM_QSTR(MP_QSTR_MONO),            MP_ROM_INT(MONO) },
 };
@@ -1008,7 +1070,7 @@ MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
 STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->mode != I2S_MODE_MASTER_RX) {
+    if (self->mode != I2S_MODE_MASTER_RX && self->mode != I2S_MODE_SLAVE_RX) {
         *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
@@ -1041,7 +1103,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
 STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->mode != I2S_MODE_MASTER_TX) {
+    if (self->mode != I2S_MODE_MASTER_TX && self->mode != I2S_MODE_SLAVE_TX) {
         *errcode = MP_EPERM;
         return MP_STREAM_ERROR;
     }
