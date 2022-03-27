@@ -256,6 +256,7 @@ SRC_C += \
 	shared/netutils/dhcpserver.c \
 	shared/readline/readline.c \
 	shared/runtime/gchelper_native.c \
+	shared/runtime/interrupt_char.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
