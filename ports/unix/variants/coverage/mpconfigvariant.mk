@@ -39,7 +39,6 @@ SRC_BITMAP := \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
 	shared-bindings/zlib/__init__.c \
-	shared-bindings/zlib/DecompIO.c \
 	shared-module/aesio/aes.c \
 	shared-module/aesio/__init__.c \
 	shared-module/bitmaptools/__init__.c \
@@ -50,7 +49,6 @@ SRC_BITMAP := \
 	shared-module/rainbowio/__init__.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \
-	shared-module/zlib/DecompIO.c
 
 $(info $(SRC_BITMAP))
 SRC_C += $(SRC_BITMAP)
