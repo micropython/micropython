@@ -95,7 +95,8 @@ Constructor
      - ``mode`` specifies receive or transmit
      - ``bits`` specifies sample size (bits), 16 or 32
      - ``format`` specifies channel format, STEREO or MONO
-     - ``rate`` specifies audio sampling rate (samples/s)
+     - ``rate`` specifies audio sampling rate (Hz);
+       this is the frequency of the ``ws`` signal
      - ``ibuf`` specifies internal buffer length (bytes)
 
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while
