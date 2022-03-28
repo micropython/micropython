@@ -32,6 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "supervisor/shared/board.h"
+#include "badger-shared.h"
 
 #define DELAY 0x80
 
@@ -258,10 +259,20 @@ const uint8_t display_stop_sequence[] = {
 };
 
 void board_init(void) {
+    // Drive the EN_3V3 pin high so the board stays awake on battery power
+    enable_pin_obj.base.type = &digitalio_digitalinout_type;
+    common_hal_digitalio_digitalinout_construct(&enable_pin_obj, &pin_GPIO10);
+    common_hal_digitalio_digitalinout_switch_to_output(&enable_pin_obj, true, DRIVE_MODE_PUSH_PULL);
+
+    // Never reset
+    common_hal_digitalio_digitalinout_never_reset(&enable_pin_obj);
+
+    // Set up the SPI object used to control the display
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO19, &pin_GPIO16, false);
     common_hal_busio_spi_never_reset(spi);
 
+    // Set up the DisplayIO pin object
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
@@ -273,6 +284,7 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
+    // Set up the DisplayIO epaper object
     displayio_epaperdisplay_obj_t *display = &displays[0].epaper_display;
     display->base.type = &displayio_epaperdisplay_type;
     common_hal_displayio_epaperdisplay_construct(
