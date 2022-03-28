@@ -4,10 +4,12 @@ huffman
 # For nvm.toml
 cascadetoml
 jinja2
-typer
+# Undo this pin when click and typer are again compatible.
+typer==0.4.0
 
 sh
-click
+# Undo this pin when click and typer are again compatible.
+click==8.0.4
 cpp-coveralls
 requests
 requests-cache
