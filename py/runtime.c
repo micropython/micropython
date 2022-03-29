@@ -860,9 +860,6 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
                     // expand size of args array if needed
                     if (args2_len + 1 >= args2_alloc) {
                         uint new_alloc = args2_alloc * 2;
-                        if (new_alloc < 4) {
-                            new_alloc = 4;
-                        }
                         args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
                         args2_alloc = new_alloc;
                     }
