@@ -715,27 +715,29 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     uint args2_len = 0;
 
     // Try to get a hint for unpacked * args length
-    uint list_len = 0;
+    int list_len = 0;
 
     if (star_args != 0) {
         for (uint i = 0; i < n_args; i++) {
             if (star_args & (1 << i)) {
                 mp_obj_t len = mp_obj_len_maybe(args[i]);
                 if (len != MP_OBJ_NULL) {
-                    list_len += mp_obj_get_int(len);
+                    // -1 accounts for 1 of n_args occupied by this arg
+                    list_len += mp_obj_get_int(len) - 1;
                 }
             }
         }
     }
 
     // Try to get a hint for the size of the kw_dict
-    uint kw_dict_len = 0;
+    int kw_dict_len = 0;
 
     for (uint i = 0; i < n_kw; i++) {
         mp_obj_t key = args[n_args + i * 2];
         mp_obj_t value = args[n_args + i * 2 + 1];
         if (key == MP_OBJ_NULL && value != MP_OBJ_NULL && mp_obj_is_type(value, &mp_type_dict)) {
-            kw_dict_len += mp_obj_dict_len(value);
+            // -1 accounts for 1 of n_kw occupied by this arg
+            kw_dict_len += mp_obj_dict_len(value) - 1;
         }
     }
 
