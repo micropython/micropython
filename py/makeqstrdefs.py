@@ -22,6 +22,14 @@ _MODE_QSTR = "qstr"
 _MODE_COMPRESS = "compress"
 
 
+def is_c_source(fname):
+    return os.path.splitext(fname)[1] in [".c"]
+
+
+def is_cxx_source(fname):
+    return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
+
+
 def preprocess():
     if any(src in args.dependencies for src in args.changed_sources):
         sources = args.sources
@@ -32,9 +40,9 @@ def preprocess():
     csources = []
     cxxsources = []
     for source in sources:
-        if source.endswith(".cpp"):
+        if is_cxx_source(source):
             cxxsources.append(source)
-        elif source.endswith(".c"):
+        elif is_c_source(source):
             csources.append(source)
     try:
         os.makedirs(os.path.dirname(args.output[0]))
@@ -87,7 +95,7 @@ def process_file(f):
             m = re_line.match(line)
             assert m is not None
             fname = m.group(1)
-            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
+            if not is_c_source(fname) and not is_cxx_source(fname):
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
