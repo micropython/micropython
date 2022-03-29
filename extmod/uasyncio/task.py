@@ -123,7 +123,7 @@ class Task:
     def __init__(self, coro, globals=None):
         self.coro = coro  # Coroutine of this Task
         self.data = None  # General data for queue it is waiting on
-        self.state = True  # None, False, True or a TaskQueue instance
+        self.state = True  # None, False, True, a callable, or a TaskQueue instance
         self.ph_key = 0  # Pairing heap
         self.ph_child = None  # Paring heap
         self.ph_child_last = None  # Paring heap
@@ -137,6 +137,9 @@ class Task:
         elif self.state is True:
             # Allocated head of linked list of Tasks waiting on completion of this task.
             self.state = TaskQueue()
+        elif type(self.state) is not TaskQueue:
+            # Task has state used for another purpose, so can't also wait on it.
+            raise RuntimeError("can't wait")
         return self
 
     def __next__(self):
