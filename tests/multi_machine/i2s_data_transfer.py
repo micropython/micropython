@@ -101,9 +101,9 @@ def instance0():
             (16, I2S.STEREO, b"2367ABEF2367ABEF2367ABEF2367ABEF"),  # MSBs of L and R channels
             (16, I2S.MONO, b"23AB23AB23AB23AB23AB23AB23AB23AB"),  # MSBs of L channel only
         ):
-        test_rx(I2S.RX_PASSIVE, bits_per_sample, frame_format, 4, 0, expected)
+        test_rx(I2S.PERIPHERAL_RX, bits_per_sample, frame_format, 4, 0, expected)
         multitest.wait("tx done")
-        test_rx(I2S.RX, bits_per_sample, frame_format, 4, 1, expected)
+        test_rx(I2S.CONTROLLER_RX, bits_per_sample, frame_format, 4, 1, expected)
         multitest.broadcast("rx done")
 
 
@@ -121,7 +121,7 @@ def instance1():
             (32, I2S.STEREO, 4),
             (32, I2S.STEREO, 4),
         ):
-        test_tx(I2S.TX, bits_per_sample, frame_format, num_tx + 1)
+        test_tx(I2S.CONTROLLER_TX, bits_per_sample, frame_format, num_tx + 1)
         multitest.broadcast("tx done")
-        test_tx(I2S.TX_PASSIVE, bits_per_sample, frame_format, num_tx)
+        test_tx(I2S.PERIPHERAL_TX, bits_per_sample, frame_format, num_tx)
         multitest.wait("rx done")
