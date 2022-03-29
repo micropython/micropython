@@ -5,8 +5,13 @@ STARTUP_FILE = $(STM32LIB_CMSIS_BASE)/Source/Templates/gcc/startup_stm32wb55xx_c
 
 ifeq ($(USE_MBOOT),1)
 # When using Mboot all the text goes together after the bootloader
+ifeq ($(MBOOT_ENABLE_PACKING),1)
+LD_FILES = boards/stm32wb55xg_mbp.ld boards/common_bl.ld
+TEXT0_ADDR = 0x08008000
+else
 LD_FILES = boards/stm32wb55xg.ld boards/common_bl.ld
 TEXT0_ADDR = 0x08004000
+endif
 else
 # When not using Mboot the text goes at the start of flash
 LD_FILES = boards/stm32wb55xg.ld boards/common_basic.ld

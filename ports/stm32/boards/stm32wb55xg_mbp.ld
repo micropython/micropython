@@ -1,13 +1,13 @@
 /*
-    GNU linker script for STM32WB55xG
+    GNU linker script for STM32WB55xG with larger bootloader section to fit mboot with packing support.
 */
 
 /* Specify the memory areas */
 MEMORY
 {
     FLASH (rx)      : ORIGIN = 0x08000000, LENGTH = 512K /* sectors 0-127 */
-    FLASH_BL (rx)   : ORIGIN = 0x08000000, LENGTH = 16K /* sectors 0-3, used by the bootloader */
-    FLASH_APP (rx)  : ORIGIN = 0x08004000, LENGTH = 496K /* sectors 4-127 */
+    FLASH_BL (rx)   : ORIGIN = 0x08000000, LENGTH = 32K /* sectors 0-7, used by the bootloader */
+    FLASH_APP (rx)  : ORIGIN = 0x08008000, LENGTH = 464K /* sectors 8-127 */
     FLASH_FS (r)    : ORIGIN = 0x08080000, LENGTH = 256K /* sectors 128-191 */
     RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 192K /* SRAM1 */
     RAM2A (xrw)     : ORIGIN = 0x20030000, LENGTH = 10K  /* SRAM2A */
