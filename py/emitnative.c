@@ -723,7 +723,13 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
 
     if (emit->pass == MP_PASS_EMIT) {
         void *f = mp_asm_base_get_code(&emit->as->base);
+        #if N_PRELUDE_AS_BYTES_OBJ
+        // Keep only the machine code, not the prelude, which is in a separate bytes object.
+        mp_uint_t f_len = emit->prelude_offset;
+        #else
+        // Keep both the machine code and the prelude.
         mp_uint_t f_len = mp_asm_base_get_code_size(&emit->as->base);
+        #endif
 
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
