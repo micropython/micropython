@@ -25,3 +25,12 @@ try:
     eval("a.f(**{'a': 1}, *(2, 3, 4))")
 except SyntaxError:
     print("SyntaxError")
+
+
+# coverage test for arg allocation corner case
+
+def f2(*args, **kwargs):
+    print(len(args), len(kwargs))
+
+
+f2(*iter(range(4)), **{'a': 1})
