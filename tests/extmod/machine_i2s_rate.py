@@ -45,7 +45,7 @@ def test(mode, bits_per_sample, frame_format):
     buf_len_250ms = bits_per_frame // 8 * RATE // 4
 
     # Create test data and preload I2S buffers.
-    if mode == I2S.TX:
+    if mode == I2S.CONTROLLER_TX:
         mode_str = "TX"
         data = TEST_BYTES * (buf_len_250ms // len(TEST_BYTES))
         i2s.write(data)
@@ -57,7 +57,7 @@ def test(mode, bits_per_sample, frame_format):
     # Time how long it takes to read/write 2 lots of data.
     t0 = time.ticks_ms()
     for i in range(2):
-        if mode == I2S.TX:
+        if mode == I2S.CONTROLLER_TX:
             i2s.write(data)
         else:
             i2s.readinto(data)
@@ -70,11 +70,11 @@ def test(mode, bits_per_sample, frame_format):
     print(mode_str, bits_per_sample, channels, abs(dt - 500) <= 4)
 
 
-test(I2S.TX, 16, I2S.MONO)
-test(I2S.TX, 16, I2S.STEREO)
-test(I2S.TX, 32, I2S.MONO)
-test(I2S.TX, 32, I2S.STEREO)
-test(I2S.RX, 16, I2S.MONO)
-test(I2S.RX, 16, I2S.STEREO)
-test(I2S.RX, 32, I2S.MONO)
-test(I2S.RX, 32, I2S.STEREO)
+test(I2S.CONTROLLER_TX, 16, I2S.MONO)
+test(I2S.CONTROLLER_TX, 16, I2S.STEREO)
+test(I2S.CONTROLLER_TX, 32, I2S.MONO)
+test(I2S.CONTROLLER_TX, 32, I2S.STEREO)
+test(I2S.CONTROLLER_RX, 16, I2S.MONO)
+test(I2S.CONTROLLER_RX, 16, I2S.STEREO)
+test(I2S.CONTROLLER_RX, 32, I2S.MONO)
+test(I2S.CONTROLLER_RX, 32, I2S.STEREO)
