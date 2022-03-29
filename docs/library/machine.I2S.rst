@@ -6,7 +6,7 @@ class I2S -- Inter-IC Sound bus protocol
 
 I2S is a synchronous serial protocol used to connect digital audio devices.
 At the physical level, a bus consists of 3 lines: SCK, WS, SD.
-The I2S class supports controller operation.  Peripheral operation is not supported.
+The I2S class supports controller and peripheral operation.
 
 The I2S class is currently available as a Technical Preview.  During the preview period, feedback from
 users is encouraged.  Based on this feedback, the I2S class API and implementation may be changed.
@@ -30,7 +30,7 @@ I2S objects can be created and initialized using::
 
     audio_out = I2S(2,
                     sck=sck_pin, ws=ws_pin, sd=sd_pin,
-                    mode=I2S.TX,
+                    mode=I2S.CONTROLLER_TX,
                     bits=16,
                     format=I2S.MONO,
                     rate=44100,
@@ -38,7 +38,7 @@ I2S objects can be created and initialized using::
 
     audio_in = I2S(2,
                    sck=sck_pin, ws=ws_pin, sd=sd_pin,
-                   mode=I2S.RX,
+                   mode=I2S.CONTROLLER_RX,
                    bits=32,
                    format=I2S.STEREO,
                    rate=22050,
@@ -72,6 +72,10 @@ uasyncio::
    sreader = uasyncio.StreamReader(audio_in)
    num_read = await sreader.readinto(buf)
 
+Controller and peripheral mode are supported.  When a controller, the SCK and WS pins will
+be outputs and the I2S hardware will generate the required signals on these pins.  When a
+peripheral, the SCK and WS signals are inputs and must be generated externally.
+
 Constructor
 -----------
 
@@ -92,11 +96,11 @@ Constructor
      - ``sck`` is a pin object for the serial clock line
      - ``ws`` is a pin object for the word select line
      - ``sd`` is a pin object for the serial data line
-     - ``mode`` specifies receive or transmit
+     - ``mode`` specifies controller or peripheral, and receive or transmit
      - ``bits`` specifies sample size (bits), 16 or 32
      - ``format`` specifies channel format, STEREO or MONO
      - ``rate`` specifies audio sampling rate (Hz);
-       this is the frequency of the ``ws`` signal
+       this is the frequency of the ``ws`` signal, and isn't needed when in peripheral mode
      - ``ibuf`` specifies internal buffer length (bytes)
 
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while
@@ -144,13 +148,21 @@ Methods
 Constants
 ---------
 
-.. data:: I2S.RX
+.. data:: I2S.CONTROLLER_RX
 
-   for initialising the I2S bus ``mode`` to receive
+   for initialising the I2S bus ``mode`` to receive as a controller
 
-.. data:: I2S.TX
+.. data:: I2S.CONTROLLER_TX
 
-   for initialising the I2S bus ``mode`` to transmit
+   for initialising the I2S bus ``mode`` to transmit as a controller
+
+.. data:: I2S.PERIPHERAL_RX
+
+   for initialising the I2S bus ``mode`` to receive as a peripheral
+
+.. data:: I2S.PERIPHERAL_TX
+
+   for initialising the I2S bus ``mode`` to transmit as a peripheral
 
 .. data:: I2S.STEREO
 
