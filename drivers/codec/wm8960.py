@@ -140,69 +140,69 @@ _MAX_VOLUME_SPEAKER = const(0x7F)
 
 # Config symbol names
 # Modules
-module_ADC = const(0)  # ADC module in WM8960
-module_DAC = const(1)  # DAC module in WM8960
-module_VREF = const(2)  # VREF module
-module_headphone = const(3)  # Headphone
-module_mic_bias = const(4)  # Mic bias
-module_mic = const(5)  # Input Mic
-module_line_in = const(6)  # Analog in PGA
-module_line_out = const(7)  # Line out module
-module_speaker = const(8)  # Speaker module
-module_omix = const(9)  # Output mixer
-module_mono_out = const(10)  # Mono mix
+MODULE_ADC = const(0)  # ADC module in WM8960
+MODULE_DAC = const(1)  # DAC module in WM8960
+MODULE_VREF = const(2)  # VREF module
+MODULE_HEADPHONE = const(3)  # Headphone
+MODULE_MIC_BIAS = const(4)  # Mic bias
+MODULE_MIC = const(5)  # Input Mic
+MODULE_LINE_IN = const(6)  # Analog in PGA
+MODULE_LINE_OUT = const(7)  # Line out module
+MODULE_SPEAKER = const(8)  # Speaker module
+MODULE_OMIX = const(9)  # Output mixer
+MODULE_MONO_OUT = const(10)  # Mono mix
 
 # Route
-route_bypass = const(0)  # LINEIN->Headphone.
-route_playback = const(1)  #  I2SIN->DAC->Headphone.
-route_playback_record = const(2)  # I2SIN->DAC->Headphone, LINEIN->ADC->I2SOUT.
-route_record = const(5)  # LINEIN->ADC->I2SOUT.
+ROUTE_BYPASS = const(0)  # LINEIN->Headphone.
+ROUTE_PLAYBACK = const(1)  #  I2SIN->DAC->Headphone.
+ROUTE_PLAYBACK_RECORD = const(2)  # I2SIN->DAC->Headphone, LINEIN->ADC->I2SOUT.
+ROUTE_RECORD = const(5)  # LINEIN->ADC->I2SOUT.
 
 # Input
-input_closed = const(0)  # Input device is closed
-input_mic1 = const(1)  # Input as single ended mic, only use L/RINPUT1
-input_mic2 = const(2)  # Input as diff. mic, use L/RINPUT1 and L/RINPUT2
-input_mic3 = const(3)  # Input as diff. mic, use L/RINPUT1 and L/RINPUT3
-input_line2 = const(4)  # Input as line input, only use L/RINPUT2
-input_line3 = const(5)  # Input as line input, only use L/RINPUT3
+INPUT_CLOSED = const(0)  # Input device is closed
+INPUT_MIC1 = const(1)  # Input as single ended mic, only use L/RINPUT1
+INPUT_MIC2 = const(2)  # Input as diff. mic, use L/RINPUT1 and L/RINPUT2
+INPUT_MIC3 = const(3)  # Input as diff. mic, use L/RINPUT1 and L/RINPUT3
+INPUT_LINE2 = const(4)  # Input as line input, only use L/RINPUT2
+INPUT_LINE3 = const(5)  # Input as line input, only use L/RINPUT3
 
 # ADC sync input
-sync_adc = const(0)  # Use ADCLRC pin for ADC sync
-sync_dac = const(1)  # used DACLRC pin for ADC sync
+SYNC_ADC = const(0)  # Use ADCLRC pin for ADC sync
+SYNC_DAC = const(1)  # used DACLRC pin for ADC sync
 
 # Protocol type
-bus_I2S = const(2)  # I2S type
-bus_left_justified = const(1)  # Left justified mode
-bus_right_justified = const(0)  # Right justified mode
-bus_PCMA = const(3)  # PCM A mode
-bus_PCMB = const(3 | (1 << 4))  # PCM B mode
+BUS_I2S = const(2)  # I2S type
+BUS_LEFT_JUSTIFIED = const(1)  # Left justified mode
+BUS_RIGHT_JUSTIFIED = const(0)  # Right justified mode
+BUS_PCMA = const(3)  # PCM A mode
+BUS_PCMB = const(3 | (1 << 4))  # PCM B mode
 
 # Channel swap
-swap_none = const(0)
-swap_input = const(1)
-swap_output = const(2)
+SWAP_NONE = const(0)
+SWAP_INPUT = const(1)
+SWAP_OUTPUT = const(2)
 
 # Mute settings
-mute_fast = const(0)
-mute_slow = const(1)
+MUTE_FAST = const(0)
+MUTE_SLOW = const(1)
 
 # ALC settings
-alc_off = const(0)
-alc_right = const(1)
-alc_left = const(2)
-alc_stereo = const(3)
-alc_mode = const(0)  # ALC mode
-alc_limiter = const(1)  # Limiter mode
+ALC_OFF = const(0)
+ALC_RIGHT = const(1)
+ALC_LEFT = const(2)
+ALC_STEREO = const(3)
+ALC_MODE = const(0)  # ALC mode
+ALC_LIMITER = const(1)  # Limiter mode
 
 # Clock Source
-sysclk_mclk = const(0)  # sysclk source from external MCLK
-sysclk_PLL = const(1)  # sysclk source from internal PLL
+SYSCLK_MCLK = const(0)  # sysclk source from external MCLK
+SYSCLK_PLL = const(1)  # sysclk source from internal PLL
 
 
-# fmt: off
 class Regs:
     # register cache of 56 register. Since registers cannot be read back, they are
     # kept in the table for modification
+    # fmt: off
     cache = array.array("H", (
         0x0097, 0x0097, 0x0000, 0x0000, 0x0000, 0x0008, 0x0000,
         0x000a, 0x01c0, 0x0000, 0x00ff, 0x00ff, 0x0000, 0x0000,
@@ -213,7 +213,7 @@ class Regs:
         0x0040, 0x0000, 0x0000, 0x0050, 0x0050, 0x0000, 0x0002,
         0x0037, 0x004d, 0x0080, 0x0008, 0x0031, 0x0026, 0x00e9
     ))
-# fmt: on
+    # fmt: on
 
     def __init__(self, i2c, i2c_address=_I2C_ADDR):
         self.value_buffer = bytearray(2)
@@ -290,11 +290,11 @@ class WM8960:
     }
 
     _volume_config_table = {
-        module_ADC: (_MAX_VOLUME_ADC, _LADC, 0x100),
-        module_DAC: (_MAX_VOLUME_DAC, _LDAC, 0x100),
-        module_headphone: (_MAX_VOLUME_HEADPHONE, _LOUT1, 0x180),
-        module_line_in: (_MAX_VOLUME_LINEIN, _LINVOL, 0x140),
-        module_speaker: (_MAX_VOLUME_SPEAKER, _LOUT2, 0x180),
+        MODULE_ADC: (_MAX_VOLUME_ADC, _LADC, 0x100),
+        MODULE_DAC: (_MAX_VOLUME_DAC, _LDAC, 0x100),
+        MODULE_HEADPHONE: (_MAX_VOLUME_HEADPHONE, _LOUT1, 0x180),
+        MODULE_LINE_IN: (_MAX_VOLUME_LINEIN, _LINVOL, 0x140),
+        MODULE_SPEAKER: (_MAX_VOLUME_SPEAKER, _LOUT2, 0x180),
     }
 
     def __init__(
@@ -302,22 +302,22 @@ class WM8960:
         i2c,
         sample_rate=16000,
         bits=16,
-        swap=swap_none,
-        route=route_playback_record,
-        left_input=input_mic3,
-        right_input=input_mic2,
-        sysclk_source=sysclk_mclk,
+        swap=SWAP_NONE,
+        route=ROUTE_PLAYBACK_RECORD,
+        left_input=INPUT_MIC3,
+        right_input=INPUT_MIC2,
+        sysclk_source=SYSCLK_MCLK,
         mclk_freq=None,
         primary=False,
-        adc_sync=sync_dac,
-        protocol=bus_I2S,
+        adc_sync=SYNC_DAC,
+        protocol=BUS_I2S,
         i2c_address=_I2C_ADDR,
     ):
         self.regs = regs = Regs(i2c, i2c_address)
         self.sample_rate = sample_rate
 
         # check parameter consistency and set the sysclk value
-        if sysclk_source == sysclk_PLL:
+        if sysclk_source == SYSCLK_PLL:
             if sample_rate in (11025, 22050, 44100):
                 sysclk = 11289600
             else:
@@ -326,7 +326,7 @@ class WM8960:
                 sysclk = sample_rate * 256
             if mclk_freq is None:
                 mclk_freq = sysclk
-        else:  # sysclk_source == sysclk_mclk
+        else:  # sysclk_source == SYSCLK_MCLK
             if mclk_freq is None:
                 mclk_freq = sample_rate * 256
             sysclk = mclk_freq
@@ -340,7 +340,7 @@ class WM8960:
         # Enable left and right channel input PGA, left and right output mixer
         regs[_POWER3] = 0x3C
 
-        if adc_sync == sync_adc:
+        if adc_sync == SYNC_ADC:
             # ADC and DAC use different Frame Clock Pins
             regs[_IFACE2] = 0x00  # ADCLRC 0x00:Input 0x40:output.
         else:
@@ -349,7 +349,7 @@ class WM8960:
         self.set_data_route(route)
         self.set_protocol(protocol)
 
-        if sysclk_source == sysclk_PLL:
+        if sysclk_source == SYSCLK_PLL:
             self.set_internal_pll_config(mclk_freq, sysclk)
         if primary:
             self.set_master_clock(sysclk, sample_rate, bits)
@@ -359,9 +359,9 @@ class WM8960:
         self.set_speaker_clock(sysclk)
 
         # swap channels
-        if swap & swap_input:
+        if swap & SWAP_INPUT:
             regs[_IFACE1] = (0, _IFACE1_ALRSWAP_MASK)
-        if swap & swap_output:
+        if swap & SWAP_OUTPUT:
             regs[_IFACE1] = (0, _IFACE1_DLRSWAP_MASK)
 
         self.set_left_input(left_input)
@@ -390,12 +390,12 @@ class WM8960:
 
     def deinit(self):
 
-        self.set_module(module_ADC, False)
-        self.set_module(module_DAC, False)
-        self.set_module(module_VREF, False)
-        self.set_module(module_line_in, False)
-        self.set_module(module_line_out, False)
-        self.set_module(module_speaker, False)
+        self.set_module(MODULE_ADC, False)
+        self.set_module(MODULE_DAC, False)
+        self.set_module(MODULE_VREF, False)
+        self.set_module(MODULE_LINE_IN, False)
+        self.set_module(MODULE_LINE_OUT, False)
+        self.set_module(MODULE_SPEAKER, False)
 
     def set_internal_pll_config(self, input_mclk, output_clk):
         regs = self.regs
@@ -461,28 +461,28 @@ class WM8960:
         is_enabled = 1 if is_enabled else 0
         regs = self.regs
 
-        if module == module_ADC:
+        if module == MODULE_ADC:
 
             regs[_POWER1] = (
                 _POWER1_ADCL_MASK | _POWER1_ADCR_MASK,
                 (_POWER1_ADCL_MASK | _POWER1_ADCR_MASK) * is_enabled,
             )
 
-        elif module == module_DAC:
+        elif module == MODULE_DAC:
 
             regs[_POWER2] = (
                 _POWER2_DACL_MASK | _POWER2_DACR_MASK,
                 (_POWER2_DACL_MASK | _POWER2_DACR_MASK) * is_enabled,
             )
 
-        elif module == module_VREF:
+        elif module == MODULE_VREF:
 
             regs[_POWER1] = (
                 _POWER1_VREF_MASK,
                 (is_enabled << _POWER1_VREF_SHIFT),
             )
 
-        elif module == module_line_in:
+        elif module == MODULE_LINE_IN:
 
             regs[_POWER1] = (
                 _POWER1_AINL_MASK | _POWER1_AINR_MASK,
@@ -493,21 +493,21 @@ class WM8960:
                 (_POWER3_LMIC_MASK | _POWER3_RMIC_MASK) * is_enabled,
             )
 
-        elif module == module_line_out:
+        elif module == MODULE_LINE_OUT:
 
             regs[_POWER2] = (
                 _POWER2_LOUT1_MASK | _POWER2_ROUT1_MASK,
                 (_POWER2_LOUT1_MASK | _POWER2_ROUT1_MASK) * is_enabled,
             )
 
-        elif module == module_mic_bias:
+        elif module == MODULE_MIC_BIAS:
 
             regs[_POWER1] = (
                 _POWER1_MICB_MASK,
                 (is_enabled << _POWER1_MICB_SHIFT),
             )
 
-        elif module == module_speaker:
+        elif module == MODULE_SPEAKER:
 
             regs[_POWER2] = (
                 _POWER2_SPKL_MASK | _POWER2_SPKR_MASK,
@@ -515,14 +515,14 @@ class WM8960:
             )
             regs[_CLASSD1] = 0xF7
 
-        elif module == module_omix:
+        elif module == MODULE_OMIX:
 
             regs[_POWER3] = (
                 _POWER3_LOMIX_MASK | _POWER3_ROMIX_MASK,
                 (_POWER3_LOMIX_MASK | _POWER3_ROMIX_MASK) * is_enabled,
             )
 
-        elif module == module_mono_out:
+        elif module == MODULE_MONO_OUT:
 
             regs[_MONOMIX1] = regs[_MONOMIX2] = is_enabled << 7
             regs[_MONO] = is_enabled << 6
@@ -538,13 +538,13 @@ class WM8960:
 
     def set_data_route(self, route):
         regs = self.regs
-        if route == route_bypass:
+        if route == ROUTE_BYPASS:
             # Bypass means from line-in to HP
             # Left LINPUT3 to left output mixer, LINPUT3 left output mixer volume = 0dB
             # Right RINPUT3 to right output mixer, RINPUT3 right output mixer volume = 0dB
             regs[_LOUTMIX, _ROUTMIX] = 0x80
 
-        elif route == route_playback:
+        elif route == ROUTE_PLAYBACK:
             # Data route I2S_IN-> DAC-> HP
             #
             # Left DAC to left output mixer, LINPUT3 left output mixer volume = 0dB
@@ -552,29 +552,29 @@ class WM8960:
             regs[_LOUTMIX, _ROUTMIX] = 0x100
             regs[_POWER3] = 0x0C
             # Set power for DAC
-            self.set_module(module_DAC, True)
-            self.set_module(module_omix, True)
-            self.set_module(module_line_out, True)
+            self.set_module(MODULE_DAC, True)
+            self.set_module(MODULE_OMIX, True)
+            self.set_module(MODULE_LINE_OUT, True)
 
-        elif route == route_playback_record:
+        elif route == ROUTE_PLAYBACK_RECORD:
             #
             # Left DAC to left output mixer, LINPUT3 left output mixer volume = 0dB
             # Right DAC to right output mixer, RINPUT3 right output mixer volume = 0dB
             regs[_LOUTMIX, _ROUTMIX] = 0x100
             regs[_POWER3] = 0x3C
-            self.set_module(module_DAC, True)
-            self.set_module(module_ADC, True)
-            self.set_module(module_line_in, True)
-            self.set_module(module_omix, True)
-            self.set_module(module_line_out, True)
+            self.set_module(MODULE_DAC, True)
+            self.set_module(MODULE_ADC, True)
+            self.set_module(MODULE_LINE_IN, True)
+            self.set_module(MODULE_OMIX, True)
+            self.set_module(MODULE_LINE_OUT, True)
 
-        elif route == route_record:
+        elif route == ROUTE_RECORD:
             # LINE_IN->ADC->I2S_OUT
             # Left and right input boost, LIN3BOOST and RIN3BOOST = 0dB
             regs[_POWER3] = 0x30
             # Power up ADC and AIN
-            self.set_module(module_line_in, True)
-            self.set_module(module_ADC, True)
+            self.set_module(MODULE_LINE_IN, True)
+            self.set_module(MODULE_ADC, True)
 
         else:
             raise ValueError("Invalid route")
@@ -582,31 +582,31 @@ class WM8960:
     def set_left_input(self, input):
 
         regs = self.regs
-        if input == input_closed:
+        if input == INPUT_CLOSED:
             # Disable the input
             regs[_POWER1] = (_POWER1_AINL_MASK | _POWER1_ADCL_MASK, 0)
 
-        elif input == input_mic1:
+        elif input == INPUT_MIC1:
             # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x138
             regs[_LINVOL] = 0x117
 
-        elif input == input_mic2:
+        elif input == INPUT_MIC2:
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x178
             regs[_LINVOL] = 0x117
 
-        elif input == input_mic3:
+        elif input == INPUT_MIC3:
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
             regs[_LINPATH] = 0x1B8
             regs[_LINVOL] = 0x117
 
-        elif input == input_line2:
+        elif input == INPUT_LINE2:
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK)
             regs[_INBMIX1] = (0, 0xE)
 
-        elif input == input_line3:
+        elif input == INPUT_LINE3:
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK)
             regs[_INBMIX1] = (0, 0x70)
 
@@ -616,31 +616,31 @@ class WM8960:
     def set_right_input(self, input):
 
         regs = self.regs
-        if input == input_closed:
+        if input == INPUT_CLOSED:
             # Disable the input
             regs[_POWER1] = (_POWER1_AINR_MASK | _POWER1_ADCR_MASK, 0)
 
-        elif input == input_mic1:
+        elif input == INPUT_MIC1:
             # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
             regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x138
             regs[_RINVOL] = 0x117
 
-        elif input == input_mic2:
+        elif input == INPUT_MIC2:
             regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x178
             regs[_RINVOL] = 0x117
 
-        elif input == input_mic3:
+        elif input == INPUT_MIC3:
             regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
             regs[_RINPATH] = 0x1B8
             regs[_RINVOL] = 0x117
 
-        elif input == input_line2:
+        elif input == INPUT_LINE2:
             regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK)
             regs[_INBMIX2] = (0, 0xE)
 
-        elif input == input_line3:
+        elif input == INPUT_LINE3:
             regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK)
             regs[_INBMIX2] = (0, 0x70)
 
@@ -664,39 +664,33 @@ class WM8960:
         self.regs[_CLOCK1] = (0x1F8, divider << 6 | divider << 3)
         self.regs[_IFACE1] = (_IFACE1_WL_MASK, wl << _IFACE1_WL_SHIFT)
 
-    def set_volume(self, module, volume, volume_r=None):
-
-        if volume_r is None:
-            volume_r = volume
-
-        if not ((0 <= volume <= 100) and (0 <= volume_r <= 100)):
-            raise ValueError("Invalid value for volume")
-        elif not module in self._volume_config_table.keys():
-            raise ValueError("Invalid module")
-
-        vol_max, regnum, flags = self._volume_config_table[module]
-        self.regs[regnum] = int(volume * vol_max / 100 + 0.5) | flags
-        self.regs[regnum + 1] = int(volume_r * vol_max / 100 + 0.5) | flags
-
-    def get_volume(self, module):
-
+    def volume(self, module, volume_l=None, volume_r=None):
         if not module in self._volume_config_table.keys():
             raise ValueError("Invalid module")
 
-        vol_max, regnum, _ = self._volume_config_table[module]
-        return (int((self.regs[regnum] & vol_max) * 100 / vol_max + 0.5),
-                int((self.regs[regnum + 1] & vol_max) * 100 / vol_max + 0.5))
+        if volume_l is None:  # get volume
+            vol_max, regnum, _ = self._volume_config_table[module]
+            return (
+                int((self.regs[regnum] & vol_max) * 100 / vol_max + 0.5),
+                int((self.regs[regnum + 1] & vol_max) * 100 / vol_max + 0.5),
+            )
+        else:  # set volume
+            if volume_r is None:
+                volume_r = volume
 
-    def volume(self, module, volume_l=None, volume_r=None):
-        if volume_l is None:
-            return self.get_volume(module)
-        else:
-            self.set_volume(module, volume_l, volume_r)
+            if not ((0 <= volume <= 100) and (0 <= volume_r <= 100)):
+                raise ValueError("Invalid value for volume")
+            elif not module in self._volume_config_table.keys():
+                raise ValueError("Invalid module")
 
-    def mute(self, enable, soft=True, ramp=mute_fast):
+            vol_max, regnum, flags = self._volume_config_table[module]
+            self.regs[regnum] = int(volume * vol_max / 100 + 0.5) | flags
+            self.regs[regnum + 1] = int(volume_r * vol_max / 100 + 0.5) | flags
+
+    def mute(self, enable, soft=True, ramp=MUTE_FAST):
         enable = _DACCTL1_DACMU_MASK if enable else 0
         soft = _DACCTL2_DACSMM_MASK if soft else 0
-        ramp = _DACCTL2_DACMR_MASK if ramp == mute_slow else 0
+        ramp = _DACCTL2_DACMR_MASK if ramp == MUTE_SLOW else 0
         self.regs[_DACCTL1] = (_DACCTL1_DACMU_MASK, enable)
         self.regs[_DACCTL2] = (
             _DACCTL2_DACSMM_MASK | _DACCTL2_DACMR_MASK,
@@ -704,7 +698,7 @@ class WM8960:
         )
 
     def expand_3d(self, depth=0):
-        depth &= 0x0f
+        depth &= 0x0F
         cutoff = 0 if self.sample_rate >= 32000 else 0b1100000
         self.regs[_3D] = cutoff | depth << 1 | (1 if depth > 0 else 0)
 
@@ -715,9 +709,9 @@ class WM8960:
             enable << _DACCTL1_MONOMIX_SHIFT,
         )
 
-    def alc_mode(self, channel, mode=alc_mode):
-        if mode != alc_mode:
-            mode = alc_limiter
+    def ALC_MODE(self, channel, mode=ALC_MODE):
+        if mode != ALC_MODE:
+            mode = ALC_LIMITER
         channel &= 3
         self.regs[_ALC1] = (
             _ALC_CHANNEL_MASK,
