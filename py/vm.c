@@ -821,8 +821,8 @@ unwind_jump:;
                     obj = mp_getiter(obj, iter_buf);
                     if (obj != MP_OBJ_FROM_PTR(iter_buf)) {
                         // Iterator didn't use the stack so indicate that with MP_OBJ_NULL.
-                        sp[-MP_OBJ_ITER_BUF_NSLOTS + 1] = MP_OBJ_NULL;
-                        sp[-MP_OBJ_ITER_BUF_NSLOTS + 2] = obj;
+                        *(sp - MP_OBJ_ITER_BUF_NSLOTS + 1) = MP_OBJ_NULL;
+                        *(sp - MP_OBJ_ITER_BUF_NSLOTS + 2) = obj;
                     }
                     DISPATCH();
                 }
@@ -833,8 +833,8 @@ unwind_jump:;
                     DECODE_ULABEL; // the jump offset if iteration finishes; for labels are always forward
                     code_state->sp = sp;
                     mp_obj_t obj;
-                    if (sp[-MP_OBJ_ITER_BUF_NSLOTS + 1] == MP_OBJ_NULL) {
-                        obj = sp[-MP_OBJ_ITER_BUF_NSLOTS + 2];
+                    if (*(sp - MP_OBJ_ITER_BUF_NSLOTS + 1) == MP_OBJ_NULL) {
+                        obj = *(sp - MP_OBJ_ITER_BUF_NSLOTS + 2);
                     } else {
                         obj = MP_OBJ_FROM_PTR(&sp[-MP_OBJ_ITER_BUF_NSLOTS + 1]);
                     }
