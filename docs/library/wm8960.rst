@@ -207,11 +207,14 @@ controlling the operation:
     Specify the source for the left input. For a list of suitable parameter values, see
     the table above.
 
-.. method:: WM8960.set_volume(module, value [, value_r])
+... method:: WM8960.volume(module [, volume_l [, volume_r]])
 
-    Sets the volume of a certain module. If two values are given, the first one is used
-    for the left channel, the second for the right channel. The value range is normalized
-    to 0.0-100.0 with a logarithmic scale.
+    Sets or returns the volume of a certain module. If no volume value is supplied, the
+    actual volume tuple is returned.   
+    If one or two values are supplied, it sets the volume of a certain module.
+    If two values are provided, the first one is used for the left channel,
+    the second for the right channel. If only one value is supplied, it is used for
+    both channels. The value range is normalized to 0.0-100.0 with a logarithmic scale.
     For a list of suitable modules and db/step, see the table below.
 
 .. table:: **Module Names and dB steps**
@@ -227,20 +230,6 @@ controlling the operation:
    0.475   MODULE_LINE_IN
    0.8     MODULE_SPEAKER
    ======= ====
-
-
-.. method:: WM8960.get_volume(module)
-
-    Return the actual volumes set for a module as a two element tuple.
-    The module names are the same as for set_volume().
-
-.. method:: WM8960.volume(module [, value [, value_r]])
-
-    Sets or returns the volume of a certain module. If not value is supplied, the
-    actual volume tuple is returned. If two values are given, the first one is used
-    for the left channel, the second for the right channel.
-    For a list of suitable modules and highest values, see the table below.
-
 
 .. method:: WM8960.mute(module, mute, soft=True, ramp=wm8960.MUTE_FAST)
 
