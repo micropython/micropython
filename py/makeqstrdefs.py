@@ -23,11 +23,11 @@ _MODE_COMPRESS = "compress"
 
 
 def is_c_source(fname):
-  return os.path.splitext(fname)[1] in [".c"]
+    return os.path.splitext(fname)[1] in [".c"]
 
 
 def is_cxx_source(fname):
-  return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
+    return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
 
 
 def preprocess():
