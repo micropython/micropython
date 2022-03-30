@@ -169,6 +169,17 @@ The following libraries are specific to the Zephyr port.
 
   zephyr.rst
 
+Libraries specific to drivers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following libraries are specific to port independent drivers.
+
+.. toctree::
+  :maxdepth: 2
+
+  wm8960.rst
+
+
 Extending built-in libraries from Python
 ----------------------------------------
 
