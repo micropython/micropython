@@ -34,6 +34,8 @@
 #include "supervisor/shared/board.h"
 #include "badger-shared.h"
 
+digitalio_digitalinout_obj_t enable_pin_obj;
+
 #define DELAY 0x80
 
 enum reg {
