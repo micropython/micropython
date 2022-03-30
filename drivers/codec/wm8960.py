@@ -297,6 +297,15 @@ class WM8960:
         MODULE_SPEAKER: (_MAX_VOLUME_SPEAKER, _LOUT2, 0x180),
     }
 
+    _input_config_table = {
+        INPUT_CLOSED: None,
+        INPUT_MIC1: (0x138, 0x117),
+        INPUT_MIC2: (0x178, 0x117),
+        INPUT_MIC3: (0x1b8, 0x117),
+        INPUT_LINE2: (0, 0xe),
+        INPUT_LINE3: (0, 0x70),
+    }
+
     def __init__(
         self,
         i2c,
@@ -580,72 +589,38 @@ class WM8960:
             raise ValueError("Invalid route")
 
     def set_left_input(self, input):
+        if not input in self._input_config_table.keys():
+            raise ValueError("Invalid input")
+
+        input = self._input_config_table[input]
 
         regs = self.regs
-        if input == INPUT_CLOSED:
-            # Disable the input
+        if input is None:
             regs[_POWER1] = (_POWER1_AINL_MASK | _POWER1_ADCL_MASK, 0)
-
-        elif input == INPUT_MIC1:
-            # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
-            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
-            regs[_LINPATH] = 0x138
-            regs[_LINVOL] = 0x117
-
-        elif input == INPUT_MIC2:
-            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
-            regs[_LINPATH] = 0x178
-            regs[_LINVOL] = 0x117
-
-        elif input == INPUT_MIC3:
-            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
-            regs[_LINPATH] = 0x1B8
-            regs[_LINVOL] = 0x117
-
-        elif input == INPUT_LINE2:
+        elif input[0] == 0:
             regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK)
-            regs[_INBMIX1] = (0, 0xE)
-
-        elif input == INPUT_LINE3:
-            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK)
-            regs[_INBMIX1] = (0, 0x70)
-
+            regs[_INBMIX1] = input
         else:
-            raise ValueError("Invalid input name")
+            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCL_MASK | _POWER1_MICB_MASK)
+            regs[_LINPATH] = input[0]
+            regs[_LINVOL] = input[1]
 
     def set_right_input(self, input):
+        if not input in self._input_config_table.keys():
+            raise ValueError("Invalid input name")
+
+        input = self._input_config_table[input]
 
         regs = self.regs
-        if input == INPUT_CLOSED:
-            # Disable the input
+        if input is None:
             regs[_POWER1] = (_POWER1_AINR_MASK | _POWER1_ADCR_MASK, 0)
-
-        elif input == INPUT_MIC1:
-            # Only LMN1 enabled, LMICBOOST to 13db, LMIC2B enabled
-            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
-            regs[_RINPATH] = 0x138
-            regs[_RINVOL] = 0x117
-
-        elif input == INPUT_MIC2:
-            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
-            regs[_RINPATH] = 0x178
-            regs[_RINVOL] = 0x117
-
-        elif input == INPUT_MIC3:
-            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
-            regs[_RINPATH] = 0x1B8
-            regs[_RINVOL] = 0x117
-
-        elif input == INPUT_LINE2:
-            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK)
-            regs[_INBMIX2] = (0, 0xE)
-
-        elif input == INPUT_LINE3:
-            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK)
-            regs[_INBMIX2] = (0, 0x70)
-
+        elif input[0] == 0:
+            regs[_POWER1] = (0, _POWER1_AINL_MASK | _POWER1_ADCR_MASK)
+            regs[_INBMIX2] = input
         else:
-            raise ValueError("Invalid input name")
+            regs[_POWER1] = (0, _POWER1_AINR_MASK | _POWER1_ADCR_MASK | _POWER1_MICB_MASK)
+            regs[_RINPATH] = input[0]
+            regs[_RINVOL] = input[1]
 
     def set_protocol(self, protocol):
         self.regs[_IFACE1] = (
@@ -676,15 +651,15 @@ class WM8960:
             )
         else:  # set volume
             if volume_r is None:
-                volume_r = volume
+                volume_r = volume_l
 
-            if not ((0 <= volume <= 100) and (0 <= volume_r <= 100)):
+            if not ((0 <= volume_l <= 100) and (0 <= volume_r <= 100)):
                 raise ValueError("Invalid value for volume")
             elif not module in self._volume_config_table.keys():
                 raise ValueError("Invalid module")
 
             vol_max, regnum, flags = self._volume_config_table[module]
-            self.regs[regnum] = int(volume * vol_max / 100 + 0.5) | flags
+            self.regs[regnum] = int(volume_l * vol_max / 100 + 0.5) | flags
             self.regs[regnum + 1] = int(volume_r * vol_max / 100 + 0.5) | flags
 
     def mute(self, enable, soft=True, ramp=MUTE_FAST):
@@ -709,7 +684,7 @@ class WM8960:
             enable << _DACCTL1_MONOMIX_SHIFT,
         )
 
-    def ALC_MODE(self, channel, mode=ALC_MODE):
+    def alc_mode(self, channel, mode=ALC_MODE):
         if mode != ALC_MODE:
             mode = ALC_LIMITER
         channel &= 3
