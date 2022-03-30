@@ -890,7 +890,7 @@ However, you can attach external PHY interfaces. By default, the firmware for Se
 uses the driver for a LAN8720 PHY. The MIMXRT1170_EVK is equipped with two Ethernet ports.
 They are addressed as LAN(0) for the 100M port and LAN(1) for the 1G port.
 
-For details of the network interface refer to the class :std:ref:`network.LAN <mimxrt_network.LAN>`.
+For details of the network interface refer to the class :std:ref:`network.LAN <network.LAN>`.
 
 Transferring files
 ------------------

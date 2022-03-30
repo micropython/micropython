@@ -1,11 +1,10 @@
 .. currentmodule:: network
-.. _mimxrt_network.LAN:
+.. _network.LAN:
 
-class LAN -- control Ethernet modules of the MIMXRT port
-========================================================
+class LAN -- control an Ethernet module
+=======================================
 
-This class allows you to control the Ethernet interface of the MIMXRT
-MCUs. The PHY hardware type is board-specific.
+This class allows you to control the Ethernet interface. The PHY hardware type is board-specific.
 
 Example usage::
 
@@ -29,7 +28,7 @@ Constructors
 
      - *id* is the number of the Ethernet port, either 0 or 1.
      - *phy_type* is the name of the PHY driver. For most board the on-board PHY has to be used and
-       is the default. Suitable values are PHY_KSZ8081, PHY_DP83825, PHY_DP83848, PHY_LAN8720, and PHY_RTL8211F.
+       is the default. Suitable values are port specific.
      - *phy_addr* specifies the address of the PHY interface. As with *phy_type*, the hardwired value has
        to be used for most boards and that value is the default.
      - *phy_clock* specifies, whether the data clock is provided by the Ethernet controller or the PYH interface.
@@ -83,3 +82,11 @@ Methods
 
    low_power=True | False  Set or clear low power mode.
 
+
+Specific LAN class implementations
+----------------------------------
+
+MIMXRT port:
+
+Suitable values for the *phy_type* constructor argument are
+PHY_KSZ8081, PHY_DP83825, PHY_DP83848, PHY_LAN8720, and PHY_RTL8211F.

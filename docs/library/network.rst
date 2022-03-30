@@ -152,7 +152,7 @@ provide a way to control networking interfaces of various kinds.
    network.WLANWiPy.rst
    network.CC3K.rst
    network.WIZNET5K.rst
-   network.LANmimxrt.rst
+   network.LAN.rst
 
 Network functions
 =================
