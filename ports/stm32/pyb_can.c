@@ -217,7 +217,7 @@ STATIC void pyb_can_get_bit_timing(mp_uint_t baudrate, mp_uint_t sample_point,
 // init(mode, prescaler=100, *, sjw=1, bs1=6, bs2=8)
 STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_prescaler, ARG_sjw, ARG_bs1, ARG_bs2, ARG_auto_restart, ARG_baudrate, ARG_sample_point,
-           ARG_brs_prescaler, ARG_brs_sjw, ARG_brs_bs1, ARG_brs_bs2, ARG_brs_baudrate, ARG_brs_sample_point };
+           ARG_num_filter_banks, ARG_brs_prescaler, ARG_brs_sjw, ARG_brs_bs1, ARG_brs_bs2, ARG_brs_baudrate, ARG_brs_sample_point };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,             MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = CAN_MODE_NORMAL} },
         { MP_QSTR_prescaler,        MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
@@ -227,6 +227,7 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
         { MP_QSTR_auto_restart,     MP_ARG_KW_ONLY | MP_ARG_BOOL,   {.u_bool = false} },
         { MP_QSTR_baudrate,         MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 0} },
         { MP_QSTR_sample_point,     MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 75} }, // 75% sampling point
+        { MP_QSTR_num_filter_banks, MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = 14} },
         #if MICROPY_HW_ENABLE_FDCAN
         { MP_QSTR_brs_prescaler,    MP_ARG_INT,                     {.u_int = CAN_DEFAULT_PRESCALER} },
         { MP_QSTR_brs_sjw,          MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = CAN_DEFAULT_SJW} },
@@ -267,6 +268,12 @@ STATIC mp_obj_t pyb_can_init_helper(pyb_can_obj_t *self, size_t n_args, const mp
     self->can.Init.DataSyncJumpWidth = args[ARG_brs_sjw].u_int;
     self->can.Init.DataTimeSeg1 = args[ARG_bs1].u_int;     // DataTimeSeg1 = Propagation_segment + Phase_segment_1
     self->can.Init.DataTimeSeg2 = args[ARG_bs2].u_int;
+    #else
+    // Init filter banks for classic CAN.
+    can2_start_bank = args[ARG_num_filter_banks].u_int;
+    for (int f = 0; f < CAN_MAX_FILTER; f++) {
+        can_clearfilter(self, f, can2_start_bank);
+    }
     #endif
 
     if (!can_init(self, args[ARG_mode].u_int, args[ARG_prescaler].u_int, args[ARG_sjw].u_int,
@@ -726,35 +733,6 @@ STATIC mp_obj_t pyb_can_recv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_can_recv_obj, 1, pyb_can_recv);
 
-// initfilterbanks(n)
-STATIC mp_obj_t pyb_can_initfilterbanks(mp_obj_t self_in, mp_obj_t bank_in) {
-    pyb_can_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    #if MICROPY_HW_ENABLE_FDCAN
-    (void)self;
-    #if 0
-    FDCAN_InitTypeDef *init = &self->can.Init;
-    // Clear standard ID filters.
-    for (int f = 0; f < init->StdFiltersNbr; ++f) {
-        can_clearfilter(self, f, false);
-    }
-    // Clear extended ID filters.
-    for (int f = 0; f < init->ExtFiltersNbr; ++f) {
-        can_clearfilter(self, f, true);
-    }
-    #endif
-    #else
-    // NOTE: For classic CAN, this function calls HAL_CAN_ConfigFilter(NULL, &filter);
-    // if CAN3 is defined, ConfigFilter() will dereference a NULL pointer.
-    can2_start_bank = mp_obj_get_int(bank_in);
-    for (int f = 0; f < CAN_MAX_FILTER; f++) {
-        can_clearfilter(self, f, can2_start_bank);
-    }
-    #endif
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_can_initfilterbanks_fun_obj, pyb_can_initfilterbanks);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pyb_can_initfilterbanks_obj, MP_ROM_PTR(&pyb_can_initfilterbanks_fun_obj));
-
 STATIC mp_obj_t pyb_can_clearfilter(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_extframe };
     static const mp_arg_t allowed_args[] = {
@@ -1006,7 +984,6 @@ STATIC const mp_rom_map_elem_t pyb_can_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&pyb_can_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&pyb_can_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&pyb_can_recv_obj) },
-    { MP_ROM_QSTR(MP_QSTR_initfilterbanks), MP_ROM_PTR(&pyb_can_initfilterbanks_obj) },
     { MP_ROM_QSTR(MP_QSTR_setfilter), MP_ROM_PTR(&pyb_can_setfilter_obj) },
     { MP_ROM_QSTR(MP_QSTR_clearfilter), MP_ROM_PTR(&pyb_can_clearfilter_obj) },
     { MP_ROM_QSTR(MP_QSTR_rxcallback), MP_ROM_PTR(&pyb_can_rxcallback_obj) },
