@@ -1,0 +1,64 @@
+name: Code size comment
+
+on:
+  workflow_run:
+    workflows: [Check code size]
+    types: [completed]
+
+jobs:
+  comment:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: 'Download artifact'
+        id: download-artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+
+            const allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+
+            const matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "code-size-report"
+            });
+
+            if (matchArtifact.length === 0) {
+              return false;
+            }
+
+            const download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact[0].id,
+               archive_format: 'zip',
+            });
+
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/code-size-report.zip`, Buffer.from(download.data));
+
+            return true;
+      - name: 'Unzip artifact'
+        if: steps.download-artifact.outputs.result
+        run: unzip code-size-report.zip
+      - name: Post comment to pull request
+        if: steps.download-artifact.outputs.result
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+
+            github.rest.issues.createComment({
+              issue_number: Number(fs.readFileSync('pr_number')),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Code size report:
+
+            \`\`\`
+            ${fs.readFileSync('diff')}
+            \`\`\`
+            `,
+            });
