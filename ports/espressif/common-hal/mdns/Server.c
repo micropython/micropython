@@ -117,6 +117,11 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
         next = next->next;
     }
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_results, NULL));
+    // The empty tuple object is shared and stored in flash so return early if
+    // we got it. Without this we'll crash when trying to set len below.
+    if (num_results == 0) {
+        return MP_OBJ_FROM_PTR(tuple);
+    }
     next = results;
     // Don't error if we're out of memory. Instead, truncate the tuple.
     uint8_t added = 0;

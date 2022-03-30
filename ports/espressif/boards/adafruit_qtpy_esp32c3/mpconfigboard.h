@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Glenn Ruben Bakke
+ * Copyright (c) 2021 microDev
+ * Copyright (c) 2021 skieast/Bruce Segal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +25,26 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_HW_BOARD_NAME       "PCA10059 nRF52840 Dongle"
-#define MICROPY_HW_MCU_NAME         "nRF52840"
+// Board setup
+#define MICROPY_HW_BOARD_NAME       "Adafruit QT Py ESP32C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
 
-#define MICROPY_HW_LED_STATUS          (&pin_P0_06)
-#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
-#define CIRCUITPY_RGB_STATUS_R      (&pin_P0_08)
-#define CIRCUITPY_RGB_STATUS_G      (&pin_P1_09)
-#define CIRCUITPY_RGB_STATUS_B      (&pin_P0_12)
+// Status LED
+#define MICROPY_HW_NEOPIXEL         (&pin_GPIO2)
+
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO5}}
+
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO10, .mosi = &pin_GPIO7, .miso = &pin_GPIO8}}
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
+
+// For entering safe mode
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

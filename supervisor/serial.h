@@ -39,6 +39,7 @@
 extern vstr_t *boot_output;
 #endif
 
+
 void serial_early_init(void);
 void serial_init(void);
 void serial_write(const char *text);
@@ -47,6 +48,14 @@ void serial_write_substring(const char *text, uint32_t length);
 char serial_read(void);
 bool serial_bytes_available(void);
 bool serial_connected(void);
+
+// These have no-op versions that are weak and the port can override. They work
+// in tandem with the cross-port mechanics like USB and BLE.
+void port_serial_init(void);
+bool port_serial_connected(void);
+char port_serial_read(void);
+bool port_serial_bytes_available(void);
+void port_serial_write_substring(const char *text, uint32_t length);
 
 int debug_uart_printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 

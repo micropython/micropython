@@ -82,4 +82,10 @@
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
 #endif
 
+// Define to (1) in mpconfigboard.h if the board uses the internal USB to
+// Serial/JTAG to connect do USB.
+#ifndef CIRCUITPY_ESP_USB_SERIAL_JTAG
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (0)
+#endif
+
 #endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
