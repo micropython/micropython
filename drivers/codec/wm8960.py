@@ -301,8 +301,8 @@ class WM8960:
         INPUT_CLOSED: None,
         INPUT_MIC1: (0x138, 0x117),
         INPUT_MIC2: (0x178, 0x117),
-        INPUT_MIC3: (0x1b8, 0x117),
-        INPUT_LINE2: (0, 0xe),
+        INPUT_MIC3: (0x1B8, 0x117),
+        INPUT_LINE2: (0, 0xE),
         INPUT_LINE3: (0, 0x70),
     }
 
