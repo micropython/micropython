@@ -25,10 +25,11 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <unistd.h>
 
 #include "py/parsenum.h"
 #include "py/compile.h"
@@ -699,8 +700,8 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     if (have_self) {
         self = *args++; // may be MP_OBJ_NULL
     }
-    uint n_args = n_args_n_kw & 0xff;
-    uint n_kw = (n_args_n_kw >> 8) & 0xff;
+    size_t n_args = n_args_n_kw & 0xff;
+    size_t n_kw = (n_args_n_kw >> 8) & 0xff;
     mp_uint_t star_args = mp_obj_get_int_truncated(args[n_args + 2 * n_kw]);
 
     DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, map=%u)\n", fun, self, n_args, n_kw, args, star_args);
@@ -711,14 +712,14 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
 
     // The new args array
     mp_obj_t *args2;
-    uint args2_alloc;
-    uint args2_len = 0;
+    size_t args2_alloc;
+    size_t args2_len = 0;
 
     // Try to get a hint for unpacked * args length
-    int list_len = 0;
+    ssize_t list_len = 0;
 
     if (star_args != 0) {
-        for (uint i = 0; i < n_args; i++) {
+        for (size_t i = 0; i < n_args; i++) {
             if (star_args & (1 << i)) {
                 mp_obj_t len = mp_obj_len_maybe(args[i]);
                 if (len != MP_OBJ_NULL) {
@@ -730,9 +731,9 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     }
 
     // Try to get a hint for the size of the kw_dict
-    int kw_dict_len = 0;
+    ssize_t kw_dict_len = 0;
 
-    for (uint i = 0; i < n_kw; i++) {
+    for (size_t i = 0; i < n_kw; i++) {
         mp_obj_t key = args[n_args + i * 2];
         mp_obj_t value = args[n_args + i * 2 + 1];
         if (key == MP_OBJ_NULL && value != MP_OBJ_NULL && mp_obj_is_type(value, &mp_type_dict)) {
@@ -770,7 +771,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
             args2[args2_len++] = self;
         }
 
-        for (uint i = 0; i < n_args; i++) {
+        for (size_t i = 0; i < n_args; i++) {
             mp_obj_t arg = args[i];
             if (star_args & (1 << i)) {
                 // star arg
@@ -811,18 +812,18 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     }
 
     // The size of the args2 array now is the number of positional args.
-    uint pos_args_len = args2_len;
+    size_t pos_args_len = args2_len;
 
     // ensure there is still enough room for kw args
     if (args2_len + 2 * (n_kw + kw_dict_len) > args2_alloc) {
-        uint new_alloc = args2_len + 2 * (n_kw + kw_dict_len);
+        size_t new_alloc = args2_len + 2 * (n_kw + kw_dict_len);
         args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
             new_alloc * sizeof(mp_obj_t));
         args2_alloc = new_alloc;
     }
 
     // Copy the kw args.
-    for (uint i = 0; i < n_kw; i++) {
+    for (size_t i = 0; i < n_kw; i++) {
         mp_obj_t kw_key = args[n_args + i * 2];
         mp_obj_t kw_value = args[n_args + i * 2 + 1];
         if (kw_key == MP_OBJ_NULL) {
@@ -859,7 +860,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
                 while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
                     // expand size of args array if needed
                     if (args2_len + 1 >= args2_alloc) {
-                        uint new_alloc = args2_alloc * 2;
+                        size_t new_alloc = args2_alloc * 2;
                         args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
                         args2_alloc = new_alloc;
                     }
