@@ -394,10 +394,12 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
             mp_obj_t obj = mp_parse_node_extract_const_object(pns);
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-            mp_printf(print, "literal const(%016llx)\n", obj);
+            mp_printf(print, "literal const(%016llx)=", obj);
             #else
-            mp_printf(print, "literal const(%p)\n", obj);
+            mp_printf(print, "literal const(%p)=", obj);
             #endif
+            mp_obj_print_helper(print, obj, PRINT_REPR);
+            mp_printf(print, "\n");
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
             #if MICROPY_DEBUG_PARSE_RULE_NAME

@@ -31,7 +31,7 @@
 [  13]   \(rule\|expr_stmt\)(5) (n=2)
            id(h)
 [  13]     \(rule\|atom_expr_normal\)(44) (n=2)
-[  13]       literal const(\.\+)
+[  13]       literal const(\.\+)="fstring: '{}'"
 [  13]       \(rule\|atom_expr_trailers\)(142) (n=2)
 [  13]         \(rule\|trailer_period\)(50) (n=1)
                  id(format)
