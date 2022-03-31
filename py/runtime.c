@@ -702,7 +702,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
     }
     size_t n_args = n_args_n_kw & 0xff;
     size_t n_kw = (n_args_n_kw >> 8) & 0xff;
-    mp_uint_t star_args = mp_obj_get_int_truncated(args[n_args + 2 * n_kw]);
+    mp_uint_t star_args = MP_OBJ_SMALL_INT_VALUE(args[n_args + 2 * n_kw]);
 
     DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, map=%u)\n", fun, self, n_args, n_kw, args, star_args);
 
@@ -720,7 +720,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
 
     if (star_args != 0) {
         for (size_t i = 0; i < n_args; i++) {
-            if (star_args & (1 << i)) {
+            if ((star_args >> i) & 1) {
                 mp_obj_t len = mp_obj_len_maybe(args[i]);
                 if (len != MP_OBJ_NULL) {
                     // -1 accounts for 1 of n_args occupied by this arg
@@ -773,7 +773,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
 
         for (size_t i = 0; i < n_args; i++) {
             mp_obj_t arg = args[i];
-            if (star_args & (1 << i)) {
+            if ((star_args >> i) & 1) {
                 // star arg
                 if (mp_obj_is_type(arg, &mp_type_tuple) || mp_obj_is_type(arg, &mp_type_list)) {
                     // optimise the case of a tuple and list

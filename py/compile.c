@@ -2408,9 +2408,9 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                     return;
                 }
                 #if MICROPY_DYNAMIC_COMPILER
-                if (i > mp_dynamic_compiler.small_int_bits)
+                if (i >= (size_t)mp_dynamic_compiler.small_int_bits - 1)
                 #else
-                if (i > MP_SMALL_INT_BITS)
+                if (i >= MP_SMALL_INT_BITS - 1)
                 #endif
                 {
                     // If there are not enough bits in a small int to fit the flag, then we consider
@@ -2419,7 +2419,7 @@ STATIC void compile_trailer_paren_helper(compiler_t *comp, mp_parse_node_t pn_ar
                     return;
                 }
                 star_flags |= MP_EMIT_STAR_FLAG_SINGLE;
-                star_args |= 1 << i;
+                star_args |= (mp_uint_t)1 << i;
                 compile_node(comp, pns_arg->nodes[0]);
                 n_positional++;
             } else if (MP_PARSE_NODE_STRUCT_KIND(pns_arg) == PN_arglist_dbl_star) {
