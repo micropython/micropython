@@ -122,12 +122,16 @@ MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 
 MP_PERSISTENT_OBJ_FUN_TABLE = 0
-MP_PERSISTENT_OBJ_ELLIPSIS = 1
-MP_PERSISTENT_OBJ_STR = 2
-MP_PERSISTENT_OBJ_BYTES = 3
-MP_PERSISTENT_OBJ_INT = 4
-MP_PERSISTENT_OBJ_FLOAT = 5
-MP_PERSISTENT_OBJ_COMPLEX = 6
+MP_PERSISTENT_OBJ_NONE = 1
+MP_PERSISTENT_OBJ_FALSE = 2
+MP_PERSISTENT_OBJ_TRUE = 3
+MP_PERSISTENT_OBJ_ELLIPSIS = 4
+MP_PERSISTENT_OBJ_STR = 5
+MP_PERSISTENT_OBJ_BYTES = 6
+MP_PERSISTENT_OBJ_INT = 7
+MP_PERSISTENT_OBJ_FLOAT = 8
+MP_PERSISTENT_OBJ_COMPLEX = 9
+MP_PERSISTENT_OBJ_TUPLE = 10
 
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -846,7 +850,7 @@ class RawCodeBytecode(RawCode):
         while ip < len(bc):
             fmt, sz, arg = mp_opcode_decode(bc, ip)
             if bc[ip] == Opcodes.MP_BC_LOAD_CONST_OBJ:
-                arg = "%r" % self.obj_table[arg]
+                arg = repr(self.obj_table[arg])
             if fmt == MP_BC_FORMAT_QSTR:
                 arg = self.qstr_table[arg].str
             elif fmt in (MP_BC_FORMAT_VAR_UINT, MP_BC_FORMAT_OFFSET):
@@ -1115,8 +1119,17 @@ def read_obj(reader, segments):
     obj_type = reader.read_byte()
     if obj_type == MP_PERSISTENT_OBJ_FUN_TABLE:
         return MPFunTable()
+    elif obj_type == MP_PERSISTENT_OBJ_NONE:
+        return None
+    elif obj_type == MP_PERSISTENT_OBJ_FALSE:
+        return False
+    elif obj_type == MP_PERSISTENT_OBJ_TRUE:
+        return True
     elif obj_type == MP_PERSISTENT_OBJ_ELLIPSIS:
         return Ellipsis
+    elif obj_type == MP_PERSISTENT_OBJ_TUPLE:
+        ln = reader.read_uint()
+        return tuple(read_obj(reader, segments) for _ in range(ln))
     else:
         ln = reader.read_uint()
         start_pos = reader.tell()
