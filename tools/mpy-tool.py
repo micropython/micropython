@@ -600,9 +600,113 @@ class CompiledModule:
         print("    .rc = &raw_code_%s," % self.raw_code.escaped_name)
         print("};")
 
-    def freeze_constants(self):
+    def freeze_constant_obj(self, obj_name, obj):
         global const_str_content, const_int_content, const_obj_content
 
+        if isinstance(obj, MPFunTable):
+            return "&mp_fun_table"
+        elif obj is None:
+            return "MP_ROM_NONE"
+        elif obj is False:
+            return "MP_ROM_FALSE"
+        elif obj is True:
+            return "MP_ROM_TRUE"
+        elif obj is Ellipsis:
+            return "MP_ROM_PTR(&mp_const_ellipsis_obj)"
+        elif is_str_type(obj) or is_bytes_type(obj):
+            if is_str_type(obj):
+                obj = bytes_cons(obj, "utf8")
+                obj_type = "mp_type_str"
+            else:
+                obj_type = "mp_type_bytes"
+            print(
+                'static const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                % (
+                    obj_name,
+                    obj_type,
+                    qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
+                    len(obj),
+                    "".join(("\\x%02x" % b) for b in obj),
+                )
+            )
+            const_str_content += len(obj)
+            const_obj_content += 4 * 4
+            return "MP_ROM_PTR(&%s)" % obj_name
+        elif is_int_type(obj):
+            if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
+                # TODO check if we can actually fit this long-int into a small-int
+                raise FreezeError(self, "target does not support long int")
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
+                # TODO
+                raise FreezeError(self, "freezing int to long-long is not implemented")
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
+                neg = 0
+                if obj < 0:
+                    obj = -obj
+                    neg = 1
+                bits_per_dig = config.MPZ_DIG_SIZE
+                digs = []
+                z = obj
+                while z:
+                    digs.append(z & ((1 << bits_per_dig) - 1))
+                    z >>= bits_per_dig
+                ndigs = len(digs)
+                digs = ",".join(("%#x" % d) for d in digs)
+                print(
+                    "static const mp_obj_int_t %s = {{&mp_type_int}, "
+                    "{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};"
+                    % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs)
+                )
+                const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
+                const_obj_content += 4 * 4
+                return "MP_ROM_PTR(&%s)" % obj_name
+        elif type(obj) is float:
+            macro_name = "%s_macro" % obj_name
+            print(
+                "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
+            )
+            print(
+                "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
+                % (obj_name, obj)
+            )
+            print("#define %s MP_ROM_PTR(&%s)" % (macro_name, obj_name))
+            print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
+            n = struct.unpack("<I", struct.pack("<f", obj))[0]
+            n = ((n & ~0x3) | 2) + 0x80800000
+            print("#define %s ((mp_rom_obj_t)(0x%08x))" % (macro_name, n))
+            print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
+            n = struct.unpack("<Q", struct.pack("<d", obj))[0]
+            n += 0x8004000000000000
+            print("#define %s ((mp_rom_obj_t)(0x%016x))" % (macro_name, n))
+            print("#endif")
+            const_obj_content += 3 * 4
+            return macro_name
+        elif type(obj) is complex:
+            print(
+                "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
+                % (obj_name, obj.real, obj.imag)
+            )
+            return "MP_ROM_PTR(&%s)" % obj_name
+        elif type(obj) is tuple:
+            if len(obj) == 0:
+                return "MP_ROM_PTR(&mp_const_empty_tuple_obj)"
+            else:
+                obj_refs = []
+                for i, sub_obj in enumerate(obj):
+                    sub_obj_name = "%s_%u" % (obj_name, i)
+                    obj_refs.append(self.freeze_constant_obj(sub_obj_name, sub_obj))
+                print(
+                    "static const mp_rom_obj_tuple_t %s = {{&mp_type_tuple}, %d, {"
+                    % (obj_name, len(obj))
+                )
+                for ref in obj_refs:
+                    print("    %s," % ref)
+                print("}};")
+                return "MP_ROM_PTR(&%s)" % obj_name
+        else:
+            raise FreezeError(self, "freezing of object %r is not implemented" % (obj,))
+
+    def freeze_constants(self):
         if len(self.qstr_table):
             print(
                 "static const qstr_short_t const_qstr_table_data_%s[%u] = {"
@@ -618,74 +722,10 @@ class CompiledModule:
         # generate constant objects
         print()
         print("// constants")
+        obj_refs = []
         for i, obj in enumerate(self.obj_table):
             obj_name = "const_obj_%s_%u" % (self.escaped_name, i)
-            if isinstance(obj, MPFunTable):
-                pass
-            elif obj is Ellipsis:
-                print("#define %s mp_const_ellipsis_obj" % obj_name)
-            elif is_str_type(obj) or is_bytes_type(obj):
-                if is_str_type(obj):
-                    obj = bytes_cons(obj, "utf8")
-                    obj_type = "mp_type_str"
-                else:
-                    obj_type = "mp_type_bytes"
-                print(
-                    'static const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
-                    % (
-                        obj_name,
-                        obj_type,
-                        qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
-                        len(obj),
-                        "".join(("\\x%02x" % b) for b in obj),
-                    )
-                )
-                const_str_content += len(obj)
-                const_obj_content += 4 * 4
-            elif is_int_type(obj):
-                if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
-                    # TODO check if we can actually fit this long-int into a small-int
-                    raise FreezeError(self, "target does not support long int")
-                elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
-                    # TODO
-                    raise FreezeError(self, "freezing int to long-long is not implemented")
-                elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
-                    neg = 0
-                    if obj < 0:
-                        obj = -obj
-                        neg = 1
-                    bits_per_dig = config.MPZ_DIG_SIZE
-                    digs = []
-                    z = obj
-                    while z:
-                        digs.append(z & ((1 << bits_per_dig) - 1))
-                        z >>= bits_per_dig
-                    ndigs = len(digs)
-                    digs = ",".join(("%#x" % d) for d in digs)
-                    print(
-                        "static const mp_obj_int_t %s = {{&mp_type_int}, "
-                        "{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};"
-                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs)
-                    )
-                    const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
-                    const_obj_content += 4 * 4
-            elif type(obj) is float:
-                print(
-                    "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
-                )
-                print(
-                    "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
-                    % (obj_name, obj)
-                )
-                print("#endif")
-                const_obj_content += 3 * 4
-            elif type(obj) is complex:
-                print(
-                    "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
-                    % (obj_name, obj.real, obj.imag)
-                )
-            else:
-                raise FreezeError(self, "freezing of object %r is not implemented" % (obj,))
+            obj_refs.append(self.freeze_constant_obj(obj_name, obj))
 
         # generate constant table
         print()
@@ -694,25 +734,8 @@ class CompiledModule:
             "static const mp_rom_obj_t const_obj_table_data_%s[%u] = {"
             % (self.escaped_name, len(self.obj_table))
         )
-        for i in range(len(self.obj_table)):
-            if isinstance(self.obj_table[i], MPFunTable):
-                print("    &mp_fun_table,")
-            elif type(self.obj_table[i]) is float:
-                print(
-                    "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
-                )
-                print("    MP_ROM_PTR(&const_obj_%s_%u)," % (self.escaped_name, i))
-                print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
-                n = struct.unpack("<I", struct.pack("<f", self.obj_table[i]))[0]
-                n = ((n & ~0x3) | 2) + 0x80800000
-                print("    (mp_rom_obj_t)(0x%08x)," % (n,))
-                print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
-                n = struct.unpack("<Q", struct.pack("<d", self.obj_table[i]))[0]
-                n += 0x8004000000000000
-                print("    (mp_rom_obj_t)(0x%016x)," % (n,))
-                print("#endif")
-            else:
-                print("    MP_ROM_PTR(&const_obj_%s_%u)," % (self.escaped_name, i))
+        for ref in obj_refs:
+            print("    %s," % ref)
         print("};")
 
         global const_table_ptr_content
