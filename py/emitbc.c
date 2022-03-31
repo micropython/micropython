@@ -32,6 +32,7 @@
 #include <assert.h>
 
 #include "py/mpstate.h"
+#include "py/smallint.h"
 #include "py/emit.h"
 #include "py/bc0.h"
 
@@ -471,6 +472,7 @@ void mp_emit_bc_load_const_tok(emit_t *emit, mp_token_kind_t tok) {
 }
 
 void mp_emit_bc_load_const_small_int(emit_t *emit, mp_int_t arg) {
+    assert(MP_SMALL_INT_FITS(arg));
     if (-MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS <= arg
         && arg < MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS) {
         emit_write_bytecode_byte(emit, 1,
