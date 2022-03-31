@@ -34,3 +34,6 @@ def f2(*args, **kwargs):
 
 
 f2(*iter(range(4)), **{'a': 1})
+
+# case where *args is not a tuple/list and takes up most of the memory allocated for **kwargs
+f2(*iter(range(100)), **{str(i): i for i in range(100)})
