@@ -333,12 +333,7 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
         return true;
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-        // nodes are 32-bit pointers, but need to extract 64-bit object
-        *o = (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
-        #else
-        *o = (mp_obj_t)pns->nodes[0];
-        #endif
+        *o = mp_parse_node_extract_const_object(pns);
         return mp_obj_is_int(*o);
     } else {
         return false;
@@ -397,10 +392,11 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
         // node must be a mp_parse_node_struct_t
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
+            mp_obj_t obj = mp_parse_node_extract_const_object(pns);
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-            mp_printf(print, "literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+            mp_printf(print, "literal const(%016llx)\n", obj);
             #else
-            mp_printf(print, "literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
+            mp_printf(print, "literal const(%p)\n", obj);
             #endif
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);

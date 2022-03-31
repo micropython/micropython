@@ -77,9 +77,20 @@ typedef struct _mp_parse_node_struct_t {
 static inline mp_parse_node_t mp_parse_node_new_small_int(mp_int_t val) {
     return (mp_parse_node_t)(MP_PARSE_NODE_SMALL_INT | ((mp_uint_t)val << 1));
 }
+
 static inline mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg) {
     return (mp_parse_node_t)(kind | ((mp_uint_t)arg << 4));
 }
+
+static inline mp_obj_t mp_parse_node_extract_const_object(mp_parse_node_struct_t *pns) {
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to extract 64-bit object
+    return (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
+    #else
+    return (mp_obj_t)pns->nodes[0];
+    #endif
+}
+
 bool mp_parse_node_is_const_false(mp_parse_node_t pn);
 bool mp_parse_node_is_const_true(mp_parse_node_t pn);
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o);
