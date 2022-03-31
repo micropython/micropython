@@ -236,6 +236,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PORT}
 )
 
+target_link_libraries(${MICROPY_TARGET} micropy_lib_mbedtls)
 target_link_libraries(${MICROPY_TARGET} usermod)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE
