@@ -32,6 +32,10 @@
 #include "components/hal/include/hal/uart_types.h"
 #include "py/obj.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+
 typedef struct {
     mp_obj_base_t base;
     const mcu_pin_obj_t *rx_pin;
@@ -42,6 +46,9 @@ typedef struct {
     uint8_t character_bits;
     bool rx_error;
     uint32_t timeout_ms;
+    bool is_debug;
+    QueueHandle_t event_queue;
+    TaskHandle_t event_task;
 } busio_uart_obj_t;
 
 void uart_reset(void);
