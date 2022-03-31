@@ -202,13 +202,25 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         return MP_OBJ_FROM_PTR(&mp_fun_table);
     } else
     #endif
-    if (obj_type == MP_PERSISTENT_OBJ_ELLIPSIS) {
+    if (obj_type == MP_PERSISTENT_OBJ_NONE) {
+        return mp_const_none;
+    } else if (obj_type == MP_PERSISTENT_OBJ_FALSE) {
+        return mp_const_false;
+    } else if (obj_type == MP_PERSISTENT_OBJ_TRUE) {
+        return mp_const_true;
+    } else if (obj_type == MP_PERSISTENT_OBJ_ELLIPSIS) {
         return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
     } else {
         size_t len = read_uint(reader);
         if (len == 0 && obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
             return mp_const_empty_bytes;
+        } else if (obj_type == MP_PERSISTENT_OBJ_TUPLE) {
+            mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(len, NULL));
+            for (size_t i = 0; i < len; ++i) {
+                tuple->items[i] = load_obj(reader);
+            }
+            return MP_OBJ_FROM_PTR(tuple);
         }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
@@ -514,9 +526,28 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         mp_print_bytes(print, &obj_type, 1);
         mp_print_uint(print, len);
         mp_print_bytes(print, (const byte *)str, len + 1); // +1 to store null terminator
+    } else if (o == mp_const_none) {
+        byte obj_type = MP_PERSISTENT_OBJ_NONE;
+        mp_print_bytes(print, &obj_type, 1);
+    } else if (o == mp_const_false) {
+        byte obj_type = MP_PERSISTENT_OBJ_FALSE;
+        mp_print_bytes(print, &obj_type, 1);
+    } else if (o == mp_const_true) {
+        byte obj_type = MP_PERSISTENT_OBJ_TRUE;
+        mp_print_bytes(print, &obj_type, 1);
     } else if (MP_OBJ_TO_PTR(o) == &mp_const_ellipsis_obj) {
         byte obj_type = MP_PERSISTENT_OBJ_ELLIPSIS;
         mp_print_bytes(print, &obj_type, 1);
+    } else if (mp_obj_is_type(o, &mp_type_tuple)) {
+        size_t len;
+        mp_obj_t *items;
+        mp_obj_tuple_get(o, &len, &items);
+        byte obj_type = MP_PERSISTENT_OBJ_TUPLE;
+        mp_print_bytes(print, &obj_type, 1);
+        mp_print_uint(print, len);
+        for (size_t i = 0; i < len; ++i) {
+            save_obj(print, items[i]);
+        }
     } else {
         // we save numbers using a simplistic text representation
         // TODO could be improved

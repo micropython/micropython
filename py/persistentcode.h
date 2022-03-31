@@ -104,12 +104,16 @@ enum {
 
 enum {
     MP_PERSISTENT_OBJ_FUN_TABLE = 0,
+    MP_PERSISTENT_OBJ_NONE,
+    MP_PERSISTENT_OBJ_FALSE,
+    MP_PERSISTENT_OBJ_TRUE,
     MP_PERSISTENT_OBJ_ELLIPSIS,
     MP_PERSISTENT_OBJ_STR,
     MP_PERSISTENT_OBJ_BYTES,
     MP_PERSISTENT_OBJ_INT,
     MP_PERSISTENT_OBJ_FLOAT,
     MP_PERSISTENT_OBJ_COMPLEX,
+    MP_PERSISTENT_OBJ_TUPLE,
 };
 
 mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *ctx);
