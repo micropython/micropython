@@ -57,29 +57,15 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
 
     pcnt_unit_config(&pcnt_config);
 
-    if ((self->divisor == 2) || (self->divisor == 1)) {
-        // Setup channel 1 for divisor=2 or divisor=1
-        pcnt_config.pulse_gpio_num = pin_b->number;     // What was control is now signal
-        pcnt_config.ctrl_gpio_num = pin_a->number;      // What was signal is now control
-        pcnt_config.channel = PCNT_CHANNEL_1;
-        // What to do on the positive / negative edge of pulse input?
-        pcnt_config.pos_mode = PCNT_COUNT_DEC;       // Count up on the positive edge
-        pcnt_config.neg_mode = PCNT_COUNT_INC;       // Keep the counter value on the negative edge
-        // What to do when control input is low or high?
-        pcnt_config.lctrl_mode = PCNT_MODE_KEEP;         // Keep the primary counter mode if low
-        pcnt_config.hctrl_mode = PCNT_MODE_REVERSE;      // Reverse counting direction if high
-    } else {
-        // Ensure channel 1 is disabled for divisor=4
-        pcnt_config.pulse_gpio_num = pin_b->number;     // What was control is now signal
-        pcnt_config.ctrl_gpio_num = pin_a->number;      // What was signal is now control
-        pcnt_config.channel = PCNT_CHANNEL_1;
-        // What to do on the positive / negative edge of pulse input?
-        pcnt_config.pos_mode = PCNT_COUNT_DIS;       // Disabled
-        pcnt_config.neg_mode = PCNT_COUNT_DIS;       // Disabled
-        // What to do when control input is low or high?
-        pcnt_config.lctrl_mode = PCNT_MODE_DISABLE;     // Disabled
-        pcnt_config.hctrl_mode = PCNT_MODE_DISABLE;     // Disabled
-    }
+    pcnt_config.pulse_gpio_num = pin_b->number;     // What was control is now signal
+    pcnt_config.ctrl_gpio_num = pin_a->number;      // What was signal is now control
+    pcnt_config.channel = PCNT_CHANNEL_1;
+    // What to do on the positive / negative edge of pulse input?
+    pcnt_config.pos_mode = PCNT_COUNT_DEC;       // Count up on the positive edge
+    pcnt_config.neg_mode = PCNT_COUNT_INC;       // Keep the counter value on the negative edge
+    // What to do when control input is low or high?
+    pcnt_config.lctrl_mode = PCNT_MODE_KEEP;         // Keep the primary counter mode if low
+    pcnt_config.hctrl_mode = PCNT_MODE_REVERSE;      // Reverse counting direction if high
 
     pcnt_unit_config(&pcnt_config);
 
@@ -112,11 +98,7 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
 
-    if ((self->divisor == 4) || (self->divisor == 2)) {
-        return (count / 2) + self->position;
-    } else {
-        return (count) + self->position;
-    }
+    return (count / self->divisor) + self->position;
 }
 
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
