@@ -441,6 +441,12 @@
 #define MICROPY_COMP_CONST_FOLDING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to compile constant tuples immediately to their respective objects; eg (1, True)
+// Otherwise the tuple will be built at runtime
+#ifndef MICROPY_COMP_CONST_TUPLE
+#define MICROPY_COMP_CONST_TUPLE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
 // Whether to enable optimisations for constant literals, eg OrderedDict
 #ifndef MICROPY_COMP_CONST_LITERAL
 #define MICROPY_COMP_CONST_LITERAL (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
