@@ -828,9 +828,7 @@ void mp_call_prepare_args_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_
         mp_obj_t kw_value = args[n_args + i * 2 + 1];
         if (kw_key == MP_OBJ_NULL) {
             // double-star args
-            if (kw_value == MP_OBJ_NULL) {
-                // pass
-            } else if (mp_obj_is_type(kw_value, &mp_type_dict)) {
+            if (mp_obj_is_type(kw_value, &mp_type_dict)) {
                 // dictionary
                 mp_map_t *map = mp_obj_dict_get_map(kw_value);
                 // should have enough, since kw_dict_len is in this case hinted correctly above
