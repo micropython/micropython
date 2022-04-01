@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_PY_BC_H
 
 #include "py/runtime.h"
+#include "py/objstr.h"
 
 // bytecode layout:
 //
@@ -253,6 +254,21 @@ typedef struct _mp_code_state_t {
     // Variable-length, never accessed by name, only as (void*)(state + n_state)
     // mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
+
+#if MICROPY_EMIT_NATIVE
+static inline const uint8_t *mp_get_prelude(const uint8_t *fun_data, const mp_module_context_t *context, size_t prelude_offset) {
+    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
+    // Prelude is in bytes object in const_table, at index prelude_offset.
+    (void)fun_data;
+    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(context->constants.obj_table[prelude_offset]);
+    return prelude_bytes->data;
+    #else
+    // Prelude is in the function data, at offset prelude_offset.
+    (void)context;
+    return fun_data + prelude_offset;
+    #endif
+}
+#endif
 
 // Allocator may return NULL, in which case data is not stored (can be used to compute size).
 typedef uint8_t *(*mp_encode_uint_allocator_t)(void *env, size_t nbytes);

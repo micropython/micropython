@@ -225,7 +225,11 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
+STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *context) {
+    #if !MICROPY_EMIT_MACHINE_CODE
+    (void)context;
+    #endif
+
     // Load function kind and data length
     size_t kind_len = read_uint(reader);
     int kind = (kind_len & 3) + MP_CODE_BYTECODE;
@@ -283,8 +287,8 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
         if (kind == MP_CODE_NATIVE_PY) {
             // Read prelude offset within fun_data, and extract scope flags.
             prelude_offset = read_uint(reader);
-            const byte *ip = fun_data + prelude_offset;
-            MP_BC_PRELUDE_SIG_DECODE(ip);
+            const uint8_t *prelude_ptr = mp_get_prelude(fun_data, context, prelude_offset);
+            MP_BC_PRELUDE_SIG_DECODE(prelude_ptr);
             native_scope_flags = scope_flags;
         } else {
             // Load basic scope info for viper and asm.
@@ -338,7 +342,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
         n_children = read_uint(reader);
         children = m_new(mp_raw_code_t *, n_children);
         for (size_t i = 0; i < n_children; ++i) {
-            children[i] = load_raw_code(reader);
+            children[i] = load_raw_code(reader, context);
         }
     }
 
@@ -431,7 +435,7 @@ mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *
 
     // Load top-level module.
     mp_compiled_module_t cm2;
-    cm2.rc = load_raw_code(reader);
+    cm2.rc = load_raw_code(reader, context);
     cm2.context = context;
 
     #if MICROPY_PERSISTENT_CODE_SAVE

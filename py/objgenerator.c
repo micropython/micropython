@@ -93,13 +93,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Determine start of prelude.
     uintptr_t prelude_offset = ((uintptr_t *)self_fun->bytecode)[0];
-    #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
-    // Prelude is in bytes object in const_table, at index prelude_offset
-    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->context->constants.obj_table[prelude_offset]);
-    const uint8_t *prelude_ptr = prelude_bytes->data;
-    #else
-    const uint8_t *prelude_ptr = self_fun->bytecode + prelude_offset;
-    #endif
+    const uint8_t *prelude_ptr = mp_get_prelude(self_fun->bytecode, self_fun->context, prelude_offset);
 
     // Extract n_state from the prelude.
     const uint8_t *ip = prelude_ptr;

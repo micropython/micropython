@@ -719,20 +719,26 @@ class RawCode(object):
         MP_CODE_NATIVE_ASM: "MP_CODE_NATIVE_ASM",
     }
 
-    def __init__(self, cm_escaped_name, qstr_table, fun_data, prelude_offset, code_kind):
+    def __init__(self, cm_escaped_name, qstr_table, obj_table, fun_data, prelude_offset, code_kind):
         self.qstr_table = qstr_table
+        self.obj_table = obj_table
         self.fun_data = fun_data
         self.prelude_offset = prelude_offset
         self.code_kind = code_kind
 
         if code_kind in (MP_CODE_BYTECODE, MP_CODE_NATIVE_PY):
+            if code_kind == MP_CODE_NATIVE_PY and config.native_arch == MP_NATIVE_ARCH_XTENSAWIN:
+                prelude_data = self.obj_table[prelude_offset]
+                prelude_offset = 0
+            else:
+                prelude_data = self.fun_data
             (
                 self.offset_names,
                 self.offset_opcodes,
                 self.offset_line_info,
                 self.prelude,
                 self.names,
-            ) = extract_prelude(self.fun_data, prelude_offset)
+            ) = extract_prelude(prelude_data, prelude_offset)
             self.scope_flags = self.prelude[2]
             self.n_pos_args = self.prelude[3]
             self.simple_name = self.qstr_table[self.names[0]]
@@ -822,9 +828,8 @@ class RawCode(object):
 
 class RawCodeBytecode(RawCode):
     def __init__(self, cm_escaped_name, qstr_table, obj_table, fun_data):
-        self.obj_table = obj_table
         super(RawCodeBytecode, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, 0, MP_CODE_BYTECODE
+            cm_escaped_name, qstr_table, obj_table, fun_data, 0, MP_CODE_BYTECODE
         )
 
     def disassemble(self):
@@ -902,6 +907,7 @@ class RawCodeNative(RawCode):
         self,
         cm_escaped_name,
         qstr_table,
+        obj_table,
         kind,
         fun_data,
         prelude_offset,
@@ -911,7 +917,7 @@ class RawCodeNative(RawCode):
         type_sig,
     ):
         super(RawCodeNative, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, prelude_offset, kind
+            cm_escaped_name, qstr_table, obj_table, fun_data, prelude_offset, kind
         )
 
         if kind in (MP_CODE_NATIVE_VIPER, MP_CODE_NATIVE_ASM):
@@ -1191,6 +1197,7 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
         rc = RawCodeNative(
             cm_escaped_name,
             qstr_table,
+            obj_table,
             kind,
             fun_data,
             prelude_offset,

@@ -737,7 +737,11 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
             emit->emit_common->children,
             #if MICROPY_PERSISTENT_CODE_SAVE
             emit->emit_common->ct_cur_child,
+            #if N_PRELUDE_AS_BYTES_OBJ
+            emit->prelude_const_table_offset,
+            #else
             emit->prelude_offset,
+            #endif
             emit->qstr_link_cur, emit->qstr_link,
             #endif
             emit->scope->scope_flags, 0, 0);
