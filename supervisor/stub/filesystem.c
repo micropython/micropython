@@ -31,6 +31,11 @@ void filesystem_background(void) {
     return;
 }
 
+void filesystem_tick(void)
+{
+    return;
+}
+
 bool filesystem_init(bool create_allowed, bool force_create) {
     (void)create_allowed;
     (void)force_create;
