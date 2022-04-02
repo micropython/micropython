@@ -26,22 +26,79 @@
 
 #include <mpconfigboard.h>
 
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+
+// Set default feature levels for each processor
+
 #if defined(NRF51822)
-  #include "mpconfigdevice_nrf51822.h"
+#if defined(BLUETOOTH_SD)
+// If SoftDevice is used there is less flash/ram available for application
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
+#else
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#endif
+
 #elif defined(NRF52832)
-  #include "mpconfigdevice_nrf52832.h"
+  #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+
 #elif defined(NRF52840)
-  #include "mpconfigdevice_nrf52840.h"
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
 #elif defined(NRF9160)
-  #include "mpconfigdevice_nrf9160.h"
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
 #else
   #pragma error "Device not defined"
 #endif
 
+#endif // MICROPY_CONFIG_ROM_LEVEL
+
+// pre-defined shortcuts to use below in #if queries or define values
+#define CORE_FEAT (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_CORE_FEATURES)
+#define EXTRA_FEAT (MICROPY_CONFIG_ROM_LEVEL >= MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
 // options to control how MicroPython is built
+
 #ifndef MICROPY_VFS
-#define MICROPY_VFS                 (0)
+#define MICROPY_VFS                        (CORE_FEAT)
 #endif
+
+#ifndef MICROPY_MBFS
+#define MICROPY_MBFS                       (!MICROPY_VFS)
+#endif
+
+#ifndef MICROPY_ENABLE_SOURCE_LINE
+#define MICROPY_ENABLE_SOURCE_LINE         (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN      (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_PY_SYS_STDFILES
+#define MICROPY_PY_SYS_STDFILES            (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_PY_UBINASCII
+#define MICROPY_PY_UBINASCII               (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_PY_NRF
+#define MICROPY_PY_NRF                     (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_EMIT_THUMB
+#define MICROPY_EMIT_THUMB          (EXTRA_FEAT)
+#endif
+
+#ifndef MICROPY_EMIT_INLINE_THUMB
+#define MICROPY_EMIT_INLINE_THUMB   (EXTRA_FEAT)
+#endif
+
 #define MICROPY_ALLOC_PATH_MAX      (512)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #define MICROPY_COMP_MODULE_CONST   (0)
@@ -177,16 +234,51 @@
 #define MICROPY_PY_TIME_TICKS       (1)
 #endif
 
-#ifndef MICROPY_PY_NRF
-#define MICROPY_PY_NRF              (0)
-#endif
-
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (0)
 
-// if sdk is in use, import configuration
+// if sdk is in use, import configuration and enable some core features
 #if BLUETOOTH_SD
 #include "bluetooth_conf.h"
+#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (1)
+#define MICROPY_COMP_CONST                    (1)
+#define MICROPY_COMP_CONST_FOLDING            (1)
+#define MICROPY_COMP_CONST_LITERAL            (1)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN      (1)
+#define MICROPY_CPYTHON_COMPAT                (1)
+#define MICROPY_ENABLE_COMPILER               (1)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT        (1)
+#define MICROPY_ERROR_REPORTING               (2)
+#define MICROPY_FULL_CHECKS                   (1)
+#define MICROPY_GC_ALLOC_THRESHOLD            (1)
+#define MICROPY_MODULE_GETATTR                (1)
+#define MICROPY_MULTIPLE_INHERITANCE          (1)
+#define MICROPY_PY_ARRAY                      (1)
+#define MICROPY_PY_ASSIGN_EXPR                (1)
+#define MICROPY_PY_ASYNC_AWAIT                (1)
+#define MICROPY_PY_ATTRTUPLE                  (1)
+#define MICROPY_PY_BUILTINS_BYTEARRAY         (1)
+#define MICROPY_PY_BUILTINS_DICT_FROMKEYS     (1)
+#define MICROPY_PY_BUILTINS_ENUMERATE         (1)
+#define MICROPY_PY_BUILTINS_EVAL_EXEC         (1)
+#define MICROPY_PY_BUILTINS_FILTER            (1)
+#define MICROPY_PY_BUILTINS_MIN_MAX           (1)
+#define MICROPY_PY_BUILTINS_PROPERTY          (1)
+#define MICROPY_PY_BUILTINS_RANGE_ATTRS       (1)
+#define MICROPY_PY_BUILTINS_REVERSED          (1)
+#define MICROPY_PY_BUILTINS_SET               (1)
+#define MICROPY_PY_BUILTINS_SLICE             (1)
+#define MICROPY_PY_BUILTINS_STR_COUNT         (1)
+#define MICROPY_PY_BUILTINS_STR_OP_MODULO     (1)
+#define MICROPY_PY_COLLECTIONS                (1)
+#define MICROPY_PY_GC                         (1)
+#define MICROPY_PY_GENERATOR_PEND_THROW       (1)
+#define MICROPY_PY_MATH                       (1)
+#define MICROPY_PY_STRUCT                     (1)
+#define MICROPY_PY_SYS                        (1)
+#define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS     (1)
+#define MICROPY_PY___FILE__                   (1)
+#define MICROPY_QSTR_BYTES_IN_HASH            (2)
 #endif
 
 #ifndef MICROPY_PY_UBLUEPY
@@ -286,4 +378,39 @@ extern const struct _mp_obj_module_t music_module;
 
 #ifndef MP_NEED_LOG2
 #define MP_NEED_LOG2                (1)
+#endif
+
+// Disable extra features enabled by EXTRA on NRF52840 & NRF9160
+// to initially preserve existing feature set
+#if (EXTRA_FEAT)
+#define MICROPY_COMP_RETURN_IF_EXPR (0)
+#define MICROPY_ENABLE_SCHEDULER (0)
+#define MICROPY_MODULE_ATTR_DELEGATION (0)
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (0)
+#define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
+#define MICROPY_OPT_MATH_FACTORIAL (0)
+#define MICROPY_PY_BUILTINS_INPUT (0)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (0)
+#define MICROPY_PY_BUILTINS_POW3 (0)
+#define MICROPY_PY_BUILTINS_ROUND_INT (0)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES (0)
+#define MICROPY_PY_COLLECTIONS_DEQUE (0)
+#define MICROPY_PY_DELATTR_SETATTR (0)
+#define MICROPY_PY_DESCRIPTORS (0)
+#define MICROPY_PY_FSTRINGS (0)
+#define MICROPY_PY_IO_IOBASE (0)
+#define MICROPY_PY_MATH_CONSTANTS (0)
+#define MICROPY_PY_MATH_FACTORIAL (0)
+#define MICROPY_PY_MATH_ISCLOSE (0)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
+#define MICROPY_PY_SYS_ATTR_DELEGATION (0)
+#define MICROPY_PY_SYS_PS1_PS2 (0)
+#define MICROPY_PY_UASYNCIO (0)
+#define MICROPY_PY_UBINASCII_CRC32 (0)
+#define MICROPY_PY_UERRNO (0)
+#define MICROPY_PY_UHASHLIB (0)
+#define MICROPY_PY_UOS (0)
+#define MICROPY_PY_UOS_STATVFS (0)
+#define MICROPY_PY_URE_SUB (0)
+#define MICROPY_PY_USELECT (0)
 #endif
