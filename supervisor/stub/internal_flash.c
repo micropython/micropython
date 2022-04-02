@@ -55,8 +55,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 }
 
 #if (0)
-void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs)
-{
+void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs) {
     return;
 }
 #endif

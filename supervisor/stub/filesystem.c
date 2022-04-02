@@ -31,8 +31,7 @@ void filesystem_background(void) {
     return;
 }
 
-void filesystem_tick(void)
-{
+void filesystem_tick(void) {
     return;
 }
 
