@@ -53,12 +53,20 @@
 //|     size used during compression (8-15, the dictionary size is power of 2 of
 //|     that value). Additionally, if value is positive, *data* is assumed to be
 //|     zlib stream (with zlib header). Otherwise, if it's negative, it's assumed
-//|     to be raw DEFLATE stream. *bufsize* parameter is for compatibility with
-//|     CPython and is ignored.
+//|     to be raw DEFLATE stream.
 //|
-//|     :param ~bytes data: data to be decompressed
-//|     :param ~int wbits: DEFLATE dictionary window size used during compression
-//|     :param ~int bufsize: ignored for compatibility with CPython only
+//|     The wbits parameter controls the size of the history buffer (or “window size”), and what header
+//|     and trailer format is expected.
+//|
+//|     Common wbits values:
+//|
+//|     * To decompress deflate format, use wbits = -15
+//|     * To decompress zlib format, use wbits = 15
+//|     * To decompress gzip format, use wbits = 31
+//|
+//|     :param bytes data: data to be decompressed
+//|     :param int wbits: DEFLATE dictionary window size used during compression. See above.
+//|     :param int bufsize: ignored for compatibility with CPython only
 //|     """
 //|     ...
 //|
