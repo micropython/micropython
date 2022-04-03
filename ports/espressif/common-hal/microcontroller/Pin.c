@@ -78,6 +78,11 @@ STATIC void _reset_pin(gpio_num_t pin_number) {
     if (11 <= pin_number && pin_number <= 17) {
         return;
     }
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    if (pin_number == 18 || pin_number == 19) {
+        return;
+    }
+    #endif
     #endif
 
     // Give the board a chance to reset the pin in a particular way.

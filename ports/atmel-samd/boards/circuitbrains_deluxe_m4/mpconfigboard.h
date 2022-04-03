@@ -5,8 +5,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_PB13)
 
-#define AUTORESET_DELAY_MS 500
-
 #define BOARD_HAS_CRYSTAL 1
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PB03)

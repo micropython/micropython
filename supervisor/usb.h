@@ -41,7 +41,7 @@ void usb_background(void);
 void usb_background_schedule(void);
 
 // Ports must call this from their particular USB IRQ handler
-void usb_irq_handler(void);
+void usb_irq_handler(int instance);
 
 // Only inits the USB peripheral clocks and pins. The peripheral will be initialized by
 // TinyUSB.

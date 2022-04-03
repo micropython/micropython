@@ -28,3 +28,7 @@
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
 #define MICROPY_HW_LED_STATUS          (&pin_P0_06)
+#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
+#define CIRCUITPY_RGB_STATUS_R      (&pin_P0_08)
+#define CIRCUITPY_RGB_STATUS_G      (&pin_P1_09)
+#define CIRCUITPY_RGB_STATUS_B      (&pin_P0_12)

@@ -165,6 +165,9 @@ void usb_background(void) {
     if (usb_enabled()) {
         #if CFG_TUSB_OS == OPT_OS_NONE
         tud_task();
+        #if CIRCUITPY_USB_HOST
+        tuh_task();
+        #endif
         #endif
         // No need to flush if there's no REPL.
         #if CIRCUITPY_USB_CDC
@@ -185,8 +188,15 @@ void usb_background_schedule(void) {
     background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
-void usb_irq_handler(void) {
-    tud_int_handler(0);
+void usb_irq_handler(int instance) {
+    if (instance == CIRCUITPY_USB_DEVICE_INSTANCE) {
+        tud_int_handler(instance);
+    } else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
+        #if CIRCUITPY_USB_HOST
+        tuh_int_handler(instance);
+        #endif
+    }
+
     usb_background_schedule();
 }
 

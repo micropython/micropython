@@ -130,7 +130,7 @@ class Task:
         self.ph_next = None  # Paring heap
         self.ph_rightmost_parent = None  # Paring heap
 
-    def __iter__(self):
+    def __await__(self):
         if not self.state:
             # Task finished, signal that is has been await'ed on.
             self.state = False

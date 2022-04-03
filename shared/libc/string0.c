@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 
 #ifndef likely
@@ -66,6 +67,14 @@ void *memcpy(void *dst, const void *src, size_t n) {
     }
 
     return dst;
+}
+
+extern void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
+void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen) {
+    if (len > slen) {
+        return NULL;
+    }
+    return memcpy(dest, src, len);
 }
 
 void *memmove(void *dest, const void *src, size_t n) {

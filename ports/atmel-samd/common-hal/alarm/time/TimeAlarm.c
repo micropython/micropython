@@ -26,26 +26,20 @@
 
 #include "py/runtime.h"
 #include "hpl/pm/hpl_pm_base.h"
-// #include <stdio.h>
 
 #include "shared-bindings/alarm/time/TimeAlarm.h"
 #include "shared-bindings/time/__init__.h"
 #include "common-hal/alarm/__init__.h"
 #include "supervisor/port.h"
 
-STATIC volatile bool woke_up;
-STATIC uint32_t deep_sleep_ticks;
-// TODO: replace timealarm_on with SAMD_ALARM_FLAG bit flags
-STATIC volatile bool timealarm_on;
+STATIC volatile bool woke_up = false;
+STATIC mp_float_t wakeup_time;
 
 void common_hal_alarm_time_timealarm_construct(alarm_time_timealarm_obj_t *self, mp_float_t monotonic_time) {
-    // TODO: throw a ValueError if the input time exceeds the maximum
-    //       value of the Compare register. This must be calculated from the
-    //       setup values in port.c. Should be ~3 days. Give it some margin.
-    //
-    //       UPDATE: for deep sleep at least, it's far more than 3 days since
-    //               prescalar is set to 1024. (2^32)/32 seconds so >1500 days?
-
+    // TODO: when issueing light/seep sleep, throw a ValueError if the
+    //       time exceeds the maximum value.  For light sleep, max =
+    //       2**32 / 16384 = 3 days.  For deep sleep, max = 2**32 / 32
+    //       = 1550 days.
     self->monotonic_time = monotonic_time;
 }
 
@@ -74,29 +68,30 @@ mp_obj_t alarm_time_timealarm_create_wakeup_alarm(void) {
 }
 
 void time_alarm_callback(void) {
-    if (timealarm_on) {
-        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1; // clear flags
+    if (SAMD_ALARM_FLAG_TIME_CHK) {
+        RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1;
+        // SAMD_ALARM_FLAG_TIME_CLR;
         woke_up = true;
-        timealarm_on = false;
     }
 }
 
 bool alarm_time_timealarm_woke_this_cycle(void) {
-    if (timealarm_on && (((uint32_t)port_get_raw_ticks(NULL) << 4) > RTC->MODE0.COMP[1].reg)) {
-        woke_up = true;
+    if (SAMD_ALARM_FLAG_TIME_CHK) {
+        mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+        if (now_secs > wakeup_time) {
+            woke_up = true;
+        }
     }
     return woke_up;
 }
 
 void alarm_time_timealarm_reset(void) {
-    timealarm_on = false;
+    SAMD_ALARM_FLAG_TIME_CLR;
     woke_up = false;
-    SAMD_ALARM_FLAG &= ~SAMD_ALARM_FLAG_TIME; // clear flag
+    RTC->MODE0.INTENCLR.reg = RTC_MODE0_INTENCLR_CMP1;
 }
 
 void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_obj_t *alarms) {
-    // Turn on debug control
-    // RTC->MODE0.DBGCTRL.bit.DBGRUN = 1;
     // Search through alarms for TimeAlarm instances, and check that there's only one
     bool timealarm_set = false;
     alarm_time_timealarm_obj_t *timealarm = MP_OBJ_NULL;
@@ -114,55 +109,36 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
         return;
     }
 
-    // Compute how long to actually sleep, considering the time now.
-    mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
-    uint32_t wakeup_in_secs = MAX(0.0f, timealarm->monotonic_time - now_secs);
-    uint32_t wakeup_in_ticks = wakeup_in_secs * 1024;
+    // In the true deep sleep case, counter is set again based on
+    // wakeup_time in alarm_time_timealarm_prepare_for_deep_sleep.
+    wakeup_time = timealarm->monotonic_time;
 
-    // In the deep sleep case, we can't start the timer until the USB delay has finished
-    // (otherwise it will go off while USB enumerates, and we'll risk entering deep sleep
-    // without any way to wake up again)
-    if (deep_sleep) {
-        deep_sleep_ticks = wakeup_in_ticks;
-    } else {
-        deep_sleep_ticks = 0;
-    }
-    timealarm_on = true;
-    // Set COMP1 for fake sleep. This will be read and reset for real deep sleep anyways.
-    // RTC->MODE0.COMP[1].reg = wakeup_in_ticks;
-    RTC->MODE0.COMP[1].reg = ((uint32_t)port_get_raw_ticks(NULL) + wakeup_in_ticks) << 4;
+    // Compute how long to actually sleep, considering the time now.
+    // At least 1 count = 1/16384 sec is necessary.
+    mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+    uint32_t wakeup_in_counts = MAX(1, (uint32_t)((wakeup_time - now_secs) * 16384));
+
+
+    SAMD_ALARM_FLAG_TIME_SET;
+    RTC->MODE0.COMP[1].reg = RTC->MODE0.COUNT.reg + wakeup_in_counts;
     while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP1)) != 0) {
     }
     RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_CMP1;
     RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_CMP1;
-    SAMD_ALARM_FLAG |= SAMD_ALARM_FLAG_TIME; // set TimeAlarm flag
-
-    // This is set for fake sleep. Max fake sleep time is ~72 hours
-    // True deep sleep isn't limited by this
-    // port_interrupt_after_ticks(wakeup_in_ticks);
-    // printf("second t %lu, cmp0 %lu, cmp1 %lu\n", (uint32_t)port_get_raw_ticks(NULL),RTC->MODE0.COMP[0].reg,RTC->MODE0.COMP[1].reg);
-    // TODO: set up RTC->COMP[1] and create a callback pointing to
-    //       time_alarm_callback. See atmel-samd/supervisor/port.c -> _port_interrupt_after_ticks()
-    //       for how to set this up. I don't know how you do the callback, though. You MUST use
-    //       COMP[1], since port.c uses COMP[0] already and needs to set that for
-    //       things like the USB enumeration delay.
-
-    // If true deep sleep is called, it will either ignore or overwrite the above setup depending on
-    // whether it is shorter or longer than the USB delay
-    // printf("set deep alarm finished\n");
-
 }
 
 void alarm_time_timealarm_prepare_for_deep_sleep(void) {
-    if (deep_sleep_ticks) {
-        // TODO: set up RTC->COMP[1] again, since it needs to start AFTER the USB enumeration delay.
-        //       Just do the exact same setup as alarm_time_timealarm_set_alarms(). Note, this
-        //       is used for both fake and real deep sleep, so it still needs the callback.
-        //       See STM32 for reference.
+    // set up RTC->COMP[1] again, since it needs to start AFTER the USB enumeration delay.
+    // Just do the exact same setup as alarm_time_timealarm_set_alarms(). Note, this
+    // is used for both fake and real deep sleep, so it still needs the callback.
+    // See STM32 for reference.
+    //
+    // In deep sleep mode, prescaler is set to 1024, so that 1 count = 1/32 s.
+    // At least 1 count is necessary.
 
-        RTC->MODE0.COMP[1].reg = deep_sleep_ticks;
-        while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP1)) != 0) {
-        }
-        deep_sleep_ticks = 0;
+    mp_float_t now_secs = uint64_to_float(common_hal_time_monotonic_ms()) / 1000.0f;
+    uint32_t wakeup_in_counts = MAX(1, (uint32_t)((wakeup_time - now_secs) * 32));
+    RTC->MODE0.COMP[1].reg = wakeup_in_counts;
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COMP1)) != 0) {
     }
 }

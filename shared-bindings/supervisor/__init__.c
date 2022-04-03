@@ -27,14 +27,13 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "py/reload.h"
 #include "py/objstr.h"
 
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate.h"
@@ -95,9 +94,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|     ...
 //|
 STATIC mp_obj_t supervisor_reload(void) {
-    reload_requested = true;
-    supervisor_set_run_reason(RUN_REASON_SUPERVISOR_RELOAD);
-    mp_raise_reload_exception();
+    reload_initiate(RUN_REASON_SUPERVISOR_RELOAD);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);

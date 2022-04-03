@@ -1,2 +1,3 @@
 #!/bin/sh
-git describe --first-parent --dirty --tags --always --match "[1-9].*"
+# Add any supplied arguments.
+git describe --first-parent --dirty --tags --always --match "[1-9].*" "$@"

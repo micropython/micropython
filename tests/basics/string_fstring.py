@@ -22,6 +22,13 @@ def foo(a, b):
     return f'{x}{y}{a}{b}'
 print(foo(7, 8))
 
+# ':' character within {...} that should not be interpreted as format specifiers.
+print(f"a{[0,1,2][0:2]}")
+print(f"a{[0,15,2][0:2][-1]:04x}")
+
+# Nested '{' and '}' characters.
+print(f"a{ {0,1,2}}")
+
 # PEP-0498 specifies that '\\' and '#' must be disallowed explicitly, whereas
 # MicroPython relies on the syntax error as a result of the substitution.
 
