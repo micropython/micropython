@@ -208,11 +208,17 @@ STATIC const char *const rule_name_table[] = {
 
 // *FORMAT-ON*
 
-typedef struct _rule_stack_t {
+typedef struct _rule_stack_item_t {
     size_t src_line : (8 * sizeof(size_t) - 8); // maximum bits storing source line number
     size_t rule_id : 8; // this must be large enough to fit largest rule number
     size_t arg_i; // this dictates the maximum nodes in a "list" of things
-} rule_stack_t;
+} rule_stack_item_t;
+
+typedef struct _rule_stack_chunk_t {
+    struct _rule_stack_chunk_t *prev;
+    rule_stack_item_t stack[8];
+    uint16_t top;
+} rule_stack_chunk_t;
 
 typedef struct _mp_parse_chunk_t {
     size_t alloc;
@@ -224,9 +230,7 @@ typedef struct _mp_parse_chunk_t {
 } mp_parse_chunk_t;
 
 typedef struct _parser_t {
-    size_t rule_stack_alloc;
-    size_t rule_stack_top;
-    rule_stack_t *rule_stack;
+    rule_stack_chunk_t *rule_stack_top_chunk;
 
     size_t result_stack_alloc;
     size_t result_stack_top;
@@ -291,13 +295,26 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     return ret;
 }
 
+STATIC rule_stack_chunk_t * alloc_rule_stack_chunk(void) {
+    rule_stack_chunk_t *chunk = m_new_obj(rule_stack_chunk_t);
+    chunk->prev = NULL;
+    chunk->top = 0;
+    return chunk;
+}
+
 STATIC void push_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t arg_i) {
-    if (parser->rule_stack_top >= parser->rule_stack_alloc) {
-        rule_stack_t *rs = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MICROPY_ALLOC_PARSE_RULE_INC);
-        parser->rule_stack = rs;
-        parser->rule_stack_alloc += MICROPY_ALLOC_PARSE_RULE_INC;
+    rule_stack_chunk_t *chunk = parser->rule_stack_top_chunk;
+    if (chunk == NULL) {
+        chunk = alloc_rule_stack_chunk();
+        parser->rule_stack_top_chunk = chunk;
     }
-    rule_stack_t *rs = &parser->rule_stack[parser->rule_stack_top++];
+    if (chunk->top >= MP_ARRAY_SIZE(chunk->stack)) {
+        rule_stack_chunk_t *newchunk = alloc_rule_stack_chunk();
+        newchunk->prev = chunk;
+        parser->rule_stack_top_chunk = newchunk;
+        chunk = newchunk;
+    }
+    rule_stack_item_t *rs = &chunk->stack[chunk->top++];
     rs->src_line = src_line;
     rs->rule_id = rule_id;
     rs->arg_i = arg_i;
@@ -310,10 +327,16 @@ STATIC void push_rule_from_arg(parser_t *parser, size_t arg) {
 }
 
 STATIC uint8_t pop_rule(parser_t *parser, size_t *arg_i, size_t *src_line) {
-    parser->rule_stack_top -= 1;
-    uint8_t rule_id = parser->rule_stack[parser->rule_stack_top].rule_id;
-    *arg_i = parser->rule_stack[parser->rule_stack_top].arg_i;
-    *src_line = parser->rule_stack[parser->rule_stack_top].src_line;
+    rule_stack_chunk_t *chunk = parser->rule_stack_top_chunk;
+    assert(chunk != NULL && chunk->top > 0);
+    chunk->top -= 1;
+    uint8_t rule_id = chunk->stack[chunk->top].rule_id;
+    *arg_i = chunk->stack[chunk->top].arg_i;
+    *src_line = chunk->stack[chunk->top].src_line;
+    if (chunk->top == 0) {
+        parser->rule_stack_top_chunk = chunk->prev;
+        m_del_obj(rule_stack_chunk_t, chunk);
+    }
     return rule_id;
 }
 
@@ -868,9 +891,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser_t parser;
 
-    parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
-    parser.rule_stack_top = 0;
-    parser.rule_stack = m_new(rule_stack_t, parser.rule_stack_alloc);
+    parser.rule_stack_top_chunk = NULL;
 
     parser.result_stack_alloc = MICROPY_ALLOC_PARSE_RESULT_INIT;
     parser.result_stack_top = 0;
@@ -905,7 +926,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     for (;;) {
     next_rule:
-        if (parser.rule_stack_top == 0) {
+        if (parser.rule_stack_top_chunk == NULL) {
             break;
         }
 
@@ -916,15 +937,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
         uint8_t rule_act = rule_act_table[rule_id];
         const uint16_t *rule_arg = get_rule_arg(rule_id);
         size_t n = rule_act & RULE_ACT_ARG_MASK;
-
-        #if 0
-        // debugging
-        printf("depth=" UINT_FMT " ", parser.rule_stack_top);
-        for (int j = 0; j < parser.rule_stack_top; ++j) {
-            printf(" ");
-        }
-        printf("%s n=" UINT_FMT " i=" UINT_FMT " bt=%d\n", rule_name_table[rule_id], n, i, backtrack);
-        #endif
 
         switch (rule_act & RULE_ACT_KIND_MASK) {
             case RULE_ACT_OR:
@@ -1207,7 +1219,10 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     parser.tree.root = parser.result_stack[0];
 
     // free the memory that we don't need anymore
-    m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
+    while (parser.rule_stack_top_chunk != NULL) {
+        size_t dummy;
+        pop_rule(&parser, &dummy, &dummy);
+    }
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
 
     // we also free the lexer on behalf of the caller
