@@ -8,7 +8,7 @@ class NeoPixel:
     # G R B W
     ORDER = (1, 0, 2, 3)
 
-    def __init__(self, pin, n, bpp=3, timing=1):
+    def __init__(self, pin, n, bpp=3, timing=1, autowrite=0):
         self.pin = pin
         self.n = n
         self.bpp = bpp
@@ -21,6 +21,7 @@ class NeoPixel:
             if isinstance(timing, int)
             else timing
         )
+        self.autowrite = autowrite
 
     def __len__(self):
         return self.n
@@ -29,6 +30,8 @@ class NeoPixel:
         offset = i * self.bpp
         for i in range(self.bpp):
             self.buf[offset + self.ORDER[i]] = v[i]
+        if self.autowrite:
+            self.write()
 
     def __getitem__(self, i):
         offset = i * self.bpp
@@ -44,6 +47,8 @@ class NeoPixel:
             while j < l:
                 b[j] = c
                 j += bpp
+        if self.autowrite:
+            self.write()
 
     def write(self):
         # BITSTREAM_TYPE_HIGH_LOW = 0
