@@ -383,7 +383,7 @@ class WM8960:
         # ADC volume, 0dB
         regs[_LADC, _RADC] = 0x1C3
         # Digital DAC volume, 0dB
-        regs[_LDAC, _RDAC] = 0x1E0
+        regs[_LDAC, _RDAC] = 0x1FF
         # Headphone volume, LOUT1 and ROUT1, 0dB
         regs[_LOUT1, _ROUT1] = 0x16F
         # speaker volume 6dB
