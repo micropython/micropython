@@ -227,7 +227,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int backlog = SOMAXCONN < 128 ? SOMAXCONN : 128;
+    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = (int)mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;

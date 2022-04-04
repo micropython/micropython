@@ -190,7 +190,7 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     socket_obj_t *socket = args[0];
     socket_check_closed(socket);
 
-    mp_int_t backlog = 2;
+    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
