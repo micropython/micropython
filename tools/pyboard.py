@@ -263,6 +263,12 @@ class ProcessToSerialPosix:
             return 1
         return 0
 
+# Class selector based on select module platform dependancy (available on Unix, but not on Windows)
+import select
+if hasattr(select, "poll"):
+    ProcessToSerial = ProcessToSerialPosix
+else:
+    ProcessToSerial = ProcessToSerialThreading 
 
 class ProcessPtyToTerminal:
     """Execute a process which creates a PTY and prints slave PTY as
@@ -316,12 +322,7 @@ class Pyboard:
         self.in_raw_repl = False
         self.use_raw_paste = True
         if device.startswith("exec:"):
-            # Class selector based on select module platform dependancy (available on Unix, but not on Windows)
-            import select
-            if hasattr(select, "poll"):
-                self.serial = ProcessToSerialPosix(device[len("exec:") :])
-            else:
-                self.serial = ProcessToSerialThreading(device[len("exec:") :])
+            self.serial = ProcessToSerial(device[len("exec:") :])
         elif device.startswith("execpty:"):
             self.serial = ProcessPtyToTerminal(device[len("qemupty:") :])
         elif device and device[0].isdigit() and device[-1].isdigit() and device.count(".") == 3:
