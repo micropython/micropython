@@ -135,6 +135,11 @@ The full list of supported commands are:
 
       $ mpremote mount <local-dir>
 
+  During usage, Ctrl-D will soft-reboot and normally reconnect the mount automatically.
+  If the unit has a main.py running at startup however the remount cannot occur.
+  In this case a raw mode soft reboot can be used: Ctrl-A Ctrl-D to reboot,
+  then Ctrl-B to get back to normal repl at which point the mount will be ready.
+
 - unmount the local directory from the remote device:
 
   .. code-block:: bash
