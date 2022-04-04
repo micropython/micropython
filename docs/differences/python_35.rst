@@ -140,7 +140,7 @@ Changes to built-in modules:
    | The *socket.sendall()* method no longer resets the socket timeout every time bytes are received or sent.  |               |
    | The socket timeout is now the maximum total duration to send all data.                                    |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
-   | The backlog argument of the *socket.listen()* method is now optional. By default it is set to SOMAXCONN or|               |
+   | The backlog argument of the *socket.listen()* method is now optional. By default it is set to SOMAXCONN or| Completed     |
    | to 128, whichever is less.                                                                                |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | `ssl <https://docs.python.org/3/whatsnew/3.5.html#ssl>`_                                                                  |
