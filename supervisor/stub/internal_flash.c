@@ -55,14 +55,20 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 }
 
 #if (0)
+// See definition in supervisor/flash.c
 void supervisor_flash_init_vfs(struct _fs_user_mount_t *vfs) {
+    return;
+}
+
+// See definition in supervisor/flash.c
+void supervisor_flash_flush(void) {
     return;
 }
 #endif
 
-void port_internal_flash_flush(void) {
-    return;
+void supervisor_flash_release_cache(void) {
 }
 
-void supervisor_flash_release_cache(void) {
+void port_internal_flash_flush(void) {
+    return;
 }
