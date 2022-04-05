@@ -31,6 +31,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "supervisor/memory.h"
+
 // Ports must call this as frequently as they can in order to keep the USB
 // connection alive and responsive.  Normally this is called from background
 // tasks after the USB IRQ handler is executed, but in specific circumstances
@@ -58,10 +60,19 @@ typedef struct {
     size_t num_out_endpoints;
 } descriptor_counts_t;
 
+typedef struct {
+    uint16_t vid;
+    uint16_t pid;
+    char manufacturer_name[128];
+    char product_name[128];
+} usb_identification_t;
+
+extern supervisor_allocation *usb_identification_allocation;
+
 // Shared implementation.
 bool usb_enabled(void);
 void usb_add_interface_string(uint8_t interface_string_index, const char str[]);
-void usb_build_descriptors(void);
+void usb_build_descriptors(const usb_identification_t *identification);
 void usb_disconnect(void);
 void usb_init(void);
 void usb_set_defaults(void);
