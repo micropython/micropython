@@ -37,7 +37,6 @@ typedef struct _ringbuf_t {
     uint32_t size;
     uint32_t iget;
     uint32_t iput;
-    bool heap;
 } ringbuf_t;
 
 // Note that the capacity of the buffer is N-1!

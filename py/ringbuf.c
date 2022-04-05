@@ -28,7 +28,6 @@
 #include "ringbuf.h"
 
 bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity) {
-    r->heap = false;
     r->buf = buf;
     r->size = capacity;
     r->iget = r->iput = 0;
@@ -40,7 +39,6 @@ bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity) {
 // size of the buffer is one greater than that, due to how the buffer
 // handles empty and full statuses.
 bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
-    r->heap = true;
     r->buf = gc_alloc(capacity + 1, false, long_lived);
     r->size = capacity + 1;
     r->iget = r->iput = 0;
@@ -48,9 +46,8 @@ bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived) {
 }
 
 void ringbuf_free(ringbuf_t *r) {
-    if (r->heap) {
-        gc_free(r->buf);
-    }
+    // Free buf by letting gc take care of it. If the VM has finished already,
+    // this will be safe.
     r->buf = (uint8_t *)NULL;
     r->size = 0;
     ringbuf_clear(r);

@@ -108,6 +108,7 @@ STATIC void reset_single_pwmout(uint8_t i) {
 
     for (int ch = 0; ch < CHANNELS_PER_PWM; ch++) {
         pwm_seq[i][ch] = (1 << 15); // polarity = 0
+        pwm->PSEL.OUT[ch] = 0xFFFFFFFF; // disconnnect from I/O
     }
 }
 
