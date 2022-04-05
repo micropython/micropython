@@ -268,6 +268,27 @@ def do_disconnect(pyb):
     pyb.close()
 
 
+def show_progress_bar(size, total_size):
+    if not sys.stdout.isatty():
+        return
+    verbose_size = 2048
+    bar_length = 20
+    if total_size < verbose_size:
+        return
+    elif size >= total_size:
+        # Clear progress bar when copy completes
+        print("\r" + " " * (20 + bar_length) + "\r", end="")
+    else:
+        progress = size / total_size
+        bar = round(progress * bar_length)
+        print(
+            "\r ... copying {:3.0f}% [{}{}]".format(
+                progress * 100, "#" * bar, "-" * (bar_length - bar)
+            ),
+            end="",
+        )
+
+
 def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
@@ -293,9 +314,13 @@ def do_filesystem(pyb, args):
                 if d not in known_dirs:
                     pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
                     known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
+            pyboard.filesystem_command(
+                pyb,
+                ["cp", "/".join((dir, file)), ":" + dir + "/"],
+                progress_callback=show_progress_bar,
+            )
     else:
-        pyboard.filesystem_command(pyb, args)
+        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar)
     args.clear()
 
 

@@ -491,7 +491,10 @@ class Pyboard:
         )
         self.exec_(cmd, data_consumer=stdout_write_bytes)
 
-    def fs_get(self, src, dest, chunk_size=256):
+    def fs_get(self, src, dest, chunk_size=256, progress_callback=None):
+        if progress_callback:
+            src_size = int(self.exec_("import os\nprint(os.stat('%s')[6])" % src))
+            written = 0
         self.exec_("f=open('%s','rb')\nr=f.read" % src)
         with open(dest, "wb") as f:
             while True:
@@ -507,9 +510,15 @@ class Pyboard:
                 if not data:
                     break
                 f.write(data)
+                if progress_callback:
+                    written += len(data)
+                    progress_callback(written, src_size)
         self.exec_("f.close()")
 
-    def fs_put(self, src, dest, chunk_size=256):
+    def fs_put(self, src, dest, chunk_size=256, progress_callback=None):
+        if progress_callback:
+            src_size = os.path.getsize(src)
+            written = 0
         self.exec_("f=open('%s','wb')\nw=f.write" % dest)
         with open(src, "rb") as f:
             while True:
@@ -520,6 +529,9 @@ class Pyboard:
                     self.exec_("w(b" + repr(data) + ")")
                 else:
                     self.exec_("w(" + repr(data) + ")")
+                if progress_callback:
+                    written += len(data)
+                    progress_callback(written, src_size)
         self.exec_("f.close()")
 
     def fs_mkdir(self, dir):
@@ -546,7 +558,7 @@ def execfile(filename, device="/dev/ttyACM0", baudrate=115200, user="micro", pas
     pyb.close()
 
 
-def filesystem_command(pyb, args):
+def filesystem_command(pyb, args, progress_callback=None):
     def fname_remote(src):
         if src.startswith(":"):
             src = src[1:]
@@ -579,7 +591,7 @@ def filesystem_command(pyb, args):
                 src = fname_remote(src)
                 dest2 = fname_cp_dest(src, dest)
                 print(fmt % (src, dest2))
-                op(src, dest2)
+                op(src, dest2, progress_callback=progress_callback)
         else:
             op = {
                 "ls": pyb.fs_ls,
