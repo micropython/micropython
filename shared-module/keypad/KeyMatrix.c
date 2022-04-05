@@ -37,7 +37,13 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-static void keypad_keymatrix_scan_now(keypad_keymatrix_obj_t *self, uint64_t now);
+static void keymatrix_scan_now(void *self_in, mp_obj_t timestamp);
+static size_t keymatrix_get_key_count(void *self_in);
+
+static keypad_scanner_funcs_t keymatrix_funcs = {
+    .scan_now = keymatrix_scan_now,
+    .get_key_count = keymatrix_get_key_count,
+};
 
 static mp_uint_t row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
     return row * self->column_digitalinouts->len + column;
@@ -69,21 +75,13 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_column_pins, false, false);
 
     self->columns_to_anodes = columns_to_anodes;
+    self->funcs = &keymatrix_funcs;
 
-    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
-    events->base.type = &keypad_eventqueue_type;
-    common_hal_keypad_eventqueue_construct(events, max_events);
-    self->events = events;
-
-    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
-
-    // Add self to the list of active keypad scanners.
-    keypad_register_scanner((keypad_scanner_obj_t *)self);
-    keypad_keymatrix_scan_now(self, port_get_raw_ticks(NULL));
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
 }
 
 void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self) {
-    if (common_hal_keypad_keymatrix_deinited(self)) {
+    if (common_hal_keypad_deinited(self)) {
         return;
     }
 
@@ -99,14 +97,7 @@ void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self) {
         common_hal_digitalio_digitalinout_deinit(self->column_digitalinouts->items[column]);
     }
     self->column_digitalinouts = MP_ROM_NONE;
-}
-
-bool common_hal_keypad_keymatrix_deinited(keypad_keymatrix_obj_t *self) {
-    return self->row_digitalinouts == MP_ROM_NONE;
-}
-
-size_t common_hal_keypad_keymatrix_get_key_count(keypad_keymatrix_obj_t *self) {
-    return common_hal_keypad_keymatrix_get_row_count(self) * common_hal_keypad_keymatrix_get_column_count(self);
+    common_hal_keypad_deinit_core(self);
 }
 
 size_t common_hal_keypad_keymatrix_get_row_count(keypad_keymatrix_obj_t *self) {
@@ -127,32 +118,13 @@ void common_hal_keypad_keymatrix_key_number_to_row_column(keypad_keymatrix_obj_t
     *column = key_number % num_columns;
 }
 
-mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self) {
-    return MP_OBJ_FROM_PTR(self->events);
+static size_t keymatrix_get_key_count(void *self_in) {
+    keypad_keymatrix_obj_t *self = self_in;
+    return common_hal_keypad_keymatrix_get_column_count(self) * common_hal_keypad_keymatrix_get_row_count(self);
 }
 
-void common_hal_keypad_keymatrix_reset(keypad_keymatrix_obj_t *self) {
-    const size_t key_count = common_hal_keypad_keymatrix_get_key_count(self);
-
-    memset(self->previously_pressed, false, key_count);
-    memset(self->currently_pressed, false, key_count);
-    keypad_keymatrix_scan_now(self, port_get_raw_ticks(NULL));
-}
-
-void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
-    uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < self->interval_ticks) {
-        // Too soon. Wait longer to debounce.
-        return;
-    }
-
-    keypad_keymatrix_scan_now(self, now);
-}
-
-static void keypad_keymatrix_scan_now(keypad_keymatrix_obj_t *self, uint64_t now) {
-    self->last_scan_ticks = now;
-
-    mp_obj_t timestamp = supervisor_ticks_ms();
+static void keymatrix_scan_now(void *self_in, mp_obj_t timestamp) {
+    keypad_keymatrix_obj_t *self = self_in;
 
     // On entry, all pins are set to inputs with a pull-up or pull-down,
     // depending on the diode orientation.

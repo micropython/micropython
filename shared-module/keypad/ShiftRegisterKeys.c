@@ -36,7 +36,13 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
-static void keypad_shiftregisterkeys_scan_now(keypad_shiftregisterkeys_obj_t *self, uint64_t now);
+static void shiftregisterkeys_scan_now(void *self, mp_obj_t timestamp);
+static size_t shiftregisterkeys_get_key_count(void *self);
+
+static keypad_scanner_funcs_t shiftregisterkeys_funcs = {
+    .scan_now = shiftregisterkeys_scan_now,
+    .get_key_count = shiftregisterkeys_get_key_count,
+};
 
 void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
@@ -54,30 +60,21 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
 
     digitalio_digitalinout_obj_t *latch = m_new_obj(digitalio_digitalinout_obj_t);
     latch->base.type = &digitalio_digitalinout_type;
+
     common_hal_digitalio_digitalinout_construct(latch, latch_pin);
     common_hal_digitalio_digitalinout_switch_to_output(latch, true, DRIVE_MODE_PUSH_PULL);
     self->latch = latch;
     self->value_to_latch = value_to_latch;
 
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
     self->value_when_pressed = value_when_pressed;
     self->key_count = key_count;
+    self->funcs = &shiftregisterkeys_funcs;
 
-    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
-
-    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
-    events->base.type = &keypad_eventqueue_type;
-    common_hal_keypad_eventqueue_construct(events, max_events);
-    self->events = events;
-
-    // Add self to the list of active keypad scanners.
-    keypad_register_scanner((keypad_scanner_obj_t *)self);
-    keypad_shiftregisterkeys_scan_now(self, port_get_raw_ticks(NULL));
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
 }
 
 void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *self) {
-    if (common_hal_keypad_shiftregisterkeys_deinited(self)) {
+    if (common_hal_keypad_deinited(self)) {
         return;
     }
 
@@ -93,47 +90,22 @@ void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *
 
     common_hal_digitalio_digitalinout_deinit(self->latch);
     self->latch = MP_ROM_NONE;
+
+    common_hal_keypad_deinit_core(self);
 }
 
-bool common_hal_keypad_shiftregisterkeys_deinited(keypad_shiftregisterkeys_obj_t *self) {
-    return self->clock == MP_ROM_NONE;
-}
-
-size_t common_hal_keypad_shiftregisterkeys_get_key_count(keypad_shiftregisterkeys_obj_t *self) {
+size_t shiftregisterkeys_get_key_count(void *self_in) {
+    keypad_shiftregisterkeys_obj_t *self = self_in;
     return self->key_count;
 }
 
-mp_obj_t common_hal_keypad_shiftregisterkeys_get_events(keypad_shiftregisterkeys_obj_t *self) {
-    return MP_OBJ_FROM_PTR(self->events);
-}
-
-void common_hal_keypad_shiftregisterkeys_reset(keypad_shiftregisterkeys_obj_t *self) {
-    const size_t key_count = common_hal_keypad_shiftregisterkeys_get_key_count(self);
-
-    memset(self->previously_pressed, false, key_count);
-    memset(self->currently_pressed, false, key_count);
-    keypad_shiftregisterkeys_scan_now(self, port_get_raw_ticks(NULL));
-}
-
-void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
-    uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < self->interval_ticks) {
-        // Too soon. Wait longer to debounce.
-        return;
-    }
-
-    keypad_shiftregisterkeys_scan_now(self, now);
-}
-
-static void keypad_shiftregisterkeys_scan_now(keypad_shiftregisterkeys_obj_t *self, uint64_t now) {
-    self->last_scan_ticks = now;
-
-    mp_obj_t timestamp = supervisor_ticks_ms();
+static void shiftregisterkeys_scan_now(void *self_in, mp_obj_t timestamp) {
+    keypad_shiftregisterkeys_obj_t *self = self_in;
 
     // Latch (freeze) the current state of the input pins.
     common_hal_digitalio_digitalinout_set_value(self->latch, self->value_to_latch);
 
-    const size_t key_count = common_hal_keypad_shiftregisterkeys_get_key_count(self);
+    const size_t key_count = shiftregisterkeys_get_key_count(self);
 
     for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
         // Zero-th data appears on on the data pin immediately, without shifting.
