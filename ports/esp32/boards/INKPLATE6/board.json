@@ -1,0 +1,27 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Display",
+        "e-ink",
+        "Micro USB",
+        "MicroSD",
+        "SPIRAM"
+    ],
+    "id": "inkplate6",
+    "images": [
+        "inkplate6.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "ESP32",
+    "thumbnail": "",
+    "url": "https://inkplate.io/",
+    "variants": {
+        "idf3": "Compiled with IDF 3.x"
+    },
+    "vendor": "e-radonica"
+}
