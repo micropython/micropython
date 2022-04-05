@@ -37,6 +37,8 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
+static void keypad_keymatrix_scan_now(keypad_keymatrix_obj_t *self, uint64_t now);
+
 static mp_uint_t row_column_to_key_number(keypad_keymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
     return row * self->column_digitalinouts->len + column;
 }
@@ -74,10 +76,10 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     self->events = events;
 
     self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
-    self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
+    keypad_keymatrix_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void common_hal_keypad_keymatrix_deinit(keypad_keymatrix_obj_t *self) {
@@ -132,10 +134,9 @@ mp_obj_t common_hal_keypad_keymatrix_get_events(keypad_keymatrix_obj_t *self) {
 void common_hal_keypad_keymatrix_reset(keypad_keymatrix_obj_t *self) {
     const size_t key_count = common_hal_keypad_keymatrix_get_key_count(self);
 
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
     memset(self->previously_pressed, false, key_count);
     memset(self->currently_pressed, false, key_count);
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+    keypad_keymatrix_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
@@ -145,6 +146,10 @@ void keypad_keymatrix_scan(keypad_keymatrix_obj_t *self) {
         return;
     }
 
+    keypad_keymatrix_scan_now(self, now);
+}
+
+static void keypad_keymatrix_scan_now(keypad_keymatrix_obj_t *self, uint64_t now) {
     self->last_scan_ticks = now;
 
     mp_obj_t timestamp = supervisor_ticks_ms();

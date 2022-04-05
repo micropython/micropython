@@ -36,6 +36,8 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
+static void keypad_keys_scan_now(keypad_keys_obj_t *self, uint64_t now);
+
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, const mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
     mp_obj_t dios[num_pins];
 
@@ -64,6 +66,7 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
+    keypad_keys_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
@@ -96,10 +99,9 @@ mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self) {
 void common_hal_keypad_keys_reset(keypad_keys_obj_t *self) {
     const size_t key_count = common_hal_keypad_keys_get_key_count(self);
 
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
     memset(self->previously_pressed, false, key_count);
     memset(self->currently_pressed, false, key_count);
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+    keypad_keys_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void keypad_keys_scan(keypad_keys_obj_t *self) {
@@ -109,6 +111,10 @@ void keypad_keys_scan(keypad_keys_obj_t *self) {
         return;
     }
 
+    keypad_keys_scan_now(self, now);
+}
+
+static void keypad_keys_scan_now(keypad_keys_obj_t *self, uint64_t now) {
     self->last_scan_ticks = now;
 
     const size_t key_count = common_hal_keypad_keys_get_key_count(self);

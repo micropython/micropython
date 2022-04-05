@@ -36,6 +36,8 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
+static void keypad_shiftregisterkeys_scan_now(keypad_shiftregisterkeys_obj_t *self, uint64_t now);
+
 void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
     digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
@@ -63,7 +65,6 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     self->key_count = key_count;
 
     self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
-    self->last_scan_ticks = port_get_raw_ticks(NULL);
 
     keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
     events->base.type = &keypad_eventqueue_type;
@@ -72,6 +73,7 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner((keypad_scanner_obj_t *)self);
+    keypad_shiftregisterkeys_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *self) {
@@ -108,10 +110,9 @@ mp_obj_t common_hal_keypad_shiftregisterkeys_get_events(keypad_shiftregisterkeys
 void common_hal_keypad_shiftregisterkeys_reset(keypad_shiftregisterkeys_obj_t *self) {
     const size_t key_count = common_hal_keypad_shiftregisterkeys_get_key_count(self);
 
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
     memset(self->previously_pressed, false, key_count);
     memset(self->currently_pressed, false, key_count);
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
+    keypad_shiftregisterkeys_scan_now(self, port_get_raw_ticks(NULL));
 }
 
 void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
@@ -121,6 +122,10 @@ void keypad_shiftregisterkeys_scan(keypad_shiftregisterkeys_obj_t *self) {
         return;
     }
 
+    keypad_shiftregisterkeys_scan_now(self, now);
+}
+
+static void keypad_shiftregisterkeys_scan_now(keypad_shiftregisterkeys_obj_t *self, uint64_t now) {
     self->last_scan_ticks = now;
 
     mp_obj_t timestamp = supervisor_ticks_ms();
