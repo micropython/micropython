@@ -247,7 +247,6 @@ static void rtc_init(void) {
         RTC_MODE0_CTRLA_COUNTSYNC;
     #endif
 
-    RTC->MODE0.INTENSET.reg = RTC_MODE0_INTENSET_OVF;
 
     // Set all peripheral interrupt priorities to the lowest priority by default.
     for (uint16_t i = 0; i < PERIPH_COUNT_IRQn; i++) {
@@ -501,45 +500,34 @@ uint32_t port_get_saved_word(void) {
 // TODO: Move this to an RTC backup register so we can preserve it when only the BACKUP power domain
 // is enabled.
 static volatile uint64_t overflowed_ticks = 0;
+static uint32_t rtc_old_count;
 
 static uint32_t _get_count(uint64_t *overflow_count) {
-    while (1) {
-        // Disable interrupts so we can grab the count and the overflow atomically.
-        common_hal_mcu_disable_interrupts();
-
-        #ifdef SAM_D5X_E5X
-        while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
-        }
-        #endif
-        // SAMD21 does continuous sync so we don't need to wait here.
-
-        uint32_t count = RTC->MODE0.COUNT.reg;
-        if (overflow_count != NULL) {
-            *overflow_count = overflowed_ticks;
-        }
-
-        bool overflow_pending = RTC->MODE0.INTFLAG.bit.OVF;
-
-        common_hal_mcu_enable_interrupts();
-
-        if (!overflow_pending) {
-            return count;
-        }
-
-        // Try again if overflow hasn't been processed yet.
+    #ifdef SAM_D5X_E5X
+    while ((RTC->MODE0.SYNCBUSY.reg & (RTC_MODE0_SYNCBUSY_COUNTSYNC | RTC_MODE0_SYNCBUSY_COUNT)) != 0) {
     }
+    #endif
+    // SAMD21 does continuous sync so we don't need to wait here.
+
+    uint32_t count = RTC->MODE0.COUNT.reg;
+    if (count < rtc_old_count) {
+        // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
+        // tick.
+        overflowed_ticks += (1L << (32 - 4));
+    }
+    rtc_old_count = count;
+
+    if (overflow_count != NULL) {
+        *overflow_count = overflowed_ticks;
+    }
+
+    return count;
 }
 
 volatile bool _woken_up;
 
 void RTC_Handler(void) {
     uint32_t intflag = RTC->MODE0.INTFLAG.reg;
-    if (intflag & RTC_MODE0_INTFLAG_OVF) {
-        RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_OVF;
-        // Our RTC is 32 bits and we're clocking it at 16.384khz which is 16 (2 ** 4) subticks per
-        // tick.
-        overflowed_ticks += (1L << (32 - 4));
-    }
     #ifdef SAM_D5X_E5X
     if (intflag & RTC_MODE0_INTFLAG_PER2) {
         RTC->MODE0.INTFLAG.reg = RTC_MODE0_INTFLAG_PER2;
