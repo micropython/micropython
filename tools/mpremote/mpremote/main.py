@@ -18,6 +18,7 @@ MicroPython device over a serial connection.  Commands supported are:
 """
 
 import os, sys
+import json
 from collections.abc import Mapping
 from textwrap import dedent
 
@@ -41,6 +42,12 @@ _COMMANDS = {
     "disconnect": (False, False, 0, "disconnect current device"),
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
+    "manifest": (
+        True,
+        False,
+        1,
+        "compile manifest.py",
+    ),
     "mount": (True, False, 1, "mount local directory on device"),
     "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
@@ -269,6 +276,18 @@ def do_disconnect(pyb):
 
 
 def do_filesystem(pyb, args):
+    if args[0] == "cp" and args[1] == "-r":
+        args.pop(0)
+        args.pop(0)
+        assert args[-1] == ":"
+        args.pop()
+        pyb.cp_recursive(args)
+    else:
+        pyboard.filesystem_command(pyb, args)
+    args.clear()
+
+
+def cp_recursive(self, local_paths):
     def _list_recursive(files, path):
         if os.path.isdir(path):
             for entry in os.listdir(path):
@@ -276,27 +295,41 @@ def do_filesystem(pyb, args):
         else:
             files.append(os.path.split(path))
 
-    if args[0] == "cp" and args[1] == "-r":
-        args.pop(0)
-        args.pop(0)
-        assert args[-1] == ":"
-        args.pop()
-        src_files = []
-        for path in args:
-            _list_recursive(src_files, path)
-        known_dirs = {""}
-        pyb.exec_("import uos")
-        for dir, file in src_files:
-            dir_parts = dir.split("/")
-            for i in range(len(dir_parts)):
-                d = "/".join(dir_parts[: i + 1])
-                if d not in known_dirs:
-                    pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
-                    known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
-    else:
-        pyboard.filesystem_command(pyb, args)
-    args.clear()
+    src_files = []
+    for path in local_paths:
+        _list_recursive(src_files, path)
+    known_dirs = {""}
+    pyb.exec_("import uos, json")
+    # When copying directories, list existing remote contents to
+    # ensure they're removed if no longer present locally.
+    replace_dirs = {}
+    for path in local_paths:
+        if os.path.isdir(path):
+            try:
+                replace_dirs[path] = sorted(
+                    json.loads(self.exec_("print(json.dumps(uos.listdir('%s')))" % path))
+                )
+            except PyboardError as ex:
+                if b"ENOENT" not in ex.args[2]:
+                    raise
+    # Copy all files
+    for dir, file in src_files:
+        dir_parts = dir.split("/")
+        for i in range(len(dir_parts)):
+            d = "/".join(dir_parts[: i + 1])
+            if d not in known_dirs:
+                pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
+                known_dirs.add(d)
+        if d in replace_dirs and file in replace_dirs[d]:
+            replace_dirs[d].remove(file)
+        pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
+    # delete non-replaced files in remote folder
+    for dir, entries in replace_dirs.items():
+        for entry in reversed(entries):
+            p = dir + "/" + entry
+            if p in known_dirs:
+                continue
+            pyboard.filesystem_command(pyb, ["rm", p])
 
 
 def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, file_to_inject):
@@ -490,6 +523,9 @@ def main():
             elif cmd == "soft-reset":
                 pyb.enter_raw_repl(soft_reset=True)
                 auto_soft_reset = False
+            elif cmd == "manifest":
+                path = args.pop(0)
+                pyb.build_manifest(path)
             elif cmd == "mount":
                 path = args.pop(0)
                 pyb.mount_local(path)

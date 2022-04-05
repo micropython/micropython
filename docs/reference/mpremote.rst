@@ -146,6 +146,23 @@ The full list of supported commands are:
 
       $ mpremote umount
 
+- compile a manifest.py from the current folder:
+
+  .. code-block:: bash
+
+      $ MPY_DIR=../../micropython 
+      $ PORT_DIR=../../micropython/ports/esp32
+      $ mpremote manifest .
+  
+  This will assemble / mpy-cross everything specified in the manifest.py into the folder ``_manifest``.
+  If the current folder is also mounted, this folder will automatically be added to the path, eg:
+
+  .. code-block:: bash
+
+      $ mpremote manifest . mount .
+
+  A soft-reset will re-process the manifest file to include any local updates.
+
 Multiple commands can be specified and they will be run sequentially.
 
 

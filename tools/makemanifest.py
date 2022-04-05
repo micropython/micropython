@@ -135,8 +135,18 @@ KIND_AS_MPY = 2
 KIND_MPY = 3
 
 VARS = {}
+MPY_CROSS = None
+MPY_TOOL = None
 
 manifest_list = []
+
+
+QUIET = False
+
+
+def log(*args):
+    if not QUIET:
+        print(*args)
 
 
 class IncludeOptions:
@@ -166,7 +176,12 @@ def system(cmd):
 def convert_path(path):
     # Perform variable substituion.
     for name, value in VARS.items():
-        path = path.replace("$({})".format(name), value)
+        pattern = "$({})".format(name)
+        if value is not None:
+            path = path.replace(pattern, value)
+        elif pattern in path:
+            raise SystemExit("{} variable must be specified".format(name))
+
     # Convert to absolute path (so that future operations don't rely on
     # still being chdir'ed).
     return os.path.abspath(path)
@@ -225,7 +240,7 @@ def freeze_internal(kind, path, script, opt):
                     kind = k
                     break
             else:
-                print("warn: unsupported file type, skipped freeze: {}".format(script))
+                log("warn: unsupported file type, skipped freeze: {}".format(script))
                 return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
@@ -325,23 +340,42 @@ def main():
         VARS[name] = value
 
     if "MPY_DIR" not in VARS or "PORT_DIR" not in VARS:
-        print("MPY_DIR and PORT_DIR variables must be specified")
+        log.error("MPY_DIR and PORT_DIR variables must be specified")
         sys.exit(1)
 
-    # Get paths to tools
-    MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/mpy-cross"
-    if sys.platform == "win32":
-        MPY_CROSS += ".exe"
-    MPY_CROSS = os.getenv("MICROPY_MPYCROSS", MPY_CROSS)
-    MPY_TOOL = VARS["MPY_DIR"] + "/tools/mpy-tool.py"
+    process(
+        args.files,
+        args.build_dir,
+        args.output,
+        args.mpy_tool_flags,
+        args.mpy_cross_flags,
+    )
 
-    # Ensure mpy-cross is built
+
+def process(files, build_dir, output=None, mpy_tool_flags="", mpy_cross_flags=""):
+    # Get paths to tools
+    global MPY_CROSS, MPY_TOOL
+    if MPY_CROSS is None:
+        MPY_CROSS = VARS["MPY_DIR"] + "/mpy-cross/mpy-cross"
+        if sys.platform == "win32":
+            MPY_CROSS += ".exe"
+        MPY_CROSS = os.getenv("MICROPY_MPYCROSS", MPY_CROSS)
+    if MPY_TOOL is None:
+        MPY_TOOL = VARS["MPY_DIR"] + "/tools/mpy-tool.py"
+
+    # Ensure mpy-cross is built / available
+    if not os.path.exists(MPY_CROSS):
+        try:
+            from mpy_cross import mpy_cross
+            MPY_CROSS = mpy_cross
+        except ImportError:
+            pass
     if not os.path.exists(MPY_CROSS):
         print("mpy-cross not found at {}, please build it first".format(MPY_CROSS))
         sys.exit(1)
 
     # Include top-level inputs, to generate the manifest
-    for input_manifest in args.files:
+    for input_manifest in files:
         try:
             if input_manifest.endswith(".py"):
                 include(input_manifest)
@@ -354,6 +388,7 @@ def main():
     # Process the manifest
     str_paths = []
     mpy_files = []
+    new_files = []
     ts_newest = 0
     for kind, path, script, opt in manifest_list:
         if kind == KIND_AS_STR:
@@ -361,15 +396,16 @@ def main():
             ts_outfile = get_timestamp_newest(path)
         elif kind == KIND_AS_MPY:
             infile = "{}/{}".format(path, script)
-            outfile = "{}/frozen_mpy/{}.mpy".format(args.build_dir, script[:-3])
+            subdir = "frozen_mpy" if output else ""
+            outfile = "{}/{}/{}.mpy".format(build_dir, subdir, script[:-3])
             ts_infile = get_timestamp(infile)
             ts_outfile = get_timestamp(outfile, 0)
             if ts_infile >= ts_outfile:
-                print("MPY", script)
+                log("MPY", script)
                 mkdir(outfile)
                 res, out = system(
                     [MPY_CROSS]
-                    + args.mpy_cross_flags.split()
+                    + mpy_cross_flags.split()
                     + ["-o", outfile, "-s", script, "-O{}".format(opt), infile]
                 )
                 if res != 0:
@@ -377,6 +413,7 @@ def main():
                     sys.stdout.buffer.write(out)
                     raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
+                new_files.append(outfile)
             mpy_files.append(outfile)
         else:
             assert kind == KIND_MPY
@@ -385,50 +422,53 @@ def main():
             ts_outfile = get_timestamp(infile)
         ts_newest = max(ts_newest, ts_outfile)
 
-    # Check if output file needs generating
-    if ts_newest < get_timestamp(args.output, 0):
-        # No files are newer than output file so it does not need updating
-        return
+    if output:
+        # Check if output file needs generating
+        if ts_newest < get_timestamp(output, 0):
+            # No files are newer than output file so it does not need updating
+            return
 
-    # Freeze paths as strings
-    output_str = generate_frozen_str_content(str_paths)
+        # Freeze paths as strings
+        output_str = generate_frozen_str_content(str_paths)
 
-    # Freeze .mpy files
-    if mpy_files:
-        res, output_mpy = system(
-            [
-                sys.executable,
-                MPY_TOOL,
-                "-f",
-                "-q",
-                args.build_dir + "/genhdr/qstrdefs.preprocessed.h",
-            ]
-            + args.mpy_tool_flags.split()
-            + mpy_files
-        )
-        if res != 0:
-            print("error freezing mpy {}:".format(mpy_files))
-            print(output_mpy.decode())
-            sys.exit(1)
-    else:
-        output_mpy = (
-            b'#include "py/emitglue.h"\n'
-            b"extern const qstr_pool_t mp_qstr_const_pool;\n"
-            b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
-            b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
-            b"};\n"
-            b'const char mp_frozen_names[] = { MP_FROZEN_STR_NAMES "\\0"};\n'
-            b"const mp_raw_code_t *const mp_frozen_mpy_content[] = {NULL};\n"
-        )
+        # Freeze .mpy files
+        if mpy_files:
+            res, output_mpy = system(
+                [
+                    sys.executable,
+                    MPY_TOOL,
+                    "-f",
+                    "-q",
+                    build_dir + "/genhdr/qstrdefs.preprocessed.h",
+                ]
+                + mpy_tool_flags.split()
+                + mpy_files
+            )
+            if res != 0:
+                print("error freezing mpy {}:".format(mpy_files))
+                print(output_mpy.decode())
+                sys.exit(1)
+        else:
+            output_mpy = (
+                b'#include "py/emitglue.h"\n'
+                b"extern const qstr_pool_t mp_qstr_const_pool;\n"
+                b"const qstr_pool_t mp_qstr_frozen_const_pool = {\n"
+                b"    (qstr_pool_t*)&mp_qstr_const_pool, MP_QSTRnumber_of, 0, 0\n"
+                b"};\n"
+                b'const char mp_frozen_names[] = { MP_FROZEN_STR_NAMES "\\0"};\n'
+                b"const mp_raw_code_t *const mp_frozen_mpy_content[] = {NULL};\n"
+            )
 
-    # Generate output
-    print("GEN", args.output)
-    mkdir(args.output)
-    with open(args.output, "wb") as f:
-        f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n")
-        f.write(output_str)
-        f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n")
-        f.write(output_mpy)
+        # Generate output
+        log("GEN {}".format(output))
+        mkdir(output)
+        with open(output, "wb") as f:
+            f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_STR\n//\n")
+            f.write(output_str)
+            f.write(b"//\n// Content for MICROPY_MODULE_FROZEN_MPY\n//\n")
+            f.write(output_mpy)
+
+    return mpy_files, new_files
 
 
 if __name__ == "__main__":

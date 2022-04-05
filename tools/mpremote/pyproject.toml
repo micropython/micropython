@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel"
+    "wheel",
+    "mpy-cross",
 ]
 build-backend = "setuptools.build_meta"
