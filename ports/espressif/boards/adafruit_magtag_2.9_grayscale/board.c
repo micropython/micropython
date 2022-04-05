@@ -188,6 +188,10 @@ bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
         gpio_config(&cfg);
         return true;
     }
+    // Pin 4 is used for voltage monitoring, so don't reset
+    if (pin_number == 4) {
+        return true;
+    }
     return false;
 }
 
