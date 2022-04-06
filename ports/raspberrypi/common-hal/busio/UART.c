@@ -85,7 +85,7 @@ static void shared_callback(busio_uart_obj_t *self) {
     _copy_into_ringbuf(&self->ringbuf, self->uart);
     // We always clear the interrupt so it doesn't continue to fire because we
     // may not have read everything available.
-    uart_get_hw(self->uart)->icr = UART_UARTICR_RXIC_BITS;
+    uart_get_hw(self->uart)->icr = UART_UARTICR_RXIC_BITS | UART_UARTICR_RTIC_BITS;
 }
 
 static void uart0_callback(void) {

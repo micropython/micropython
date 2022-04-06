@@ -364,7 +364,7 @@ audioio_get_buffer_result_t audiomp3_mp3file_get_buffer(audiomp3_mp3file_obj_t *
     }
 
     self->samples_decoded += *buffer_length / sizeof(int16_t);
-    return GET_BUFFER_MORE_DATA;
+    return mp3file_find_sync_word(self) ? GET_BUFFER_MORE_DATA : GET_BUFFER_DONE;
 }
 
 void audiomp3_mp3file_get_buffer_structure(audiomp3_mp3file_obj_t *self, bool single_channel_output,
