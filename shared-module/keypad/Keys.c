@@ -36,6 +36,14 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 
+static void keypad_keys_scan_now(void *self_in, mp_obj_t timestamp);
+static size_t keys_get_key_count(void *self_in);
+
+static keypad_scanner_funcs_t keys_funcs = {
+    .scan_now = keypad_keys_scan_now,
+    .get_key_count = keys_get_key_count,
+};
+
 void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pins, const mcu_pin_obj_t *pins[], bool value_when_pressed, bool pull, mp_float_t interval, size_t max_events) {
     mp_obj_t dios[num_pins];
 
@@ -53,67 +61,36 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
     self->value_when_pressed = value_when_pressed;
+    self->funcs = &keys_funcs;
 
-    self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
-    self->last_scan_ticks = port_get_raw_ticks(NULL);
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
 
-    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
-    events->base.type = &keypad_eventqueue_type;
-    common_hal_keypad_eventqueue_construct(events, max_events);
-    self->events = events;
-
-    // Add self to the list of active keypad scanners.
-    keypad_register_scanner((keypad_scanner_obj_t *)self);
 }
 
 void common_hal_keypad_keys_deinit(keypad_keys_obj_t *self) {
-    if (common_hal_keypad_keys_deinited(self)) {
+    if (common_hal_keypad_deinited(self)) {
         return;
     }
 
     // Remove self from the list of active keypad scanners first.
     keypad_deregister_scanner((keypad_scanner_obj_t *)self);
 
-    for (size_t key = 0; key < common_hal_keypad_keys_get_key_count(self); key++) {
+    for (size_t key = 0; key < keys_get_key_count(self); key++) {
         common_hal_digitalio_digitalinout_deinit(self->digitalinouts->items[key]);
     }
     self->digitalinouts = MP_ROM_NONE;
 
+    common_hal_keypad_deinit_core(self);
 }
 
-bool common_hal_keypad_keys_deinited(keypad_keys_obj_t *self) {
-    return self->digitalinouts == MP_ROM_NONE;
-}
-
-size_t common_hal_keypad_keys_get_key_count(keypad_keys_obj_t *self) {
+size_t keys_get_key_count(void *self_in) {
+    keypad_keys_obj_t *self = self_in;
     return self->digitalinouts->len;
 }
 
-mp_obj_t common_hal_keypad_keys_get_events(keypad_keys_obj_t *self) {
-    return MP_OBJ_FROM_PTR(self->events);
-}
-
-void common_hal_keypad_keys_reset(keypad_keys_obj_t *self) {
-    const size_t key_count = common_hal_keypad_keys_get_key_count(self);
-
-    supervisor_acquire_lock(&keypad_scanners_linked_list_lock);
-    memset(self->previously_pressed, false, key_count);
-    memset(self->currently_pressed, false, key_count);
-    supervisor_release_lock(&keypad_scanners_linked_list_lock);
-}
-
-void keypad_keys_scan(keypad_keys_obj_t *self) {
-    uint64_t now = port_get_raw_ticks(NULL);
-    if (now - self->last_scan_ticks < self->interval_ticks) {
-        // Too soon. Wait longer to debounce.
-        return;
-    }
-
-    self->last_scan_ticks = now;
-
-    const size_t key_count = common_hal_keypad_keys_get_key_count(self);
-
-    mp_obj_t timestamp = supervisor_ticks_ms();
+static void keypad_keys_scan_now(void *self_in, mp_obj_t timestamp) {
+    keypad_keys_obj_t *self = self_in;
+    size_t key_count = keys_get_key_count(self);
 
     for (mp_uint_t key_number = 0; key_number < key_count; key_number++) {
         // Remember the previous up/down state.
