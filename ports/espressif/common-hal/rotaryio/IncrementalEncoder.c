@@ -98,12 +98,12 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
     int16_t count;
     pcnt_get_counter_value(self->unit, &count);
 
-    return (count / self->divisor) + self->position;
+    return (count + self->position) / self->divisor;
 }
 
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_position) {
-    self->position = new_position;
+    self->position = new_position * self->divisor;
     pcnt_counter_clear(self->unit);
 }
 
