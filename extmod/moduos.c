@@ -147,6 +147,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_PY_UOS_DUPTERM_NOTIFY
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&mp_uos_dupterm_notify_obj) },
     #endif
+    #if MICROPY_PY_UOS_DISABLE_REPL
+    { MP_ROM_QSTR(MP_QSTR_disable_repl), MP_ROM_PTR(&os_disable_repl_obj) },
+    #endif
     #if MICROPY_PY_UOS_ERRNO
     { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_uos_errno_obj) },
     #endif

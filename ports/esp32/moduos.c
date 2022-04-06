@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/misc.h"
+#include "uart.h"
 
 STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
@@ -62,4 +63,11 @@ STATIC mp_obj_t mp_uos_dupterm_notify(mp_obj_t obj_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_dupterm_notify_obj, mp_uos_dupterm_notify);
+#endif
+
+#if MICROPY_PY_UOS_DISABLE_REPL
+STATIC void os_disable_repl(void) {
+    uart_disable_repl();
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_disable_repl_obj, os_disable_repl);
 #endif

@@ -77,6 +77,10 @@ int uart_stdout_tx_strn(const char *str, size_t len) {
     return len - remaining;
 }
 
+void uart_disable_repl(void) {
+    uart_disable_rx_intr(MICROPY_HW_UART_REPL);
+}
+
 // all code executed in ISR must be in IRAM, and any const data must be in DRAM
 STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
     volatile uart_dev_t *uart = &UART0;

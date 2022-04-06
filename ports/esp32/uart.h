@@ -38,5 +38,5 @@
 
 void uart_stdout_init(void);
 int uart_stdout_tx_strn(const char *str, size_t len);
-
+void uart_disable_repl(void);
 #endif // MICROPY_INCLUDED_ESP32_UART_H

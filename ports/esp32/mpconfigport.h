@@ -75,6 +75,7 @@
 #define MICROPY_PY_UOS_INCLUDEFILE          "ports/esp32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
 #define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
+#define MICROPY_PY_UOS_DISABLE_REPL       (1)
 #define MICROPY_PY_UOS_UNAME                (1)
 #define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_MACHINE                  (1)
