@@ -351,12 +351,13 @@ fs_hook_code = re.sub("buf4", "b4", fs_hook_code)
 
 
 class PyboardCommand:
-    def __init__(self, fin, fout, path):
+    def __init__(self, fin, fout, path, unsafe_links=False):
         self.fin = fin
         self.fout = fout
         self.root = path + "/"
         self.data_ilistdir = ["", []]
         self.data_files = []
+        self.unsafe_links = unsafe_links
 
     def rd_s8(self):
         return struct.unpack("<b", self.fin.read(1))[0]
@@ -397,8 +398,12 @@ class PyboardCommand:
         print(f"[{msg}]", end="\r\n")
 
     def path_check(self, path):
-        parent = os.path.realpath(self.root)
-        child = os.path.realpath(path)
+        if not self.unsafe_links:
+            parent = os.path.realpath(self.root)
+            child = os.path.realpath(path)
+        else:
+            parent = os.path.abspath(self.root)
+            child = os.path.abspath(path)
         if parent != os.path.commonpath([parent, child]):
             raise OSError(EPERM, "")  # File is outside mounted dir
 
@@ -612,13 +617,13 @@ class PyboardExtended(Pyboard):
         self.device_name = dev
         self.mounted = False
 
-    def mount_local(self, path):
+    def mount_local(self, path, unsafe_links=False):
         fout = self.serial
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
         self.exec_("__mount()")
         self.mounted = True
-        self.cmd = PyboardCommand(self.serial, fout, path)
+        self.cmd = PyboardCommand(self.serial, fout, path, unsafe_links=unsafe_links)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def write_ctrl_d(self, out_callback):
