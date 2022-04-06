@@ -16,6 +16,7 @@ CIRCUITPY_PARALLELDISPLAY = 0
 CIRCUITPY_SDCARDIO = 0
 CIRCUITPY_SHARPDISPLAY = 0
 CIRCUITPY_TRACEBACK = 0
+CIRCUITPY_ZLIB=0
 
 # Include these Python libraries in firmware.
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
