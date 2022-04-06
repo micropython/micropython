@@ -28,6 +28,7 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -129,11 +130,6 @@ STATIC mp_obj_t keypad_keys___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_keys___exit___obj, 4, 4, keypad_keys___exit__);
 
-STATIC void check_for_deinit(keypad_keys_obj_t *self) {
-    if (common_hal_keypad_keys_deinited(self)) {
-        raise_deinited_error();
-    }
-}
 
 //|     def reset(self) -> None:
 //|         """Reset the internal state of the scanner to assume that all keys are now released.
@@ -142,61 +138,24 @@ STATIC void check_for_deinit(keypad_keys_obj_t *self) {
 //|         """
 //|         ...
 //|
-STATIC mp_obj_t keypad_keys_reset(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    common_hal_keypad_keys_reset(self);
-    return MP_ROM_NONE;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_reset_obj, keypad_keys_reset);
 
 //|     key_count: int
 //|     """The number of keys that are being scanned. (read-only)
 //|     """
 //|
-STATIC mp_obj_t keypad_keys_get_key_count(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_keys_get_key_count(self));
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_get_key_count_obj, keypad_keys_get_key_count);
-
-const mp_obj_property_t keypad_keys_key_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_keys_get_key_count_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
 //|     """
 //|
-STATIC mp_obj_t keypad_keys_get_events(mp_obj_t self_in) {
-    keypad_keys_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-
-    return common_hal_keypad_keys_get_events(self);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(keypad_keys_get_events_obj, keypad_keys_get_events);
-
-const mp_obj_property_t keypad_keys_events_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_keys_get_events_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
-
 STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&keypad_keys_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&keypad_keys___exit___obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_keys_events_obj) },
-    { MP_ROM_QSTR(MP_QSTR_key_count),    MP_ROM_PTR(&keypad_keys_key_count_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset),        MP_ROM_PTR(&keypad_keys_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_events),       MP_ROM_PTR(&keypad_generic_events_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_count),    MP_ROM_PTR(&keypad_generic_key_count_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset),        MP_ROM_PTR(&keypad_generic_reset_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_keys_locals_dict, keypad_keys_locals_dict_table);
