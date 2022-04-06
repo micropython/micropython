@@ -41,7 +41,16 @@ _COMMANDS = {
     "disconnect": (False, False, 0, "disconnect current device"),
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
-    "mount": (True, False, 1, "mount local directory on device"),
+    "mount": (
+        True,
+        False,
+        1,
+        """\
+        mount local directory on device
+        options:
+            --unsafe-links, -l
+                follow symbolic links pointing outside of local directory""",
+    ),
     "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
         False,
@@ -516,8 +525,12 @@ def main():
                 pyb.enter_raw_repl(soft_reset=True)
                 auto_soft_reset = False
             elif cmd == "mount":
+                unsafe_links = False
+                if args[0] == "--unsafe-links" or args[0] == "-l":
+                    args.pop(0)
+                    unsafe_links = True
                 path = args.pop(0)
-                pyb.mount_local(path)
+                pyb.mount_local(path, unsafe_links=unsafe_links)
                 print(f"Local directory {path} is mounted at /remote")
             elif cmd == "umount":
                 pyb.umount_local()
