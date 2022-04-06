@@ -53,6 +53,8 @@
 //|         convert the value and its location to a display native pixel color. This may be a simple color
 //|         palette lookup, a gradient, a pattern or a color transformer.
 //|
+//|         To save RAM usage, tile values are only allowed in the range from 0 to 255 inclusive (single byte values).
+//|
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
 //|         :param Bitmap,OnDiskBitmap,Shape bitmap: The bitmap storing one or more tiles.
