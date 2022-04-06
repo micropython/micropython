@@ -72,6 +72,13 @@ uasyncio::
    sreader = uasyncio.StreamReader(audio_in)
    num_read = await sreader.readinto(buf)
 
+Some codec devices like the WM8960 or SGTL5000 require separate initialization
+before they can operate with the I2S class.  For these, separate drivers are
+supplied, which also offer methods for controlling volume, audio processing and
+other things.  For these drivers see:
+
+- :ref:`wm8960`
+
 Constructor
 -----------
 
