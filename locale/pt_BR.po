@@ -3109,7 +3109,7 @@ msgstr "divisão complexa por zero"
 msgid "complex values not supported"
 msgstr "os valores complexos não compatíveis"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "compressão do cabeçalho"
 

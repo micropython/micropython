@@ -3073,7 +3073,7 @@ msgstr "komplex division med noll"
 msgid "complex values not supported"
 msgstr "komplexa värden stöds inte"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "komprimeringsheader"
 

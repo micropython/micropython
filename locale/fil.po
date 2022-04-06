@@ -3048,7 +3048,7 @@ msgstr "kumplikadong dibisyon sa pamamagitan ng zero"
 msgid "complex values not supported"
 msgstr "kumplikadong values hindi sinusuportahan"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "compression header"
 

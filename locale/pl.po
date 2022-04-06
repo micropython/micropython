@@ -3030,7 +3030,7 @@ msgstr "zespolone dzielenie przez zero"
 msgid "complex values not supported"
 msgstr "wartości zespolone nieobsługiwane"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "nagłówek kompresji"
 

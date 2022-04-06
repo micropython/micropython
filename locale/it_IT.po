@@ -3064,7 +3064,7 @@ msgstr "complex divisione per zero"
 msgid "complex values not supported"
 msgstr "valori complessi non supportai"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "compressione dell'header"
 

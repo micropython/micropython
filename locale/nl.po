@@ -3053,7 +3053,7 @@ msgstr "complexe deling door 0"
 msgid "complex values not supported"
 msgstr "complexe waardes niet ondersteund"
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr "compressie header"
 
