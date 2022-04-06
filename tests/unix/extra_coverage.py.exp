@@ -43,7 +43,7 @@ ulab.scipy.linalg               ulab.scipy.optimize
 ulab.scipy.signal               ulab.scipy.special
 ulab.utils      uos             urandom         ure
 uselect         ustruct         utime           utimeq
-uzlib
+uzlib           zlib
 ime
 
 utime           utimeq

@@ -46,6 +46,7 @@ CIRCUITPY_SYNTHIO ?= 0
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
 CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
+CIRCUITPY_ZLIB = 0
 
 # TODO: In CircuitPython 8.0, turn this back on, after `busio.OneWire` is removed.
 # We'd like a smoother transition, but we can't afford the space to have both

@@ -5,6 +5,7 @@
 
 .. module:: zlib
    :synopsis: zlib decompression
+   :noindex:
 
 |see_cpython_module| :mod:`cpython:zlib`.
 
@@ -26,6 +27,7 @@ Functions
    CPython and is ignored.
 
 .. class:: DecompIO(stream, wbits=0, /)
+   :noindex:
 
    Create a ``stream`` wrapper which allows transparent decompression of
    compressed data in another *stream*. This allows to process compressed
