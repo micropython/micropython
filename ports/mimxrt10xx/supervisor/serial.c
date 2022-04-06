@@ -26,65 +26,65 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/serial.h"
 #include "py/mphal.h"
 #include <string.h>
-#include "supervisor/serial.h"
 
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
 // TODO: Switch this to using DEBUG_UART.
-
+#if defined(USE_DEBUG_PORT_CODE)
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
 // static LPUART_Type *uart_instance = LPUART2; // feather 1062
 
 static uint32_t UartSrcFreq(void) {
-    uint32_t freq;
+  uint32_t freq;
 
-    /* To make it simple, we assume default PLL and divider settings, and the only variable
-         from application is use PLL3 source or OSC source */
-    /* PLL3 div6 80M */
-    if (CLOCK_GetMux(kCLOCK_UartMux) == 0) {
-        freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
-    } else {
-        freq = CLOCK_GetOscFreq() / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
-    }
+  /* To make it simple, we assume default PLL and divider settings, and the only
+     variable from application is use PLL3 source or OSC source */
+  /* PLL3 div6 80M */
+  if (CLOCK_GetMux(kCLOCK_UartMux) == 0) {
+    freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) /
+           (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
+  } else {
+    freq = CLOCK_GetOscFreq() / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
+  }
 
-    return freq;
+  return freq;
 }
 
 void port_serial_init(void) {
-    lpuart_config_t config;
+  lpuart_config_t config;
 
-    LPUART_GetDefaultConfig(&config);
-    config.baudRate_Bps = 115200;
-    config.enableTx = true;
-    config.enableRx = true;
+  LPUART_GetDefaultConfig(&config);
+  config.baudRate_Bps = 115200;
+  config.enableTx = true;
+  config.enableRx = true;
 
-    LPUART_Init(uart_instance, &config, UartSrcFreq());
+  LPUART_Init(uart_instance, &config, UartSrcFreq());
 }
 
-bool port_serial_connected(void) {
-    return true;
-}
+bool port_serial_connected(void) { return true; }
 
 char port_serial_read(void) {
-    uint8_t data;
+  uint8_t data;
 
-    LPUART_ReadBlocking(uart_instance, &data, sizeof(data));
+  LPUART_ReadBlocking(uart_instance, &data, sizeof(data));
 
-    return data;
+  return data;
 }
 
 bool port_serial_bytes_available(void) {
-    return LPUART_GetStatusFlags(uart_instance) & kLPUART_RxDataRegFullFlag;
+  return LPUART_GetStatusFlags(uart_instance) & kLPUART_RxDataRegFullFlag;
 }
 
 void port_serial_write_substring(const char *text, uint32_t len) {
-    if (len == 0) {
-        return;
-    }
+  if (len == 0) {
+    return;
+  }
 
-    LPUART_WriteBlocking(uart_instance, (uint8_t *)text, len);
+  LPUART_WriteBlocking(uart_instance, (uint8_t *)text, len);
 }
+#endif // USE_DEBUG_PORT_CODE
