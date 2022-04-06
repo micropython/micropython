@@ -165,7 +165,8 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool claim_pins,
     bool user_interruptible,
-    bool sideset_enable
+    bool sideset_enable,
+    int wrap_target, int wrap
     ) {
     // Create a program id that isn't the pointer so we can store it without storing the original object.
     uint32_t program_id = ~((uint32_t)program);
@@ -289,7 +290,18 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     if (jmp_pin != NULL) {
         sm_config_set_jmp_pin(&c, jmp_pin->number);
     }
-    sm_config_set_wrap(&c, program_offset, program_offset + program_len - 1);
+
+    mp_arg_validate_int_range(wrap, -1, program_len - 1, MP_QSTR_wrap);
+    if (wrap == -1) {
+        wrap = program_len - 1;
+    }
+
+    mp_arg_validate_int_range(wrap_target, 0, program_len - 1, MP_QSTR_wrap_target);
+
+    wrap += program_offset;
+    wrap_target += program_offset;
+
+    sm_config_set_wrap(&c, wrap_target, wrap);
     sm_config_set_in_shift(&c, in_shift_right, auto_push, push_threshold);
     sm_config_set_out_shift(&c, out_shift_right, auto_pull, pull_threshold);
 
@@ -348,7 +360,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool auto_pull, uint8_t pull_threshold, bool out_shift_right,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
-    bool user_interruptible) {
+    bool user_interruptible,
+    int wrap_target, int wrap) {
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
     uint32_t pins_we_use = wait_gpio_mask;
@@ -510,7 +523,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         auto_push, push_threshold, in_shift_right,
         true /* claim pins */,
         user_interruptible,
-        sideset_enable);
+        sideset_enable,
+        wrap_target, wrap);
     if (!ok) {
         mp_raise_RuntimeError(translate("All state machines in use"));
     }
@@ -833,11 +847,4 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
     uint8_t pio_index = pio_get_index(self->pio);
     uint8_t sm = self->state_machine;
     return _current_program_offset[pio_index][sm];
-}
-
-void rp2pio_statemachine_set_wrap(rp2pio_statemachine_obj_t *self, uint wrap_target, uint wrap) {
-    uint8_t sm = self->state_machine;
-    uint8_t offset = rp2pio_statemachine_program_offset(self);
-
-    pio_sm_set_wrap(self->pio, sm, offset + wrap_target, offset + wrap);
 }

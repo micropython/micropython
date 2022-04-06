@@ -92,7 +92,9 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         false, 32, false, // out settings
         false, // Wait for txstall
         false, 32, false, // in settings
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        0, MP_ARRAY_SIZE(encoder) - 1 // wrap settings
+        );
 
     // We're guaranteed by the init code that some output will be available promptly
     uint8_t quiescent_state;

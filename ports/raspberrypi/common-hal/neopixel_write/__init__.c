@@ -78,7 +78,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         false, 32, true, // RX setting we don't use
         false, // claim pins
         false, // Not user-interruptible.
-        false); // No sideset enable
+        false, // No sideset enable
+        0, -1); // wrap
     if (!ok) {
         // Do nothing. Maybe bitbang?
         return;

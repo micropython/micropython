@@ -76,10 +76,10 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool claim_pins,
     bool interruptible,
-    bool sideset_enable);
+    bool sideset_enable,
+    int wrap_target, int wrap);
 
 uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self);
-void rp2pio_statemachine_set_wrap(rp2pio_statemachine_obj_t *self, uint wrap_target, uint wrap);
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins);
 
