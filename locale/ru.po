@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-02-14 18:08+0000\n"
-"Last-Translator: Clay <code.clayt@gmail.com>\n"
+"PO-Revision-Date: 2022-04-06 13:37+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: main.c
 msgid ""
@@ -212,7 +212,7 @@ msgstr "Объект '%q' не является вызываемым"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr "Объект '%q'не является итерируемым"
+msgstr "Объект '%q' не является итерируемым"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
