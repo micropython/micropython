@@ -369,21 +369,21 @@ class GasScreen(Screen):
         self.focus_index = focus
         self.edit_btns[self.focus_index].highlight(True)
         self._draw_gas_table_row(self.gas_table, self.focus_index)
-        self.parent.btn_top_left.remove_event_dsc(self.parent.cb_tl)
-        self.parent.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
-        self.parent.btn_bottom_right.remove_event_dsc(self.parent.cb_br)
+        self.parent.btn_tl.remove_event_dsc(self.parent.cb_tl)
+        self.parent.btn_bl.remove_event_dsc(self.parent.cb_bl)
+        self.parent.btn_br.remove_event_dsc(self.parent.cb_br)
 
-        self.cb_tl = self.parent.btn_top_left.add_event_cb(self._cb_select, lv.EVENT.CLICKED, None)
-        self.cb_bl = self.parent.btn_bottom_left.add_event_cb(self._cb_next(-1), lv.EVENT.CLICKED, None)
-        self.cb_br = self.parent.btn_bottom_right.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
+        self.cb_tl = self.parent.btn_tl.add_event_cb(self._cb_select, lv.EVENT.CLICKED, None)
+        self.cb_bl = self.parent.btn_bl.add_event_cb(self._cb_next(-1), lv.EVENT.CLICKED, None)
+        self.cb_br = self.parent.btn_br.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
 
     def _cb_menu_btn(self, event):
         self.edit_btns[-1].highlight(False)
         self.parent.menu_bar.toggle_visibility()
-        self.parent.btn_top_left.remove_event_dsc(self.cb_tl)
-        self.parent.btn_bottom_left.remove_event_dsc(self.cb_bl)
-        self.parent.btn_bottom_right.remove_event_dsc(self.cb_br)
-        self.parent.cb_tl = self.parent.btn_top_left.add_event_cb(self.parent._cb_centre_btn, lv.EVENT.CLICKED, None)
+        self.parent.btn_tl.remove_event_dsc(self.cb_tl)
+        self.parent.btn_bl.remove_event_dsc(self.cb_bl)
+        self.parent.btn_br.remove_event_dsc(self.cb_br)
+        self.parent.cb_tl = self.parent.btn_tl.add_event_cb(self.parent._cb_centre_btn, lv.EVENT.CLICKED, None)
         self.parent.define_nav_cb()
 
 
@@ -465,22 +465,22 @@ class GasEdit(lv_obj_extended):
         self.edit_btns[self.focus_index].label.set_text(f'PPO2: {(self.parent.gas_list[self.index].ppo2)}')
 
     def _cb_done_btn(self, event):
-        self.controller.btn_top_left.remove_event_dsc(self.cb_tl)
-        self.controller.btn_bottom_left.remove_event_dsc(self.cb_bl)
-        self.controller.btn_bottom_right.remove_event_dsc(self.cb_br)
+        self.controller.btn_tl.remove_event_dsc(self.cb_tl)
+        self.controller.btn_bl.remove_event_dsc(self.cb_bl)
+        self.controller.btn_br.remove_event_dsc(self.cb_br)
         self.delete()
         self.parent.show(focus=self.index)
 
     def show(self, focus=0):
         self.focus_index = focus
         self.edit_btns[self.focus_index].highlight(True)
-        self.controller.btn_top_left.remove_event_dsc(self.parent.cb_tl)
-        self.controller.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
-        self.controller.btn_bottom_right.remove_event_dsc(self.parent.cb_br)
+        self.controller.btn_tl.remove_event_dsc(self.parent.cb_tl)
+        self.controller.btn_bl.remove_event_dsc(self.parent.cb_bl)
+        self.controller.btn_br.remove_event_dsc(self.parent.cb_br)
 
-        self.cb_tl = self.controller.btn_top_left.add_event_cb(self._cb_edit, lv.EVENT.CLICKED, None)
-        self.cb_bl = self.controller.btn_bottom_left.add_event_cb(self._cb_next(-1), lv.EVENT.CLICKED, None)
-        self.cb_br = self.controller.btn_bottom_right.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
+        self.cb_tl = self.controller.btn_tl.add_event_cb(self._cb_edit, lv.EVENT.CLICKED, None)
+        self.cb_bl = self.controller.btn_bl.add_event_cb(self._cb_next(-1), lv.EVENT.CLICKED, None)
+        self.cb_br = self.controller.btn_br.add_event_cb(self._cb_next(1), lv.EVENT.CLICKED, None)
 
 
 class PlanningScreen(Screen):
@@ -650,21 +650,21 @@ class PlanningScreen(Screen):
     def show(self, focus=0):
         super(PlanningScreen, self).show()
         self.focus_index = focus
-        self.parent.btn_top_left.remove_event_dsc(self.parent.cb_tl)
-        self.parent.btn_bottom_left.remove_event_dsc(self.parent.cb_bl)
-        self.parent.btn_bottom_right.remove_event_dsc(self.parent.cb_br)
+        self.parent.btn_tl.remove_event_dsc(self.parent.cb_tl)
+        self.parent.btn_bl.remove_event_dsc(self.parent.cb_bl)
+        self.parent.btn_br.remove_event_dsc(self.parent.cb_br)
 
-        self.cb_tl = self.parent.btn_top_left.add_event_cb(self._cb_inc, lv.EVENT.CLICKED, None)
-        self.cb_bl = self.parent.btn_bottom_left.add_event_cb(self._cb_prev, lv.EVENT.CLICKED, None)
-        self.cb_br = self.parent.btn_bottom_right.add_event_cb(self._cb_next, lv.EVENT.CLICKED, None)
+        self.cb_tl = self.parent.btn_tl.add_event_cb(self._cb_inc, lv.EVENT.CLICKED, None)
+        self.cb_bl = self.parent.btn_bl.add_event_cb(self._cb_prev, lv.EVENT.CLICKED, None)
+        self.cb_br = self.parent.btn_br.add_event_cb(self._cb_next, lv.EVENT.CLICKED, None)
 
     def _cb_menu_btn(self, event):
         self.c_bottom.toggle_visibility()
         self.parent.menu_bar.toggle_visibility()
-        self.parent.btn_top_left.remove_event_dsc(self.cb_tl)
-        self.parent.btn_bottom_left.remove_event_dsc(self.cb_bl)
-        self.parent.btn_bottom_right.remove_event_dsc(self.cb_br)
-        self.parent.cb_tl = self.parent.btn_top_left.add_event_cb(self.parent._cb_centre_btn, lv.EVENT.CLICKED, None)
+        self.parent.btn_tl.remove_event_dsc(self.cb_tl)
+        self.parent.btn_bl.remove_event_dsc(self.cb_bl)
+        self.parent.btn_br.remove_event_dsc(self.cb_br)
+        self.parent.cb_tl = self.parent.btn_tl.add_event_cb(self.parent._cb_centre_btn, lv.EVENT.CLICKED, None)
         self.parent.define_nav_cb()
 
 
@@ -674,18 +674,18 @@ class Controller(lv.obj):
         self.top_bar = TopBar(self, self)
         self.menu_bar = MenuBar(self, 'Main', self)
 
-        self.btn_top_left = physical_btn(self, lv.ALIGN.TOP_LEFT, 20, 20, 40)
-        self.btn_top_right = physical_btn(self, lv.ALIGN.TOP_RIGHT, -20, 20, 40)
-        self.btn_bottom_left = physical_btn(self, lv.ALIGN.BOTTOM_LEFT, 20, -20, 40)
-        self.btn_bottom_right = physical_btn(self, lv.ALIGN.BOTTOM_RIGHT, -20, -20, 40)
+        self.btn_tl = physical_btn(self, lv.ALIGN.TOP_LEFT, 20, 20, 40)
+        self.btn_tr = physical_btn(self, lv.ALIGN.TOP_RIGHT, -20, 20, 40)
+        self.btn_bl = physical_btn(self, lv.ALIGN.BOTTOM_LEFT, 20, -20, 40)
+        self.btn_br = physical_btn(self, lv.ALIGN.BOTTOM_RIGHT, -20, -20, 40)
 
-        self.cb_tl = self.btn_top_left.add_event_cb(self._cb_centre_btn, lv.EVENT.CLICKED, None)
-        self.cb_tr = self.btn_top_right.add_event_cb(self._cb_home_btn, lv.EVENT.CLICKED, None)
+        self.cb_tl = self.btn_tl.add_event_cb(self._cb_centre_btn, lv.EVENT.CLICKED, None)
+        self.cb_tr = self.btn_tr.add_event_cb(self._cb_home_btn, lv.EVENT.CLICKED, None)
         self.define_nav_cb()
 
     def define_nav_cb(self):
-        self.cb_bl = self.btn_bottom_left.add_event_cb(self.menu_bar.prev_button, lv.EVENT.CLICKED, None)
-        self.cb_br = self.btn_bottom_right.add_event_cb(self.menu_bar.next_button, lv.EVENT.CLICKED, None)
+        self.cb_bl = self.btn_bl.add_event_cb(self.menu_bar.prev_button, lv.EVENT.CLICKED, None)
+        self.cb_br = self.btn_br.add_event_cb(self.menu_bar.next_button, lv.EVENT.CLICKED, None)
 
     def _cb_home_btn(self, event):
         if self.active_screen != self.screens['Main']:
