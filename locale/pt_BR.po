@@ -3219,10 +3219,6 @@ msgstr "divido por zero"
 msgid "division by zero"
 msgstr "divisão por zero"
 
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "divisor must be 4"
-msgstr "o divisor deve ser 4"
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
 msgstr "dtype deve ser flutuante ou complexo"
@@ -4727,6 +4723,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "divisor must be 4"
+#~ msgstr "o divisor deve ser 4"
 
 #~ msgid ""
 #~ "\n"

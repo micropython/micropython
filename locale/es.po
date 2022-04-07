@@ -3200,10 +3200,6 @@ msgstr "divide por cero"
 msgid "division by zero"
 msgstr "división por cero"
 
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "divisor must be 4"
-msgstr ""
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
 msgstr ""

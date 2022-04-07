@@ -3194,10 +3194,6 @@ msgstr "chú yǐ líng"
 msgid "division by zero"
 msgstr "bèi líng chú"
 
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "divisor must be 4"
-msgstr "èr chóng zòu bì xū shì 4"
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
 msgstr "dtype bì xū shì fú diǎn xíng huò fù shù"
@@ -4695,6 +4691,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "divisor must be 4"
+#~ msgstr "èr chóng zòu bì xū shì 4"
 
 #~ msgid ""
 #~ "\n"
