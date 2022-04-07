@@ -78,8 +78,8 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     self->base.type = &rotaryio_incrementalencoder_type;
 
     common_hal_rotaryio_incrementalencoder_construct(self, pin_a, pin_b);
-
     common_hal_rotaryio_incrementalencoder_set_divisor(self, args[ARG_divisor].u_int);
+
     return MP_OBJ_FROM_PTR(self);
 }
 

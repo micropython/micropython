@@ -37,7 +37,7 @@ void peripherals_pcnt_reset(void) {
     }
 }
 
-int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
+int peripherals_pcnt_get_unit(pcnt_config_t pcnt_config) {
     // Look for available pcnt unit
     for (uint8_t i = 0; i <= 3; i++) {
         if (pcnt_unit_state[i] == PCNT_UNIT_INACTIVE) {
@@ -47,6 +47,17 @@ int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
         } else if (i == 3) {
             return -1;
         }
+    }
+
+    return pcnt_config.unit;
+}
+
+int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
+    // Look for available pcnt unit
+
+    const int8_t unit = peripherals_pcnt_get_unit(pcnt_config);
+    if (unit == -1) {
+        return -1;
     }
 
     // Initialize PCNT unit
