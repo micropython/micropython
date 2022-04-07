@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "SPI Flash",
+        "USB-C"
+    ],
+    "images": [
+        "weact_rp2040.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "WeAct Studio RP2040",
+    "url": "https://github.com/WeActTC/WeActStudio.RP2040CoreBoard",
+    "variants": {
+        "flash_2mb": "2 MiB Flash",
+        "flash_4mb": "4 MiB Flash",
+        "flash_8mb": "8 MiB Flash"
+    },
+    "vendor": "WeAct"
+}
