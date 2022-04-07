@@ -980,6 +980,11 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                         mp_token_kind_t tok_kind = rule_arg[i] & RULE_ARG_ARG_MASK;
                         if (lex->tok_kind == tok_kind) {
                             // matched token
+                            if (rule_id == RULE_built_in_decorator && i == 0 && qstr_from_strn(lex->vstr.buf, lex->vstr.len) != MP_QSTR_micropython) {
+                                // The first NAME of a built-in decorator must be "micropython"
+                                backtrack = true;
+                                goto next_rule;
+                            }
                             if (tok_kind == MP_TOKEN_NAME) {
                                 push_result_token(&parser, rule_id);
                             }
