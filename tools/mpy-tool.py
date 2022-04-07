@@ -121,6 +121,14 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 
+MP_PERSISTENT_OBJ_FUN_TABLE = 0
+MP_PERSISTENT_OBJ_ELLIPSIS = 1
+MP_PERSISTENT_OBJ_STR = 2
+MP_PERSISTENT_OBJ_BYTES = 3
+MP_PERSISTENT_OBJ_INT = 4
+MP_PERSISTENT_OBJ_FLOAT = 5
+MP_PERSISTENT_OBJ_COMPLEX = 6
+
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
@@ -1104,26 +1112,26 @@ def read_qstr(reader, segments):
 
 
 def read_obj(reader, segments):
-    obj_type = reader.read_bytes(1)
-    if obj_type == b"t":
+    obj_type = reader.read_byte()
+    if obj_type == MP_PERSISTENT_OBJ_FUN_TABLE:
         return MPFunTable()
-    elif obj_type == b"e":
+    elif obj_type == MP_PERSISTENT_OBJ_ELLIPSIS:
         return Ellipsis
     else:
         ln = reader.read_uint()
         start_pos = reader.tell()
         buf = reader.read_bytes(ln)
-        if obj_type in (b"s", b"b"):
+        if obj_type in (MP_PERSISTENT_OBJ_STR, MP_PERSISTENT_OBJ_BYTES):
             reader.read_byte()  # read and discard null terminator
-        if obj_type == b"s":
+        if obj_type == MP_PERSISTENT_OBJ_STR:
             obj = str_cons(buf, "utf8")
-        elif obj_type == b"b":
+        elif obj_type == MP_PERSISTENT_OBJ_BYTES:
             obj = buf
-        elif obj_type == b"i":
+        elif obj_type == MP_PERSISTENT_OBJ_INT:
             obj = int(str_cons(buf, "ascii"), 10)
-        elif obj_type == b"f":
+        elif obj_type == MP_PERSISTENT_OBJ_FLOAT:
             obj = float(str_cons(buf, "ascii"))
-        elif obj_type == b"c":
+        elif obj_type == MP_PERSISTENT_OBJ_COMPLEX:
             obj = complex(str_cons(buf, "ascii"))
         else:
             raise MPYReadError(reader.filename, "corrupt .mpy file")

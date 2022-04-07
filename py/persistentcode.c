@@ -198,29 +198,29 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
 STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
     #if MICROPY_EMIT_MACHINE_CODE
-    if (obj_type == 't') {
+    if (obj_type == MP_PERSISTENT_OBJ_FUN_TABLE) {
         return MP_OBJ_FROM_PTR(&mp_fun_table);
     } else
     #endif
-    if (obj_type == 'e') {
+    if (obj_type == MP_PERSISTENT_OBJ_ELLIPSIS) {
         return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
     } else {
         size_t len = read_uint(reader);
-        if (len == 0 && obj_type == 'b') {
+        if (len == 0 && obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
             return mp_const_empty_bytes;
         }
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         read_bytes(reader, (byte *)vstr.buf, len);
-        if (obj_type == 's' || obj_type == 'b') {
+        if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
-            return mp_obj_new_str_from_vstr(obj_type == 's' ? &mp_type_str : &mp_type_bytes, &vstr);
-        } else if (obj_type == 'i') {
+            return mp_obj_new_str_from_vstr(obj_type == MP_PERSISTENT_OBJ_STR ? &mp_type_str : &mp_type_bytes, &vstr);
+        } else if (obj_type == MP_PERSISTENT_OBJ_INT) {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
         } else {
-            assert(obj_type == 'f' || obj_type == 'c');
-            return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == 'c', false, NULL);
+            assert(obj_type == MP_PERSISTENT_OBJ_FLOAT || obj_type == MP_PERSISTENT_OBJ_COMPLEX);
+            return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == MP_PERSISTENT_OBJ_COMPLEX, false, NULL);
         }
     }
 }
@@ -498,16 +498,16 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
 STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (o == MP_OBJ_FROM_PTR(&mp_fun_table)) {
-        byte obj_type = 't';
+        byte obj_type = MP_PERSISTENT_OBJ_FUN_TABLE;
         mp_print_bytes(print, &obj_type, 1);
     } else
     #endif
     if (mp_obj_is_str_or_bytes(o)) {
         byte obj_type;
         if (mp_obj_is_str(o)) {
-            obj_type = 's';
+            obj_type = MP_PERSISTENT_OBJ_STR;
         } else {
-            obj_type = 'b';
+            obj_type = MP_PERSISTENT_OBJ_BYTES;
         }
         size_t len;
         const char *str = mp_obj_str_get_data(o, &len);
@@ -515,21 +515,21 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         mp_print_uint(print, len);
         mp_print_bytes(print, (const byte *)str, len + 1); // +1 to store null terminator
     } else if (MP_OBJ_TO_PTR(o) == &mp_const_ellipsis_obj) {
-        byte obj_type = 'e';
+        byte obj_type = MP_PERSISTENT_OBJ_ELLIPSIS;
         mp_print_bytes(print, &obj_type, 1);
     } else {
         // we save numbers using a simplistic text representation
         // TODO could be improved
         byte obj_type;
         if (mp_obj_is_int(o)) {
-            obj_type = 'i';
+            obj_type = MP_PERSISTENT_OBJ_INT;
         #if MICROPY_PY_BUILTINS_COMPLEX
         } else if (mp_obj_is_type(o, &mp_type_complex)) {
-            obj_type = 'c';
+            obj_type = MP_PERSISTENT_OBJ_COMPLEX;
         #endif
         } else {
             assert(mp_obj_is_float(o));
-            obj_type = 'f';
+            obj_type = MP_PERSISTENT_OBJ_FLOAT;
         }
         vstr_t vstr;
         mp_print_t pr;
