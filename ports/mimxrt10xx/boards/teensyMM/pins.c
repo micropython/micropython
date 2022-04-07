@@ -6,6 +6,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // Micromod pins mapped to logical Teensy pins
+    // Plus pins mapping some of the names on micromod breakout boards
     {MP_OBJ_NEW_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO_AD_B0_03)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO_AD_B0_03)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_GPIO_AD_B0_03)},
