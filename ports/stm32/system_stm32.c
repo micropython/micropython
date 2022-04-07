@@ -208,7 +208,16 @@ MP_WEAK void SystemClock_Config(void) {
     /* The voltage scaling allows optimizing the power consumption when the device is
        clocked below the maximum system frequency, to update the voltage scaling value
        regarding system frequency refer to product datasheet.  */
-    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    #if defined(STM32H7)
+    if (HAL_GetREVID() >= 0x2003) {
+        // Enable VSCALE0 for revision V devices.
+        __HAL_RCC_SYSCFG_CLK_ENABLE();
+        __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+    } else
+    #endif
+    {
+        __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    }
 
     #elif defined(STM32G4)
     // Configure the main internal regulator output voltage
