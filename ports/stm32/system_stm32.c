@@ -179,14 +179,31 @@ MP_WEAK void SystemClock_Config(void) {
 
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
 
-    /* Enable Power Control clock */
-    #if defined(STM32H7A3xxQ) || defined(STM32H7B3xxQ)
-    MODIFY_REG(PWR->CR3, PWR_SUPPLY_CONFIG_MASK, PWR_CR3_SMPSEN);
+    #if defined(STM32H7) && defined(SMPS)
+    // H7 MCUs with SMPS must provide a power supply configuration.
+    MODIFY_REG(PWR->CR3, PWR_SUPPLY_CONFIG_MASK, MICROPY_HW_PWR_SMPS_CONFIG);
     #elif defined(STM32H7)
+    // H7 MCUs without SMPS, lock the power supply configuration update.
     MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
     #else
+    // other MCUs, enable power control clock.
     __PWR_CLK_ENABLE();
     #endif
+
+    #if defined(STM32H7)
+    // Wait untill the voltage levels are valid.
+    while (!__HAL_PWR_GET_FLAG(PWR_FLAG_ACTVOSRDY)) {
+    }
+
+    #if defined(MICROPY_HW_PWR_SMPS_CONFIG)
+    // If the SMPS supplies external circuitry, wait for the external supply ready flag.
+    if (MICROPY_HW_PWR_SMPS_CONFIG & PWR_CR3_SMPSEXTHP) {
+        while (!__HAL_PWR_GET_FLAG(PWR_FLAG_SMPSEXTRDY)) {
+        }
+    }
+    #endif // defined(MICROPY_HW_PWR_SMPS_CONFIG)
+
+    #endif // defined(STM32H7)
 
     /* The voltage scaling allows optimizing the power consumption when the device is
        clocked below the maximum system frequency, to update the voltage scaling value
@@ -202,7 +219,7 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32H7)
-    // Wait for PWR_FLAG_VOSRDY
+    // Wait until core supply reaches the required voltage level.
     while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
     }
     #endif
