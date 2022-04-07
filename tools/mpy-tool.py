@@ -327,6 +327,13 @@ class Opcodes:
         mapping[MP_BC_BINARY_OP_MULTI + i] = "BINARY_OP %d %s" % (i, mp_binary_op_method_name[i])
 
 
+# This definition of a small int covers all possible targets, in the sense that every
+# target can encode as a small int, an integer that passes this test.  The minimum is set
+# by MICROPY_OBJ_REPR_B on a 16-bit machine, where there are 14 bits for the small int.
+def mp_small_int_fits(i):
+    return -0x2000 <= i <= 0x1FFF
+
+
 # this function mirrors that in py/bc.c
 def mp_opcode_format(bytecode, ip, count_var_uint):
     opcode = bytecode[ip]
@@ -633,8 +640,10 @@ class CompiledModule:
             const_obj_content += 4 * 4
             return "MP_ROM_PTR(&%s)" % obj_name
         elif is_int_type(obj):
-            if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
-                # TODO check if we can actually fit this long-int into a small-int
+            if mp_small_int_fits(obj):
+                # Encode directly as a small integer object.
+                return "MP_ROM_INT(%d)" % obj
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
                 raise FreezeError(self, "target does not support long int")
             elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
                 # TODO
