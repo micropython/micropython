@@ -55,7 +55,7 @@ endif
 ifeq ($(CIRCUITPY_ULAB),1)
 ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
 SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
-CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -iquote $(TOP)/extmod/ulab/code
+CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -DULAB_HAS_USER_MODULE=0 -iquote $(TOP)/extmod/ulab/code
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 endif
 
@@ -159,7 +159,6 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objzip.o \
 	opmethods.o \
 	proto.o \
-	reload.o \
 	sequence.o \
 	stream.o \
 	binary.o \
@@ -222,19 +221,6 @@ PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
 PY_O += $(BUILD)/$(BUILD)/frozen_content.o
-endif
-
-# object file for frozen files
-ifneq ($(FROZEN_DIR),)
-PY_O += $(BUILD)/frozen.o
-endif
-
-# Combine old singular FROZEN_MPY_DIR with new multiple value form.
-FROZEN_MPY_DIRS += $(FROZEN_MPY_DIR)
-
-# object file for frozen bytecode (frozen .mpy files)
-ifneq ($(FROZEN_MPY_DIRS),)
-PY_O += $(BUILD)/frozen_mpy.o
 endif
 
 # Sources that may contain qstrings

@@ -38,6 +38,8 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
+#include "py/mpconfig.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,8 +47,11 @@ extern "C" {
 // --------------------------------------------------------------------+
 // COMMON CONFIGURATION
 // --------------------------------------------------------------------+
-#ifndef CFG_TUSB_DEBUG
-#define CFG_TUSB_DEBUG              0
+
+// When debugging TinyUSB, only output to the UART debug link.
+#if CIRCUITPY_DEBUG_TINYUSB > 0 && defined(CIRCUITPY_DEBUG_UART_TX)
+#define CFG_TUSB_DEBUG              CIRCUITPY_DEBUG_TINYUSB
+#define CFG_TUSB_DEBUG_PRINTF       debug_uart_printf
 #endif
 
 /*------------- RTOS -------------*/
@@ -59,10 +64,18 @@ extern "C" {
 // DEVICE CONFIGURATION
 // --------------------------------------------------------------------+
 
+#if CIRCUITPY_USB_DEVICE_INSTANCE == 0
 #if USB_HIGHSPEED
 #define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
 #else
 #define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_DEVICE)
+#endif
+#elif CIRCUITPY_USB_DEVICE_INSTANCE == 1
+#if USB_HIGHSPEED
+#define CFG_TUSB_RHPORT1_MODE       (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT1_MODE       (OPT_MODE_DEVICE)
+#endif
 #endif
 
 // Vendor name included in Inquiry response, max 8 bytes
@@ -109,6 +122,43 @@ extern "C" {
 
 #define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(CIRCUITPY_TUSB_MEM_ALIGN)))
 
+// --------------------------------------------------------------------
+// HOST CONFIGURATION
+// --------------------------------------------------------------------
+
+#if CIRCUITPY_USB_HOST
+
+#if CIRCUITPY_USB_HOST_INSTANCE == 0
+#if USB_HIGHSPEED
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_HOST | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT0_MODE       (OPT_MODE_HOST)
+#endif
+#elif CIRCUITPY_USB_HOST_INSTANCE == 1
+#if USB_HIGHSPEED
+#define CFG_TUSB_RHPORT1_MODE       (OPT_MODE_HOST | OPT_MODE_HIGH_SPEED)
+#else
+#define CFG_TUSB_RHPORT1_MODE       (OPT_MODE_HOST)
+#endif
+#endif
+
+// Size of buffer to hold descriptors and other data used for enumeration
+#ifndef CFG_TUH_ENUMERATION_BUFSIZE
+#define CFG_TUH_ENUMERATION_BUFSIZE 256
+#endif
+
+#define CFG_TUH_HUB                 1
+#define CFG_TUH_CDC                 0
+#define CFG_TUH_MSC                 0
+#define CFG_TUH_VENDOR              0
+
+// max device support (excluding hub device)
+#define CFG_TUH_DEVICE_MAX          (CFG_TUH_HUB ? 4 : 1) // hub typically has 4 ports
+
+// Number of endpoints per device
+#define CFG_TUH_ENDPOINT_MAX        8
+
+#endif
 
 #ifdef __cplusplus
 }

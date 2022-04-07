@@ -691,7 +691,7 @@ static void write_pixels(displayio_bitmap_t *bitmap, int y, bool *data) {
         uint32_t *pixel_data = (uint32_t *)(bitmap->data + bitmap->stride * y);
         for (int i = 0; i < bitmap->stride; i++) {
             uint32_t p = 0;
-            for (int j = 0; j < 32; i++) {
+            for (int j = 0; j < 32; j++) {
                 p = (p << 1);
                 if (*data++) {
                     p |= 1;

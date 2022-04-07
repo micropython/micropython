@@ -30,8 +30,6 @@
 #define MICROPY_HW_BOARD_NAME       "Seeed XIAO nRF52840 Sense"
 #define MICROPY_HW_MCU_NAME         "nRF52840"
 
-#define MICROPY_HW_LED_STATUS       (&pin_P0_26)
-
 #if QSPI_FLASH_FILESYSTEM
 #define MICROPY_QSPI_DATA0                NRF_GPIO_PIN_MAP(0, 20)
 #define MICROPY_QSPI_DATA1                NRF_GPIO_PIN_MAP(0, 24)
@@ -52,3 +50,8 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_P1_12)
 #define DEFAULT_UART_BUS_TX         (&pin_P1_11)
+
+#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
+#define CIRCUITPY_RGB_STATUS_R      (&pin_P0_26)
+#define CIRCUITPY_RGB_STATUS_G      (&pin_P0_30)
+#define CIRCUITPY_RGB_STATUS_B      (&pin_P0_06)

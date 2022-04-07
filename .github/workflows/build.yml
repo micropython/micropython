@@ -42,8 +42,8 @@ jobs:
       run: python tools/ci_fetch_deps.py test ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags || git log --parents HEAD~4..
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -72,10 +72,23 @@ jobs:
       run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --emit native
       working-directory: tests
     - name: mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy -d basics float micropython
       working-directory: tests
     - name: Native mpy Tests
-      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --mpy-cross-flags='-mcache-lookup-bc' --via-mpy --emit native -d basics float micropython
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py -j1 --via-mpy --emit native -d basics float micropython
+      working-directory: tests
+    - name: Build native modules
+      run: |
+        make -C examples/natmod/features1
+        make -C examples/natmod/features2
+        make -C examples/natmod/btree
+        make -C examples/natmod/framebuf
+        make -C examples/natmod/uheapq
+        make -C examples/natmod/urandom
+        make -C examples/natmod/ure
+        make -C examples/natmod/uzlib
+    - name: Test native modules
+      run: MICROPY_CPYTHON3=python3.8 MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
       working-directory: tests
     - name: Build mpy-cross.static-aarch64
       run: make -C mpy-cross -j2 -f Makefile.static-aarch64
@@ -148,8 +161,8 @@ jobs:
       run: python tools/ci_fetch_deps.py mpy-cross-mac ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Install dependencies
       run: |
         brew install gettext
@@ -204,8 +217,8 @@ jobs:
       run: python tools/ci_fetch_deps.py docs ${{ github.sha }}
     - name: CircuitPython version
       run: |
-        git describe --dirty --tags
-        echo >>$GITHUB_ENV CP_VERSION=$(git describe --dirty --tags)
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - name: Set up Python 3
       uses: actions/setup-python@v2
       with:
@@ -379,13 +392,15 @@ jobs:
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
     - name: CircuitPython version
-      run: git describe --dirty --tags
+      run: |
+        tools/describe || git log --parents HEAD~4..
+        echo >>$GITHUB_ENV CP_VERSION=$(tools/describe)
     - uses: actions/cache@v2
       name: Fetch IDF tool cache
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-20210923
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-20220404
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)

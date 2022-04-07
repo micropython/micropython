@@ -41,7 +41,7 @@
 //| chips in the same circuit. It doesn't include audio interconnect protocols
 //| such as S/PDIF.
 //|
-//| All libraries change hardware state and should be deinitialized when they
+//| All classes change hardware state and should be deinitialized when they
 //| are no longer needed. To do so, either call :py:meth:`!deinit` or use a
 //| context manager."""
 //|

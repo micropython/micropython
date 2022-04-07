@@ -71,8 +71,8 @@ static void display_init(void) {
         spi,
         &pin_GPIO36,    // CLK
         &pin_GPIO35,    // MOSI
-        NULL            // MISO not connected
-        );
+        NULL,           // MISO not connected
+        false);         // Not half-duplex
 
     common_hal_busio_spi_never_reset(spi);
 

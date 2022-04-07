@@ -78,11 +78,11 @@ arg names:
 45 STORE_NAME g
 48 LOAD_CONST_OBJ \.\+
 50 LOAD_METHOD format
-53 LOAD_NAME b (cache=0)
-57 CALL_METHOD n=1 nkw=0
-59 STORE_NAME h
-62 LOAD_CONST_NONE
-63 RETURN_VALUE
+53 LOAD_NAME b
+56 CALL_METHOD n=1 nkw=0
+58 STORE_NAME h
+61 LOAD_CONST_NONE
+62 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+

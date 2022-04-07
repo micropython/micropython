@@ -37,15 +37,14 @@ uint8_t display_init_sequence[] = {
     0x01, 0x80, 0x96, //  _SWRESET and Delay 150ms
     0x11, 0x80, 0xFF, //  _SLPOUT and Delay 500ms
     0x3A, 0x81, 0x55, 0x0A, //  _COLMOD and Delay 10ms
-    0x36, 0x01, 0x08, //  _MADCTL
     0x13, 0x80, 0x0A, //  _NORON and Delay 10ms
-    0x36, 0x01, 0xC0, //  _MADCTL
+    0x36, 0x01, 0xC8, //  _MADCTL
     0x29, 0x80, 0xFF, //  _DISPON and Delay 500ms
 };
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_GPIO7, &pin_GPIO6, NULL);
+    common_hal_busio_spi_construct(spi, &pin_GPIO7, &pin_GPIO6, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;

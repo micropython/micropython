@@ -27,14 +27,13 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "py/reload.h"
 #include "py/objstr.h"
 
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/autoreload.h"
 #include "supervisor/shared/bluetooth/bluetooth.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/status_leds.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate.h"
@@ -76,16 +75,15 @@ STATIC mp_obj_t supervisor_disable_autoreload(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_autoreload);
 
 //| def set_rgb_status_brightness(brightness: int) -> None:
-//|     """Set brightness of status neopixel from 0-255
-//|     `set_rgb_status_brightness` is called."""
+//|     """Set brightness of status RGB LED from 0-255. This will take effect
+//|        after the current code finishes and the status LED is used to show
+//|        the finish state."""
 //|     ...
 //|
 STATIC mp_obj_t supervisor_set_rgb_status_brightness(mp_obj_t lvl) {
     // This must be int. If cast to uint8_t first, will never raise a ValueError.
     int brightness_int = mp_obj_get_int(lvl);
-    if (brightness_int < 0 || brightness_int > 255) {
-        mp_raise_ValueError(translate("Brightness must be between 0 and 255"));
-    }
+    mp_arg_validate_int_range(brightness_int, 0, 255, MP_QSTR_brightness);
     set_status_brightness((uint8_t)brightness_int);
     return mp_const_none;
 }
@@ -96,9 +94,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_set_rgb_status_brightness_obj, supervisor_s
 //|     ...
 //|
 STATIC mp_obj_t supervisor_reload(void) {
-    reload_requested = true;
-    supervisor_set_run_reason(RUN_REASON_SUPERVISOR_RELOAD);
-    mp_raise_reload_exception();
+    reload_initiate(RUN_REASON_SUPERVISOR_RELOAD);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);

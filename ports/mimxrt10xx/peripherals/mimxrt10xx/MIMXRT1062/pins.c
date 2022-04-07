@@ -153,3 +153,8 @@ const mcu_pin_obj_t pin_GPIO_SD_B1_08 = PIN(GPIO3, 8, GPIO_SD_B1_08, NO_ADC, 0, 
 const mcu_pin_obj_t pin_GPIO_SD_B1_09 = PIN(GPIO3, 9, GPIO_SD_B1_09, NO_ADC, 0, 0x00000005, 0x000010B0);
 const mcu_pin_obj_t pin_GPIO_SD_B1_10 = PIN(GPIO3, 10, GPIO_SD_B1_10, NO_ADC, 0, 0x00000005, 0x000010B0);
 const mcu_pin_obj_t pin_GPIO_SD_B1_11 = PIN(GPIO3, 11, GPIO_SD_B1_11, NO_ADC, 0, 0x00000005, 0x000010B0);
+
+const mcu_pin_obj_t pin_USB_OTG1_DN = { { &mcu_pin_type }, };
+const mcu_pin_obj_t pin_USB_OTG1_DP = { { &mcu_pin_type }, };
+const mcu_pin_obj_t pin_USB_OTG2_DN = { { &mcu_pin_type }, };
+const mcu_pin_obj_t pin_USB_OTG2_DP = { { &mcu_pin_type }, };

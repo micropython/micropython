@@ -42,8 +42,8 @@ typedef struct  {
     uint8_t report_ids[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t in_report_lengths[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
     uint8_t out_report_lengths[CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR];
-    uint8_t usage_page;
-    uint8_t usage;
+    uint16_t usage_page;
+    uint16_t usage;
     uint8_t num_report_ids;
 } usb_hid_device_obj_t;
 

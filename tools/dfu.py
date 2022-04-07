@@ -25,7 +25,7 @@ def consume(fmt, data, names):
 
 
 def cstring(string):
-    return string.split("\0", 1)[0]
+    return string.split(b"\0", 1)[0]
 
 
 def compute_crc(data):

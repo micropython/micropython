@@ -76,7 +76,7 @@ const mp_obj_property_t wifi_radio_enabled_obj = {
                MP_ROM_NONE },
 };
 
-//|     hostname: ReadableBuffer
+//|     hostname: Union[str | ReadableBuffer]
 //|     """Hostname for wifi interface. When the hostname is altered after interface started/connected
 //|        the changes would only be reflected once the interface restarts/reconnects."""
 //|
@@ -226,11 +226,12 @@ STATIC mp_obj_t wifi_radio_stop_station(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 
 //|     def start_ap(self,
-//|                  ssid: ReadableBuffer,
-//|                  password: ReadableBuffer = b"",
+//|                  ssid: Union[str | ReadableBuffer],
+//|                  password: Union[str | ReadableBuffer] = "",
 //|                  *,
 //|                  channel: Optional[int] = 1,
-//|                  authmode: Optional[AuthMode]) -> None:
+//|                  authmode: Optional[AuthMode],
+//|                  max_connections: Optional[int] = 4) -> None:
 //|         """Starts an Access Point with the specified ssid and password.
 //|
 //|            If ``channel`` is given, the access point will use that channel unless
@@ -239,16 +240,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|            If ``authmode`` is given, the access point will use that Authentication
 //|            mode. If a password is given, ``authmode`` must not be ``OPEN``.
 //|            If ``authmode`` isn't given, ``OPEN`` will be used when password isn't provided,
-//|            otherwise ``WPA_WPA2_PSK``."""
+//|            otherwise ``WPA_WPA2_PSK``.
+//|
+//|            If ``max_connections`` is given, the access point will allow up to
+//|            that number of stations to connect."""
 //|         ...
 //|
 STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode };
+    enum { ARG_ssid, ARG_password, ARG_channel, ARG_authmode, ARG_max_connections };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_password,  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_channel, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
         { MP_QSTR_authmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_max_connections, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 4} },
     };
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -283,7 +288,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
         authmode = 1;
     }
 
-    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmode);
+    common_hal_wifi_radio_start_ap(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, authmode, args[ARG_max_connections].u_int);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(wifi_radio_start_ap_obj, 1, wifi_radio_start_ap);
@@ -299,11 +304,11 @@ STATIC mp_obj_t wifi_radio_stop_ap(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_ap_obj, wifi_radio_stop_ap);
 
 //|     def connect(self,
-//|                 ssid: ReadableBuffer,
-//|                 password: ReadableBuffer = b"",
+//|                 ssid: Union[str | ReadableBuffer],
+//|                 password: Union[str | ReadableBuffer] = "",
 //|                 *,
 //|                 channel: Optional[int] = 0,
-//|                 bssid: Optional[ReadableBuffer] = b"",
+//|                 bssid: Optional[Union[str | ReadableBuffer]] = "",
 //|                 timeout: Optional[float] = None) -> None:
 //|         """Connects to the given ssid and waits for an ip address. Reconnections are handled
 //|            automatically once one connection succeeds.

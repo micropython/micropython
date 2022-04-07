@@ -64,21 +64,21 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     // Use the state machine to manage pins.
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         pdmin, sizeof(pdmin) / sizeof(pdmin[0]),
-        44100 * 32 * 2, // Clock at 44.1 khz to warm the DAC up.
+        sample_rate * 32 * 2, // Frequency based on sample rate
         NULL, 0,
         NULL, 1, 0, 0xffffffff, // out pin
         data_pin, 1, // in pins
         0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
         clock_pin, 1, 0, 0x1f, // sideset pins
+        false, // No sideset enable
         NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
         false, // Wait for txstall
         false, 32, true, // in settings
-        false, // Not user-interruptible.
-        false); // No sideset enable
+        false); // Not user-interruptible.
 
     uint32_t actual_frequency = common_hal_rp2pio_statemachine_get_frequency(&self->state_machine);
     if (actual_frequency < MIN_MIC_CLOCK) {

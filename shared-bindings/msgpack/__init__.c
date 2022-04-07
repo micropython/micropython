@@ -83,11 +83,11 @@
 //| """
 //|
 
-//| def pack(obj: object, buffer: WriteableBuffer, *, default: Union[Callable[[object], None], None] = None) -> None:
-//|     """Ouput object to buffer in msgpack format.
+//| def pack(obj: object, stream: circuitpython_typing.ByteStream, *, default: Union[Callable[[object], None], None] = None) -> None:
+//|     """Output object to stream in msgpack format.
 //|
 //|     :param object obj: Object to convert to msgpack format.
-//|     :param ~circuitpython_typing.WriteableBuffer buffer: buffer to write into
+//|     :param ~circuitpython_typing.ByteStream stream: stream to write to
 //|     :param Optional[~circuitpython_typing.Callable[[object], None]] default:
 //|           function called for python objects that do not have
 //|           a representation in msgpack format.
@@ -98,7 +98,7 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
     enum { ARG_obj, ARG_buffer, ARG_default };
     STATIC const mp_arg_t allowed_args[] = {
         { MP_QSTR_obj, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_stream, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_default, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -115,22 +115,22 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(mod_msgpack_pack_obj, 0, mod_msgpack_pack);
 
 
-//| def unpack(buffer: ReadableBuffer, *, ext_hook: Union[Callable[[int, bytes], object], None] = None, use_list: bool=True) -> object:
-//|     """Unpack and return one object from buffer.
+//| def unpack(stream: circuitpython_typing.ByteStream, *, ext_hook: Union[Callable[[int, bytes], object], None] = None, use_list: bool=True) -> object:
+//|     """Unpack and return one object from stream.
 //|
-//|     :param ~circuitpython_typing.ReadableBuffer buffer: buffer to read from
+//|     :param ~circuitpython_typing.ByteStream stream: stream to read from
 //|     :param Optional[~circuitpython_typing.Callable[[int, bytes], object]] ext_hook: function called for objects in
 //|            msgpack ext format.
 //|     :param Optional[bool] use_list: return array as list or tuple (use_list=False).
 //|
-//|     :return object: object read from buffer.
+//|     :return object: object read from stream.
 //|     """
 //|     ...
 //|
 STATIC mp_obj_t mod_msgpack_unpack(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buffer, ARG_ext_hook, ARG_use_list };
     STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, },
+        { MP_QSTR_stream, MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_ext_hook, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
         { MP_QSTR_use_list, MP_ARG_KW_ONLY | MP_ARG_BOOL, { .u_bool = true } },
     };

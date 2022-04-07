@@ -27,7 +27,7 @@ msgstr ""
 #: main.c
 msgid ""
 "\n"
-"Code stopped by auto-reload.\n"
+"Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -586,14 +586,10 @@ msgstr "両方のピンにハードウェア割り込み対応が必要"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
 msgstr "brightnessは0から1.0まででなければなりません"
-
-#: shared-bindings/supervisor/__init__.c
-msgid "Brightness must be between 0 and 255"
-msgstr "Brightnessは0から255の間でなければなりません"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -697,6 +693,7 @@ msgstr ""
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "ローカルのCharacteristicにはCCCDを設定できません"
@@ -1138,6 +1135,13 @@ msgstr ""
 msgid "Group already used"
 msgstr "グループはすでに使われています"
 
+#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
+msgid "Half duplex SPI is not implemented"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
 #: ports/stm/common-hal/sdioio/SDCard.c
@@ -1433,7 +1437,8 @@ msgstr "右チャネルのピンが不正"
 #: ports/espressif/common-hal/canio/CAN.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
@@ -1491,7 +1496,7 @@ msgstr "不正なワード/ビット長"
 msgid "Key must be 16, 24, or 32 bytes long"
 msgstr "Keyの長さは、16, 24, 32バイトのいずれかでなければなりません"
 
-#: shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
 msgstr ""
 
@@ -1519,7 +1524,7 @@ msgstr "MISOピン初期化に失敗"
 msgid "MOSI pin init failed."
 msgstr "MOSIピン初期化に失敗"
 
-#: shared-bindings/is31fl3741/__init__.c
+#: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr ""
 
@@ -1609,6 +1614,7 @@ msgstr "名前が長すぎます"
 msgid "Nimble out of memory"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr ""
@@ -2135,7 +2141,7 @@ msgstr "サンプルレートは正数でなければなりません"
 msgid "Sample rate too high. It must be less than %d"
 msgstr "サンプルレートは%d以下でなければなりません"
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
 msgstr ""
 
@@ -2165,7 +2171,6 @@ msgstr ""
 msgid "Size not supported"
 msgstr "サイズは対応していません"
 
-#: ports/atmel-samd/common-hal/alarm/SleepMemory.c
 #: ports/raspberrypi/common-hal/alarm/SleepMemory.c
 msgid "Sleep Memory not available"
 msgstr ""
@@ -2418,6 +2423,10 @@ msgstr "パーザを初期化できません"
 msgid "Unable to read color palette data"
 msgstr "カラーパレットデータを読み込めません"
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "Unable to start mDNS query"
+msgstr ""
+
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "nvmに書き込みできません"
@@ -2435,6 +2444,16 @@ msgstr "想定されていないnrfx UUID型"
 msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error at %s:%d: %d"
+msgstr ""
+
+#: ports/espressif/common-hal/_bleio/__init__.c
+#, c-format
+msgid "Unknown BLE error: %d"
+msgstr ""
+
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
@@ -2445,6 +2464,7 @@ msgstr ""
 msgid "Unknown gatt error: 0x%04x"
 msgstr "不明なGATTエラー: 0x%04x"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
 msgstr "理由不明"
@@ -2506,12 +2526,14 @@ msgstr "非対応の操作"
 msgid "Update Failed"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
@@ -2882,6 +2904,10 @@ msgstr ""
 msgid "can't load with '%q' index"
 msgstr ""
 
+#: py/builtinimport.c
+msgid "can't perform relative import"
+msgstr ""
+
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
 msgstr ""
@@ -2943,10 +2969,6 @@ msgstr "インスタンスを作れません"
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr ""
-
-#: py/builtinimport.c
-msgid "cannot perform relative import"
-msgstr "相対インポートはできません"
 
 #: extmod/moductypes.c
 msgid "cannot unambiguously get sizeof scalar"
@@ -3627,6 +3649,14 @@ msgstr "このビルドはlong intに非対応"
 msgid "loopback + silent mode not supported by peripheral"
 msgstr ""
 
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS already initialized"
+msgstr ""
+
+#: ports/espressif/common-hal/mdns/Server.c
+msgid "mDNS only works with built-in WiFi"
+msgstr ""
+
 #: py/parse.c
 msgid "malformed f-string"
 msgstr "不正な形式のf-string"
@@ -3642,6 +3672,10 @@ msgstr "定義域エラー"
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "matrix is not positive definite"
 msgstr "正定値行列ではありません"
+
+#: ports/espressif/common-hal/wifi/Radio.c
+msgid "max_connections must be between 0 and 10"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -3797,6 +3831,7 @@ msgstr "指定の属性はありません"
 msgid "non-Device in %q"
 msgstr ""
 
+#: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr ""
@@ -4021,6 +4056,10 @@ msgstr ""
 "pixel_shaderはdisplayio.Paletteかdisplayio.ColorConverterのどちらかでなければ"
 "なりません"
 
+#: extmod/vfs_posix_file.c
+msgid "poll on file not available on win32"
+msgstr ""
+
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"
 msgstr ""
@@ -4059,6 +4098,7 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
 #: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
+#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
 #: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
 #: ports/espressif/boards/artisense_rd00/mpconfigboard.h
@@ -4066,10 +4106,13 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
 #: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
 #: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
+#: ports/espressif/boards/espressif_esp32s3_devkitm_1_n8/mpconfigboard.h
 #: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
 #: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
@@ -4081,6 +4124,10 @@ msgstr "pow()の第3引数には整数が必要"
 #: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
 #: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
+#: ports/espressif/boards/hexky_s2/mpconfigboard.h
+#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_esp32_s2_wroom/mpconfigboard.h
+#: ports/espressif/boards/lilygo_ttgo_t8_s2/mpconfigboard.h
 #: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
 #: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
@@ -4580,7 +4627,7 @@ msgstr "watchdogのtimeoutは0以上でなければなりません"
 msgid "width must be from 2 to 8 (inclusive), not %d"
 msgstr ""
 
-#: shared-bindings/is31fl3741/IS31FL3741.c
+#: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
@@ -4652,6 +4699,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Brightnessは0から255の間でなければなりません"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "相対インポートはできません"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "非対応のpull値"

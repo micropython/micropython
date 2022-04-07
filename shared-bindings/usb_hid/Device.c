@@ -31,7 +31,7 @@
 //| class Device:
 //|     """HID Device specification"""
 //|
-//|     def __init__(self, *, descriptor: ReadableBuffer, usage_page: int, usage: int, report_ids: Sequence[int], in_report_lengths: Sequence[int], out_report_lengths: Sequence[int]) -> None:
+//|     def __init__(self, *, report_descriptor: ReadableBuffer, usage_page: int, usage: int, report_ids: Sequence[int], in_report_lengths: Sequence[int], out_report_lengths: Sequence[int]) -> None:
 //|         """Create a description of a USB HID device. The actual device is created when you
 //|         pass a `Device` to `usb_hid.enable()`.
 //|
@@ -103,12 +103,12 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     mp_obj_t descriptor = mp_obj_new_bytearray(descriptor_bufinfo.len, descriptor_bufinfo.buf);
 
     const mp_int_t usage_page_arg = args[ARG_usage_page].u_int;
-    mp_arg_validate_int_range(usage_page_arg, 1, 255, MP_QSTR_usage_page);
-    const uint8_t usage_page = usage_page_arg;
+    mp_arg_validate_int_range(usage_page_arg, 1, 0xFFFF, MP_QSTR_usage_page);
+    const uint16_t usage_page = usage_page_arg;
 
     const mp_int_t usage_arg = args[ARG_usage].u_int;
-    mp_arg_validate_int_range(usage_arg, 1, 255, MP_QSTR_usage_page);
-    const uint8_t usage = usage_arg;
+    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage_page);
+    const uint16_t usage = usage_arg;
 
     mp_obj_t report_ids = args[ARG_report_ids].u_obj;
     mp_obj_t in_report_lengths = args[ARG_in_report_lengths].u_obj;

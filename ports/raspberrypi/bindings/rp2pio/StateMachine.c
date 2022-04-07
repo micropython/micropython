@@ -365,6 +365,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
+//|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
+//|         will perform 8 bit writes to the PIO FIFO. The RP2040's memory bus will duplicate the value into
+//|         the other byte positions. So, pulling more data in the PIO assembly will read the duplicated values.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
@@ -413,6 +420,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
 //|
+//|         Reads from the FIFO will match the input buffer's element size. For example, bytearray elements
+//|         will perform 8 bit reads from the PIO FIFO. The alignment within the 32 bit value depends on
+//|         ``in_shift_right``. When ``in_shift_right`` is True, the upper N bits will be read. The lower
+//|         bits will be read when ``in_shift_right`` is False.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
@@ -460,6 +475,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         The lengths of the slices defined by ``buffer_out[out_start:out_end]`` and ``buffer_in[in_start:in_end]``
 //|         may be different. The function will return once both are filled.
 //|         If buffer slice lengths are both 0, nothing happens.
+//|
+//|         Data transfers to and from the FIFOs will match the corresponding buffer's element size. See
+//|         `write` and `readinto` for details.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
 //|
 //|         :param ~circuitpython_typing.ReadableBuffer buffer_out: Write out the data in this buffer
 //|         :param ~circuitpython_typing.WriteableBuffer buffer_in: Read data into this buffer

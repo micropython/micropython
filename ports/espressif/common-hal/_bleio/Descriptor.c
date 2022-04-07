@@ -36,7 +36,6 @@
 #include "host/ble_att.h"
 
 void common_hal_bleio_descriptor_construct(bleio_descriptor_obj_t *self, bleio_characteristic_obj_t *characteristic, bleio_uuid_obj_t *uuid, bleio_attribute_security_mode_t read_perm, bleio_attribute_security_mode_t write_perm, mp_int_t max_length, bool fixed_length, mp_buffer_info_t *initial_value_bufinfo) {
-    mp_raise_NotImplementedError(NULL);
     self->characteristic = characteristic;
     self->uuid = uuid;
     self->handle = BLEIO_HANDLE_INVALID;

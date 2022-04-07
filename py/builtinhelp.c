@@ -69,22 +69,18 @@ STATIC void mp_help_add_from_map(mp_obj_t list, const mp_map_t *map) {
 #if MICROPY_MODULE_FROZEN
 STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
     while (*name) {
-        size_t l = strlen(name);
+        size_t len = strlen(name);
         // name should end in '.py' and we strip it off
-        mp_obj_list_append(list, mp_obj_new_str(name, l - 3));
-        name += l + 1;
+        mp_obj_list_append(list, mp_obj_new_str(name, len - 3));
+        name += len + 1;
     }
 }
 #endif
 
 // These externs were originally declared inside mp_help_print_modules(),
 // but they triggered -Wnested-externs, so they were moved outside.
-#if MICROPY_MODULE_FROZEN_STR
-extern const char mp_frozen_str_names[];
-#endif
-
-#if MICROPY_MODULE_FROZEN_MPY
-extern const char mp_frozen_mpy_names[];
+#if MICROPY_MODULE_FROZEN
+extern const char mp_frozen_names[];
 #endif
 
 STATIC void mp_help_print_modules(void) {
@@ -92,12 +88,8 @@ STATIC void mp_help_print_modules(void) {
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
 
-    #if MICROPY_MODULE_FROZEN_STR
-    mp_help_add_from_names(list, mp_frozen_str_names);
-    #endif
-
-    #if MICROPY_MODULE_FROZEN_MPY
-    mp_help_add_from_names(list, mp_frozen_mpy_names);
+    #if MICROPY_MODULE_FROZEN
+    mp_help_add_from_names(list, mp_frozen_names);
     #endif
 
     // sort the list so it's printed in alphabetical order
