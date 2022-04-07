@@ -29,6 +29,9 @@
 // 6 wait states when running at 280MHz (VOS0 range)
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6
 
+// SMPS configuration
+#define MICROPY_HW_PWR_SMPS_CONFIG  (PWR_DIRECT_SMPS_SUPPLY)
+
 #if 0
 // 512MBit external OSPI flash, used for either the filesystem or XIP memory mapped
 #define MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 (29)
