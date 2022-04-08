@@ -77,6 +77,7 @@ extension_by_board = {
     "ai_thinker_esp32-c3s-2m": BIN,
     "espressif_esp32c3_devkitm_1_n4": BIN,
     "lilygo_ttgo_t-01c3": BIN,
+    "lolin-c3-mini": BIN,
     "microdev_micro_c3": BIN,
     "lilygo_ttgo_t-oi-plus": BIN,
     # broadcom
