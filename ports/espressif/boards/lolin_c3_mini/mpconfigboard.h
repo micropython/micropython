@@ -39,3 +39,6 @@
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO4)
 #define DEFAULT_SPI_BUS_MISO (&pin_GPIO3)
 #define DEFAULT_SPI_BUS_SCK (&pin_GPIO2)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO20)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO21)
