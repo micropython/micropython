@@ -478,6 +478,12 @@ class GlobalQStrList:
     def get_by_index(self, i):
         return self.qstrs[i]
 
+    def find_by_str(self, s):
+        for q in self.qstrs:
+            if q is not None and q.str == s:
+                return q
+        return None
+
 
 class MPFunTable:
     def __repr__(self):
@@ -633,6 +639,9 @@ class CompiledModule:
                 else:
                     return "MP_ROM_PTR(&mp_const_empty_bytes_obj)"
             if is_str_type(obj):
+                q = global_qstrs.find_by_str(obj)
+                if q:
+                    return "MP_ROM_QSTR(%s)" % q.qstr_id
                 obj = bytes_cons(obj, "utf8")
                 obj_type = "mp_type_str"
             else:
