@@ -351,9 +351,9 @@ MP_WEAK void SystemClock_Config(void) {
     #endif
 
     #if defined(STM32H7)
-    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_1;
-    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    RCC_OscInitStruct.PLL.PLLRGE = MICROPY_HW_CLK_PLLVCI;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = MICROPY_HW_CLK_PLLVCO;
+    RCC_OscInitStruct.PLL.PLLFRACN = MICROPY_HW_CLK_PLLFRAC;
     #endif
 
     #if defined(STM32F4) || defined(STM32F7)
@@ -392,9 +392,9 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.PLL3.PLL3P = MICROPY_HW_CLK_PLL3P;
     PeriphClkInitStruct.PLL3.PLL3Q = MICROPY_HW_CLK_PLL3Q;
     PeriphClkInitStruct.PLL3.PLL3R = MICROPY_HW_CLK_PLL3R;
-    PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_1;
-    PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
-    PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
+    PeriphClkInitStruct.PLL3.PLL3RGE = MICROPY_HW_CLK_PLL3VCI;
+    PeriphClkInitStruct.PLL3.PLL3VCOSEL = MICROPY_HW_CLK_PLL3VCO;
+    PeriphClkInitStruct.PLL3.PLL3FRACN = MICROPY_HW_CLK_PLL3FRAC;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
