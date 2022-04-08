@@ -31,9 +31,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IO8), MP_ROM_PTR(&pin_GPIO8) },   // 14: GPIO8
     { MP_ROM_QSTR(MP_QSTR_SDA),  MP_ROM_PTR(&pin_GPIO8) },  // mpboardconfig.h
     { MP_ROM_QSTR(MP_QSTR_IO9), MP_ROM_PTR(&pin_GPIO9) },   // 15: GPIO9
-    { MP_ROM_QSTR(MP_QSTR_IO20), MP_ROM_PTR(&pin_GPIO20) }, // 16: GPIO10/FSPICS0
+    { MP_ROM_QSTR(MP_QSTR_IO10), MP_ROM_PTR(&pin_GPIO10) }, // 16: GPIO10/FSPICS0
     { MP_ROM_QSTR(MP_QSTR_SCL),  MP_ROM_PTR(&pin_GPIO10) }, // mpboardconfig.h
-    // 17: VDD3P3_SPI
+    // 17: VDD3P3_CPJ
     // 18: VDD_SPI
     // 19: SPIHD
     // 20: SPIWP
@@ -44,7 +44,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // Used for USB 25: GPIO18/D-
     // Used for USB 26: GPIO19/D+
     { MP_ROM_QSTR(MP_QSTR_RX),   MP_ROM_PTR(&pin_GPIO20) }, // 27: GPIO20/U0RXD
-    { MP_ROM_QSTR(MP_QSTR_RX),   MP_ROM_PTR(&pin_GPIO22) }, // 28: FPIO22/U0TXD
+    { MP_ROM_QSTR(MP_QSTR_IO20), MP_ROM_PTR(&pin_GPIO20) },
+    { MP_ROM_QSTR(MP_QSTR_TX),   MP_ROM_PTR(&pin_GPIO21) }, // 28: GPIO21/U0TXD
+    { MP_ROM_QSTR(MP_QSTR_IO21), MP_ROM_PTR(&pin_GPIO21) },
     // 29: XTAL_N
     // 30: XTAL_P
     // 31: VDDA
