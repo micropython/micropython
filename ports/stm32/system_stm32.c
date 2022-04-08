@@ -239,10 +239,19 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
     RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    #if defined(STM32H7)
-    RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
+
+    #if defined(MICROPY_HW_RCC_CSI_STATE)
+    RCC_OscInitStruct.CSIState = MICROPY_HW_RCC_CSI_STATE;
+    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_CSI;
     #endif
+
+    #if defined(MICROPY_HW_RCC_HSI48_STATE)
+    RCC_OscInitStruct.HSI48State = MICROPY_HW_RCC_HSI48_STATE;
+    RCC_OscInitStruct.OscillatorType |= RCC_OSCILLATORTYPE_HSI48;
+    #endif
+
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
+
     #elif defined(STM32L4)
 
     #if MICROPY_HW_CLK_USE_HSE
@@ -370,6 +379,7 @@ MP_WEAK void SystemClock_Config(void) {
     RCC_ClkInitStruct.APB1CLKDivider = MICROPY_HW_CLK_APB1_DIV;
     RCC_ClkInitStruct.APB2CLKDivider = MICROPY_HW_CLK_APB2_DIV;
     #elif defined(STM32H7)
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.AHBCLKDivider = MICROPY_HW_CLK_AHB_DIV;
     RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
@@ -383,10 +393,20 @@ MP_WEAK void SystemClock_Config(void) {
         __fatal_error("HAL_RCC_OscConfig");
     }
 
-    #if defined(STM32H7)
-    /* PLL3 for USB Clock */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
-    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
+    #if defined(MICROPY_HW_CLK_PLL2M)
+    // PLL2 configuration.
+    PeriphClkInitStruct.PLL2.PLL2M = MICROPY_HW_CLK_PLL2M;
+    PeriphClkInitStruct.PLL2.PLL2N = MICROPY_HW_CLK_PLL2N;
+    PeriphClkInitStruct.PLL2.PLL2P = MICROPY_HW_CLK_PLL2P;
+    PeriphClkInitStruct.PLL2.PLL2Q = MICROPY_HW_CLK_PLL2Q;
+    PeriphClkInitStruct.PLL2.PLL2R = MICROPY_HW_CLK_PLL2R;
+    PeriphClkInitStruct.PLL2.PLL2RGE = MICROPY_HW_CLK_PLL2VCI;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = MICROPY_HW_CLK_PLL2VCO;
+    PeriphClkInitStruct.PLL2.PLL2FRACN = MICROPY_HW_CLK_PLL2FRAC;
+    #endif
+
+    #if defined(MICROPY_HW_CLK_PLL3M)
+    // PLL3 configuration.
     PeriphClkInitStruct.PLL3.PLL3M = MICROPY_HW_CLK_PLL3M;
     PeriphClkInitStruct.PLL3.PLL3N = MICROPY_HW_CLK_PLL3N;
     PeriphClkInitStruct.PLL3.PLL3P = MICROPY_HW_CLK_PLL3P;
@@ -395,10 +415,72 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.PLL3.PLL3RGE = MICROPY_HW_CLK_PLL3VCI;
     PeriphClkInitStruct.PLL3.PLL3VCOSEL = MICROPY_HW_CLK_PLL3VCO;
     PeriphClkInitStruct.PLL3.PLL3FRACN = MICROPY_HW_CLK_PLL3FRAC;
+    #endif
+
+    #if defined(STM32H7)
+
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+    #if defined(MICROPY_HW_RCC_USB_CLKSOURCE)
+    PeriphClkInitStruct.UsbClockSelection = MICROPY_HW_RCC_USB_CLKSOURCE;
+    #else
+    // Use PLL3 for USB clock source by default.
+    PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_RTC_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_RTC;
+    PeriphClkInitStruct.RTCClockSelection = MICROPY_HW_RCC_RTC_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_RNG_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_RNG;
+    PeriphClkInitStruct.RngClockSelection = MICROPY_HW_RCC_RNG_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_FMC_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_FMC;
+    PeriphClkInitStruct.FmcClockSelection = MICROPY_HW_RCC_FMC_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_ADC_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_ADC;
+    PeriphClkInitStruct.AdcClockSelection = MICROPY_HW_RCC_ADC_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_SDMMC_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_SDMMC;
+    PeriphClkInitStruct.SdmmcClockSelection = MICROPY_HW_RCC_SDMMC_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_FDCAN_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_FDCAN;
+    PeriphClkInitStruct.FdcanClockSelection = MICROPY_HW_RCC_FDCAN_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_QSPI_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_QSPI;
+    PeriphClkInitStruct.QspiClockSelection = MICROPY_HW_RCC_QSPI_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_SPI123_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_SPI123;
+    PeriphClkInitStruct.Spi123ClockSelection = MICROPY_HW_RCC_SPI123_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_I2C123_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_I2C123;
+    PeriphClkInitStruct.I2c123ClockSelection = MICROPY_HW_RCC_I2C123_CLKSOURCE;
+    #endif
+
+    #if defined(MICROPY_HW_RCC_SPI45_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_SPI45;
+    PeriphClkInitStruct.Spi45ClockSelection = MICROPY_HW_RCC_SPI45_CLKSOURCE;
+    #endif
+
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         __fatal_error("HAL_RCCEx_PeriphCLKConfig");
     }
-    #endif
+    #endif  // defined(STM32H7)
 
     #if defined(STM32F7)
     /* Activate the OverDrive to reach the 200 MHz Frequency */
