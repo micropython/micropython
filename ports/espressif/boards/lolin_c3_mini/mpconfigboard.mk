@@ -1,5 +1,5 @@
-USB_VID = 0x303A
-USB_PID = 0x80C3
+USB_VID = 0x303A # TODO: I Assume this is Wemos, need to check
+USB_PID = 0x80C3 # TODO: Does this board have a new PID?
 USB_PRODUCT = "C3 Mini"
 USB_MANUFACTURER = "Lolin"
 

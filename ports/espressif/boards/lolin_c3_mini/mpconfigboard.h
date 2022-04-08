@@ -29,9 +29,13 @@
 #define MICROPY_HW_BOARD_NAME       "LOLIN_C3_MINI" // from Wemos MP
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FH4" // from Wemos MP
 
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO10) // no I2C labels on S2 Mini, def from Wemos MP
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8) // no I2C labels on S2 Mini, def from Wemos MP
+// From Wemos C3 Mini Schematic
+// https://www.wemos.cc/en/latest/_static/files/sch_c3_mini_v1.0.0.pdf
+// And MP Config
+// https://github.com/micropython/micropython/blob/master/ports/esp32/boards/LOLIN_C3_MINI
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO10)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO2)   // no SPI labels on S2 Mini, def from Wemos MP
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO4) // no SPI labels on S2 Mini, def from Wemos MP
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO3)  // no SPI labels on S2 Mini, def from Wemos MP
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO4)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO3)
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO2)
