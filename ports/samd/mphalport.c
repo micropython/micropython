@@ -27,23 +27,55 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/stream.h"
+#include "shared/runtime/interrupt_char.h"
 #include "samd_soc.h"
 #include "tusb.h"
 
-#if MICROPY_KBD_EXCEPTION
-
-void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    (void)itf;
-    (void)wanted_char;
-    tud_cdc_read_char(); // discard interrupt char
-    mp_sched_keyboard_interrupt();
-}
-
-void mp_hal_set_interrupt_char(int c) {
-    tud_cdc_set_wanted_char(c);
-}
-
+#ifndef MICROPY_HW_STDIN_BUFFER_LEN
+#define MICROPY_HW_STDIN_BUFFER_LEN 256
 #endif
+
+STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
+
+uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
+
+void poll_cdc_interfaces(void) {
+    // any CDC interfaces left to poll?
+    if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
+        for (uint8_t itf = 0; itf < 8; ++itf) {
+            if (cdc_itf_pending & (1 << itf)) {
+                tud_cdc_rx_cb(itf);
+                if (!cdc_itf_pending) {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void tud_cdc_rx_cb(uint8_t itf) {
+    // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
+    // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
+    cdc_itf_pending &= ~(1 << itf);
+    for (uint32_t bytes_avail = tud_cdc_n_available(itf); bytes_avail > 0; --bytes_avail) {
+        if (ringbuf_free(&stdin_ringbuf)) {
+            int data_char = tud_cdc_read_char();
+            #if MICROPY_KBD_EXCEPTION
+            if (data_char == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else {
+                ringbuf_put(&stdin_ringbuf, data_char);
+            }
+            #else
+            ringbuf_put(&stdin_ringbuf, data_char);
+            #endif
+        } else {
+            cdc_itf_pending |= (1 << itf);
+            return;
+        }
+    }
+}
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     ms += 1;
@@ -63,7 +95,11 @@ void mp_hal_delay_us(mp_uint_t us) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    if (tud_cdc_connected() && tud_cdc_available()) {
+    poll_cdc_interfaces();
+    if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+    if (USARTx->USART.INTFLAG.bit.RXC) {
         ret |= MP_STREAM_POLL_RD;
     }
     return ret;
@@ -74,12 +110,11 @@ int mp_hal_stdin_rx_chr(void) {
         if (USARTx->USART.INTFLAG.bit.RXC) {
             return USARTx->USART.DATA.bit.DATA;
         }
-        if (tud_cdc_connected() && tud_cdc_available()) {
-            uint8_t buf[1];
-            uint32_t count = tud_cdc_read(buf, sizeof(buf));
-            if (count) {
-                return buf[0];
-            }
+
+        poll_cdc_interfaces();
+        int c = ringbuf_get(&stdin_ringbuf);
+        if (c != -1) {
+            return c;
         }
         __WFI();
     }

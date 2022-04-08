@@ -41,13 +41,18 @@ void mp_hal_set_interrupt_char(int c);
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
+
 static inline mp_uint_t mp_hal_ticks_us(void) {
     return systick_ms * 1000;
 }
+
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
+static inline uint64_t mp_hal_time_ns(void) {
+    return systick_ms * 1000000;
+}
 // C-level pin HAL
 
 #include "py/obj.h"
