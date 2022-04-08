@@ -62,6 +62,11 @@ import struct
 sys.path.append(sys.path[0] + "/../py")
 import makeqstrdata as qstrutil
 
+# Threshold of str length below which it will be turned into a qstr when freezing.
+# This helps to reduce frozen code size because qstrs are more efficient to encode
+# as objects than full mp_obj_str_t instances.
+PERSISTENT_STR_INTERN_THRESHOLD = 25
+
 
 class MPYReadError(Exception):
     def __init__(self, filename, msg):
@@ -1187,6 +1192,9 @@ def read_obj(reader, segments):
             reader.read_byte()  # read and discard null terminator
         if obj_type == MP_PERSISTENT_OBJ_STR:
             obj = str_cons(buf, "utf8")
+            if len(obj) < PERSISTENT_STR_INTERN_THRESHOLD:
+                if not global_qstrs.find_by_str(obj):
+                    global_qstrs.add(obj)
         elif obj_type == MP_PERSISTENT_OBJ_BYTES:
             obj = buf
         elif obj_type == MP_PERSISTENT_OBJ_INT:
