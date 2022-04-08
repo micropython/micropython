@@ -24,6 +24,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A4), MP_ROM_PTR(&pin_GPIO4) },    // 9: GPIO4/A4/FSPIHD/MTMS
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO4) },  // mpboardconfig.h
     { MP_ROM_QSTR(MP_QSTR_IO5), MP_ROM_PTR(&pin_GPIO5) },   // 10: GPIO5/A2_0/FSPIWP/MTDI
+    { MP_ROM_QSTR(MP_QSTR_A5), MP_ROM_PTR(&pin_GPIO5) },    // Board screen has A5, Schematic has A2_0 (huh?)
     // 11: VDD3P3_RTC
     { MP_ROM_QSTR(MP_QSTR_IO6), MP_ROM_PTR(&pin_GPIO6) },   // 12: GPIO6/FSPICLK/MTCK
     { MP_ROM_QSTR(MP_QSTR_LED),  MP_ROM_PTR(&pin_GPIO7) },  // mpboardconfig.h
