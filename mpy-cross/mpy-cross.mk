@@ -8,7 +8,7 @@ include ../py/mkenv.mk
 
 ifeq ($(OS),Windows_NT)
 # Detect a MINGW32 build, and change the name of the final executable.
-PROG ?= mpy-cross.exe
+PROG ?= mpy-cross
 else
 PROG ?= mpy-cross
 endif
