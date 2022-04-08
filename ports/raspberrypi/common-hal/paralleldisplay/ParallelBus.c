@@ -67,9 +67,13 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     common_hal_digitalio_digitalinout_construct(&self->chip_select, chip_select);
     common_hal_digitalio_digitalinout_switch_to_output(&self->chip_select, true, DRIVE_MODE_PUSH_PULL);
 
-    self->read.base.type = &digitalio_digitalinout_type;
-    common_hal_digitalio_digitalinout_construct(&self->read, read);
-    common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
+    self->read.base.type = &mp_type_NoneType;
+    if (read != NULL) {
+        self->read.base.type = &digitalio_digitalinout_type;
+        common_hal_digitalio_digitalinout_construct(&self->read, read);
+        common_hal_digitalio_digitalinout_switch_to_output(&self->read, true, DRIVE_MODE_PUSH_PULL);
+        never_reset_pin_number(read->number);
+    }
 
     self->data0_pin = data_pin;
     self->write = write_pin;
@@ -86,13 +90,12 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
     never_reset_pin_number(command->number);
     never_reset_pin_number(chip_select->number);
     never_reset_pin_number(write_pin);
-    never_reset_pin_number(read->number);
     for (uint8_t i = 0; i < 8; i++) {
         never_reset_pin_number(data_pin + i);
     }
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
-        parallel_program, sizeof(parallel_program) / sizeof(parallel_program[0]),
+        parallel_program, MP_ARRAY_SIZE(parallel_program),
         frequency * 2, // frequency multiplied by 2 as 2 PIO instructions
         NULL, 0, // init
         data0, 8, 0, 255, // first out pin, # out pins
@@ -106,7 +109,8 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
         false, // wait for TX stall
         false, 32, true, // RX setting we don't use
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        0, -1); // wrap settings
 
     common_hal_rp2pio_statemachine_never_reset(&self->state_machine);
 }
@@ -121,8 +125,12 @@ void common_hal_paralleldisplay_parallelbus_deinit(paralleldisplay_parallelbus_o
     reset_pin_number(self->command.pin->number);
     reset_pin_number(self->chip_select.pin->number);
     reset_pin_number(self->write);
-    reset_pin_number(self->read.pin->number);
-    reset_pin_number(self->reset.pin->number);
+    if (self->read.base.type != &mp_type_NoneType) {
+        reset_pin_number(self->read.pin->number);
+    }
+    if (self->reset.base.type != &mp_type_NoneType) {
+        reset_pin_number(self->reset.pin->number);
+    }
 }
 
 bool common_hal_paralleldisplay_parallelbus_reset(mp_obj_t obj) {

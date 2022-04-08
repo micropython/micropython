@@ -149,5 +149,5 @@ void init_usb_hardware(void) {
 }
 
 void OTG_FS_IRQHandler(void) {
-    usb_irq_handler();
+    usb_irq_handler(0);
 }

@@ -3,6 +3,8 @@
 
 // Core Feather Pins
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
+    CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
+
     { MP_ROM_QSTR(MP_QSTR_ENABLE_3V3), MP_ROM_PTR(&pin_PE04) },
     { MP_ROM_QSTR(MP_QSTR_DISCHARGE_3V3), MP_ROM_PTR(&pin_PE06) },
     { MP_ROM_QSTR(MP_QSTR_DISABLE_DISCHARGING), MP_ROM_TRUE },

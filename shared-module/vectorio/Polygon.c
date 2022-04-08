@@ -61,11 +61,12 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
 
 
 
-void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t points_list) {
+void common_hal_vectorio_polygon_construct(vectorio_polygon_t *self, mp_obj_t points_list, uint16_t color_index) {
     VECTORIO_POLYGON_DEBUG("%p polygon_construct: ", self);
     self->points_list = NULL;
     self->len = 0;
     self->on_dirty.obj = NULL;
+    self->color_index = color_index + 1;
     _clobber_points_list(self, points_list);
     VECTORIO_POLYGON_DEBUG("\n");
 }
@@ -181,10 +182,23 @@ uint32_t common_hal_vectorio_polygon_get_pixel(void *obj, int16_t x, int16_t y) 
         x1 = x2;
         y1 = y2;
     }
-    return winding_number == 0 ? 0 : 1;
+    return winding_number == 0 ? 0 : self->color_index;
 }
 
 mp_obj_t common_hal_vectorio_polygon_get_draw_protocol(void *polygon) {
     vectorio_polygon_t *self = polygon;
     return self->draw_protocol_instance;
+}
+
+uint16_t common_hal_vectorio_polygon_get_color_index(void *obj) {
+    vectorio_polygon_t *self = obj;
+    return self->color_index - 1;
+}
+
+void common_hal_vectorio_polygon_set_color_index(void *obj, uint16_t color_index) {
+    vectorio_polygon_t *self = obj;
+    self->color_index = abs(color_index + 1);
+    if (self->on_dirty.obj != NULL) {
+        self->on_dirty.event(self->on_dirty.obj);
+    }
 }

@@ -33,6 +33,8 @@
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
+// TODO: Switch this to using DEBUG_UART.
+
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
 // static LPUART_Type *uart_instance = LPUART2; // feather 1062
@@ -52,7 +54,7 @@ static uint32_t UartSrcFreq(void) {
     return freq;
 }
 
-void serial_init(void) {
+void port_serial_init(void) {
     lpuart_config_t config;
 
     LPUART_GetDefaultConfig(&config);
@@ -63,11 +65,11 @@ void serial_init(void) {
     LPUART_Init(uart_instance, &config, UartSrcFreq());
 }
 
-bool serial_connected(void) {
+bool port_serial_connected(void) {
     return true;
 }
 
-char serial_read(void) {
+char port_serial_read(void) {
     uint8_t data;
 
     LPUART_ReadBlocking(uart_instance, &data, sizeof(data));
@@ -75,15 +77,11 @@ char serial_read(void) {
     return data;
 }
 
-bool serial_bytes_available(void) {
+bool port_serial_bytes_available(void) {
     return LPUART_GetStatusFlags(uart_instance) & kLPUART_RxDataRegFullFlag;
 }
 
-void serial_write(const char *text) {
-    LPUART_WriteBlocking(uart_instance, (uint8_t *)text, strlen(text));
-}
-
-void serial_write_substring(const char *text, uint32_t len) {
+void port_serial_write_substring(const char *text, uint32_t len) {
     if (len == 0) {
         return;
     }

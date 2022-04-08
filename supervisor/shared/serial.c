@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <string.h>
 
 #include "py/mpconfig.h"
@@ -49,7 +50,8 @@
  * Enabling on another platform will cause a crash.
  */
 
-#if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+#if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
+#include "py/mpprint.h"
 #include "shared-bindings/busio/UART.h"
 busio_uart_obj_t debug_uart;
 byte buf_array[64];
@@ -59,22 +61,81 @@ byte buf_array[64];
 bool tud_vendor_connected(void);
 #endif
 
+#if defined(CIRCUITPY_DEBUG_UART_TX)
+STATIC void debug_uart_print_strn(void *env, const char *str, size_t len) {
+    (void)env;
+    int uart_errcode;
+    common_hal_busio_uart_write(&debug_uart, (const uint8_t *)str, len, &uart_errcode);
+}
+
+const mp_print_t debug_uart_print = {NULL, debug_uart_print_strn};
+#endif
+
+int debug_uart_printf(const char *fmt, ...) {
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
+    // Skip prints that occur before debug serial is started. It's better than
+    // crashing.
+    if (common_hal_busio_uart_deinited(&debug_uart)) {
+        return 0;
+    }
+    va_list ap;
+    va_start(ap, fmt);
+    int ret = mp_vprintf(&debug_uart_print, fmt, ap);
+    va_end(ap);
+    return ret;
+    #else
+    return 0;
+    #endif
+}
+
+MP_WEAK void port_serial_init(void) {
+}
+
+MP_WEAK bool port_serial_connected(void) {
+    return false;
+}
+
+MP_WEAK char port_serial_read(void) {
+    return -1;
+}
+
+MP_WEAK bool port_serial_bytes_available(void) {
+    return false;
+}
+
+MP_WEAK void port_serial_write_substring(const char *text, uint32_t length) {
+    (void)text;
+    (void)length;
+}
+
 void serial_early_init(void) {
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
     debug_uart.base.type = &busio_uart_type;
 
-    const mcu_pin_obj_t *rx = MP_OBJ_TO_PTR(DEBUG_UART_RX);
-    const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(DEBUG_UART_TX);
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
+    const mcu_pin_obj_t *rx = MP_OBJ_TO_PTR(CIRCUITPY_DEBUG_UART_RX);
+    #else
+    const mcu_pin_obj_t *rx = NULL;
+    #endif
+
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
+    const mcu_pin_obj_t *tx = MP_OBJ_TO_PTR(CIRCUITPY_DEBUG_UART_TX);
+    #else
+    const mcu_pin_obj_t *tx = NULL;
+    #endif
 
     common_hal_busio_uart_construct(&debug_uart, tx, rx, NULL, NULL, NULL,
         false, 115200, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, 64,
         buf_array, true);
     common_hal_busio_uart_never_reset(&debug_uart);
+
+    // Do an initial print so that we can confirm the serial output is working.
+    debug_uart_printf("Serial debug setup\r\n");
     #endif
 }
 
 void serial_init(void) {
-    // USB serial is set up separately.
+    port_serial_init();
 }
 
 bool serial_connected(void) {
@@ -84,7 +145,7 @@ bool serial_connected(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX) && defined(CIRCUITPY_DEBUG_UART_RX)
     return true;
     #endif
 
@@ -103,6 +164,10 @@ bool serial_connected(void) {
         return true;
     }
     #endif
+
+    if (port_serial_connected()) {
+        return true;
+    }
     return false;
 }
 
@@ -115,7 +180,7 @@ char serial_read(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
     if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
         int uart_errcode;
         char text;
@@ -138,6 +203,10 @@ char serial_read(void) {
     #if CIRCUITPY_USB
     return (char)tud_cdc_read_char();
     #endif
+
+    if (port_serial_bytes_available() > 0) {
+        return port_serial_read();
+    }
     return -1;
 }
 
@@ -148,7 +217,7 @@ bool serial_bytes_available(void) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_RX)
     if (common_hal_busio_uart_rx_characters_available(&debug_uart)) {
         return true;
     }
@@ -170,6 +239,10 @@ bool serial_bytes_available(void) {
         return true;
     }
     #endif
+
+    if (port_serial_bytes_available() > 0) {
+        return true;
+    }
     return false;
 }
 
@@ -188,7 +261,7 @@ void serial_write_substring(const char *text, uint32_t length) {
     }
     #endif
 
-    #if defined(DEBUG_UART_TX) && defined(DEBUG_UART_RX)
+    #if defined(CIRCUITPY_DEBUG_UART_TX)
     int uart_errcode;
 
     common_hal_busio_uart_write(&debug_uart, (const uint8_t *)text, length, &uart_errcode);
@@ -215,6 +288,8 @@ void serial_write_substring(const char *text, uint32_t length) {
         usb_background();
     }
     #endif
+
+    port_serial_write_substring(text, length);
 }
 
 void serial_write(const char *text) {

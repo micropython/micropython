@@ -45,8 +45,10 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#if CIRCUITPY_REPL_LOGO
 extern uint32_t blinka_bitmap_data[];
 extern displayio_bitmap_t blinka_bitmap;
+#endif
 extern displayio_group_t circuitpython_splash;
 
 #if CIRCUITPY_TERMINALIO
@@ -62,8 +64,13 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     displayio_tilegrid_t *grid = &supervisor_terminal_text_grid;
     bool tall = height_px > width_px;
     bool reset_tiles = false;
+    #if CIRCUITPY_REPL_LOGO
     uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
     uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px;
+    #else
+    uint16_t terminal_width_px = width_px;
+    uint16_t terminal_height_px = height_px;
+    #endif
     uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
     // determine scale based on h
     if (width_in_tiles < 80) {
@@ -106,8 +113,13 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     if (reset_tiles) {
         uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
+        #if CIRCUITPY_REPL_LOGO
         grid->y = tall ? blinka_bitmap.height : 0;
         grid->x = tall ? 0 : blinka_bitmap.width;
+        #else
+        grid->y = 0;
+        grid->x = 0;
+        #endif
         grid->top_left_y = 0;
         if (remaining_pixels > 0) {
             grid->y -= (grid->tile_height - remaining_pixels);
@@ -167,6 +179,7 @@ void supervisor_display_move_memory(void) {
     #endif
 }
 
+#if CIRCUITPY_REPL_LOGO
 uint32_t blinka_bitmap_data[32] = {
     0x00000011, 0x11000000,
     0x00000111, 0x53100000,
@@ -281,8 +294,10 @@ displayio_tilegrid_t blinka_sprite = {
     .inline_tiles = true,
     .in_group = true
 };
+#endif
 
 #if CIRCUITPY_TERMINALIO
+#if CIRCUITPY_REPL_LOGO
 mp_obj_t members[] = { &blinka_sprite, &supervisor_terminal_text_grid, };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
@@ -291,6 +306,16 @@ mp_obj_list_t splash_children = {
     .items = members,
 };
 #else
+mp_obj_t members[] = { &supervisor_terminal_text_grid, };
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 1,
+    .len = 1,
+    .items = members,
+};
+#endif
+#else
+#if CIRCUITPY_REPL_LOGO
 mp_obj_t members[] = { &blinka_sprite };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
@@ -298,6 +323,15 @@ mp_obj_list_t splash_children = {
     .len = 1,
     .items = members,
 };
+#else
+mp_obj_t members[] = {};
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 0,
+    .len = 0,
+    .items = members,
+};
+#endif
 #endif
 
 displayio_group_t circuitpython_splash = {

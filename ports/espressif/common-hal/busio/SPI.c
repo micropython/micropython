@@ -205,11 +205,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     if (len == 0) {
         return true;
     }
-    // Other than the read special case, stop transfers that don't have a pin/array match
-    if (!self->MOSI && (data_out != data_in)) {
+    if (self->MOSI == NULL && data_out != NULL) {
         mp_raise_ValueError(translate("No MOSI Pin"));
     }
-    if (!self->MISO && data_in) {
+    if (self->MISO == NULL && data_in != NULL) {
         mp_raise_ValueError(translate("No MISO Pin"));
     }
 

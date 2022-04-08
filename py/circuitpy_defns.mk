@@ -174,6 +174,10 @@ ifeq ($(CIRCUITPY_FREQUENCYIO),1)
 SRC_PATTERNS += frequencyio/%
 endif
 
+ifeq ($(CIRCUITPY_FUTURE),1)
+SRC_PATTERNS += __future__/%
+endif
+
 ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
 SRC_PATTERNS += gamepadshift/%
 endif
@@ -209,6 +213,9 @@ SRC_PATTERNS += memorymonitor/%
 endif
 ifeq ($(CIRCUITPY_MICROCONTROLLER),1)
 SRC_PATTERNS += microcontroller/%
+endif
+ifeq ($(CIRCUITPY_MDNS),1)
+SRC_PATTERNS += mdns/%
 endif
 ifeq ($(CIRCUITPY_NEOPIXEL_WRITE),1)
 SRC_PATTERNS += neopixel_write/%
@@ -312,6 +319,9 @@ endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
+ifeq ($(CIRCUITPY_USB_HOST),1)
+SRC_PATTERNS += usb_host/% usb/%
+endif
 ifeq ($(CIRCUITPY_USB_MIDI),1)
 SRC_PATTERNS += usb_midi/%
 endif
@@ -320,6 +330,9 @@ SRC_PATTERNS += usb_vendor/%
 endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
+endif
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_PATTERNS += zlib/%
 endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
@@ -394,6 +407,9 @@ SRC_COMMON_HAL_ALL = \
 	microcontroller/Pin.c \
 	microcontroller/Processor.c \
 	microcontroller/__init__.c \
+	mdns/__init__.c \
+	mdns/Server.c \
+	mdns/RemoteService.c \
 	neopixel_write/__init__.c \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
@@ -422,6 +438,8 @@ SRC_COMMON_HAL_ALL = \
 	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
+	usb_host/__init__.c \
+	usb_host/Port.c \
 	watchdog/WatchDogMode.c \
 	watchdog/WatchDogTimer.c \
 	watchdog/__init__.c \
@@ -451,6 +469,7 @@ $(filter $(SRC_PATTERNS), \
 	_bleio/Attribute.c \
 	_bleio/ScanEntry.c \
 	_eve/__init__.c \
+	__future__/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
 	countio/Edge.c \
@@ -577,7 +596,11 @@ SRC_SHARED_MODULE_ALL = \
 	time/__init__.c \
 	traceback/__init__.c \
 	uheap/__init__.c \
+	usb/__init__.c \
+	usb/core/__init__.c \
+	usb/core/Device.c \
 	ustack/__init__.c \
+	zlib/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
@@ -634,10 +657,22 @@ SRC_MOD += $(addprefix lib/protomatter/src/, \
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
 endif
 
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_MOD += $(addprefix lib/uzlib/, \
+	tinflate.c \
+	tinfzlib.c \
+	tinfgzip.c \
+	adler32.c \
+	crc32.c \
+)
+$(BUILD)/lib/uzlib/tinflate.o: CFLAGS += -Wno-missing-braces -Wno-missing-prototypes
+endif
+
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
 	displayio/display_core.c \
+	usb/utf16le.c \
 )
 
 SRC_COMMON_HAL_INTERNAL = \

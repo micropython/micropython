@@ -14,14 +14,14 @@
 //|     """Count the number of rising- and/or falling-edge transitions on a given pin.
 //|     """
 //|
-//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull]) -> None:
+//|     def __init__(self, pin: microcontroller.Pin, *, edge: Edge = Edge.FALL, pull: Optional[digitalio.Pull] = None) -> None:
 //|         """Create a Counter object associated with the given pin that counts
 //|         rising- and/or falling-edge transitions. At least one of ``rise`` and ``fall`` must be True.
 //|         The default is to count only falling edges, and is for historical backward compatibility.
 //|
 //|         :param ~microcontroller.Pin pin: pin to monitor
-//|         :param Edge: which edge transitions to count
-//|         :param digitalio.Pull: enable a pull-up or pull-down if not None
+//|         :param Edge edge: which edge transitions to count
+//|         :param Optional[digitalio.Pull] pull: enable a pull-up or pull-down if not None
 //|
 //|
 //|         For example::
@@ -52,8 +52,8 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj);
     const countio_edge_t edge = validate_edge(args[ARG_edge].u_obj, MP_QSTR_edge);
     const digitalio_pull_t pull = validate_pull(args[ARG_pull].u_obj, MP_QSTR_pull);
-
-    countio_counter_obj_t *self = m_new_obj(countio_counter_obj_t);
+    // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
+    countio_counter_obj_t *self = m_new_ll_obj(countio_counter_obj_t);
     self->base.type = &countio_counter_type;
 
     common_hal_countio_counter_construct(self, pin, edge, pull);

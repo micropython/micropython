@@ -437,7 +437,7 @@ void supervisor_run_background_tasks_if_tick(void);
 
 // CIRCUITPY_AUTORELOAD_DELAY_MS = 0 will completely disable autoreload.
 #ifndef CIRCUITPY_AUTORELOAD_DELAY_MS
-#define CIRCUITPY_AUTORELOAD_DELAY_MS 500
+#define CIRCUITPY_AUTORELOAD_DELAY_MS 750
 #endif
 
 #ifndef CIRCUITPY_FILESYSTEM_FLUSH_INTERVAL_MS
@@ -480,7 +480,26 @@ void supervisor_run_background_tasks_if_tick(void);
 #define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
 #endif
 
+// Display the Blinka logo in the REPL on displayio displays.
+#ifndef CIRCUITPY_REPL_LOGO
+#define CIRCUITPY_REPL_LOGO (1)
+#endif
+
 // USB settings
+
+// Debug level for TinyUSB. Only outputs over debug UART so it doesn't cause
+// additional USB logging.
+#ifndef CIRCUITPY_DEBUG_TINYUSB
+#define CIRCUITPY_DEBUG_TINYUSB 0
+#endif
+
+#ifndef CIRCUITPY_USB_DEVICE_INSTANCE
+#define CIRCUITPY_USB_DEVICE_INSTANCE 0
+#endif
+
+#ifndef CIRCUITPY_USB_HOST_INSTANCE
+#define CIRCUITPY_USB_HOST_INSTANCE -1
+#endif
 
 // If the port requires certain USB endpoint numbers, define these in mpconfigport.h.
 

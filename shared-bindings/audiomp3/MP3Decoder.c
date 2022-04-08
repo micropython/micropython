@@ -44,6 +44,20 @@
 //|         :param typing.BinaryIO file: Already opened mp3 file
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
+//|         Playback of mp3 audio is CPU intensive, and the
+//|         exact limit depends on many factors such as the particular
+//|         microcontroller, SD card or flash performance, and other
+//|         code in use such as displayio. If playback is garbled,
+//|         skips, or plays as static, first try using a "simpler" mp3:
+//|
+//|           * Use constant bit rate (CBR) not VBR or ABR (variable or average bit rate) when encoding your mp3 file
+//|           * Use a lower sample rate (e.g., 11.025kHz instead of 48kHz)
+//|           * Use a lower bit rate (e.g., 32kbit/s instead of 256kbit/s)
+//|
+//|         Reduce activity taking place at the same time as
+//|         mp3 playback. For instance, only update small portions of a
+//|         displayio screen if audio is playing. Disable auto-refresh
+//|         and explicitly call refresh.
 //|
 //|         Playing a mp3 file from flash::
 //|

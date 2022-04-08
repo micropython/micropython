@@ -30,15 +30,46 @@
 #include "components/driver/include/driver/uart.h"
 
 #include "mpconfigport.h"
+#include "shared/readline/readline.h"
 #include "shared/runtime/interrupt_char.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/translate.h"
 #include "supervisor/shared/tick.h"
 
 uint8_t never_reset_uart_mask = 0;
+
+static void uart_event_task(void *param) {
+    busio_uart_obj_t *self = param;
+    uart_event_t event;
+    while (true) {
+        if (xQueueReceive(self->event_queue, &event, portMAX_DELAY)) {
+            switch (event.type) {
+                case UART_PATTERN_DET:
+                    // When the debug uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
+                    if (self->is_debug) {
+                        port_wake_main_task();
+                        if (mp_interrupt_char == CHAR_CTRL_C) {
+                            uart_flush(self->uart_num);
+                            mp_sched_keyboard_interrupt();
+                        }
+                    }
+                    break;
+                case UART_DATA:
+                    // When the debug uart receives any key, wake the main task
+                    if (self->is_debug) {
+                        port_wake_main_task();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
 
 void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
@@ -125,10 +156,26 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     uint8_t rx_threshold = UART_FIFO_LEN - 8;
     // Install the driver before we change the settings.
-    if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 0, NULL, 0) != ESP_OK ||
+    if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
         mp_raise_ValueError(translate("Could not initialize UART"));
     }
+    // On the debug uart, enable pattern detection to look for CTRL+C
+    #ifdef CIRCUITPY_DEBUG_UART_RX
+    if (rx == CIRCUITPY_DEBUG_UART_RX) {
+        self->is_debug = true;
+        uart_enable_pattern_det_baud_intr(self->uart_num, CHAR_CTRL_C, 1, 1, 0, 0);
+    }
+    #endif
+    // Start a task to listen for uart events
+    xTaskCreatePinnedToCore(
+        uart_event_task,
+        "uart_event_task",
+        configMINIMAL_STACK_SIZE,
+        self,
+        CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
+        &self->event_task,
+        xPortGetCoreID());
     uart_set_hw_flow_ctrl(self->uart_num, flow_control, rx_threshold);
 
     // Set baud rate
@@ -230,6 +277,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     if (common_hal_busio_uart_deinited(self)) {
         return;
     }
+    vTaskDelete(self->event_task);
     uart_driver_delete(self->uart_num);
 
     common_hal_reset_pin(self->rx_pin);

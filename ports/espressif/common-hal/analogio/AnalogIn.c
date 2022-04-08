@@ -55,6 +55,10 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     }
     common_hal_mcu_pin_claim(pin);
     self->pin = pin;
+    // Pull-ups are enabled by default for power-saving reasons on quiescent pins.
+    // Turn off the pull-up as soon as we know the pin will be used for analog reads,
+    // since it may take a while for the voltage to stabilize if the input is high-impedance.
+    gpio_pullup_dis(pin->number);
 }
 
 bool common_hal_analogio_analogin_deinited(analogio_analogin_obj_t *self) {

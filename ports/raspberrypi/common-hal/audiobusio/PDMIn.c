@@ -63,7 +63,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
 
     // Use the state machine to manage pins.
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
-        pdmin, sizeof(pdmin) / sizeof(pdmin[0]),
+        pdmin, MP_ARRAY_SIZE(pdmin),
         sample_rate * 32 * 2, // Frequency based on sample rate
         NULL, 0,
         NULL, 1, 0, 0xffffffff, // out pin
@@ -78,7 +78,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         false, 32, false, // out settings
         false, // Wait for txstall
         false, 32, true, // in settings
-        false); // Not user-interruptible.
+        false, // Not user-interruptible.
+        0, -1); // wrap settings
 
     uint32_t actual_frequency = common_hal_rp2pio_statemachine_get_frequency(&self->state_machine);
     if (actual_frequency < MIN_MIC_CLOCK) {
