@@ -621,6 +621,11 @@ class CompiledModule:
         elif obj is Ellipsis:
             return "MP_ROM_PTR(&mp_const_ellipsis_obj)"
         elif is_str_type(obj) or is_bytes_type(obj):
+            if len(obj) == 0:
+                if is_str_type(obj):
+                    return "MP_ROM_QSTR(MP_QSTR_)"
+                else:
+                    return "MP_ROM_PTR(&mp_const_empty_bytes_obj)"
             if is_str_type(obj):
                 obj = bytes_cons(obj, "utf8")
                 obj_type = "mp_type_str"
