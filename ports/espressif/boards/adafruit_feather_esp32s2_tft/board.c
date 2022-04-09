@@ -81,7 +81,7 @@ void board_init(void) {
         &pin_GPIO39,    // DC
         &pin_GPIO7,     // CS
         &pin_GPIO40,    // RST
-        10000000,       // baudrate
+        40000000,       // baudrate
         0,              // polarity
         0               // phase
         );
