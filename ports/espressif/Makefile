@@ -310,7 +310,7 @@ $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -DESP32
 SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
 
 # IDF build commands
-IDF_PATH = "$(realpath ./esp-idf)"
+IDF_PATH = $(realpath ./esp-idf)
 # create the directory
 $(BUILD)/esp-idf:
 	$(Q)$(MKDIR) -p $@
