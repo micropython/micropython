@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME "Teensy MM"
+#define MICROPY_HW_BOARD_NAME "SparkFun Teensy MicroMod Processor"
 #define MICROPY_HW_MCU_NAME "IMXRT1062DVL6A"
 
 // If you change this, then make sure to update the linker scripts as well to
