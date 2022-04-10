@@ -137,12 +137,52 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
+
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_t native_tilegrid = mp_obj_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
+
+static void enforce_bitmap_size(mp_obj_t self_in, mp_obj_t bitmap) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    uint16_t bitmap_width;
+    uint16_t bitmap_height;
+    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
+    if (native != MP_OBJ_NULL) {
+        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
+        bitmap_width = bmp->width;
+        bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        bitmap_width = bmp->width;
+        bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        bitmap_width = bmp->width;
+        bitmap_height = bmp->height;
+    } else {
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+    }
+    uint16_t tile_width = self->tile_width;
+    if (tile_width == 0) {
+        tile_width = bitmap_width;
+    }
+    uint16_t tile_height = self->tile_height;
+    if (tile_height == 0) {
+        tile_height = bitmap_height;
+    }
+    if (bitmap_width % tile_width != 0) {
+        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
+    }
+    if (bitmap_height % tile_height != 0) {
+        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
+    }
+}
+
 //|     hidden: bool
 //|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
 //|
@@ -396,6 +436,14 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bit
 
         mp_raise_TypeError(translate("bitmap must be displayio.Bitmap, displayio.Shape, or displayio.OnDiskBitmap"));
     }
+
+    /*if (bitmap->width % self->tile_width != 0) {
+        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
+    }
+    if (bitmap->height % self->tile_height != 0) {
+        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
+    }*/
+    enforce_bitmap_size(self_in, bitmap);
 
     common_hal_displayio_tilegrid_set_bitmap(self, bitmap);
 
