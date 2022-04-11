@@ -57,7 +57,7 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
     prelude->opcodes = ip + n_info + n_cell;
 
     prelude->qstr_block_name_idx = mp_decode_uint_value(ip);
-    for (size_t i = 0; i < 1 + n_pos_args + n_kwonly_args; ++i) {
+    for (size_t i = 0; i < 1 + n_pos_args + n_posonly_args + n_kwonly_args; ++i) {
         ip = mp_decode_uint_skip(ip);
     }
     prelude->line_info = ip;

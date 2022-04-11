@@ -437,7 +437,7 @@ def extract_prelude(bytecode, ip):
 
     # Extract simple_name and argument qstrs (var uints).
     args = []
-    for arg_num in range(1 + n_pos_args + n_kwonly_args):
+    for arg_num in range(1 + n_pos_args + n_posonly_args + n_kwonly_args):
         value = 0
         while True:
             b = local_read_byte()

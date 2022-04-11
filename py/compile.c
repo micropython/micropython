@@ -2883,6 +2883,7 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
         }
         // comes before a slash, so counts as positional-only parameter
         comp->scope_cur->num_posonly_args = comp->scope_cur->num_pos_args;
+        comp->scope_cur->num_pos_args = 0;
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;
