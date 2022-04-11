@@ -190,6 +190,17 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
                 return mp_const_false;
             }
         }
+        #if MICROPY_CPYTHON_COMPAT
+        case MP_BINARY_OP_INPLACE_OR:
+        case MP_BINARY_OP_OR: {
+            if (op == MP_BINARY_OP_OR) {
+                lhs_in = mp_obj_dict_copy(lhs_in);
+            }
+            mp_obj_t dicts[2] = {lhs_in, rhs_in};
+            dict_update(2, dicts, (mp_map_t *)&mp_const_empty_map);
+            return lhs_in;
+        }
+        #endif
         default:
             // op not supported
             return MP_OBJ_NULL;
