@@ -489,7 +489,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = args[0];
 
-    int32_t backlog = 0;
+    int32_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;

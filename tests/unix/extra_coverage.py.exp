@@ -45,8 +45,8 @@ utime           utimeq
 argv            atexit          byteorder       exc_info
 exit            getsizeof       implementation  maxsize
 modules         path            platform        print_exception
-stderr          stdin           stdout          version
-version_info
+ps1             ps2             stderr          stdin
+stdout          tracebacklimit  version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -174,4 +174,9 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+\
+
+X
+'\x1b'
+b'\x00\xff'
 NULL

@@ -621,8 +621,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(&emit->as, ASM_THUMB_OP_CPSIE_I);
         } else if (op == MP_QSTR_push) {
             mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
-            if ((reglist & 0xff00) == 0) {
-                asm_thumb_op16(&emit->as, 0xb400 | reglist);
+            if ((reglist & 0xbf00) == 0) {
+                if ((reglist & (1 << 14)) == 0) {
+                    asm_thumb_op16(&emit->as, 0xb400 | reglist);
+                } else {
+                    // 16-bit encoding for pushing low registers and LR
+                    asm_thumb_op16(&emit->as, 0xb500 | (reglist & 0xff));
+                }
             } else {
                 if (!ARMV7M) {
                     goto unknown_op;
@@ -631,8 +636,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             }
         } else if (op == MP_QSTR_pop) {
             mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
-            if ((reglist & 0xff00) == 0) {
-                asm_thumb_op16(&emit->as, 0xbc00 | reglist);
+            if ((reglist & 0x7f00) == 0) {
+                if ((reglist & (1 << 15)) == 0) {
+                    asm_thumb_op16(&emit->as, 0xbc00 | reglist);
+                } else {
+                    // 16-bit encoding for popping low registers and PC, i.e., returning
+                    asm_thumb_op16(&emit->as, 0xbd00 | (reglist & 0xff));
+                }
             } else {
                 if (!ARMV7M) {
                     goto unknown_op;

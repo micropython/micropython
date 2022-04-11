@@ -39,7 +39,19 @@ _COMMANDS = {
         or any valid device name/path""",
     ),
     "disconnect": (False, False, 0, "disconnect current device"),
-    "mount": (True, False, 1, "mount local directory on device"),
+    "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
+    "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
+    "mount": (
+        True,
+        False,
+        1,
+        """\
+        mount local directory on device
+        options:
+            --unsafe-links, -l
+                follow symbolic links pointing outside of local directory""",
+    ),
+    "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
         False,
         True,
@@ -265,6 +277,27 @@ def do_disconnect(pyb):
     pyb.close()
 
 
+def show_progress_bar(size, total_size):
+    if not sys.stdout.isatty():
+        return
+    verbose_size = 2048
+    bar_length = 20
+    if total_size < verbose_size:
+        return
+    elif size >= total_size:
+        # Clear progress bar when copy completes
+        print("\r" + " " * (20 + bar_length) + "\r", end="")
+    else:
+        progress = size / total_size
+        bar = round(progress * bar_length)
+        print(
+            "\r ... copying {:3.0f}% [{}{}]".format(
+                progress * 100, "#" * bar, "-" * (bar_length - bar)
+            ),
+            end="",
+        )
+
+
 def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
@@ -290,9 +323,13 @@ def do_filesystem(pyb, args):
                 if d not in known_dirs:
                     pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
                     known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
+            pyboard.filesystem_command(
+                pyb,
+                ["cp", "/".join((dir, file)), ":" + dir + "/"],
+                progress_callback=show_progress_bar,
+            )
     else:
-        pyboard.filesystem_command(pyb, args)
+        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar)
     args.clear()
 
 
@@ -434,6 +471,7 @@ def main():
 
     args = sys.argv[1:]
     pyb = None
+    auto_soft_reset = True
     did_action = False
 
     try:
@@ -460,13 +498,19 @@ def main():
             elif cmd == "help":
                 print_help()
                 sys.exit(0)
+            elif cmd == "resume":
+                auto_soft_reset = False
+                continue
+
+            # The following commands need a connection, and either a raw or friendly REPL.
 
             if pyb is None:
                 pyb = do_connect(["auto"])
 
             if need_raw_repl:
                 if not pyb.in_raw_repl:
-                    pyb.enter_raw_repl()
+                    pyb.enter_raw_repl(soft_reset=auto_soft_reset)
+                    auto_soft_reset = False
             else:
                 if pyb.in_raw_repl:
                     pyb.exit_raw_repl()
@@ -476,10 +520,20 @@ def main():
             if cmd == "disconnect":
                 do_disconnect(pyb)
                 pyb = None
+                auto_soft_reset = True
+            elif cmd == "soft-reset":
+                pyb.enter_raw_repl(soft_reset=True)
+                auto_soft_reset = False
             elif cmd == "mount":
+                unsafe_links = False
+                if args[0] == "--unsafe-links" or args[0] == "-l":
+                    args.pop(0)
+                    unsafe_links = True
                 path = args.pop(0)
-                pyb.mount_local(path)
+                pyb.mount_local(path, unsafe_links=unsafe_links)
                 print(f"Local directory {path} is mounted at /remote")
+            elif cmd == "umount":
+                pyb.umount_local()
             elif cmd in ("exec", "eval", "run"):
                 follow = True
                 if args[0] == "--no-follow":

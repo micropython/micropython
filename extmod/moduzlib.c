@@ -78,7 +78,7 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
     o->eof = false;
 
     mp_int_t dict_opt = 0;
-    int dict_sz;
+    uint dict_sz;
     if (n_args > 1) {
         dict_opt = mp_obj_get_int(args[1]);
     }
@@ -95,7 +95,10 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
         header_error:
             mp_raise_ValueError(MP_ERROR_TEXT("compression header"));
         }
-        dict_sz = 1 << dict_opt;
+        // RFC 1950 section 2.2:
+        // CINFO is the base-2 logarithm of the LZ77 window size,
+        // minus eight (CINFO=7 indicates a 32K window size)
+        dict_sz = 1 << (dict_opt + 8);
     } else {
         dict_sz = 1 << -dict_opt;
     }
@@ -117,6 +120,7 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
         o->eof = true;
     }
     if (st < 0) {
+        DEBUG_printf("uncompress error=" INT_FMT "\n", st);
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }

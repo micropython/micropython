@@ -75,7 +75,6 @@ typedef struct _scope_t {
     struct _scope_t *next;
     mp_parse_node_t pn;
     mp_raw_code_t *raw_code;
-    uint16_t source_file; // a qstr
     uint16_t simple_name; // a qstr
     uint16_t scope_flags;  // see runtime0.h
     uint16_t emit_options; // see emitglue.h
@@ -90,7 +89,7 @@ typedef struct _scope_t {
     id_info_t *id_info;
 } scope_t;
 
-scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, qstr source_file, mp_uint_t emit_options);
+scope_t *scope_new(scope_kind_t kind, mp_parse_node_t pn, mp_uint_t emit_options);
 void scope_free(scope_t *scope);
 id_info_t *scope_find_or_add_id(scope_t *scope, qstr qstr, id_info_kind_t kind);
 id_info_t *scope_find(scope_t *scope, qstr qstr);

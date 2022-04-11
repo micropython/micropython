@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy.md"
+        "../deploy_s3.md"
     ],
     "docs": "",
     "features": [

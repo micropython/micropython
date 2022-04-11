@@ -34,6 +34,12 @@
 #include "dma.h"
 #include "irq.h"
 
+// When this option is enabled, the DMA will turn off automatically after
+// a period of inactivity.
+#ifndef MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
+#define MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF (1)
+#endif
+
 #define DMA_IDLE_ENABLED()  (dma_idle.enabled != 0)
 #define DMA_SYSTICK_LOG2    (3)
 #define DMA_SYSTICK_MASK    ((1 << DMA_SYSTICK_LOG2) - 1)
@@ -653,7 +659,9 @@ static const uint8_t dma_irqn[NSTREAM] = {
 static DMA_HandleTypeDef *dma_handle[NSTREAM] = {NULL};
 static uint8_t dma_last_sub_instance[NSTREAM];
 static volatile uint32_t dma_enable_mask = 0;
+#if MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
 volatile dma_idle_count_t dma_idle;
+#endif
 
 #define DMA_INVALID_CHANNEL 0xff    // Value stored in dma_last_channel which means invalid
 
@@ -1082,6 +1090,7 @@ void DMA2_Channel7_IRQHandler(void) {
 
 #endif
 
+#if MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
 static void dma_idle_handler(uint32_t tick);
 
 // Resets the idle counter for the DMA controller associated with dma_id.
@@ -1089,6 +1098,7 @@ static void dma_tickle(dma_id_t dma_id) {
     dma_idle.counter[(dma_id < NSTREAMS_PER_CONTROLLER) ? 0 : 1] = 1;
     systick_enable_dispatch(SYSTICK_DISPATCH_DMA, dma_idle_handler);
 }
+#endif
 
 static void dma_enable_clock(dma_id_t dma_id) {
     // We don't want dma_tick_handler() to turn off the clock right after we
@@ -1143,7 +1153,9 @@ static void dma_disable_clock(dma_id_t dma_id) {
     // We just mark the clock as disabled here, but we don't actually disable it.
     // We wait for the timer to expire first, which means that back-to-back
     // transfers don't have to initialize as much.
+    #if MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
     dma_tickle(dma_id);
+    #endif
     dma_enable_mask &= ~(1 << dma_id);
 }
 
@@ -1250,6 +1262,7 @@ void dma_invalidate_channel(const dma_descr_t *dma_descr) {
     }
 }
 
+#if MICROPY_HW_DMA_ENABLE_AUTO_TURN_OFF
 // Called from the SysTick handler
 // We use LSB of tick to select which controller to process
 static void dma_idle_handler(uint32_t tick) {
@@ -1302,6 +1315,7 @@ static void dma_idle_handler(uint32_t tick) {
         }
     }
 }
+#endif
 
 #if defined(STM32F0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4)
 

@@ -37,6 +37,7 @@
 #include "irq.h"
 #include "mboot.h"
 #include "powerctrl.h"
+#include "sdcard.h"
 #include "dfu.h"
 #include "pack.h"
 
@@ -60,31 +61,38 @@
 // Most values are defined in irq.h.
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
-// Configure PLL to give the desired CPU freq
-#undef MICROPY_HW_FLASH_LATENCY
-#if defined(STM32F4) || defined(STM32F7)
-  #if MBOOT_ENABLE_PACKING
-    // With encryption/signing/compression, a faster CPU makes processing much faster.
+#if defined(MBOOT_CLK_PLLM)
+  // The board specified the PLL values, flash latency and bus dividers
+  #define CORE_PLL_FREQ (1000000 * MBOOT_CLK_PLLN / MBOOT_CLK_PLLP)
+#else
+  // The board did not specify the clock values, so configure defaults
+  #if defined(STM32F4) || defined(STM32F7)
+    #if MBOOT_ENABLE_PACKING
+      // With encryption/signing/compression, a faster CPU makes processing much faster.
+      #define CORE_PLL_FREQ (96000000)
+      #define MBOOT_FLASH_LATENCY FLASH_LATENCY_3
+    #else
+      #define CORE_PLL_FREQ (48000000)
+      #define MBOOT_FLASH_LATENCY FLASH_LATENCY_1
+    #endif
+    #define MBOOT_CLK_AHB_DIV (RCC_SYSCLK_DIV1)
+    #define MBOOT_CLK_APB1_DIV (RCC_HCLK_DIV4)
+    #define MBOOT_CLK_APB2_DIV (RCC_HCLK_DIV2)
+  #elif defined(STM32H7)
     #define CORE_PLL_FREQ (96000000)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_3
-  #else
-    #define CORE_PLL_FREQ (48000000)
-    #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_1
+    #define MBOOT_FLASH_LATENCY FLASH_LATENCY_2
+    #define MBOOT_CLK_AHB_DIV (RCC_HCLK_DIV2)
+    #define MBOOT_CLK_APB1_DIV (RCC_APB1_DIV2)
+    #define MBOOT_CLK_APB2_DIV (RCC_APB2_DIV2)
+    #define MBOOT_CLK_APB3_DIV (RCC_APB3_DIV2)
+    #define MBOOT_CLK_APB4_DIV (RCC_APB4_DIV2)
   #endif
-#elif defined(STM32H7)
-  #define CORE_PLL_FREQ (96000000)
-  #define MICROPY_HW_FLASH_LATENCY FLASH_LATENCY_2
+  #define MBOOT_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
+  #define MBOOT_CLK_PLLN (192)
+  #define MBOOT_CLK_PLLP (MBOOT_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
+  #define MBOOT_CLK_PLLQ (4)
+  #define MBOOT_CLK_PLLR (2)
 #endif
-#undef MICROPY_HW_CLK_PLLM
-#undef MICROPY_HW_CLK_PLLN
-#undef MICROPY_HW_CLK_PLLP
-#undef MICROPY_HW_CLK_PLLQ
-#undef MICROPY_HW_CLK_PLLR
-#define MICROPY_HW_CLK_PLLM (MICROPY_HW_CLK_VALUE / 1000000)
-#define MICROPY_HW_CLK_PLLN (192)
-#define MICROPY_HW_CLK_PLLP (MICROPY_HW_CLK_PLLN / (CORE_PLL_FREQ / 1000000))
-#define MICROPY_HW_CLK_PLLQ (4)
-#define MICROPY_HW_CLK_PLLR (2)
 
 // Work out which USB device to use for the USB DFU interface
 #if !defined(MICROPY_HW_USB_MAIN_DEV)
@@ -101,13 +109,18 @@
 #define APP_VALIDITY_BITS (0x00000003)
 
 // For 1ms system ticker.
-static volatile uint32_t systick_ms;
+volatile uint32_t systick_ms;
 
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
 
 uint32_t get_le32(const uint8_t *b) {
     return b[0] | b[1] << 8 | b[2] << 16 | b[3] << 24;
+}
+
+uint64_t get_le64(const uint8_t *b) {
+    return (uint64_t)b[0] | (uint64_t)b[1] << 8 | (uint64_t)b[2] << 16 | (uint64_t)b[3] << 24
+        | (uint64_t)b[4] << 32 | (uint64_t)b[5] << 40 | (uint64_t)b[6] << 48 | (uint64_t)b[7] << 56;
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
@@ -203,10 +216,10 @@ void SystemClock_Config(void) {
         #else
         1 << RCC_PLLCFGR_PLLSRC_Pos // HSE selected as PLL source
         #endif
-        | MICROPY_HW_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
-        | MICROPY_HW_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
-        | ((MICROPY_HW_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
-        | MICROPY_HW_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
+        | MBOOT_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
+        | MBOOT_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
+        | ((MBOOT_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
+        | MBOOT_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
         #ifdef RCC_PLLCFGR_PLLR
         | 2 << RCC_PLLCFGR_PLLR_Pos // default PLLR value of 2
         #endif
@@ -218,12 +231,12 @@ void SystemClock_Config(void) {
     }
 
     // Increase latency before changing clock
-    if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Configure AHB divider
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_SYSCLK_DIV1);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, MBOOT_CLK_AHB_DIV);
 
     // Configure SYSCLK source from PLL
     __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_PLLCLK);
@@ -231,13 +244,13 @@ void SystemClock_Config(void) {
     }
 
     // Decrease latency after changing clock
-    if (MICROPY_HW_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Set APB clock dividers
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_HCLK_DIV4);
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, RCC_HCLK_DIV2 << 3);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, MBOOT_CLK_APB1_DIV);
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, MBOOT_CLK_APB2_DIV << 3);
 
     // Update clock value and reconfigure systick now that the frequency changed
     SystemCoreClock = CORE_PLL_FREQ;
@@ -281,14 +294,14 @@ void SystemClock_Config(void) {
     RCC->PLLCFGR = 0;
 
     // Configure PLL1 for use by SYSCLK
-    RCC->PLLCKSELR |= MICROPY_HW_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
+    RCC->PLLCKSELR |= MBOOT_CLK_PLLM << RCC_PLLCKSELR_DIVM1_Pos;
     RCC->PLLCFGR |= RCC_PLLCFGR_DIVP1EN;
     RCC->PLL1FRACR = 0;
     RCC->PLL1DIVR =
-        (MICROPY_HW_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
-        | (MICROPY_HW_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
-        | (MICROPY_HW_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
-        | (MICROPY_HW_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
+        (MBOOT_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
+        | (MBOOT_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
+        | (MBOOT_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
+        | (MBOOT_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
 
     // Configure PLL3 for use by USB at Q=48MHz
     RCC->PLLCKSELR |= MICROPY_HW_CLK_PLL3M << RCC_PLLCKSELR_DIVM3_Pos;
@@ -314,14 +327,14 @@ void SystemClock_Config(void) {
     }
 
     // Increase latency before changing SYSCLK
-    if (MICROPY_HW_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY > (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Configure AHB divider
     RCC->D1CFGR =
         0 << RCC_D1CFGR_D1CPRE_Pos // SYSCLK prescaler of 1
-        | 8 << RCC_D1CFGR_HPRE_Pos // AHB prescaler of 2
+        | MBOOT_CLK_AHB_DIV
         ;
 
     // Configure SYSCLK source from PLL
@@ -330,21 +343,14 @@ void SystemClock_Config(void) {
     }
 
     // Decrease latency after changing clock
-    if (MICROPY_HW_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
-        __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    if (MBOOT_FLASH_LATENCY < (FLASH->ACR & FLASH_ACR_LATENCY)) {
+        __HAL_FLASH_SET_LATENCY(MBOOT_FLASH_LATENCY);
     }
 
     // Set APB clock dividers
-    RCC->D1CFGR |=
-        4 << RCC_D1CFGR_D1PPRE_Pos // APB3 prescaler of 2
-        ;
-    RCC->D2CFGR =
-        4 << RCC_D2CFGR_D2PPRE2_Pos // APB2 prescaler of 2
-        | 4 << RCC_D2CFGR_D2PPRE1_Pos // APB1 prescaler of 2
-        ;
-    RCC->D3CFGR =
-        4 << RCC_D3CFGR_D3PPRE_Pos // APB4 prescaler of 2
-        ;
+    RCC->D1CFGR |= MBOOT_CLK_APB3_DIV;
+    RCC->D2CFGR = MBOOT_CLK_APB2_DIV | MBOOT_CLK_APB1_DIV;
+    RCC->D3CFGR = MBOOT_CLK_APB4_DIV;
 
     // Update clock value and reconfigure systick now that the frequency changed
     SystemCoreClockUpdate();
@@ -389,112 +395,6 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
     GPIO_TypeDef *gpio = (GPIO_TypeDef*)(port_pin & ~0xf);
     uint32_t pin = port_pin & 0xf;
     gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
-}
-
-/******************************************************************************/
-// LED
-
-#if defined(MBOOT_LED1)
-#define LED0 MBOOT_LED1
-#elif defined(MICROPY_HW_LED1)
-#define LED0 MICROPY_HW_LED1
-#endif
-
-#if defined(MBOOT_LED2)
-#define LED1 MBOOT_LED2
-#elif defined(MICROPY_HW_LED2)
-#define LED1 MICROPY_HW_LED2
-#endif
-
-#if defined(MBOOT_LED3)
-#define LED2 MBOOT_LED3
-#elif defined(MICROPY_HW_LED3)
-#define LED2 MICROPY_HW_LED3
-#endif
-
-#if defined(MBOOT_LED4)
-#define LED3 MBOOT_LED4
-#elif defined(MICROPY_HW_LED4)
-#define LED3 MICROPY_HW_LED4
-#endif
-
-// For flashing states: bit 0 is "active", bit 1 is "inactive", bits 2-6 are flash rate.
-typedef enum {
-    LED0_STATE_OFF = 0,
-    LED0_STATE_ON = 1,
-    LED0_STATE_SLOW_FLASH = (20 << 2) | 1,
-    LED0_STATE_FAST_FLASH = (2 << 2) | 1,
-    LED0_STATE_SLOW_INVERTED_FLASH = (20 << 2) | 2,
-} led0_state_t;
-
-static led0_state_t led0_cur_state = LED0_STATE_OFF;
-static uint32_t led0_ms_interval = 0;
-static int led0_toggle_count = 0;
-
-MP_WEAK void led_init(void) {
-    #if defined(MBOOT_BOARD_LED_INIT)
-    // Custom LED init function provided by the board.
-    MBOOT_BOARD_LED_INIT();
-    #else
-    // Init LEDs using GPIO calls.
-    mp_hal_pin_output(LED0);
-    #ifdef LED1
-    mp_hal_pin_output(LED1);
-    #endif
-    #ifdef LED2
-    mp_hal_pin_output(LED2);
-    #endif
-    #ifdef LED3
-    mp_hal_pin_output(LED3);
-    #endif
-    #endif
-
-    led0_cur_state = LED0_STATE_OFF;
-}
-
-MP_WEAK void led_state(uint32_t led, int val) {
-    #if defined(MBOOT_BOARD_LED_STATE)
-    // Custom LED state function provided by the board.
-    return MBOOT_BOARD_LED_STATE(led, val);
-    #else
-    // Set LEDs using GPIO calls.
-    if (val) {
-        MICROPY_HW_LED_ON(led);
-    } else {
-        MICROPY_HW_LED_OFF(led);
-    }
-    #endif
-}
-
-void led_state_all(unsigned int mask) {
-    led_state(LED0, mask & 1);
-    #ifdef LED1
-    led_state(LED1, mask & 2);
-    #endif
-    #ifdef LED2
-    led_state(LED2, mask & 4);
-    #endif
-    #ifdef LED3
-    led_state(LED3, mask & 8);
-    #endif
-}
-
-void led0_state(led0_state_t state) {
-    led0_cur_state = state;
-    if (state == LED0_STATE_OFF || state == LED0_STATE_ON) {
-        led_state(LED0, state);
-    }
-}
-
-void led0_update() {
-    if (led0_cur_state != LED0_STATE_OFF && systick_ms - led0_ms_interval > 50) {
-        uint8_t rate = (led0_cur_state >> 2) & 0x1f;
-        led0_ms_interval += 50;
-        if (++led0_toggle_count >= rate) {
-            led0_toggle_count = 0;
-        }
-        led_state(LED0, (led0_cur_state & (led0_toggle_count == 0 ? 1 : 2)));
-    }
 }
 
 /******************************************************************************/
@@ -611,8 +511,9 @@ static int spiflash_page_erase(mp_spiflash_t *spif, uint32_t addr, uint32_t n_bl
 #endif
 
 int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
+    mboot_state_change(MBOOT_STATE_ERASE_START, addr);
+
     int ret = -1;
-    led0_state(LED0_STATE_ON);
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
@@ -632,12 +533,14 @@ int hw_page_erase(uint32_t addr, uint32_t *next_addr) {
         ret = mboot_flash_page_erase(addr, next_addr);
     }
 
-    led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_ERASE_END, ret);
+
     return ret;
 }
 
-void hw_read(uint32_t addr, int len, uint8_t *buf) {
-    led0_state(LED0_STATE_FAST_FLASH);
+void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
+    mboot_state_change(MBOOT_STATE_READ_START, addr);
+
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         mp_spiflash_read(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, buf);
@@ -648,16 +551,28 @@ void hw_read(uint32_t addr, int len, uint8_t *buf) {
         mp_spiflash_read(MBOOT_SPIFLASH2_SPIFLASH, addr - MBOOT_SPIFLASH2_ADDR, len, buf);
     } else
     #endif
+    #if defined(MBOOT_SDCARD_ADDR)
+    if (MBOOT_SDCARD_ADDR <= addr && addr < MBOOT_SDCARD_ADDR + MBOOT_SDCARD_BYTE_SIZE) {
+        // Read address and length must be aligned.
+        if (addr % SDCARD_BLOCK_SIZE == 0 && len % SDCARD_BLOCK_SIZE == 0) {
+            sdcard_read_blocks(buf, (addr - MBOOT_SDCARD_ADDR) / SDCARD_BLOCK_SIZE, len / SDCARD_BLOCK_SIZE);
+        } else {
+            memset(buf, 0xff, len);
+        }
+    } else
+    #endif
     {
         // Other addresses, just read directly from memory
-        memcpy(buf, (void*)addr, len);
+        memcpy(buf, (void *)(uintptr_t)addr, len);
     }
-    led0_state(LED0_STATE_SLOW_FLASH);
+
+    mboot_state_change(MBOOT_STATE_READ_END, 0);
 }
 
 int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
+    mboot_state_change(MBOOT_STATE_WRITE_START, addr);
+
     int ret = -1;
-    led0_state(LED0_STATE_FAST_FLASH);
     #if defined(MBOOT_SPIFLASH_ADDR)
     if (MBOOT_SPIFLASH_ADDR <= addr && addr < MBOOT_SPIFLASH_ADDR + MBOOT_SPIFLASH_BYTE_SIZE) {
         ret = mp_spiflash_write(MBOOT_SPIFLASH_SPIFLASH, addr - MBOOT_SPIFLASH_ADDR, len, src8);
@@ -675,7 +590,8 @@ int hw_write(uint32_t addr, const uint8_t *src8, size_t len) {
         dfu_context.error = MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
     }
 
-    led0_state((ret == 0) ? LED0_STATE_SLOW_FLASH : LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_WRITE_END, ret);
+
     return ret;
 }
 
@@ -688,22 +604,27 @@ int do_page_erase(uint32_t addr, uint32_t *next_addr) {
     #endif
 }
 
-void do_read(uint32_t addr, int len, uint8_t *buf) {
+void do_read(mboot_addr_t addr, size_t len, uint8_t *buf) {
     #if MBOOT_ENABLE_PACKING
     // Read disabled on packed (encrypted) mode.
+    mboot_state_change(MBOOT_STATE_READ_START, addr);
     dfu_context.status = DFU_STATUS_ERROR_FILE;
     dfu_context.error = MBOOT_ERROR_STR_INVALID_READ_IDX;
-    led0_state(LED0_STATE_SLOW_INVERTED_FLASH);
+    mboot_state_change(MBOOT_STATE_READ_END, -MBOOT_ERRNO_FLASH_READ_DISALLOWED);
     #else
     hw_read(addr, len, buf);
     #endif
 }
 
-int do_write(uint32_t addr, const uint8_t *src8, size_t len) {
+int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run) {
     #if MBOOT_ENABLE_PACKING
-    return mboot_pack_write(addr, src8, len);
+    return mboot_pack_write(addr, src8, len, dry_run);
     #else
-    return hw_write(addr, src8, len);
+    if (dry_run) {
+        return 0;
+    } else {
+        return hw_write(addr, src8, len);
+    }
     #endif
 }
 
@@ -788,7 +709,15 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     if (buf[0] == I2C_CMD_ECHO) {
         ++len;
     } else if (buf[0] == I2C_CMD_GETID && len == 0) {
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Warray-bounds"
+        #pragma GCC diagnostic ignored "-Wstringop-overread"
+        #endif
         memcpy(buf, (uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS, 12);
+        #if __GNUC__ >= 11
+        #pragma GCC diagnostic pop
+        #endif
         memcpy(buf + 12, MICROPY_HW_MCU_NAME, sizeof(MICROPY_HW_MCU_NAME));
         memcpy(buf + 12 + sizeof(MICROPY_HW_MCU_NAME), MICROPY_HW_BOARD_NAME, sizeof(MICROPY_HW_BOARD_NAME) - 1);
         len = 12 + sizeof(MICROPY_HW_MCU_NAME) + sizeof(MICROPY_HW_BOARD_NAME) - 1;
@@ -820,7 +749,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
             // Mark the 2 lower bits to indicate invalid app firmware
             buf[1] |= APP_VALIDITY_BITS;
         }
-        int ret = do_write(i2c_obj.cmd_wraddr, buf + 1, len);
+        int ret = do_write(i2c_obj.cmd_wraddr, buf + 1, len, false);
         if (ret < 0) {
             len = ret;
         } else {
@@ -842,7 +771,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
             len = -1;
         } else {
             buf &= ~APP_VALIDITY_BITS;
-            int ret = do_write(APPLICATION_ADDR, (void*)&buf, 4);
+            int ret = do_write(APPLICATION_ADDR, (void*)&buf, 4, false);
             if (ret < 0) {
                 len = ret;
             } else {
@@ -916,7 +845,7 @@ static int dfu_process_dnload(void) {
     } else if (dfu_context.wBlockNum > 1) {
         // write data to memory
         uint32_t addr = (dfu_context.wBlockNum - 2) * DFU_XFER_SIZE + dfu_context.addr;
-        ret = do_write(addr, dfu_context.buf, dfu_context.wLength);
+        ret = do_write(addr, dfu_context.buf, dfu_context.wLength, false);
     }
     if (ret == 0) {
         return DFU_STATE_DNLOAD_IDLE;
@@ -1332,71 +1261,6 @@ static int pyb_usbdd_shutdown(void) {
 /******************************************************************************/
 // main
 
-#if defined(MBOOT_BOARD_GET_RESET_MODE)
-
-static inline int mboot_get_reset_mode(void) {
-    return MBOOT_BOARD_GET_RESET_MODE();
-}
-
-#else
-
-#define RESET_MODE_NUM_STATES (4)
-#define RESET_MODE_TIMEOUT_CYCLES (8)
-#ifdef LED2
-#ifdef LED3
-#define RESET_MODE_LED_STATES 0x8421
-#else
-#define RESET_MODE_LED_STATES 0x7421
-#endif
-#else
-#define RESET_MODE_LED_STATES 0x3210
-#endif
-
-static void usrbtn_init(void) {
-    mp_hal_pin_config(MICROPY_HW_USRSW_PIN, MP_HAL_PIN_MODE_INPUT, MICROPY_HW_USRSW_PULL, 0);
-}
-
-static int usrbtn_state(void) {
-    return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
-}
-
-static int mboot_get_reset_mode(void) {
-    usrbtn_init();
-    int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
-    if (usrbtn_state()) {
-        // Cycle through reset modes while USR is held
-        // Timeout is roughly 20s, where reset_mode=1
-        systick_init();
-        led_init();
-        reset_mode = 0;
-        for (int i = 0; i < (RESET_MODE_NUM_STATES * RESET_MODE_TIMEOUT_CYCLES + 1) * 32; i++) {
-            if (i % 32 == 0) {
-                if (++reset_mode > RESET_MODE_NUM_STATES) {
-                    reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
-                }
-                uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-                led_state_all(l);
-            }
-            if (!usrbtn_state()) {
-                break;
-            }
-            mp_hal_delay_ms(19);
-        }
-        // Flash the selected reset mode
-        for (int i = 0; i < 6; i++) {
-            led_state_all(0);
-            mp_hal_delay_ms(50);
-            uint8_t l = RESET_MODE_LED_STATES >> ((reset_mode - 1) * 4);
-            led_state_all(l);
-            mp_hal_delay_ms(50);
-        }
-        mp_hal_delay_ms(300);
-    }
-    return reset_mode;
-}
-
-#endif
-
 NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, uint32_t bl_addr) {
     __asm volatile (
         "ldr r2, [r1, #0]\n"    // get address of stack pointer
@@ -1507,14 +1371,7 @@ void stm32_main(uint32_t initial_r0) {
 
 enter_bootloader:
 
-    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
-    led_init();
-
-    // set the system clock to be HSE
-    SystemClock_Config();
-
-    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
-    __set_PRIMASK(0);
+    MBOOT_BOARD_ENTRY_INIT(&initial_r0);
 
     #if USE_USB_POLLING
     // irqs with a priority value greater or equal to "pri" will be disabled
@@ -1522,10 +1379,6 @@ enter_bootloader:
     uint32_t pri = 2;
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
-    #endif
-
-    #if defined(MBOOT_BOARD_ENTRY_INIT)
-    MBOOT_BOARD_ENTRY_INIT(initial_r0);
     #endif
 
     #if defined(MBOOT_SPIFLASH_ADDR)
@@ -1538,16 +1391,24 @@ enter_bootloader:
     mp_spiflash_init(MBOOT_SPIFLASH2_SPIFLASH);
     #endif
 
+    #if defined(MBOOT_SDCARD_ADDR)
+    sdcard_init();
+    sdcard_select_sd();
+    sdcard_power_on();
+    #endif
+
     #if MBOOT_ENABLE_PACKING
     mboot_pack_init();
     #endif
 
-    #if MBOOT_FSLOAD
     if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+        mboot_state_change(MBOOT_STATE_FSLOAD_START, 0);
+        int ret = -1;
+        #if MBOOT_FSLOAD
         // Application passed through elements, validate then process them
         const uint8_t *elem_end = elem_search(ELEM_DATA_START, ELEM_TYPE_END);
         if (elem_end != NULL && elem_end[-1] == 0) {
-            int ret = fsload_process();
+            ret = fsload_process();
             // If there is a valid ELEM_TYPE_STATUS element then store the status in the given location.
             const uint8_t *elem_status = elem_search(ELEM_DATA_START, ELEM_TYPE_STATUS);
             if (elem_status != NULL && elem_status[-1] == 4) {
@@ -1556,11 +1417,11 @@ enter_bootloader:
                 *status_ptr = ret;
             }
         }
+        #endif
+        mboot_state_change(MBOOT_STATE_FSLOAD_END, ret);
         // Always reset because the application is expecting to resume
-        led_state_all(0);
         leave_bootloader();
     }
-    #endif
 
     dfu_init();
 
@@ -1575,8 +1436,7 @@ enter_bootloader:
     i2c_init(initial_r0);
     #endif
 
-    led_state_all(0);
-    led0_state(LED0_STATE_SLOW_FLASH);
+    mboot_state_change(MBOOT_STATE_DFU_START, 0);
 
     #if MBOOT_USB_RESET_ON_DISCONNECT
     bool has_connected = false;
@@ -1610,8 +1470,9 @@ enter_bootloader:
         #endif
     }
 
+    mboot_state_change(MBOOT_STATE_DFU_END, 0);
+
     // Shutdown and leave the bootloader.
-    led_state_all(0);
     mp_hal_delay_ms(50);
     pyb_usbdd_shutdown();
     #if defined(MBOOT_I2C_SCL)
