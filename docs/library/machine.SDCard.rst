@@ -122,3 +122,46 @@ You can set the pins used for SPI access by passing a tuple as the
 
 *Note:* The current cc3200 SD card implementation names the this class
 :class:`machine.SD` rather than :class:`machine.SDCard` .
+
+mimxrt
+``````
+
+The SDCard module for the mimxrt port only supports access via dedicated SD/MMC
+peripheral (USDHC) in 4-bit mode with 50MHz clock frequency exclusively.
+Unfortunately the MIMXRT1011 controller does not support the USDHC peripheral.
+Hence this controller does not feature the ``machine.SDCard`` module.
+
+Due to the decision to only support 4-bit mode with 50MHz clock frequency the
+interface has been simplified, and the constructor signature is:
+
+.. class:: SDCard(slot=1)
+  :noindex:
+
+The pins used for the USDHC peripheral have to be configured in ``mpconfigboard.h``.
+Most of the controllers supported by the mimxrt port provide up to two USDHC
+peripherals.  Therefore the pin configuration is performed using the macro
+``MICROPY_USDHCx`` with x being 1 or 2 respectively.
+
+The following shows an example configuration for USDHC1::
+
+  #define MICROPY_USDHC1 \
+    { \
+          .cmd   = { GPIO_SD_B0_02_USDHC1_CMD}, \
+          .clk   = { GPIO_SD_B0_03_USDHC1_CLK }, \
+          .cd_b  = { GPIO_SD_B0_06_USDHC1_CD_B },\
+          .data0 = { GPIO_SD_B0_04_USDHC1_DATA0 },\
+          .data1 = { GPIO_SD_B0_05_USDHC1_DATA1 },\
+          .data2 = { GPIO_SD_B0_00_USDHC1_DATA2 },\
+          .data3 = { GPIO_SD_B0_01_USDHC1_DATA3 },\
+    }
+
+If the card detect pin is not used (cb_b pin) then the respective entry has to be
+filled with the following dummy value::
+
+  #define USDHC_DUMMY_PIN NULL , 0
+
+Based on the definition of macro ``MICROPY_USDHC1`` and/or ``MICROPY_USDHC2``
+the ``machine.SDCard`` module either supports one or two slots.  If only one of
+the defines is provided, calling ``machine.SDCard()`` or ``machine.SDCard(1)``
+will return an instance using the respective USDHC peripheral.  When both macros
+are defined, calling ``machine.SDCard(2)`` returns an instance using USDHC2.

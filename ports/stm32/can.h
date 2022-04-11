@@ -67,7 +67,6 @@ typedef struct _pyb_can_obj_t {
     mp_obj_t rxcallback1;
     mp_uint_t can_id : 8;
     bool is_enabled : 1;
-    bool extframe : 1;
     byte rx_state0;
     byte rx_state1;
     uint16_t num_error_warning;

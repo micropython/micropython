@@ -100,6 +100,7 @@ int nina_get_rssi(void);
 int nina_fw_version(uint8_t *fw_ver);
 int nina_set_hostname(const char *name);
 int nina_gethostbyname(const char *name, uint8_t *out_ip);
+int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface);
 int nina_socket_socket(uint8_t type);
 int nina_socket_close(int fd);
 int nina_socket_bind(int fd, uint8_t *ip, uint16_t port, int type);

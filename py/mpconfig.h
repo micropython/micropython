@@ -328,6 +328,14 @@
 #define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
 #endif
 
+// Whether bytecode uses a qstr_table to map internal qstr indices in the bytecode
+// to global qstr values in the runtime (behaviour when feature is enabled), or
+// just stores global qstr values directly in the bytecode.  This must be enabled
+// if MICROPY_PERSISTENT_CODE is enabled.
+#ifndef MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+#define MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE (MICROPY_PERSISTENT_CODE)
+#endif
+
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)
@@ -812,6 +820,12 @@ typedef double mp_float_t;
 // (useful for porting existing libraries to MicroPython).
 #ifndef MICROPY_STREAMS_POSIX_API
 #define MICROPY_STREAMS_POSIX_API (0)
+#endif
+
+// Whether modules can use MP_MODULE_ATTR_DELEGATION_ENTRY() to delegate failed
+// attribute lookups.
+#ifndef MICROPY_MODULE_ATTR_DELEGATION
+#define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 // Whether to call __init__ when importing builtin modules for the first time
@@ -1342,6 +1356,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
+// Whether to provide sys.{ps1,ps2} mutable attributes, to control REPL prompts
+#ifndef MICROPY_PY_SYS_PS1_PS2
+#define MICROPY_PY_SYS_PS1_PS2 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide "sys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)
@@ -1361,6 +1380,17 @@ typedef double mp_float_t;
 // This is implemented per-port
 #ifndef MICROPY_PY_SYS_STDIO_BUFFER
 #define MICROPY_PY_SYS_STDIO_BUFFER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide sys.tracebacklimit mutable attribute
+#ifndef MICROPY_PY_SYS_TRACEBACKLIMIT
+#define MICROPY_PY_SYS_TRACEBACKLIMIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
+// Whether the sys module supports attribute delegation
+// This is enabled automatically when needed by other features
+#ifndef MICROPY_PY_SYS_ATTR_DELEGATION
+#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
 // Whether to provide "uerrno" module
@@ -1445,6 +1475,14 @@ typedef double mp_float_t;
 // Whether to support the "separators" argument to dump, dumps
 #ifndef MICROPY_PY_UJSON_SEPARATORS
 #define MICROPY_PY_UJSON_SEPARATORS (1)
+#endif
+
+#ifndef MICROPY_PY_UOS
+#define MICROPY_PY_UOS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_UOS_STATVFS
+#define MICROPY_PY_UOS_STATVFS (MICROPY_PY_UOS)
 #endif
 
 #ifndef MICROPY_PY_URE
@@ -1553,6 +1591,11 @@ typedef double mp_float_t;
 // Whether to provide the "machine.SoftSPI" class
 #ifndef MICROPY_PY_MACHINE_SOFTSPI
 #define MICROPY_PY_MACHINE_SOFTSPI (0)
+#endif
+
+// The default backlog value for socket.listen(backlog)
+#ifndef MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT
+#define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (2)
 #endif
 
 #ifndef MICROPY_PY_USSL

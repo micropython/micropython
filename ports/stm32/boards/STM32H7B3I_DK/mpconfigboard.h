@@ -13,21 +13,31 @@
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (0)
 
 // The board has a 24MHz HSE, the following gives 280MHz CPU speed
-#define MICROPY_HW_CLK_PLLM (12)
-#define MICROPY_HW_CLK_PLLN (280)
-#define MICROPY_HW_CLK_PLLP (2)
-#define MICROPY_HW_CLK_PLLQ (2)
-#define MICROPY_HW_CLK_PLLR (2)
+#define MICROPY_HW_CLK_PLLM         (12)
+#define MICROPY_HW_CLK_PLLN         (280)
+#define MICROPY_HW_CLK_PLLP         (2)
+#define MICROPY_HW_CLK_PLLQ         (2)
+#define MICROPY_HW_CLK_PLLR         (2)
+#define MICROPY_HW_CLK_PLLVCI       (RCC_PLL1VCIRANGE_1)
+#define MICROPY_HW_CLK_PLLVCO       (RCC_PLL1VCOWIDE)
+#define MICROPY_HW_CLK_PLLFRAC      (0)
+
 
 // The USB clock is set using PLL3 (48Mhz usb clock)
-#define MICROPY_HW_CLK_PLL3M (12)
-#define MICROPY_HW_CLK_PLL3N (192)
-#define MICROPY_HW_CLK_PLL3P (17)
-#define MICROPY_HW_CLK_PLL3Q (8)
-#define MICROPY_HW_CLK_PLL3R (2)
+#define MICROPY_HW_CLK_PLL3M        (12)
+#define MICROPY_HW_CLK_PLL3N        (192)
+#define MICROPY_HW_CLK_PLL3P        (17)
+#define MICROPY_HW_CLK_PLL3Q        (8)
+#define MICROPY_HW_CLK_PLL3R        (2)
+#define MICROPY_HW_CLK_PLL3VCI      (RCC_PLL3VCIRANGE_1)
+#define MICROPY_HW_CLK_PLL3VCO      (RCC_PLL3VCOWIDE)
+#define MICROPY_HW_CLK_PLL3FRAC     (0)
 
 // 6 wait states when running at 280MHz (VOS0 range)
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_6
+
+// SMPS configuration
+#define MICROPY_HW_PWR_SMPS_CONFIG  (PWR_DIRECT_SMPS_SUPPLY)
 
 #if 0
 // 512MBit external OSPI flash, used for either the filesystem or XIP memory mapped

@@ -193,6 +193,10 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
         MP_STATE_VM(dupterm_objs[idx]) = args[0];
     }
 
+    #if MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED
+    mp_uos_dupterm_stream_detached_attached(previous_obj, args[0]);
+    #endif
+
     return previous_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_dupterm_obj, 1, 2, mp_uos_dupterm);

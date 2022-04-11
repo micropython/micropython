@@ -70,7 +70,8 @@ static uint8_t lfs_lookahead_buffer[LFS_LOOKAHEAD_SIZE];
 static int dev_read(const struct LFSx_API (config) * c, LFSx_API(block_t) block, LFSx_API(off_t) off, void *buffer, LFSx_API(size_t) size) {
     VFS_LFSx_CONTEXT_T *ctx = c->context;
     if (0 <= block && block < ctx->config.block_count) {
-        hw_read(ctx->bdev_base_addr + block * ctx->config.block_size + off, size, buffer);
+        mboot_addr_t addr = ctx->bdev_base_addr + (mboot_addr_t)block * (mboot_addr_t)ctx->config.block_size + (mboot_addr_t)off;
+        hw_read(addr, size, buffer);
         return LFSx_MACRO(_ERR_OK);
     }
     return LFSx_MACRO(_ERR_IO);
@@ -88,7 +89,7 @@ static int dev_sync(const struct LFSx_API (config) * c) {
     return LFSx_MACRO(_ERR_OK);
 }
 
-int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size) {
+int VFS_LFSx_MOUNT(VFS_LFSx_CONTEXT_T *ctx, mboot_addr_t base_addr, mboot_addr_t byte_len, uint32_t block_size) {
     ctx->bdev_base_addr = base_addr;
 
     struct LFSx_API (config) *config = &ctx->config;

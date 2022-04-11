@@ -701,6 +701,33 @@ int nina_gethostbyname(const char *name, uint8_t *out_ip) {
     return 0;
 }
 
+int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface) {
+    switch (cmd) {
+        case NINA_CMD_SET_PIN_MODE:
+            if (len != 2 || nina_send_command_read_ack(NINA_CMD_SET_PIN_MODE,
+                2, ARG_8BITS, NINA_ARGS(ARG_BYTE(buf[0]), ARG_BYTE(buf[1]))) != SPI_ACK) {
+                return -1;
+            }
+            break;
+        case NINA_CMD_SET_DIGITAL_WRITE:
+            if (len != 2 || nina_send_command_read_ack(NINA_CMD_SET_DIGITAL_WRITE,
+                2, ARG_8BITS, NINA_ARGS(ARG_BYTE(buf[0]), ARG_BYTE(buf[1]))) != SPI_ACK) {
+                return -1;
+            }
+            break;
+        case NINA_CMD_GET_DIGITAL_READ:
+            if (len != 1 || nina_send_command_read_vals(NINA_CMD_GET_DIGITAL_READ,
+                1, ARG_8BITS, NINA_ARGS(ARG_BYTE(buf[0])),
+                1, ARG_8BITS, NINA_VALS({(uint16_t *)&len, buf})) != 0) {
+                return -1;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 0;
+}
+
 int nina_socket_socket(uint8_t type) {
     uint16_t size = 1;
     uint8_t sock = 0;

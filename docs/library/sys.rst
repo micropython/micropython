@@ -132,6 +132,12 @@ Constants
    If you need to check whether your program runs on MicroPython (vs other
    Python implementation), use `sys.implementation` instead.
 
+.. data:: ps1
+          ps2
+
+   Mutable attributes holding strings, which are used for the REPL prompt.  The defaults
+   give the standard Python prompt of ``>>>`` and ``...``.
+
 .. data:: stderr
 
    Standard error `stream`.
@@ -143,6 +149,14 @@ Constants
 .. data:: stdout
 
    Standard output `stream`.
+
+.. data:: tracebacklimit
+
+   A mutable attribute holding an integer value which is the maximum number of traceback
+   entries to store in an exception.  Set to 0 to disable adding tracebacks.  Defaults
+   to 1000.
+
+   Note: this is not available on all ports.
 
 .. data:: version
 

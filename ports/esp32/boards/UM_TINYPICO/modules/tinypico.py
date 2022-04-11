@@ -83,10 +83,9 @@ def set_dotstar_power(state):
     """Set the power for the on-board Dotstar to allow no current draw when not needed."""
     # Set the power pin to the inverse of state
     if state:
-        Pin(DOTSTAR_PWR, Pin.OUT, None)  # Break the PULL_HOLD on the pin
-        Pin(DOTSTAR_PWR).value(False)  # Set the pin to LOW to enable the Transistor
+        Pin(DOTSTAR_PWR, Pin.OUT, None, value=0)  # Drive output to LOW to enable transistor
     else:
-        Pin(13, Pin.IN, Pin.PULL_HOLD)  # Set PULL_HOLD on the pin to allow the 3V3 pull-up to work
+        Pin(DOTSTAR_PWR, Pin.IN, None)  # Disable output, external pull-up will disable transistor
 
     Pin(
         DOTSTAR_CLK, Pin.OUT if state else Pin.IN

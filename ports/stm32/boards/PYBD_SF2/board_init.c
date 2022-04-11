@@ -44,6 +44,11 @@ typedef struct _pyb_otp_t {
 void mboot_board_early_init(void) {
     // Enable 500mA on WBUS-DIP28
     mp_hal_pin_config(pyb_pin_W23, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
+
+    #if defined(MBOOT_SDCARD_ADDR)
+    // Configure EN_3V3 as an output pin so that SD card can be used
+    mp_hal_pin_config(pyb_pin_EN_3V3, MP_HAL_PIN_MODE_OUTPUT, MP_HAL_PIN_PULL_NONE, 0);
+    #endif
 }
 
 void board_early_init(void) {

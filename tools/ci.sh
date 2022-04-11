@@ -68,6 +68,23 @@ function ci_code_size_build {
 }
 
 ########################################################################################
+# .mpy file format
+
+function ci_mpy_format_setup {
+    sudo pip3 install pyelftools
+}
+
+function ci_mpy_format_test {
+    # Test mpy-tool.py dump feature on bytecode
+    python2 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+    python3 ./tools/mpy-tool.py -xd ports/minimal/frozentest.mpy
+
+    # Test mpy-tool.py dump feature on native code
+    make -C examples/natmod/features1
+    ./tools/mpy-tool.py -xd examples/natmod/features1/features1.mpy
+}
+
+########################################################################################
 # ports/cc3200
 
 function ci_cc3200_setup {
@@ -107,8 +124,7 @@ function ci_esp32_idf402_setup {
 }
 
 function ci_esp32_idf44_setup {
-    # This commit is just before v5.0-dev
-    ci_esp32_setup_helper 142bb32c50fa9875b8b69fa539a2d59559460d72
+    ci_esp32_setup_helper v4.4
 }
 
 function ci_esp32_build {
@@ -240,7 +256,7 @@ function ci_rp2_setup {
 
 function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
-    git submodule update --init lib/pico-sdk lib/tinyusb
+    make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
     make ${MAKEOPTS} -C ports/rp2 clean
     make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
@@ -276,6 +292,7 @@ function ci_stm32_pyb_build {
     make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBV10 CFLAGS_EXTRA='-DMBOOT_FSLOAD=1 -DMBOOT_VFS_LFS2=1'
     make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
+    make ${MAKEOPTS} -C ports/stm32/mboot BOARD=STM32F769DISC CFLAGS_EXTRA='-DMBOOT_ADDRESS_SPACE_64BIT=1 -DMBOOT_SDCARD_ADDR=0x100000000ULL -DMBOOT_SDCARD_BYTE_SIZE=0x400000000ULL -DMBOOT_FSLOAD=1 -DMBOOT_VFS_FAT=1'
 }
 
 function ci_stm32_nucleo_build {
@@ -369,6 +386,7 @@ function ci_unix_run_tests_full_helper {
     fi
     make -C ports/unix VARIANT=$variant "$@" test_full
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-multitests.py multi_net/*.py)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-perfbench.py 1000 1000)
 }
 
 function ci_native_mpy_modules_build {
@@ -408,10 +426,6 @@ function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
 }
 
-function ci_unix_standard_run_perfbench {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython ./run-perfbench.py 1000 1000)
-}
-
 function ci_unix_dev_build {
     ci_unix_build_helper VARIANT=dev
 }
@@ -438,7 +452,7 @@ function ci_unix_coverage_run_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
 }
 
 function ci_unix_32bit_setup {
@@ -605,7 +619,7 @@ function ci_windows_build {
 
 ZEPHYR_DOCKER_VERSION=v0.21.0
 ZEPHYR_SDK_VERSION=0.13.2
-ZEPHYR_VERSION=v2.7.0
+ZEPHYR_VERSION=v3.0.0
 
 function ci_zephyr_setup {
     docker pull zephyrprojectrtos/ci:${ZEPHYR_DOCKER_VERSION}

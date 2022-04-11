@@ -4,6 +4,7 @@
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
+#define MICROPY_PY_IO_FILEIO        (0)
 #define MICROPY_PY_USOCKET          (0)
 #define MICROPY_PY_NETWORK          (0)
 #define MICROPY_PY_STM              (0)

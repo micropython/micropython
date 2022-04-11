@@ -106,11 +106,11 @@ LDFLAGS += --gc-sections
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
-COPT = -Og
+COPT ?= -Og
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0
 else
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 # Flags for optional C++ source code
@@ -297,7 +297,6 @@ SRC_C += \
 	modmachine.c \
 	modpyb.c \
 	modstm.c \
-	moduos.c \
 	modutime.c \
 	network_lan.c \
 	extint.c \
@@ -400,7 +399,7 @@ ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g4))
     HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
     HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7))

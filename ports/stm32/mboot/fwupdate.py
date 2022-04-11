@@ -75,12 +75,10 @@ def dfu_read(filename):
         return None
 
     hdr = f.read(16)
-    crc = crc32(hdr[:-4], crc)
-    hdr = struct.unpack("<HHHH3sBI", hdr)
-
+    crc = crc32(hdr, crc)
     crc = ~crc & 0xFFFFFFFF
-    if crc != hdr[-1]:
-        print("CRC failed", crc, hdr[-1])
+    if crc != 0:
+        print("CRC failed", crc)
         return None
 
     return elems
@@ -227,7 +225,9 @@ def _create_element(kind, body):
     return bytes([kind, len(body)]) + body
 
 
-def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT, fs_blocksize=0, status_addr=None):
+def update_mpy(
+    filename, fs_base, fs_len, fs_type=VFS_FAT, fs_blocksize=0, status_addr=None, addr_64bit=False
+):
     # Check firmware is of .dfu or .dfu.gz type
     try:
         with open(filename, "rb") as f:
@@ -243,9 +243,10 @@ def update_mpy(filename, fs_base, fs_len, fs_type=VFS_FAT, fs_blocksize=0, statu
         raise Exception("littlefs requires fs_blocksize parameter")
 
     mount_point = 1
+    mount_encoding = "<BBQQL" if addr_64bit else "<BBLLL"
     elems = _create_element(
         _ELEM_TYPE_MOUNT,
-        struct.pack("<BBLLL", mount_point, fs_type, fs_base, fs_len, fs_blocksize),
+        struct.pack(mount_encoding, mount_point, fs_type, fs_base, fs_len, fs_blocksize),
     )
     elems += _create_element(
         _ELEM_TYPE_FSLOAD, struct.pack("<B", mount_point) + bytes(filename, "ascii")

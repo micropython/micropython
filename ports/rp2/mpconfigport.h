@@ -30,8 +30,10 @@
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
-
 #include "mpconfigboard.h"
+#if MICROPY_HW_USB_MSC
+#include "hardware/flash.h"
+#endif
 
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "RP2040"
@@ -81,8 +83,12 @@
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
+#define MICROPY_PY_UOS_INCLUDEFILE              "ports/rp2/moduos.c"
+#define MICROPY_PY_UOS_UNAME                    (1)
+#define MICROPY_PY_UOS_URANDOM                  (1)
 #define MICROPY_PY_URE_MATCH_GROUPS             (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
+#define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
@@ -102,15 +108,28 @@
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
+#define MICROPY_SSL_MBEDTLS                     (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_RPATH                     (2)
+#if MICROPY_HW_USB_MSC
+#define MICROPY_FATFS_USE_LABEL                 (1)
+#define MICROPY_FATFS_MULTI_PARTITION           (1)
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
+#endif
 
+#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+#define mp_type_fileio mp_type_vfs_fat_fileio
+#define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS2
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
 #define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
 
 // Use VFS's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
@@ -124,7 +143,6 @@
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_rp2;
-extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_utime;
 
@@ -172,13 +190,17 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__rp2), (mp_obj_t)&mp_module_rp2 }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
     { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
     SOCKET_BUILTIN_MODULE \
     NETWORK_BUILTIN_MODULE \
 
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
+
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_NINAW10  \
+    MICROPY_BOARD_NETWORK_INTERFACES \
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS

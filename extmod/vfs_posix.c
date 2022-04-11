@@ -37,6 +37,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#ifdef _MSC_VER
+#include <direct.h> // For mkdir etc.
+#endif
 
 typedef struct _mp_obj_vfs_posix_t {
     mp_obj_base_t base;
@@ -254,7 +257,11 @@ STATIC mp_obj_t vfs_posix_mkdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
     const char *path = vfs_posix_get_path_str(self, path_in);
     MP_THREAD_GIL_EXIT();
+    #ifdef _WIN32
+    int ret = mkdir(path);
+    #else
     int ret = mkdir(path, 0777);
+    #endif
     MP_THREAD_GIL_ENTER();
     if (ret != 0) {
         mp_raise_OSError(errno);
@@ -308,6 +315,8 @@ STATIC mp_obj_t vfs_posix_stat(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_stat_obj, vfs_posix_stat);
 
+#if MICROPY_PY_UOS_STATVFS
+
 #ifdef __ANDROID__
 #define USE_STATFS 1
 #endif
@@ -349,6 +358,8 @@ STATIC mp_obj_t vfs_posix_statvfs(mp_obj_t self_in, mp_obj_t path_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(vfs_posix_statvfs_obj, vfs_posix_statvfs);
 
+#endif
+
 STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&vfs_posix_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&vfs_posix_umount_obj) },
@@ -362,7 +373,9 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&vfs_posix_rename_obj) },
     { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&vfs_posix_rmdir_obj) },
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&vfs_posix_stat_obj) },
+    #if MICROPY_PY_UOS_STATVFS
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&vfs_posix_statvfs_obj) },
+    #endif
 };
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 

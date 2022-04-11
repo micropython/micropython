@@ -137,7 +137,6 @@ SRC_C = $(addprefix ports/unix/,\
 	unix_mphal.c \
 	input.c \
 	modmachine.c \
-	modos.c \
 	moduselect.c \
 	alloc.c \
 	coverage.c \

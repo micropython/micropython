@@ -34,15 +34,15 @@
 #include "lib/oofatfs/ff.h"
 
 typedef struct _vfs_fat_context_t {
-    uint32_t bdev_base_addr;
-    uint32_t bdev_byte_len;
+    mboot_addr_t bdev_base_addr;
+    uint32_t bdev_num_blocks;
     FATFS fatfs;
     FIL fp;
 } vfs_fat_context_t;
 
 extern const stream_methods_t vfs_fat_stream_methods;
 
-int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len);
+int vfs_fat_mount(vfs_fat_context_t *ctx, mboot_addr_t base_addr, mboot_addr_t byte_len);
 
 #endif
 
@@ -55,7 +55,7 @@ int vfs_fat_mount(vfs_fat_context_t *ctx, uint32_t base_addr, uint32_t byte_len)
 #define LFS_LOOKAHEAD_SIZE (32)
 
 typedef struct _vfs_lfs1_context_t {
-    uint32_t bdev_base_addr;
+    mboot_addr_t bdev_base_addr;
     struct lfs1_config config;
     lfs1_t lfs;
     struct lfs1_file_config filecfg;
@@ -65,7 +65,7 @@ typedef struct _vfs_lfs1_context_t {
 
 extern const stream_methods_t vfs_lfs1_stream_methods;
 
-int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size);
+int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, mboot_addr_t base_addr, mboot_addr_t byte_len, uint32_t block_size);
 
 #endif
 
@@ -79,7 +79,7 @@ int vfs_lfs1_mount(vfs_lfs1_context_t *ctx, uint32_t base_addr, uint32_t byte_le
 #define LFS_LOOKAHEAD_SIZE (32)
 
 typedef struct _vfs_lfs2_context_t {
-    uint32_t bdev_base_addr;
+    mboot_addr_t bdev_base_addr;
     struct lfs2_config config;
     lfs2_t lfs;
     struct lfs2_file_config filecfg;
@@ -89,7 +89,7 @@ typedef struct _vfs_lfs2_context_t {
 
 extern const stream_methods_t vfs_lfs2_stream_methods;
 
-int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, uint32_t base_addr, uint32_t byte_len, uint32_t block_size);
+int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, mboot_addr_t base_addr, mboot_addr_t byte_len, uint32_t block_size);
 
 #endif
 

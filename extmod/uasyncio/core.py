@@ -195,6 +195,11 @@ def run_until_complete(main_task=None):
                 if t.state is True:
                     # "None" indicates that the task is complete and not await'ed on (yet).
                     t.state = None
+                elif callable(t.state):
+                    # The task has a callback registered to be called on completion.
+                    t.state(t, er)
+                    t.state = False
+                    waiting = True
                 else:
                     # Schedule any other tasks waiting on the completion of this task.
                     while t.state.peek():

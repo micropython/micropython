@@ -93,7 +93,7 @@ void mp_task(void *pvParameter) {
     #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_init();
     #else
-    uart_init();
+    uart_stdout_init();
     #endif
     machine_init();
 

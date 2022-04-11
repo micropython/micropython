@@ -62,6 +62,9 @@ void *m_calloc_mbedtls(size_t nmemb, size_t size) {
 }
 
 void m_free_mbedtls(void *ptr_in) {
+    if (ptr_in == NULL) {
+        return;
+    }
     void **ptr = &((void**)ptr_in)[-2];
     #if DEBUG
     uint32_t nb;

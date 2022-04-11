@@ -265,6 +265,9 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     } else if (self->state == TASK_STATE_RUNNING_NOT_WAITED_ON) {
         // Allocate the waiting queue.
         self->state = task_queue_make_new(&task_queue_type, 0, 0, NULL);
+    } else if (mp_obj_get_type(self->state) != &task_queue_type) {
+        // Task has state used for another purpose, so can't also wait on it.
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("can't wait"));
     }
     return self_in;
 }
