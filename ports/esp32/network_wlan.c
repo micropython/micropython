@@ -461,6 +461,11 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         conf_wifi_sta_reconnects = (reconnects == -1) ? 0 : reconnects + 1;
                         break;
                     }
+                    case MP_QSTR_txpower: {
+                        int8_t power = (mp_obj_get_float(kwargs->table[i].value) * 4);
+                        esp_exceptions(esp_wifi_set_max_tx_power(power));
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -537,6 +542,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             int rec = conf_wifi_sta_reconnects - 1;
             val = MP_OBJ_NEW_SMALL_INT(rec);
             break;
+        case MP_QSTR_txpower: {
+            int8_t power;
+            esp_exceptions(esp_wifi_get_max_tx_power(&power));
+            val = mp_obj_new_float(power * 0.25);
+            break;
+        }
         default:
             goto unknown;
     }
