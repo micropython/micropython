@@ -1406,7 +1406,7 @@ unwind_loop:
                 const byte *bytecode_start = ip + n_info + n_cell;
                 size_t bc = code_state->ip - bytecode_start;
                 qstr block_name = mp_decode_uint_value(ip);
-                for (size_t i = 0; i < 1 + n_pos_args + n_kwonly_args; ++i) {
+                for (size_t i = 0; i < 1 + n_pos_args + n_posonly_args + n_kwonly_args; ++i) {
                     ip = mp_decode_uint_skip(ip);
                 }
                 #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE

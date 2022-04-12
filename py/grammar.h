@@ -75,14 +75,14 @@ DEF_RULE(funcdef, c(funcdef), and_blank(8), tok(KW_DEF), tok(NAME), tok(DEL_PARE
 DEF_RULE_NC(funcdefrettype, and_ident(2), tok(DEL_MINUS_MORE), rule(test))
 // note: typedargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(typedargslist, list_with_end, rule(typedargslist_item), tok(DEL_COMMA))
-DEF_RULE_NC(typedargslist_item, or(3), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star))
+DEF_RULE_NC(typedargslist_item, or(4), rule(typedargslist_name), rule(typedargslist_star), rule(typedargslist_dbl_star), tok(OP_SLASH))
 DEF_RULE_NC(typedargslist_name, and_ident(3), tok(NAME), opt_rule(generic_colon_test), opt_rule(generic_equal_test))
 DEF_RULE_NC(typedargslist_star, and(2), tok(OP_STAR), opt_rule(tfpdef))
 DEF_RULE_NC(typedargslist_dbl_star, and(3), tok(OP_DBL_STAR), tok(NAME), opt_rule(generic_colon_test))
 DEF_RULE_NC(tfpdef, and(2), tok(NAME), opt_rule(generic_colon_test))
 // note: varargslist lets through more than is allowed, compiler does further checks
 DEF_RULE_NC(varargslist, list_with_end, rule(varargslist_item), tok(DEL_COMMA))
-DEF_RULE_NC(varargslist_item, or(3), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star))
+DEF_RULE_NC(varargslist_item, or(4), rule(varargslist_name), rule(varargslist_star), rule(varargslist_dbl_star), tok(OP_SLASH))
 DEF_RULE_NC(varargslist_name, and_ident(2), tok(NAME), opt_rule(generic_equal_test))
 DEF_RULE_NC(varargslist_star, and(2), tok(OP_STAR), opt_rule(vfpdef))
 DEF_RULE_NC(varargslist_dbl_star, and(2), tok(OP_DBL_STAR), tok(NAME))

@@ -1,0 +1,160 @@
+PASSED: 'def f(a, b = 5, /, c): pass' threw an error.
+PASSED: 'def f(a = 5, b, /, c): pass' threw an error.
+PASSED: 'def f(a = 5, b=1, /, c, *, d=2): pass' threw an error.
+PASSED: 'def f(a = 5, b, /): pass' threw an error.
+PASSED: 'def f(*args, /): pass' threw an error.
+PASSED: 'def f(*args, a, /): pass' threw an error.
+PASSED: 'def f(**kwargs, /): pass' threw an error.
+PASSED: 'def f(/, a = 1): pass' threw an error.
+PASSED: 'def f(/, a): pass' threw an error.
+PASSED: 'def f(/): pass' threw an error.
+PASSED: 'def f(*, a, /): pass' threw an error.
+PASSED: 'def f(*, /, a): pass' threw an error.
+PASSED: 'def f(a, /, a): pass' threw an error.
+PASSED: 'def f(a, /, *, a): pass' threw an error.
+PASSED: 'def f(a, b/2, c): pass' threw an error.
+PASSED: 'def f(a, /, c, /): pass' threw an error.
+PASSED: 'def f(a, /, c, /, d): pass' threw an error.
+PASSED: 'def f(a, /, c, /, d, *, e): pass' threw an error.
+PASSED: 'def f(a, *, c, /, d, e): pass' threw an error.
+PASSED: 'async def f(a, b = 5, /, c): pass' threw an error.
+PASSED: 'async def f(a = 5, b, /, c): pass' threw an error.
+PASSED: 'async def f(a = 5, b=1, /, c, d=2): pass' threw an error.
+PASSED: 'async def f(a = 5, b, /): pass' threw an error.
+PASSED: 'async def f(*args, /): pass' threw an error.
+PASSED: 'async def f(*args, a, /): pass' threw an error.
+PASSED: 'async def f(**kwargs, /): pass' threw an error.
+PASSED: 'async def f(/, a = 1): pass' threw an error.
+PASSED: 'async def f(/, a): pass' threw an error.
+PASSED: 'async def f(/): pass' threw an error.
+PASSED: 'async def f(*, a, /): pass' threw an error.
+PASSED: 'async def f(*, /, a): pass' threw an error.
+PASSED: 'async def f(a, /, a): pass' threw an error.
+PASSED: 'async def f(a, /, *, a): pass' threw an error.
+PASSED: 'async def f(a, b/2, c): pass' threw an error.
+PASSED: 'async def f(a, /, c, /): pass' threw an error.
+PASSED: 'async def f(a, /, c, /, d): pass' threw an error.
+PASSED: 'async def f(a, /, c, /, d, *, e): pass' threw an error.
+PASSED: 'async def f(a, *, c, /, d, e): pass' threw an error.
+
+test_optional_positional_only_args
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: 'f(1, b=2, c=3)' threw an error.
+PASSED: Assertion check
+PASSED: 'f(1, b=2)' threw an error.
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: 'f(1, b=2, c=3)' threw an error.
+PASSED: Assertion check
+PASSED: 'f(1, b=2)' threw an error.
+PASSED: Assertion check
+
+test_pos_only_call_via_unpacking
+PASSED: Assertion check
+
+test_use_positional_as_keyword
+PASSED: 'f(a=1)' threw an error.
+PASSED: 'f(a=1, b=2)' threw an error.
+PASSED: 'f(a=1, b=2)' threw an error.
+
+test_positional_only_and_arg_invalid_calls
+PASSED: 'f(1, 2)' threw an error.
+PASSED: 'f(1)' threw an error.
+PASSED: 'f()' threw an error.
+PASSED: 'f(1, 2, 3, 4)' threw an error.
+
+test_positional_only_and_optional_arg_invalid_calls
+PASSED: 'f(1, 2)' did not throw syntax error.
+PASSED: 'f(1)' threw an error.
+PASSED: 'f()' threw an error.
+PASSED: 'f(1, 2, 3, 4)' threw an error.
+PASSED: 'f(1, 2, 3, d=1, e=2)' did not throw syntax error.
+PASSED: 'f(1, 2, 3, e=2)' threw an error.
+PASSED: 'f(1, 2, 3)' threw an error.
+PASSED: 'f(1, 2)' threw an error.
+PASSED: 'f(1)' threw an error.
+PASSED: 'f()' threw an error.
+PASSED: 'f(1, 2, 3, 4, 5, 6, d=7, e=8)' threw an error.
+PASSED: 'f(1, 2, 3, d=1, e=4, f=56)' threw an error.
+PASSED: 'f(1, 2)' did not throw syntax error.
+PASSED: 'f(1)' threw an error.
+PASSED: 'f()' threw an error.
+PASSED: 'f(1, 2, 3)' threw an error.
+PASSED: 'f(1)' did not throw syntax error.
+PASSED: 'f()' threw an error.
+PASSED: 'f(1, 2, 3)' threw an error.
+
+test_no_standard_args_usage
+PASSED: 'f(1, 2, c=3)' did not throw syntax error.
+PASSED: 'f(1, b=2, c=3)' threw an error.
+
+test_lambdas
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: 'lambda a, b = 5, /, c: None' threw an error.
+PASSED: 'lambda a = 5, b, /, c: None' threw an error.
+PASSED: 'lambda a = 5, b, /: None' threw an error.
+PASSED: 'lambda *args, /: None' threw an error.
+PASSED: 'lambda *args, a, /: None' threw an error.
+PASSED: 'lambda **kwargs, /: None' threw an error.
+PASSED: 'lambda /, a = 1: None' threw an error.
+PASSED: 'lambda /, a: None' threw an error.
+PASSED: 'lambda /: None' threw an error.
+PASSED: 'lambda *, a, /: None' threw an error.
+PASSED: 'lambda *, /, a: None' threw an error.
+PASSED: 'lambda a, /, a: None' threw an error.
+PASSED: 'lambda a, /, *, a: None' threw an error.
+PASSED: 'lambda a, /, b, /: None' threw an error.
+PASSED: 'lambda a, /, b, /, c: None' threw an error.
+PASSED: 'lambda a, /, b, /, c, *, d: None' threw an error.
+PASSED: 'lambda a, *, b, /, c: None' threw an error.
+
+test_posonly_methods
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: 'Example.f(1,2)' threw an error.
+PASSED: 'Example().f(1, b=2)' threw an error.
+
+test_module_function
+PASSED: 'f()' threw an error.
+
+test_closures
+PASSED: Assertion check
+PASSED: 'f(1,2)(3)' threw an error.
+PASSED: 'f(1,2)(3,4,5)' threw an error.
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: 'f(1,2)(3)' threw an error.
+PASSED: 'f(1,2)(3,4,5)' threw an error.
+
+test_same_keyword_as_positional_with_kwargs
+PASSED: Assertion check
+PASSED: 'f(something=42)' threw an error.
+PASSED: Assertion check
+
+test_mangling
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+
+test_async
+PASSED: 'f(a=1, b=2)' threw an error.
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+
+test_generator
+PASSED: 'f(a=1, b=2)' threw an error.
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+PASSED: Assertion check
+
+test_super
+PASSED: Assertion check

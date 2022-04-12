@@ -375,7 +375,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     }
 
     // set default type for arguments
-    mp_uint_t num_args = emit->scope->num_pos_args + emit->scope->num_kwonly_args;
+    mp_uint_t num_args = emit->scope->num_pos_args + emit->scope->num_posonly_args + emit->scope->num_kwonly_args;
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         num_args += 1;
     }
@@ -669,7 +669,9 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
         // bytecode prelude: source info (function and argument qstrs)
         size_t info_start = mp_asm_base_get_code_pos(&emit->as->base);
         emit_native_write_code_info_qstr(emit, emit->scope->simple_name);
-        for (int i = 0; i < emit->scope->num_pos_args + emit->scope->num_kwonly_args; i++) {
+        uint32_t num_args = emit->scope->num_pos_args + emit->scope->num_posonly_args + emit->scope->num_kwonly_args;
+        assert(num_args < UINT16_MAX);
+        for (uint32_t i = emit->scope->num_posonly_args; i < num_args; i++) {
             qstr qst = MP_QSTR__star_;
             for (int j = 0; j < emit->scope->id_info_len; ++j) {
                 id_info_t *id = &emit->scope->id_info[j];

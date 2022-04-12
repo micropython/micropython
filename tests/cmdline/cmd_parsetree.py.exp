@@ -32,11 +32,11 @@
            id(h)
 [  13]     \(rule\|atom_expr_normal\)(44) (n=2)
 [  13]       literal const(\.\+)
-[  13]       \(rule\|atom_expr_trailers\)(142) (n=2)
+[  13]       atom_expr_trailers(142) (n=2)
 [  13]         \(rule\|trailer_period\)(50) (n=1)
                  id(format)
 [  13]         \(rule\|trailer_paren\)(48) (n=1)
-[  13]           \(rule\|arglist\)(164) (n=1)
+[  13]           arglist(164) (n=1)
                    id(b)
 ----------------
 File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 62 bytes)
