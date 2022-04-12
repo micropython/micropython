@@ -49,10 +49,11 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
-
+#ifndef NDEBUG
 static inline uint64_t mp_hal_time_ns(void) {
     return systick_ms * 1000000;
 }
+#endif
 // C-level pin HAL
 
 #include "py/obj.h"

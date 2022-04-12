@@ -57,7 +57,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -Og -ggdb
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections

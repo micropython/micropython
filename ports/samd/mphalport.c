@@ -36,7 +36,7 @@
 #endif
 
 STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
-ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
+ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
@@ -95,19 +95,21 @@ void mp_hal_delay_us(mp_uint_t us) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    if (enable_uart_repl && USARTx->USART.INTFLAG.bit.RXC) {
+        ret |= MP_STREAM_POLL_RD;
+    }
+
     poll_cdc_interfaces();
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
-    if (USARTx->USART.INTFLAG.bit.RXC) {
-        ret |= MP_STREAM_POLL_RD;
-    }
+
     return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (USARTx->USART.INTFLAG.bit.RXC) {
+        if (enable_uart_repl && USARTx->USART.INTFLAG.bit.RXC) {
             return USARTx->USART.DATA.bit.DATA;
         }
 
@@ -135,9 +137,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             i += n2;
         }
     }
-    while (len--) {
-        while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+    if (enable_uart_repl) {
+        while (len--) {
+            while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+            }
+            USARTx->USART.DATA.bit.DATA = *str++;
         }
-        USARTx->USART.DATA.bit.DATA = *str++;
     }
 }

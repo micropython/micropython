@@ -29,6 +29,12 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_CONFIG_ROM_LEVEL            (MICROPY_CONFIG_ROM_LEVEL_BASIC_FEATURES)
+#endif
+
+#define MICROPY_HW_ENABLE_UART_REPL         (1)
+
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)
@@ -36,8 +42,11 @@
 #define MICROPY_ALLOC_PATH_MAX              (256)
 #define MICROPY_QSTR_BYTES_IN_HASH          (1)
 
+// MicroPython emitters
+#define MICROPY_PERSISTENT_CODE_LOAD        (1)
+
 // Compiler configuration
-#define MICROPY_COMP_CONST                  (0)
+#define MICROPY_COMP_CONST                  (1)
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
@@ -55,21 +64,22 @@
 // fixes sys/usys import issue
 #define MICROPY_MODULE_WEAK_LINKS           (1)
 // Control over Python builtins
+#define MICROPY_PY_BUILTINS_STR_UNICODE     (1)
 #define MICROPY_PY_ASYNC_AWAIT              (0)
 #define MICROPY_PY_BUILTINS_STR_COUNT       (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
 #define MICROPY_PY_BUILTINS_SET             (0)
 #define MICROPY_PY_BUILTINS_FROZENSET       (0)
 #define MICROPY_PY_BUILTINS_PROPERTY        (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE       (0)
+#define MICROPY_PY_BUILTINS_ENUMERATE       (1)
 #define MICROPY_PY_BUILTINS_FILTER          (0)
 #define MICROPY_PY_BUILTINS_REVERSED        (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED  (1)
-#define MICROPY_PY_BUILTINS_MIN_MAX         (0)
+#define MICROPY_PY_BUILTINS_MIN_MAX         (1)
 #define MICROPY_PY___FILE__                 (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_ATTRTUPLE                (0)
+#define MICROPY_PY_ATTRTUPLE                (1)
 #define MICROPY_PY_COLLECTIONS              (0)
 #define MICROPY_PY_SYS                      (1)
 #define MICROPY_PY_SYS_PLATFORM             "samd"

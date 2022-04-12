@@ -38,4 +38,6 @@ void USB_1_Handler_wrapper(void);
 void USB_2_Handler_wrapper(void);
 void USB_3_Handler_wrapper(void);
 
+extern uint8_t enable_uart_repl;
+
 #endif // MICROPY_INCLUDED_SAMD_SAMD_SOC_H
