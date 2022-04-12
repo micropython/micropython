@@ -549,6 +549,7 @@ retry:;
     } else if (dest[0] != MP_OBJ_NULL) {
         dest[2] = rhs_in;
         res = mp_call_method_n_kw(1, 0, dest);
+        res = op == MP_BINARY_OP_CONTAINS ? mp_obj_new_bool(mp_obj_is_true(res)) : res;
     } else {
         // If this was an inplace method, fallback to normal method
         // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
