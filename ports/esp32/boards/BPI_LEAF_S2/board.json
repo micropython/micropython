@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy_s2.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "USB-C",
+        "SPIRAM",
+        "WiFi"
+    ],
+    "images": [
+        "bpi_leaf_s2.jpg"
+    ],
+    "mcu": "esp32s2",
+    "product": "BPI-Leaf-S2",
+    "thumbnail": "",
+    "url": "https://banana-pi.org/",
+    "vendor": "Banana Pi"
+}

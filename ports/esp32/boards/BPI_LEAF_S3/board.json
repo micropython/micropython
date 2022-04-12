@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "Battery Charging",
+        "RGB LED",
+        "SPIRAM",
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "images": [
+        "bpi_leaf_s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "BPI-Leaf-S3",
+    "thumbnail": "",
+    "url": "https://banana-pi.org/",
+    "vendor": "Banana Pi"
+}
