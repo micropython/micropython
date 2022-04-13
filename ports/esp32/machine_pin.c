@@ -191,11 +191,19 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{NULL}, -1}, // 30 FLASH/PSRAM
     {{NULL}, -1}, // 31 FLASH/PSRAM
     {{NULL}, -1}, // 32 FLASH/PSRAM
+    #if CONFIG_SPIRAM_MODE_OCT
+    {{NULL}, -1}, // 33 FLASH/PSRAM
+    {{NULL}, -1}, // 34 FLASH/PSRAM
+    {{NULL}, -1}, // 35 FLASH/PSRAM
+    {{NULL}, -1}, // 36 FLASH/PSRAM
+    {{NULL}, -1}, // 37 FLASH/PSRAM
+    #else
     {{&machine_pin_type}, GPIO_NUM_33},
     {{&machine_pin_type}, GPIO_NUM_34},
     {{&machine_pin_type}, GPIO_NUM_35},
     {{&machine_pin_type}, GPIO_NUM_36},
     {{&machine_pin_type}, GPIO_NUM_37},
+    #endif
     {{&machine_pin_type}, GPIO_NUM_38},
     {{&machine_pin_type}, GPIO_NUM_39}, // MTCLK
     {{&machine_pin_type}, GPIO_NUM_40}, // MTDO
@@ -658,11 +666,19 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{NULL}, -1}, // 30 FLASH/PSRAM
     {{NULL}, -1}, // 31 FLASH/PSRAM
     {{NULL}, -1}, // 32 FLASH/PSRAM
+    #if CONFIG_SPIRAM_MODE_OCT
+    {{NULL}, -1}, // 33 FLASH/PSRAM
+    {{NULL}, -1}, // 34 FLASH/PSRAM
+    {{NULL}, -1}, // 35 FLASH/PSRAM
+    {{NULL}, -1}, // 36 FLASH/PSRAM
+    {{NULL}, -1}, // 37 FLASH/PSRAM
+    #else
     {{&machine_pin_irq_type}, GPIO_NUM_33},
     {{&machine_pin_irq_type}, GPIO_NUM_34},
     {{&machine_pin_irq_type}, GPIO_NUM_35},
     {{&machine_pin_irq_type}, GPIO_NUM_36},
     {{&machine_pin_irq_type}, GPIO_NUM_37},
+    #endif
     {{&machine_pin_irq_type}, GPIO_NUM_38},
     {{&machine_pin_irq_type}, GPIO_NUM_39},
     {{&machine_pin_irq_type}, GPIO_NUM_40},
