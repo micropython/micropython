@@ -354,6 +354,14 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
     QUADSPI->AR = addr; // address to read from
 
+    #if defined(STM32H7)
+    // Workaround for SR getting set immediately after setting the address.
+    if (QUADSPI->SR & 0x01) {
+        QUADSPI->FCR |= QUADSPI_FCR_CTEF;
+        QUADSPI->AR = addr; // address to read from
+    }
+    #endif
+
     // Read in the data 4 bytes at a time if dest is aligned
     if (((uintptr_t)dest & 3) == 0) {
         while (len >= 4) {
