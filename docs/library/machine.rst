@@ -61,7 +61,7 @@ Interrupt related functions
    The *state* parameter should be the value that was returned from the most
    recent call to the `disable_irq()` function.
   
-.. note:: Some ports (for example the esp32) have an interrupt watchdog which will reset the cpu if interrupts are disabled for longer that the timeout period. After calling `disable_irq()`, `enable_irq()` should be called before the timeout expires to prevent a reset.
+.. note:: Some ports (for example the esp32) have an interrupt watchdog which will reset the cpu if interrupts are disabled for longer than the timeout period. After calling `disable_irq()`, `enable_irq()` should be called before the timeout expires to prevent a reset.
 
 Power related functions
 -----------------------
