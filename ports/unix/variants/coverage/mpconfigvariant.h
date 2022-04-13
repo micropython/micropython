@@ -32,6 +32,8 @@
 
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
+#define MICROPY_GC_SPLIT_HEAP          (1)
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
 #define MICROPY_TRACKED_ALLOC           (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_REPL_EMACS_WORDS_MOVE  (1)

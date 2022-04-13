@@ -477,8 +477,22 @@ MP_NOINLINE int main_(int argc, char **argv) {
     pre_process_options(argc, argv);
 
     #if MICROPY_ENABLE_GC
+    #if !MICROPY_GC_SPLIT_HEAP
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
+    #else
+    assert(MICROPY_GC_SPLIT_HEAP_N_HEAPS > 0);
+    char *heaps[MICROPY_GC_SPLIT_HEAP_N_HEAPS];
+    long multi_heap_size = heap_size / MICROPY_GC_SPLIT_HEAP_N_HEAPS;
+    for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
+        heaps[i] = malloc(multi_heap_size);
+        if (i == 0) {
+            gc_init(heaps[i], heaps[i] + multi_heap_size);
+        } else {
+            gc_add(heaps[i], heaps[i] + multi_heap_size);
+        }
+    }
+    #endif
     #endif
 
     #if MICROPY_ENABLE_PYSTACK
@@ -729,7 +743,13 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #if MICROPY_ENABLE_GC && !defined(NDEBUG)
     // We don't really need to free memory since we are about to exit the
     // process, but doing so helps to find memory leaks.
+    #if !MICROPY_GC_SPLIT_HEAP
     free(heap);
+    #else
+    for (size_t i = 0; i < MICROPY_GC_SPLIT_HEAP_N_HEAPS; i++) {
+        free(heaps[i]);
+    }
+    #endif
     #endif
 
     // printf("total bytes = %d\n", m_get_total_bytes_allocated());
