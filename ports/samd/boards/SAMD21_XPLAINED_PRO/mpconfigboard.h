@@ -16,7 +16,7 @@
 // USART pin assignments: (This board has 3 USARTS brought out to the pins. See https://docs.zephyrproject.org/1.14.1/boards/arm/atsamd21_xpro/doc/index.html#serial-port )
 // Tx=PA10=SERCOM0/PAD[2], Rx=PA11=SERCOM0/PAD[3]
 #define CPU_FREQ (48000000) // For selecting Baud from clock.
-#define MP_PIN_GRP 1 // A=0, B=1
+#define MP_PIN_GRP 0 // A=0, B=1
 #define MP_TX_PIN 10 // 'n'
 #define MP_RX_PIN 11
 #define MP_PERIPHERAL_MUX 5 // 'n'th group of 2 pins

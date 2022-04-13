@@ -45,12 +45,17 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA21}, // D11
     {{&machine_pin_type}, PIN_PA23}, // D12
     {{&machine_pin_type}, PIN_PA22}, // D13
-    {{&machine_pin_type}, PIN_PA02},     // A0
+    {{&machine_pin_type}, PIN_PA02}, // A0 = 14
     {{&machine_pin_type}, PIN_PA05}, // A1
     {{&machine_pin_type}, PIN_PB08}, // A2
     {{&machine_pin_type}, PIN_PB09}, // A3
     {{&machine_pin_type}, PIN_PA04}, // A4
-    {{&machine_pin_type}, PIN_PA06}, // A5
+    {{&machine_pin_type}, PIN_PA06}, // A5 = 19
+    {{&machine_pin_type}, PIN_PA12}, // SDA = 20
+    {{&machine_pin_type}, PIN_PA13}, // SCL = 21
+    {{&machine_pin_type}, PIN_PA00}, // MOSI = 22
+    {{&machine_pin_type}, PIN_PB23}, // MISO = 23
+    {{&machine_pin_type}, PIN_PA01}, // SCK = 24
 };
 
 const machine_led_obj_t machine_led_obj[] = {

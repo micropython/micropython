@@ -47,6 +47,11 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
+#ifndef NDEBUG
+static inline uint64_t mp_hal_time_ns(void) {
+    return systick_ms * 1000000;
+}
+#endif
 
 // C-level pin HAL
 
@@ -55,7 +60,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint
 
-extern uint32_t machine_pin_open_drain_mask;
+extern uint64_t machine_pin_open_drain_mask;
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
@@ -87,7 +92,6 @@ static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_pin_level(pin, v);
 }
 
-/*
 static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
 }
@@ -95,6 +99,5 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
 }
-*/
 
 #endif // MICROPY_INCLUDED_SAMD_MPHALPORT_H

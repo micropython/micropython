@@ -63,6 +63,9 @@ void mp_hal_delay_us(mp_uint_t us) {
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    if (enable_uart_repl && USARTx->USART.INTFLAG.bit.RXC) {
+        ret |= MP_STREAM_POLL_RD;
+    }
     if (tud_cdc_connected() && tud_cdc_available()) {
         ret |= MP_STREAM_POLL_RD;
     }
@@ -71,7 +74,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (USARTx->USART.INTFLAG.bit.RXC) {
+        if (enable_uart_repl && USARTx->USART.INTFLAG.bit.RXC) {
             return USARTx->USART.DATA.bit.DATA;
         }
         if (tud_cdc_connected() && tud_cdc_available()) {
@@ -100,9 +103,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             i += n2;
         }
     }
-    while (len--) {
-        while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+    if (enable_uart_repl) {
+        while (len--) {
+            while (!(USARTx->USART.INTFLAG.bit.DRE)) {
+            }
+            USARTx->USART.DATA.bit.DATA = *str++;
         }
-        USARTx->USART.DATA.bit.DATA = *str++;
     }
 }

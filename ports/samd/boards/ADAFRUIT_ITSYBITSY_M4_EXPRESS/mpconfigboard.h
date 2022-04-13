@@ -20,7 +20,7 @@
 // Please consult the SAM_D51 Datasheet, I/O Multiplexing and Considerations.
 // USART pin assignments: Tx=TX_D1=PA17=SERCOM3/PAD[0], Rx=RX_D0=PA16=SERCOM3/PAD[1]
 #define CPU_FREQ (48000000) // For selecting Baud from clock.
-#define MP_PIN_GRP 1 // A-D=0-3
+#define MP_PIN_GRP 0 // A-D=0-3
 #define MP_TX_PIN 17
 #define MP_RX_PIN 16 // 'n'
 #define MP_PERIPHERAL_MUX 8 // 'n'th group of 2 pins

@@ -35,11 +35,14 @@
 #include "samd_soc.h"
 #include "tusb.h"
 
+uint8_t enable_uart_repl = false;
+
 // "MP" macros defined in "boards/$(BOARD)/mpconfigboard.h"
 mp_obj_t machine_uart_init(void) {
     // Firstly, assign alternate function SERCOM PADs to GPIO pins.
     PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 1; // Enable
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 1; // Enable
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PULLEN = 1; // Enable Pull avoiding crosstalk
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 1; // Enable MUX
     PORT->Group[MP_PIN_GRP].PMUX[MP_PERIPHERAL_MUX].reg = MP_PORT_FUNC; // Sets PMUXE & PMUXO in 1 hit.
     uint32_t rxpo = MP_RXPO_PAD; // 1=Pad1,3=Pad3 Rx data
     uint32_t txpo = MP_TXPO_PAD; // 0=pad0,1=Pad2 Tx data
@@ -90,15 +93,18 @@ mp_obj_t machine_uart_init(void) {
     while (USARTx->USART.SYNCBUSY.bit.ENABLE) {
     }
 
+    enable_uart_repl = true;
     return mp_const_none;
 }
 
 // Disconnect SERCOM from GPIO pins. (Can't SWRST, as that will totally kill USART).
 mp_obj_t machine_uart_deinit(void) {
     // Reset
+    enable_uart_repl = false;
     printf("Disabling the Alt-Funct, releasing the USART pins for GPIO... \n");
     PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 0; // Disable
     PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 0; // Disable
+    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PULLEN = 0; // Disable Pull
 
     return mp_const_none;
 }
