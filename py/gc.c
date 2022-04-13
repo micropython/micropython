@@ -230,6 +230,7 @@ bool gc_is_locked(void) {
     return MP_STATE_THREAD(gc_lock_depth) != 0;
 }
 
+#if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
 STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
@@ -244,6 +245,14 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     }
     return NULL;
 }
+#endif
+
+// ptr should be of type void*
+#define VERIFY_PTR(ptr) ( \
+    ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+    && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start      /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(area).gc_pool_end         /* must be below end of pool */ \
+    )
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
@@ -257,18 +266,20 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-STATIC void gc_mark_subtree(mp_gc_stack_item_t item) {
-    // Start with the item passed in the argument.
+#if MICROPY_GC_SPLIT_HEAP
+STATIC void gc_mark_subtree(mp_state_mem_area_t *area, size_t block)
+#else
+STATIC void gc_mark_subtree(size_t block)
+#endif
+{
+    // Start with the block passed in the argument.
     size_t sp = 0;
     for (;;) {
         MICROPY_GC_HOOK_LOOP
 
-        #if MICROPY_GC_SPLIT_HEAP
-        mp_state_mem_area_t *area = item.area;
-        #else
-        mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+        #if !MICROPY_GC_SPLIT_HEAP
+        mp_state_mem_area_t * area = &MP_STATE_MEM(area);
         #endif
-        size_t block = item.block;
 
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
@@ -283,11 +294,18 @@ STATIC void gc_mark_subtree(mp_gc_stack_item_t item) {
             void *ptr = *ptrs;
             // If this is a heap pointer that hasn't been marked, mark it and push
             // it's children to the stack.
+            #if MICROPY_GC_SPLIT_HEAP
             mp_state_mem_area_t *ptr_area = gc_get_ptr_area(ptr);
             if (!ptr_area) {
                 // Not a heap-allocated pointer (might even be random data).
                 continue;
             }
+            #else
+            if (!VERIFY_PTR(ptr)) {
+                continue;
+            }
+            mp_state_mem_area_t *ptr_area = area;
+            #endif
             size_t ptr_block = BLOCK_FROM_PTR(ptr_area, ptr);
             if (ATB_GET_KIND(ptr_area, ptr_block) != AT_HEAD) {
                 // This block is already marked.
@@ -297,24 +315,27 @@ STATIC void gc_mark_subtree(mp_gc_stack_item_t item) {
             TRACE_MARK(ptr_block, ptr);
             ATB_HEAD_TO_MARK(ptr_area, ptr_block);
             if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
+                MP_STATE_MEM(gc_block_stack)[sp] = ptr_block;
                 #if MICROPY_GC_SPLIT_HEAP
-                mp_gc_stack_item_t ptr_item = {ptr_area, ptr_block};
-                #else
-                mp_gc_stack_item_t ptr_item = {ptr_block};
+                MP_STATE_MEM(gc_area_stack)[sp] = ptr_area;
                 #endif
-                MP_STATE_MEM(gc_stack)[sp++] = ptr_item;
+                sp += 1;
             } else {
                 MP_STATE_MEM(gc_stack_overflow) = 1;
             }
         }
 
-        // Are there any items on the stack?
+        // Are there any blocks on the stack?
         if (sp == 0) {
             break; // No, stack is empty, we're done.
         }
 
-        // pop the next item off the stack
-        item = MP_STATE_MEM(gc_stack)[--sp];
+        // pop the next block off the stack
+        sp -= 1;
+        block = MP_STATE_MEM(gc_block_stack)[sp];
+        #if MICROPY_GC_SPLIT_HEAP
+        area = MP_STATE_MEM(gc_area_stack)[sp];
+        #endif
     }
 }
 
@@ -329,13 +350,10 @@ STATIC void gc_deal_with_stack_overflow(void) {
                 // trace (again) if mark bit set
                 if (ATB_GET_KIND(area, block) == AT_MARK) {
                     #if MICROPY_GC_SPLIT_HEAP
-                    mp_gc_stack_item_t item = {area, block};
+                    gc_mark_subtree(area, block);
                     #else
-                    mp_gc_stack_item_t item = {block};
+                    gc_mark_subtree(block);
                     #endif
-                    // *MP_STATE_MEM(gc_sp)++ = item;
-                    // gc_drain_stack();
-                    gc_mark_subtree(item);
                 }
             }
         }
@@ -435,22 +453,31 @@ static void *gc_get_ptr(void **ptrs, int i) {
 }
 
 void gc_collect_root(void **ptrs, size_t len) {
+    #if !MICROPY_GC_SPLIT_HEAP
+    mp_state_mem_area_t *area = &MP_STATE_MEM(area);
+    #endif
     for (size_t i = 0; i < len; i++) {
         MICROPY_GC_HOOK_LOOP
         void *ptr = gc_get_ptr(ptrs, i);
+        #if MICROPY_GC_SPLIT_HEAP
         mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
-        if (area) {
-            size_t block = BLOCK_FROM_PTR(area, ptr);
-            if (ATB_GET_KIND(area, block) == AT_HEAD) {
-                // An unmarked head: mark it, and mark all its children
-                ATB_HEAD_TO_MARK(area, block);
-                #if MICROPY_GC_SPLIT_HEAP
-                mp_gc_stack_item_t item = {area, block};
-                #else
-                mp_gc_stack_item_t item = {block};
-                #endif
-                gc_mark_subtree(item);
-            }
+        if (!area) {
+            continue;
+        }
+        #else
+        if (!VERIFY_PTR(ptr)) {
+            continue;
+        }
+        #endif
+        size_t block = BLOCK_FROM_PTR(area, ptr);
+        if (ATB_GET_KIND(area, block) == AT_HEAD) {
+            // An unmarked head: mark it, and mark all its children
+            ATB_HEAD_TO_MARK(area, block);
+            #if MICROPY_GC_SPLIT_HEAP
+            gc_mark_subtree(area, block);
+            #else
+            gc_mark_subtree(block);
+            #endif
         }
     }
 }
@@ -716,8 +743,15 @@ void gc_free(void *ptr) {
     }
 
     // get the GC block number corresponding to this pointer
-    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+    mp_state_mem_area_t *area;
+    #if MICROPY_GC_SPLIT_HEAP
+    area = gc_get_ptr_area(ptr);
     assert(area);
+    #else
+    assert(VERIFY_PTR(ptr));
+    area = &MP_STATE_MEM(area);
+    #endif
+
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
 
@@ -760,7 +794,18 @@ void gc_free(void *ptr) {
 
 size_t gc_nbytes(const void *ptr) {
     GC_ENTER();
-    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+
+    mp_state_mem_area_t *area;
+    #if MICROPY_GC_SPLIT_HEAP
+    area = gc_get_ptr_area(ptr);
+    #else
+    if (VERIFY_PTR(ptr)) {
+        area = &MP_STATE_MEM(area);
+    } else {
+        area = NULL;
+    }
+    #endif
+
     if (area) {
         size_t block = BLOCK_FROM_PTR(area, ptr);
         if (ATB_GET_KIND(area, block) == AT_HEAD) {
@@ -829,8 +874,14 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     GC_ENTER();
 
     // get the GC block number corresponding to this pointer
-    mp_state_mem_area_t *area = gc_get_ptr_area(ptr);
+    mp_state_mem_area_t *area;
+    #if MICROPY_GC_SPLIT_HEAP
+    area = gc_get_ptr_area(ptr);
     assert(area);
+    #else
+    assert(VERIFY_PTR(ptr));
+    area = &MP_STATE_MEM(area);
+    #endif
     size_t block = BLOCK_FROM_PTR(area, ptr);
     assert(ATB_GET_KIND(area, block) == AT_HEAD);
 

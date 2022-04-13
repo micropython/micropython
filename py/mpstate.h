@@ -89,15 +89,6 @@ typedef struct _mp_state_mem_area_t {
     size_t gc_last_free_atb_index;
 } mp_state_mem_area_t;
 
-// This structure holds a single stacked block and the area it is on. Used
-// during garbage collection.
-typedef struct {
-    #if MICROPY_GC_SPLIT_HEAP
-    mp_state_mem_area_t *area;
-    #endif
-    size_t block;
-} mp_gc_stack_item_t;
-
 // This structure hold information about the memory allocation system.
 typedef struct _mp_state_mem_t {
     #if MICROPY_MEM_STATS
@@ -109,7 +100,11 @@ typedef struct _mp_state_mem_t {
     mp_state_mem_area_t area;
 
     int gc_stack_overflow;
-    mp_gc_stack_item_t gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    MICROPY_GC_STACK_ENTRY_TYPE gc_block_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    #if MICROPY_GC_SPLIT_HEAP
+    // Array that tracks the area for each block on gc_block_stack.
+    mp_state_mem_area_t *gc_area_stack[MICROPY_ALLOC_GC_STACK_SIZE];
+    #endif
 
     // This variable controls auto garbage collection.  If set to 0 then the
     // GC won't automatically run when gc_alloc can't find enough blocks.  But
