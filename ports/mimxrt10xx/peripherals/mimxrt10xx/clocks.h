@@ -27,4 +27,4 @@
 extern uint32_t SystemCoreClock;
 
 void clocks_init(void);
-uint32_t setarmclock(uint32_t frequency); 
+uint32_t setarmclock(uint32_t frequency);

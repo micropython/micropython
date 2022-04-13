@@ -2149,6 +2149,10 @@ msgstr ""
 msgid "Set pin count must be between 1 and 5"
 msgstr ""
 
+#: shared-bindings/microcontroller/Processor.c
+msgid "Settable Clock Not Implemented for Your Board"
+msgstr ""
+
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
 msgstr ""
@@ -3019,7 +3023,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr ""
 

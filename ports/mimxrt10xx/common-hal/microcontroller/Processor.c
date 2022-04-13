@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-//https://raw.githubusercontent.com/adafruit/circuitpython/main/ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+// https://raw.githubusercontent.com/adafruit/circuitpython/main/ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 
 #include <math.h>
 
@@ -54,7 +54,7 @@ float common_hal_mcu_processor_get_temperature(void) {
 
 uint32_t common_hal_mcu_processor_set_sys_clock(mcu_processor_obj_t *self,
     uint32_t frequency) {
-	SystemCoreClock = setarmclock(frequency);
+    SystemCoreClock = setarmclock(frequency);
     return SystemCoreClock;
 }
 

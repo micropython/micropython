@@ -36,7 +36,7 @@
 typedef struct {
     mp_obj_base_t base;
     // Stores no state currently.
-	uint32_t frequency;
+    uint32_t frequency;
 } mcu_processor_obj_t;
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_MICROCONTROLLER_PROCESSOR_H
