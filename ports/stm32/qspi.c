@@ -52,6 +52,10 @@
 #define MICROPY_HW_QSPI_CS_HIGH_CYCLES  2  // nCS stays high for 2 cycles
 #endif
 
+#ifndef MICROPY_HW_QSPI_MPU_REGION_SIZE
+#define MICROPY_HW_QSPI_MPU_REGION_SIZE ((1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3)) >> 20)
+#endif
+
 #if (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) >= 24
 #define QSPI_CMD 0xec
 #define QSPI_ADSIZE 3
@@ -74,11 +78,33 @@ static inline void qspi_mpu_enable_mapped(void) {
     // for the memory-mapped region, so 3 MPU regions are used to disable access
     // to everything except the valid address space, using holes in the bottom
     // of the regions and nesting them.
-    // At the moment this is hard-coded to 2MiB of QSPI address space.
     uint32_t irq_state = mpu_config_start();
+    #if MICROPY_HW_QSPI_MPU_REGION_SIZE > 128
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 64
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 32
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 16
     mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0f, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 8
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 4
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 2
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 1
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
     mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
+    #else
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_4MB));
+    #endif
     mpu_config_end(irq_state);
 }
 
