@@ -224,6 +224,10 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
                 | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
         ;
 
+        // Wait for at least 1 free byte location in the FIFO.
+        while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
+        }
+
         // This assumes len==2
         *(uint16_t *)&QUADSPI->DR = data;
     }
