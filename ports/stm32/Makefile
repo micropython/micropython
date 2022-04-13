@@ -279,6 +279,7 @@ SRC_C += \
 	pyb_spi.c \
 	qspi.c \
 	uart.c \
+	ulpi.c \
 	can.c \
 	fdcan.c \
 	pyb_can.c \
