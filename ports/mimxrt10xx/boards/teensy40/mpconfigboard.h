@@ -16,3 +16,5 @@
 
 #define DEFAULT_UART_BUS_RX (&pin_GPIO_AD_B0_03)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO_AD_B0_02)
+
+#define HAS_SETTABLE_CLOCK 1
