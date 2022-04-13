@@ -30,6 +30,8 @@
 #include <stddef.h>
 
 void gc_init(void *start, void *end);
+
+// Used to add additional heaps when multiple heaps are enabled.
 void gc_add(void *start, void *end);
 
 // These lock/unlock functions can be nested.

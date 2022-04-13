@@ -56,4 +56,5 @@
 #define MICROPY_PY_UCRYPTOLIB          (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
-#define MICROPY_GC_MULTIHEAP (1)
+#define MICROPY_GC_MULTIHEAP           (1)
+#define MICROPY_GC_N_HEAPS             (4)

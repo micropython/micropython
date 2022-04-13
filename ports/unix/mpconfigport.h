@@ -120,6 +120,10 @@
     #define MICROPY_EMIT_ARM        (1)
 #endif
 #define MICROPY_ENABLE_GC           (1)
+// Number of heaps to assign if MICROPY_GC_MULTIHEAP=1
+#ifndef MICROPY_GC_N_HEAPS
+#define MICROPY_GC_N_HEAPS          (1)
+#endif
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (1)
 #define MICROPY_MEM_STATS           (1)
 #define MICROPY_DEBUG_PRINTERS      (1)
