@@ -24,25 +24,28 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+// Board setup
 
-#define MICROPY_HW_BOARD_NAME       "LOLIN_C3_MINI" // from Wemos MP
+#define MICROPY_HW_BOARD_NAME       "Wemos Lolin C3 Mini" // from Wemos MP
 #define MICROPY_HW_MCU_NAME         "ESP32-C3FH4" // from Wemos MP
 
 // From Wemos C3 Mini Schematic
 // https://www.wemos.cc/en/latest/_static/files/sch_c3_mini_v1.0.0.pdf
 // And MP Config
 // https://github.com/micropython/micropython/blob/master/ports/esp32/boards/LOLIN_C3_MINI
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO10)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+// Status LED
+#define MICROPY_HW_NEOPIXEL         (&pin_GPIO7)
 
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO4)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO3)
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO2)
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO5}}
 
-#define DEFAULT_UART_BUS_RX (&pin_GPIO20)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO21)
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO10, .mosi = &pin_GPIO7, .miso = &pin_GPIO8}}
 
-// // Serial over UART
-#define CIRCUITPY_DEBUG_UART_RX     DEFAULT_UART_BUS_RX
-#define CIRCUITPY_DEBUG_UART_TX     DEFAULT_UART_BUS_TX
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)
