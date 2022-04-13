@@ -78,6 +78,9 @@ static inline void qspi_mpu_enable_mapped(void) {
     // for the memory-mapped region, so 3 MPU regions are used to disable access
     // to everything except the valid address space, using holes in the bottom
     // of the regions and nesting them.
+    // Note: Disabling a subregion (by setting its corresponding SRD bit to 1) means another region
+    // overlapping the disabled range matches instead. If no other enabled region overlaps the disabled
+    // subregion, and the access is unprivileged or the background region is disabled, the MPU issues a fault.
     uint32_t irq_state = mpu_config_start();
     #if MICROPY_HW_QSPI_MPU_REGION_SIZE > 128
     mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
@@ -349,6 +352,14 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
 
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
     QUADSPI->AR = addr; // address to read from
+
+    #if defined(STM32H7)
+    // Workaround for SR getting set immediately after setting the address.
+    if (QUADSPI->SR & 0x01) {
+        QUADSPI->FCR |= QUADSPI_FCR_CTEF;
+        QUADSPI->AR = addr; // address to read from
+    }
+    #endif
 
     // Read in the data 4 bytes at a time if dest is aligned
     if (((uintptr_t)dest & 3) == 0) {
