@@ -48,6 +48,19 @@ Reset related functions
 Interrupt related functions
 ---------------------------
 
+   Some systems require interrupts to operate correctly so disabling them for long periods may compromise core functionality, for example watchdog timers may trigger unexpectedly. Interrupts should only be disabled for a minimum amount of time and re-enabled to their previous state by passing back the original *state* returned by `disable_irq()`.
+
+   For example::
+
+       import machine
+
+       # Disable interrupts
+       state = machine.disable_irq()
+
+       # Enable interrupts
+       machine.enable_irq(state)
+
+
 .. function:: disable_irq()
 
    Disable interrupt requests.
@@ -60,8 +73,6 @@ Interrupt related functions
    Re-enable interrupt requests.
    The *state* parameter should be the value that was returned from the most
    recent call to the `disable_irq()` function.
-  
-.. note:: Some ports (for example the esp32) have an interrupt watchdog which will reset the cpu if interrupts are disabled for longer than the timeout period. After calling `disable_irq()`, `enable_irq()` should be called before the timeout expires to prevent a reset.
 
 Power related functions
 -----------------------
