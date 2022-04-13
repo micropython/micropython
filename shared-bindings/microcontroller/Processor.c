@@ -73,8 +73,7 @@
 //|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
 
-STATIC mp_obj_t mcu_processor_set_sys_clock(mp_obj_t self_in, mp_obj_t freq) {
-    mcu_processor_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t mcu_processor_set_sys_clock(mp_obj_t self, mp_obj_t freq) {
     #if defined(HAS_SETTABLE_CLOCK)
     uint32_t value_of_freq = MP_OBJ_SMALL_INT_VALUE(freq);
     common_hal_mcu_processor_set_sys_clock(self, value_of_freq);
