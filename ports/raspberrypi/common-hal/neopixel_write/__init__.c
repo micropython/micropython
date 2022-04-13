@@ -35,23 +35,23 @@
 
 uint64_t next_start_raw_ticks = 0;
 
-// NeoPixels are 800khz bit streams. Zeroes are 1/3 duty cycle (~416ns) and ones
-// are 2/3 duty cycle (~833ns). Each of the instructions below take 1/3 duty
+// NeoPixels are 800khz bit streams. We are choosing zeros as <312ns hi, 936 lo> and ones
+// and ones as <700 ns hi, 556 ns lo>.
 // cycle. The first two instructions always run while only one of the two final
 // instructions run per bit. We start with the low period because it can be
-// longer than 1/3 period while waiting for more data.
+// longer while waiting for more data.
 const uint16_t neopixel_program[] = {
 // bitloop:
-//   out x 1        side 0 [1]; Side-set still takes place before instruction stalls
-    0x6121,
-//   jmp !x do_zero side 1 [1]; Branch on the bit we shifted out after 1/3 duty delay. Positive pulse
-    0x1123,
+//   out x 1        side 0 [6]; Drive low. Side-set still takes place before instruction stalls.
+    0x6621,
+//   jmp !x do_zero side 1 [3]; Branch on the bit we shifted out previous delay. Drive high.
+    0x1323,
 // do_one:
-//   jmp  bitloop   side 1 [1]; Continue driving high, for a long pulse
-    0x1100,
+//   jmp  bitloop   side 1 [4]; Continue driving high, for a one (long pulse)
+    0x1400,
 // do_zero:
-//   nop            side 0 [1]; Or drive low, for a short pulse
-    0xa142
+//   nop            side 0 [4]; Or drive low, for a zero (short pulse)
+    0xa442
 };
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t num_bytes) {
@@ -63,7 +63,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     uint32_t pins_we_use = 1 << digitalinout->pin->number;
     bool ok = rp2pio_statemachine_construct(&state_machine,
         neopixel_program, sizeof(neopixel_program) / sizeof(neopixel_program[0]),
-        800000 * 6, // 800 khz * 6 cycles per bit
+        12800000, // MHz, to get about appropriate sub-bit times in PIO program.
         NULL, 0, // init program
         NULL, 1, // out
         NULL, 1, // in
