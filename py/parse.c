@@ -357,7 +357,7 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     }
 }
 
-#if MICROPY_COMP_CONST_TUPLE
+#if MICROPY_COMP_CONST_TUPLE || MICROPY_COMP_CONST
 STATIC bool mp_parse_node_is_const(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         // Small integer.
@@ -545,9 +545,9 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-// Create a parse node represeting a constant integer value, possibly optimising
-// it by putting the (small) integer value directly in the parse node itself.
-STATIC mp_parse_node_t make_node_const_int(parser_t *parser, size_t src_line, mp_obj_t obj) {
+// Create a parse node represeting a constant object, possibly optimising the case of
+// an integer, by putting the (small) integer value directly in the parse node itself.
+STATIC mp_parse_node_t make_node_const_object_optimised(parser_t *parser, size_t src_line, mp_obj_t obj) {
     if (mp_obj_is_small_int(obj)) {
         mp_int_t val = MP_OBJ_SMALL_INT_VALUE(obj);
         #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
@@ -579,7 +579,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_map_elem_t *elem;
         if (rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            pn = make_node_const_int(parser, lex->tok_line, elem->value);
+            pn = make_node_const_object_optimised(parser, lex->tok_line, elem->value);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
@@ -589,7 +589,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
-        pn = make_node_const_int(parser, lex->tok_line, o);
+        pn = make_node_const_object_optimised(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
         mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
@@ -803,14 +803,14 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 
                 // get the value
                 mp_parse_node_t pn_value = ((mp_parse_node_struct_t *)((mp_parse_node_struct_t *)pn1)->nodes[1])->nodes[0];
-                mp_obj_t value;
-                if (!mp_parse_node_get_int_maybe(pn_value, &value)) {
+                if (!mp_parse_node_is_const(pn_value)) {
                     mp_obj_t exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
-                        MP_ERROR_TEXT("constant must be an integer"));
+                        MP_ERROR_TEXT("not a constant"));
                     mp_obj_exception_add_traceback(exc, parser->lexer->source_name,
                         ((mp_parse_node_struct_t *)pn1)->source_line, MP_QSTRnull);
                     nlr_raise(exc);
                 }
+                mp_obj_t value = mp_parse_node_convert_to_obj(pn_value);
 
                 // store the value in the table of dynamic constants
                 mp_map_elem_t *elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
@@ -872,7 +872,7 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     for (size_t i = num_args; i > 0; i--) {
         pop_result(parser);
     }
-    push_result_node(parser, make_node_const_int(parser, 0, arg0));
+    push_result_node(parser, make_node_const_object_optimised(parser, 0, arg0));
 
     return true;
 }

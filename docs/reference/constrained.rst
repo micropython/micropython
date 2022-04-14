@@ -112,7 +112,8 @@ with an underscore as in ``_COLS``: this symbol is not visible outside the
 module so will not occupy RAM.
 
 The argument to ``const()`` may be anything which, at compile time, evaluates
-to an integer e.g. ``0x100`` or ``1 << 8``. It can even include other const
+to a constant e.g. ``0x100``, ``1 << 8`` or ``(True, "string", b"bytes")``
+(see section below for details).  It can even include other const
 symbols that have already been defined, e.g. ``1 << BIT``.
 
 **Constant data structures**
