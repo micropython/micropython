@@ -1047,6 +1047,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     // parse!
 
     bool backtrack = false;
+    bool is_list = false;
+    bool missing_comma = false;
 
     for (;;) {
     next_rule:
@@ -1133,6 +1135,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             // failed to match token
                             if (i > 0) {
                                 // already eaten tokens so can't backtrack
+                                missing_comma = is_list;
                                 goto syntax_error;
                             } else {
                                 // this rule failed, so backtrack
@@ -1241,6 +1244,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                                 // list allows trailing separator; finish parsing list
                                 had_trailing_sep = true;
                                 backtrack = false;
+                                is_list = false;
                             } else {
                                 // list doesn't allowing trailing separator; fail
                                 goto syntax_error;
@@ -1252,6 +1256,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     }
                 } else {
                     for (;;) {
+                        is_list = true;
                         size_t arg = rule_arg[i & 1 & n];
                         if ((arg & RULE_ARG_KIND_MASK) == RULE_ARG_TOK) {
                             if (lex->tok_kind == (arg & RULE_ARG_ARG_MASK)) {
@@ -1273,6 +1278,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                             assert((arg & RULE_ARG_KIND_MASK) == RULE_ARG_RULE);
                             push_rule(&parser, rule_src_line, rule_id, i + 1); // save this list-rule
                             push_rule_from_arg(&parser, arg); // push child of list-rule
+                            is_list = false;
                             goto next_rule;
                         }
                     }
@@ -1337,6 +1343,9 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("raw f-strings are not supported"));
         #endif
+        } else if (missing_comma) {
+            exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
+                MP_ERROR_TEXT("invalid syntax. Perhaps you forgot a comma?"));
         } else {
             exc = mp_obj_new_exception_msg(&mp_type_SyntaxError,
                 MP_ERROR_TEXT("invalid syntax"));
