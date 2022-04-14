@@ -857,17 +857,8 @@ STATIC qstr compile_classdef_helper(compiler_t *comp, mp_parse_node_struct_t *pn
 }
 
 // returns true if it was a built-in decorator (even if the built-in had an error)
-STATIC bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_parse_node_t *name_nodes, uint *emit_options) {
-    if (MP_PARSE_NODE_LEAF_ARG(name_nodes[0]) != MP_QSTR_micropython) {
-        return false;
-    }
-
-    if (name_len != 2) {
-        compile_syntax_error(comp, name_nodes[0], MP_ERROR_TEXT("invalid micropython decorator"));
-        return true;
-    }
-
-    qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
+STATIC bool compile_built_in_decorator(compiler_t *comp, mp_parse_node_t name_node, uint *emit_options) {
+    qstr attr = MP_PARSE_NODE_LEAF_ARG(name_node);
     if (attr == MP_QSTR_bytecode) {
         *emit_options = MP_EMIT_OPT_BYTECODE;
     #if MICROPY_EMIT_NATIVE
@@ -888,17 +879,17 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     #endif
         #endif
     } else {
-        compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid micropython decorator"));
+        compile_syntax_error(comp, name_node, MP_ERROR_TEXT("invalid micropython decorator"));
     }
 
     #if MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
     if (*emit_options == MP_EMIT_OPT_NATIVE_PYTHON || *emit_options == MP_EMIT_OPT_VIPER) {
         if (emit_native_table[mp_dynamic_compiler.native_arch] == NULL) {
-            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid arch"));
+            compile_syntax_error(comp, name_node, MP_ERROR_TEXT("invalid arch"));
         }
     } else if (*emit_options == MP_EMIT_OPT_ASM) {
         if (emit_asm_table[mp_dynamic_compiler.native_arch] == NULL) {
-            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid arch"));
+            compile_syntax_error(comp, name_node, MP_ERROR_TEXT("invalid arch"));
         }
     }
     #endif
@@ -920,30 +911,22 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
         assert(MP_PARSE_NODE_IS_STRUCT_KIND(nodes[i], PN_decorator)); // should be
         mp_parse_node_struct_t *pns_decorator = (mp_parse_node_struct_t *)nodes[i];
 
-        // nodes[0] contains the decorator function, which is a dotted name
-        mp_parse_node_t *name_nodes;
-        size_t name_len = mp_parse_node_extract_list(&pns_decorator->nodes[0], PN_dotted_name, &name_nodes);
+        assert(MP_PARSE_NODE_STRUCT_NUM_NODES(pns_decorator) == 1);
+        mp_parse_node_t decorator_arg = pns_decorator->nodes[0];
 
-        // check for built-in decorators
-        if (compile_built_in_decorator(comp, name_len, name_nodes, &emit_options)) {
-            // this was a built-in
-            num_built_in_decorators += 1;
-
+        if (MP_PARSE_NODE_IS_STRUCT_KIND(decorator_arg, PN_built_in_decorator)) {
+            mp_parse_node_struct_t *decorator_arg_s = (mp_parse_node_struct_t *)decorator_arg;
+            assert(MP_PARSE_NODE_STRUCT_NUM_NODES(decorator_arg_s) == 2);
+            // The first child node must be the ID "micropython" (enforced by
+            // the parser). We just need to have a look at the second child.
+            mp_parse_node_t name_node = decorator_arg_s->nodes[1];
+            if (compile_built_in_decorator(comp, name_node, &emit_options)) {
+                num_built_in_decorators += 1;
+            }
         } else {
-            // not a built-in, compile normally
-
-            // compile the decorator function
-            compile_node(comp, name_nodes[0]);
-            for (size_t j = 1; j < name_len; j++) {
-                assert(MP_PARSE_NODE_IS_ID(name_nodes[j])); // should be
-                EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(name_nodes[j]), MP_EMIT_ATTR_LOAD);
-            }
-
-            // nodes[1] contains arguments to the decorator function, if any
-            if (!MP_PARSE_NODE_IS_NULL(pns_decorator->nodes[1])) {
-                // call the decorator function with the arguments in nodes[1]
-                compile_node(comp, pns_decorator->nodes[1]);
-            }
+            // decorator_arg is something derived from a namedexpr_test rule.
+            // Compile it normally.
+            compile_node(comp, decorator_arg);
         }
     }
 

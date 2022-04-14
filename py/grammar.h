@@ -51,7 +51,9 @@ DEF_RULE_NC(file_input_3, or(2), tok(NEWLINE), rule(stmt))
 DEF_RULE_NC(eval_input, and_ident(2), rule(testlist), opt_rule(eval_input_2))
 DEF_RULE_NC(eval_input_2, and(1), tok(NEWLINE))
 
-// decorator: '@' dotted_name [ '(' [arglist] ')' ] NEWLINE
+// decorator: '@' decorator_arg NEWLINE
+// decorator_arg: built_in_decorator | namedexpr_test
+// built_in_decorator: 'micropython' '.' NAME
 // decorators: decorator+
 // decorated: decorators (classdef | funcdef | async_funcdef)
 // funcdef: 'def' NAME parameters ['->' test] ':' suite
@@ -62,7 +64,9 @@ DEF_RULE_NC(eval_input_2, and(1), tok(NEWLINE))
 // varargslist: vfpdef ['=' test] (',' vfpdef ['=' test])* [',' ['*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef]] |  '*' [vfpdef] (',' vfpdef ['=' test])* [',' '**' vfpdef] | '**' vfpdef
 // vfpdef: NAME
 
-DEF_RULE_NC(decorator, and(4), tok(OP_AT), rule(dotted_name), opt_rule(trailer_paren), tok(NEWLINE))
+DEF_RULE_NC(decorator, and(3), tok(OP_AT), rule(decorator_arg), tok(NEWLINE))
+DEF_RULE_NC(decorator_arg, or(2), rule(built_in_decorator), rule(namedexpr_test))
+DEF_RULE_NC(built_in_decorator, and(3), tok(NAME), tok(DEL_PERIOD), tok(NAME))
 DEF_RULE_NC(decorators, one_or_more, rule(decorator))
 DEF_RULE(decorated, c(decorated), and_ident(2), rule(decorators), rule(decorated_body))
 #if MICROPY_PY_ASYNC_AWAIT
