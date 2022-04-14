@@ -456,7 +456,6 @@ uint32_t setarmclock(uint32_t frequency) {
     // if voltage needs to increase, do it before switch clock speed
     CCM->CCGR6 |= CCM_CCGR6_DCDC(CCM_CCGR_ON);
     if ((dcdc & ((uint32_t)(0x1F << 0))) < ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0)) {
-        // printf("Increasing voltage to %u mV\n", voltage);
         dcdc &= ~((uint32_t)(0x1F << 0));
         dcdc |= ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0);
         DCDC->REG3 = dcdc;
@@ -466,16 +465,13 @@ uint32_t setarmclock(uint32_t frequency) {
     }
 
     if (!(cbcdr & CCM_CBCDR_PERIPH_CLK_SEL_L)) {
-        // printf("need to switch to alternate clock during reconfigure of ARM PLL\n");
         const uint32_t need1s = CCM_ANALOG_PLL_USB1_ENABLE_L | CCM_ANALOG_PLL_USB1_POWER_L |
             CCM_ANALOG_PLL_USB1_LOCK_L | CCM_ANALOG_PLL_USB1_EN_USB_CLKS_L;
         uint32_t sel, div;
         if ((CCM_ANALOG->PLL_USB1 & need1s) == need1s) {
-            // printf("USB PLL is running, so we can use 120 MHz\n");
             sel = 0;
             div = 3;             // divide down to 120 MHz, so IPG is ok even if IPG_PODF=0
         } else {
-            // printf("USB PLL is off, use 24 MHz crystal\n");
             sel = 1;
             div = 0;
         }
@@ -500,8 +496,6 @@ uint32_t setarmclock(uint32_t frequency) {
         while (CCM->CDHIPR & ((uint32_t)(1 << 5))) {
             ;                                              // wait
         }
-    } else {
-        // printf("already running from PERIPH_CLK2, safe to mess with ARM PLL\n");
     }
 
     // TODO: check if PLL2 running, can 352, 396 or 528 can work? (no need for ARM PLL)
@@ -528,10 +522,9 @@ uint32_t setarmclock(uint32_t frequency) {
     if (mult < 54) {
         mult = 54;
     }
-    // printf("Freq: 12 MHz * %u / %u / %u\n", mult, div_arm, div_ahb);
+
     frequency = mult * 12000000 / div_arm / div_ahb;
 
-    // printf("ARM PLL=%x\n", CCM_ANALOG->PLL_ARM);
     const uint32_t arm_pll_mask = CCM_ANALOG_PLL_ARM_LOCK_L | CCM_ANALOG_PLL_ARM_BYPASS_L |
         CCM_ANALOG_PLL_ARM_ENABLE_L | CCM_ANALOG_PLL_ARM_POWERDOWN_L |
         CCM_ANALOG_PLL_ARM_DIV_SELECT_MASK;
@@ -545,9 +538,6 @@ uint32_t setarmclock(uint32_t frequency) {
         while (!(CCM_ANALOG->PLL_ARM & CCM_ANALOG_PLL_ARM_LOCK_L)) {
             ;                                                                // wait for lock
         }
-        // printf("ARM PLL=%x\n", CCM_ANALOG->PLL_ARM);
-    } else {
-        // printf("ARM PLL already running at required frequency\n");
     }
 
     if ((CCM->CACRR & ((uint32_t)(0x07 << 0))) != (div_arm - 1)) {
@@ -588,11 +578,8 @@ uint32_t setarmclock(uint32_t frequency) {
     F_BUS_ACTUAL = frequency / div_ipg;
     // scale_cpu_cycles_to_microseconds = 0xFFFFFFFFu / (uint32_t)(frequency / 1000000u);
 
-    // printf("New Frequency: ARM=%u, IPG=%u\n", frequency, frequency / div_ipg);
-
     // if voltage needs to decrease, do it after switch clock speed
     if ((dcdc & ((uint32_t)(0x1F << 0))) > ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0)) {
-        // printf("Decreasing voltage to %u mV\n", voltage);
         dcdc &= ~((uint32_t)(0x1F << 0));
         dcdc |= ((uint32_t)(0x1F << 0));
         DCDC->REG3 = dcdc;

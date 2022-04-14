@@ -35,7 +35,6 @@
 
 typedef struct {
     mp_obj_base_t base;
-    // Stores no state currently.
     uint32_t frequency;
 } mcu_processor_obj_t;
 
