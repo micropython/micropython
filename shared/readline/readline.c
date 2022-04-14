@@ -222,7 +222,22 @@ int readline_process_char(int c) {
         } else if (c == 9) {
             // tab magic
             const char *compl_str;
-            size_t compl_len = mp_repl_autocomplete(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len, &mp_plat_print, &compl_str);
+            size_t compl_len;
+            if (vstr_len(rl.line) != 0 && unichar_isspace(vstr_str(rl.line)[rl.cursor_pos - 1])) {
+                // expand tab to 4 spaces if it follows whitespace:
+                //  - includes the case of additional indenting
+                //  - includes the case of indenting the start of a line that's not the first line,
+                //    because a newline will be the previous character
+                //  - doesn't include the case when at the start of the first line, because we still
+                //    want to use auto-complete there
+                compl_str = "    ";
+                compl_len = 4;
+            } else {
+                // try to auto-complete a word
+                const char *cur_line_buf = vstr_str(rl.line) + rl.orig_line_len;
+                size_t cur_line_len = rl.cursor_pos - rl.orig_line_len;
+                compl_len = mp_repl_autocomplete(cur_line_buf, cur_line_len, &mp_plat_print, &compl_str);
+            }
             if (compl_len == 0) {
                 // no match
             } else if (compl_len == (size_t)(-1)) {
