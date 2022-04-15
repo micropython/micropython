@@ -1,6 +1,6 @@
 {
     "deploy": [
-        "../deploy_mimxrt.md"
+        "deploy_olimex.md"
     ],
     "docs": "",
     "features": [
