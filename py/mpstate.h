@@ -241,6 +241,16 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_SCHEDULER
     volatile int16_t sched_state;
+
+    #if MICROPY_SCHEDULER_STATIC_NODES
+    // These will usually point to statically allocated memory.  They are not
+    // traced by the GC.  They are assumed to be zero'd out before mp_init() is
+    // called (usually because this struct lives in the BSS).
+    struct _mp_sched_node_t *sched_head;
+    struct _mp_sched_node_t *sched_tail;
+    #endif
+
+    // These index sched_queue.
     uint8_t sched_len;
     uint8_t sched_idx;
     #endif
