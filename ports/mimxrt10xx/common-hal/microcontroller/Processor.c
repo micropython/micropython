@@ -57,6 +57,15 @@ uint32_t common_hal_mcu_processor_set_frequency(mcu_processor_obj_t *self,
     if (frequency < 24000000 || frequency > 1008000000) {
         mp_raise_ValueError(translate("Frequency Out of Range Must be between 24Mhz and 1.008Ghz"));
     }
+    if (frequency <= 600000000) {
+        mp_printf(&mp_plat_print, "System Clock is set to %d hz\n", frequency);
+    }
+    if (frequency > 600000000) {
+        mp_printf(&mp_plat_print, "System Clock is set to %d hz and is Overclocked\n", frequency);
+    }
+    if (frequency > 816000000) {
+        mp_printf(&mp_plat_print,  "System Clock is set to %d hz and is Overclocked, Cooling Required!\n", frequency);
+    }
     SystemCoreClock = setarmclock(frequency);
     return SystemCoreClock;
 }
