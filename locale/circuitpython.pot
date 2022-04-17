@@ -1108,7 +1108,8 @@ msgid "Framebuffer requires %d bytes"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
-msgid "Frequency Out of Range Must be between 24Mhz and 1.008Ghz"
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
