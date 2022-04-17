@@ -44,14 +44,14 @@ $(() => {
 		var nvisible = 0;
 		$(".support-matrix-table tbody tr").each( (index,item) => {
 			var name = $(item).find("td:first-child p").html();
-			var modules = $(item).find("a.reference.internal");
+			var modules = $(item).find("code, a.reference.external");
 			var matching_all = true;
 			//
 			list_search.forEach((sstring) => {
 				var matching = (sstring[0] == "-");
 				for(var modi = 0; modi < modules.length; ++modi) {
 					module = modules[modi];
-					var mod_name = module.firstChild.firstChild.textContent;
+					var mod_name = module.firstChild.textContent;
 					if(sstring[0] == "-") {
 						if(mod_name.match(sstring.substr(1))) {
 							matching = false;

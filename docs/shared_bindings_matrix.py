@@ -62,8 +62,13 @@ additional_modules = {
     "fontio": "CIRCUITPY_DISPLAYIO",
     "terminalio": "CIRCUITPY_DISPLAYIO",
     "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
-    "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF"
+    "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF",
+    "usb": "CIRCUITPY_USB_HOST",
 }
+
+frozen_excludes = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
+"""Files and dirs at the root of a frozen directory that should be ignored.
+This is the same list as in the preprocess_frozen_modules script."""
 
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
@@ -162,6 +167,40 @@ def get_settings_from_makefile(port_dir, board_name):
 
     return settings
 
+def get_repository_url(directory):
+    contents = subprocess.run(
+        ["git", "remote", "get-url", "origin"],
+        encoding="utf-8",
+        errors="replace",
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=directory
+    )
+    return contents.stdout.strip()
+
+def frozen_modules_from_dirs(frozen_mpy_dirs):
+    """
+    Go through the list of frozen directories and extract the python modules.
+    Paths are of the type:
+        $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground
+        $(TOP)/frozen/circuitpython-stage/meowbit
+    Python modules are at the root of the path, and are python files or directories
+    containing python files. Except the ones in the frozen_excludes list.
+    """
+    frozen_modules = []
+    for frozen_path in filter(lambda x: x, frozen_mpy_dirs.split(" ")):
+        source_dir = get_circuitpython_root_dir() / frozen_path[7:]
+        url_repository = get_repository_url(source_dir)
+        for sub in source_dir.glob("*"):
+            if sub.name in frozen_excludes:
+                continue
+            if sub.name.endswith(".py"):
+                frozen_modules.append((sub.name[:-3], url_repository))
+                continue
+            if next(sub.glob("**/*.py"), None): # tests if not empty
+                frozen_modules.append((sub.name, url_repository))
+    return frozen_modules
+
 def lookup_setting(settings, key, default=''):
     while True:
         value = settings.get(key, default)
@@ -207,8 +246,14 @@ def support_matrix_by_board(use_branded_name=True):
                 board_modules.append(base[module]['name'])
         board_modules.sort()
 
+        frozen_modules = []
+        if "FROZEN_MPY_DIRS" in settings:
+            frozen_modules = frozen_modules_from_dirs(settings["FROZEN_MPY_DIRS"])
+            if frozen_modules:
+                frozen_modules.sort()
+
         # generate alias boards too
-        board_matrix = [(board_name, board_modules)]
+        board_matrix = [(board_name, (board_modules, frozen_modules))]
         if entry.name in aliases_by_board:
             for alias in aliases_by_board[entry.name]:
                 if use_branded_name:
@@ -216,7 +261,7 @@ def support_matrix_by_board(use_branded_name=True):
                         alias = aliases_brand_names[alias]
                     else:
                         alias = alias.replace("_"," ").title()
-                board_matrix.append( (alias, board_modules) )
+                board_matrix.append( (alias, (board_modules, frozen_modules)) )
 
         return board_matrix # this is now a list of (board,modules)
 
@@ -225,7 +270,6 @@ def support_matrix_by_board(use_branded_name=True):
     # flatmap with comprehensions
     boards = dict(sorted([board for matrix in mapped_exec for board in matrix]))
 
-    # print(json.dumps(boards, indent=2))
     return boards
 
 if __name__ == '__main__':

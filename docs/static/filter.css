@@ -7,8 +7,21 @@
 	right: 10px;
 	top: 4px;
 }
-.support-matrix-table .this_module code,
-.support-matrix-table .this_module span {
+
+.support-matrix-table .reference.external {
+	box-sizing: border-box;
+	font-weight: 700;
+	color: #404050;
+	font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", Courier, monospace;
+	padding: 2px 5px;
+	background: white;
+	border: 1px solid #e1e4e5;
+	font-size: 75%;
+}
+
+.support-matrix-table .this_module,
+.support-matrix-table .this_module.reference.external,
+.support-matrix-table .this_module * {
 	background: black;
 	color: white;
 }
