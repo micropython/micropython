@@ -837,9 +837,11 @@ int __attribute__((used)) main(void) {
     // Start the debug serial
     serial_early_init();
 
+    #if !INTERNAL_FLASH_FILESYSTEM
     // Set up anything that might need to get done before we try to use SPI flash
     // This is needed for some boards where flash relies on GPIO setup to work
     external_flash_setup();
+    #endif
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
