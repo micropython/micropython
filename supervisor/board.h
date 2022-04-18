@@ -47,5 +47,4 @@ void reset_board(void);
 // disabling USB, BLE or flash) because CircuitPython may continue to run.
 void board_deinit(void);
 
-
 #endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H
