@@ -62,6 +62,7 @@
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
 #include "supervisor/workflow.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
@@ -982,6 +983,3 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 #endif
-
-void MP_WEAK external_flash_setup(void) {
-}

@@ -28,7 +28,7 @@
 #include "mpconfigboard.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "hal/include/hal_gpio.h"
-#include "py/mphal.h"
+#include "supervisor/shared/external_flash/external_flash.h"
 
 void board_init(void) {
 }
@@ -58,7 +58,4 @@ void external_flash_setup(void) {
     gpio_set_pin_function(PIN_PB23, GPIO_PIN_FUNCTION_OFF);
     gpio_set_pin_direction(PIN_PB23, GPIO_DIRECTION_OUT);
     gpio_set_pin_level(PIN_PB23, true);
-
-    // Add some delay to give the pins time to get set
-    // mp_hal_delay_ms(3000);
 }

@@ -47,9 +47,4 @@ void reset_board(void);
 // disabling USB, BLE or flash) because CircuitPython may continue to run.
 void board_deinit(void);
 
-// Configure anything that needs to get set up before the external flash
-// is init'ed. For example, if GPIO needs to be configured to enable the
-// flash chip, as is the case on some boards.
-void external_flash_setup(void);
-
 #endif  // MICROPY_INCLUDED_SUPERVISOR_BOARD_H
