@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-01-16 13:56+0000\n"
-"Last-Translator: Gökhan Koçmarlı <gokhankocmarli@gmail.com>\n"
+"PO-Revision-Date: 2022-04-19 17:07+0000\n"
+"Last-Translator: Siyabend Ürün <urunsiyabend@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: main.c
 msgid ""
@@ -515,7 +515,7 @@ msgstr "Dizi değerleri tekil bytelar olmalıdır."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "En az %d %q belirtilmeli (%d değil)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -570,23 +570,24 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "Bit derinliği 1-6 aralığında olmalı, %d değil"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr ""
+msgstr "Bit derinliği 8'in katı olacak şekilde olmalı."
 
 #: shared-bindings/bitmaptools/__init__.c
+#, fuzzy
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "Bitmap boyutu ve bit başına değer uyuşmalı"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
-msgstr ""
+msgstr "Önyükleme cihazı ilk cihaz olmalı (arayüz #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Hem RX hem de TX akış kontrolü için gerekli"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
