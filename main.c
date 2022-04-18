@@ -836,11 +836,9 @@ int __attribute__((used)) main(void) {
     // Start the debug serial
     serial_early_init();
 
-    #if CIRCUITPY_EXTERNAL_FLASH_SETUP
     // Set up anything that might need to get done before we try to use SPI flash
     // This is needed for some boards where flash relies on GPIO setup to work
     external_flash_setup();
-    #endif
 
     // Create a new filesystem only if we're not in a safe mode.
     // A power brownout here could make it appear as if there's
@@ -984,3 +982,6 @@ void MP_WEAK __assert_func(const char *file, int line, const char *func, const c
     __fatal_error("Assertion failed");
 }
 #endif
+
+void MP_WEAK external_flash_setup(void) {
+}
