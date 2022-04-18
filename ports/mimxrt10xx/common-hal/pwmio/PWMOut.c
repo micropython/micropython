@@ -101,9 +101,10 @@ void debug_print_flexpwm_registers(PWM_Type *base) {
         base->FSTS, base->FFILT, base->FTST, base->FCTRL2);
     for (uint8_t i = 0; i < 4; i++) {
         mp_printf(&mp_plat_print,
-            "\t\t(%u) INIT:%x CTRL2:%x CTRL:%x VAL0:%x VAL1:%x VAL2:%x VAL3:%x VAL4:%x VAL5:%x OCTRL:%x DTCNT0:%x DTCNT1:%x\n", i,
+            "\t\t(%u) INIT:%x CTRL2:%x CTRL:%x VAL0:%x VAL1:%x VAL2:%x VAL3:%x VAL4:%x VAL5:%x OCTRL:%x DTCNT0:%x DTCNT1:%x  DISMAP: %x %x\n", i,
             base->SM[i].INIT, base->SM[i].CTRL2, base->SM[i].CTRL, base->SM[i].VAL0, base->SM[i].VAL1, base->SM[i].VAL2,
-            base->SM[i].VAL3, base->SM[i].VAL4, base->SM[i].VAL5, base->SM[i].OCTRL, base->SM[i].DTCNT0, base->SM[i].DTCNT1);
+            base->SM[i].VAL3, base->SM[i].VAL4, base->SM[i].VAL5, base->SM[i].OCTRL, base->SM[i].DTCNT0, base->SM[i].DTCNT1,
+            base->SM[i].DISMAP[0], base->SM[i].DISMAP[1]);
     }
 
 }
@@ -183,23 +184,11 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     self->pwm->pwm->SM[self->pwm->submodule].DISMAP[1] = 0;
 
     DBGPrintf(&mp_plat_print, "\tCall PWM_SetupPwm %p %x %u\n", self->pwm->pwm, self->pwm->submodule);
-    #if 0
+    // ========================================================================================================
     // Not calling the PWM_SetupPwm as it was setup to only work for PWM output on chan A and B but not X
     // I have done some experimenting, probably could try others, but again they do not work with X.
     // Most of the code checks to see if A if not, then it assume B.
-    pwm_signal_param_t pwmSignal = {
-        .pwmChannel = self->pwm->channel,
-        .level = kPWM_HighTrue,
-        .dutyCyclePercent = 0, // avoid an initial transient
-        .deadtimeValue = 0, // allow 100% duty cycle
-    };
-    status_t status = PWM_SetupPwm(self->pwm->pwm, self->pwm->submodule, &pwmSignal, 1, kPWM_EdgeAligned, frequency, PWM_SRC_CLK_FREQ);
-
-    if (status != kStatus_Success) {
-        return PWMOUT_INITIALIZATION_ERROR;
-    }
-    #else
-    // ========================================================================================================
+    //
     // Instead I set it up to work similar to what the Teensy 4.x code does.
     //
     // That is we set the PWM_CTRL_FULL_MASK, which then uses  base->SM[submodule].VAL1  to control
@@ -236,8 +225,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         base->MCTRL |= PWM_MCTRL_LDOK(mask);
     }
     debug_print_flexpwm_registers(self->pwm->pwm);
-
-    #endif
 
     PWM_SetPwmLdok(self->pwm->pwm, 1 << self->pwm->submodule, true);
 
