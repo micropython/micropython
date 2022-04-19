@@ -42,6 +42,8 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
+#define NO_DMA_CHANNEL (-1)
+
 // Count how many state machines are using each pin.
 STATIC uint8_t _pin_reference_count[TOTAL_GPIO_COUNT];
 STATIC uint32_t _current_program_id[NUM_PIOS][NUM_PIO_STATE_MACHINES];
@@ -330,6 +332,9 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     sm_config_set_fifo_join(&c, join);
     self->sm_config = c;
 
+    // no DMA allocated
+    self->dma_channel[0] = self->dma_channel[1] = NO_DMA_CHANNEL;
+
     pio_sm_init(self->pio, self->state_machine, program_offset, &c);
     common_hal_rp2pio_statemachine_run(self, init, init_len);
 
@@ -581,6 +586,7 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t *sel
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins) {
     common_hal_rp2pio_statemachine_stop(self);
+    (void)common_hal_rp2pio_statemachine_end_continuous_write(self);
 
     uint8_t sm = self->state_machine;
     uint8_t pio_index = pio_get_index(self->pio);
@@ -849,10 +855,114 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
     return _current_program_offset[pio_index][sm];
 }
 
-bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
-    return false;
+#define HERE(fmt, ...) (mp_printf(&mp_plat_print, "%s: %d: " fmt "\n", __FILE__, __LINE__,##__VA_ARGS__))
+
+bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_obj_t *self, mp_obj_t buf_obj, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
+    if (self->dma_channel[0] != NO_DMA_CHANNEL && stride_in_bytes == self->continuous_stride_in_bytes) {
+        HERE("updating channel pending=%d\n", self->pending_set_data);
+        while (self->pending_set_data) {
+            RUN_BACKGROUND_TASKS;
+            if (self->user_interruptible && mp_hal_is_interrupted()) {
+                (void)common_hal_rp2pio_statemachine_end_continuous_write(self);
+                return false;
+            }
+        }
+
+        common_hal_mcu_disable_interrupts();
+        self->next_buffer = data;
+        self->next_size = len / stride_in_bytes;
+        self->pending_set_data = true;
+        common_hal_mcu_enable_interrupts();
+
+        // need to keep a reference alive to the buffer, lest the GC collect it while its lone remaining pointer is in the DMA peripheral register
+        self->buf_objs[++self->buf_obj_idx % 2] = buf_obj;
+        return true;
+    }
+
+    common_hal_rp2pio_statemachine_end_continuous_write(self);
+
+    for (int i = 0; i < 2; i++) {
+        HERE("allocating channel %d", i);
+        if (self->dma_channel[i] == -1) {
+            self->dma_channel[i] = dma_claim_unused_channel(false);
+            HERE("got  channel %d", self->dma_channel[i]);
+            MP_STATE_PORT(continuous_pio)[self->dma_channel[i]] = self;
+        }
+        if (self->dma_channel[i] == -1) {
+            HERE("allocating channel %d failed", i);
+            (void)common_hal_rp2pio_statemachine_end_continuous_write(self);
+            return false;
+        }
+    }
+
+    volatile uint8_t *tx_destination = (volatile uint8_t *)&self->pio->txf[self->state_machine];
+
+    self->tx_dreq = pio_get_dreq(self->pio, self->state_machine, true);
+
+    dma_channel_config c;
+
+    self->pending_set_data = false;
+    self->continuous_stride_in_bytes = stride_in_bytes;
+    self->buf_objs[0] = buf_obj;
+    self->buf_objs[1] = NULL;
+
+    self->next_buffer = data;
+    self->next_size = len / stride_in_bytes;
+
+    c = dma_channel_get_default_config(self->dma_channel[0]);
+    channel_config_set_transfer_data_size(&c, _stride_to_dma_size(stride_in_bytes));
+    channel_config_set_dreq(&c, self->tx_dreq);
+    channel_config_set_read_increment(&c, true);
+    channel_config_set_write_increment(&c, false);
+    // channel_config_set_chain_to(&c, self->dma_channel[1]);
+    dma_channel_configure(self->dma_channel[0], &c,
+        tx_destination,
+        data,
+        len / stride_in_bytes,
+        false);
+
+    #if 0
+    channel_config_set_chain_to(&c, self->dma_channel[0]);
+    dma_channel_configure(self->dma_channel[1], &c,
+        tx_destination,
+        data,
+        len / stride_in_bytes,
+        false);
+    #endif
+
+    dma_hw->inte0 |= (1 << self->dma_channel[0]) | (1 << self->dma_channel[1]);
+    irq_set_mask_enabled(1 << DMA_IRQ_0, true);
+
+    HERE("OK let's go");
+    dma_start_channel_mask(1u << self->dma_channel[0]);
+    return true;
+}
+
+void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int channel) {
+    HERE("dma complete[%d] pending set data=%d busy=%d,%d %d@%p", channel, self->pending_set_data, dma_channel_is_busy(self->dma_channel[0]), dma_channel_is_busy(self->dma_channel[1]),
+        self->next_size, self->next_buffer);
+
+    dma_channel_set_read_addr(channel, self->next_buffer, false);
+    dma_channel_set_trans_count(channel, self->next_size, true);
+
+    self->pending_set_data = false;
 }
 
 bool common_hal_rp2pio_statemachine_end_continuous_write(rp2pio_statemachine_obj_t *self) {
-    return false;
+    for (int i = 0; i < 2; i++) {
+        if (self->dma_channel[i] == NO_DMA_CHANNEL) {
+            continue;
+        }
+        int channel = self->dma_channel[i];
+        uint32_t channel_mask = 1u << channel;
+        dma_hw->inte0 &= ~channel_mask;
+        if (!dma_hw->inte0) {
+            irq_set_mask_enabled(1 << DMA_IRQ_0, false);
+        }
+        MP_STATE_PORT(continuous_pio)[channel] = NULL;
+        dma_channel_abort(channel);
+        dma_channel_unclaim(channel);
+        self->dma_channel[i] = NO_DMA_CHANNEL;
+    }
+    return true;
 }

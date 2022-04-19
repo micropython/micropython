@@ -54,6 +54,15 @@ typedef struct {
     bool in_shift_right;
     bool user_interruptible;
     uint8_t offset;
+
+    // dma-related items
+    uint8_t buf_obj_idx;
+    const uint8_t *next_buffer;
+    size_t next_size;
+    int dma_channel[2];
+    mp_obj_t buf_objs[2];
+    int continuous_stride_in_bytes;
+    volatile int pending_set_data;
 } rp2pio_statemachine_obj_t;
 
 void reset_rp2pio_statemachine(void);
@@ -82,6 +91,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self);
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins);
+void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int channel);
 
 extern const mp_obj_type_t rp2pio_statemachine_type;
 

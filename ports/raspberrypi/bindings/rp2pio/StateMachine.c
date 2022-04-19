@@ -480,7 +480,7 @@ STATIC mp_obj_t rp2pio_statemachine_start_continuous_write(size_t n_args, const 
             mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
         }
 
-        ok = common_hal_rp2pio_statemachine_start_continuous_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
+        ok = common_hal_rp2pio_statemachine_start_continuous_write(self, args[ARG_buffer].u_obj, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     }
     if (!ok) {
         mp_raise_OSError(MP_EIO);

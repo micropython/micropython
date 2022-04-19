@@ -29,6 +29,7 @@
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/audiocore/WaveFile.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "bindings/rp2pio/StateMachine.h"
 #include "supervisor/background_callback.h"
 
 #include "py/mpstate.h"
@@ -324,7 +325,9 @@ void audio_dma_stop(audio_dma_t *dma) {
         channel_mask |= 1 << dma->channel[1];
     }
     dma_hw->inte0 &= ~channel_mask;
-    irq_set_mask_enabled(1 << DMA_IRQ_0, false);
+    if (!dma_hw->inte0) {
+        irq_set_mask_enabled(1 << DMA_IRQ_0, false);
+    }
 
     // Run any remaining audio tasks because we remove ourselves from
     // playing_audio.
@@ -442,13 +445,20 @@ STATIC void dma_callback_fun(void *arg) {
 void isr_dma_0(void) {
     for (size_t i = 0; i < NUM_DMA_CHANNELS; i++) {
         uint32_t mask = 1 << i;
-        if ((dma_hw->intr & mask) != 0 && MP_STATE_PORT(playing_audio)[i] != NULL) {
+        if ((dma_hw->intr & mask) == 0) {
+            continue;
+        }
+        if (MP_STATE_PORT(playing_audio)[i] != NULL) {
             audio_dma_t *dma = MP_STATE_PORT(playing_audio)[i];
             // Record all channels whose DMA has completed; they need loading.
             dma->channels_to_load_mask |= mask;
             background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
-            dma_hw->ints0 = mask;
         }
+        if (MP_STATE_PORT(continuous_pio)[i] != NULL) {
+            rp2pio_statemachine_obj_t *pio = MP_STATE_PORT(continuous_pio)[i];
+            rp2pio_statemachine_dma_complete(pio, i);
+        }
+        dma_hw->ints0 = mask;
     }
 }
 
