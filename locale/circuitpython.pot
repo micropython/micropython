@@ -2721,11 +2721,6 @@ msgstr ""
 msgid "binary op %q not implemented"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c
-msgid ""
-"bitmap must be displayio.Bitmap, displayio.Shape, or displayio.OnDiskBitmap"
-msgstr ""
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr ""
@@ -3028,7 +3023,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c
+#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
 msgid "compression header"
 msgstr ""
 

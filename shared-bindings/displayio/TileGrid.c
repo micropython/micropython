@@ -137,7 +137,6 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-
 // Helper to ensure we have the native super class instead of a subclass.
 static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_t native_tilegrid = mp_obj_cast_to_native_base(tilegrid_obj, &displayio_tilegrid_type);
@@ -392,12 +391,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_bitmap_obj, displayio_tilegrid_
 
 STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bitmap) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
-    if (!mp_obj_is_type(bitmap, &displayio_bitmap_type) &&
-        !mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type) &&
-        !mp_obj_is_type(bitmap, &displayio_shape_type)) {
-
-        mp_raise_TypeError(translate("bitmap must be displayio.Bitmap, displayio.Shape, or displayio.OnDiskBitmap"));
-    }
 
     uint16_t new_bitmap_width;
     uint16_t new_bitmap_height;
