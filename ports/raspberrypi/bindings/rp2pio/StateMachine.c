@@ -482,6 +482,9 @@ STATIC mp_obj_t rp2pio_statemachine_start_continuous_write(size_t n_args, const 
 
         ok = common_hal_rp2pio_statemachine_start_continuous_write(self, args[ARG_buffer].u_obj, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
     }
+    if (mp_hal_is_interrupted()) {
+        return mp_const_none;
+    }
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -495,6 +498,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_start_continuous_write_obj, 2, rp
 STATIC mp_obj_t rp2pio_statemachine_obj_end_continuous_write(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
     bool ok = common_hal_rp2pio_statemachine_end_continuous_write(self);
+    if (mp_hal_is_interrupted()) {
+        return mp_const_none;
+    }
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }

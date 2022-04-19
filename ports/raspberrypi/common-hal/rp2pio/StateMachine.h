@@ -59,7 +59,6 @@ typedef struct {
     uint8_t buf_obj_idx;
     const uint8_t *next_buffer;
     size_t next_size;
-    int dma_channel[2];
     mp_obj_t buf_objs[2];
     int continuous_stride_in_bytes;
     volatile int pending_set_data;

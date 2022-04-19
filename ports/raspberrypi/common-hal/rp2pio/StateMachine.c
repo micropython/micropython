@@ -53,6 +53,12 @@ STATIC bool _never_reset[NUM_PIOS][NUM_PIO_STATE_MACHINES];
 
 STATIC uint32_t _current_pins[NUM_PIOS];
 STATIC uint32_t _current_sm_pins[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+STATIC int8_t _sm_dma_plus_one[NUM_PIOS][NUM_PIO_STATE_MACHINES];
+
+#define SM_DMA_ALLOCATED(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] != 0)
+#define SM_DMA_GET_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] - 1)
+#define SM_DMA_CLEAR_CHANNEL(pio_index, sm) (_sm_dma_plus_one[(pio_index)][(sm)] = 0)
+#define SM_DMA_SET_CHANNEL(pio_isntance, sm, channel) (_sm_dma_plus_one[(pio_index)][(sm)] = (channel) + 1)
 
 STATIC PIO pio_instances[2] = {pio0, pio1};
 typedef void (*interrupt_handler_type)(void *);
@@ -72,8 +78,24 @@ static void rp2pio_statemachine_set_pull(uint32_t pull_pin_up, uint32_t pull_pin
     }
 }
 
+STATIC void rp2pio_statemachine_clear_dma(int pio_index, int sm) {
+    if (SM_DMA_ALLOCATED(pio_index, sm)) {
+        int channel = SM_DMA_GET_CHANNEL(pio_index, sm);
+        uint32_t channel_mask = 1u << channel;
+        dma_hw->inte0 &= ~channel_mask;
+        if (!dma_hw->inte0) {
+            irq_set_mask_enabled(1 << DMA_IRQ_0, false);
+        }
+        MP_STATE_PORT(continuous_pio)[channel] = NULL;
+        dma_channel_abort(channel);
+        dma_channel_unclaim(channel);
+    }
+    SM_DMA_CLEAR_CHANNEL(pio_index, sm);
+}
+
 STATIC void _reset_statemachine(PIO pio, uint8_t sm, bool leave_pins) {
     uint8_t pio_index = pio_get_index(pio);
+    rp2pio_statemachine_clear_dma(pio_index, sm);
     uint32_t program_id = _current_program_id[pio_index][sm];
     if (program_id == 0) {
         return;
@@ -333,7 +355,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     self->sm_config = c;
 
     // no DMA allocated
-    self->dma_channel[0] = self->dma_channel[1] = NO_DMA_CHANNEL;
+    SM_DMA_CLEAR_CHANNEL(pio_index, state_machine);
 
     pio_sm_init(self->pio, self->state_machine, program_offset, &c);
     common_hal_rp2pio_statemachine_run(self, init, init_len);
@@ -858,7 +880,10 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
 #define HERE(fmt, ...) (mp_printf(&mp_plat_print, "%s: %d: " fmt "\n", __FILE__, __LINE__,##__VA_ARGS__))
 
 bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_obj_t *self, mp_obj_t buf_obj, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
-    if (self->dma_channel[0] != NO_DMA_CHANNEL && stride_in_bytes == self->continuous_stride_in_bytes) {
+    uint8_t pio_index = pio_get_index(self->pio);
+    uint8_t sm = self->state_machine;
+
+    if (SM_DMA_ALLOCATED(pio_index, sm) && stride_in_bytes == self->continuous_stride_in_bytes) {
         HERE("updating channel pending=%d\n", self->pending_set_data);
         while (self->pending_set_data) {
             RUN_BACKGROUND_TASKS;
@@ -881,19 +906,15 @@ bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_o
 
     common_hal_rp2pio_statemachine_end_continuous_write(self);
 
-    for (int i = 0; i < 2; i++) {
-        HERE("allocating channel %d", i);
-        if (self->dma_channel[i] == -1) {
-            self->dma_channel[i] = dma_claim_unused_channel(false);
-            HERE("got  channel %d", self->dma_channel[i]);
-            MP_STATE_PORT(continuous_pio)[self->dma_channel[i]] = self;
-        }
-        if (self->dma_channel[i] == -1) {
-            HERE("allocating channel %d failed", i);
-            (void)common_hal_rp2pio_statemachine_end_continuous_write(self);
-            return false;
-        }
+    HERE("allocating dma channel");
+    int channel = dma_claim_unused_channel(false);
+    if (channel == -1) {
+        HERE("allocating DMA channel failed");
+        return false;
     }
+    HERE("got channel %d", channel);
+
+    SM_DMA_SET_CHANNEL(pio_index, sm, channel);
 
     volatile uint8_t *tx_destination = (volatile uint8_t *)&self->pio->txf[self->state_machine];
 
@@ -909,37 +930,31 @@ bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_o
     self->next_buffer = data;
     self->next_size = len / stride_in_bytes;
 
-    c = dma_channel_get_default_config(self->dma_channel[0]);
+    c = dma_channel_get_default_config(channel);
     channel_config_set_transfer_data_size(&c, _stride_to_dma_size(stride_in_bytes));
     channel_config_set_dreq(&c, self->tx_dreq);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
-    // channel_config_set_chain_to(&c, self->dma_channel[1]);
-    dma_channel_configure(self->dma_channel[0], &c,
+    dma_channel_configure(channel, &c,
         tx_destination,
         data,
         len / stride_in_bytes,
         false);
-
-    #if 0
-    channel_config_set_chain_to(&c, self->dma_channel[0]);
-    dma_channel_configure(self->dma_channel[1], &c,
-        tx_destination,
-        data,
-        len / stride_in_bytes,
-        false);
-    #endif
-
-    dma_hw->inte0 |= (1 << self->dma_channel[0]) | (1 << self->dma_channel[1]);
-    irq_set_mask_enabled(1 << DMA_IRQ_0, true);
-
     HERE("OK let's go");
-    dma_start_channel_mask(1u << self->dma_channel[0]);
+
+    common_hal_mcu_disable_interrupts();
+    MP_STATE_PORT(continuous_pio)[channel] = self;
+    dma_hw->inte0 |= 1u << channel;
+    irq_set_mask_enabled(1 << DMA_IRQ_0, true);
+    dma_start_channel_mask(1u << channel);
+    common_hal_mcu_enable_interrupts();
+
+    HERE("mark");
     return true;
 }
 
 void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int channel) {
-    HERE("dma complete[%d] pending set data=%d busy=%d,%d %d@%p", channel, self->pending_set_data, dma_channel_is_busy(self->dma_channel[0]), dma_channel_is_busy(self->dma_channel[1]),
+    HERE("dma complete[%d] pending set data=%d %sbusy %d@%p", channel, self->pending_set_data, dma_channel_is_busy(channel) ? "not " : "",
         self->next_size, self->next_buffer);
 
     dma_channel_set_read_addr(channel, self->next_buffer, false);
@@ -949,20 +964,8 @@ void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int chann
 }
 
 bool common_hal_rp2pio_statemachine_end_continuous_write(rp2pio_statemachine_obj_t *self) {
-    for (int i = 0; i < 2; i++) {
-        if (self->dma_channel[i] == NO_DMA_CHANNEL) {
-            continue;
-        }
-        int channel = self->dma_channel[i];
-        uint32_t channel_mask = 1u << channel;
-        dma_hw->inte0 &= ~channel_mask;
-        if (!dma_hw->inte0) {
-            irq_set_mask_enabled(1 << DMA_IRQ_0, false);
-        }
-        MP_STATE_PORT(continuous_pio)[channel] = NULL;
-        dma_channel_abort(channel);
-        dma_channel_unclaim(channel);
-        self->dma_channel[i] = NO_DMA_CHANNEL;
-    }
+    uint8_t pio_index = pio_get_index(self->pio);
+    uint8_t sm = self->state_machine;
+    rp2pio_statemachine_clear_dma(pio_index, sm);
     return true;
 }
