@@ -157,7 +157,7 @@ STATIC NORETURN void math_error(void) {
 //|     """Return ``x * (2**exp)``."""
 //|     ...
 //|
-//| def log(x: float, base: float = 2.71828) -> float:
+//| def log(x: float, base: float = e) -> float:
 //|     """Return the logarithm of x to the given base. If base is not specified,
 //|     returns the natural logarithm (base e) of x"""
 //|     ...
