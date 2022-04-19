@@ -426,7 +426,82 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine_write);
 
+//|     def continuous_write(self, buffer: Optional[ReadableBuffer], *, start: int = 0, end: Optional[int] = None) -> None:
+//|         """Write the data contained in ``buffer`` to the state machine repeatedly until stopped. If the buffer is empty or None, an existing continuous_write is canceled.
+//|
+//|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
+//|         will perform 8 bit writes to the PIO FIFO. The RP2040's memory bus will duplicate the value into
+//|         the other byte positions. So, pulling more data in the PIO assembly will read the duplicated values.
+//|
+//|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
+//|         size.
+//|
+//|         To atomically change from one buffer to another, simply call
+//|         `StateMachine.continuous_write` again with a different buffer.
+//|         The call will only return once outputting the new buffer has started.
+//|
+//|         If the buffer is modified while it is being written out, the updated
+//|         values will be used. However, because of interactions between CPU
+//|         writes, DMA and the PIO FIFO are complex, it is difficult to predict
+//|         the result of modifying multiple values. Instead, alternate between
+//|         a pair of buffers.
+//|
+//|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
+//|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         ...
+//|
+STATIC mp_obj_t rp2pio_statemachine_start_continuous_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_buffer, ARG_start, ARG_end };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+    };
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    mp_buffer_info_t bufinfo = {};
+    if (args[ARG_buffer].u_obj != mp_const_none) {
+        mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    }
+    int32_t start = args[ARG_start].u_int;
+    size_t length = bufinfo.len;
+    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
+    bool ok = true;
+    if (length == 0) {
+        ok = common_hal_rp2pio_statemachine_end_continuous_write(self);
+    } else {
+        uint8_t *original_pointer = bufinfo.buf;
+        int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
+        if (stride_in_bytes > 4) {
+            mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        }
+
+        ok = common_hal_rp2pio_statemachine_start_continuous_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
+    }
+    if (!ok) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_start_continuous_write_obj, 2, rp2pio_statemachine_start_continuous_write);
+
+//|     def end_continuous_write(self) -> None:
+//|         """Stop a continuous write, if one is in progress."""
+//|
+STATIC mp_obj_t rp2pio_statemachine_obj_end_continuous_write(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    bool ok = common_hal_rp2pio_statemachine_end_continuous_write(self);
+    if (!ok) {
+        mp_raise_OSError(MP_EIO);
+    }
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_end_continuous_write_obj, rp2pio_statemachine_obj_end_continuous_write);
 //|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
@@ -646,6 +721,8 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&rp2pio_statemachine_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&rp2pio_statemachine_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&rp2pio_statemachine_write_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_start_continuous_write), MP_ROM_PTR(&rp2pio_statemachine_start_continuous_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_end_continuous_write), MP_ROM_PTR(&rp2pio_statemachine_end_continuous_write_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&rp2pio_statemachine_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_rxstall), MP_ROM_PTR(&rp2pio_statemachine_rxstall_obj) },

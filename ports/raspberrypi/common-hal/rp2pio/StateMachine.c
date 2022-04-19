@@ -848,3 +848,11 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
     uint8_t sm = self->state_machine;
     return _current_program_offset[pio_index][sm];
 }
+
+bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
+    return false;
+}
+
+bool common_hal_rp2pio_statemachine_end_continuous_write(rp2pio_statemachine_obj_t *self) {
+    return false;
+}
