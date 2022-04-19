@@ -34,12 +34,11 @@
 #include "fsl_lpuart.h"
 
 // TODO: Switch this to using DEBUG_UART.
-// Need official way to turn off the port serial code when it is not needed
-#if defined(USE_DEBUG_PORT_CODE)
+// If the board defined a debug uart tx or rx pin then we enable this code
+#if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
 // static LPUART_Type *uart_instance = LPUART2; // feather 1062
-
 static uint32_t UartSrcFreq(void) {
     uint32_t freq;
 
