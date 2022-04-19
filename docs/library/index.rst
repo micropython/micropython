@@ -176,6 +176,17 @@ The following libraries are specific to the Zephyr port.
 
   zephyr.rst
 
+
+Libraries specific to MIMXRT devices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following libraries are specific MIMXRT devices.
+
+.. toctree::
+  :maxdepth: 2
+
+  machine.QECNT.rst
+
 Extending built-in libraries from Python
 ----------------------------------------
 
