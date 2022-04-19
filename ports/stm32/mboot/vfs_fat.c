@@ -58,20 +58,20 @@ DRESULT disk_ioctl(void *pdrv, BYTE cmd, void *buf) {
             return RES_OK;
 
         case GET_SECTOR_COUNT:
-            *((DWORD*)buf) = ctx->bdev_num_blocks;
+            *((DWORD *)buf) = ctx->bdev_num_blocks;
             return RES_OK;
 
         case GET_SECTOR_SIZE:
-            *((WORD*)buf) = SECSIZE;
+            *((WORD *)buf) = SECSIZE;
             return RES_OK;
 
         case GET_BLOCK_SIZE:
-            *((DWORD*)buf) = 1; // erase block size in units of sector size
+            *((DWORD *)buf) = 1; // erase block size in units of sector size
             return RES_OK;
 
         case IOCTL_INIT:
         case IOCTL_STATUS:
-            *((DSTATUS*)buf) = STA_PROTECT;
+            *((DSTATUS *)buf) = STA_PROTECT;
             return RES_OK;
 
         default:

@@ -1,1 +1,1 @@
-print('frzstr1')
+print("frzstr1")
