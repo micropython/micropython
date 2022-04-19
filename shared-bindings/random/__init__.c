@@ -80,7 +80,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 //| @overload
 //| def randrange(start: int, stop: int) -> int: ...
 //| @overload
-//| def randrange(start: int, stop: int, step: int):
+//| def randrange(start: int, stop: int, step: int) -> int:
 //|     """Returns a randomly selected integer from ``range(start[, stop[, step]])``."""
 //|     ...
 //|
