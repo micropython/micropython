@@ -159,7 +159,7 @@ STATIC NORETURN void math_error(void) {
 //|
 //| def log(x: float, base: float = math.e) -> float:
 //|     """Return the logarithm of x to the given base. If base is not specified,
-//|     returns the natural logarithm (base e) of x""
+//|     returns the natural logarithm (base e) of x"""
 //|     ...
 //|
 //| def modf(x: float) -> Tuple[float, float]:
