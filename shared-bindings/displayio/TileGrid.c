@@ -439,77 +439,46 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bit
         mp_raise_TypeError(translate("bitmap must be displayio.Bitmap, displayio.Shape, or displayio.OnDiskBitmap"));
     }
 
-    /*if (bitmap->width % self->tile_width != 0) {
-        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
-    }
-    if (bitmap->height % self->tile_height != 0) {
-        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
-    }*/
-    // enforce_bitmap_size(self_in, bitmap);
-
-    uint16_t bitmap_width;
-    uint16_t bitmap_height;
+    uint16_t new_bitmap_width;
+    uint16_t new_bitmap_height;
     mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
     if (native != MP_OBJ_NULL) {
         displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
-        bitmap_width = bmp->width;
-        bitmap_height = bmp->height;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
     } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
-        bitmap_width = bmp->width;
-        bitmap_height = bmp->height;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
     } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
         native = bitmap;
-        bitmap_width = bmp->width;
-        bitmap_height = bmp->height;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
     } else {
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
     }
 
-    uint16_t tile_width = self->tile_width;
-    uint16_t tile_height = self->tile_height;
     mp_obj_t old_native = mp_obj_cast_to_native_base(self->bitmap, &displayio_shape_type);
     if (old_native != MP_OBJ_NULL) {
         displayio_shape_t *old_bmp = MP_OBJ_TO_PTR(old_native);
-        if (tile_width == old_bmp->width) {
-            self->tile_width = bitmap_width;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
         }
-        if (tile_height == old_bmp->width) {
-            self->tile_height = bitmap_height;
-        }
-
     } else if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
         old_native = self->bitmap;
-        if (tile_width == old_bmp->width) {
-            self->tile_width = bitmap_width;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
         }
-        if (tile_height == old_bmp->width) {
-            self->tile_height = bitmap_height;
-        }
-
     } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
         old_native = self->bitmap;
-        if (tile_width == old_bmp->width) {
-            self->tile_width = bitmap_width;
-        }
-        if (tile_height == old_bmp->width) {
-            self->tile_height = bitmap_height;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
         }
     }
-
-
-
-    if (bitmap_width % tile_width != 0) {
-        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
-    }
-    if (bitmap_height % tile_height != 0) {
-        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
-    }
-
 
     common_hal_displayio_tilegrid_set_bitmap(self, bitmap);
 
