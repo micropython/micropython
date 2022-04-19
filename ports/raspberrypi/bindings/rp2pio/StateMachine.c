@@ -426,7 +426,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine_write);
 
-//|     def continuous_write(self, buffer: Optional[ReadableBuffer], *, start: int = 0, end: Optional[int] = None) -> None:
+//|     def start_continuous_write(self, buffer: Optional[ReadableBuffer], *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine repeatedly until stopped. If the buffer is empty or None, an existing continuous_write is canceled.
 //|
 //|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
@@ -434,11 +434,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         the other byte positions. So, pulling more data in the PIO assembly will read the duplicated values.
 //|
 //|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
-//|         size.
+//|         size, or use `memoryview.cast` to change the interpretation of an existing buffer.
 //|
 //|         To atomically change from one buffer to another, simply call
-//|         `StateMachine.continuous_write` again with a different buffer.
-//|         The call will only return once outputting the new buffer has started.
+//|         `StateMachine.continuous_write` again with a different buffer with the same element size.
+//|         The call will only return once DMA has started putting the previous
+//|         buffer's data into the PIO FIFO.
 //|
 //|         If the buffer is modified while it is being written out, the updated
 //|         values will be used. However, because of interactions between CPU

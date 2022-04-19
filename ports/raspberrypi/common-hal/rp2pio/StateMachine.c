@@ -877,14 +877,11 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
     return _current_program_offset[pio_index][sm];
 }
 
-#define HERE(fmt, ...) (mp_printf(&mp_plat_print, "%s: %d: " fmt "\n", __FILE__, __LINE__,##__VA_ARGS__))
-
 bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_obj_t *self, mp_obj_t buf_obj, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
     uint8_t pio_index = pio_get_index(self->pio);
     uint8_t sm = self->state_machine;
 
     if (SM_DMA_ALLOCATED(pio_index, sm) && stride_in_bytes == self->continuous_stride_in_bytes) {
-        HERE("updating channel pending=%d\n", self->pending_set_data);
         while (self->pending_set_data) {
             RUN_BACKGROUND_TASKS;
             if (self->user_interruptible && mp_hal_is_interrupted()) {
@@ -906,13 +903,10 @@ bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_o
 
     common_hal_rp2pio_statemachine_end_continuous_write(self);
 
-    HERE("allocating dma channel");
     int channel = dma_claim_unused_channel(false);
     if (channel == -1) {
-        HERE("allocating DMA channel failed");
         return false;
     }
-    HERE("got channel %d", channel);
 
     SM_DMA_SET_CHANNEL(pio_index, sm, channel);
 
@@ -940,7 +934,6 @@ bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_o
         data,
         len / stride_in_bytes,
         false);
-    HERE("OK let's go");
 
     common_hal_mcu_disable_interrupts();
     MP_STATE_PORT(continuous_pio)[channel] = self;
@@ -949,14 +942,10 @@ bool common_hal_rp2pio_statemachine_start_continuous_write(rp2pio_statemachine_o
     dma_start_channel_mask(1u << channel);
     common_hal_mcu_enable_interrupts();
 
-    HERE("mark");
     return true;
 }
 
 void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int channel) {
-    HERE("dma complete[%d] pending set data=%d %sbusy %d@%p", channel, self->pending_set_data, dma_channel_is_busy(channel) ? "not " : "",
-        self->next_size, self->next_buffer);
-
     dma_channel_set_read_addr(channel, self->next_buffer, false);
     dma_channel_set_trans_count(channel, self->next_size, true);
 
