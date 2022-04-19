@@ -448,6 +448,11 @@ void isr_dma_0(void) {
         if ((dma_hw->intr & mask) == 0) {
             continue;
         }
+        // acknowledge interrupt early. Doing so late means that you could lose an
+        // interrupt if the buffer is very small and the DMA operation
+        // completed by the time callback_add() / dma_complete() returned. This
+        // affected PIO continuous write more than audio.
+        dma_hw->ints0 = mask;
         if (MP_STATE_PORT(playing_audio)[i] != NULL) {
             audio_dma_t *dma = MP_STATE_PORT(playing_audio)[i];
             // Record all channels whose DMA has completed; they need loading.
@@ -458,7 +463,6 @@ void isr_dma_0(void) {
             rp2pio_statemachine_obj_t *pio = MP_STATE_PORT(continuous_pio)[i];
             rp2pio_statemachine_dma_complete(pio, i);
         }
-        dma_hw->ints0 = mask;
     }
 }
 
