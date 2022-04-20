@@ -215,10 +215,6 @@ typedef long mp_off_t;
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-extern const struct _mp_obj_module_t mp_module_time;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) }, \
-
 #if MICROPY_USE_READLINE == 1
 #define MICROPY_PORT_ROOT_POINTERS \
     char *readline_hist[50];

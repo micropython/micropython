@@ -712,3 +712,5 @@ const mp_obj_module_t mp_module_jni = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_jni, mp_module_jni, MICROPY_PY_JNI);

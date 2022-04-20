@@ -701,3 +701,5 @@ const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket, MICROPY_PY_SOCKET);

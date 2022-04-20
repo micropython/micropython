@@ -631,3 +631,5 @@ const mp_obj_module_t mp_module_ffi = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_ffi_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ffi, mp_module_ffi, MICROPY_PY_FFI);
