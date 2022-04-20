@@ -226,64 +226,9 @@ extern const struct _mp_obj_module_t mp_module_uos;
 extern const struct _mp_obj_module_t mp_module_ubluepy;
 extern const struct _mp_obj_module_t music_module;
 
-#if MICROPY_PY_NRF
-#define NRF_MODULE                          { MP_ROM_QSTR(MP_QSTR_nrf), MP_ROM_PTR(&nrf_module) },
-#else
-#define NRF_MODULE
-#endif
-
-#if MICROPY_PY_UBLUEPY
-#define UBLUEPY_MODULE                      { MP_ROM_QSTR(MP_QSTR_ubluepy), MP_ROM_PTR(&mp_module_ubluepy) },
-#else
-#define UBLUEPY_MODULE
-#endif
-
-#if MICROPY_PY_MUSIC
-#define MUSIC_MODULE                        { MP_ROM_QSTR(MP_QSTR_music), MP_ROM_PTR(&music_module) },
-#else
-#define MUSIC_MODULE
-#endif
-
 #if BOARD_SPECIFIC_MODULES
 #include "boardmodules.h"
-#define MICROPY_BOARD_BUILTINS BOARD_MODULES
-#else
-#define MICROPY_BOARD_BUILTINS
 #endif // BOARD_SPECIFIC_MODULES
-
-#if BLUETOOTH_SD
-
-#if MICROPY_PY_BLE
-extern const struct _mp_obj_module_t ble_module;
-#define BLE_MODULE                        { MP_ROM_QSTR(MP_QSTR_ble), MP_ROM_PTR(&ble_module) },
-#else
-#define BLE_MODULE
-#endif
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    BLE_MODULE \
-    MUSIC_MODULE \
-    UBLUEPY_MODULE \
-    MICROPY_BOARD_BUILTINS \
-    NRF_MODULE \
-
-
-#else
-extern const struct _mp_obj_module_t ble_module;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&board_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    MUSIC_MODULE \
-    MICROPY_BOARD_BUILTINS \
-    NRF_MODULE \
-
-
-#endif // BLUETOOTH_SD
 
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
