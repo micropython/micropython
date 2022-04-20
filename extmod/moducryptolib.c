@@ -374,4 +374,6 @@ const mp_obj_module_t mp_module_ucryptolib = {
     .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_ucryptolib, mp_module_ucryptolib, MICROPY_PY_UCRYPTOLIB);
+
 #endif // MICROPY_PY_UCRYPTOLIB

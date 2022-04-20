@@ -229,4 +229,5 @@ const mp_obj_module_t mp_module_utimeq = {
     .globals = (mp_obj_dict_t *)&mp_module_utimeq_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_utimeq, mp_module_utimeq, MICROPY_PY_UTIMEQ);
 #endif // MICROPY_PY_UTIMEQ

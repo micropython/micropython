@@ -310,4 +310,6 @@ const mp_obj_module_t mp_module_uasyncio = {
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR__uasyncio, mp_module_uasyncio, MICROPY_PY_UASYNCIO);
+
 #endif // MICROPY_PY_UASYNCIO
