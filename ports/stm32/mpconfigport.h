@@ -212,29 +212,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
 #define UTIME_BUILTIN_MODULE
 #endif
 
-#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
-// usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
-#elif MICROPY_PY_USOCKET
-// usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-// no usocket module
-#define SOCKET_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
-#else
-#define NETWORK_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_ONEWIRE
-#define ONEWIRE_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) },
-#else
-#define ONEWIRE_BUILTIN_MODULE
-#endif
-
 #if defined(MICROPY_HW_ETH_MDC)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
@@ -271,9 +248,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
     PYB_BUILTIN_MODULE \
     STM_BUILTIN_MODULE \
     UTIME_BUILTIN_MODULE \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
-    ONEWIRE_BUILTIN_MODULE \
 
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
