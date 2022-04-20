@@ -108,13 +108,6 @@
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-extern const struct _mp_obj_module_t mp_module_samd;
-extern const struct _mp_obj_module_t mp_module_utime;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_samd), MP_ROM_PTR(&mp_module_samd) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8];
 
