@@ -126,11 +126,6 @@
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-extern const struct _mp_obj_module_t mp_module_utime;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-
 // #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
