@@ -136,16 +136,6 @@
     { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t esp_module;
-extern const struct _mp_obj_module_t esp32_module;
-extern const struct _mp_obj_module_t utime_module;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_esp32), (mp_obj_t)&esp32_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
-
 #define MP_STATE_PORT MP_STATE_VM
 
 struct _machine_timer_obj_t;
