@@ -34,9 +34,10 @@ async def task_loop(id):
         print("task_loop loop", id)
 
 
-async def task_raise(id):
+async def task_raise(id, t=0.02):
     print("task_raise start", id)
-    await asyncio.sleep(0.02)
+    await asyncio.sleep(t)
+    print("task_raise raise", id)
     raise ValueError(id)
 
 
@@ -79,7 +80,8 @@ async def main():
     print("====")
 
     # Test case where both tasks raise an exception.
-    tasks = [asyncio.create_task(task_raise(1)), asyncio.create_task(task_raise(2))]
+    # Use t=0 so they raise one after the other, between the gather starting and finishing.
+    tasks = [asyncio.create_task(task_raise(1, t=0)), asyncio.create_task(task_raise(2, t=0))]
     try:
         await asyncio.gather(*tasks)
     except ValueError as er:
