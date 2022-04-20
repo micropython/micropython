@@ -172,30 +172,20 @@
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t stm_module;
-extern const struct _mp_obj_module_t mp_module_ubinascii;
-extern const struct _mp_obj_module_t mp_module_ure;
-extern const struct _mp_obj_module_t mp_module_uzlib;
-extern const struct _mp_obj_module_t mp_module_ujson;
-extern const struct _mp_obj_module_t mp_module_uheapq;
-extern const struct _mp_obj_module_t mp_module_uhashlib;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_onewire;
-
 #if MICROPY_PY_PYB
-#define PYB_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
+extern const struct _mp_obj_module_t pyb_module;
+#define PYB_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
 #else
-#define PYB_BUILTIN_MODULE
+#define PYB_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_STM
-#define STM_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+extern const struct _mp_obj_module_t stm_module;
+#define STM_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
 #else
-#define STM_BUILTIN_MODULE
+#define STM_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_MACHINE
@@ -204,12 +194,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
-#endif
-
-#if MICROPY_PY_UTIME
-#define UTIME_BUILTIN_MODULE                { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) },
-#else
-#define UTIME_BUILTIN_MODULE
 #endif
 
 #if defined(MICROPY_HW_ETH_MDC)
@@ -244,16 +228,11 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #define MICROPY_HW_NIC_CC3K
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
-    UTIME_BUILTIN_MODULE \
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
+    PYB_BUILTIN_MODULE_CONSTANTS \
+    STM_BUILTIN_MODULE_CONSTANTS \
 
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
