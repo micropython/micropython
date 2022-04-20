@@ -78,7 +78,7 @@ async def gather(*aws, return_exceptions=False):
                 # Still some sub-tasks running.
                 return
         # Gather waiting is done, schedule the main gather task.
-        core._task_queue.push_head(gather_task)
+        core._task_queue.push(gather_task)
 
     ts = [core._promote_to_task(aw) for aw in aws]
     for i in range(len(ts)):

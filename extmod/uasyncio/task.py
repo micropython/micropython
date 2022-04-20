@@ -99,17 +99,14 @@ class TaskQueue:
     def peek(self):
         return self.heap
 
-    def push_sorted(self, v, key):
+    def push(self, v, key=None):
         assert v.ph_child is None
         assert v.ph_next is None
         v.data = None
-        v.ph_key = key
+        v.ph_key = key if key is not None else core.ticks()
         self.heap = ph_meld(v, self.heap)
 
-    def push_head(self, v):
-        self.push_sorted(v, core.ticks())
-
-    def pop_head(self):
+    def pop(self):
         v = self.heap
         assert v.ph_next is None
         self.heap = ph_pairing(v.ph_child)
@@ -150,7 +147,7 @@ class Task:
             raise self.data
         else:
             # Put calling task on waiting queue.
-            self.state.push_head(core.cur_task)
+            self.state.push(core.cur_task)
             # Set calling task's data to this task that it waits on, to double-link it.
             core.cur_task.data = self
 
@@ -171,10 +168,10 @@ class Task:
         if hasattr(self.data, "remove"):
             # Not on the main running queue, remove the task from the queue it's on.
             self.data.remove(self)
-            core._task_queue.push_head(self)
+            core._task_queue.push(self)
         elif core.ticks_diff(self.ph_key, core.ticks()) > 0:
             # On the main running queue but scheduled in the future, so bring it forward to now.
             core._task_queue.remove(self)
-            core._task_queue.push_head(self)
+            core._task_queue.push(self)
         self.data = core.CancelledError
         return True

@@ -103,7 +103,7 @@ STATIC mp_obj_t task_queue_peek(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_queue_peek_obj, task_queue_peek);
 
-STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t task_queue_push(size_t n_args, const mp_obj_t *args) {
     mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_obj_task_t *task = MP_OBJ_TO_PTR(args[1]);
     task->data = mp_const_none;
@@ -116,9 +116,9 @@ STATIC mp_obj_t task_queue_push_sorted(size_t n_args, const mp_obj_t *args) {
     self->heap = (mp_obj_task_t *)mp_pairheap_push(task_lt, TASK_PAIRHEAP(self->heap), TASK_PAIRHEAP(task));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_sorted_obj, 2, 3, task_queue_push_sorted);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(task_queue_push_obj, 2, 3, task_queue_push);
 
-STATIC mp_obj_t task_queue_pop_head(mp_obj_t self_in) {
+STATIC mp_obj_t task_queue_pop(mp_obj_t self_in) {
     mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_task_t *head = (mp_obj_task_t *)mp_pairheap_peek(task_lt, &self->heap->pairheap);
     if (head == NULL) {
@@ -127,7 +127,7 @@ STATIC mp_obj_t task_queue_pop_head(mp_obj_t self_in) {
     self->heap = (mp_obj_task_t *)mp_pairheap_pop(task_lt, &self->heap->pairheap);
     return MP_OBJ_FROM_PTR(head);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_queue_pop_head_obj, task_queue_pop_head);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_queue_pop_obj, task_queue_pop);
 
 STATIC mp_obj_t task_queue_remove(mp_obj_t self_in, mp_obj_t task_in) {
     mp_obj_task_queue_t *self = MP_OBJ_TO_PTR(self_in);
@@ -139,9 +139,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(task_queue_remove_obj, task_queue_remove);
 
 STATIC const mp_rom_map_elem_t task_queue_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_peek), MP_ROM_PTR(&task_queue_peek_obj) },
-    { MP_ROM_QSTR(MP_QSTR_push_sorted), MP_ROM_PTR(&task_queue_push_sorted_obj) },
-    { MP_ROM_QSTR(MP_QSTR_push_head), MP_ROM_PTR(&task_queue_push_sorted_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pop_head), MP_ROM_PTR(&task_queue_pop_head_obj) },
+    { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&task_queue_push_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&task_queue_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(task_queue_locals_dict, task_queue_locals_dict_table);
@@ -205,18 +204,18 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
         // Not on the main running queue, remove the task from the queue it's on.
         dest[2] = MP_OBJ_FROM_PTR(self);
         mp_call_method_n_kw(1, 0, dest);
-        // _task_queue.push_head(self)
+        // _task_queue.push(self)
         dest[0] = _task_queue;
         dest[1] = MP_OBJ_FROM_PTR(self);
-        task_queue_push_sorted(2, dest);
+        task_queue_push(2, dest);
     } else if (ticks_diff(self->ph_key, ticks()) > 0) {
         // On the main running queue but scheduled in the future, so bring it forward to now.
         // _task_queue.remove(self)
         task_queue_remove(_task_queue, MP_OBJ_FROM_PTR(self));
-        // _task_queue.push_head(self)
+        // _task_queue.push(self)
         dest[0] = _task_queue;
         dest[1] = MP_OBJ_FROM_PTR(self);
-        task_queue_push_sorted(2, dest);
+        task_queue_push(2, dest);
     }
 
     self->data = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_CancelledError));
@@ -281,7 +280,7 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
         mp_obj_t args[2] = { self->state, cur_task };
-        task_queue_push_sorted(2, args);
+        task_queue_push(2, args);
         // Set calling task's data to this task that it waits on, to double-link it.
         ((mp_obj_task_t *)MP_OBJ_TO_PTR(cur_task))->data = self_in;
     }
