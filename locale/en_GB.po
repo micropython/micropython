@@ -1118,6 +1118,11 @@ msgstr "Format not supported"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer requires %d bytes"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "Frequency must match existing PWMOut using this timer"
@@ -3053,7 +3058,7 @@ msgstr "complex division by zero"
 msgid "complex values not supported"
 msgstr "complex values not supported"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "compression header"
 
@@ -3307,6 +3312,10 @@ msgstr "font must be 2048 bytes long"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format requires a dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"
