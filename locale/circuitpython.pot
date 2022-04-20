@@ -2154,10 +2154,6 @@ msgstr ""
 msgid "Set pin count must be between 1 and 5"
 msgstr ""
 
-#: shared-bindings/microcontroller/Processor.c
-msgid "Settable Clock Not Implemented for Your Board"
-msgstr ""
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Side set pin count must be between 1 and 5"
 msgstr ""
@@ -3280,6 +3276,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "format requires a dict"
+msgstr ""
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
 msgstr ""
 
 #: py/objdeque.c
