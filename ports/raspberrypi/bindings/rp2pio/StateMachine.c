@@ -437,7 +437,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         size, or use `memoryview.cast` to change the interpretation of an existing buffer.
 //|
 //|         To atomically change from one buffer to another, simply call
-//|         `StateMachine.continuous_write` again with a different buffer with the same element size.
+//|         `StateMachine.start_continuous_write` again with a different buffer with the same element size.
 //|         The call will only return once DMA has started putting the previous
 //|         buffer's data into the PIO FIFO.
 //|
