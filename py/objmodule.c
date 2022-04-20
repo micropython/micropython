@@ -161,9 +161,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    // extra builtin modules as defined by a port
-    MICROPY_PORT_BUILTIN_MODULES
-
     #ifdef MICROPY_REGISTERED_MODULES
     // builtin modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES

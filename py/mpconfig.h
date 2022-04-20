@@ -1649,11 +1649,6 @@ typedef double mp_float_t;
 #define MICROPY_PORT_EXTRA_BUILTINS
 #endif
 
-// Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
-#ifndef MICROPY_PORT_BUILTIN_MODULES
-#define MICROPY_PORT_BUILTIN_MODULES
-#endif
-
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.
 #ifndef MICROPY_PORT_CONSTANTS
 #define MICROPY_PORT_CONSTANTS
