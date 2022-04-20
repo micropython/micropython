@@ -161,38 +161,6 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___main__), MP_ROM_PTR(&mp_module___main__) },
-    { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
-    { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
-
-    #if MICROPY_PY_IO
-    { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
-    #endif
-    #if MICROPY_PY_COLLECTIONS
-    { MP_ROM_QSTR(MP_QSTR_ucollections), MP_ROM_PTR(&mp_module_collections) },
-    #endif
-    #if MICROPY_PY_STRUCT
-    { MP_ROM_QSTR(MP_QSTR_ustruct), MP_ROM_PTR(&mp_module_ustruct) },
-    #endif
-
-    #if MICROPY_PY_BUILTINS_FLOAT
-    #if MICROPY_PY_MATH
-    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
-    #endif
-    #if MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
-    { MP_ROM_QSTR(MP_QSTR_cmath), MP_ROM_PTR(&mp_module_cmath) },
-    #endif
-    #endif
-    #if MICROPY_PY_SYS
-    { MP_ROM_QSTR(MP_QSTR_usys), MP_ROM_PTR(&mp_module_sys) },
-    #endif
-    #if MICROPY_PY_GC && MICROPY_ENABLE_GC
-    { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
-    #endif
-    #if MICROPY_PY_THREAD
-    { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
-    #endif
-
     // extra builtin modules as defined by a port
     MICROPY_PORT_BUILTIN_MODULES
 
