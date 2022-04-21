@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-23 08:58+0000\n"
+"PO-Revision-Date: 2022-04-21 13:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1122,18 +1122,25 @@ msgstr "Formatet stöds inte"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer kräver %d byte"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+"Frekvens måste vara en av 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 "
+"eller 1008 Mhz"
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
-msgstr "Frekvensen måste matcha befintlig PWMOut med denna timer"
+msgstr "Frekvensen måste matcha befintlig PWMOut med den här timern"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
-msgstr "Funktion kräver lås"
+msgstr "Funktionen kräver lås"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
-msgstr "Generiskt fel"
+msgstr "Allmänt fel"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -3073,7 +3080,7 @@ msgstr "komplex division med noll"
 msgid "complex values not supported"
 msgstr "komplexa värden stöds inte"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "komprimeringsheader"
 
@@ -3329,6 +3336,10 @@ msgstr "typsnitt måste vara 2048 bytes långt"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formatet kräver en dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr "frekvens är skrivskyddad för detta kort"
 
 #: py/objdeque.c
 msgid "full"

@@ -1116,6 +1116,11 @@ msgstr "非対応の形式"
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "このタイマーを使う既存のPWMOutと周波数を一致させる必要があります"
@@ -3036,7 +3041,7 @@ msgstr "複素数ゼロ除算"
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "圧縮ヘッダー"
 
@@ -3291,6 +3296,10 @@ msgstr "fontは2048バイト長でなければなりません"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formatにはdictが必要"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"
