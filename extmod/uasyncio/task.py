@@ -100,10 +100,10 @@ class TaskQueue:
         return self.heap
 
     def push_sorted(self, v, key):
+        assert v.ph_child is None
+        assert v.ph_next is None
         v.data = None
         v.ph_key = key
-        v.ph_child = None
-        v.ph_next = None
         self.heap = ph_meld(v, self.heap)
 
     def push_head(self, v):
@@ -111,7 +111,9 @@ class TaskQueue:
 
     def pop_head(self):
         v = self.heap
-        self.heap = ph_pairing(self.heap.ph_child)
+        assert v.ph_next is None
+        self.heap = ph_pairing(v.ph_child)
+        v.ph_child = None
         return v
 
     def remove(self, v):
