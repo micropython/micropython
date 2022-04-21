@@ -53,10 +53,10 @@ static volatile ringbuf_t tx_ringbuf;
 
 static void board_init(void) {
     // Config clock source.
-#ifndef BLUETOOTH_SD
+    #ifndef BLUETOOTH_SD
     NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
     NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-#endif
+    #endif
 
     // Priorities 0, 1, 4 (nRF52) are reserved for SoftDevice
     // 2 is highest for application
@@ -66,7 +66,7 @@ static void board_init(void) {
     // We need to invoke the handler based on the status initially
     uint32_t usb_reg;
 
-#ifdef BLUETOOTH_SD
+    #ifdef BLUETOOTH_SD
     uint8_t sd_en = false;
     sd_softdevice_is_enabled(&sd_en);
 
@@ -77,14 +77,14 @@ static void board_init(void) {
 
         sd_power_usbregstatus_get(&usb_reg);
     } else
-#endif
+    #endif
     {
         // Power module init
         const nrfx_power_config_t pwr_cfg = { 0 };
         nrfx_power_init(&pwr_cfg);
 
         // Register tusb function as USB power handler
-        const nrfx_power_usbevt_config_t config = { .handler = (nrfx_power_usb_event_handler_t) tusb_hal_nrf_power_event };
+        const nrfx_power_usbevt_config_t config = { .handler = (nrfx_power_usb_event_handler_t)tusb_hal_nrf_power_event };
         nrfx_power_usbevt_init(&config);
 
         nrfx_power_usbevt_enable();
@@ -96,11 +96,11 @@ static void board_init(void) {
         tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
     }
 
-#ifndef BLUETOOTH_SD
+    #ifndef BLUETOOTH_SD
     if (usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk) {
         tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
     }
-#endif
+    #endif
 }
 
 static bool cdc_rx_any(void) {
@@ -108,7 +108,7 @@ static bool cdc_rx_any(void) {
 }
 
 static int cdc_rx_char(void) {
-    return ringbuf_get((ringbuf_t*)&rx_ringbuf);
+    return ringbuf_get((ringbuf_t *)&rx_ringbuf);
 }
 
 static bool cdc_tx_any(void) {
@@ -116,28 +116,27 @@ static bool cdc_tx_any(void) {
 }
 
 static int cdc_tx_char(void) {
-    return ringbuf_get((ringbuf_t*)&tx_ringbuf);
+    return ringbuf_get((ringbuf_t *)&tx_ringbuf);
 }
 
-static void cdc_task(void)
-{
-    if ( tud_cdc_connected() ) {
+static void cdc_task(void) {
+    if (tud_cdc_connected()) {
         // connected and there are data available
         while (tud_cdc_available()) {
             int c;
             uint32_t count = tud_cdc_read(&c, 1);
             (void)count;
-            ringbuf_put((ringbuf_t*)&rx_ringbuf, c);
+            ringbuf_put((ringbuf_t *)&rx_ringbuf, c);
         }
 
         int chars = 0;
         while (cdc_tx_any()) {
             if (chars < 64) {
-               tud_cdc_write_char(cdc_tx_char());
-               chars++;
+                tud_cdc_write_char(cdc_tx_char());
+                chars++;
             } else {
-               chars = 0;
-               tud_cdc_write_flush();
+                chars = 0;
+                tud_cdc_write_flush();
             }
         }
 
@@ -150,15 +149,14 @@ static void usb_cdc_loop(void) {
     cdc_task();
 }
 
-int usb_cdc_init(void)
-{
+int usb_cdc_init(void) {
     static bool initialized = false;
     if (!initialized) {
 
-#if BLUETOOTH_SD
+        #if BLUETOOTH_SD
         // Initialize the clock and BLE stack.
         ble_drv_stack_enable();
-#endif
+        #endif
 
         board_init();
         initialized = true;
@@ -183,9 +181,9 @@ int usb_cdc_init(void)
 // process SOC event from SD
 void usb_cdc_sd_event_handler(uint32_t soc_evt) {
     /*------------- usb power event handler -------------*/
-    int32_t usbevt = (soc_evt == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
-                     (soc_evt == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
-                     (soc_evt == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+    int32_t usbevt = (soc_evt == NRF_EVT_POWER_USB_DETECTED) ? NRFX_POWER_USB_EVT_DETECTED:
+        (soc_evt == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+        (soc_evt == NRF_EVT_POWER_USB_REMOVED) ? NRFX_POWER_USB_EVT_REMOVED : -1;
 
     if (usbevt >= 0) {
         tusb_hal_nrf_power_event(usbevt);
@@ -219,7 +217,7 @@ int mp_hal_stdin_rx_chr(void) {
 void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
     for (const char *top = str + len; str < top; str++) {
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
+        ringbuf_put((ringbuf_t *)&tx_ringbuf, *str);
         usb_cdc_loop();
     }
 }
@@ -228,10 +226,10 @@ void mp_hal_stdout_tx_strn_cooked(const char *str, mp_uint_t len) {
 
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
-            ringbuf_put((ringbuf_t*)&tx_ringbuf, '\r');
+            ringbuf_put((ringbuf_t *)&tx_ringbuf, '\r');
             usb_cdc_loop();
         }
-        ringbuf_put((ringbuf_t*)&tx_ringbuf, *str);
+        ringbuf_put((ringbuf_t *)&tx_ringbuf, *str);
         usb_cdc_loop();
     }
 }
