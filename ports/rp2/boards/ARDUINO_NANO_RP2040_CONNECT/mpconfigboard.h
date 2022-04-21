@@ -19,6 +19,7 @@
 #define MICROPY_HW_USB_MSC              (1)
 #define MICROPY_HW_USB_VID              (0x2341)
 #define MICROPY_HW_USB_PID              (0x025e)
+#define MICROPY_HW_USB_CDC_1200BPS_TOUCH (1)
 
 // UART 1 config.
 #define MICROPY_HW_UART1_TX             (8)
