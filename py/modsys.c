@@ -36,6 +36,7 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/persistentcode.h"
+#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_SYS_SETTRACE
 #include "py/objmodule.h"
@@ -54,7 +55,7 @@ const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adap
 #endif
 
 // version - Python language version that this implementation conforms to, as a string
-STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0");
+STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0; " MICROPY_BANNER_NAME_AND_VERSION);
 
 // version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)

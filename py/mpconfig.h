@@ -1714,6 +1714,11 @@ typedef double mp_float_t;
 #define MICROPY_OBJ_BASE_ALIGNMENT
 #endif
 
+// String used for the banner, and sys.version additional information
+#ifndef MICROPY_BANNER_NAME_AND_VERSION
+#define MICROPY_BANNER_NAME_AND_VERSION "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+#endif
+
 // On embedded platforms, these will typically enable/disable irqs.
 #ifndef MICROPY_BEGIN_ATOMIC_SECTION
 #define MICROPY_BEGIN_ATOMIC_SECTION() (0)
