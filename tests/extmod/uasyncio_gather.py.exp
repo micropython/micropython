@@ -36,3 +36,19 @@ True True
 gather_task
 start 1
 start 2
+====
+gather_task
+start 1
+start 2
+====
+gather_task
+start 1
+start 2
+end 1
+end 2
+====
+gather_task
+start 1
+start 2
+end 1
+end 2

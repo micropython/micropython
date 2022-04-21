@@ -20,9 +20,9 @@ async def factorial(name, number):
     return f
 
 
-async def task(id):
+async def task(id, t=0.02):
     print("start", id)
-    await asyncio.sleep(0.02)
+    await asyncio.sleep(t)
     print("end", id)
     return id
 
@@ -95,6 +95,15 @@ async def main():
     await asyncio.sleep(0.01)
     t.cancel()
     await asyncio.sleep(0.04)
+
+    # Test edge cases where the gather is cancelled just as tasks are created and ending.
+    for i in range(1, 4):
+        print("====")
+        t = asyncio.create_task(gather_task(task(1, t=0), task(2, t=0)))
+        for _ in range(i):
+            await asyncio.sleep(0)
+        t.cancel()
+        await asyncio.sleep(0.2)
 
 
 asyncio.run(main())
