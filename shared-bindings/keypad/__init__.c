@@ -32,6 +32,53 @@
 #include "shared-bindings/keypad/KeyMatrix.h"
 #include "shared-bindings/keypad/Keys.h"
 #include "shared-bindings/keypad/ShiftRegisterKeys.h"
+#include "shared-bindings/util.h"
+
+STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
+    if (common_hal_keypad_deinited(self)) {
+        raise_deinited_error();
+    }
+}
+
+STATIC mp_obj_t keypad_generic_reset(mp_obj_t self_in) {
+    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    common_hal_keypad_generic_reset(self);
+    return MP_ROM_NONE;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_generic_reset_obj, keypad_generic_reset);
+
+STATIC mp_obj_t keypad_generic_get_key_count(mp_obj_t self_in) {
+    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    return MP_OBJ_NEW_SMALL_INT(common_hal_keypad_generic_get_key_count(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_generic_get_key_count_obj, keypad_generic_get_key_count);
+
+const mp_obj_property_t keypad_generic_key_count_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&keypad_generic_get_key_count_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
+STATIC mp_obj_t keypad_generic_get_events(mp_obj_t self_in) {
+    keypad_keymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    return common_hal_keypad_generic_get_events(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_generic_get_events_obj, keypad_generic_get_events);
+
+const mp_obj_property_t keypad_generic_events_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&keypad_generic_get_events_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
 
 //| """Support for scanning keys and key matrices
 //|

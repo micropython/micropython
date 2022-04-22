@@ -34,6 +34,7 @@
 
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
+#include "fsl_device_registers.h"
 
 #include "clocks.h"
 
@@ -334,4 +335,258 @@ void clocks_init(void) {
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;
 
     CLOCK_EnableClock(kCLOCK_Iomuxc);
+}
+
+/* clockspeed.c
+ * http://www.pjrc.com/teensy/
+ * Copyright (c) 2017 PJRC.COM, LLC
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+// Note setarmclock is a port from Teensyduino for the Teensy 4.x written by Paul Stroffgren,
+// A brief explanation of F_CPU_ACTUAL vs F_CPU
+//  https://forum.pjrc.com/threads/57236?p=212642&viewfull=1#post212642
+volatile uint32_t F_CPU_ACTUAL = 396000000;
+volatile uint32_t F_BUS_ACTUAL = 132000000;
+
+// Define these to increase the voltage when attempting overclocking
+// The frequency step is how quickly to increase voltage per frequency
+// The datasheet says 1600 is the absolute maximum voltage.  The hardware
+// can actually create up to 1575.  But 1300 is the recommended limit.
+//  (earlier versions of the datasheet said 1300 was the absolute max)
+#define OVERCLOCK_STEPSIZE  28000000
+#define OVERCLOCK_MAX_VOLT  1575
+
+#define DCDC_REG3                                               0x40080012
+#define DCDC_REG0                                               0x40080000
+#define DCDC_REG0_STS_DC_OK_L                           ((uint32_t)(1 << 31))
+#define CCM_ANALOG_PLL_USB1_ENABLE_L            ((uint32_t)(1 << 13))
+#define CCM_ANALOG_PLL_USB1_POWER_L             ((uint32_t)(1 << 12))
+#define CCM_ANALOG_PLL_USB1_EN_USB_CLKS_L               ((uint32_t)(1 << 6))
+#define CCM_ANALOG_PLL_USB1_LOCK_L              ((uint32_t)(1 << 31))
+#define CCM_CCGR6_DCDC(n)                       ((uint32_t)(((n) & 0x03) << 6))
+#define CCM_ANALOG_PLL_ARM_LOCK_L                       ((uint32_t)(1 << 31))
+#define CCM_ANALOG_PLL_ARM_BYPASS_L             ((uint32_t)(1 << 16))
+#define CCM_ANALOG_PLL_ARM_ENABLE_L             ((uint32_t)(1 << 13))
+#define CCM_ANALOG_PLL_ARM_POWERDOWN_L          ((uint32_t)(1 << 12))
+#define CCM_CDHIPR_ARM_PODF_BUSY_L              ((uint32_t)(1 << 16))
+#define CCM_CDHIPR_AHB_PODF_BUSY_L              ((uint32_t)(1 << 1))
+#define CCM_CDHIPR_PERIPH_CLK_SEL_BUSY_L                ((uint32_t)(1 << 5))
+#define CCM_CBCDR_PERIPH_CLK_SEL_L              ((uint32_t)(1 << 25))
+#define CCM_CCGR_OFF                            0
+#define CCM_CCGR_ON_RUNONLY                     1
+#define CCM_CCGR_ON                             3
+
+/* Teensyduino Core Library - clockspeed.c
+ * http://www.pjrc.com/teensy/
+ * Copyright (c) 2017 PJRC.COM, LLC.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * 1. The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * 2. If the Software is incorporated into a build system that allows
+ * selection among a list of target devices, then similar target
+ * devices manufactured by PJRC.COM must be included in the list of
+ * target devices and selectable in the same manner.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+// uint32_t set_arm_clock(uint32_t frequency);
+
+// stuff needing wait handshake:
+//  CCM_CACRR  ARM_PODF
+//  CCM_CBCDR  PERIPH_CLK_SEL
+//  CCM_CBCMR  PERIPH2_CLK_SEL
+//  CCM_CBCDR  AHB_PODF
+//  CCM_CBCDR  SEMC_PODF
+
+uint32_t setarmclock(uint32_t frequency) {
+    uint32_t cbcdr = CCM->CBCDR;     // pg 1021
+    uint32_t cbcmr = CCM->CBCMR;     // pg 1023
+    uint32_t dcdc = DCDC->REG3;
+
+    // compute required voltage
+    uint32_t voltage = 1150;     // default = 1.15V
+    if (frequency > 528000000) {
+        voltage = 1250;         // 1.25V
+        #if defined(OVERCLOCK_STEPSIZE) && defined(OVERCLOCK_MAX_VOLT)
+        if (frequency > 600000000) {
+            voltage += ((frequency - 600000000) / OVERCLOCK_STEPSIZE) * 25;
+            if (voltage > OVERCLOCK_MAX_VOLT) {
+                voltage = OVERCLOCK_MAX_VOLT;
+            }
+        }
+        #endif
+    } else if (frequency <= 24000000) {
+        voltage = 950;         // 0.95
+    }
+
+    // if voltage needs to increase, do it before switch clock speed
+    CCM->CCGR6 |= CCM_CCGR6_DCDC(CCM_CCGR_ON);
+    if ((dcdc & ((uint32_t)(0x1F << 0))) < ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0)) {
+        dcdc &= ~((uint32_t)(0x1F << 0));
+        dcdc |= ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0);
+        DCDC->REG3 = dcdc;
+        while (!(DCDC->REG0 & DCDC_REG0_STS_DC_OK_L)) {
+            ;                                                   // wait voltage settling
+        }
+    }
+
+    if (!(cbcdr & CCM_CBCDR_PERIPH_CLK_SEL_L)) {
+        const uint32_t need1s = CCM_ANALOG_PLL_USB1_ENABLE_L | CCM_ANALOG_PLL_USB1_POWER_L |
+            CCM_ANALOG_PLL_USB1_LOCK_L | CCM_ANALOG_PLL_USB1_EN_USB_CLKS_L;
+        uint32_t sel, div;
+        if ((CCM_ANALOG->PLL_USB1 & need1s) == need1s) {
+            sel = 0;
+            div = 3;             // divide down to 120 MHz, so IPG is ok even if IPG_PODF=0
+        } else {
+            sel = 1;
+            div = 0;
+        }
+        if ((cbcdr & ((uint32_t)(0x07 << 27))) != CCM_CBCDR_PERIPH_CLK2_PODF(div)) {
+            // PERIPH_CLK2 divider needs to be changed
+            cbcdr &= ~((uint32_t)(0x07 << 27));
+            cbcdr |= CCM_CBCDR_PERIPH_CLK2_PODF(div);
+            CCM->CBCDR = cbcdr;
+        }
+        if ((cbcmr & ((uint32_t)(0x03 << 12))) != CCM_CBCMR_PERIPH_CLK2_SEL(sel)) {
+            // PERIPH_CLK2 source select needs to be changed
+            cbcmr &= ~((uint32_t)(0x03 << 12));
+            cbcmr |= CCM_CBCMR_PERIPH_CLK2_SEL(sel);
+            CCM->CBCMR = cbcmr;
+            while (CCM->CDHIPR & ((uint32_t)(1 << 3))) {
+                ;                                                  // wait
+            }
+        }
+        // switch over to PERIPH_CLK2
+        cbcdr |= ((uint32_t)(1 << 25));
+        CCM->CBCDR = cbcdr;
+        while (CCM->CDHIPR & ((uint32_t)(1 << 5))) {
+            ;                                              // wait
+        }
+    }
+
+    // TODO: check if PLL2 running, can 352, 396 or 528 can work? (no need for ARM PLL)
+
+    // DIV_SELECT: 54-108 = official range 648 to 1296 in 12 MHz steps
+    uint32_t div_arm = 1;
+    uint32_t div_ahb = 1;
+    while (frequency * div_arm * div_ahb < 648000000) {
+        if (div_arm < 8) {
+            div_arm = div_arm + 1;
+        } else {
+            if (div_ahb < 5) {
+                div_ahb = div_ahb + 1;
+                div_arm = 1;
+            } else {
+                break;
+            }
+        }
+    }
+    uint32_t mult = (frequency * div_arm * div_ahb + 6000000) / 12000000;
+    if (mult > 108) {
+        mult = 108;
+    }
+    if (mult < 54) {
+        mult = 54;
+    }
+
+    frequency = mult * 12000000 / div_arm / div_ahb;
+
+    const uint32_t arm_pll_mask = CCM_ANALOG_PLL_ARM_LOCK_L | CCM_ANALOG_PLL_ARM_BYPASS_L |
+        CCM_ANALOG_PLL_ARM_ENABLE_L | CCM_ANALOG_PLL_ARM_POWERDOWN_L |
+        CCM_ANALOG_PLL_ARM_DIV_SELECT_MASK;
+    if ((CCM_ANALOG->PLL_ARM & arm_pll_mask) != (CCM_ANALOG_PLL_ARM_LOCK_L
+                                                 | CCM_ANALOG_PLL_ARM_ENABLE_L | CCM_ANALOG_PLL_ARM_DIV_SELECT(mult))) {
+        // printf("ARM PLL needs reconfigure\n");
+        CCM_ANALOG->PLL_ARM = CCM_ANALOG_PLL_ARM_POWERDOWN_L;
+        // TODO: delay needed?
+        CCM_ANALOG->PLL_ARM = CCM_ANALOG_PLL_ARM_ENABLE_L
+            | CCM_ANALOG_PLL_ARM_DIV_SELECT(mult);
+        while (!(CCM_ANALOG->PLL_ARM & CCM_ANALOG_PLL_ARM_LOCK_L)) {
+            ;                                                                // wait for lock
+        }
+    }
+
+    if ((CCM->CACRR & ((uint32_t)(0x07 << 0))) != (div_arm - 1)) {
+        CCM->CACRR = CCM_CACRR_ARM_PODF(div_arm - 1);
+        while (CCM->CDHIPR & CCM_CDHIPR_ARM_PODF_BUSY_L) {
+            ;                                                      // wait
+        }
+    }
+
+    if ((cbcdr & ((uint32_t)(0x07 << 10))) != CCM_CBCDR_AHB_PODF(div_ahb - 1)) {
+        cbcdr &= ~((uint32_t)(0x07 << 10));
+        cbcdr |= CCM_CBCDR_AHB_PODF(div_ahb - 1);
+        CCM->CBCDR = cbcdr;
+        while (CCM->CDHIPR & CCM_CDHIPR_AHB_PODF_BUSY_L) {
+            ;                                                     // wait
+        }
+    }
+
+    uint32_t div_ipg = (frequency + 149999999) / 150000000;
+    if (div_ipg > 4) {
+        div_ipg = 4;
+    }
+    if ((cbcdr & ((uint32_t)(0x03 << 8))) != (CCM_CBCDR_IPG_PODF(div_ipg - 1))) {
+        cbcdr &= ~((uint32_t)(0x03 << 8));
+        cbcdr |= CCM_CBCDR_IPG_PODF(div_ipg - 1);
+        // TODO: how to safely change IPG_PODF ??
+        CCM->CBCDR = cbcdr;
+    }
+
+    // cbcdr &= ~CCM_CBCDR_PERIPH_CLK_SEL;
+    // CCM_CBCDR = cbcdr;  // why does this not work at 24 MHz?
+    CCM->CBCDR &= ~((uint32_t)(1 << 25));
+    while (CCM->CDHIPR & CCM_CDHIPR_PERIPH_CLK_SEL_BUSY_L) {
+        ;                                                        // wait
+
+    }
+    F_CPU_ACTUAL = frequency;
+    F_BUS_ACTUAL = frequency / div_ipg;
+    // scale_cpu_cycles_to_microseconds = 0xFFFFFFFFu / (uint32_t)(frequency / 1000000u);
+
+    // if voltage needs to decrease, do it after switch clock speed
+    if ((dcdc & ((uint32_t)(0x1F << 0))) > ((uint32_t)(((voltage - 800) / 25) & 0x1F) << 0)) {
+        dcdc &= ~((uint32_t)(0x1F << 0));
+        dcdc |= ((uint32_t)(0x1F << 0));
+        DCDC->REG3 = dcdc;
+        while (!(DCDC->REG0 & DCDC_REG0_STS_DC_OK_L)) {
+            ;                                                   // wait voltage settling
+        }
+    }
+
+    return frequency;
 }

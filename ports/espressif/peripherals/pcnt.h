@@ -31,6 +31,7 @@
 #include "soc/pcnt_struct.h"
 
 extern int peripherals_pcnt_init(pcnt_config_t pcnt_config);
+extern int peripherals_pcnt_get_unit(pcnt_config_t pcnt_config);
 extern void peripherals_pcnt_deinit(pcnt_unit_t *unit);
 extern void peripherals_pcnt_reset(void);
 
