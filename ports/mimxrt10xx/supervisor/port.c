@@ -416,7 +416,6 @@ void port_idle_until_interrupt(void) {
     if (!background_callback_pending()) {
         NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
         __WFI();
-        #endif
     }
     common_hal_mcu_enable_interrupts();
 }
