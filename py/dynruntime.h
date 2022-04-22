@@ -126,6 +126,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_get_array(o, len, items)     (mp_obj_get_array_dyn((o), (len), (items)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
+#define mp_obj_malloc_helper(n, t)          (mp_obj_malloc_helper_dyn(n, t))
+
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
     if (type == &mp_type_str) {
         return mp_obj_new_str((const char *)data, len);
@@ -161,6 +163,12 @@ static inline void *mp_obj_str_get_data_dyn(mp_obj_t o, size_t *l) {
 static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     // If bytes implemented MP_UNARY_OP_LEN could use: mp_unary_op(MP_UNARY_OP_LEN, o)
     return mp_fun_table.call_function_n_kw(mp_fun_table.load_name(MP_QSTR_len), 1, &o);
+}
+
+static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
 }
 
 /******************************************************************************/
