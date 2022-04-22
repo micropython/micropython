@@ -196,7 +196,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     // which uses 0, 1 has to be handled specially. So for the different channels:
     //      A - Uses VAL2 to turn on (0) and VAL3=duty to turn off
     //      B - Uses VAL4 to turn on (0) and VAL5 to turn off
-    //      X - As mentioned above VAL1 turns off, but its set to the timing for freqency. so
+    //      X - As mentioned above VAL1 turns off, but it's set to the timing for frequency. so
     //          VAL0 turns on, so we set it to VAL1 - duty
     //
     PWM_Type *base = self->pwm->pwm;
