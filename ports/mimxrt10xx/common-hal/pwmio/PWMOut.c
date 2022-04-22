@@ -38,7 +38,7 @@
 #include "supervisor/shared/translate.h"
 #include "periph.h"
 
-// Debug print support set to  none zero to enable debug printing
+// Debug print support set to zero to enable debug printing
 #define ENABLE_DEBUG_PRINTING 0
 
 
