@@ -53,7 +53,7 @@
  */
 STATIC bool mp3file_update_inbuf_always(audiomp3_mp3file_obj_t *self) {
     // If we didn't previously reach the end of file, we can try reading now
-    if (!self->eof) {
+    if (!self->eof && self->inbuf_offset != 0) {
 
         // Move the unconsumed portion of the buffer to the start
         uint8_t *end_of_buffer = self->inbuf + self->inbuf_length;
