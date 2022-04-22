@@ -54,14 +54,12 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&arg_vals);
 
     // create enumerate object
-    mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = type;
+    mp_obj_enumerate_t *o = mp_obj_malloc(mp_obj_enumerate_t, type);
     o->iter = mp_getiter(arg_vals.iterable.u_obj, NULL);
     o->cur = arg_vals.start.u_int;
     #else
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
-    mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = type;
+    mp_obj_enumerate_t *o = mp_obj_malloc(mp_obj_enumerate_t, type);
     o->iter = mp_getiter(args[0], NULL);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
     #endif

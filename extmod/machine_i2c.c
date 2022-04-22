@@ -668,8 +668,7 @@ STATIC void mp_machine_soft_i2c_init(mp_obj_base_t *self_in, size_t n_args, cons
 
 STATIC mp_obj_t mp_machine_soft_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // create new soft I2C object
-    machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
-    self->base.type = &mp_machine_soft_i2c_type;
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &mp_machine_soft_i2c_type);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
     mp_machine_soft_i2c_init(&self->base, n_args, args, &kw_args);

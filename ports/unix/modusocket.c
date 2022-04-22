@@ -80,8 +80,7 @@ static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen
 }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
-    mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &mp_type_socket;
+    mp_obj_socket_t *o = mp_obj_malloc(mp_obj_socket_t, &mp_type_socket);
     o->fd = fd;
     o->blocking = true;
     return o;

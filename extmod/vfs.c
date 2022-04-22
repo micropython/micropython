@@ -417,8 +417,7 @@ mp_obj_t mp_vfs_ilistdir(size_t n_args, const mp_obj_t *args) {
 
     if (vfs == MP_VFS_ROOT) {
         // list the root directory
-        mp_vfs_ilistdir_it_t *iter = m_new_obj(mp_vfs_ilistdir_it_t);
-        iter->base.type = &mp_type_polymorph_iter;
+        mp_vfs_ilistdir_it_t *iter = mp_obj_malloc(mp_vfs_ilistdir_it_t, &mp_type_polymorph_iter);
         iter->iternext = mp_vfs_ilistdir_it_iternext;
         iter->cur.vfs = MP_STATE_VM(vfs_mount_table);
         iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;

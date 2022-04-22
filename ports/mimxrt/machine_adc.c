@@ -80,8 +80,7 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     ADC_SetChannelConfig(adc_instance, 0UL, &channel_config);  // NOTE: we always choose channel group '0' since we only perform software triggered conversion
 
     // Create ADC Instance
-    machine_adc_obj_t *o = m_new_obj(machine_adc_obj_t);
-    o->base.type = &machine_adc_type;
+    machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->adc = adc_instance;
     o->channel = (uint8_t)channel;
     o->channel_group = 0;

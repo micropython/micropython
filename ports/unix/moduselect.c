@@ -324,8 +324,7 @@ STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     if (n_args > 0) {
         alloc = mp_obj_get_int(args[0]);
     }
-    mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
-    poll->base.type = &mp_type_poll;
+    mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
     poll->len = 0;

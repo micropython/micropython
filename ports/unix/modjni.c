@@ -145,8 +145,7 @@ STATIC void jclass_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
-        mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
-        o->base.type = &jmethod_type;
+        mp_obj_jmethod_t *o = mp_obj_malloc(mp_obj_jmethod_t, &jmethod_type);
         o->name = attr_in;
         o->meth = NULL;
         o->obj = self->cls;
@@ -183,8 +182,7 @@ STATIC const mp_obj_type_t jclass_type = {
 };
 
 STATIC mp_obj_t new_jclass(jclass jc) {
-    mp_obj_jclass_t *o = m_new_obj(mp_obj_jclass_t);
-    o->base.type = &jclass_type;
+    mp_obj_jclass_t *o = mp_obj_malloc(mp_obj_jclass_t, &jclass_type);
     o->cls = jc;
     return MP_OBJ_FROM_PTR(o);
 }
@@ -223,8 +221,7 @@ STATIC void jobject_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
         // JJ1(ExceptionDescribe);
         JJ1(ExceptionClear);
 
-        mp_obj_jmethod_t *o = m_new_obj(mp_obj_jmethod_t);
-        o->base.type = &jmethod_type;
+        mp_obj_jmethod_t *o = mp_obj_malloc(mp_obj_jmethod_t, &jmethod_type);
         o->name = attr_in;
         o->meth = NULL;
         o->obj = self->obj;
@@ -343,8 +340,7 @@ STATIC mp_obj_t new_jobject(jobject jo) {
     } else if (JJ(IsInstanceOf, jo, Class_class)) {
         return new_jclass(jo);
     } else {
-        mp_obj_jobject_t *o = m_new_obj(mp_obj_jobject_t);
-        o->base.type = &jobject_type;
+        mp_obj_jobject_t *o = mp_obj_malloc(mp_obj_jobject_t, &jobject_type);
         o->obj = jo;
         return MP_OBJ_FROM_PTR(o);
     }
@@ -644,8 +640,7 @@ STATIC mp_obj_t mod_jni_cls(mp_obj_t cls_name_in) {
     }
     jclass cls = JJ(FindClass, cls_name);
 
-    mp_obj_jclass_t *o = m_new_obj(mp_obj_jclass_t);
-    o->base.type = &jclass_type;
+    mp_obj_jclass_t *o = mp_obj_malloc(mp_obj_jclass_t, &jclass_type);
     o->cls = cls;
     return MP_OBJ_FROM_PTR(o);
 }

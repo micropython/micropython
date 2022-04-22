@@ -105,8 +105,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         }
     }
 
-    machine_timer_obj_t *self = m_new_obj(machine_timer_obj_t);
-    self->base.type = &machine_timer_type;
+    machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
     self->group = group;
     self->index = index;
 

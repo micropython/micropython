@@ -352,9 +352,8 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_arg_val_t vals[PYB_EXTINT_MAKE_NEW_NUM_ARGS];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, PYB_EXTINT_MAKE_NEW_NUM_ARGS, pyb_extint_make_new_args, vals);
 
-    extint_obj_t *self = m_new_obj(extint_obj_t);
+    extint_obj_t *self = mp_obj_malloc(extint_obj_t, type);
     machine_pin_obj_t *pin = vals[0].u_obj;
-    self->base.type = type;
     self->pin_idx = pin->pin;
     self->irq_no = extint_register(vals[0].u_obj, vals[1].u_int, vals[2].u_int, vals[3].u_obj, false);
 

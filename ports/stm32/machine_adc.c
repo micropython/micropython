@@ -461,8 +461,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     adc_config(adc, 12);
 
-    machine_adc_obj_t *o = m_new_obj(machine_adc_obj_t);
-    o->base.type = &machine_adc_type;
+    machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->adc = adc;
     o->channel = channel;
     o->sample_time = sample_time;

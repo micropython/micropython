@@ -69,8 +69,7 @@ STATIC int read_src_stream(TINF_DATA *data) {
 STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
-    mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
-    o->base.type = type;
+    mp_obj_decompio_t *o = mp_obj_malloc(mp_obj_decompio_t, type);
     memset(&o->decomp, 0, sizeof(o->decomp));
     o->decomp.readSource = read_src_stream;
     o->src_stream = args[0];

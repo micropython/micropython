@@ -153,8 +153,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
 
     // Get peripheral object.
     uint8_t spi_hw_id = spi_index_table[spi_id];  // the hw spi number 1..n
-    machine_spi_obj_t *self = m_new_obj(machine_spi_obj_t);
-    self->base.type = &machine_spi_type;
+    machine_spi_obj_t *self = mp_obj_malloc(machine_spi_obj_t, &machine_spi_type);
     self->spi_id = spi_id;
     self->spi_inst = spi_base_ptr_table[spi_hw_id];
     self->spi_hw_id = spi_hw_id;

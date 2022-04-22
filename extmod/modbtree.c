@@ -67,8 +67,7 @@ void __dbpanic(DB *db) {
 }
 
 STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
-    mp_obj_btree_t *o = m_new_obj(mp_obj_btree_t);
-    o->base.type = &btree_type;
+    mp_obj_btree_t *o = mp_obj_malloc(mp_obj_btree_t, &btree_type);
     o->stream = stream;
     o->db = db;
     o->start_key = mp_const_none;

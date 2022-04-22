@@ -639,14 +639,12 @@ STATIC mp_obj_t extra_coverage(void) {
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");
 
-    mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
-    s->base.type = &mp_type_stest_fileio;
+    mp_obj_streamtest_t *s = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_fileio);
     s->buf = NULL;
     s->len = 0;
     s->pos = 0;
     s->error_code = 0;
-    mp_obj_streamtest_t *s2 = m_new_obj(mp_obj_streamtest_t);
-    s2->base.type = &mp_type_stest_textio2;
+    mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
     mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};
