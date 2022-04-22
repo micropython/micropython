@@ -627,7 +627,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 // this factory function is provided for backwards compatibility with old FrameBuffer1 class
 STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args) {
     mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
-    o->base.type = &mp_type_framebuf;
+    o->base.type = (mp_obj_type_t *)&mp_type_framebuf;
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
