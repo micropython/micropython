@@ -415,15 +415,6 @@ void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
     if (!background_callback_pending()) {
         NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
-        // Don't down clock on debug builds because it prevents the DAP from
-        // reading memory
-        #if 0
-        #if CIRCUITPY_DEBUG == 0
-        CLOCK_SetMode(kCLOCK_ModeWait);
-        #endif
-        __WFI();
-        CLOCK_SetMode(kCLOCK_ModeRun);
-        #else
         __WFI();
         #endif
     }
