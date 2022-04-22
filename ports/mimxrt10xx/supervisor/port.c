@@ -398,7 +398,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
-    // Currently I have disabled the setting into wait mode as this impacts lots of differnt
+    // Currently I have disabled the setting into wait mode as this impacts lots of different
     // subsystems and it is unclear if you can or should set it generically without having
     // a better understanding of user intent.  For example by default it will kill PWM
     // when in this mode, unless PWM_CTRL2_WAITEN_MASK is set, and even with this set
