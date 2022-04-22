@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-21 22:57+0000\n"
+"PO-Revision-Date: 2022-04-23 21:13+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: main.c
 msgid ""
@@ -1139,6 +1139,8 @@ msgstr "O Framebuffer requer %d bytes"
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
+"A frequência deve ser 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 ou "
+"1008 Mhz"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -3373,7 +3375,7 @@ msgstr "formato requer um dict"
 
 #: shared-bindings/microcontroller/Processor.c
 msgid "frequency is read-only for this board"
-msgstr ""
+msgstr "nesta placa, a frequência é de apenas leitura"
 
 #: py/objdeque.c
 msgid "full"
