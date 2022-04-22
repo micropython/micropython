@@ -160,7 +160,7 @@ STATIC void eth_process_frame(eth_t *self, uint8_t *buf, size_t length) {
     }
 }
 
-void eth_irq_handler(ENET_Type *base, enet_handle_t *handle, 
+void eth_irq_handler(ENET_Type *base, enet_handle_t *handle,
     #if FSL_FEATURE_ENET_QUEUE > 1
     uint32_t ringId,
     #endif /* FSL_FEATURE_ENET_QUEUE > 1 */

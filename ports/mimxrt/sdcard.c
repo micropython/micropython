@@ -367,7 +367,7 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
                 sdcard_error_recovery(base);
             }
             break;
-        };
+        }
         ticks_delay_us64(10);
     }
     return status;

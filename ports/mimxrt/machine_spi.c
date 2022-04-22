@@ -231,7 +231,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
     // Wait a short while for the previous transfer to finish, but not forever
     for (volatile int j = 0; (j < 5000) && ((self->spi_inst->SR & kLPSPI_ModuleBusyFlag) != 0); j++) {}
-    
+
     lpspi_transfer_t masterXfer;
     masterXfer.txData = (uint8_t *)src;
     masterXfer.rxData = (uint8_t *)dest;
