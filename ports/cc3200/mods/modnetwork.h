@@ -36,7 +36,11 @@
  DEFINE TYPES
  ******************************************************************************/
 typedef struct _mod_network_nic_type_t {
-    mp_obj_type_t base;
+    union {
+        mp_obj_type_t base;
+        // Ensure that this struct is big enough to hold any type size.
+        mp_obj_full_type_t _alloc;
+    };
 } mod_network_nic_type_t;
 
 typedef struct _mod_network_socket_base_t {

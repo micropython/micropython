@@ -552,6 +552,9 @@ typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
+// In split/slots representations, this is a variable sized struct.
+// In order to use this as a member, or allocate dynamically, use the
+// mp_obj_full_type_t below (which must be kept in sync).
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
@@ -621,6 +624,30 @@ struct _mp_obj_type_t {
     // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
 };
+
+// Non-variable sized version of mp_obj_type_t to be used as a member
+// in other structs or for dynamic allocation. The fields are exactly
+// as in mp_obj_type_t, but with a fixed size for the flexible array
+// members.
+typedef struct _mp_obj_full_type_t {
+    mp_obj_base_t base;
+    uint16_t flags;
+    uint16_t name;
+    mp_make_new_fun_t make_new;
+
+    mp_print_fun_t print;
+    mp_call_fun_t call;
+    mp_unary_op_fun_t unary_op;
+    mp_binary_op_fun_t binary_op;
+    mp_attr_fun_t attr;
+    mp_subscr_fun_t subscr;
+    mp_getiter_fun_t getiter;
+    mp_fun_1_t iternext;
+    mp_buffer_fun_t buffer;
+    const void *protocol;
+    const void *parent;
+    struct _mp_obj_dict_t *locals_dict;
+} mp_obj_full_type_t;
 
 #define _MP_DEFINE_CONST_OBJ_TYPE_0(_typename, _name, _flags, _make_new) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new }
 #define _MP_DEFINE_CONST_OBJ_TYPE_1(_typename, _name, _flags, _make_new, f1, v1) const mp_obj_type_t _typename = { .base = { &mp_type_type }, .name = _name, .flags = _flags, .make_new = _make_new, .f1 = v1 }
