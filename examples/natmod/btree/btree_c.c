@@ -94,7 +94,7 @@ int mp_stream_posix_fsync(void *stream) {
     return res;
 }
 
-mp_obj_type_t btree_type;
+mp_obj_full_type_t btree_type;
 
 #include "extmod/modbtree.c"
 

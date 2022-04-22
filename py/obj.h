@@ -562,6 +562,9 @@ typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
 
+// This struct will be updated to become a variable sized struct. In order to
+// use this as a member, or allocate dynamically, use the mp_obj_empty_type_t
+// or mp_obj_full_type_t structs below (which must be kept in sync).
 struct _mp_obj_type_t {
     // A type is an object so must start with this entry, which points to mp_type_type.
     mp_obj_base_t base;
@@ -632,6 +635,13 @@ struct _mp_obj_type_t {
     struct _mp_obj_dict_t *locals_dict;
 };
 
+// Non-variable sized versions of mp_obj_type_t to be used as a member
+// in other structs or for dynamic allocation. The fields are exactly
+// as in mp_obj_type_t, but with a fixed size for the flexible array
+// members.
+typedef mp_obj_type_t mp_obj_empty_type_t;
+typedef mp_obj_type_t mp_obj_full_type_t;
+
 #define MP_TYPE_NULL_MAKE_NEW (NULL)
 
 // Implementation of MP_DEFINE_CONST_OBJ_TYPE for each number of arguments.
@@ -657,14 +667,15 @@ struct _mp_obj_type_t {
 // of the 30th argument (30 is 13*2 + 4).
 #define MP_DEFINE_CONST_OBJ_TYPE_NARGS(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28, _29, N, ...) MP_DEFINE_CONST_OBJ_TYPE_NARGS_##N
 
-// This macro is used to define a object type in ROM.
+// These macros are used to define a object type in ROM.
 // Invoke as MP_DEFINE_CONST_OBJ_TYPE(_typename, _name, _flags, _make_new [, slot, func]*)
-// It uses the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
+// They use the number of arguments to select which MP_DEFINE_CONST_OBJ_TYPE_*
 // macro to use based on the number of arguments. It works by shifting the
 // numeric values 12, 11, ... 0 by the number of arguments, such that the
 // 30th argument ends up being the number to use. The _INV values are
 // placeholders because the slot arguments come in pairs.
 #define MP_DEFINE_CONST_OBJ_TYPE(...) MP_DEFINE_CONST_OBJ_TYPE_EXPAND(MP_DEFINE_CONST_OBJ_TYPE_NARGS(__VA_ARGS__, _INV, 12, _INV, 11, _INV, 10, _INV, 9, _INV, 8, _INV, 7, _INV, 6, _INV, 5, _INV, 4, _INV, 3, _INV, 2, _INV, 1, _INV, 0)(mp_obj_type_t, __VA_ARGS__))
+#define MP_DEFINE_CONST_OBJ_FULL_TYPE(...) MP_DEFINE_CONST_OBJ_TYPE_EXPAND(MP_DEFINE_CONST_OBJ_TYPE_NARGS(__VA_ARGS__, _INV, 12, _INV, 11, _INV, 10, _INV, 9, _INV, 8, _INV, 7, _INV, 6, _INV, 5, _INV, 4, _INV, 3, _INV, 2, _INV, 1, _INV, 0)(mp_obj_full_type_t, __VA_ARGS__))
 
 // Constant types, globally accessible
 extern const mp_obj_type_t mp_type_type;

@@ -1024,7 +1024,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &wiznet5k_locals_dict
     );
 #else // WIZNET5K_PROVIDED_STACK
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_wiznet5k_base,
     MP_QSTR_WIZNET5K,
     MP_TYPE_FLAG_NONE,

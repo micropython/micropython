@@ -8,7 +8,7 @@ void *memset(void *s, int c, size_t n) {
 }
 #endif
 
-mp_obj_type_t decompio_type;
+mp_obj_full_type_t decompio_type;
 
 #include "extmod/moduzlib.c"
 

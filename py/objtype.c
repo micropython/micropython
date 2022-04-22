@@ -1148,7 +1148,10 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         #endif
     }
 
-    mp_obj_type_t *o = m_new0(mp_obj_type_t, 1);
+    // Allocate a full-sized mp_obj_full_type_t instance (i.e. all slots / extended fields).
+    // Given that Python types use almost all the slots anyway, this doesn't cost anything
+    // extra.
+    mp_obj_type_t *o = (mp_obj_type_t *)m_new0(mp_obj_full_type_t, 1);
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;

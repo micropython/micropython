@@ -774,7 +774,7 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
 
 static MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_nina_base,
     MP_QSTR_nina,
     MP_TYPE_FLAG_NONE,
