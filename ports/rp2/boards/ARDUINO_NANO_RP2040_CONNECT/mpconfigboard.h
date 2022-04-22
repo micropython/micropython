@@ -18,7 +18,7 @@
 // Enable USB Mass Storage with FatFS filesystem.
 #define MICROPY_HW_USB_MSC              (1)
 #define MICROPY_HW_USB_VID              (0x2341)
-#define MICROPY_HW_USB_PID              (0x015e)
+#define MICROPY_HW_USB_PID              (0x025e)
 
 // UART 1 config.
 #define MICROPY_HW_UART1_TX             (8)
