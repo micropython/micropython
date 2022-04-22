@@ -323,8 +323,7 @@ STATIC mp_obj_t pyb_can_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     pyb_can_obj_t *self;
     if (MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] == NULL) {
-        self = m_new_obj(pyb_can_obj_t);
-        self->base.type = &pyb_can_type;
+        self = mp_obj_malloc(pyb_can_obj_t, &pyb_can_type);
         self->can_id = can_idx;
         self->is_enabled = false;
         MP_STATE_PORT(pyb_can_obj_all)[can_idx - 1] = self;

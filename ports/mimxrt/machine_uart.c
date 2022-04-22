@@ -277,8 +277,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // Create the UART object and fill it with defaults.
     uint8_t uart_hw_id = uart_index_table[uart_id];  // the hw uart number 1..n
-    machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
-    self->base.type = &machine_uart_type;
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->id = uart_id;
     self->lpuart = uart_base_ptr_table[uart_hw_id];
     self->invert = false;

@@ -75,8 +75,7 @@ const mp_obj_int_t mp_sys_maxsize_obj = {
 #endif
 
 mp_obj_int_t *mp_obj_int_new_mpz(void) {
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     mpz_init_zero(&o->mpz);
     return o;
 }

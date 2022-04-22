@@ -44,8 +44,7 @@ typedef struct _esp32_nvs_obj_t {
 
 // *esp32_nvs_new allocates a python NVS object given a handle to an esp-idf namespace C obj.
 STATIC esp32_nvs_obj_t *esp32_nvs_new(nvs_handle_t namespace) {
-    esp32_nvs_obj_t *self = m_new_obj(esp32_nvs_obj_t);
-    self->base.type = &esp32_nvs_type;
+    esp32_nvs_obj_t *self = mp_obj_malloc(esp32_nvs_obj_t, &esp32_nvs_type);
     self->namespace = namespace;
     return self;
 }

@@ -95,8 +95,7 @@ STATIC NORETURN void syntax_error(void) {
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
-    mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-    o->base.type = type;
+    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
@@ -463,8 +462,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = sub->items[1];
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -479,8 +477,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -552,8 +549,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[2];
                 o->addr = self->addr + size * index;
                 o->flags = self->flags;
@@ -570,8 +566,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_ob
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[1];
                 o->addr = p + size * index;
                 o->flags = self->flags;

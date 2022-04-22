@@ -273,8 +273,7 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
 
-    pyb_flash_obj_t *self = m_new_obj(pyb_flash_obj_t);
-    self->base.type = &pyb_flash_type;
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
 
     uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
 

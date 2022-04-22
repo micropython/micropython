@@ -243,8 +243,7 @@ mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items) {
     if (n == 0) {
         return mp_const_empty_tuple;
     }
-    mp_obj_tuple_t *o = m_new_obj_var(mp_obj_tuple_t, mp_obj_t, n);
-    o->base.type = &mp_type_tuple;
+    mp_obj_tuple_t *o = mp_obj_malloc_var(mp_obj_tuple_t, mp_obj_t, n, &mp_type_tuple);
     o->len = n;
     if (items) {
         for (size_t i = 0; i < n; i++) {

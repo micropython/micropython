@@ -54,8 +54,7 @@ typedef struct _mp_obj_thread_lock_t {
 } mp_obj_thread_lock_t;
 
 STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
-    mp_obj_thread_lock_t *self = m_new_obj(mp_obj_thread_lock_t);
-    self->base.type = &mp_type_thread_lock;
+    mp_obj_thread_lock_t *self = mp_obj_malloc(mp_obj_thread_lock_t, &mp_type_thread_lock);
     mp_thread_mutex_init(&self->mutex);
     self->locked = false;
     return self;
