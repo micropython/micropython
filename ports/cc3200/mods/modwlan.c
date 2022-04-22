@@ -1285,7 +1285,7 @@ STATIC const mp_rom_map_elem_t wlan_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_locals_dict, wlan_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+STATIC MP_DEFINE_CONST_OBJ_FULL_TYPE(
     mod_network_nic_type_wlan_base,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,

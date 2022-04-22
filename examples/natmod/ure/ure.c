@@ -32,8 +32,8 @@ void *memmove(void *dest, const void *src, size_t n) {
     return mp_fun_table.memmove_(dest, src, n);
 }
 
-mp_obj_type_t match_type;
-mp_obj_type_t re_type;
+mp_obj_full_type_t match_type;
+mp_obj_full_type_t re_type;
 
 #include "extmod/modure.c"
 
