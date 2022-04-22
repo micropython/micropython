@@ -785,7 +785,8 @@ typedef struct _mp_obj_full_type_t {
 #define MP_OBJ_TYPE_GET_SLOT_OR_NULL(t, f) (_MP_OBJ_TYPE_SLOT_TYPE_##f(MP_OBJ_TYPE_HAS_SLOT(t, f) ? MP_OBJ_TYPE_GET_SLOT(t, f) : NULL))
 #define MP_OBJ_TYPE_SET_SLOT(t, f, v, n) ((t)->slot_index_##f = n, (t)->slots[(t)->slot_index_##f - 1] = (void *)v)
 #define MP_OBJ_TYPE_OFFSETOF_SLOT(f) (offsetof(mp_obj_type_t, slot_index_##f))
-#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0)
+// For everything except make_new, the offset is to the uint8_t index. For make_new, we need to check the pointer.
+#define MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(t, offset) (*(uint8_t *)((char *)(t) + (offset)) != 0 || (offset == offsetof(mp_obj_type_t, make_new) && t->make_new))
 
 #elif MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SPLIT
 
