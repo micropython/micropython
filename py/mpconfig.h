@@ -150,7 +150,7 @@
 #define MICROPY_OBJ_TYPE_REPR_SPLIT (2)
 
 #ifndef MICROPY_OBJ_TYPE_REPR
-#define MICROPY_OBJ_TYPE_REPR (MICROPY_OBJ_TYPE_REPR_FULL)
+#define MICROPY_OBJ_TYPE_REPR (MICROPY_OBJ_TYPE_REPR_SLOT_INDEX)
 #endif
 
 /*****************************************************************************/
