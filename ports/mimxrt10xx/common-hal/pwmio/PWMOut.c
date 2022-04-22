@@ -258,7 +258,7 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     // As mentioned in the setting up of the frequency code
     //      A - Uses VAL2 to turn on (0) and VAL3=duty to turn off
     //      B - Uses VAL4 to turn on (0) and VAL5 to turn off
-    //      X - As mentioned above VAL1 turns off, but its set to the timing for freqency. so
+    //      X - As mentioned above VAL1 turns off, but it's set to the timing for frequency. so
     //          VAL0 turns on, so we set it to VAL1 - duty
 
     DBGPrintf(&mp_plat_print, "common_hal_pwmio_pwmout_set_duty_cycle %u\n", duty);
