@@ -33,7 +33,7 @@
 #else
 #define OTP_ADDR (0x1ff0f3c0)
 #endif
-#define OTP ((pyb_otp_t*)OTP_ADDR)
+#define OTP ((pyb_otp_t *)OTP_ADDR)
 
 typedef struct _pyb_otp_t {
     uint16_t series;

@@ -469,11 +469,7 @@ int nina_disconnect(void) {
 }
 
 int nina_isconnected(void) {
-    int status = nina_connection_status();
-    if (status == -1) {
-        return -1;
-    }
-    return status == NINA_STATUS_CONNECTED;
+    return nina_connection_status() == NINA_STATUS_CONNECTED;
 }
 
 int nina_connected_sta(uint32_t *sta_ip) {

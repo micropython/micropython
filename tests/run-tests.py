@@ -13,6 +13,9 @@ from multiprocessing.pool import ThreadPool
 import threading
 import tempfile
 
+# Maximum time to run a PC-based test, in seconds.
+TEST_TIMEOUT = 30
+
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
@@ -178,10 +181,15 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+                output_mupy = subprocess.check_output(
+                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT
+                )
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:

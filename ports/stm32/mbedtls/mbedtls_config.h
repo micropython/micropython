@@ -65,7 +65,7 @@
 #define MBEDTLS_BIGNUM_C
 #define MBEDTLS_CIPHER_C
 #define MBEDTLS_CTR_DRBG_C
-//#define MBEDTLS_ECP_C
+// #define MBEDTLS_ECP_C
 #define MBEDTLS_ENTROPY_C
 #define MBEDTLS_ERROR_C
 #define MBEDTLS_MD_C

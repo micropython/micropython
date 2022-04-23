@@ -39,7 +39,7 @@ static size_t count_links(uint32_t *nb) {
     while (p != NULL) {
         ++n;
         *nb += gc_nbytes(p);
-        p = (void**)p[1];
+        p = (void **)p[1];
     }
     return n;
 }
@@ -65,17 +65,17 @@ void m_free_mbedtls(void *ptr_in) {
     if (ptr_in == NULL) {
         return;
     }
-    void **ptr = &((void**)ptr_in)[-2];
+    void **ptr = &((void **)ptr_in)[-2];
     #if DEBUG
     uint32_t nb;
     size_t n = count_links(&nb);
     printf("mbed_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", ptr, ptr[0], ptr[1], gc_nbytes(ptr), n, (uint)nb);
     #endif
     if (ptr[1] != NULL) {
-        ((void**)ptr[1])[0] = ptr[0];
+        ((void **)ptr[1])[0] = ptr[0];
     }
     if (ptr[0] != NULL) {
-        ((void**)ptr[0])[1] = ptr[1];
+        ((void **)ptr[0])[1] = ptr[1];
     } else {
         MP_STATE_PORT(mbedtls_memory) = ptr[1];
     }

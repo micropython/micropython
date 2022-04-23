@@ -62,13 +62,13 @@
 #define IRQ_PRI_I2C (NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0))
 
 #if defined(MBOOT_CLK_PLLM)
-  // The board specified the PLL values, flash latency and bus dividers
+// The board specified the PLL values, flash latency and bus dividers
   #define CORE_PLL_FREQ (1000000 * MBOOT_CLK_PLLN / MBOOT_CLK_PLLP)
 #else
-  // The board did not specify the clock values, so configure defaults
+// The board did not specify the clock values, so configure defaults
   #if defined(STM32F4) || defined(STM32F7)
     #if MBOOT_ENABLE_PACKING
-      // With encryption/signing/compression, a faster CPU makes processing much faster.
+// With encryption/signing/compression, a faster CPU makes processing much faster.
       #define CORE_PLL_FREQ (96000000)
       #define MBOOT_FLASH_LATENCY FLASH_LATENCY_3
     #else
@@ -120,7 +120,7 @@ uint32_t get_le32(const uint8_t *b) {
 
 uint64_t get_le64(const uint8_t *b) {
     return (uint64_t)b[0] | (uint64_t)b[1] << 8 | (uint64_t)b[2] << 16 | (uint64_t)b[3] << 24
-        | (uint64_t)b[4] << 32 | (uint64_t)b[5] << 40 | (uint64_t)b[6] << 48 | (uint64_t)b[7] << 56;
+           | (uint64_t)b[4] << 32 | (uint64_t)b[5] << 40 | (uint64_t)b[6] << 48 | (uint64_t)b[7] << 56;
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
@@ -217,17 +217,17 @@ void SystemClock_Config(void) {
         1 << RCC_PLLCFGR_PLLSRC_Pos // HSE selected as PLL source
         #endif
         | MBOOT_CLK_PLLM << RCC_PLLCFGR_PLLM_Pos
-        | MBOOT_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
-        | ((MBOOT_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
-        | MBOOT_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
+            | MBOOT_CLK_PLLN << RCC_PLLCFGR_PLLN_Pos
+            | ((MBOOT_CLK_PLLP >> 1) - 1) << RCC_PLLCFGR_PLLP_Pos
+            | MBOOT_CLK_PLLQ << RCC_PLLCFGR_PLLQ_Pos
         #ifdef RCC_PLLCFGR_PLLR
         | 2 << RCC_PLLCFGR_PLLR_Pos // default PLLR value of 2
         #endif
-        ;
+    ;
 
     // Enable PLL
     __HAL_RCC_PLL_ENABLE();
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
     }
 
     // Increase latency before changing clock
@@ -299,9 +299,9 @@ void SystemClock_Config(void) {
     RCC->PLL1FRACR = 0;
     RCC->PLL1DIVR =
         (MBOOT_CLK_PLLN - 1) << RCC_PLL1DIVR_N1_Pos
-        | (MBOOT_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
-        | (MBOOT_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
-        | (MBOOT_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
+            | (MBOOT_CLK_PLLP - 1) << RCC_PLL1DIVR_P1_Pos // only even P allowed
+            | (MBOOT_CLK_PLLQ - 1) << RCC_PLL1DIVR_Q1_Pos
+            | (MBOOT_CLK_PLLR - 1) << RCC_PLL1DIVR_R1_Pos;
 
     // Configure PLL3 for use by USB at Q=48MHz
     RCC->PLLCKSELR |= MICROPY_HW_CLK_PLL3M << RCC_PLLCKSELR_DIVM3_Pos;
@@ -309,21 +309,21 @@ void SystemClock_Config(void) {
     RCC->PLL3FRACR = 0;
     RCC->PLL3DIVR =
         (MICROPY_HW_CLK_PLL3N - 1) << RCC_PLL3DIVR_N3_Pos
-        | (MICROPY_HW_CLK_PLL3P - 1) << RCC_PLL3DIVR_P3_Pos // only even P allowed
-        | (MICROPY_HW_CLK_PLL3Q - 1) << RCC_PLL3DIVR_Q3_Pos
-        | (MICROPY_HW_CLK_PLL3R - 1) << RCC_PLL3DIVR_R3_Pos;
+            | (MICROPY_HW_CLK_PLL3P - 1) << RCC_PLL3DIVR_P3_Pos // only even P allowed
+            | (MICROPY_HW_CLK_PLL3Q - 1) << RCC_PLL3DIVR_Q3_Pos
+            | (MICROPY_HW_CLK_PLL3R - 1) << RCC_PLL3DIVR_R3_Pos;
 
     // Select PLL3-Q for USB clock source
     MODIFY_REG(RCC->D2CCIP2R, RCC_D2CCIP2R_USBSEL, RCC_D2CCIP2R_USBSEL_1);
 
     // Enable PLL1
     __HAL_RCC_PLL_ENABLE();
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLLRDY) == RESET) {
     }
 
     // Enable PLL3
     __HAL_RCC_PLL3_ENABLE();
-    while(__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) == RESET) {
+    while (__HAL_RCC_GET_FLAG(RCC_FLAG_PLL3RDY) == RESET) {
     }
 
     // Increase latency before changing SYSCLK
@@ -334,8 +334,8 @@ void SystemClock_Config(void) {
     // Configure AHB divider
     RCC->D1CFGR =
         0 << RCC_D1CFGR_D1CPRE_Pos // SYSCLK prescaler of 1
-        | MBOOT_CLK_AHB_DIV
-        ;
+            | MBOOT_CLK_AHB_DIV
+    ;
 
     // Configure SYSCLK source from PLL
     __HAL_RCC_SYSCLK_CONFIG(RCC_SYSCLKSOURCE_PLLCLK);
@@ -374,7 +374,7 @@ void SystemClock_Config(void) {
 #endif
 
 void mp_hal_pin_config(mp_hal_pin_obj_t port_pin, uint32_t mode, uint32_t pull, uint32_t alt) {
-    GPIO_TypeDef *gpio = (GPIO_TypeDef*)(port_pin & ~0xf);
+    GPIO_TypeDef *gpio = (GPIO_TypeDef *)(port_pin & ~0xf);
 
     // Enable the GPIO peripheral clock
     uint32_t gpio_idx = ((uintptr_t)gpio - GPIOA_BASE) / (GPIOB_BASE - GPIOA_BASE);
@@ -392,7 +392,7 @@ void mp_hal_pin_config(mp_hal_pin_obj_t port_pin, uint32_t mode, uint32_t pull, 
 }
 
 void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
-    GPIO_TypeDef *gpio = (GPIO_TypeDef*)(port_pin & ~0xf);
+    GPIO_TypeDef *gpio = (GPIO_TypeDef *)(port_pin & ~0xf);
     uint32_t pin = port_pin & 0xf;
     gpio->OSPEEDR = (gpio->OSPEEDR & ~(3 << (2 * pin))) | (speed << (2 * pin));
 }
@@ -457,7 +457,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
 
     // Check the erase set bits to 1, at least for the first 256 bytes
     for (int i = 0; i < 64; ++i) {
-        if (((volatile uint32_t*)sector_start)[i] != 0xffffffff) {
+        if (((volatile uint32_t *)sector_start)[i] != 0xffffffff) {
             return -MBOOT_ERRNO_FLASH_ERASE_FAILED;
         }
     }
@@ -475,7 +475,7 @@ static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
         return -MBOOT_ERRNO_FLASH_WRITE_DISALLOWED;
     }
 
-    const uint32_t *src = (const uint32_t*)src8;
+    const uint32_t *src = (const uint32_t *)src8;
     size_t num_word32 = (len + 3) / 4;
 
     // Write the data to flash.
@@ -633,8 +633,8 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run) {
 
 #if defined(MBOOT_I2C_SCL)
 
-#define PASTE2(a, b) a ## b
-#define PASTE3(a, b, c) a ## b ## c
+#define PASTE2(a, b) a##b
+#define PASTE3(a, b, c) a##b##c
 #define EVAL_PASTE2(a, b) PASTE2(a, b)
 #define EVAL_PASTE3(a, b, c) PASTE3(a, b, c)
 
@@ -714,7 +714,7 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
         #pragma GCC diagnostic ignored "-Warray-bounds"
         #pragma GCC diagnostic ignored "-Wstringop-overread"
         #endif
-        memcpy(buf, (uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS, 12);
+        memcpy(buf, (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS, 12);
         #if __GNUC__ >= 11
         #pragma GCC diagnostic pop
         #endif
@@ -760,22 +760,22 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
         uint32_t hashlen = get_le32(buf + 1);
         static CRYAL_SHA256_CTX ctx;
         sha256_init(&ctx);
-        sha256_update(&ctx, (const void*)i2c_obj.cmd_rdaddr, hashlen);
+        sha256_update(&ctx, (const void *)i2c_obj.cmd_rdaddr, hashlen);
         i2c_obj.cmd_rdaddr += hashlen;
         sha256_final(&ctx, buf);
         len = 32;
     } else if (buf[0] == I2C_CMD_MARKVALID && len == 0) {
         uint32_t buf;
-        buf = *(volatile uint32_t*)APPLICATION_ADDR;
+        buf = *(volatile uint32_t *)APPLICATION_ADDR;
         if ((buf & APP_VALIDITY_BITS) != APP_VALIDITY_BITS) {
             len = -1;
         } else {
             buf &= ~APP_VALIDITY_BITS;
-            int ret = do_write(APPLICATION_ADDR, (void*)&buf, 4, false);
+            int ret = do_write(APPLICATION_ADDR, (void *)&buf, 4, false);
             if (ret < 0) {
                 len = ret;
             } else {
-                buf = *(volatile uint32_t*)APPLICATION_ADDR;
+                buf = *(volatile uint32_t *)APPLICATION_ADDR;
                 if ((buf & APP_VALIDITY_BITS) != 0) {
                     len = -2;
                 } else {
@@ -1018,7 +1018,7 @@ static uint8_t cfg_descr[9 + 9 + 9] =
 
 static uint8_t *pyb_usbdd_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
     *length = USB_LEN_DEV_DESC;
-    return (uint8_t*)dev_descr;
+    return (uint8_t *)dev_descr;
 }
 
 static char get_hex_char(int val) {
@@ -1036,19 +1036,19 @@ static void format_hex(char *buf, int val) {
 }
 
 static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, uint16_t *length) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     uint8_t *str_desc = self->usbd_str_desc;
     switch (idx) {
         case USBD_IDX_LANGID_STR:
             *length = sizeof(USBD_LangIDDesc);
-            return (uint8_t*)USBD_LangIDDesc; // the data should only be read from this buf
+            return (uint8_t *)USBD_LangIDDesc; // the data should only be read from this buf
 
         case USBD_IDX_MFC_STR:
-            USBD_GetString((uint8_t*)MBOOT_USBD_MANUFACTURER_STRING, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_USBD_MANUFACTURER_STRING, str_desc, length);
             return str_desc;
 
         case USBD_IDX_PRODUCT_STR:
-            USBD_GetString((uint8_t*)MBOOT_USBD_PRODUCT_STRING, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_USBD_PRODUCT_STRING, str_desc, length);
             return str_desc;
 
         case USBD_IDX_SERIAL_STR: {
@@ -1064,7 +1064,7 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             //     dfu-util -l
             //
             // See: https://my.st.com/52d187b7 for the algorithim used.
-            uint8_t *id = (uint8_t*)MP_HAL_UNIQUE_ID_ADDRESS;
+            uint8_t *id = (uint8_t *)MP_HAL_UNIQUE_ID_ADDRESS;
             char serial_buf[16];
             format_hex(&serial_buf[0], id[11]);
             format_hex(&serial_buf[2], id[10] + id[2]);
@@ -1074,29 +1074,29 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             format_hex(&serial_buf[10], id[6]);
             serial_buf[12] = '\0';
 
-            USBD_GetString((uint8_t*)serial_buf, str_desc, length);
+            USBD_GetString((uint8_t *)serial_buf, str_desc, length);
             return str_desc;
         }
 
         case USBD_IDX_CONFIG_STR:
-            USBD_GetString((uint8_t*)FLASH_LAYOUT_STR, str_desc, length);
+            USBD_GetString((uint8_t *)FLASH_LAYOUT_STR, str_desc, length);
             return str_desc;
 
         case MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX:
-            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER, str_desc, length);
             return str_desc;
 
         case MBOOT_ERROR_STR_INVALID_ADDRESS_IDX:
-            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_ADDRESS, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_ERROR_STR_INVALID_ADDRESS, str_desc, length);
             return str_desc;
 
         #if MBOOT_ENABLE_PACKING
         case MBOOT_ERROR_STR_INVALID_SIG_IDX:
-            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_SIG, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_ERROR_STR_INVALID_SIG, str_desc, length);
             return str_desc;
 
         case MBOOT_ERROR_STR_INVALID_READ_IDX:
-            USBD_GetString((uint8_t*)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
+            USBD_GetString((uint8_t *)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
             return str_desc;
         #endif
 
@@ -1111,19 +1111,19 @@ static const USBD_DescriptorsTypeDef pyb_usbdd_descriptors = {
 };
 
 static uint8_t pyb_usbdd_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     (void)self;
     return USBD_OK;
 }
 
 static uint8_t pyb_usbdd_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     (void)self;
     return USBD_OK;
 }
 
 static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     (void)self;
     self->bRequest = req->bRequest;
     self->wValue = req->wValue;
@@ -1149,7 +1149,7 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 }
 
 static uint8_t pyb_usbdd_EP0_TxSent(USBD_HandleTypeDef *pdev) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     self->tx_pending = false;
     #if !USE_USB_POLLING
     // Process now that we have sent a response
@@ -1159,19 +1159,19 @@ static uint8_t pyb_usbdd_EP0_TxSent(USBD_HandleTypeDef *pdev) {
 }
 
 static uint8_t pyb_usbdd_EP0_RxReady(USBD_HandleTypeDef *pdev) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     dfu_handle_rx(self->bRequest, self->wValue, self->wLength, self->rx_buf);
     return USBD_OK;
 }
 
 static uint8_t *pyb_usbdd_GetCfgDesc(USBD_HandleTypeDef *pdev, uint16_t *length) {
     *length = sizeof(cfg_descr);
-    return (uint8_t*)cfg_descr;
+    return (uint8_t *)cfg_descr;
 }
 
 // this is used only in high-speed mode, which we don't support
 static uint8_t *pyb_usbdd_GetDeviceQualifierDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
-    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t*)pdev->pClassData;
+    pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     (void)self;
     /*
     *length = sizeof(USBD_CDC_MSC_HID_DeviceQualifierDesc);
@@ -1228,7 +1228,7 @@ static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
     USBD_HandleTypeDef *usbd = &self->hUSBDDevice;
     usbd->id = phy_id;
     usbd->dev_state = USBD_STATE_DEFAULT;
-    usbd->pDesc = (USBD_DescriptorsTypeDef*)&pyb_usbdd_descriptors;
+    usbd->pDesc = (USBD_DescriptorsTypeDef *)&pyb_usbdd_descriptors;
     usbd->pClass = &pyb_usbdd_class;
     usbd->pClassData = self;
 }
@@ -1272,7 +1272,7 @@ NORETURN static __attribute__((naked)) void branch_to_application(uint32_t r0, u
 }
 
 static void try_enter_application(int reset_mode) {
-    uint32_t msp = *(volatile uint32_t*)APPLICATION_ADDR;
+    uint32_t msp = *(volatile uint32_t *)APPLICATION_ADDR;
     if ((msp & APP_VALIDITY_BITS) != 0) {
         // Application is invalid.
         return;

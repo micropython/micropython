@@ -30,7 +30,7 @@
 // Map pixel number 0-24, and 25-36 to TLC bit number.
 static const uint8_t hub_display_pixel_map[] = {
     // 5x5 display
-     9,  11,   6,   1,  14,
+    9,  11,   6,   1,  14,
     10,  19,   8,   0,  26,
     23,  18,   3,   2,  24,
     21,  20,  15,  13,  25,
@@ -61,7 +61,7 @@ static void hub_display_tim_init(void) {
     uint32_t reg = 6 << TIM_CCMR1_OC1M_Pos // PWM1 mode
         | 1 << TIM_CCMR1_OC1PE_Pos // preload enabled
         | 0 << TIM_CCMR1_CC1S_Pos // output mode
-        ;
+    ;
     uint32_t shift = 8 * (ch & 1);
     tim->CCMR1 = (tim->CCMR1 & ~(0xff << shift)) | reg << shift;
 

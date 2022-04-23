@@ -61,9 +61,13 @@ class _Remove:
 
 async def gather(*aws, return_exceptions=False):
     def done(t, er):
+        # Sub-task "t" has finished, with exception "er".
         nonlocal state
-        if type(state) is not int:
-            # A sub-task already raised an exception, so do nothing.
+        if gather_task.data is not _Remove:
+            # The main gather task has already been scheduled, so do nothing.
+            # This happens if another sub-task already raised an exception and
+            # woke the main gather task (via this done function), or if the main
+            # gather task was cancelled externally.
             return
         elif not return_exceptions and not isinstance(er, StopIteration):
             # A sub-task raised an exception, indicate that to the gather task.
@@ -74,7 +78,7 @@ async def gather(*aws, return_exceptions=False):
                 # Still some sub-tasks running.
                 return
         # Gather waiting is done, schedule the main gather task.
-        core._task_queue.push_head(gather_task)
+        core._task_queue.push(gather_task)
 
     ts = [core._promote_to_task(aw) for aw in aws]
     for i in range(len(ts)):

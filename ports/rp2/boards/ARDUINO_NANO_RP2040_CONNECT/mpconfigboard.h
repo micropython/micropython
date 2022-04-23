@@ -1,4 +1,4 @@
-//Board config for Arduino Nano RP2040 Connect.
+// Board config for Arduino Nano RP2040 Connect.
 
 // Board and hardware specific configuration
 #define MICROPY_HW_BOARD_NAME           "Arduino Nano RP2040 Connect"
