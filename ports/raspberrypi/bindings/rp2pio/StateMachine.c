@@ -426,7 +426,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine_write);
 
-//|     def background_write(self, once: Optional[ReadableBuffer]=None, *, loop=Optional[ReadableBuffer]=None) -> None:
+//|     def background_write(self, once: Optional[ReadableBuffer]=None, *, loop: Optional[ReadableBuffer]=None) -> None:
 //|         """Write data to the TX fifo in the background, with optional looping.
 //|
 //|         First, if any previous ``once`` or ``loop`` buffer has not been started, this function blocks until they have.
