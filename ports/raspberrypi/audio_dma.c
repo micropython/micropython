@@ -459,8 +459,8 @@ void isr_dma_0(void) {
             dma->channels_to_load_mask |= mask;
             background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
         }
-        if (MP_STATE_PORT(continuous_pio)[i] != NULL) {
-            rp2pio_statemachine_obj_t *pio = MP_STATE_PORT(continuous_pio)[i];
+        if (MP_STATE_PORT(background_pio)[i] != NULL) {
+            rp2pio_statemachine_obj_t *pio = MP_STATE_PORT(background_pio)[i];
             rp2pio_statemachine_dma_complete(pio, i);
         }
     }

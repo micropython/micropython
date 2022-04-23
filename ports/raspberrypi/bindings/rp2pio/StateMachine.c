@@ -426,63 +426,79 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine_write);
 
-//|     def start_continuous_write(self, buffer: Optional[ReadableBuffer], *, start: int = 0, end: Optional[int] = None) -> None:
-//|         """Write the data contained in ``buffer`` to the state machine repeatedly until stopped. If the buffer is empty or None, an existing continuous_write is canceled.
+//|     def background_write(self, once: Optional[ReadableBuffer]=None, *, loop=Optional[ReadableBuffer]=None) -> None:
+//|         """Write data to the TX fifo in the background, with optional looping.
+//|
+//|         First, if any previous ``once`` or ``loop`` buffer has not been started, this function blocks until they have.
+//|         This means that any ``once`` or ``loop`` buffer will be written at least once.
+//|         Then the ``once`` and/or ``loop`` buffers are queued. and the function returns.
+//|         The ``once`` buffer (if specified) will be written just once.
+//|         Finally, the ``loop`` buffer (if specified) will continue being looped indefinitely.
 //|
 //|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
 //|         will perform 8 bit writes to the PIO FIFO. The RP2040's memory bus will duplicate the value into
 //|         the other byte positions. So, pulling more data in the PIO assembly will read the duplicated values.
 //|
 //|         To perform 16 or 32 bits writes into the FIFO use an `array.array` with a type code of the desired
-//|         size, or use `memoryview.cast` to change the interpretation of an existing buffer.
+//|         size, or use `memoryview.cast` to change the interpretation of an
+//|         existing buffer.  To send just part of a larger buffer, slice a `memoryview`
+//|         of it.
 //|
-//|         To atomically change from one buffer to another, simply call
-//|         `StateMachine.start_continuous_write` again with a different buffer with the same element size.
-//|         The call will only return once DMA has started putting the previous
-//|         buffer's data into the PIO FIFO.
-//|
-//|         If the buffer is modified while it is being written out, the updated
+//|         If a buffer is modified while it is being written out, the updated
 //|         values will be used. However, because of interactions between CPU
 //|         writes, DMA and the PIO FIFO are complex, it is difficult to predict
 //|         the result of modifying multiple values. Instead, alternate between
 //|         a pair of buffers.
 //|
-//|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
-//|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
-//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         Having both a ``once`` and a ``loop`` parameter is to support a special case in PWM generation
+//|         where a change in duty cycle requires a special transitional buffer to be used exactly once. Most
+//|         use cases will probably only use one of ``once`` or ``loop``.
+//|
+//|         :param ~Optional[circuitpython_typing.ReadableBuffer] once: Data to be written once
+//|         :param ~Optional[circuitpython_typing.ReadableBuffer] loop: Data to be written repeatedly
+//|         """
 //|         ...
 //|
-STATIC mp_obj_t rp2pio_statemachine_start_continuous_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buffer, ARG_start, ARG_end };
+
+STATIC void fill_buf_info(sm_buf_info *info, mp_obj_t obj, size_t *stride_in_bytes) {
+    if (obj != mp_const_none) {
+        info->obj = obj;
+        mp_get_buffer_raise(obj, &info->info, MP_BUFFER_READ);
+        size_t stride = mp_binary_get_size('@', info->info.typecode, NULL);
+        if (stride > 4) {
+            mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        }
+        if (*stride_in_bytes && stride != *stride_in_bytes) {
+            mp_raise_ValueError(translate("Mismatched data size"));
+        }
+        *stride_in_bytes = stride;
+    } else {
+        memset(info, 0, sizeof(*info));
+    }
+}
+
+STATIC mp_obj_t rp2pio_statemachine_background_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_once, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_once,     MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_loop,     MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
     };
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_buffer_info_t bufinfo = {};
-    if (args[ARG_buffer].u_obj != mp_const_none) {
-        mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
+    sm_buf_info once_info;
+    sm_buf_info loop_info;
+    size_t stride_in_bytes = 0;
+    fill_buf_info(&once_info, args[ARG_once].u_obj, &stride_in_bytes);
+    fill_buf_info(&loop_info, args[ARG_loop].u_obj, &stride_in_bytes);
+    if (!stride_in_bytes) {
+        return mp_const_none;
     }
-    int32_t start = args[ARG_start].u_int;
-    size_t length = bufinfo.len;
-    normalize_buffer_bounds(&start, args[ARG_end].u_int, &length);
-    bool ok = true;
-    if (length == 0) {
-        ok = common_hal_rp2pio_statemachine_end_continuous_write(self);
-    } else {
-        uint8_t *original_pointer = bufinfo.buf;
-        int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
-        if (stride_in_bytes > 4) {
-            mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
-        }
 
-        ok = common_hal_rp2pio_statemachine_start_continuous_write(self, args[ARG_buffer].u_obj, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
-    }
+    bool ok = common_hal_rp2pio_statemachine_background_write(self, &once_info, &loop_info, stride_in_bytes);
+
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
     }
@@ -491,14 +507,14 @@ STATIC mp_obj_t rp2pio_statemachine_start_continuous_write(size_t n_args, const 
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_start_continuous_write_obj, 2, rp2pio_statemachine_start_continuous_write);
+MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_background_write_obj, 1, rp2pio_statemachine_background_write);
 
-//|     def end_continuous_write(self) -> None:
-//|         """Stop a continuous write, if one is in progress."""
+//|     def stop_background_write(self) -> None:
+//|         """Immediately stop a background write, if one is in progress.  Items already in the TX FIFO are not affected."""
 //|
-STATIC mp_obj_t rp2pio_statemachine_obj_end_continuous_write(mp_obj_t self_in) {
+STATIC mp_obj_t rp2pio_statemachine_obj_stop_background_write(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    bool ok = common_hal_rp2pio_statemachine_end_continuous_write(self);
+    bool ok = common_hal_rp2pio_statemachine_stop_background_write(self);
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
     }
@@ -507,8 +523,45 @@ STATIC mp_obj_t rp2pio_statemachine_obj_end_continuous_write(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_background_write_obj, rp2pio_statemachine_obj_stop_background_write);
 
-MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_end_continuous_write_obj, rp2pio_statemachine_obj_end_continuous_write);
+//|     @property
+//|     def writing(self) -> bool:
+//|         """Returns True if a background write is in progress"""
+//|
+STATIC mp_obj_t rp2pio_statemachine_obj_get_writing(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_bool(common_hal_rp2pio_statemachine_get_writing(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_writing_obj, rp2pio_statemachine_obj_get_writing);
+
+const mp_obj_property_t rp2pio_statemachine_writing_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_writing_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
+
+//|     @property
+//|     def pending(self) -> int:
+//|         """Returns the number of pending buffers for background writing.
+//|
+//|         If the number is 0, then a `StateMachine.background_write` call will not block."""
+//|
+STATIC mp_obj_t rp2pio_statemachine_obj_get_pending(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_rp2pio_statemachine_get_pending(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_pending_obj, rp2pio_statemachine_obj_get_pending);
+
+const mp_obj_property_t rp2pio_statemachine_pending_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_pending_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
 //|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
@@ -728,8 +781,10 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&rp2pio_statemachine_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&rp2pio_statemachine_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&rp2pio_statemachine_write_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_start_continuous_write), MP_ROM_PTR(&rp2pio_statemachine_start_continuous_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_end_continuous_write), MP_ROM_PTR(&rp2pio_statemachine_end_continuous_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_background_write), MP_ROM_PTR(&rp2pio_statemachine_background_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop_background_write), MP_ROM_PTR(&rp2pio_statemachine_stop_background_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_writing), MP_ROM_PTR(&rp2pio_statemachine_writing_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pending), MP_ROM_PTR(&rp2pio_statemachine_pending_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&rp2pio_statemachine_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_rxstall), MP_ROM_PTR(&rp2pio_statemachine_rxstall_obj) },
