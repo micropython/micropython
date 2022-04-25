@@ -128,7 +128,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
-	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
+	hal/fsl_flexspi_nor_boot.c \
 
 ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
