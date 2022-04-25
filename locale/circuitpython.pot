@@ -1604,6 +1604,10 @@ msgstr ""
 msgid "Name too long"
 msgstr ""
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
 msgstr ""

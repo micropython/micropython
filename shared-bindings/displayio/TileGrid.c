@@ -143,6 +143,7 @@ static displayio_tilegrid_t *native_tilegrid(mp_obj_t tilegrid_obj) {
     mp_obj_assert_native_inited(native_tilegrid);
     return MP_OBJ_TO_PTR(native_tilegrid);
 }
+
 //|     hidden: bool
 //|     """True when the TileGrid is hidden. This may be False even when a part of a hidden Group."""
 //|
@@ -379,6 +380,72 @@ const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
               MP_ROM_NONE},
 };
 
+//|     bitmap: Union[Bitmap,OnDiskBitmap,Shape]
+//|     """The bitmap of the tilegrid."""
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_get_bitmap(mp_obj_t self_in) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+    return common_hal_displayio_tilegrid_get_bitmap(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_bitmap_obj, displayio_tilegrid_obj_get_bitmap);
+
+STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bitmap) {
+    displayio_tilegrid_t *self = native_tilegrid(self_in);
+
+    uint16_t new_bitmap_width;
+    uint16_t new_bitmap_height;
+    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
+    if (native != MP_OBJ_NULL) {
+        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
+        native = bitmap;
+        new_bitmap_width = bmp->width;
+        new_bitmap_height = bmp->height;
+    } else {
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+    }
+
+    mp_obj_t old_native = mp_obj_cast_to_native_base(self->bitmap, &displayio_shape_type);
+    if (old_native != MP_OBJ_NULL) {
+        displayio_shape_t *old_bmp = MP_OBJ_TO_PTR(old_native);
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    } else if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
+        displayio_bitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
+        old_native = self->bitmap;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
+        displayio_ondiskbitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
+        old_native = self->bitmap;
+        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
+            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+        }
+    }
+
+    common_hal_displayio_tilegrid_set_bitmap(self, bitmap);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_bitmap_obj, displayio_tilegrid_obj_set_bitmap);
+
+const mp_obj_property_t displayio_tilegrid_bitmap_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&displayio_tilegrid_get_bitmap_obj,
+              (mp_obj_t)&displayio_tilegrid_set_bitmap_obj,
+              MP_ROM_NONE},
+};
+
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the tile index at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
@@ -454,7 +521,8 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_flip_y), MP_ROM_PTR(&displayio_tilegrid_flip_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose_xy), MP_ROM_PTR(&displayio_tilegrid_transpose_xy_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pixel_shader),          MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&displayio_tilegrid_bitmap_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_locals_dict_table);
 
