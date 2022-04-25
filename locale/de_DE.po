@@ -1631,6 +1631,10 @@ msgstr "NVS-Fehler"
 msgid "Name too long"
 msgstr "Name zu lang"
 
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
 msgstr "Kein Speicher mehr für Nible vorhanden"

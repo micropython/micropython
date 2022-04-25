@@ -31,8 +31,8 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 "\n"
-"dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā zǎi."
-"\n"
+"dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā "
+"zǎi.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -1638,6 +1638,10 @@ msgstr "NVS cuò wù"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
