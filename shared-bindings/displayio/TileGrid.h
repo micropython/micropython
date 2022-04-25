@@ -45,6 +45,9 @@ void common_hal_displayio_tilegrid_set_y(displayio_tilegrid_t *self, mp_int_t y)
 mp_obj_t common_hal_displayio_tilegrid_get_pixel_shader(displayio_tilegrid_t *self);
 void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, mp_obj_t pixel_shader);
 
+mp_obj_t common_hal_displayio_tilegrid_get_bitmap(displayio_tilegrid_t *self);
+void common_hal_displayio_tilegrid_set_bitmap(displayio_tilegrid_t *self, mp_obj_t bitmap);
+
 
 bool common_hal_displayio_tilegrid_get_flip_x(displayio_tilegrid_t *self);
 void common_hal_displayio_tilegrid_set_flip_x(displayio_tilegrid_t *self, bool flip_x);

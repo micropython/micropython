@@ -221,6 +221,15 @@ void common_hal_displayio_tilegrid_set_pixel_shader(displayio_tilegrid_t *self, 
     self->full_change = true;
 }
 
+mp_obj_t common_hal_displayio_tilegrid_get_bitmap(displayio_tilegrid_t *self) {
+    return self->bitmap;
+}
+
+void common_hal_displayio_tilegrid_set_bitmap(displayio_tilegrid_t *self, mp_obj_t bitmap) {
+    self->bitmap = bitmap;
+    self->full_change = true;
+}
+
 uint16_t common_hal_displayio_tilegrid_get_width(displayio_tilegrid_t *self) {
     return self->width_in_tiles;
 }
