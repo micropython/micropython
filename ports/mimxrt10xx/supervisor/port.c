@@ -398,6 +398,13 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     // App note here: https://www.nxp.com/docs/en/application-note/AN12085.pdf
+    // Currently I have disabled the setting into wait mode as this impacts lots of different
+    // subsystems and it is unclear if you can or should set it generically without having
+    // a better understanding of user intent.  For example by default it will kill PWM
+    // when in this mode, unless PWM_CTRL2_WAITEN_MASK is set, and even with this set
+    // it may not work properly if the same timer/subtimer is trying to PWM on multiple channels.
+    // Maybe at later date, revisit after we have a better understanding on things like which
+    // timers it impacts and how each subsystem is configured.
 
     // Clear the FPU interrupt because it can prevent us from sleeping.
     if (__get_FPSCR() & ~(0x9f)) {
@@ -408,13 +415,7 @@ void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
     if (!background_callback_pending()) {
         NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
-        // Don't down clock on debug builds because it prevents the DAP from
-        // reading memory
-        #if CIRCUITPY_DEBUG == 0
-        CLOCK_SetMode(kCLOCK_ModeWait);
-        #endif
         __WFI();
-        CLOCK_SetMode(kCLOCK_ModeRun);
     }
     common_hal_mcu_enable_interrupts();
 }
