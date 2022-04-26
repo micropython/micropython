@@ -1547,6 +1547,11 @@ msgstr "Berichten zijn beperkt tot 8 bytes"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Microfoon opstart vertraging moet in bereik van 0.0 tot 1.0 zijn"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Ontbrekende MISO of MOSI Pin"

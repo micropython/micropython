@@ -1562,6 +1562,11 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Fehlender MISO- oder MOSI-Pin"
