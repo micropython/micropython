@@ -179,8 +179,8 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 
 STATIC int do_repl(void) {
     mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
-    mp_hal_stdout_tx_str("; " MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version\n"
-        "Use Ctrl-D to exit, Ctrl-E for paste mode\n");
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     #if MICROPY_USE_READLINE == 1
 
