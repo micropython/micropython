@@ -84,7 +84,7 @@ STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
     #if MICROPY_PERSISTENT_CODE_LOAD
-    MP_QSTR_mpy,
+    MP_QSTR__mpy,
     #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
