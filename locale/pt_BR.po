@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-21 22:57+0000\n"
+"PO-Revision-Date: 2022-04-26 13:00+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: main.c
 msgid ""
@@ -1139,6 +1139,8 @@ msgstr "O Framebuffer requer %d bytes"
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
+"A frequência deve ser 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 ou "
+"1008 Mhz"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1572,6 +1574,11 @@ msgstr "As mensagens estão limitadas a 8 bytes"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "O atraso na inicialização do microfone deve estar entre 0,0 e 1,0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "O pino MISO ou MOSI está ausente"
@@ -1640,6 +1647,10 @@ msgstr "Erro NVS"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nome muito longo"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr "O novo bitmap deve ter o mesmo tamanho que o bitmap antigo"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -3373,7 +3384,7 @@ msgstr "formato requer um dict"
 
 #: shared-bindings/microcontroller/Processor.c
 msgid "frequency is read-only for this board"
-msgstr ""
+msgstr "nesta placa, a frequência é de apenas leitura"
 
 #: py/objdeque.c
 msgid "full"

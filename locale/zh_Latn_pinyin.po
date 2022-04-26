@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-02-13 00:57+0000\n"
+"PO-Revision-Date: 2022-04-23 21:13+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.11-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: main.c
 msgid ""
@@ -30,6 +30,9 @@ msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā "
+"zǎi.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -356,9 +359,8 @@ msgid "0.0 to a complex power"
 msgstr "0.0 de fùshù cì mì"
 
 #: py/modbuiltins.c
-#, fuzzy
 msgid "3-arg pow() not supported"
-msgstr "bù zhīchí 3-arg pow()"
+msgstr "bù zhī chí 3-arg pow()"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
@@ -1135,6 +1137,7 @@ msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
+"pín lǜ bì xū wéi 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 huò 1008 Mhz"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1566,6 +1569,11 @@ msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
@@ -1635,6 +1643,10 @@ msgstr "NVS cuò wù"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Míngchēng tài zhǎng"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2467,7 +2479,7 @@ msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
-msgstr ""
+msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2489,12 +2501,12 @@ msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
-msgstr ""
+msgstr "%s:%d: %d chù chū xiàn wèi zhī BLE cuò wù"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error: %d"
-msgstr ""
+msgstr "wèi zhī de BLE cuò wù: %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -2958,7 +2970,7 @@ msgstr "wúfǎ yòng '%q' ' suǒyǐn jiāzài"
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "wú fǎ zhí xíng xiāng duì dǎo rù"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -3348,7 +3360,7 @@ msgstr "géshì yāoqiú yīgè yǔjù"
 
 #: shared-bindings/microcontroller/Processor.c
 msgid "frequency is read-only for this board"
-msgstr ""
+msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
 
 #: py/objdeque.c
 msgid "full"
@@ -3705,11 +3717,11 @@ msgstr "Wài shè bù zhī chí huán huí + jìng yīn mó shì"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
-msgstr ""
+msgstr "mDNS yǐ chū shǐ huà"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr ""
+msgstr "mDNS jǐn shì yòng yú nèi zhì wú xiàn wǎng luò"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3729,7 +3741,7 @@ msgstr "jǔzhèn bùshì zhèngdìng de"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "max_connections must be between 0 and 10"
-msgstr ""
+msgstr "max_connections bì xū jiè yú 0 hé 10 zhī jiān"
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -4110,7 +4122,7 @@ msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "zài win32 shàng bù tí gōng wén jiàn tóu piào"
 
 #: shared-module/vectorio/Polygon.c
 msgid "polygon can only be registered in one parent"

@@ -1548,6 +1548,11 @@ msgstr "Messages limited to 8 bytes"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Microphone startup delay must be in range 0.0 to 1.0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Missing MISO or MOSI pin"
@@ -1616,6 +1621,10 @@ msgstr "NVS Error"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Name too long"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
