@@ -1,6 +1,3 @@
-# For string compression
-huffman
-
 # For nvm.toml
 cascadetoml
 jinja2
