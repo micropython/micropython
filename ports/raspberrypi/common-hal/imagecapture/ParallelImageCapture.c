@@ -112,7 +112,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         NULL, 0, 0, 0, // sideset pins
         #endif
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         (1 << vertical_sync->number) | (1 << horizontal_reference->number) | (1 << data_clock->number), // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings

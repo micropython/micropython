@@ -196,6 +196,9 @@
 	url = https://github.com/raspberrypi/rpi-firmware.git
 	branch = master
 	shallow = true
+[submodule "lib/adafruit_floppy"]
+	path = lib/adafruit_floppy
+	url = https://github.com/adafruit/Adafruit_Floppy
 [submodule "ports/stm/st_driver/cmsis_device_f4"]
 	path = ports/stm/st_driver/cmsis_device_f4
 	url = https://github.com/STMicroelectronics/cmsis_device_f4.git

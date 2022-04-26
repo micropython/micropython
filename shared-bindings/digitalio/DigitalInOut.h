@@ -41,6 +41,14 @@ typedef enum {
     DIGITALINOUT_INPUT_ONLY
 } digitalinout_result_t;
 
+typedef enum {
+    DIGITALINOUT_REG_READ,
+    DIGITALINOUT_REG_WRITE,
+    DIGITALINOUT_REG_SET,
+    DIGITALINOUT_REG_RESET,
+    DIGITALINOUT_REG_TOGGLE,
+} digitalinout_reg_op_t;
+
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin);
 void common_hal_digitalio_digitalinout_deinit(digitalio_digitalinout_obj_t *self);
 bool common_hal_digitalio_digitalinout_deinited(digitalio_digitalinout_obj_t *self);
@@ -55,5 +63,8 @@ void common_hal_digitalio_digitalinout_set_pull(digitalio_digitalinout_obj_t *se
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(digitalio_digitalinout_obj_t *self);
 void common_hal_digitalio_digitalinout_never_reset(digitalio_digitalinout_obj_t *self);
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj);
+
+volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalinout_obj_t *self, digitalinout_reg_op_t op, uint32_t *mask);
+bool common_hal_digitalio_has_reg_op(digitalinout_reg_op_t op);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DIGITALIO_DIGITALINOUT_H
