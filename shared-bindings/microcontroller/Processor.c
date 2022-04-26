@@ -30,9 +30,16 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "py/objproperty.h"
+#include "shared-bindings/util.h"
 
+#include "shared/runtime/buffer_helper.h"
+#include "shared/runtime/context_manager_helpers.h"
+#include "py/mperrno.h"
+#include "py/objtype.h"
+#include "py/objproperty.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate.h"
+
 
 //| class Processor:
 //|     """Microcontroller CPU information and control
@@ -61,6 +68,20 @@
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz. (read-only)"""
 //|
+
+STATIC mp_obj_t mcu_processor_set_frequency(mp_obj_t self, mp_obj_t freq) {
+    #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
+    uint32_t value_of_freq = (uint32_t)mp_arg_validate_int_min(mp_obj_get_int(freq), 0, MP_QSTR_frequency);
+    common_hal_mcu_processor_set_frequency(self, value_of_freq);
+    #else
+    mp_raise_msg(&mp_type_NotImplementedError,translate("frequency is read-only for this board"));
+    #endif
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_2(mcu_processor_set_frequency_obj, mcu_processor_set_frequency);
+
+
 STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
     return mp_obj_new_int_from_uint(common_hal_mcu_processor_get_frequency());
 }
@@ -70,7 +91,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_frequency_obj, mcu_processor_get_fre
 const mp_obj_property_t mcu_processor_frequency_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&mcu_processor_get_frequency_obj,  // getter
-              MP_ROM_NONE,            // no setter
+              (mp_obj_t)&mcu_processor_set_frequency_obj,  // setter
               MP_ROM_NONE,            // no deleter
     },
 };

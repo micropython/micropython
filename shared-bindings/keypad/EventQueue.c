@@ -45,7 +45,7 @@
 //|         If a new event arrives when the queue is full, the event is discarded, and
 //|         `overflowed` is set to ``True``.
 //|
-//|         :return: the next queued key transition `Event`
+//|         :return: The next queued key transition `Event`.
 //|         :rtype: Optional[Event]
 //|         """
 //|         ...

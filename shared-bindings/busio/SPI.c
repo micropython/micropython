@@ -299,7 +299,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 1, busio_spi_write);
 //|
 //|         :param WriteableBuffer buffer: read bytes into this buffer
 //|         :param int start: beginning of buffer slice
-//|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
+//|         :param int end: end of buffer slice; if not specified, it will be the equivalent value
+//|             of ``len(buffer)`` and for any value provided it will take the value of
+//|             ``min(end, len(buffer))``
 //|         :param int write_value: value to write while reading
 //|         """
 //|         ...

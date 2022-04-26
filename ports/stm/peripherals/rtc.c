@@ -86,7 +86,7 @@ uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t *subticks) {
     uint32_t time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
     uint32_t date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
     uint32_t ssr = (uint32_t)(RTC->SSR);
-    while (ssr != first_ssr) {
+    if (ssr != first_ssr) {
         first_ssr = ssr;
         time = (uint32_t)(RTC->TR & RTC_TR_RESERVED_MASK);
         date = (uint32_t)(RTC->DR & RTC_DR_RESERVED_MASK);
@@ -184,13 +184,16 @@ void stm32_peripherals_rtc_set_alarm(uint8_t alarm_idx, uint32_t ticks) {
 
     alarm.AlarmTime.SubSeconds = rtc_clock_frequency - 1 -
         ((raw_ticks % TICK_DIVISOR) * 32);
+    if (alarm.AlarmTime.SubSeconds > rtc_clock_frequency) {
+        alarm.AlarmTime.SubSeconds = alarm.AlarmTime.SubSeconds +
+            rtc_clock_frequency;
+    }
     alarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
     alarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_SET;
     // Masking here means that the bits are ignored so we set none of them.
     alarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_NONE;
     alarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_DATE;
     alarm.Alarm = (alarm_idx == PERIPHERALS_ALARM_A) ? RTC_ALARM_A : RTC_ALARM_B;
-
     HAL_RTC_SetAlarm_IT(&hrtc, &alarm, RTC_FORMAT_BIN);
     HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
     alarmed_already[alarm_idx] = false;

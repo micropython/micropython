@@ -75,8 +75,13 @@ STATIC mp_obj_t random_getrandbits(mp_obj_t num_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_getrandbits_obj, random_getrandbits);
 
-//| def randrange(stop: Tuple[int, int, int]) -> int:
-//|     """Returns a randomly selected integer from ``range(start, stop, step)``."""
+//| @overload
+//| def randrange(stop: int) -> int: ...
+//| @overload
+//| def randrange(start: int, stop: int) -> int: ...
+//| @overload
+//| def randrange(start: int, stop: int, step: int) -> int:
+//|     """Returns a randomly selected integer from ``range(start[, stop[, step]])``."""
 //|     ...
 //|
 STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {

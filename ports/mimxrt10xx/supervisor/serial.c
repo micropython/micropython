@@ -26,27 +26,28 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/serial.h"
 #include "py/mphal.h"
 #include <string.h>
-#include "supervisor/serial.h"
 
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
 // TODO: Switch this to using DEBUG_UART.
-
+// If the board defined a debug uart tx or rx pin then we enable this code
+#if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
 // static LPUART_Type *uart_instance = LPUART2; // feather 1062
-
 static uint32_t UartSrcFreq(void) {
     uint32_t freq;
 
-    /* To make it simple, we assume default PLL and divider settings, and the only variable
-         from application is use PLL3 source or OSC source */
+    /* To make it simple, we assume default PLL and divider settings, and the only
+       variable from application is use PLL3 source or OSC source */
     /* PLL3 div6 80M */
     if (CLOCK_GetMux(kCLOCK_UartMux) == 0) {
-        freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
+        freq = (CLOCK_GetPllFreq(kCLOCK_PllUsb1) / 6U) /
+            (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
     } else {
         freq = CLOCK_GetOscFreq() / (CLOCK_GetDiv(kCLOCK_UartDiv) + 1U);
     }
@@ -88,3 +89,4 @@ void port_serial_write_substring(const char *text, uint32_t len) {
 
     LPUART_WriteBlocking(uart_instance, (uint8_t *)text, len);
 }
+#endif // USE_DEBUG_PORT_CODE
