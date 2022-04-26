@@ -187,3 +187,30 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
         }
     }
 }
+
+bool common_hal_digitalio_has_reg_op(digitalinout_reg_op_t op) {
+    return true;
+}
+
+volatile uint32_t *common_hal_digitalio_digitalinout_get_reg(digitalio_digitalinout_obj_t *self, digitalinout_reg_op_t op, uint32_t *mask) {
+    const uint8_t pin = self->pin->number;
+    int port = GPIO_PORT(pin);
+
+    *mask = 1u << GPIO_PIN(pin);
+
+
+    switch (op) {
+        case DIGITALINOUT_REG_READ:
+            return (volatile uint32_t *)&PORT->Group[port].IN.reg;
+        case DIGITALINOUT_REG_WRITE:
+            return &PORT->Group[port].OUT.reg;
+        case DIGITALINOUT_REG_SET:
+            return &PORT->Group[port].OUTSET.reg;
+        case DIGITALINOUT_REG_RESET:
+            return &PORT->Group[port].OUTCLR.reg;
+        case DIGITALINOUT_REG_TOGGLE:
+            return &PORT->Group[port].OUTTGL.reg;
+        default:
+            return NULL;
+    }
+}
