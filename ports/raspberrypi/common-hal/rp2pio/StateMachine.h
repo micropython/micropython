@@ -32,6 +32,11 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio.h"
 
+typedef struct sm_buf_info {
+    mp_obj_t obj;
+    mp_buffer_info_t info;
+} sm_buf_info;
+
 typedef struct {
     mp_obj_base_t base;
     uint32_t pins; // Bitmask of what pins this state machine uses.
@@ -54,6 +59,12 @@ typedef struct {
     bool in_shift_right;
     bool user_interruptible;
     uint8_t offset;
+
+    // dma-related items
+    volatile int pending_buffers;
+    sm_buf_info current, once, loop;
+    int background_stride_in_bytes;
+    bool dma_completed;
 } rp2pio_statemachine_obj_t;
 
 void reset_rp2pio_statemachine(void);
@@ -82,6 +93,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self);
 
 void rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self, bool leave_pins);
+void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int channel);
 
 extern const mp_obj_type_t rp2pio_statemachine_type;
 
