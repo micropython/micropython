@@ -100,7 +100,7 @@ static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMa
         "        movs r6, #1; d3: sub r6, #1; bne d3;"          // 60 ns (end TOL or entire T1L)
                                                                 // other instructions add more delay
         #endif
-         #ifdef SAM_D5X_E5X
+        #ifdef SAM_D5X_E5X
         "        movs r6, #18; d3: subs r6, #1; bne d3;"        // extra for 936 ns total (byte end T0L or entire T1L)
         #endif
         "        cmp r2, r3;"
