@@ -18,6 +18,10 @@ ifneq ($(FROZEN_MANIFEST),)
 CMAKE_ARGS += -DMICROPY_FROZEN_MANIFEST=${FROZEN_MANIFEST}
 endif
 
+ifeq ($(DEBUG),1)
+CMAKE_ARGS += -DCMAKE_BUILD_TYPE=Debug
+endif
+
 all:
 	[ -e $(BUILD)/CMakeCache.txt ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
 	$(MAKE) $(MAKESILENT) -C $(BUILD)
