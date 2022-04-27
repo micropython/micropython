@@ -46,6 +46,7 @@
 #include "gccollect.h"
 #include "irq.h"
 #include "powerctrl.h"
+#include "boardctrl.h"
 #include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
@@ -270,7 +271,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
@@ -279,6 +280,8 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
     #endif
 
     __disable_irq();
+
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
 
     #if MICROPY_HW_USES_BOOTLOADER
     if (n_args == 0 || !mp_obj_is_true(args[0])) {

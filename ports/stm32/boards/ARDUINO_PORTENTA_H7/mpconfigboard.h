@@ -38,7 +38,7 @@ void PORTENTA_board_startup(void);
 #define MICROPY_BOARD_EARLY_INIT    PORTENTA_board_early_init
 void PORTENTA_board_early_init(void);
 
-#define MICROPY_BOARD_ENTER_BOOTLOADER PORTENTA_board_enter_bootloader
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) PORTENTA_board_enter_bootloader()
 void PORTENTA_board_enter_bootloader(void);
 
 void PORTENTA_board_low_power(int mode);
