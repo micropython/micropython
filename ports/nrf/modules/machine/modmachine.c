@@ -191,6 +191,14 @@ STATIC mp_obj_t machine_disable_irq(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+    while (1) {
+        ;
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),           MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) },
@@ -242,6 +250,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 #if defined(NRF52_SERIES)
     { MP_ROM_QSTR(MP_QSTR_NFC_RESET),          MP_ROM_INT(PYB_RESET_NFC) },
 #endif
+    { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
