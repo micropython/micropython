@@ -13,8 +13,8 @@
  * Source file: https://github.com/STMicroelectronics/STM32CubeF7/blob/v1.15.0/Projects/STM32746G-Discovery/Examples/PWR/PWR_CurrentConsumption/Src/stm32f7xx_lp_modes.c
  */
 
-#include <stdint.h>
 #include "py/mphal.h"
+#include "py/mperrno.h"
 #include "pin_static_af.h"
 #include "ulpi.h"
 
