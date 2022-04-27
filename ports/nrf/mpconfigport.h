@@ -371,6 +371,10 @@ extern const struct _mp_obj_module_t music_module;
 #define MICROPY_BOARD_STARTUP()
 #endif
 
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
+
 #ifndef MICROPY_BOARD_EARLY_INIT
 #define MICROPY_BOARD_EARLY_INIT()
 #endif
