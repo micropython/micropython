@@ -14,6 +14,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c
+    ${MICROPY_EXTMOD_DIR}/mod_stage.c
     ${MICROPY_EXTMOD_DIR}/modbtree.c
     ${MICROPY_EXTMOD_DIR}/modframebuf.c
     ${MICROPY_EXTMOD_DIR}/modnetwork.c
