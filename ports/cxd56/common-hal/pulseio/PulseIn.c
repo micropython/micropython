@@ -75,7 +75,7 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
         if (self->len < self->maxlen) {
             self->len++;
         } else {
-            self->start++;
+            self->start = (self->start + 1) % self->maxlen;
         }
     }
     self->last_us = current_us;
