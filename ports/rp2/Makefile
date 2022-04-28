@@ -19,7 +19,7 @@ CMAKE_ARGS += -DMICROPY_FROZEN_MANIFEST=${FROZEN_MANIFEST}
 endif
 
 all:
-	[ -d $(BUILD) ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
+	[ -e $(BUILD)/CMakeCache.txt ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
 	$(MAKE) $(MAKESILENT) -C $(BUILD)
 
 clean:
@@ -28,4 +28,12 @@ clean:
 GIT_SUBMODULES += lib/mbedtls lib/pico-sdk lib/tinyusb
 
 submodules:
+ifeq ($(BOARD),PICO)
+	# Run the standard submodules target with minimum required submodules above
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules
+else
+	# Run submodules task through cmake interface to pick up any board specific dependencies.
+	GIT_SUBMODULES=$$(cmake -B $(BUILD)/submodules -DECHO_SUBMODULES=1 -DGIT_SUBMODULES="$(GIT_SUBMODULES)" ${CMAKE_ARGS} -S . 2>&1 | \
+	    grep 'GIT_SUBMODULES=' | cut -d= -f2); \
+	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" submodules
+endif

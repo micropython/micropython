@@ -178,3 +178,10 @@ if(MICROPY_FROZEN_MANIFEST)
         VERBATIM
     )
 endif()
+
+# Update submodules
+if(ECHO_SUBMODULES)
+    # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
+    # settings then print the final GIT_SUBMODULES variable as a fatal error and exit.
+    message(FATAL_ERROR "GIT_SUBMODULES=${GIT_SUBMODULES}")
+endif()
