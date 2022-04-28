@@ -250,6 +250,20 @@ function ci_qemu_arm_build {
 }
 
 ########################################################################################
+# ports/renesas-ra
+
+function ci_renesas_ra_setup {
+    ci_gcc_arm_setup
+}
+
+function ci_renesas_ra_board_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/renesas-ra submodules
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA4M1_CLICKER
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=RA6M2_EK
+}
+
+########################################################################################
 # ports/rp2
 
 function ci_rp2_setup {
