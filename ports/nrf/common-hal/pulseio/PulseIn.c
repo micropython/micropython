@@ -103,7 +103,7 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
         if (self->len < self->maxlen) {
             self->len++;
         } else {
-            self->start++;
+            self->start = (self->start + 1) % self->maxlen;
         }
     }
 
