@@ -485,6 +485,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             for t in tests:
                 if t.startswith("basics/io_"):
                     skip_tests.add(t)
+        elif args.target == "renesas-ra":
+            skip_tests.add(
+                "extmod/utime_time_ns.py"
+            )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
 
@@ -803,7 +807,7 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf")
+    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf", "renesas-ra")
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -827,6 +831,8 @@ the last matching regex is used:
             if args.target == "pyboard":
                 # run pyboard tests
                 test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+            elif args.target in ("renesas-ra"):
+                test_dirs += ("float", "inlineasm", "renesas-ra")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
