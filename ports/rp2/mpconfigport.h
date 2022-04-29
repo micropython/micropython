@@ -60,12 +60,6 @@
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
 
-// Features currently overriden for rp2, planned to be brought in line with
-// other ports
-#define MICROPY_PY_BUILTINS_EXECFILE            (0)
-#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (0)
-#define MICROPY_REPL_EMACS_KEYS                 (0)
-
 // Python internal features
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)

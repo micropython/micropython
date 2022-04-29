@@ -36,6 +36,8 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/persistentcode.h"
+#include "extmod/moduplatform.h"
+#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_SYS_SETTRACE
 #include "py/objmodule.h"
@@ -54,7 +56,7 @@ const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adap
 #endif
 
 // version - Python language version that this implementation conforms to, as a string
-STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0");
+STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0; " MICROPY_BANNER_NAME_AND_VERSION);
 
 // version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
@@ -68,34 +70,38 @@ STATIC const mp_obj_tuple_t mp_sys_implementation_version_info_obj = {
     3,
     { I(MICROPY_VERSION_MAJOR), I(MICROPY_VERSION_MINOR), I(MICROPY_VERSION_MICRO) }
 };
+STATIC const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER_MACHINE);
 #if MICROPY_PERSISTENT_CODE_LOAD
 #define SYS_IMPLEMENTATION_ELEMS \
     MP_ROM_QSTR(MP_QSTR_micropython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
+    MP_ROM_PTR(&mp_sys_implementation_machine_obj), \
     MP_ROM_INT(MPY_FILE_HEADER_INT)
 #else
 #define SYS_IMPLEMENTATION_ELEMS \
     MP_ROM_QSTR(MP_QSTR_micropython), \
-    MP_ROM_PTR(&mp_sys_implementation_version_info_obj)
+    MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
+    MP_ROM_PTR(&mp_sys_implementation_machine_obj)
 #endif
 #if MICROPY_PY_ATTRTUPLE
 STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
+    MP_QSTR__machine,
     #if MICROPY_PERSISTENT_CODE_LOAD
-    MP_QSTR_mpy,
+    MP_QSTR__mpy,
     #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    2 + MICROPY_PERSISTENT_CODE_LOAD,
+    3 + MICROPY_PERSISTENT_CODE_LOAD,
     SYS_IMPLEMENTATION_ELEMS
     );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
-    2 + MICROPY_PERSISTENT_CODE_LOAD,
+    3 + MICROPY_PERSISTENT_CODE_LOAD,
     {
         SYS_IMPLEMENTATION_ELEMS
     }
