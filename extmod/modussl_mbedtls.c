@@ -242,6 +242,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
                 goto cleanup;
             }
+            #ifdef MICROPY_EVENT_POLL_HOOK
+            MICROPY_EVENT_POLL_HOOK
+            #endif
         }
     }
 
