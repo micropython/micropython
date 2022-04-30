@@ -115,6 +115,7 @@ STATIC mp_obj_t mod_urandom_seed(size_t n_args, const mp_obj_t *args) {
     yasmarang_n = 69;
     yasmarang_d = 233;
     yasmarang_dat = 0;
+    (void)yasmarang();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_urandom_seed_obj, 0, 1, mod_urandom_seed);
