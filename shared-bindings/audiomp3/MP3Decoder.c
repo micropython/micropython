@@ -35,7 +35,14 @@
 #include "supervisor/shared/translate.h"
 
 //| class MP3Decoder:
-//|     """Load a mp3 file for audio playback"""
+//|     """Load a mp3 file for audio playback
+//|
+//|     .. note::
+//|
+//|         ``MP3Decoder`` uses a lot of contiguous memory, so care should be given to
+//|         optimizing memory usage.  More information can be found here:
+//|         https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/reducing-memory-fragmentation
+//|     """
 //|
 //|     def __init__(self, file: typing.BinaryIO, buffer: WriteableBuffer) -> None:
 //|
