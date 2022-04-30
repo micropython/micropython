@@ -40,7 +40,7 @@
 //|     .. note::
 //|
 //|         ``MP3Decoder`` uses a lot of contiguous memory, so care should be given to
-//|         optimizing memory usage.  More information can be found here:
+//|         optimizing memory usage.  More information and recommendations can be found here:
 //|         https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/reducing-memory-fragmentation
 //|     """
 //|
