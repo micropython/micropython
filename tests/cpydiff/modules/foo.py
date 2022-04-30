@@ -1,2 +1,0 @@
-print("foo")
-xxx

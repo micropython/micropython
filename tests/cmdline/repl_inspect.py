@@ -1,2 +1,0 @@
-# cmdline: -i -c print("test")
-# -c option combined with -i option results in REPL

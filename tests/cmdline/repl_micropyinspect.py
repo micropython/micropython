@@ -1,2 +1,0 @@
-# cmdline: cmdline/repl_micropyinspect
-# setting MICROPYINSPECT environment variable before program exit triggers REPL

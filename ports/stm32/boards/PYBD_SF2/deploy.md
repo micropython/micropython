@@ -1,3 +1,0 @@
-### Pyboard-D via mboot
-
-For the pyboard D-series you can enter the mboot DFU bootloader by executing `machine.bootloader()` at the MicroPython REPL. Alternatively, mboot can be entered by holding down the USR button, pressing and releasing the RST button, and continuing to hold down USR until the LED is white (4th in the cycle), then let go of USR while the LED is white. The LED will then flash red once per second to indicate it is in USB DFU mode. You can then program the firmware using a DFU programmer, eg [dfu-util](http://dfu-util.sourceforge.net/) or [pydfu.py](https://github.com/micropython/micropython/blob/master/tools/pydfu.py).

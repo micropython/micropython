@@ -1,6 +1,0 @@
-NameError name 'name' isn't defined
-TypeError exceptions must derive from BaseException
-name 'name' isn't defined
-exceptions must derive from BaseException
-NameError
-TypeError
