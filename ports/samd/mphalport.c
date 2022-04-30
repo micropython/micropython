@@ -46,20 +46,21 @@ void mp_hal_set_interrupt_char(int c) {
 #endif
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    ms += 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        MICROPY_EVENT_POLL_HOOK
+    if (ms > 10) {
+        uint32_t t0 = systick_ms;
+        while (systick_ms - t0 < ms) {
+            MICROPY_EVENT_POLL_HOOK
+        }
+    } else {
+        mp_hal_delay_us(ms * 1000);
     }
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    uint32_t ms = us / 1000 + 1;
-    uint32_t t0 = systick_ms;
-    while (systick_ms - t0 < ms) {
-        __WFI();
+    if (us > 10) {
+        delay_us(us);
     }
-}
+ }
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;

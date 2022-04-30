@@ -29,9 +29,11 @@
 typedef void (*ISR)(void);
 
 extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
+extern void Default_Handler(void);
 
 const ISR isr_vector[];
 uint32_t systick_ms;
+uint32_t systick_ms_upper;
 
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
@@ -75,13 +77,16 @@ void Reset_Handler(void) {
     }
 }
 
-void Default_Handler(void) {
-    for (;;) {
-    }
-}
+// void Default_Handler(void) {
+//     for (;;) {
+//     }
+// }
 
 void SysTick_Handler(void) {
     systick_ms += 1;
+    if (systick_ms == 0) {
+        systick_ms_upper += 1;
+    }
 }
 
 const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {

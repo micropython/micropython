@@ -31,10 +31,12 @@
 
 // ASF4
 #include "hal_gpio.h"
+#include "hal_delay.h"
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 extern volatile uint32_t systick_ms;
+extern volatile uint32_t systick_ms_upper;
 
 void mp_hal_set_interrupt_char(int c);
 
@@ -47,11 +49,12 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
-#ifndef NDEBUG
 static inline uint64_t mp_hal_time_ns(void) {
-    return systick_ms * 1000000;
+    return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
 }
-#endif
+static inline void mp_hal_delay_us_fast(mp_uint_t us) {
+    delay_us(us);
+}
 
 // C-level pin HAL
 

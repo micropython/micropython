@@ -130,8 +130,6 @@ static void usb_init(void) {
     tusb_init();
 }
 
-#if defined(MCU_SAMD51)
-
 void init_clocks(uint32_t cpu_freq) {
     #if defined(MCU_SAMD21)
 
@@ -258,7 +256,6 @@ void init_clocks(uint32_t cpu_freq) {
     }
     #endif // defined(MCU_SAMD51)
 }
-#endif
 
 void samd_init(void) {
     init_clocks(CPU_FREQ);

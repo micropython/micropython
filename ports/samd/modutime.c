@@ -25,8 +25,11 @@
  */
 
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "extmod/utime_mphal.h"
 #include "shared/timeutils/timeutils.h"
+
+static uint32_t systick_offset;
 
 // localtime([secs])
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
@@ -34,9 +37,10 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     mp_int_t seconds;
     if (n_args == 0 || args[0] == mp_const_none) {
         // seconds = pyb_rtc_get_us_since_epoch() / 1000 / 1000;
-        seconds = mp_obj_get_int(args[0]);
+        seconds = mp_hal_time_ns() / 1000000000 + systick_offset;
     } else {
         seconds = mp_obj_get_int(args[0]);
+        systick_offset = seconds - mp_hal_time_ns() / 1000000000;
     }
     timeutils_seconds_since_epoch_to_struct_time(seconds, &tm);
     mp_obj_t tuple[8] = {
@@ -72,7 +76,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 
 // time()
 STATIC mp_obj_t time_time(void) {
-    mp_raise_NotImplementedError("time");
+    return mp_obj_new_int_from_uint(mp_hal_time_ns() / 1000000000 + systick_offset);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

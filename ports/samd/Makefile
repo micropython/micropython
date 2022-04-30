@@ -30,10 +30,12 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(TOP)/lib/cmsis/inc
+INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/config
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hri
+INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hpl/adc
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hpl/core
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hpl/gclk
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hpl/pm
@@ -57,7 +59,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -Og -ggdb
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
@@ -87,6 +89,8 @@ SRC_C = \
 	samd_soc.c \
 	tusb_port.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
+	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_delay.c \
+	lib/asf4/$(MCU_SERIES_LOWER)/hpl/systick/hpl_systick.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hpl/nvmctrl/hpl_nvmctrl.c \
 	lib/libm/ef_sqrt.c \
@@ -107,6 +111,13 @@ SRC_C = \
 	shared/runtime/stdout_helpers.c \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
+
+ifeq ($(MCU_SERIES),SAMD21)
+SRC_C += lib/asf4/$(MCU_SERIES_LOWER)/hpl/core/hpl_core_m0plus_base.c
+else
+SRC_C += lib/asf4/$(MCU_SERIES_LOWER)/hpl/core/hpl_core_m4.c
+
+endif
 
 SRC_C += $(SRC_MOD)
 
