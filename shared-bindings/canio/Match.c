@@ -82,7 +82,7 @@ STATIC mp_obj_t canio_match_id_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_id_get_obj, canio_match_id_get);
 
-const mp_obj_property_getter_t canio_match_id_obj = MP_PROPERTY_GETTER(canio_match_id_obj,
+MP_PROPERTY_GETTER(canio_match_id_obj,
     (mp_obj_t)&canio_match_id_get_obj);
 
 //|
@@ -96,7 +96,7 @@ STATIC mp_obj_t canio_match_mask_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_mask_get_obj, canio_match_mask_get);
 
-const mp_obj_property_getter_t canio_match_mask_obj = MP_PROPERTY_GETTER(canio_match_mask_obj,
+MP_PROPERTY_GETTER(canio_match_mask_obj,
     (mp_obj_t)&canio_match_mask_get_obj);
 
 //|     extended: bool
@@ -109,7 +109,7 @@ STATIC mp_obj_t canio_match_extended_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_match_extended_get_obj, canio_match_extended_get);
 
-const mp_obj_property_getter_t canio_match_extended_obj = MP_PROPERTY_GETTER(canio_match_extended_obj,
+MP_PROPERTY_GETTER(canio_match_extended_obj,
     (mp_obj_t)&canio_match_extended_get_obj);
 
 STATIC const mp_rom_map_elem_t canio_match_locals_dict_table[] = {

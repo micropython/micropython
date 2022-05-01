@@ -97,7 +97,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_obj_get_pin(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_pin_obj, alarm_pin_pinalarm_obj_get_pin);
 
-const mp_obj_property_getter_t alarm_pin_pinalarm_pin_obj = MP_PROPERTY_GETTER(alarm_pin_pinalarm_pin_obj,
+MP_PROPERTY_GETTER(alarm_pin_pinalarm_pin_obj,
     (mp_obj_t)&alarm_pin_pinalarm_get_pin_obj);
 
 //|     value: bool
@@ -109,7 +109,7 @@ STATIC mp_obj_t alarm_pin_pinalarm_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_pin_pinalarm_get_value_obj, alarm_pin_pinalarm_obj_get_value);
 
-const mp_obj_property_getter_t alarm_pin_pinalarm_value_obj = MP_PROPERTY_GETTER(alarm_pin_pinalarm_value_obj,
+MP_PROPERTY_GETTER(alarm_pin_pinalarm_value_obj,
     (mp_obj_t)&alarm_pin_pinalarm_get_value_obj);
 
 STATIC const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {

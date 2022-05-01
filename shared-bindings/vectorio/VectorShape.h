@@ -38,10 +38,10 @@ void vectorio_vector_shape_update_transform(vectorio_vector_shape_t *self, displ
 
 // Composable property definition for shapes that use VectorShape
 extern vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl;
-extern const mp_obj_property_t vectorio_vector_shape_x_obj;
-extern const mp_obj_property_t vectorio_vector_shape_y_obj;
-extern const mp_obj_property_t vectorio_vector_shape_location_obj;
-extern const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_x_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_y_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_location_obj;
+extern const mp_obj_property_getset_t vectorio_vector_shape_pixel_shader_obj;
 extern const mp_obj_fun_builtin_fixed_t vectorio_vector_shape_contains_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_VECTORIO_SHAPE_H

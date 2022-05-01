@@ -114,7 +114,7 @@ STATIC mp_obj_t countio_counter_obj_set_count(mp_obj_t self_in, mp_obj_t new_cou
 }
 MP_DEFINE_CONST_FUN_OBJ_2(countio_counter_set_count_obj, countio_counter_obj_set_count);
 
-const mp_obj_property_getset_t countio_counter_count_obj = MP_PROPERTY_GETSET(countio_counter_count_obj,
+MP_PROPERTY_GETSET(countio_counter_count_obj,
     (mp_obj_t)&countio_counter_get_count_obj,
     (mp_obj_t)&countio_counter_set_count_obj);
 

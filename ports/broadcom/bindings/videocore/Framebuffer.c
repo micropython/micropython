@@ -96,7 +96,7 @@ STATIC mp_obj_t videocore_framebuffer_get_width(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_videocore_framebuffer_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_get_width_obj, videocore_framebuffer_get_width);
-const mp_obj_property_getter_t videocore_framebuffer_width_obj = MP_PROPERTY_GETTER(videocore_framebuffer_width_obj,
+MP_PROPERTY_GETTER(videocore_framebuffer_width_obj,
     (mp_obj_t)&videocore_framebuffer_get_width_obj);
 
 //|     height: int
@@ -109,7 +109,7 @@ STATIC mp_obj_t videocore_framebuffer_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_get_height_obj, videocore_framebuffer_get_height);
 
-const mp_obj_property_getter_t videocore_framebuffer_height_obj = MP_PROPERTY_GETTER(videocore_framebuffer_height_obj,
+MP_PROPERTY_GETTER(videocore_framebuffer_height_obj,
     (mp_obj_t)&videocore_framebuffer_get_height_obj);
 
 STATIC const mp_rom_map_elem_t videocore_framebuffer_locals_dict_table[] = {

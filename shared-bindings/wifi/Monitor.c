@@ -92,7 +92,7 @@ STATIC mp_obj_t wifi_monitor_obj_set_channel(mp_obj_t self_in, mp_obj_t channel)
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_monitor_set_channel_obj, wifi_monitor_obj_set_channel);
 
-const mp_obj_property_getset_t wifi_monitor_channel_obj = MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
+MP_PROPERTY_GETSET(wifi_monitor_channel_obj,
     (mp_obj_t)&wifi_monitor_get_channel_obj,
     (mp_obj_t)&wifi_monitor_set_channel_obj);
 
@@ -104,7 +104,7 @@ STATIC mp_obj_t wifi_monitor_obj_get_queue(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_monitor_get_queue_obj, wifi_monitor_obj_get_queue);
 
-const mp_obj_property_getter_t wifi_monitor_queue_obj = MP_PROPERTY_GETTER(wifi_monitor_queue_obj,
+MP_PROPERTY_GETTER(wifi_monitor_queue_obj,
     (mp_obj_t)&wifi_monitor_get_queue_obj);
 
 //| def deinit(self) -> None:

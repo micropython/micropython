@@ -82,7 +82,7 @@ STATIC mp_obj_t vectorio_polygon_obj_set_points(mp_obj_t self_in, mp_obj_t point
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_polygon_set_points_obj, vectorio_polygon_obj_set_points);
 
-const mp_obj_property_getset_t vectorio_polygon_points_obj = MP_PROPERTY_GETSET(vectorio_polygon_points_obj,
+MP_PROPERTY_GETSET(vectorio_polygon_points_obj,
     (mp_obj_t)&vectorio_polygon_get_points_obj,
     (mp_obj_t)&vectorio_polygon_set_points_obj);
 
@@ -102,7 +102,7 @@ STATIC mp_obj_t vectorio_polygon_obj_set_color_index(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_polygon_set_color_index_obj, vectorio_polygon_obj_set_color_index);
 
-const mp_obj_property_getset_t vectorio_polygon_color_index_obj = MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
+MP_PROPERTY_GETSET(vectorio_polygon_color_index_obj,
     (mp_obj_t)&vectorio_polygon_get_color_index_obj,
     (mp_obj_t)&vectorio_polygon_set_color_index_obj);
 

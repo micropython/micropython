@@ -112,7 +112,7 @@ STATIC mp_obj_t canio_can_auto_restart_set(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_can_auto_restart_set_obj, canio_can_auto_restart_set);
 
-STATIC const mp_obj_property_getset_t canio_can_auto_restart_obj = MP_PROPERTY_GETSET(canio_can_auto_restart_obj,
+MP_PROPERTY_GETSET(canio_can_auto_restart_obj,
     (mp_obj_t)&canio_can_auto_restart_get_obj,
     (mp_obj_t)&canio_can_auto_restart_set_obj);
 
@@ -127,7 +127,7 @@ STATIC mp_obj_t canio_can_baudrate_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_baudrate_get_obj, canio_can_baudrate_get);
 
-STATIC const mp_obj_property_getter_t canio_can_baudrate_obj = MP_PROPERTY_GETTER(canio_can_baudrate_obj,
+MP_PROPERTY_GETTER(canio_can_baudrate_obj,
     (mp_obj_t)&canio_can_baudrate_get_obj);
 
 //|     transmit_error_count: int
@@ -140,7 +140,7 @@ STATIC mp_obj_t canio_can_transmit_error_count_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_transmit_error_count_get_obj, canio_can_transmit_error_count_get);
 
-STATIC const mp_obj_property_getter_t canio_can_transmit_error_count_obj = MP_PROPERTY_GETTER(canio_can_transmit_error_count_obj,
+MP_PROPERTY_GETTER(canio_can_transmit_error_count_obj,
     (mp_obj_t)&canio_can_transmit_error_count_get_obj);
 
 //|     receive_error_count: int
@@ -153,7 +153,7 @@ STATIC mp_obj_t canio_can_receive_error_count_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_receive_error_count_get_obj, canio_can_receive_error_count_get);
 
-STATIC const mp_obj_property_getter_t canio_can_receive_error_count_obj = MP_PROPERTY_GETTER(canio_can_receive_error_count_obj,
+MP_PROPERTY_GETTER(canio_can_receive_error_count_obj,
     (mp_obj_t)&canio_can_receive_error_count_get_obj);
 
 //|     state: BusState
@@ -166,7 +166,7 @@ STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_state_get_obj, canio_can_state_get);
 
-STATIC const mp_obj_property_getter_t canio_can_state_obj = MP_PROPERTY_GETTER(canio_can_state_obj,
+MP_PROPERTY_GETTER(canio_can_state_obj,
     (mp_obj_t)&canio_can_state_get_obj);
 
 
@@ -264,7 +264,7 @@ STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_loopback_get_obj, canio_can_loopback_get);
 
-STATIC const mp_obj_property_getter_t canio_can_loopback_obj = MP_PROPERTY_GETTER(canio_can_loopback_obj,
+MP_PROPERTY_GETTER(canio_can_loopback_obj,
     (mp_obj_t)&canio_can_loopback_get_obj);
 
 
@@ -299,7 +299,7 @@ STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_silent_get_obj, canio_can_silent_get);
 
-STATIC const mp_obj_property_getter_t canio_can_silent_obj = MP_PROPERTY_GETTER(canio_can_silent_obj,
+MP_PROPERTY_GETTER(canio_can_silent_obj,
     (mp_obj_t)&canio_can_silent_get_obj);
 
 

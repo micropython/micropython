@@ -79,7 +79,7 @@ STATIC mp_obj_t usb_core_device_obj_get_idVendor(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_idVendor_obj, usb_core_device_obj_get_idVendor);
 
-const mp_obj_property_getter_t usb_core_device_idVendor_obj = MP_PROPERTY_GETTER(usb_core_device_idVendor_obj,
+MP_PROPERTY_GETTER(usb_core_device_idVendor_obj,
     (mp_obj_t)&usb_core_device_get_idVendor_obj);
 
 //|     idProduct: int
@@ -91,7 +91,7 @@ STATIC mp_obj_t usb_core_device_obj_get_idProduct(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_idProduct_obj, usb_core_device_obj_get_idProduct);
 
-const mp_obj_property_getter_t usb_core_device_idProduct_obj = MP_PROPERTY_GETTER(usb_core_device_idProduct_obj,
+MP_PROPERTY_GETTER(usb_core_device_idProduct_obj,
     (mp_obj_t)&usb_core_device_get_idProduct_obj);
 
 //|     serial_number: str
@@ -103,7 +103,7 @@ STATIC mp_obj_t usb_core_device_obj_get_serial_number(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_serial_number_obj, usb_core_device_obj_get_serial_number);
 
-const mp_obj_property_getter_t usb_core_device_serial_number_obj = MP_PROPERTY_GETTER(usb_core_device_serial_number_obj,
+MP_PROPERTY_GETTER(usb_core_device_serial_number_obj,
     (mp_obj_t)&usb_core_device_get_serial_number_obj);
 
 //|     product: str
@@ -115,7 +115,7 @@ STATIC mp_obj_t usb_core_device_obj_get_product(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_product_obj, usb_core_device_obj_get_product);
 
-const mp_obj_property_getter_t usb_core_device_product_obj = MP_PROPERTY_GETTER(usb_core_device_product_obj,
+MP_PROPERTY_GETTER(usb_core_device_product_obj,
     (mp_obj_t)&usb_core_device_get_product_obj);
 
 //|     manufacturer: str
@@ -127,7 +127,7 @@ STATIC mp_obj_t usb_core_device_obj_get_manufacturer(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_core_device_get_manufacturer_obj, usb_core_device_obj_get_manufacturer);
 
-const mp_obj_property_getter_t usb_core_device_manufacturer_obj = MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
+MP_PROPERTY_GETTER(usb_core_device_manufacturer_obj,
     (mp_obj_t)&usb_core_device_get_manufacturer_obj);
 
 //|     def write(self, endpoint: int, data: ReadableBuffer, timeout = None) -> int:

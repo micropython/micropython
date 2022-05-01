@@ -107,7 +107,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_timeout_obj, watchdog_watchdogtimer_obj_set_timeout);
 
-const mp_obj_property_getset_t watchdog_watchdogtimer_timeout_obj = MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
+MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj);
 
@@ -155,7 +155,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t m
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);
 
-const mp_obj_property_getset_t watchdog_watchdogtimer_mode_obj = MP_PROPERTY_GETSET(watchdog_watchdogtimer_mode_obj,
+MP_PROPERTY_GETSET(watchdog_watchdogtimer_mode_obj,
     (mp_obj_t)&watchdog_watchdogtimer_get_mode_obj,
     (mp_obj_t)&watchdog_watchdogtimer_set_mode_obj);
 

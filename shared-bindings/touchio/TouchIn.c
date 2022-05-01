@@ -120,7 +120,7 @@ STATIC mp_obj_t touchio_touchin_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_value_obj, touchio_touchin_obj_get_value);
 
-const mp_obj_property_getter_t touchio_touchin_value_obj = MP_PROPERTY_GETTER(touchio_touchin_value_obj,
+MP_PROPERTY_GETTER(touchio_touchin_value_obj,
     (mp_obj_t)&touchio_touchin_get_value_obj);
 
 
@@ -135,7 +135,7 @@ STATIC mp_obj_t touchio_touchin_obj_get_raw_value(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(touchio_touchin_get_raw_value_obj, touchio_touchin_obj_get_raw_value);
 
-const mp_obj_property_getter_t touchio_touchin_raw_value_obj = MP_PROPERTY_GETTER(touchio_touchin_raw_value_obj,
+MP_PROPERTY_GETTER(touchio_touchin_raw_value_obj,
     (mp_obj_t)&touchio_touchin_get_raw_value_obj);
 
 
@@ -175,7 +175,7 @@ STATIC mp_obj_t touchio_touchin_obj_set_threshold(mp_obj_t self_in, mp_obj_t thr
 
 MP_DEFINE_CONST_FUN_OBJ_2(touchio_touchin_set_threshold_obj, touchio_touchin_obj_set_threshold);
 
-const mp_obj_property_getset_t touchio_touchin_threshold_obj = MP_PROPERTY_GETSET(touchio_touchin_threshold_obj,
+MP_PROPERTY_GETSET(touchio_touchin_threshold_obj,
     (mp_obj_t)&touchio_touchin_get_threshold_obj,
     (mp_obj_t)&touchio_touchin_set_threshold_obj);
 

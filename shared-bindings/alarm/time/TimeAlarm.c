@@ -123,7 +123,7 @@ STATIC mp_obj_t alarm_time_timealarm_obj_get_monotonic_time(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_time_timealarm_get_monotonic_time_obj, alarm_time_timealarm_obj_get_monotonic_time);
 
-const mp_obj_property_getter_t alarm_time_timealarm_monotonic_time_obj = MP_PROPERTY_GETTER(alarm_time_timealarm_monotonic_time_obj,
+MP_PROPERTY_GETTER(alarm_time_timealarm_monotonic_time_obj,
     (mp_obj_t)&alarm_time_timealarm_get_monotonic_time_obj);
 
 STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {

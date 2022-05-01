@@ -197,7 +197,7 @@ STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_incoming_packet_length_obj, bleio_packet_buffer_get_incoming_packet_length);
 
-const mp_obj_property_getter_t bleio_packet_buffer_incoming_packet_length_obj = MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
+MP_PROPERTY_GETTER(bleio_packet_buffer_incoming_packet_length_obj,
     (mp_obj_t)&bleio_packet_buffer_get_incoming_packet_length_obj);
 
 //|     outgoing_packet_length: int
@@ -214,7 +214,7 @@ STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_packet_buffer_get_outgoing_packet_length_obj, bleio_packet_buffer_get_outgoing_packet_length);
 
-const mp_obj_property_getter_t bleio_packet_buffer_outgoing_packet_length_obj = MP_PROPERTY_GETTER(bleio_packet_buffer_outgoing_packet_length_obj,
+MP_PROPERTY_GETTER(bleio_packet_buffer_outgoing_packet_length_obj,
     (mp_obj_t)&bleio_packet_buffer_get_outgoing_packet_length_obj);
 
 STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {

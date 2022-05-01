@@ -153,7 +153,7 @@ STATIC mp_obj_t audioio_rawsample_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audioio_rawsample_set_sample_rate_obj, audioio_rawsample_obj_set_sample_rate);
 
-const mp_obj_property_getset_t audioio_rawsample_sample_rate_obj = MP_PROPERTY_GETSET(audioio_rawsample_sample_rate_obj,
+MP_PROPERTY_GETSET(audioio_rawsample_sample_rate_obj,
     (mp_obj_t)&audioio_rawsample_get_sample_rate_obj,
     (mp_obj_t)&audioio_rawsample_set_sample_rate_obj);
 

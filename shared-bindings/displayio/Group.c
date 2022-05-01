@@ -97,7 +97,7 @@ STATIC mp_obj_t displayio_group_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_hidden_obj, displayio_group_obj_set_hidden);
 
-const mp_obj_property_getset_t displayio_group_hidden_obj = MP_PROPERTY_GETSET(displayio_group_hidden_obj,
+MP_PROPERTY_GETSET(displayio_group_hidden_obj,
     (mp_obj_t)&displayio_group_get_hidden_obj,
     (mp_obj_t)&displayio_group_set_hidden_obj);
 
@@ -123,7 +123,7 @@ STATIC mp_obj_t displayio_group_obj_set_scale(mp_obj_t self_in, mp_obj_t scale_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_scale_obj, displayio_group_obj_set_scale);
 
-const mp_obj_property_getset_t displayio_group_scale_obj = MP_PROPERTY_GETSET(displayio_group_scale_obj,
+MP_PROPERTY_GETSET(displayio_group_scale_obj,
     (mp_obj_t)&displayio_group_get_scale_obj,
     (mp_obj_t)&displayio_group_set_scale_obj);
 
@@ -145,7 +145,7 @@ STATIC mp_obj_t displayio_group_obj_set_x(mp_obj_t self_in, mp_obj_t x_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_x_obj, displayio_group_obj_set_x);
 
-const mp_obj_property_getset_t displayio_group_x_obj = MP_PROPERTY_GETSET(displayio_group_x_obj,
+MP_PROPERTY_GETSET(displayio_group_x_obj,
     (mp_obj_t)&displayio_group_get_x_obj,
     (mp_obj_t)&displayio_group_set_x_obj);
 
@@ -167,7 +167,7 @@ STATIC mp_obj_t displayio_group_obj_set_y(mp_obj_t self_in, mp_obj_t y_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_y_obj, displayio_group_obj_set_y);
 
-const mp_obj_property_getset_t displayio_group_y_obj = MP_PROPERTY_GETSET(displayio_group_y_obj,
+MP_PROPERTY_GETSET(displayio_group_y_obj,
     (mp_obj_t)&displayio_group_get_y_obj,
     (mp_obj_t)&displayio_group_set_y_obj);
 

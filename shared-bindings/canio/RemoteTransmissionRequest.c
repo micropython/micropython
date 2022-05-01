@@ -82,7 +82,7 @@ STATIC mp_obj_t canio_remote_transmission_request_id_set(const mp_obj_t self_in,
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_id_set_obj, canio_remote_transmission_request_id_set);
 
-STATIC const mp_obj_property_getset_t canio_remote_transmission_request_id_obj = MP_PROPERTY_GETSET(canio_remote_transmission_request_id_obj,
+MP_PROPERTY_GETSET(canio_remote_transmission_request_id_obj,
     (mp_obj_t)&canio_remote_transmission_request_id_get_obj,
     (mp_obj_t)&canio_remote_transmission_request_id_set_obj);
 
@@ -103,7 +103,7 @@ STATIC mp_obj_t canio_remote_transmission_request_extended_set(const mp_obj_t se
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_extended_set_obj, canio_remote_transmission_request_extended_set);
 
 
-STATIC const mp_obj_property_getset_t canio_remote_transmission_request_extended_obj = MP_PROPERTY_GETSET(canio_remote_transmission_request_extended_obj,
+MP_PROPERTY_GETSET(canio_remote_transmission_request_extended_obj,
     (mp_obj_t)&canio_remote_transmission_request_extended_get_obj,
     (mp_obj_t)&canio_remote_transmission_request_extended_set_obj);
 
@@ -128,7 +128,7 @@ STATIC mp_obj_t canio_remote_transmission_request_length_set(const mp_obj_t self
 MP_DEFINE_CONST_FUN_OBJ_2(canio_remote_transmission_request_length_set_obj, canio_remote_transmission_request_length_set);
 
 
-STATIC const mp_obj_property_getset_t canio_remote_transmission_request_length_obj = MP_PROPERTY_GETSET(canio_remote_transmission_request_length_obj,
+MP_PROPERTY_GETSET(canio_remote_transmission_request_length_obj,
     (mp_obj_t)&canio_remote_transmission_request_length_get_obj,
     (mp_obj_t)&canio_remote_transmission_request_length_set_obj);
 

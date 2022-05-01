@@ -157,7 +157,7 @@ STATIC mp_obj_t usb_cdc_serial_get_connected(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_connected_obj, usb_cdc_serial_get_connected);
 
-const mp_obj_property_getter_t usb_cdc_serial_connected_obj = MP_PROPERTY_GETTER(usb_cdc_serial_connected_obj,
+MP_PROPERTY_GETTER(usb_cdc_serial_connected_obj,
     (mp_obj_t)&usb_cdc_serial_get_connected_obj);
 
 //|     in_waiting: int
@@ -169,7 +169,7 @@ STATIC mp_obj_t usb_cdc_serial_get_in_waiting(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_in_waiting_obj, usb_cdc_serial_get_in_waiting);
 
-const mp_obj_property_getter_t usb_cdc_serial_in_waiting_obj = MP_PROPERTY_GETTER(usb_cdc_serial_in_waiting_obj,
+MP_PROPERTY_GETTER(usb_cdc_serial_in_waiting_obj,
     (mp_obj_t)&usb_cdc_serial_get_in_waiting_obj);
 
 //|     out_waiting: int
@@ -181,7 +181,7 @@ STATIC mp_obj_t usb_cdc_serial_get_out_waiting(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_cdc_serial_get_out_waiting_obj, usb_cdc_serial_get_out_waiting);
 
-const mp_obj_property_getter_t usb_cdc_serial_out_waiting_obj = MP_PROPERTY_GETTER(usb_cdc_serial_out_waiting_obj,
+MP_PROPERTY_GETTER(usb_cdc_serial_out_waiting_obj,
     (mp_obj_t)&usb_cdc_serial_get_out_waiting_obj);
 
 //|     def reset_input_buffer(self) -> None:
@@ -225,7 +225,7 @@ STATIC mp_obj_t usb_cdc_serial_set_timeout(mp_obj_t self_in, mp_obj_t timeout_in
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_timeout_obj, usb_cdc_serial_set_timeout);
 
-const mp_obj_property_getset_t usb_cdc_serial_timeout_obj = MP_PROPERTY_GETSET(usb_cdc_serial_timeout_obj,
+MP_PROPERTY_GETSET(usb_cdc_serial_timeout_obj,
     (mp_obj_t)&usb_cdc_serial_get_timeout_obj,
     (mp_obj_t)&usb_cdc_serial_set_timeout_obj);
 
@@ -249,7 +249,7 @@ STATIC mp_obj_t usb_cdc_serial_set_write_timeout(mp_obj_t self_in, mp_obj_t writ
 }
 MP_DEFINE_CONST_FUN_OBJ_2(usb_cdc_serial_set_write_timeout_obj, usb_cdc_serial_set_write_timeout);
 
-const mp_obj_property_getset_t usb_cdc_serial_write_timeout_obj = MP_PROPERTY_GETSET(usb_cdc_serial_write_timeout_obj,
+MP_PROPERTY_GETSET(usb_cdc_serial_write_timeout_obj,
     (mp_obj_t)&usb_cdc_serial_get_write_timeout_obj,
     (mp_obj_t)&usb_cdc_serial_set_write_timeout_obj);
 

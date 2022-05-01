@@ -80,7 +80,7 @@ STATIC mp_obj_t bleio_service_get_characteristics(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_characteristics_obj, bleio_service_get_characteristics);
 
-const mp_obj_property_getter_t bleio_service_characteristics_obj = MP_PROPERTY_GETTER(bleio_service_characteristics_obj,
+MP_PROPERTY_GETTER(bleio_service_characteristics_obj,
     (mp_obj_t)&bleio_service_get_characteristics_obj);
 
 //|     remote: bool
@@ -93,7 +93,7 @@ STATIC mp_obj_t bleio_service_get_remote(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_remote_obj, bleio_service_get_remote);
 
-const mp_obj_property_getter_t bleio_service_remote_obj = MP_PROPERTY_GETTER(bleio_service_remote_obj,
+MP_PROPERTY_GETTER(bleio_service_remote_obj,
     (mp_obj_t)&bleio_service_get_remote_obj);
 
 //|     secondary: bool
@@ -106,7 +106,7 @@ STATIC mp_obj_t bleio_service_get_secondary(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_secondary_obj, bleio_service_get_secondary);
 
-const mp_obj_property_getter_t bleio_service_secondary_obj = MP_PROPERTY_GETTER(bleio_service_secondary_obj,
+MP_PROPERTY_GETTER(bleio_service_secondary_obj,
     (mp_obj_t)&bleio_service_get_secondary_obj);
 
 //|     uuid: Optional[UUID]
@@ -122,7 +122,7 @@ STATIC mp_obj_t bleio_service_get_uuid(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_service_get_uuid_obj, bleio_service_get_uuid);
 
-const mp_obj_property_getter_t bleio_service_uuid_obj = MP_PROPERTY_GETTER(bleio_service_uuid_obj,
+MP_PROPERTY_GETTER(bleio_service_uuid_obj,
     (mp_obj_t)&bleio_service_get_uuid_obj);
 
 

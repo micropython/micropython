@@ -83,7 +83,7 @@ STATIC mp_obj_t canio_message_id_set(const mp_obj_t self_in, const mp_obj_t id) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_id_set_obj, canio_message_id_set);
 
-STATIC const mp_obj_property_getset_t canio_message_id_obj = MP_PROPERTY_GETSET(canio_message_id_obj,
+MP_PROPERTY_GETSET(canio_message_id_obj,
     (mp_obj_t)&canio_message_id_get_obj,
     (mp_obj_t)&canio_message_id_set_obj);
 
@@ -109,7 +109,7 @@ STATIC mp_obj_t canio_message_data_set(const mp_obj_t self_in, const mp_obj_t da
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_data_set_obj, canio_message_data_set);
 
 
-STATIC const mp_obj_property_getset_t canio_message_data_obj = MP_PROPERTY_GETSET(canio_message_data_obj,
+MP_PROPERTY_GETSET(canio_message_data_obj,
     (mp_obj_t)&canio_message_data_get_obj,
     (mp_obj_t)&canio_message_data_set_obj);
 
@@ -131,7 +131,7 @@ STATIC mp_obj_t canio_message_extended_set(const mp_obj_t self_in, const mp_obj_
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_extended_set_obj, canio_message_extended_set);
 
 
-STATIC const mp_obj_property_getset_t canio_message_extended_obj = MP_PROPERTY_GETSET(canio_message_extended_obj,
+MP_PROPERTY_GETSET(canio_message_extended_obj,
     (mp_obj_t)&canio_message_extended_get_obj,
     (mp_obj_t)&canio_message_extended_set_obj);
 

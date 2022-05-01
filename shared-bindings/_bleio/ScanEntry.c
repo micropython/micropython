@@ -83,7 +83,7 @@ STATIC mp_obj_t bleio_scanentry_get_address(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_address_obj, bleio_scanentry_get_address);
 
-const mp_obj_property_getter_t bleio_scanentry_address_obj = MP_PROPERTY_GETTER(bleio_scanentry_address_obj,
+MP_PROPERTY_GETTER(bleio_scanentry_address_obj,
     (mp_obj_t)&bleio_scanentry_get_address_obj);
 
 //|     advertisement_bytes: bytes
@@ -95,7 +95,7 @@ STATIC mp_obj_t scanentry_get_advertisement_bytes(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_advertisement_bytes_obj, scanentry_get_advertisement_bytes);
 
-const mp_obj_property_getter_t bleio_scanentry_advertisement_bytes_obj = MP_PROPERTY_GETTER(bleio_scanentry_advertisement_bytes_obj,
+MP_PROPERTY_GETTER(bleio_scanentry_advertisement_bytes_obj,
     (mp_obj_t)&bleio_scanentry_get_advertisement_bytes_obj);
 
 //|     rssi: int
@@ -107,7 +107,7 @@ STATIC mp_obj_t scanentry_get_rssi(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_rssi_obj, scanentry_get_rssi);
 
-const mp_obj_property_getter_t bleio_scanentry_rssi_obj = MP_PROPERTY_GETTER(bleio_scanentry_rssi_obj,
+MP_PROPERTY_GETTER(bleio_scanentry_rssi_obj,
     (mp_obj_t)&bleio_scanentry_get_rssi_obj);
 
 //|     connectable: bool
@@ -119,7 +119,7 @@ STATIC mp_obj_t scanentry_get_connectable(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_connectable_obj, scanentry_get_connectable);
 
-const mp_obj_property_getter_t bleio_scanentry_connectable_obj = MP_PROPERTY_GETTER(bleio_scanentry_connectable_obj,
+MP_PROPERTY_GETTER(bleio_scanentry_connectable_obj,
     (mp_obj_t)&bleio_scanentry_get_connectable_obj);
 
 //|     scan_response: bool
@@ -131,7 +131,7 @@ STATIC mp_obj_t scanentry_get_scan_response(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_scanentry_get_scan_response_obj, scanentry_get_scan_response);
 
-const mp_obj_property_getter_t bleio_scanentry_scan_response_obj = MP_PROPERTY_GETTER(bleio_scanentry_scan_response_obj,
+MP_PROPERTY_GETTER(bleio_scanentry_scan_response_obj,
     (mp_obj_t)&bleio_scanentry_get_scan_response_obj);
 
 STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {

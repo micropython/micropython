@@ -53,7 +53,7 @@ STATIC mp_obj_t samd_clock_get_enabled(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_enabled_obj, samd_clock_get_enabled);
 
-const mp_obj_property_getter_t samd_clock_enabled_obj = MP_PROPERTY_GETTER(samd_clock_enabled_obj,
+MP_PROPERTY_GETTER(samd_clock_enabled_obj,
     (mp_obj_t)&samd_clock_get_enabled_obj);
 
 //|     parent: Union[Clock, None]
@@ -78,7 +78,7 @@ STATIC mp_obj_t samd_clock_get_parent(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_parent_obj, samd_clock_get_parent);
 
-const mp_obj_property_getter_t samd_clock_parent_obj = MP_PROPERTY_GETTER(samd_clock_parent_obj,
+MP_PROPERTY_GETTER(samd_clock_parent_obj,
     (mp_obj_t)&samd_clock_get_parent_obj);
 
 //|     frequency: int
@@ -91,7 +91,7 @@ STATIC mp_obj_t samd_clock_get_frequency(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(samd_clock_get_frequency_obj, samd_clock_get_frequency);
 
-const mp_obj_property_getter_t samd_clock_frequency_obj = MP_PROPERTY_GETTER(samd_clock_frequency_obj,
+MP_PROPERTY_GETTER(samd_clock_frequency_obj,
     (mp_obj_t)&samd_clock_get_frequency_obj);
 
 //|     calibration: int
@@ -118,7 +118,7 @@ STATIC mp_obj_t samd_clock_set_calibration(mp_obj_t self_in, mp_obj_t calibratio
 
 MP_DEFINE_CONST_FUN_OBJ_2(samd_clock_set_calibration_obj, samd_clock_set_calibration);
 
-const mp_obj_property_getset_t samd_clock_calibration_obj = MP_PROPERTY_GETSET(samd_clock_calibration_obj,
+MP_PROPERTY_GETSET(samd_clock_calibration_obj,
     (mp_obj_t)&samd_clock_get_calibration_obj,
     (mp_obj_t)&samd_clock_set_calibration_obj);
 

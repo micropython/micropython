@@ -88,7 +88,7 @@ STATIC mp_obj_t mcu_processor_get_frequency(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_frequency_obj, mcu_processor_get_frequency);
 
-const mp_obj_property_getset_t mcu_processor_frequency_obj = MP_PROPERTY_GETSET(mcu_processor_frequency_obj,
+MP_PROPERTY_GETSET(mcu_processor_frequency_obj,
     (mp_obj_t)&mcu_processor_get_frequency_obj,
     (mp_obj_t)&mcu_processor_set_frequency_obj);
 
@@ -101,7 +101,7 @@ STATIC mp_obj_t mcu_processor_get_reset_reason(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_reset_reason_obj, mcu_processor_get_reset_reason);
 
-const mp_obj_property_getter_t mcu_processor_reset_reason_obj = MP_PROPERTY_GETTER(mcu_processor_reset_reason_obj,
+MP_PROPERTY_GETTER(mcu_processor_reset_reason_obj,
     (mp_obj_t)&mcu_processor_get_reset_reason_obj);
 
 //|     temperature: Optional[float]
@@ -116,7 +116,7 @@ STATIC mp_obj_t mcu_processor_get_temperature(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_temperature_obj, mcu_processor_get_temperature);
 
-const mp_obj_property_getter_t mcu_processor_temperature_obj = MP_PROPERTY_GETTER(mcu_processor_temperature_obj,
+MP_PROPERTY_GETTER(mcu_processor_temperature_obj,
     (mp_obj_t)&mcu_processor_get_temperature_obj);
 
 //|     uid: bytearray
@@ -130,7 +130,7 @@ STATIC mp_obj_t mcu_processor_get_uid(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_uid_obj, mcu_processor_get_uid);
 
-const mp_obj_property_getter_t mcu_processor_uid_obj = MP_PROPERTY_GETTER(mcu_processor_uid_obj,
+MP_PROPERTY_GETTER(mcu_processor_uid_obj,
     (mp_obj_t)&mcu_processor_get_uid_obj);
 
 //|     voltage: Optional[float]
@@ -145,7 +145,7 @@ STATIC mp_obj_t mcu_processor_get_voltage(mp_obj_t self) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(mcu_processor_get_voltage_obj, mcu_processor_get_voltage);
 
-const mp_obj_property_getter_t mcu_processor_voltage_obj = MP_PROPERTY_GETTER(mcu_processor_voltage_obj,
+MP_PROPERTY_GETTER(mcu_processor_voltage_obj,
     (mp_obj_t)&mcu_processor_get_voltage_obj);
 
 STATIC const mp_rom_map_elem_t mcu_processor_locals_dict_table[] = {

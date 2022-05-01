@@ -101,7 +101,7 @@ STATIC mp_obj_t bleio_address_get_address_bytes(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_address_bytes_obj, bleio_address_get_address_bytes);
 
-const mp_obj_property_getter_t bleio_address_address_bytes_obj = MP_PROPERTY_GETTER(bleio_address_address_bytes_obj,
+MP_PROPERTY_GETTER(bleio_address_address_bytes_obj,
     (mp_obj_t)&bleio_address_get_address_bytes_obj);
 
 //|     type: int
@@ -117,7 +117,7 @@ STATIC mp_obj_t bleio_address_get_type(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_address_get_type_obj, bleio_address_get_type);
 
-const mp_obj_property_getter_t bleio_address_type_obj = MP_PROPERTY_GETTER(bleio_address_type_obj,
+MP_PROPERTY_GETTER(bleio_address_type_obj,
     (mp_obj_t)&bleio_address_get_type_obj);
 
 //|     def __eq__(self, other: object) -> bool:

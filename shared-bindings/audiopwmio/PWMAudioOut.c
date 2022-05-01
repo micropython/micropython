@@ -198,7 +198,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_get_playing(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_playing_obj, audiopwmio_pwmaudioout_obj_get_playing);
 
-const mp_obj_property_getter_t audiopwmio_pwmaudioout_playing_obj = MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_playing_obj,
+MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_playing_obj,
     (mp_obj_t)&audiopwmio_pwmaudioout_get_playing_obj);
 
 //|     def pause(self) -> None:
@@ -243,7 +243,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_get_paused(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiopwmio_pwmaudioout_get_paused_obj, audiopwmio_pwmaudioout_obj_get_paused);
 
-const mp_obj_property_getter_t audiopwmio_pwmaudioout_paused_obj = MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_paused_obj,
+MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_paused_obj,
     (mp_obj_t)&audiopwmio_pwmaudioout_get_paused_obj);
 
 STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {

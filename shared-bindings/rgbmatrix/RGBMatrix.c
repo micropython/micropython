@@ -310,7 +310,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rgbmatrix_rgbmatrix_set_brightness_obj, rgbmatrix_rgbmatrix_set_brightness);
 
-const mp_obj_property_getset_t rgbmatrix_rgbmatrix_brightness_obj = MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
+MP_PROPERTY_GETSET(rgbmatrix_rgbmatrix_brightness_obj,
     (mp_obj_t)&rgbmatrix_rgbmatrix_get_brightness_obj,
     (mp_obj_t)&rgbmatrix_rgbmatrix_set_brightness_obj);
 
@@ -336,7 +336,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_get_width(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_rgbmatrix_rgbmatrix_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_width_obj, rgbmatrix_rgbmatrix_get_width);
-const mp_obj_property_getter_t rgbmatrix_rgbmatrix_width_obj = MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
+MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_width_obj,
     (mp_obj_t)&rgbmatrix_rgbmatrix_get_width_obj);
 
 //|     height: int
@@ -349,7 +349,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rgbmatrix_rgbmatrix_get_height_obj, rgbmatrix_rgbmatrix_get_height);
 
-const mp_obj_property_getter_t rgbmatrix_rgbmatrix_height_obj = MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_height_obj,
+MP_PROPERTY_GETTER(rgbmatrix_rgbmatrix_height_obj,
     (mp_obj_t)&rgbmatrix_rgbmatrix_get_height_obj);
 
 STATIC const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {

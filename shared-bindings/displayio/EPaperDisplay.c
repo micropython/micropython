@@ -268,7 +268,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_time_to_refresh(mp_obj_t self_in
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_time_to_refresh_obj, displayio_epaperdisplay_obj_get_time_to_refresh);
 
-const mp_obj_property_getter_t displayio_epaperdisplay_time_to_refresh_obj = MP_PROPERTY_GETTER(displayio_epaperdisplay_time_to_refresh_obj,
+MP_PROPERTY_GETTER(displayio_epaperdisplay_time_to_refresh_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_time_to_refresh_obj);
 
 //|     busy: bool
@@ -281,7 +281,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_busy(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_busy_obj, displayio_epaperdisplay_obj_get_busy);
 
-const mp_obj_property_getter_t displayio_epaperdisplay_busy_obj = MP_PROPERTY_GETTER(displayio_epaperdisplay_busy_obj,
+MP_PROPERTY_GETTER(displayio_epaperdisplay_busy_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_busy_obj);
 
 //|     width: int
@@ -293,7 +293,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_width_obj, displayio_epaperdisplay_obj_get_width);
 
-const mp_obj_property_getter_t displayio_epaperdisplay_width_obj = MP_PROPERTY_GETTER(displayio_epaperdisplay_width_obj,
+MP_PROPERTY_GETTER(displayio_epaperdisplay_width_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_width_obj);
 
 //|     height: int
@@ -305,7 +305,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_height_obj, displayio_epaperdisplay_obj_get_height);
 
-const mp_obj_property_getter_t displayio_epaperdisplay_height_obj = MP_PROPERTY_GETTER(displayio_epaperdisplay_height_obj,
+MP_PROPERTY_GETTER(displayio_epaperdisplay_height_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_height_obj);
 
 //|     rotation: int
@@ -324,7 +324,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_set_rotation(mp_obj_t self_in, mp_ob
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_set_rotation_obj, displayio_epaperdisplay_obj_set_rotation);
 
 
-const mp_obj_property_getset_t displayio_epaperdisplay_rotation_obj = MP_PROPERTY_GETSET(displayio_epaperdisplay_rotation_obj,
+MP_PROPERTY_GETSET(displayio_epaperdisplay_rotation_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_rotation_obj,
     (mp_obj_t)&displayio_epaperdisplay_set_rotation_obj);
 
@@ -337,7 +337,7 @@ STATIC mp_obj_t displayio_epaperdisplay_obj_get_bus(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_epaperdisplay_get_bus_obj, displayio_epaperdisplay_obj_get_bus);
 
-const mp_obj_property_getter_t displayio_epaperdisplay_bus_obj = MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
+MP_PROPERTY_GETTER(displayio_epaperdisplay_bus_obj,
     (mp_obj_t)&displayio_epaperdisplay_get_bus_obj);
 
 

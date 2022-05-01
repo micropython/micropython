@@ -76,7 +76,7 @@ STATIC mp_obj_t keypad_event_get_key_number(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_number_obj, keypad_event_get_key_number);
 
-const mp_obj_property_getter_t keypad_event_key_number_obj = MP_PROPERTY_GETTER(keypad_event_key_number_obj,
+MP_PROPERTY_GETTER(keypad_event_key_number_obj,
     (mp_obj_t)&keypad_event_get_key_number_obj);
 
 //|     pressed: bool
@@ -90,7 +90,7 @@ STATIC mp_obj_t keypad_event_get_pressed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_pressed_obj, keypad_event_get_pressed);
 
-const mp_obj_property_getter_t keypad_event_pressed_obj = MP_PROPERTY_GETTER(keypad_event_pressed_obj,
+MP_PROPERTY_GETTER(keypad_event_pressed_obj,
     (mp_obj_t)&keypad_event_get_pressed_obj);
 
 //|     released: bool
@@ -104,7 +104,7 @@ STATIC mp_obj_t keypad_event_get_released(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_released_obj, keypad_event_get_released);
 
-const mp_obj_property_getter_t keypad_event_released_obj = MP_PROPERTY_GETTER(keypad_event_released_obj,
+MP_PROPERTY_GETTER(keypad_event_released_obj,
     (mp_obj_t)&keypad_event_get_released_obj);
 
 //|     timestamp: int
@@ -116,7 +116,7 @@ STATIC mp_obj_t keypad_event_get_timestamp(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_timestamp_obj, keypad_event_get_timestamp);
 
-const mp_obj_property_getter_t keypad_event_timestamp_obj = MP_PROPERTY_GETTER(keypad_event_timestamp_obj,
+MP_PROPERTY_GETTER(keypad_event_timestamp_obj,
     (mp_obj_t)&keypad_event_get_timestamp_obj);
 
 

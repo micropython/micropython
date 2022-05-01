@@ -117,7 +117,7 @@ STATIC mp_obj_t analogio_analogout_obj_set_value(mp_obj_t self_in, mp_obj_t valu
 }
 MP_DEFINE_CONST_FUN_OBJ_2(analogio_analogout_set_value_obj, analogio_analogout_obj_set_value);
 
-const mp_obj_property_getset_t analogio_analogout_value_obj = MP_PROPERTY_GETSET(analogio_analogout_value_obj,
+MP_PROPERTY_GETSET(analogio_analogout_value_obj,
     MP_ROM_NONE,
     (mp_obj_t)&analogio_analogout_set_value_obj);
 

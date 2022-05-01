@@ -246,7 +246,7 @@ STATIC mp_obj_t aesio_aes_set_mode(mp_obj_t aesio_obj, mp_obj_t mode_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(aesio_aes_set_mode_obj, aesio_aes_set_mode);
 
-const mp_obj_property_getset_t aesio_aes_mode_obj = MP_PROPERTY_GETSET(aesio_aes_mode_obj,
+MP_PROPERTY_GETSET(aesio_aes_mode_obj,
     (mp_obj_t)&aesio_aes_get_mode_obj,
     (mp_obj_t)&aesio_aes_set_mode_obj);
 

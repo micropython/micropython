@@ -76,7 +76,7 @@ STATIC mp_obj_t vectorio_circle_obj_set_radius(mp_obj_t self_in, mp_obj_t radius
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_circle_set_radius_obj, vectorio_circle_obj_set_radius);
 
-const mp_obj_property_getset_t vectorio_circle_radius_obj = MP_PROPERTY_GETSET(vectorio_circle_radius_obj,
+MP_PROPERTY_GETSET(vectorio_circle_radius_obj,
     (mp_obj_t)&vectorio_circle_get_radius_obj,
     (mp_obj_t)&vectorio_circle_set_radius_obj);
 
@@ -96,7 +96,7 @@ STATIC mp_obj_t vectorio_circle_obj_set_color_index(mp_obj_t self_in, mp_obj_t c
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_circle_set_color_index_obj, vectorio_circle_obj_set_color_index);
 
-const mp_obj_property_getset_t vectorio_circle_color_index_obj = MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
+MP_PROPERTY_GETSET(vectorio_circle_color_index_obj,
     (mp_obj_t)&vectorio_circle_get_color_index_obj,
     (mp_obj_t)&vectorio_circle_set_color_index_obj);
 

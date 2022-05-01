@@ -132,7 +132,7 @@ STATIC mp_obj_t bleio_uuid_get_uuid16(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid16_obj, bleio_uuid_get_uuid16);
 
-const mp_obj_property_getter_t bleio_uuid_uuid16_obj = MP_PROPERTY_GETTER(bleio_uuid_uuid16_obj,
+MP_PROPERTY_GETTER(bleio_uuid_uuid16_obj,
     (mp_obj_t)&bleio_uuid_get_uuid16_obj);
 
 //|     uuid128: bytes
@@ -154,7 +154,7 @@ STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 
-const mp_obj_property_getter_t bleio_uuid_uuid128_obj = MP_PROPERTY_GETTER(bleio_uuid_uuid128_obj,
+MP_PROPERTY_GETTER(bleio_uuid_uuid128_obj,
     (mp_obj_t)&bleio_uuid_get_uuid128_obj);
 
 //|     size: int
@@ -170,7 +170,7 @@ STATIC mp_obj_t bleio_uuid_get_size(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_size_obj, bleio_uuid_get_size);
 
-const mp_obj_property_getter_t bleio_uuid_size_obj = MP_PROPERTY_GETTER(bleio_uuid_size_obj,
+MP_PROPERTY_GETTER(bleio_uuid_size_obj,
     (mp_obj_t)&bleio_uuid_get_size_obj);
 
 

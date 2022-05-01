@@ -208,7 +208,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_get_maxlen(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_maxlen_obj, pulseio_pulsein_obj_get_maxlen);
 
-const mp_obj_property_getter_t pulseio_pulsein_maxlen_obj = MP_PROPERTY_GETTER(pulseio_pulsein_maxlen_obj,
+MP_PROPERTY_GETTER(pulseio_pulsein_maxlen_obj,
     (mp_obj_t)&pulseio_pulsein_get_maxlen_obj);
 
 //|     paused: bool
@@ -223,7 +223,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_get_paused(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_get_paused_obj, pulseio_pulsein_obj_get_paused);
 
-const mp_obj_property_getter_t pulseio_pulsein_paused_obj = MP_PROPERTY_GETTER(pulseio_pulsein_paused_obj,
+MP_PROPERTY_GETTER(pulseio_pulsein_paused_obj,
     (mp_obj_t)&pulseio_pulsein_get_paused_obj);
 
 //|     def __bool__(self) -> bool: ...

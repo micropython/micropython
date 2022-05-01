@@ -117,7 +117,7 @@ STATIC mp_obj_t analogio_analogin_obj_get_value(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_value_obj, analogio_analogin_obj_get_value);
 
-const mp_obj_property_getter_t analogio_analogin_value_obj = MP_PROPERTY_GETTER(analogio_analogin_value_obj,
+MP_PROPERTY_GETTER(analogio_analogin_value_obj,
     (mp_obj_t)&analogio_analogin_get_value_obj);
 
 //|     reference_voltage: float
@@ -139,7 +139,7 @@ STATIC mp_obj_t analogio_analogin_obj_get_reference_voltage(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(analogio_analogin_get_reference_voltage_obj,
     analogio_analogin_obj_get_reference_voltage);
 
-const mp_obj_property_getter_t analogio_analogin_reference_voltage_obj = MP_PROPERTY_GETTER(analogio_analogin_reference_voltage_obj,
+MP_PROPERTY_GETTER(analogio_analogin_reference_voltage_obj,
     (mp_obj_t)&analogio_analogin_get_reference_voltage_obj);
 
 STATIC const mp_rom_map_elem_t analogio_analogin_locals_dict_table[] = {

@@ -220,7 +220,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_duty_cycle_obj, pwmio_pwmout_obj_set_duty_cycle);
 
-const mp_obj_property_getset_t pwmio_pwmout_duty_cycle_obj = MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
+MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
     (mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
     (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj);
 
@@ -258,7 +258,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
 
-const mp_obj_property_getset_t pwmio_pwmout_frequency_obj = MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
+MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
     (mp_obj_t)&pwmio_pwmout_get_frequency_obj,
     (mp_obj_t)&pwmio_pwmout_set_frequency_obj);
 

@@ -128,7 +128,7 @@ static mp_obj_t bleio_adapter_set_enabled(mp_obj_t self, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_enabled_obj, bleio_adapter_set_enabled);
 
-const mp_obj_property_getset_t bleio_adapter_enabled_obj = MP_PROPERTY_GETSET(bleio_adapter_enabled_obj,
+MP_PROPERTY_GETSET(bleio_adapter_enabled_obj,
     (mp_obj_t)&bleio_adapter_get_enabled_obj,
     (mp_obj_t)&bleio_adapter_set_enabled_obj);
 
@@ -149,7 +149,7 @@ STATIC mp_obj_t bleio_adapter_set_address(mp_obj_t self, mp_obj_t new_address) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_address_obj, bleio_adapter_set_address);
 
-const mp_obj_property_getset_t bleio_adapter_address_obj = MP_PROPERTY_GETSET(bleio_adapter_address_obj,
+MP_PROPERTY_GETSET(bleio_adapter_address_obj,
     (mp_obj_t)&bleio_adapter_get_address_obj,
     (mp_obj_t)&bleio_adapter_set_address_obj);
 
@@ -170,7 +170,7 @@ STATIC mp_obj_t bleio_adapter_set_name(mp_obj_t self, mp_obj_t new_name) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(bleio_adapter_set_name_obj, bleio_adapter_set_name);
 
-const mp_obj_property_getset_t bleio_adapter_name_obj = MP_PROPERTY_GETSET(bleio_adapter_name_obj,
+MP_PROPERTY_GETSET(bleio_adapter_name_obj,
     (mp_obj_t)&bleio_adapter_get_name_obj,
     (mp_obj_t)&bleio_adapter_set_name_obj);
 
@@ -371,7 +371,7 @@ STATIC mp_obj_t bleio_adapter_get_advertising(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_advertising_obj, bleio_adapter_get_advertising);
 
-const mp_obj_property_getter_t bleio_adapter_advertising_obj = MP_PROPERTY_GETTER(bleio_adapter_advertising_obj,
+MP_PROPERTY_GETTER(bleio_adapter_advertising_obj,
     (mp_obj_t)&bleio_adapter_get_advertising_obj);
 
 //|     connected: bool
@@ -384,7 +384,7 @@ STATIC mp_obj_t bleio_adapter_get_connected(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connected_obj, bleio_adapter_get_connected);
 
-const mp_obj_property_getter_t bleio_adapter_connected_obj = MP_PROPERTY_GETTER(bleio_adapter_connected_obj,
+MP_PROPERTY_GETTER(bleio_adapter_connected_obj,
     (mp_obj_t)&bleio_adapter_get_connected_obj);
 
 //|     connections: Tuple[Connection]
@@ -396,7 +396,7 @@ STATIC mp_obj_t bleio_adapter_get_connections(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_connections_obj, bleio_adapter_get_connections);
 
-const mp_obj_property_getter_t bleio_adapter_connections_obj = MP_PROPERTY_GETTER(bleio_adapter_connections_obj,
+MP_PROPERTY_GETTER(bleio_adapter_connections_obj,
     (mp_obj_t)&bleio_adapter_get_connections_obj);
 
 //|     def connect(self, address: Address, *, timeout: float) -> Connection:

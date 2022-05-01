@@ -108,7 +108,7 @@ STATIC mp_obj_t gnss_obj_get_latitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_latitude_obj, gnss_obj_get_latitude);
 
-const mp_obj_property_getter_t gnss_latitude_obj = MP_PROPERTY_GETTER(gnss_latitude_obj,
+MP_PROPERTY_GETTER(gnss_latitude_obj,
     (mp_obj_t)&gnss_get_latitude_obj);
 
 //|     longitude: float
@@ -121,7 +121,7 @@ STATIC mp_obj_t gnss_obj_get_longitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_longitude_obj, gnss_obj_get_longitude);
 
-const mp_obj_property_getter_t gnss_longitude_obj = MP_PROPERTY_GETTER(gnss_longitude_obj,
+MP_PROPERTY_GETTER(gnss_longitude_obj,
     (mp_obj_t)&gnss_get_longitude_obj);
 
 //|     altitude: float
@@ -134,7 +134,7 @@ STATIC mp_obj_t gnss_obj_get_altitude(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_altitude_obj, gnss_obj_get_altitude);
 
-const mp_obj_property_getter_t gnss_altitude_obj = MP_PROPERTY_GETTER(gnss_altitude_obj,
+MP_PROPERTY_GETTER(gnss_altitude_obj,
     (mp_obj_t)&gnss_get_altitude_obj);
 
 //|     timestamp: time.struct_time
@@ -149,7 +149,7 @@ STATIC mp_obj_t gnss_obj_get_timestamp(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_timestamp_obj, gnss_obj_get_timestamp);
 
-const mp_obj_property_getter_t gnss_timestamp_obj = MP_PROPERTY_GETTER(gnss_timestamp_obj,
+MP_PROPERTY_GETTER(gnss_timestamp_obj,
     (mp_obj_t)&gnss_get_timestamp_obj);
 
 //|     fix: PositionFix
@@ -162,7 +162,7 @@ STATIC mp_obj_t gnss_obj_get_fix(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(gnss_get_fix_obj, gnss_obj_get_fix);
 
-const mp_obj_property_getter_t gnss_fix_obj = MP_PROPERTY_GETTER(gnss_fix_obj,
+MP_PROPERTY_GETTER(gnss_fix_obj,
     (mp_obj_t)&gnss_get_fix_obj);
 
 STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {

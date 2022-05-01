@@ -71,7 +71,7 @@ STATIC mp_obj_t alarm_touch_touchalarm_obj_get_pin(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(alarm_touch_touchalarm_get_pin_obj, alarm_touch_touchalarm_obj_get_pin);
 
-const mp_obj_property_getter_t alarm_touch_touchalarm_pin_obj = MP_PROPERTY_GETTER(alarm_touch_touchalarm_pin_obj,
+MP_PROPERTY_GETTER(alarm_touch_touchalarm_pin_obj,
     (mp_obj_t)&alarm_touch_touchalarm_get_pin_obj);
 
 STATIC const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
