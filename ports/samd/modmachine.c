@@ -62,10 +62,22 @@ STATIC mp_obj_t machine_bootloader(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
 
-STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(CPU_FREQ);
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return MP_OBJ_NEW_SMALL_INT(cpu_freq);
+    } else {
+        #if defined(MCU_SAMD51)
+        uint32_t freq = mp_obj_get_int(args[0]);
+        if (freq >= 48000000 && freq <= 200000000) {
+            init_clocks(freq);
+            SysTick_Config(freq / 1000);
+            cpu_freq = freq;
+        }
+        #endif
+        return mp_const_none;
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_unique_id(void) {
     // Each device has a unique 128-bit serial number which is a concatenation of four 32-bit

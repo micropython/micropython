@@ -36,6 +36,7 @@
 #include "tusb.h"
 
 uint8_t enable_uart_repl = false;
+uint32_t cpu_freq = CPU_FREQ;
 
 // "MP" macros defined in "boards/$(BOARD)/mpconfigboard.h"
 mp_obj_t machine_uart_init(void) {
@@ -183,6 +184,11 @@ void init_clocks(uint32_t cpu_freq) {
     // Gclk reset
     GCLK->CTRLA.bit.SWRST;
 
+    // Setup GCLK0 for 48MHz
+    GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+    while (GCLK->SYNCBUSY.bit.GENCTRL0) {
+    }
+
     #if MICROPY_HW_XOSC32K
     // OSCILLATOR CONTROL
     // Setup XOSC32K
@@ -227,14 +233,18 @@ void init_clocks(uint32_t cpu_freq) {
     GCLK->PCHCTRL[1].reg = GCLK_PCHCTRL_GEN_GCLK1 | GCLK_PCHCTRL_CHEN;
 
     // Setup DPLL0 for 120 MHz
+    OSCCTRL->Dpll[0].DPLLCTRLA.bit.ENABLE = 0;
+    while (OSCCTRL->Dpll[0].DPLLSYNCBUSY.bit.ENABLE == 1) {
+    }
+
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.DIV = 1;
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.DCOEN = 0;
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.LBYPASS = 1;
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.LTIME = 0;
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.REFCLK = 0;          // Sets input to GCLK
     OSCCTRL->Dpll[0].DPLLCTRLB.bit.WUF = 1;
-    uint32_t div = CPU_FREQ / DPLL0_REF_FREQ;
-    uint32_t frac = (CPU_FREQ - div * DPLL0_REF_FREQ) / (DPLL0_REF_FREQ / 32);
+    uint32_t div = cpu_freq / DPLL0_REF_FREQ;
+    uint32_t frac = (cpu_freq - div * DPLL0_REF_FREQ) / (DPLL0_REF_FREQ / 32);
     OSCCTRL->Dpll[0].DPLLRATIO.reg = (frac << 16) + div - 1;
 
     OSCCTRL->Dpll[0].DPLLCTRLA.bit.ONDEMAND = 0;
@@ -258,8 +268,8 @@ void init_clocks(uint32_t cpu_freq) {
 }
 
 void samd_init(void) {
-    init_clocks(CPU_FREQ);
-    SysTick_Config(CPU_FREQ / 1000);
+    init_clocks(cpu_freq);
+    SysTick_Config(cpu_freq / 1000);
     machine_uart_init();
     usb_init();
 }
