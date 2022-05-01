@@ -107,6 +107,18 @@
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings
+__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
+    __set_PRIMASK(state);
+}
+
+__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
+    uint32_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

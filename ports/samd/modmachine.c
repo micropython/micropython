@@ -124,6 +124,25 @@ STATIC mp_obj_t machine_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
+STATIC mp_obj_t machine_idle(void) {
+    MICROPY_EVENT_POLL_HOOK;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
+
+STATIC mp_obj_t machine_disable_irq(void) {
+    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
+    return mp_obj_new_int(state);
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
+
+STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
+    uint32_t state = mp_obj_get_int(state_in);
+    MICROPY_END_ATOMIC_SECTION(state);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -139,6 +158,10 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+
+    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 

@@ -32,6 +32,7 @@
 // ASF4
 #include "hal_gpio.h"
 #include "hal_delay.h"
+#include "hpl_time_measure.h"
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
@@ -47,7 +48,7 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
     return systick_ms * 1000;
 }
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
+    return _system_time_get(0);
 }
 static inline uint64_t mp_hal_time_ns(void) {
     return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
@@ -93,6 +94,14 @@ static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_pin_level(pin, v);
+}
+
+static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
+    gpio_set_pin_level(pin, 0);
+}
+
+static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
+    gpio_set_pin_level(pin, 1);
 }
 
 static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
