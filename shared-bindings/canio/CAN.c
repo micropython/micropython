@@ -116,7 +116,7 @@ STATIC const mp_obj_property_t canio_can_auto_restart_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_can_auto_restart_get_obj,
               (mp_obj_t)&canio_can_auto_restart_set_obj,
-              (mp_obj_t)mp_const_none},
+              MP_ROM_NONE},
 };
 
 
@@ -133,8 +133,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_baudrate_get_obj, canio_can_baudrate_get);
 STATIC const mp_obj_property_t canio_can_baudrate_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&canio_can_baudrate_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+              MP_ROM_NONE, MP_ROM_NONE},
 };
 
 //|     transmit_error_count: int
@@ -149,9 +148,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_transmit_error_count_get_obj, canio_can_tran
 
 STATIC const mp_obj_property_t canio_can_transmit_error_count_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_transmit_error_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+    .proxy = {(mp_obj_t)&canio_can_transmit_error_count_get_obj, MP_ROM_NONE, MP_ROM_NONE},
 };
 
 //|     receive_error_count: int
@@ -166,9 +163,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_receive_error_count_get_obj, canio_can_recei
 
 STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_receive_error_count_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+    .proxy = {(mp_obj_t)&canio_can_receive_error_count_get_obj, MP_ROM_NONE, MP_ROM_NONE},
 };
 
 //|     state: BusState
@@ -183,9 +178,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_state_get_obj, canio_can_state_get);
 
 STATIC const mp_obj_property_t canio_can_state_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_state_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+    .proxy = {(mp_obj_t)&canio_can_state_get_obj, MP_ROM_NONE, MP_ROM_NONE},
 };
 
 
@@ -285,9 +278,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_loopback_get_obj, canio_can_loopback_get);
 
 STATIC const mp_obj_property_t canio_can_loopback_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_loopback_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+    .proxy = {(mp_obj_t)&canio_can_loopback_get_obj, MP_ROM_NONE, MP_ROM_NONE},
 };
 
 
@@ -324,9 +315,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(canio_can_silent_get_obj, canio_can_silent_get);
 
 STATIC const mp_obj_property_t canio_can_silent_obj = {
     .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_silent_get_obj,
-              (mp_obj_t)mp_const_none,
-              (mp_obj_t)mp_const_none},
+    .proxy = {(mp_obj_t)&canio_can_silent_get_obj, MP_ROM_NONE, MP_ROM_NONE},
 };
 
 
