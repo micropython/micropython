@@ -56,6 +56,8 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA00}, // MOSI = 22
     {{&machine_pin_type}, PIN_PB23}, // MISO = 23
     {{&machine_pin_type}, PIN_PA01}, // SCK = 24
+    {{&machine_pin_type}, PIN_PB02}, // DOTSTAR_CLK = 25
+    {{&machine_pin_type}, PIN_PB03}, // DOTSTAR_DATA = 26
 };
 
 const machine_led_obj_t machine_led_obj[] = {

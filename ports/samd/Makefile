@@ -103,6 +103,7 @@ SRC_C = \
 	lib/tinyusb/src/device/usbd_control.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	lib/tinyusb/src/tusb.c \
+	drivers/bus/softspi.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
