@@ -103,12 +103,9 @@ STATIC mp_obj_t displayio_colorconverter_obj_set_dither(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_colorconverter_set_dither_obj, displayio_colorconverter_obj_set_dither);
 
-const mp_obj_property_t displayio_colorconverter_dither_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_colorconverter_get_dither_obj,
-              (mp_obj_t)&displayio_colorconverter_set_dither_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_colorconverter_dither_obj = MP_PROPERTY_GETSET(displayio_colorconverter_dither_obj,
+    (mp_obj_t)&displayio_colorconverter_get_dither_obj,
+    (mp_obj_t)&displayio_colorconverter_set_dither_obj);
 
 //|     def make_transparent(self, color: int) -> None:
 //|         """Set the transparent color or index for the ColorConverter. This will

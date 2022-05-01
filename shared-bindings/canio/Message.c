@@ -83,12 +83,9 @@ STATIC mp_obj_t canio_message_id_set(const mp_obj_t self_in, const mp_obj_t id) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_id_set_obj, canio_message_id_set);
 
-STATIC const mp_obj_property_t canio_message_id_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_message_id_get_obj,
-              (mp_obj_t)&canio_message_id_set_obj,
-              MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getset_t canio_message_id_obj = MP_PROPERTY_GETSET(canio_message_id_obj,
+    (mp_obj_t)&canio_message_id_get_obj,
+    (mp_obj_t)&canio_message_id_set_obj);
 
 //|     data: bytes
 //|     """The content of the message"""
@@ -112,12 +109,9 @@ STATIC mp_obj_t canio_message_data_set(const mp_obj_t self_in, const mp_obj_t da
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_data_set_obj, canio_message_data_set);
 
 
-STATIC const mp_obj_property_t canio_message_data_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_message_data_get_obj,
-              (mp_obj_t)&canio_message_data_set_obj,
-              MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getset_t canio_message_data_obj = MP_PROPERTY_GETSET(canio_message_data_obj,
+    (mp_obj_t)&canio_message_data_get_obj,
+    (mp_obj_t)&canio_message_data_set_obj);
 
 
 //|     extended: bool
@@ -137,12 +131,9 @@ STATIC mp_obj_t canio_message_extended_set(const mp_obj_t self_in, const mp_obj_
 MP_DEFINE_CONST_FUN_OBJ_2(canio_message_extended_set_obj, canio_message_extended_set);
 
 
-STATIC const mp_obj_property_t canio_message_extended_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_message_extended_get_obj,
-              (mp_obj_t)&canio_message_extended_set_obj,
-              MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getset_t canio_message_extended_obj = MP_PROPERTY_GETSET(canio_message_extended_obj,
+    (mp_obj_t)&canio_message_extended_get_obj,
+    (mp_obj_t)&canio_message_extended_set_obj);
 
 STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_id), MP_ROM_PTR(&canio_message_id_obj) },

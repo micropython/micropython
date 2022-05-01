@@ -52,12 +52,8 @@ STATIC mp_obj_t mdns_remoteservice_get_hostname(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_get_hostname_obj, mdns_remoteservice_get_hostname);
 
-const mp_obj_property_t mdns_remoteservice_hostname_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_remoteservice_get_hostname_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t mdns_remoteservice_hostname_obj = MP_PROPERTY_GETTER(mdns_remoteservice_hostname_obj,
+    (mp_obj_t)&mdns_remoteservice_get_hostname_obj);
 
 //|     instance_name: str
 //|     """The human readable instance name for the service. (read-only)"""
@@ -69,12 +65,8 @@ STATIC mp_obj_t remoteservice_get_instance_name(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_get_instance_name_obj, remoteservice_get_instance_name);
 
-const mp_obj_property_t mdns_remoteservice_instance_name_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_remoteservice_get_instance_name_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t mdns_remoteservice_instance_name_obj = MP_PROPERTY_GETTER(mdns_remoteservice_instance_name_obj,
+    (mp_obj_t)&mdns_remoteservice_get_instance_name_obj);
 
 //|     service_type: str
 //|     """The service type string such as ``_http``. (read-only)"""
@@ -86,12 +78,8 @@ STATIC mp_obj_t remoteservice_get_service_type(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_get_service_type_obj, remoteservice_get_service_type);
 
-const mp_obj_property_t mdns_remoteservice_service_type_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_remoteservice_get_service_type_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t mdns_remoteservice_service_type_obj = MP_PROPERTY_GETTER(mdns_remoteservice_service_type_obj,
+    (mp_obj_t)&mdns_remoteservice_get_service_type_obj);
 
 //|     protocol: str
 //|     """The protocol string such as ``_tcp``. (read-only)"""
@@ -103,12 +91,8 @@ STATIC mp_obj_t remoteservice_get_protocol(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_get_protocol_obj, remoteservice_get_protocol);
 
-const mp_obj_property_t mdns_remoteservice_protocol_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_remoteservice_get_protocol_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t mdns_remoteservice_protocol_obj = MP_PROPERTY_GETTER(mdns_remoteservice_protocol_obj,
+    (mp_obj_t)&mdns_remoteservice_get_protocol_obj);
 
 //|     port: int
 //|     """Port number used for the service. (read-only)"""
@@ -119,12 +103,8 @@ STATIC mp_obj_t remoteservice_get_port(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mdns_remoteservice_get_port_obj, remoteservice_get_port);
 
-const mp_obj_property_t mdns_remoteservice_port_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_remoteservice_get_port_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t mdns_remoteservice_port_obj = MP_PROPERTY_GETTER(mdns_remoteservice_port_obj,
+    (mp_obj_t)&mdns_remoteservice_get_port_obj);
 
 //|     def __del__(self) -> None:
 //|         """Deletes the RemoteService object."""

@@ -166,12 +166,8 @@ STATIC mp_obj_t audiomixer_mixer_obj_get_playing(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_playing_obj, audiomixer_mixer_obj_get_playing);
 
-const mp_obj_property_t audiomixer_mixer_playing_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixer_get_playing_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t audiomixer_mixer_playing_obj = MP_PROPERTY_GETTER(audiomixer_mixer_playing_obj,
+    (mp_obj_t)&audiomixer_mixer_get_playing_obj);
 
 //|     sample_rate: int
 //|     """32 bit value that dictates how quickly samples are played in Hertz (cycles per second)."""
@@ -183,12 +179,8 @@ STATIC mp_obj_t audiomixer_mixer_obj_get_sample_rate(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_sample_rate_obj, audiomixer_mixer_obj_get_sample_rate);
 
-const mp_obj_property_t audiomixer_mixer_sample_rate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixer_get_sample_rate_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t audiomixer_mixer_sample_rate_obj = MP_PROPERTY_GETTER(audiomixer_mixer_sample_rate_obj,
+    (mp_obj_t)&audiomixer_mixer_get_sample_rate_obj);
 
 //|     voice: Tuple[MixerVoice, ...]
 //|     """A tuple of the mixer's `audiomixer.MixerVoice` object(s).
@@ -204,12 +196,8 @@ STATIC mp_obj_t audiomixer_mixer_obj_get_voice(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixer_get_voice_obj, audiomixer_mixer_obj_get_voice);
 
-const mp_obj_property_t audiomixer_mixer_voice_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixer_get_voice_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t audiomixer_mixer_voice_obj = MP_PROPERTY_GETTER(audiomixer_mixer_voice_obj,
+    (mp_obj_t)&audiomixer_mixer_get_voice_obj);
 
 //|     def play(self, sample: circuitpython_typing.AudioSample, *, voice: int = 0, loop: bool = False) -> None:
 //|         """Plays the sample once when loop=False and continuously when loop=True.

@@ -220,12 +220,9 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_duty_cycle_obj, pwmio_pwmout_obj_set_duty_cycle);
 
-const mp_obj_property_t pwmio_pwmout_duty_cycle_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
-              (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t pwmio_pwmout_duty_cycle_obj = MP_PROPERTY_GETSET(pwmio_pwmout_duty_cycle_obj,
+    (mp_obj_t)&pwmio_pwmout_get_duty_cycle_obj,
+    (mp_obj_t)&pwmio_pwmout_set_duty_cycle_obj);
 
 //|     frequency: int
 //|     """32 bit value that dictates the PWM frequency in Hertz (cycles per
@@ -261,12 +258,9 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pwmio_pwmout_set_frequency_obj, pwmio_pwmout_obj_set_frequency);
 
-const mp_obj_property_t pwmio_pwmout_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&pwmio_pwmout_get_frequency_obj,
-              (mp_obj_t)&pwmio_pwmout_set_frequency_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t pwmio_pwmout_frequency_obj = MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
+    (mp_obj_t)&pwmio_pwmout_get_frequency_obj,
+    (mp_obj_t)&pwmio_pwmout_set_frequency_obj);
 
 STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods

@@ -107,12 +107,9 @@ STATIC mp_obj_t qrio_qrdecoder_set_width(mp_obj_t self_in, mp_obj_t width_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(qrio_qrdecoder_set_width_obj, qrio_qrdecoder_set_width);
 
-const mp_obj_property_t qrio_qrdecoder_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&qrio_qrdecoder_get_width_obj,
-              (mp_obj_t)&qrio_qrdecoder_set_width_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t qrio_qrdecoder_width_obj = MP_PROPERTY_GETSET(qrio_qrdecoder_width_obj,
+    (mp_obj_t)&qrio_qrdecoder_get_width_obj,
+    (mp_obj_t)&qrio_qrdecoder_set_width_obj);
 
 //|     height: int
 //|     """The height of image the decoder expects"""
@@ -131,12 +128,9 @@ STATIC mp_obj_t qrio_qrdecoder_set_height(mp_obj_t self_in, mp_obj_t height_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(qrio_qrdecoder_set_height_obj, qrio_qrdecoder_set_height);
 
-const mp_obj_property_t qrio_qrdecoder_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&qrio_qrdecoder_get_height_obj,
-              (mp_obj_t)&qrio_qrdecoder_set_height_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t qrio_qrdecoder_height_obj = MP_PROPERTY_GETSET(qrio_qrdecoder_height_obj,
+    (mp_obj_t)&qrio_qrdecoder_get_height_obj,
+    (mp_obj_t)&qrio_qrdecoder_set_height_obj);
 
 STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_QRDecoder) },

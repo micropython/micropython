@@ -69,12 +69,9 @@ static mp_obj_t wifi_radio_set_enabled(mp_obj_t self, mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_enabled_obj, wifi_radio_set_enabled);
 
-const mp_obj_property_t wifi_radio_enabled_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_enabled_obj,
-               (mp_obj_t)&wifi_radio_set_enabled_obj,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getset_t wifi_radio_enabled_obj = MP_PROPERTY_GETSET(wifi_radio_enabled_obj,
+    (mp_obj_t)&wifi_radio_get_enabled_obj,
+    (mp_obj_t)&wifi_radio_set_enabled_obj);
 
 //|     hostname: Union[str | ReadableBuffer]
 //|     """Hostname for wifi interface. When the hostname is altered after interface started/connected
@@ -110,12 +107,9 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_hostname_obj, wifi_radio_set_hostname);
 
-const mp_obj_property_t wifi_radio_hostname_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&wifi_radio_get_hostname_obj,
-              (mp_obj_t)&wifi_radio_set_hostname_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t wifi_radio_hostname_obj = MP_PROPERTY_GETSET(wifi_radio_hostname_obj,
+    (mp_obj_t)&wifi_radio_get_hostname_obj,
+    (mp_obj_t)&wifi_radio_set_hostname_obj);
 
 //|     mac_address: ReadableBuffer
 //|     """MAC address for the station. When the address is altered after interface is connected
@@ -142,12 +136,9 @@ STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_addres
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_obj, wifi_radio_set_mac_address);
 
-const mp_obj_property_t wifi_radio_mac_address_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_obj,
-               (mp_obj_t)&wifi_radio_set_mac_address_obj,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getset_t wifi_radio_mac_address_obj = MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_obj,
+    (mp_obj_t)&wifi_radio_set_mac_address_obj);
 
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
@@ -174,12 +165,9 @@ STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_add
 }
 MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_mac_address_ap_obj, wifi_radio_set_mac_address_ap);
 
-const mp_obj_property_t wifi_radio_mac_address_ap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
-               (mp_obj_t)&wifi_radio_set_mac_address_ap_obj,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getset_t wifi_radio_mac_address_ap_obj = MP_PROPERTY_GETSET(wifi_radio_mac_address_ap_obj,
+    (mp_obj_t)&wifi_radio_get_mac_address_ap_obj,
+    (mp_obj_t)&wifi_radio_set_mac_address_ap_obj);
 
 //|     def start_scanning_networks(self, *, start_channel: int = 1, stop_channel: int = 11) -> Iterable[Network]:
 //|         """Scans for available wifi networks over the given channel range. Make sure the channels are allowed in your country."""
@@ -393,12 +381,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_gateway(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_obj, wifi_radio_get_ipv4_gateway);
 
-const mp_obj_property_t wifi_radio_ipv4_gateway_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_gateway_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_gateway_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_gateway_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_gateway_obj);
 
 //|     ipv4_gateway_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point gateway, when enabled. None otherwise."""
@@ -409,12 +393,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_gateway_ap(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_gateway_ap_obj, wifi_radio_get_ipv4_gateway_ap);
 
-const mp_obj_property_t wifi_radio_ipv4_gateway_ap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_gateway_ap_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_gateway_ap_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_gateway_ap_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_gateway_ap_obj);
 
 //|     ipv4_subnet: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station subnet when connected to an access point. None otherwise."""
@@ -425,12 +405,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_subnet(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_obj, wifi_radio_get_ipv4_subnet);
 
-const mp_obj_property_t wifi_radio_ipv4_subnet_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_subnet_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_subnet_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_subnet_obj);
 
 //|     ipv4_subnet_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point subnet, when enabled. None otherwise."""
@@ -441,12 +417,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_subnet_ap(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_subnet_ap_obj, wifi_radio_get_ipv4_subnet_ap);
 
-const mp_obj_property_t wifi_radio_ipv4_subnet_ap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_subnet_ap_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_subnet_ap_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_subnet_ap_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_subnet_ap_obj);
 
 //|     ipv4_address: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the station when connected to an access point. None otherwise."""
@@ -457,12 +429,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_address(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_obj, wifi_radio_get_ipv4_address);
 
-const mp_obj_property_t wifi_radio_ipv4_address_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_address_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_address_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_address_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_address_obj);
 
 //|     ipv4_address_ap: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the access point, when enabled. None otherwise."""
@@ -473,12 +441,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_address_ap(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_ap_obj, wifi_radio_get_ipv4_address_ap);
 
-const mp_obj_property_t wifi_radio_ipv4_address_ap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_address_ap_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_address_ap_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_address_ap_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_address_ap_obj);
 
 //|     ipv4_dns: Optional[ipaddress.IPv4Address]
 //|     """IP v4 Address of the DNS server in use when connected to an access point. None otherwise."""
@@ -489,12 +453,8 @@ STATIC mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_dns_obj, wifi_radio_get_ipv4_dns);
 
-const mp_obj_property_t wifi_radio_ipv4_dns_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ipv4_dns_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ipv4_dns_obj = MP_PROPERTY_GETTER(wifi_radio_ipv4_dns_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_dns_obj);
 
 //|     ap_info: Optional[Network]
 //|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
@@ -505,12 +465,8 @@ STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 
-const mp_obj_property_t wifi_radio_ap_info_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&wifi_radio_get_ap_info_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t wifi_radio_ap_info_obj = MP_PROPERTY_GETTER(wifi_radio_ap_info_obj,
+    (mp_obj_t)&wifi_radio_get_ap_info_obj);
 
 //|     def ping(self, ip: ipaddress.IPv4Address, *, timeout: Optional[float] = 0.5) -> Optional[float]:
 //|         """Ping an IP to test connectivity. Returns echo time in seconds.

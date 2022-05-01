@@ -161,12 +161,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_hidden(mp_obj_t self_in, mp_obj_t hid
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_hidden_obj, displayio_tilegrid_obj_set_hidden);
 
-const mp_obj_property_t displayio_tilegrid_hidden_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_hidden_obj,
-              (mp_obj_t)&displayio_tilegrid_set_hidden_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_hidden_obj = MP_PROPERTY_GETSET(displayio_tilegrid_hidden_obj,
+    (mp_obj_t)&displayio_tilegrid_get_hidden_obj,
+    (mp_obj_t)&displayio_tilegrid_set_hidden_obj);
 
 //|     x: int
 //|     """X position of the left edge in the parent."""
@@ -186,12 +183,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_x(mp_obj_t self_in, mp_obj_t x_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_x_obj, displayio_tilegrid_obj_set_x);
 
-const mp_obj_property_t displayio_tilegrid_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_x_obj,
-              (mp_obj_t)&displayio_tilegrid_set_x_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_x_obj = MP_PROPERTY_GETSET(displayio_tilegrid_x_obj,
+    (mp_obj_t)&displayio_tilegrid_get_x_obj,
+    (mp_obj_t)&displayio_tilegrid_set_x_obj);
 
 //|     y: int
 //|     """Y position of the top edge in the parent."""
@@ -211,12 +205,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_y(mp_obj_t self_in, mp_obj_t y_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_y_obj, displayio_tilegrid_obj_set_y);
 
-const mp_obj_property_t displayio_tilegrid_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_y_obj,
-              (mp_obj_t)&displayio_tilegrid_set_y_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_y_obj = MP_PROPERTY_GETSET(displayio_tilegrid_y_obj,
+    (mp_obj_t)&displayio_tilegrid_get_y_obj,
+    (mp_obj_t)&displayio_tilegrid_set_y_obj);
 
 //|     width: int
 //|     """Width of the tilegrid in tiles."""
@@ -227,11 +218,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_width_obj, displayio_tilegrid_obj_get_width);
 
-const mp_obj_property_t displayio_tilegrid_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_width_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t displayio_tilegrid_width_obj = MP_PROPERTY_GETTER(displayio_tilegrid_width_obj,
+    (mp_obj_t)&displayio_tilegrid_get_width_obj);
 
 //|     height: int
 //|     """Height of the tilegrid in tiles."""
@@ -242,11 +230,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_height_obj, displayio_tilegrid_obj_get_height);
 
-const mp_obj_property_t displayio_tilegrid_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_height_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t displayio_tilegrid_height_obj = MP_PROPERTY_GETTER(displayio_tilegrid_height_obj,
+    (mp_obj_t)&displayio_tilegrid_get_height_obj);
 
 //|     tile_width: int
 //|     """Width of a single tile in pixels."""
@@ -257,11 +242,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_tile_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_width_obj, displayio_tilegrid_obj_get_tile_width);
 
-const mp_obj_property_t displayio_tilegrid_tile_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_width_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t displayio_tilegrid_tile_width_obj = MP_PROPERTY_GETTER(displayio_tilegrid_tile_width_obj,
+    (mp_obj_t)&displayio_tilegrid_get_tile_width_obj);
 
 //|     tile_height: int
 //|     """Height of a single tile in pixels."""
@@ -272,11 +254,8 @@ STATIC mp_obj_t displayio_tilegrid_obj_get_tile_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_tile_height_obj, displayio_tilegrid_obj_get_tile_height);
 
-const mp_obj_property_t displayio_tilegrid_tile_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_tile_height_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t displayio_tilegrid_tile_height_obj = MP_PROPERTY_GETTER(displayio_tilegrid_tile_height_obj,
+    (mp_obj_t)&displayio_tilegrid_get_tile_height_obj);
 
 //|     flip_x: bool
 //|     """If true, the left edge rendered will be the right edge of the right-most tile."""
@@ -295,12 +274,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_flip_x(mp_obj_t self_in, mp_obj_t fli
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_x_obj, displayio_tilegrid_obj_set_flip_x);
 
-const mp_obj_property_t displayio_tilegrid_flip_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
-              (mp_obj_t)&displayio_tilegrid_set_flip_x_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_flip_x_obj = MP_PROPERTY_GETSET(displayio_tilegrid_flip_x_obj,
+    (mp_obj_t)&displayio_tilegrid_get_flip_x_obj,
+    (mp_obj_t)&displayio_tilegrid_set_flip_x_obj);
 
 //|     flip_y: bool
 //|     """If true, the top edge rendered will be the bottom edge of the bottom-most tile."""
@@ -319,12 +295,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_flip_y(mp_obj_t self_in, mp_obj_t fli
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_flip_y_obj, displayio_tilegrid_obj_set_flip_y);
 
-const mp_obj_property_t displayio_tilegrid_flip_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
-              (mp_obj_t)&displayio_tilegrid_set_flip_y_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_flip_y_obj = MP_PROPERTY_GETSET(displayio_tilegrid_flip_y_obj,
+    (mp_obj_t)&displayio_tilegrid_get_flip_y_obj,
+    (mp_obj_t)&displayio_tilegrid_set_flip_y_obj);
 
 
 //|     transpose_xy: bool
@@ -345,12 +318,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_transpose_xy(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_transpose_xy_obj, displayio_tilegrid_obj_set_transpose_xy);
 
-const mp_obj_property_t displayio_tilegrid_transpose_xy_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
-              (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_transpose_xy_obj = MP_PROPERTY_GETSET(displayio_tilegrid_transpose_xy_obj,
+    (mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
+    (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj);
 
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The pixel shader of the tilegrid."""
@@ -373,12 +343,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_pixel_shader_obj, displayio_tilegrid_obj_set_pixel_shader);
 
-const mp_obj_property_t displayio_tilegrid_pixel_shader_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
-              (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_pixel_shader_obj = MP_PROPERTY_GETSET(displayio_tilegrid_pixel_shader_obj,
+    (mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
+    (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj);
 
 //|     bitmap: Union[Bitmap,OnDiskBitmap,Shape]
 //|     """The bitmap of the tilegrid."""
@@ -439,12 +406,9 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bit
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_set_bitmap_obj, displayio_tilegrid_obj_set_bitmap);
 
-const mp_obj_property_t displayio_tilegrid_bitmap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_tilegrid_get_bitmap_obj,
-              (mp_obj_t)&displayio_tilegrid_set_bitmap_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_tilegrid_bitmap_obj = MP_PROPERTY_GETSET(displayio_tilegrid_bitmap_obj,
+    (mp_obj_t)&displayio_tilegrid_get_bitmap_obj,
+    (mp_obj_t)&displayio_tilegrid_set_bitmap_obj);
 
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the tile index at the given index. The index can either be an x,y tuple or an int equal

@@ -112,12 +112,9 @@ STATIC mp_obj_t canio_can_auto_restart_set(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(canio_can_auto_restart_set_obj, canio_can_auto_restart_set);
 
-STATIC const mp_obj_property_t canio_can_auto_restart_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_auto_restart_get_obj,
-              (mp_obj_t)&canio_can_auto_restart_set_obj,
-              MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getset_t canio_can_auto_restart_obj = MP_PROPERTY_GETSET(canio_can_auto_restart_obj,
+    (mp_obj_t)&canio_can_auto_restart_get_obj,
+    (mp_obj_t)&canio_can_auto_restart_set_obj);
 
 
 //|     baudrate: int
@@ -130,11 +127,8 @@ STATIC mp_obj_t canio_can_baudrate_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_baudrate_get_obj, canio_can_baudrate_get);
 
-STATIC const mp_obj_property_t canio_can_baudrate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_baudrate_get_obj,
-              MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_baudrate_obj = MP_PROPERTY_GETTER(canio_can_baudrate_obj,
+    (mp_obj_t)&canio_can_baudrate_get_obj);
 
 //|     transmit_error_count: int
 //|     """The number of transmit errors (read-only).  Increased for a detected transmission error, decreased for successful transmission.  Limited to the range from 0 to 255 inclusive.  Also called TEC."""
@@ -146,10 +140,8 @@ STATIC mp_obj_t canio_can_transmit_error_count_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_transmit_error_count_get_obj, canio_can_transmit_error_count_get);
 
-STATIC const mp_obj_property_t canio_can_transmit_error_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_transmit_error_count_get_obj, MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_transmit_error_count_obj = MP_PROPERTY_GETTER(canio_can_transmit_error_count_obj,
+    (mp_obj_t)&canio_can_transmit_error_count_get_obj);
 
 //|     receive_error_count: int
 //|     """The number of receive errors (read-only).  Increased for a detected reception error, decreased for successful reception.  Limited to the range from 0 to 255 inclusive.  Also called REC."""
@@ -161,10 +153,8 @@ STATIC mp_obj_t canio_can_receive_error_count_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_receive_error_count_get_obj, canio_can_receive_error_count_get);
 
-STATIC const mp_obj_property_t canio_can_receive_error_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_receive_error_count_get_obj, MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_receive_error_count_obj = MP_PROPERTY_GETTER(canio_can_receive_error_count_obj,
+    (mp_obj_t)&canio_can_receive_error_count_get_obj);
 
 //|     state: BusState
 //|     """The current state of the bus. (read-only)"""
@@ -176,10 +166,8 @@ STATIC mp_obj_t canio_can_state_get(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_state_get_obj, canio_can_state_get);
 
-STATIC const mp_obj_property_t canio_can_state_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_state_get_obj, MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_state_obj = MP_PROPERTY_GETTER(canio_can_state_obj,
+    (mp_obj_t)&canio_can_state_get_obj);
 
 
 //|     def restart(self) -> None:
@@ -276,10 +264,8 @@ STATIC mp_obj_t canio_can_loopback_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_loopback_get_obj, canio_can_loopback_get);
 
-STATIC const mp_obj_property_t canio_can_loopback_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_loopback_get_obj, MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_loopback_obj = MP_PROPERTY_GETTER(canio_can_loopback_obj,
+    (mp_obj_t)&canio_can_loopback_get_obj);
 
 
 //|     def send(self, message: Union[RemoteTransmissionRequest, Message]) -> None:
@@ -313,10 +299,8 @@ STATIC mp_obj_t canio_can_silent_get(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(canio_can_silent_get_obj, canio_can_silent_get);
 
-STATIC const mp_obj_property_t canio_can_silent_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_can_silent_get_obj, MP_ROM_NONE, MP_ROM_NONE},
-};
+STATIC const mp_obj_property_getter_t canio_can_silent_obj = MP_PROPERTY_GETTER(canio_can_silent_obj,
+    (mp_obj_t)&canio_can_silent_get_obj);
 
 
 //|     def deinit(self) -> None:

@@ -35,6 +35,12 @@ typedef struct _mp_obj_property_t {
     mp_obj_t proxy[3]; // getter, setter, deleter
 } mp_obj_property_t;
 
+typedef struct _mp_obj_property_t mp_obj_property_getter_t;
+typedef struct _mp_obj_property_t mp_obj_property_getset_t;
+
+#define MP_PROPERTY_GETTER(P, G) {.base.type = &mp_type_property, .proxy = {G, MP_ROM_NONE, MP_ROM_NONE}}
+#define MP_PROPERTY_GETSET(P, G, S) {.base.type = &mp_type_property, .proxy = {G, S, MP_ROM_NONE}}
+
 #endif  // MICROPY_PY_BUILTINS_PROPERTY
 
 #endif  // MICROPY_INCLUDED_PY_OBJPROPERTY_H

@@ -236,12 +236,8 @@ STATIC mp_obj_t usb_hid_device_obj_get_last_received_report_property(mp_obj_t se
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_last_received_report_property_obj, usb_hid_device_obj_get_last_received_report_property);
 
-const mp_obj_property_t usb_hid_device_last_received_report_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_last_received_report_property_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t usb_hid_device_last_received_report_obj = MP_PROPERTY_GETTER(usb_hid_device_last_received_report_obj,
+    (mp_obj_t)&usb_hid_device_get_last_received_report_property_obj);
 
 //|     usage_page: int
 //|     """The device usage page identifier, which designates a category of device. (read-only)"""
@@ -252,12 +248,8 @@ STATIC mp_obj_t usb_hid_device_obj_get_usage_page(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_page_obj, usb_hid_device_obj_get_usage_page);
 
-const mp_obj_property_t usb_hid_device_usage_page_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_usage_page_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t usb_hid_device_usage_page_obj = MP_PROPERTY_GETTER(usb_hid_device_usage_page_obj,
+    (mp_obj_t)&usb_hid_device_get_usage_page_obj);
 
 //|     usage: int
 //|     """The device usage identifier, which designates a specific kind of device. (read-only)
@@ -272,12 +264,8 @@ STATIC mp_obj_t usb_hid_device_obj_get_usage(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(usb_hid_device_get_usage_obj,
     usb_hid_device_obj_get_usage);
 
-const mp_obj_property_t usb_hid_device_usage_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&usb_hid_device_get_usage_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t usb_hid_device_usage_obj = MP_PROPERTY_GETTER(usb_hid_device_usage_obj,
+    (mp_obj_t)&usb_hid_device_get_usage_obj);
 
 STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_send_report),              MP_ROM_PTR(&usb_hid_device_send_report_obj) },

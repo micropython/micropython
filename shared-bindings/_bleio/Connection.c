@@ -161,12 +161,8 @@ STATIC mp_obj_t bleio_connection_get_connected(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_connected_obj, bleio_connection_get_connected);
 
-const mp_obj_property_t bleio_connection_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_connected_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t bleio_connection_connected_obj = MP_PROPERTY_GETTER(bleio_connection_connected_obj,
+    (mp_obj_t)&bleio_connection_get_connected_obj);
 
 
 //|     paired: bool
@@ -179,12 +175,8 @@ STATIC mp_obj_t bleio_connection_get_paired(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_connection_get_paired_obj, bleio_connection_get_paired);
 
-const mp_obj_property_t bleio_connection_paired_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_paired_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t bleio_connection_paired_obj = MP_PROPERTY_GETTER(bleio_connection_paired_obj,
+    (mp_obj_t)&bleio_connection_get_paired_obj);
 
 
 //|     connection_interval: float
@@ -235,19 +227,12 @@ STATIC mp_obj_t bleio_connection_set_connection_interval(mp_obj_t self_in, mp_ob
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_connection_set_connection_interval_obj, bleio_connection_set_connection_interval);
 
-const mp_obj_property_t bleio_connection_connection_interval_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_connection_interval_obj,
-               (mp_obj_t)&bleio_connection_set_connection_interval_obj,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getset_t bleio_connection_connection_interval_obj = MP_PROPERTY_GETSET(bleio_connection_connection_interval_obj,
+    (mp_obj_t)&bleio_connection_get_connection_interval_obj,
+    (mp_obj_t)&bleio_connection_set_connection_interval_obj);
 
-const mp_obj_property_t bleio_connection_max_packet_length_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_connection_get_max_packet_length_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t bleio_connection_max_packet_length_obj = MP_PROPERTY_GETTER(bleio_connection_max_packet_length_obj,
+    (mp_obj_t)&bleio_connection_get_max_packet_length_obj);
 
 STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
     // Methods

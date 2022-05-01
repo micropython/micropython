@@ -729,12 +729,9 @@ STATIC mp_obj_t rp2pio_statemachine_obj_set_frequency(mp_obj_t self_in, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(rp2pio_statemachine_set_frequency_obj, rp2pio_statemachine_obj_set_frequency);
 
-const mp_obj_property_t rp2pio_statemachine_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_frequency_obj,
-              (mp_obj_t)&rp2pio_statemachine_set_frequency_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t rp2pio_statemachine_frequency_obj = MP_PROPERTY_GETSET(rp2pio_statemachine_frequency_obj,
+    (mp_obj_t)&rp2pio_statemachine_get_frequency_obj,
+    (mp_obj_t)&rp2pio_statemachine_set_frequency_obj);
 
 //|     rxstall: bool
 //|     """True when the state machine has stalled due to a full RX FIFO since the last
@@ -748,12 +745,8 @@ STATIC mp_obj_t rp2pio_statemachine_obj_get_rxstall(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_rxstall_obj, rp2pio_statemachine_obj_get_rxstall);
 
-const mp_obj_property_t rp2pio_statemachine_rxstall_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_rxstall_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t rp2pio_statemachine_rxstall_obj = MP_PROPERTY_GETTER(rp2pio_statemachine_rxstall_obj,
+    (mp_obj_t)&rp2pio_statemachine_get_rxstall_obj);
 
 //|     in_waiting: int
 //|     """The number of words available to readinto"""
@@ -766,12 +759,8 @@ STATIC mp_obj_t rp2pio_statemachine_obj_get_in_waiting(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_in_waiting_obj, rp2pio_statemachine_obj_get_in_waiting);
 
-const mp_obj_property_t rp2pio_statemachine_in_waiting_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_in_waiting_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t rp2pio_statemachine_in_waiting_obj = MP_PROPERTY_GETTER(rp2pio_statemachine_in_waiting_obj,
+    (mp_obj_t)&rp2pio_statemachine_get_in_waiting_obj);
 
 STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&rp2pio_statemachine_deinit_obj) },

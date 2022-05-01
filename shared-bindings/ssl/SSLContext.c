@@ -105,12 +105,9 @@ STATIC mp_obj_t ssl_sslcontext_set_check_hostname(mp_obj_t self_in, mp_obj_t val
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslcontext_set_check_hostname_obj, ssl_sslcontext_set_check_hostname);
 
-const mp_obj_property_t ssl_sslcontext_check_hostname_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
-              (mp_obj_t)&ssl_sslcontext_set_check_hostname_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t ssl_sslcontext_check_hostname_obj = MP_PROPERTY_GETSET(ssl_sslcontext_check_hostname_obj,
+    (mp_obj_t)&ssl_sslcontext_get_check_hostname_obj,
+    (mp_obj_t)&ssl_sslcontext_set_check_hostname_obj);
 
 //|     def wrap_socket(self, sock: socketpool.Socket, *, server_side: bool = False, server_hostname: Optional[str] = None) -> ssl.SSLSocket:
 //|         """Wraps the socket into a socket-compatible class that handles SSL negotiation.

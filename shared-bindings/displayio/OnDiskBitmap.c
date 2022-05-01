@@ -109,13 +109,8 @@ STATIC mp_obj_t displayio_ondiskbitmap_obj_get_width(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_width_obj, displayio_ondiskbitmap_obj_get_width);
 
-const mp_obj_property_t displayio_ondiskbitmap_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-
-};
+const mp_obj_property_getter_t displayio_ondiskbitmap_width_obj = MP_PROPERTY_GETTER(displayio_ondiskbitmap_width_obj,
+    (mp_obj_t)&displayio_ondiskbitmap_get_width_obj);
 
 //|     height: int
 //|     """Height of the bitmap. (read only)"""
@@ -128,13 +123,8 @@ STATIC mp_obj_t displayio_ondiskbitmap_obj_get_height(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_ondiskbitmap_get_height_obj, displayio_ondiskbitmap_obj_get_height);
 
-const mp_obj_property_t displayio_ondiskbitmap_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_ondiskbitmap_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-
-};
+const mp_obj_property_getter_t displayio_ondiskbitmap_height_obj = MP_PROPERTY_GETTER(displayio_ondiskbitmap_height_obj,
+    (mp_obj_t)&displayio_ondiskbitmap_get_height_obj);
 
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The image's pixel_shader.  The type depends on the underlying

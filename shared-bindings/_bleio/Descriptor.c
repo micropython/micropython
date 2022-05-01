@@ -144,12 +144,8 @@ STATIC mp_obj_t bleio_descriptor_get_uuid(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_uuid_obj, bleio_descriptor_get_uuid);
 
-const mp_obj_property_t bleio_descriptor_uuid_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_descriptor_get_uuid_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t bleio_descriptor_uuid_obj = MP_PROPERTY_GETTER(bleio_descriptor_uuid_obj,
+    (mp_obj_t)&bleio_descriptor_get_uuid_obj);
 
 //|     characteristic: Characteristic
 //|     """The Characteristic this Descriptor is a part of."""
@@ -161,12 +157,8 @@ STATIC mp_obj_t bleio_descriptor_get_characteristic(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bleio_descriptor_get_characteristic_obj, bleio_descriptor_get_characteristic);
 
-const mp_obj_property_t bleio_descriptor_characteristic_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_descriptor_get_characteristic_obj,
-               MP_ROM_NONE,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getter_t bleio_descriptor_characteristic_obj = MP_PROPERTY_GETTER(bleio_descriptor_characteristic_obj,
+    (mp_obj_t)&bleio_descriptor_get_characteristic_obj);
 
 //|     value: bytearray
 //|     """The value of this descriptor."""
@@ -192,12 +184,9 @@ STATIC mp_obj_t bleio_descriptor_set_value(mp_obj_t self_in, mp_obj_t value_in) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bleio_descriptor_set_value_obj, bleio_descriptor_set_value);
 
-const mp_obj_property_t bleio_descriptor_value_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&bleio_descriptor_get_value_obj,
-               (mp_obj_t)&bleio_descriptor_set_value_obj,
-               MP_ROM_NONE },
-};
+const mp_obj_property_getset_t bleio_descriptor_value_obj = MP_PROPERTY_GETSET(bleio_descriptor_value_obj,
+    (mp_obj_t)&bleio_descriptor_get_value_obj,
+    (mp_obj_t)&bleio_descriptor_set_value_obj);
 
 STATIC const mp_rom_map_elem_t bleio_descriptor_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_to_characteristic), MP_ROM_PTR(&bleio_descriptor_add_to_characteristic_obj) },

@@ -132,12 +132,8 @@ STATIC mp_obj_t bleio_uuid_get_uuid16(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid16_obj, bleio_uuid_get_uuid16);
 
-const mp_obj_property_t bleio_uuid_uuid16_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid16_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t bleio_uuid_uuid16_obj = MP_PROPERTY_GETTER(bleio_uuid_uuid16_obj,
+    (mp_obj_t)&bleio_uuid_get_uuid16_obj);
 
 //|     uuid128: bytes
 //|     """The 128-bit value of the UUID
@@ -158,12 +154,8 @@ STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_uuid128_obj, bleio_uuid_get_uuid128);
 
-const mp_obj_property_t bleio_uuid_uuid128_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_uuid128_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t bleio_uuid_uuid128_obj = MP_PROPERTY_GETTER(bleio_uuid_uuid128_obj,
+    (mp_obj_t)&bleio_uuid_get_uuid128_obj);
 
 //|     size: int
 //|     """128 if this UUID represents a 128-bit vendor-specific UUID. 16 if this UUID represents a
@@ -178,12 +170,8 @@ STATIC mp_obj_t bleio_uuid_get_size(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_uuid_get_size_obj, bleio_uuid_get_size);
 
-const mp_obj_property_t bleio_uuid_size_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_uuid_get_size_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t bleio_uuid_size_obj = MP_PROPERTY_GETTER(bleio_uuid_size_obj,
+    (mp_obj_t)&bleio_uuid_get_size_obj);
 
 
 //|     def pack_into(self, buffer: WriteableBuffer, offset: int = 0) -> None:

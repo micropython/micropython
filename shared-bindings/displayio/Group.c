@@ -97,12 +97,9 @@ STATIC mp_obj_t displayio_group_obj_set_hidden(mp_obj_t self_in, mp_obj_t hidden
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_hidden_obj, displayio_group_obj_set_hidden);
 
-const mp_obj_property_t displayio_group_hidden_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_hidden_obj,
-              (mp_obj_t)&displayio_group_set_hidden_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_group_hidden_obj = MP_PROPERTY_GETSET(displayio_group_hidden_obj,
+    (mp_obj_t)&displayio_group_get_hidden_obj,
+    (mp_obj_t)&displayio_group_set_hidden_obj);
 
 //|     scale: int
 //|     """Scales each pixel within the Group in both directions. For example, when scale=2 each pixel
@@ -126,12 +123,9 @@ STATIC mp_obj_t displayio_group_obj_set_scale(mp_obj_t self_in, mp_obj_t scale_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_scale_obj, displayio_group_obj_set_scale);
 
-const mp_obj_property_t displayio_group_scale_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_scale_obj,
-              (mp_obj_t)&displayio_group_set_scale_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_group_scale_obj = MP_PROPERTY_GETSET(displayio_group_scale_obj,
+    (mp_obj_t)&displayio_group_get_scale_obj,
+    (mp_obj_t)&displayio_group_set_scale_obj);
 
 //|     x: int
 //|     """X position of the Group in the parent."""
@@ -151,12 +145,9 @@ STATIC mp_obj_t displayio_group_obj_set_x(mp_obj_t self_in, mp_obj_t x_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_x_obj, displayio_group_obj_set_x);
 
-const mp_obj_property_t displayio_group_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_x_obj,
-              (mp_obj_t)&displayio_group_set_x_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_group_x_obj = MP_PROPERTY_GETSET(displayio_group_x_obj,
+    (mp_obj_t)&displayio_group_get_x_obj,
+    (mp_obj_t)&displayio_group_set_x_obj);
 
 //|     y: int
 //|     """Y position of the Group in the parent."""
@@ -176,12 +167,9 @@ STATIC mp_obj_t displayio_group_obj_set_y(mp_obj_t self_in, mp_obj_t y_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_group_set_y_obj, displayio_group_obj_set_y);
 
-const mp_obj_property_t displayio_group_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_group_get_y_obj,
-              (mp_obj_t)&displayio_group_set_y_obj,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getset_t displayio_group_y_obj = MP_PROPERTY_GETSET(displayio_group_y_obj,
+    (mp_obj_t)&displayio_group_get_y_obj,
+    (mp_obj_t)&displayio_group_set_y_obj);
 
 //|     def append(self, layer: Union[vectorio.Circle, vectorio.Rectangle, vectorio.Polygon, Group, TileGrid]) -> None:
 //|         """Append a layer to the group. It will be drawn above other layers."""

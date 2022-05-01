@@ -96,12 +96,8 @@ STATIC mp_obj_t videocore_framebuffer_get_width(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_videocore_framebuffer_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_get_width_obj, videocore_framebuffer_get_width);
-const mp_obj_property_t videocore_framebuffer_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&videocore_framebuffer_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t videocore_framebuffer_width_obj = MP_PROPERTY_GETTER(videocore_framebuffer_width_obj,
+    (mp_obj_t)&videocore_framebuffer_get_width_obj);
 
 //|     height: int
 //|     """The height of the display, in pixels"""
@@ -113,12 +109,8 @@ STATIC mp_obj_t videocore_framebuffer_get_height(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(videocore_framebuffer_get_height_obj, videocore_framebuffer_get_height);
 
-const mp_obj_property_t videocore_framebuffer_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&videocore_framebuffer_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+const mp_obj_property_getter_t videocore_framebuffer_height_obj = MP_PROPERTY_GETTER(videocore_framebuffer_height_obj,
+    (mp_obj_t)&videocore_framebuffer_get_height_obj);
 
 STATIC const mp_rom_map_elem_t videocore_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&videocore_framebuffer_deinit_obj) },
