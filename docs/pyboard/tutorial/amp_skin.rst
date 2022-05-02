@@ -15,7 +15,7 @@ The following video shows how to solder the headers, microphone and speaker onto
 
 .. raw:: html
 
-    <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
+    <iframe style="margin-left:3em;" width="560" height="315" src="https://www.youtube.com/embed/fjB1DuZRveo?rel=0" frameborder="0" allowfullscreen></iframe>
 
 For circuit schematics and datasheets for the components on the skin see :ref:`hardware_index`.
 
@@ -53,10 +53,10 @@ For example::
     dac.write_timed(buf, 400 * len(buf), mode=DAC.CIRCULAR)
 
 You can also play WAV files using the Python ``wave`` module.  You can get
-the wave module `here <http://micropython.org/resources/examples/wave.py>`__ and you will also need
-the chunk module available `here <http://micropython.org/resources/examples/chunk.py>`__.  Put these
+the wave module `here <https://micropython.org/resources/examples/wave.py>`__ and you will also need
+the chunk module available `here <https://micropython.org/resources/examples/chunk.py>`__.  Put these
 on your pyboard (either on the flash or the SD card in the top-level directory).  You will need an
-8-bit WAV file to play, such as `this one <http://micropython.org/resources/examples/test.wav>`_,
+8-bit WAV file to play, such as `this one <https://micropython.org/resources/examples/test.wav>`_,
 or to convert any file you have with the command::
 
     avconv -i original.wav -ar 22050 -codec pcm_u8 test.wav

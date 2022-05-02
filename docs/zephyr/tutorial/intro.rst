@@ -22,8 +22,8 @@ further details.
 Getting and deploying the firmware
 ----------------------------------
 
-The first step you will need to do is either clone the `MicroPython repository <https://github.com/micropython/micropython.git>`_
-or download it from the `MicroPython downloads page <http://micropython.org/download>`_. If you are an end user of MicroPython,
+The first step you will need to do is either clone the `MicroPython repository <https://github.com/micropython/micropython>`_
+or download it from the `MicroPython downloads page <https://micropython.org/download>`_. If you are an end user of MicroPython,
 it is recommended to start with the stable firmware builds. If you would like to work on development, you may follow the daily
 builds on git.
 

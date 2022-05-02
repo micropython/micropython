@@ -183,7 +183,7 @@ with each number, the bitstream is ``0101`` with durations of [100ns, 2000ns,
 100ns, 4000ns].
 
 For more details see Espressif's `ESP-IDF RMT documentation.
-<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/rmt.html>`_.
+<https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/rmt.html>`_.
 
 .. Warning::
    The current MicroPython RMT implementation lacks some features, most notably

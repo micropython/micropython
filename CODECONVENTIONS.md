@@ -211,7 +211,7 @@ This is :ref:`reference <xref_target>`.
 
 * Linking to external URL:
 ```
-`link text <http://foo.com/...>`_
+`link text <https://foo.com/...>`_
 ```
 
 * Referencing builtin singleton objects:
@@ -230,6 +230,6 @@ This is :ref:`reference <xref_target>`.
 
 More detailed guides and quickrefs:
 
-* http://www.sphinx-doc.org/en/stable/rest.html
-* http://www.sphinx-doc.org/en/stable/markup/inline.html
-* http://docutils.sourceforge.net/docs/user/rst/quickref.html
+* https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html
+* https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html#inline-markup
+* https://docutils.sourceforge.io/docs/user/rst/quickref.html

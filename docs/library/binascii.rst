@@ -28,11 +28,11 @@ Functions
 .. function:: a2b_base64(data)
 
    Decode base64-encoded data, ignoring invalid characters in the input.
-   Conforms to `RFC 2045 s.6.8 <https://tools.ietf.org/html/rfc2045#section-6.8>`_.
+   Conforms to `RFC 2045 s.6.8 <https://datatracker.ietf.org/doc/html/rfc2045#section-6.8>`_.
    Returns a bytes object.
 
 .. function:: b2a_base64(data, *, newline=True)
 
    Encode binary data in base64 format, as in `RFC 3548
-   <https://tools.ietf.org/html/rfc3548.html>`_. Returns the encoded data
+   <https://datatracker.ietf.org/doc/html/rfc3548.html>`_. Returns the encoded data
    followed by a newline character if newline is true, as a bytes object.

@@ -8,39 +8,39 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    +----------------------------------------------------------------------------------------------------------+---------------+
    | **Extensions to the syntax:**                                                                            | **Status**    |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            | Partial       |
+   | `PEP 448 <https://peps.python.org/pep-0448/>`_         | additional unpacking generalizations            | Partial       |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ | a new matrix multiplication operator            | Completed     |
+   | `PEP 465 <https://peps.python.org/pep-0465/>`_         | a new matrix multiplication operator            | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 492 <https://www.python.org/dev/peps/pep-0492/>`_ | coroutines with async and await syntax          | Completed     |
+   | `PEP 492 <https://peps.python.org/pep-0492/>`_         | coroutines with async and await syntax          | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | **Extensions and changes to runtime:**                                                                                   |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 461 <https://www.python.org/dev/peps/pep-0461/>`_ | % formatting for binary strings                 | Completed     |
+   | `PEP 461 <https://peps.python.org/pep-0461/>`_         | % formatting for binary strings                 | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 475 <https://www.python.org/dev/peps/pep-0475/>`_ | retrying system calls that fail with EINTR      | Completed     |
+   | `PEP 475 <https://peps.python.org/pep-0475/>`_         | retrying system calls that fail with EINTR      | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 479 <https://www.python.org/dev/peps/pep-0479/>`_ | change StopIteration handling inside generators | Completed     |
+   | `PEP 479 <https://peps.python.org/pep-0479/>`_         | change StopIteration handling inside generators | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | **Standard library changes:**                                                                                            |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 471 <https://www.python.org/dev/peps/pep-0471/>`_ | os.scandir()                                    |               |
+   | `PEP 471 <https://peps.python.org/pep-0471/>`_         | os.scandir()                                    |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 485 <https://www.python.org/dev/peps/pep-0485/>`_ | math.isclose(), a function for testing          | Completed     |
+   | `PEP 485 <https://peps.python.org/pep-0485/>`_         | math.isclose(), a function for testing          | Completed     |
    |                                                        | approximate equality                            |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | **Miscellaneous changes:**                                                                                               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ | improved Python zip application support         |               |
+   | `PEP 441 <https://peps.python.org/pep-0441/>`_         | improved Python zip application support         |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Launcher aware of virtual       | Not relevant  |
+   | `PEP 486 <https://peps.python.org/pep-0486/>`_         | make the Python Launcher aware of virtual       | Not relevant  |
    |                                                        | environments                                    |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ | type hints (advisory only)                      | In Progress   |
+   | `PEP 484 <https://peps.python.org/pep-0484/>`_         | type hints (advisory only)                      | In Progress   |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 488 <https://www.python.org/dev/peps/pep-0488/>`_ | elimination of PYO files                        | Not relevant  |
+   | `PEP 488 <https://peps.python.org/pep-0488/>`_         | elimination of PYO files                        | Not relevant  |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 489 <https://www.python.org/dev/peps/pep-0489/>`_ | redesigning extension module loading            |               |
+   | `PEP 489 <https://peps.python.org/pep-0489/>`_         | redesigning extension module loading            |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
 
 

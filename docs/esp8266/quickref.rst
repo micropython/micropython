@@ -462,5 +462,5 @@ transfer (both upload and download). Web client has buttons for the
 corresponding functions, or you can use command-line client ``webrepl_cli.py``
 from the repository above.
 
-See the MicroPython forum for other community-supported alternatives
+See the `MicroPython forum <https://forum.micropython.org>`_ for other community-supported alternatives
 to transfer files to ESP8266.

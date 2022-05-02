@@ -3,7 +3,7 @@ The LCD160CR skin
 
 This tutorial shows how to get started using the LCD160CR skin.
 
-.. image:: http://micropython.org/resources/LCD160CRv10-positions.jpg
+.. image:: https://micropython.org/resources/LCD160CRv10-positions.jpg
     :alt: LCD160CRv1.0 picture
     :width: 800px
 
@@ -25,7 +25,7 @@ Getting the driver
 You can control the display directly using a power/enable pin and an I2C
 bus, but it is much more convenient to use the driver provided by the
 :mod:`lcd160cr` module.  This driver is included in recent version of the
-pyboard firmware (see `here <http://micropython.org/download>`__).  You
+pyboard firmware (see `here <https://micropython.org/download>`__).  You
 can also find the driver in the GitHub repository
 `here <https://github.com/micropython/micropython/blob/master/drivers/display/lcd160cr.py>`__, and to use this version you will need to copy the file to your
 board, into a directory that is searched by import (usually the lib/
