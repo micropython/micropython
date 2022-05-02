@@ -29,8 +29,8 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit QT Py ESP32-S3 no psram"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO38)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO37)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO39)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO38)
 
 #define CIRCUITPY_BOARD_I2C         (2)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO7}, \
