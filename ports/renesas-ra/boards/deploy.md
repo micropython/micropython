@@ -5,18 +5,14 @@ You can download [J-Link Software and Documentation pack](https://www.segger.com
 A `.hex` file can be flashed using `J-Flash Lite`.
 
 1. Start `J-Flash Lite`.
-2. Select devce name for board.
-
-    |      BOARD	       |      DEVICE NAME       |
-    | :------------------: | :--------------------: |
-    |   RA4M1 Clicker	   |       R7FA4M1AB        |
-    |   EK-RA6M2	       |       R7FA6M2AF        |
-    |   EK-RA4M1	       |       R7FA4M1AB        |
-    |   EK-RA6M1	       |       R7FA6M1AD        |
-    |   EK-RA4W1	       |       R7FA4W1AD2CNG    |
-
-3. press `OK`.  
-4. Select `firmware.hex` file for Data File .
+2. Select device name for board.
+  - EK-RA4M1: R7FA4M1AB
+  - EK-RA4W1: R7FA4W1AD2CNG
+  - EK-RA6M1: R7FA6M1AD
+  - EK-RA6M2: R7FA6M2AF
+  - RA4M1 CLICKER: R7FA4M1AB
+3. press `OK`.
+4. Select `firmware.hex` file for Data File.
 5. Press `Program Device`.
 
-Please refer to the [Renesas MicroPython Wiki](https://github.com/renesas/micropython/wiki) about cable connection between the board and your PC and more information.
+Please refer to the [Getting started with MicroPython on the Renesas RA](https://docs.micropython.org/en/latest/renesas-ra/tutorial/intro.html) about cable connection between the board and your PC.
