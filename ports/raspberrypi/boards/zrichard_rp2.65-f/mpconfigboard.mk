@@ -1,6 +1,6 @@
-# ZR 6F
-USB_VID = 0x5a52
-USB_PID = 0x3646
+# pid.codes ZR
+USB_VID = 0x1209
+USB_PID = 0x5a52
 
 USB_PRODUCT = "RP2.65-F"
 USB_MANUFACTURER = "ZRichard"
