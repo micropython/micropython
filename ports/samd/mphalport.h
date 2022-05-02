@@ -33,6 +33,7 @@
 #include "hal_gpio.h"
 #include "hal_delay.h"
 #include "hpl_time_measure.h"
+#include "sam.h"
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
@@ -45,7 +46,14 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
 static inline mp_uint_t mp_hal_ticks_us(void) {
+    #if defined(MCU_SAMD51)
+    TC0->COUNT32.CTRLBSET.bit.CMD = TC_CTRLBSET_CMD_READSYNC_Val;
+    while (TC0->COUNT32.CTRLBSET.bit.CMD != 0) {
+    }
+    return REG_TC0_COUNT32_COUNT >> 1;
+    #else
     return systick_ms * 1000;
+    #endif
 }
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return _system_time_get(0);
