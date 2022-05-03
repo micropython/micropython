@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_RA_RTC_H
 
 #include "py/obj.h"
-extern const mp_obj_type_t pyb_rtc_type;
+extern const mp_obj_type_t machine_rtc_type;
 
 typedef struct
 {
@@ -64,6 +64,6 @@ void rtc_get_date(RTC_DateTypeDef *date);
 void rtc_init_start(bool force_init);
 void rtc_init_finalise(void);
 
-mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args);
+mp_obj_t machine_rtc_wakeup(size_t n_args, const mp_obj_t *args);
 
 #endif // MICROPY_INCLUDED_RA_RTC_H
