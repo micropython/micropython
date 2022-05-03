@@ -38,12 +38,7 @@
 
 //| """time and timing related functions
 //|
-//| The `time` module is a strict subset of the CPython `cpython:time` module. So, code
-//| using `time` written in CircuitPython will work in CPython but not necessarily the other
-//| way around.
-//|
-//| For more information about the `time` module, see the CPython documentation:
-//| https://docs.python.org/3/library/time.html
+//| |see_cpython_module| :mod:`cpython:time`.
 //| """
 //|
 //| def monotonic() -> float:

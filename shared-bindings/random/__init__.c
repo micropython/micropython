@@ -35,20 +35,14 @@
 
 //| """pseudo-random numbers and choices
 //|
-//| The `random` module is a strict subset of the CPython `cpython:random`
-//| module. So, code written in CircuitPython will work in CPython but not
-//| necessarily the other way around.
+//| |see_cpython_module| :mod:`cpython:random`.
 //|
 //| Like its CPython cousin, CircuitPython's random seeds itself on first use
 //| with a true random from os.urandom() when available or the uptime otherwise.
 //| Once seeded, it will be deterministic, which is why its bad for cryptography.
 //|
 //| .. warning:: Numbers from this module are not cryptographically strong! Use
-//|   bytes from `os.urandom` directly for true randomness.
-//|
-//| For more information about the `random` module, see the CPython documentation:
-//| https://docs.python.org/3/library/random.html
-//| """
+//|   bytes from `os.urandom` directly for true randomness."""
 //|
 //| from typing import TypeVar
 //| _T = TypeVar('_T')

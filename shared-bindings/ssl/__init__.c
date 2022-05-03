@@ -34,12 +34,7 @@
 //| """
 //| The `ssl` module provides SSL contexts to wrap sockets in.
 //|
-//| This module is a strict subset of the CPython `ssl` module.
-//| So, code written in CircuitPython will work in CPython but not
-//| necessarily the other way around.
-//|
-//| For more information about the `ssl` module see the CPython documentation
-//| https://docs.python.org/3/library/ssl.html
+//| |see_cpython_module| :mod:`cpython:ssl`.
 //| """
 //|
 
