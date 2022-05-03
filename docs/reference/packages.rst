@@ -309,6 +309,6 @@ to all resource files::
 References
 ----------
 
-* Python Packaging User Guide: https://packaging.python.org/
-* Setuptools documentation: https://setuptools.readthedocs.io/
+* Python Packaging User Guide: https://packaging.python.org/en/latest/
+* Setuptools documentation: https://setuptools.pypa.io/en/latest/
 * Distutils documentation: https://docs.python.org/3/library/distutils.html

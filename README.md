@@ -8,7 +8,7 @@ The MicroPython project
 
 This is the MicroPython project, which aims to put an implementation
 of Python 3.x on microcontrollers and small embedded systems.
-You can find the official website at [micropython.org](http://www.micropython.org).
+You can find the official website at [micropython.org](https://www.micropython.org).
 
 WARNING: this project is in beta stage and is subject to changes of the
 code-base, including project-wide name changes and API changes.
@@ -26,7 +26,7 @@ MicroPython can execute scripts in textual source form or from precompiled
 bytecode, in both cases either from an on-device filesystem or "frozen" into
 the MicroPython executable.
 
-See the repository http://github.com/micropython/pyboard for the MicroPython
+See the repository https://github.com/micropython/pyboard for the MicroPython
 board (PyBoard), the officially supported reference electronic circuit board.
 
 Major components in this repository:
@@ -41,7 +41,7 @@ Major components in this repository:
   to port MicroPython to another microcontroller.
 - tests/ -- test framework and test scripts.
 - docs/ -- user documentation in Sphinx reStructuredText format. Rendered
-  HTML documentation is available at http://docs.micropython.org.
+  HTML documentation is available at https://docs.micropython.org.
 
 Additional components:
 - ports/bare-arm/ -- a bare minimum version of MicroPython for ARM MCUs. Used

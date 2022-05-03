@@ -4,24 +4,24 @@ Python 3.8
 ==========
 
 Python 3.8.0 (final) was released on the 14 October 2019. The Features for 3.8
-are defined in `PEP 569 <https://www.python.org/dev/peps/pep-0569/#id9>`_ and
+are defined in `PEP 569 <https://peps.python.org/pep-0569/#features-for-3-8>`_ and
 a detailed description of the changes can be found in What's New in `Python
 3.8. <https://docs.python.org/3/whatsnew/3.8.html>`_
 
   +--------------------------------------------------------+---------------------------------------------------+---------------+
   | **Features:**                                                                                              | Status        |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 570 <https://www.python.org/dev/peps/pep-0570/>`_ | Positional-only arguments                         |               |
+  | `PEP 570 <https://peps.python.org/pep-0570/>`_         | Positional-only arguments                         |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 572 <https://www.python.org/dev/peps/pep-0572/>`_ | Assignment Expressions                            |               |
+  | `PEP 572 <https://peps.python.org/pep-0572/>`_         | Assignment Expressions                            |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 574 <https://www.python.org/dev/peps/pep-0574/>`_ | Pickle protocol 5 with out-of-band data           |               |
+  | `PEP 574 <https://peps.python.org/pep-0574/>`_         | Pickle protocol 5 with out-of-band data           |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 578 <https://www.python.org/dev/peps/pep-0578/>`_ | Runtime audit hooks                               |               |
+  | `PEP 578 <https://peps.python.org/pep-0578/>`_         | Runtime audit hooks                               |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 587 <https://www.python.org/dev/peps/pep-0587/>`_ | Python Initialization Configuration               |               |
+  | `PEP 587 <https://peps.python.org/pep-0587/>`_         | Python Initialization Configuration               |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 590 <https://www.python.org/dev/peps/pep-0590/>`_ | Vectorcall: a fast calling protocol for CPython   |               |
+  | `PEP 590 <https://peps.python.org/pep-0590/>`_         | Vectorcall: a fast calling protocol for CPython   |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
   | **Miscellaneous**                                                                                                          |
   +------------------------------------------------------------------------------------------------------------+---------------+

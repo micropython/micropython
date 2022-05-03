@@ -4,33 +4,33 @@ Python 3.9
 ==========
 
 Python 3.9.0 (final) was released on the 5th October 2020. The Features for 3.9 are
-defined in `PEP 596 <https://www.python.org/dev/peps/pep-0596/#features-for-3-9>`_
+defined in `PEP 596 <https://peps.python.org/pep-0596/#features-for-3-9>`_
 and a detailed description of the changes can be found in
 `What's New in Python 3.9 <https://docs.python.org/3/whatsnew/3.9.html>`_
 
   +--------------------------------------------------------+----------------------------------------------------+--------------+
   | **Features:**                                          |                                                    | **Status**   |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 573 <https://www.python.org/dev/peps/pep-0573/>`_ | fast access to module state from methods of C      |              |
+  | `PEP 573 <https://peps.python.org/pep-0573/>`_         | fast access to module state from methods of C      |              |
   |                                                        | extension types                                    |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 584 <https://www.python.org/dev/peps/pep-0584/>`_ | union operators added to dict                      |              |
+  | `PEP 584 <https://peps.python.org/pep-0584/>`_         | union operators added to dict                      |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 585 <https://www.python.org/dev/peps/pep-0584/>`_ | type hinting generics in standard collections      |              |
+  | `PEP 585 <https://peps.python.org/pep-0584/>`_         | type hinting generics in standard collections      |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 593 <https://www.python.org/dev/peps/pep-0593/>`_ | flexible function and variable annotations         |              |
+  | `PEP 593 <https://peps.python.org/pep-0593/>`_         | flexible function and variable annotations         |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 602 <https://www.python.org/dev/peps/pep-0602/>`_ | CPython adopts an annual release cycle. Instead of |              |
+  | `PEP 602 <https://peps.python.org/pep-0602/>`_         | CPython adopts an annual release cycle. Instead of |              |
   |                                                        | annual, aiming for two month release cycle         |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 614 <https://www.python.org/dev/peps/pep-0614/>`_ | relaxed grammar restrictions on decorators         |              |
+  | `PEP 614 <https://peps.python.org/pep-0614/>`_         | relaxed grammar restrictions on decorators         |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 615 <https://www.python.org/dev/peps/pep-0615/>`_ | the IANA Time Zone Database is now present in the  |              |
+  | `PEP 615 <https://peps.python.org/pep-0615/>`_         | the IANA Time Zone Database is now present in the  |              |
   |                                                        | standard library in the zoneinfo module            |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 616 <https://www.python.org/dev/peps/pep-0616/>`_ | string methods to remove prefixes and suffixes     |              |
+  | `PEP 616 <https://peps.python.org/pep-0616/>`_         | string methods to remove prefixes and suffixes     |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
-  | `PEP 617 <https://www.python.org/dev/peps/pep-0617/>`_ | CPython now uses a new parser based on PEG         |              |
+  | `PEP 617 <https://peps.python.org/pep-0617/>`_         | CPython now uses a new parser based on PEG         |              |
   +--------------------------------------------------------+----------------------------------------------------+--------------+
 
 Other Language Changes:

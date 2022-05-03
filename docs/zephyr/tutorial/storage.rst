@@ -12,7 +12,7 @@ Disk Access
 -----------
 
 The :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class can be used to access storage devices, such as SD cards.
-This class uses `Zephyr Disk Access API <https://docs.zephyrproject.org/latest/reference/storage/disk/access.html>`_ and
+This class uses `Zephyr Disk Access API <https://docs.zephyrproject.org/latest/services/storage/disk/access.html>`_ and
 implements the `os.AbstractBlockDev` protocol.
 
 For use with SD card controllers, SD cards must be present at boot & not removed; they will
@@ -38,7 +38,7 @@ The :ref:`zephyr.FlashArea <zephyr.FlashArea>` class can be used to implement a 
 customize filesystem configurations. To store persistent data on the device, using a higher-level filesystem
 API is recommended (see below).
 
-This class uses `Zephyr Flash map API <https://docs.zephyrproject.org/latest/reference/storage/flash_map/flash_map.html#>`_ and
+This class uses `Zephyr Flash map API <https://docs.zephyrproject.org/latest/services/storage/flash_map/flash_map.html>`_ and
 implements the `os.AbstractBlockDev` protocol.
 
 Example usage with the internal flash on the reel_board or the rv32m1_vega_ri5cy board::

@@ -77,7 +77,7 @@ Let's define a function that can download and print a URL::
 
 Then you can try::
 
-    >>> http_get('http://micropython.org/ks/test.html')
+    >>> http_get('https://micropython.org/ks/test.html')
 
 This should retrieve the webpage and print the HTML to the console.
 

@@ -38,7 +38,7 @@ Technical specifications and SoC datasheets
 -------------------------------------------
 
 The datasheets and other reference material for ESP8266 chip are available
-from the vendor site: http://bbs.espressif.com/viewtopic.php?f=67&t=225 .
+from the vendor site: https://www.espressif.com/en/support/documents/technical-documents .
 They are the primary reference for the chip technical specifications, capabilities,
 operating modes, internal functioning, etc.
 
@@ -195,7 +195,7 @@ limitation with usage of TLS on the low-memory devices:
    used, with the idea that the most interesting usage for SSL would be
    accessing various REST APIs, which usually require much smaller messages.
    The buffers size is on the order of 5KB, and is adjusted from time to
-   time, taking as a reference being able to access https://google.com .
+   time, taking as a reference being able to access https://www.google.com .
    The smaller buffer however means that some sites can't be accessed using
    it, and it's not possible to stream large amounts of data. axTLS does
    have support for TLS's Max Fragment Size extension, but no HTTPS website

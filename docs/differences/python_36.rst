@@ -8,46 +8,46 @@ Python 3.6 beta 1 was released on 12 Sep 2016, and a summary of the new features
   +-----------------------------------------------------------------------------------------------------------+--------------+
   | **New Syntax Features:**                                                                                  | **Status**   |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 498 <https://www.python.org/dev/peps/pep-0498/>`_ | Literal String Formatting                        |              |
+  | `PEP 498 <https://peps.python.org/pep-0498/>`_         | Literal String Formatting                        |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 515 <https://www.python.org/dev/peps/pep-0515/>`_ | Underscores in Numeric Literals                  |              |
+  | `PEP 515 <https://peps.python.org/pep-0515/>`_         | Underscores in Numeric Literals                  |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 525 <https://www.python.org/dev/peps/pep-0525/>`_ | Asynchronous Generators                          |              |
+  | `PEP 525 <https://peps.python.org/pep-0525/>`_         | Asynchronous Generators                          |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 526 <https://www.python.org/dev/peps/pep-0526/>`_ | Syntax for Variable Annotations (provisional)    |              |
+  | `PEP 526 <https://peps.python.org/pep-0526/>`_         | Syntax for Variable Annotations (provisional)    |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 530 <https://www.python.org/dev/peps/pep-0530/>`_ | Asynchronous Comprehensions                      |              |
+  | `PEP 530 <https://peps.python.org/pep-0530/>`_         | Asynchronous Comprehensions                      |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
   | **New Built-in Features:**                                                                                               |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 468 <https://www.python.org/dev/peps/pep-0468/>`_ | Preserving the order of *kwargs* in a function   |              |
+  | `PEP 468 <https://peps.python.org/pep-0468/>`_         | Preserving the order of *kwargs* in a function   |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 487 <https://www.python.org/dev/peps/pep-0487/>`_ | Simpler customization of class creation          |              |
+  | `PEP 487 <https://peps.python.org/pep-0487/>`_         | Simpler customization of class creation          |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 520 <https://www.python.org/dev/peps/pep-0520/>`_ | Preserving Class Attribute Definition Order      |              |
+  | `PEP 520 <https://peps.python.org/pep-0520/>`_         | Preserving Class Attribute Definition Order      |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
   | **Standard Library Changes:**                                                                                            |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 495 <https://www.python.org/dev/peps/pep-0495/>`_ | Local Time Disambiguation                        |              |
+  | `PEP 495 <https://peps.python.org/pep-0495/>`_         | Local Time Disambiguation                        |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 506 <https://www.python.org/dev/peps/pep-0506/>`_ | Adding A Secrets Module To The Standard Library  |              |
+  | `PEP 506 <https://peps.python.org/pep-0506/>`_         | Adding A Secrets Module To The Standard Library  |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 519 <https://www.python.org/dev/peps/pep-0519/>`_ | Adding a file system path protocol               |              |
+  | `PEP 519 <https://peps.python.org/pep-0519/>`_         | Adding a file system path protocol               |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
   | **CPython internals:**                                                                                                   |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 509 <https://www.python.org/dev/peps/pep-0509/>`_ | Add a private version to dict                    |              |
+  | `PEP 509 <https://peps.python.org/pep-0509/>`_         | Add a private version to dict                    |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 523 <https://www.python.org/dev/peps/pep-0523/>`_ | Adding a frame evaluation API to CPython         |              |
+  | `PEP 523 <https://peps.python.org/pep-0523/>`_         | Adding a frame evaluation API to CPython         |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
   | **Linux/Window Changes**                                                                                                 |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 524 <https://www.python.org/dev/peps/pep-0524/>`_ | Make os.urandom() blocking on Linux              |              |
+  | `PEP 524 <https://peps.python.org/pep-0524/>`_         | Make os.urandom() blocking on Linux              |              |
   |                                                        | (during system startup)                          |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 528 <https://www.python.org/dev/peps/pep-0528/>`_ | Change Windows console encoding to UTF-8         |              |
+  | `PEP 528 <https://peps.python.org/pep-0528/>`_         | Change Windows console encoding to UTF-8         |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
-  | `PEP 529 <https://www.python.org/dev/peps/pep-0529/>`_ | Change Windows filesystem encoding to UTF-8      |              |
+  | `PEP 529 <https://peps.python.org/pep-0529/>`_         | Change Windows filesystem encoding to UTF-8      |              |
   +--------------------------------------------------------+--------------------------------------------------+--------------+
 
 Other Language Changes:

@@ -32,7 +32,7 @@ Technical specifications and SoC datasheets
 -------------------------------------------
 
 The datasheets and other reference material for ESP32 chip are available
-from the vendor site: https://www.espressif.com/en/support/download/documents?keys=esp32 .
+from the vendor site: https://www.espressif.com/en/support/documents/technical-documents .
 They are the primary reference for the chip technical specifications, capabilities,
 operating modes, internal functioning, etc.
 
@@ -60,5 +60,5 @@ For more information see the ESP32 datasheet: https://www.espressif.com/sites/de
 
 MicroPython is implemented on top of the ESP-IDF, Espressif's development
 framework for the ESP32.  This is a FreeRTOS based system.  See the
-`ESP-IDF Programming Guide <https://docs.espressif.com/projects/esp-idf/en/latest/index.html>`_
+`ESP-IDF Programming Guide <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html>`_
 for details.
