@@ -172,7 +172,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
 
     primary_display_t *disp = allocate_display_or_raise();
     displayio_display_obj_t *self = &disp->display;
-    ;
+
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         self,
