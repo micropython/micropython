@@ -70,6 +70,17 @@
 //| hardware. The last step is optional because CircuitPython automatically
 //| resets hardware after a program finishes."""
 //|
+//| Note that drivers will typically handle communication if provided the bus
+//| instance (such as `busio.I2C(board.SCL, board.SDA)`), and that many of
+//| the methods listed here are lower level functionalities that are needed
+//| for working with custom drivers.
+//|
+//| Tutorial for I2C and SPI:
+//| https://learn.adafruit.com/circuitpython-basics-i2c-and-spi
+//|
+//| Tutorial for UART:
+//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-uart-serial
+//|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_busio) },
