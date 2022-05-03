@@ -34,6 +34,7 @@
 //| This module provides a standard interface to print stack traces of programs.
 //| This is useful when you want to print stack traces under program control.
 //|
+//| |see_cpython_module| :mod:`cpython:traceback`.
 //| """
 //| ...
 //|

@@ -39,12 +39,7 @@
 
 //| """functions that an OS normally provides
 //|
-//| The `os` module is a strict subset of the CPython `cpython:os` module. So,
-//| code written in CircuitPython will work in CPython but not necessarily the
-//| other way around.
-//|
-//| For more information about the `os` module, see the CPython documentation:
-//| https://docs.python.org/3/library/os.html
+//| |see_cpython_module| :mod:`cpython:os`.
 //| """
 //|
 //| import typing
