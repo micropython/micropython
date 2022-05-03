@@ -78,10 +78,28 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Pin."""
+//|         ...
+//|
+STATIC mp_obj_t mcu_pin_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+    switch (op) {
+        case MP_UNARY_OP_HASH: {
+            return mp_obj_id(self_in);
+        }
+        default:
+            return MP_OBJ_NULL; // op not supported
+    }
+}
+
 const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Pin,
-    .print = mcu_pin_print
+    .print = mcu_pin_print,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mcu_pin_unary_op,
+        )
 };
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
