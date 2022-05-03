@@ -48,15 +48,15 @@ MP_DEFINE_CONST_FUN_OBJ_0(mp_uos_sync_obj, mp_uos_sync);
 
 bool mp_uos_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
-    return type == &pyb_uart_type;
+    return type == &machine_uart_type;
 }
 
 void mp_uos_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
-    if (mp_obj_get_type(stream_detached) == &pyb_uart_type) {
+    if (mp_obj_get_type(stream_detached) == &machine_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(stream_detached), false);
     }
 
-    if (mp_obj_get_type(stream_attached) == &pyb_uart_type) {
+    if (mp_obj_get_type(stream_attached) == &machine_uart_type) {
         uart_attach_to_repl(MP_OBJ_TO_PTR(stream_attached), true);
     }
 }

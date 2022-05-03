@@ -64,7 +64,7 @@ static void set_kbd_interrupt(uint32_t ch, void *keyex) {
 #endif
 
 static void uart_rx_cb(uint32_t ch, int d) {
-    pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[ch];
+    machine_uart_obj_t *self = MP_STATE_PORT(machine_uart_obj_all)[ch];
     if (self == NULL) {
         // UART object has not been set, so we can't do anything, not
         // even disable the IRQ.  This should never happen.
@@ -86,18 +86,18 @@ void uart_init0(void) {
 
 // unregister all interrupt sources
 void uart_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        pyb_uart_obj_t *uart_obj = MP_STATE_PORT(pyb_uart_obj_all)[i];
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all)); i++) {
+        machine_uart_obj_t *uart_obj = MP_STATE_PORT(machine_uart_obj_all)[i];
         if (uart_obj != NULL && !uart_obj->is_static) {
             uart_deinit(uart_obj);
-            MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
+            MP_STATE_PORT(machine_uart_obj_all)[i] = NULL;
         }
     }
 }
 
 bool uart_exists(int uart_id) {
-    if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
-        // safeguard against pyb_uart_obj_all array being configured too small
+    if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all))) {
+        // safeguard against machine_uart_obj_all array being configured too small
         return false;
     }
     switch (uart_id) {
@@ -157,7 +157,7 @@ bool uart_exists(int uart_id) {
 }
 
 // assumes Init parameters have been set up correctly
-bool uart_init(pyb_uart_obj_t *uart_obj,
+bool uart_init(machine_uart_obj_t *uart_obj,
     uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop, uint32_t flow) {
     uart_obj->baudrate = (uint32_t)baudrate;
     uart_obj->bits = (uint8_t)bits;
@@ -374,7 +374,7 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     return true;
 }
 
-void uart_irq_config(pyb_uart_obj_t *self, bool enable) {
+void uart_irq_config(machine_uart_obj_t *self, bool enable) {
     if (self->mp_irq_trigger) {
         if (enable) {
             ra_sci_rxirq_enable(self->uart_id);
@@ -384,7 +384,7 @@ void uart_irq_config(pyb_uart_obj_t *self, bool enable) {
     }
 }
 
-void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
+void uart_set_rxbuf(machine_uart_obj_t *self, size_t len, void *buf) {
     // len = 0 (no interrupt) is not supported. static buf is used.
     self->read_buf_len = len;
     self->read_buf = buf;
@@ -394,12 +394,12 @@ void uart_set_rxbuf(pyb_uart_obj_t *self, size_t len, void *buf) {
     }
 }
 
-void uart_deinit(pyb_uart_obj_t *self) {
+void uart_deinit(machine_uart_obj_t *self) {
     self->is_enabled = false;
     ra_sci_deinit(self->uart_id);
 }
 
-void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
+void uart_attach_to_repl(machine_uart_obj_t *self, bool attached) {
     self->attached_to_repl = attached;
     #if MICROPY_KBD_EXCEPTION
     if (attached) {
@@ -410,12 +410,12 @@ void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
     #endif
 }
 
-mp_uint_t uart_rx_any(pyb_uart_obj_t *self) {
+mp_uint_t uart_rx_any(machine_uart_obj_t *self) {
     int ch = (int)self->uart_id;
     return ra_sci_rx_any(ch);
 }
 
-mp_uint_t uart_tx_avail(pyb_uart_obj_t *self) {
+mp_uint_t uart_tx_avail(machine_uart_obj_t *self) {
     int ch = (int)self->uart_id;
     return ra_sci_tx_wait(ch);
 }
@@ -423,7 +423,7 @@ mp_uint_t uart_tx_avail(pyb_uart_obj_t *self) {
 // Waits at most timeout milliseconds for at least 1 char to become ready for
 // reading (from buf or for direct reading).
 // Returns true if something available, false if not.
-bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+bool uart_rx_wait(machine_uart_obj_t *self, uint32_t timeout) {
     int ch = (int)self->uart_id;
     uint32_t start = HAL_GetTick();
     for (;;) {
@@ -438,14 +438,14 @@ bool uart_rx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 }
 
 // assumes there is a character available
-int uart_rx_char(pyb_uart_obj_t *self) {
+int uart_rx_char(machine_uart_obj_t *self) {
     int ch = (int)self->uart_id;
     return ra_sci_rx_ch(ch);
 }
 
 // Waits at most timeout milliseconds for TX register to become empty.
 // Returns true if can write, false if can't.
-bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
+bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
     uint32_t start = HAL_GetTick();
     for (;;) {
         if (uart_tx_avail(self)) {
@@ -462,7 +462,7 @@ bool uart_tx_wait(pyb_uart_obj_t *self, uint32_t timeout) {
 // num_chars - number of characters to send (9-bit chars count for 2 bytes from src)
 // *errcode - returns 0 for success, MP_Exxx on error
 // returns the number of characters sent (valid even if there was an error)
-size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode) {
+size_t uart_tx_data(machine_uart_obj_t *self, const void *src_in, size_t num_chars, int *errcode) {
     int ch = (int)self->uart_id;
     uint8_t *d8 = (uint8_t *)src_in;
     uint16_t *d16 = (uint16_t *)src_in;
@@ -485,13 +485,13 @@ size_t uart_tx_data(pyb_uart_obj_t *self, const void *src_in, size_t num_chars, 
     return (size_t)num_chars;
 }
 
-void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn(machine_uart_obj_t *uart_obj, const char *str, uint len) {
     int errcode;
     uart_tx_data(uart_obj, str, len, &errcode);
 }
 
 STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uart_irq_config(self, false);
     self->mp_irq_trigger = new_trigger;
     uart_irq_config(self, true);
@@ -499,7 +499,7 @@ STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
 }
 
 STATIC mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
-    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return self->mp_irq_flags;
     } else if (info_type == MP_IRQ_INFO_TRIGGERS) {

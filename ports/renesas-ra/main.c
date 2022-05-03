@@ -73,8 +73,8 @@ STATIC pyb_thread_t pyb_thread_main;
 #ifndef MICROPY_HW_UART_REPL_RXBUF
 #define MICROPY_HW_UART_REPL_RXBUF (260)
 #endif
-STATIC pyb_uart_obj_t pyb_uart_repl_obj;
-STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
+STATIC machine_uart_obj_t machine_uart_repl_obj;
+STATIC uint8_t machine_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
 void NORETURN __fatal_error(const char *msg) {
@@ -241,17 +241,17 @@ void ra_main(uint32_t reset_mode) {
 
     #if defined(MICROPY_HW_UART_REPL)
     // Set up a UART REPL using a statically allocated object
-    pyb_uart_repl_obj.base.type = &pyb_uart_type;
-    pyb_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
-    pyb_uart_repl_obj.is_static = true;
-    pyb_uart_repl_obj.timeout = 0;
-    pyb_uart_repl_obj.timeout_char = 2;
-    uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
-    uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
-    uart_attach_to_repl(&pyb_uart_repl_obj, true);
-    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL] = &pyb_uart_repl_obj;
+    machine_uart_repl_obj.base.type = &machine_uart_type;
+    machine_uart_repl_obj.uart_id = MICROPY_HW_UART_REPL;
+    machine_uart_repl_obj.is_static = true;
+    machine_uart_repl_obj.timeout = 0;
+    machine_uart_repl_obj.timeout_char = 2;
+    uart_init(&machine_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
+    uart_set_rxbuf(&machine_uart_repl_obj, sizeof(machine_uart_repl_rxbuf), machine_uart_repl_rxbuf);
+    uart_attach_to_repl(&machine_uart_repl_obj, true);
+    MP_STATE_PORT(machine_uart_obj_all)[MICROPY_HW_UART_REPL] = &machine_uart_repl_obj;
     #if RA_EARLY_PRINT
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    MP_STATE_PORT(pyb_stdio_uart) = &machine_uart_repl_obj;
     #endif
     #endif
 
@@ -293,7 +293,7 @@ soft_reset:
     // by boot.py must be set after boot.py is run.
 
     #if defined(MICROPY_HW_UART_REPL)
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    MP_STATE_PORT(pyb_stdio_uart) = &machine_uart_repl_obj;
     #else
     MP_STATE_PORT(pyb_stdio_uart) = NULL;
     #endif
