@@ -32,6 +32,7 @@
 typedef enum {
     ID_INFO_KIND_UNDECIDED,
     ID_INFO_KIND_GLOBAL_IMPLICIT,
+    ID_INFO_KIND_GLOBAL_IMPLICIT_ASSIGNED,
     ID_INFO_KIND_GLOBAL_EXPLICIT,
     ID_INFO_KIND_LOCAL, // in a function f, written and only referenced by f
     ID_INFO_KIND_CELL,  // in a function f, read/written by children of f
