@@ -58,6 +58,12 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA01}, // SCK = 24
     {{&machine_pin_type}, PIN_PB02}, // DOTSTAR_CLK = 25
     {{&machine_pin_type}, PIN_PB03}, // DOTSTAR_DATA = 26
+    {{&machine_pin_type}, PIN_PB10}, // QSPI_SCK = 27
+    {{&machine_pin_type}, PIN_PA08}, // QSPI_DATA0 = 28
+    {{&machine_pin_type}, PIN_PA09}, // QSPI_DATA1 = 29
+    {{&machine_pin_type}, PIN_PA10}, // QSPI_DATA2 = 30
+    {{&machine_pin_type}, PIN_PA11}, // QSPI_DATA3 = 31
+    {{&machine_pin_type}, PIN_PB11}, // QSPI_CS = 32
 };
 
 const machine_led_obj_t machine_led_obj[] = {
