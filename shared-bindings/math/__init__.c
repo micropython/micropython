@@ -41,7 +41,15 @@
 //| """mathematical functions
 //|
 //| The `math` module provides some basic mathematical functions for
-//| working with floating-point numbers."""
+//| working with floating-point numbers.
+//|
+//| This library is a subset of the CPython library.  All code using this
+//| library should function in CPython, but not necessarily the other way
+//| around.  For more information about the `math` module, see the
+//| CPython documentation:
+//|
+//| https://docs.python.org/3/library/math.html
+//| """
 //|
 
 STATIC NORETURN void math_error(void) {
