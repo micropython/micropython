@@ -35,9 +35,7 @@
 
 //| """pseudo-random numbers and choices
 //|
-//| The `random` module is a strict subset of the CPython `cpython:random`
-//| module. So, code written in CircuitPython will work in CPython but not
-//| necessarily the other way around.
+//| |see_cpython_module| :mod:`cpython:random`.
 //|
 //| Like its CPython cousin, CircuitPython's random seeds itself on first use
 //| with a true random from os.urandom() when available or the uptime otherwise.

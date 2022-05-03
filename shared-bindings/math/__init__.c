@@ -41,7 +41,10 @@
 //| """mathematical functions
 //|
 //| The `math` module provides some basic mathematical functions for
-//| working with floating-point numbers."""
+//| working with floating-point numbers.
+//|
+//| |see_cpython_module| :mod:`cpython:math`.
+//| """
 //|
 
 STATIC NORETURN void math_error(void) {
