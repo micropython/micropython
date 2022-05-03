@@ -44,7 +44,11 @@
 //| Once seeded, it will be deterministic, which is why its bad for cryptography.
 //|
 //| .. warning:: Numbers from this module are not cryptographically strong! Use
-//|   bytes from `os.urandom` directly for true randomness."""
+//|   bytes from `os.urandom` directly for true randomness.
+//|
+//| For more information about the `random` module, see the CPython documentation:
+//| https://docs.python.org/3/library/random.html
+//| """
 //|
 //| from typing import TypeVar
 //| _T = TypeVar('_T')
