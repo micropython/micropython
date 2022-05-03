@@ -45,6 +45,12 @@
 //|        recv that do not allocate bytes objects."""
 //|
 
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Socket."""
+//|         ...
+//|
+// Provided by mp_generic_unary_op().
+
 //|     def __enter__(self) -> SSLSocket:
 //|         """No-op used by Context Managers."""
 //|         ...
@@ -282,20 +288,6 @@ STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_setblocking_obj, ssl_sslsocket_setblocking);
 
-//|     def __hash__(self) -> int:
-//|         """Returns a hash for the Socket."""
-//|         ...
-//|
-STATIC mp_obj_t ssl_sslsocket_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH: {
-            return mp_obj_id(self_in);
-        }
-        default:
-            return MP_OBJ_NULL; // op not supported
-    }
-}
-
 STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&ssl_sslsocket___exit___obj) },
@@ -321,6 +313,6 @@ const mp_obj_type_t ssl_sslsocket_type = {
     .name = MP_QSTR_SSLSocket,
     .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
     MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = ssl_sslsocket_unary_op,
+        .unary_op = mp_generic_unary_op,
         )
 };
