@@ -31,7 +31,6 @@
 
 // ASF4
 #include "hal_gpio.h"
-#include "hal_delay.h"
 #include "hpl_time_measure.h"
 #include "sam.h"
 
@@ -42,27 +41,34 @@ extern volatile uint32_t systick_ms_upper;
 
 void mp_hal_set_interrupt_char(int c);
 
+#define mp_hal_delay_us_fast  mp_hal_delay_us
+
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
 static inline mp_uint_t mp_hal_ticks_us(void) {
-    #if defined(MCU_SAMD51)
-    TC0->COUNT32.CTRLBSET.bit.CMD = TC_CTRLBSET_CMD_READSYNC_Val;
-    while (TC0->COUNT32.CTRLBSET.bit.CMD != 0) {
+    #if defined(MCU_SAMD21)
+
+    return REG_TC4_COUNT32_COUNT;
+
+    #elif defined(MCU_SAMD51)
+
+    TC0->COUNT32.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
+    while (TC0->COUNT32.CTRLBSET.reg != 0) {
     }
-    return REG_TC0_COUNT32_COUNT >> 1;
+    return REG_TC0_COUNT32_COUNT >> 4;
+
     #else
     return systick_ms * 1000;
     #endif
 }
+// ticks_cpu is limited to a 1 ms period, since the CPU SysTick counter
+// is used for the 1 ms SysTick_Handler interrupt.
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
     return _system_time_get(0);
 }
 static inline uint64_t mp_hal_time_ns(void) {
     return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
-}
-static inline void mp_hal_delay_us_fast(mp_uint_t us) {
-    delay_us(us);
 }
 
 // C-level pin HAL

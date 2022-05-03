@@ -57,10 +57,19 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    if (us > 10) {
-        delay_us(us);
+    if (us > 0) {
+        uint32_t start = mp_hal_ticks_us();
+        #if defined(MCU_SAMD21)
+        // SAMD21 counter has effective 32 bit width
+        while ((mp_hal_ticks_us() - start) < us) {
+        }
+        #elif defined(MCU_SAMD51)
+        // SAMD51 counter has effective 28 bit width
+        while (((mp_hal_ticks_us() - start) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1)) < us) {
+        }
+        #endif
     }
- }
+}
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;

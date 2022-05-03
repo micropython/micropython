@@ -29,6 +29,7 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 
+
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)
