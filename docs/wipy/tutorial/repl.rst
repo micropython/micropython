@@ -26,7 +26,7 @@ Windows
 
 First you need to install the FTDI drivers for the expansion board's USB to serial
 converter. Then you need a terminal software. The best option is to download the
-free program PuTTY: `putty.exe <http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
+free program PuTTY: `putty.exe <https://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
 
 **In order to get to the telnet REPL:**
 
@@ -41,8 +41,8 @@ previous step.  With PuTTY, click on "Session" in the left-hand panel, then clic
 the "Serial" radio button on the right, then enter you COM port (eg COM4) in the
 "Serial Line" box.  Finally, click the "Open" button.
 
-Mac OS X
---------
+macOS
+-----
 
 Open a terminal and run::
 
@@ -119,7 +119,7 @@ Resetting the board
 If something goes wrong, you can reset the board in two ways. The first is to press CTRL-D
 at the MicroPython prompt, which performs a soft reset.  You will see a message something like::
 
-    >>> 
+    >>>
     MPY: soft reboot
     MicroPython v1.4.6-146-g1d8b5e5 on 2015-10-21; WiPy with CC3200
     Type "help()" for more information.

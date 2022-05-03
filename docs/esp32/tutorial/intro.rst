@@ -36,7 +36,7 @@ Getting the firmware
 
 The first thing you need to do is download the most recent MicroPython firmware
 .bin file to load onto your ESP32 device. You can download it from the
-`MicroPython downloads page <https://micropython.org/download#esp32>`_.
+`MicroPython downloads page <https://micropython.org/download/?port=esp32>`_.
 From here, you have 3 main choices:
 
 * Stable firmware builds

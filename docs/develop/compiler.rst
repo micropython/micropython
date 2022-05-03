@@ -129,7 +129,7 @@ The parser also maintains a table of constants for use in different aspects of p
 `symbol table <https://steemit.com/programming/@drifter1/writing-a-simple-compiler-on-my-own-symbol-table-basic-structure>`_
 does.
 
-Several optimizations like `constant folding <http://compileroptimizations.com/category/constant_folding.htm>`_
+Several optimizations like `constant folding <https://compileroptimizations.com/category/constant_folding.htm>`_
 on integers for most operations e.g. logical, binary, unary, etc, and optimizing enhancements on parenthesis
 around expressions are performed during this phase, along with some optimizations on strings.
 

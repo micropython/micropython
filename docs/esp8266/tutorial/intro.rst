@@ -43,7 +43,7 @@ Getting the firmware
 
 The first thing you need to do is download the most recent MicroPython firmware
 .bin file to load onto your ESP8266 device. You can download it from the
-`MicroPython downloads page <http://micropython.org/download#esp8266>`_.
+`MicroPython downloads page <https://micropython.org/download/?port=esp8266>`_.
 From here, you have 3 main choices
 
 * Stable firmware builds for 1024kb modules and above.
@@ -110,7 +110,7 @@ that you have.
 
 For some boards with a particular FlashROM configuration (e.g. some variants of
 a NodeMCU board) you may need to manually set a compatible
-`SPI Flash Mode <https://github.com/espressif/esptool/wiki/SPI-Flash-Modes>`_.
+`SPI Flash Mode <https://docs.espressif.com/projects/esptool/en/latest/esp8266/advanced-topics/spi-flash-modes.html>`_.
 You'd usually pick the fastest option that is compatible with your device, but
 the ``-fm dout`` option (the slowest option) should have the best compatibility::
 
@@ -158,7 +158,7 @@ after it, here are troubleshooting recommendations:
   advised to avoid using unearthed power connections when working with ESP8266
   and other boards. In regard to FlashROM hardware problems, there are independent
   (not related to MicroPython in any way) reports
-  `(e.g.) <http://internetofhomethings.com/homethings/?p=538>`_
+  `(e.g.) <https://internetofhomethings.com/homethings/?p=538>`_
   that on some ESP8266 modules, FlashROM can be programmed as little as 20 times
   before programming errors occur. This is *much* less than 100,000 programming
   cycles cited for FlashROM chips of a type used with ESP8266 by reputable

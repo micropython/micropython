@@ -62,12 +62,12 @@ References
 
 -  :ref:`Assembler Tutorial <pyboard_tutorial_assembler>`
 -  `Wiki hints and tips
-   <http://wiki.micropython.org/platforms/boards/pyboard/assembler>`__
+   <https://wiki.micropython.org/platforms/boards/pyboard/assembler>`__
 -  `uPy Inline Assembler source-code,
    emitinlinethumb.c <https://github.com/micropython/micropython/blob/master/py/emitinlinethumb.c>`__
 -  `ARM Thumb2 Instruction Set Quick Reference
-   Card <http://infocenter.arm.com/help/topic/com.arm.doc.qrc0001l/QRC0001_UAL.pdf>`__
+   Card <https://developer.arm.com/documentation/qrc0001/l/QRC0001_UAL.pdf>`__
 -  `RM0090 Reference
-   Manual <http://www.google.ae/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&sqi=2&ved=0CBoQFjAA&url=http%3A%2F%2Fwww.st.com%2Fst-web-ui%2Fstatic%2Factive%2Fen%2Fresource%2Ftechnical%2Fdocument%2Freference_manual%2FDM00031020.pdf&ei=G0rSU66xFeuW0QWYwoD4CQ&usg=AFQjCNFuW6TgzE4QpahO_U7g3f3wdwecAg&sig2=iET-R0y9on_Pbflzf9aYDw&bvm=bv.71778758,bs.1,d.bGQ>`__
+   Manual <https://www.google.ae/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&uact=8&sqi=2&ved=0CBoQFjAA&url=http%3A%2F%2Fwww.st.com%2Fst-web-ui%2Fstatic%2Factive%2Fen%2Fresource%2Ftechnical%2Fdocument%2Freference_manual%2FDM00031020.pdf&ei=G0rSU66xFeuW0QWYwoD4CQ&usg=AFQjCNFuW6TgzE4QpahO_U7g3f3wdwecAg&sig2=iET-R0y9on_Pbflzf9aYDw&bvm=bv.71778758,bs.1,d.bGQ>`__
 -  ARM v7-M Architecture Reference Manual (Available on the
    ARM site after a simple registration procedure. Also available on academic sites but beware of out of date versions.)

@@ -3,7 +3,7 @@
 General information about the Zephyr port
 =========================================
 
-The Zephyr Project is a Linux Foundation hosted Collaboration Project. It’s an open
+The Zephyr Project is a Linux Foundation hosted Collaboration Project. It is an open
 source collaborative effort uniting developers and users in building a
 small, scalable, real-time operating system (RTOS) optimized for resource-constrained
 devices, across multiple architectures.

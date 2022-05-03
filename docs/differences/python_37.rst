@@ -8,30 +8,30 @@ New Features:
   +--------------------------------------------------------+--------------------------------------------------+----------------+
   | **Features:**                                                                                             | **Status**     |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 538 <https://www.python.org/dev/peps/pep-0538/>`_ | Coercing the legacy C locale to a UTF-8 based    |                |
+  | `PEP 538 <https://peps.python.org/pep-0538/>`_         | Coercing the legacy C locale to a UTF-8 based    |                |
   |                                                        | locale                                           |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 539 <https://www.python.org/dev/peps/pep-0539/>`_ | A New C-API for Thread-Local Storage in CPython  |                |
+  | `PEP 539 <https://peps.python.org/pep-0539/>`_         | A New C-API for Thread-Local Storage in CPython  |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 540 <https://www.python.org/dev/peps/pep-0540/>`_ | UTF-8 mode                                       |                |
+  | `PEP 540 <https://peps.python.org/pep-0540/>`_         | UTF-8 mode                                       |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 552 <https://www.python.org/dev/peps/pep-0552/>`_ | Deterministic pyc                                |                |
+  | `PEP 552 <https://peps.python.org/pep-0552/>`_         | Deterministic pyc                                |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 553 <https://www.python.org/dev/peps/pep-0553/>`_ | Built-in breakpoint()                            |                |
+  | `PEP 553 <https://peps.python.org/pep-0553/>`_         | Built-in breakpoint()                            |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 557 <https://www.python.org/dev/peps/pep-0557/>`_ | Data Classes                                     |                |
+  | `PEP 557 <https://peps.python.org/pep-0557/>`_         | Data Classes                                     |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 560 <https://www.python.org/dev/peps/pep-0560/>`_ | Core support for typing module and generic types |                |
+  | `PEP 560 <https://peps.python.org/pep-0560/>`_         | Core support for typing module and generic types |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 562 <https://www.python.org/dev/peps/pep-0562/>`_ | Module __getattr__ and __dir__                   | Partially done |
+  | `PEP 562 <https://peps.python.org/pep-0562/>`_         | Module __getattr__ and __dir__                   | Partially done |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 563 <https://www.python.org/dev/peps/pep-0563/>`_ | Postponed Evaluation of Annotations              |                |
+  | `PEP 563 <https://peps.python.org/pep-0563/>`_         | Postponed Evaluation of Annotations              |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 564 <https://www.python.org/dev/peps/pep-0564/>`_ | Time functions with nanosecond resolution        |                |
+  | `PEP 564 <https://peps.python.org/pep-0564/>`_         | Time functions with nanosecond resolution        |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 565 <https://www.python.org/dev/peps/pep-0565/>`_ | Show DeprecationWarning in __main__              |                |
+  | `PEP 565 <https://peps.python.org/pep-0565/>`_         | Show DeprecationWarning in __main__              |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
-  | `PEP 567 <https://www.python.org/dev/peps/pep-0567/>`_ | Context Variables                                |                |
+  | `PEP 567 <https://peps.python.org/pep-0567/>`_         | Context Variables                                |                |
   +--------------------------------------------------------+--------------------------------------------------+----------------+
 
 Other Language Changes:

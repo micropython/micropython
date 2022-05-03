@@ -16,7 +16,7 @@ At the end of the video, it shows you how to correctly connect the LCD skin to t
 
 .. raw:: html
 
-    <iframe style="margin-left:3em;" width="560" height="315" src="http://www.youtube.com/embed/PowCzdLYbFM?rel=0" frameborder="0" allowfullscreen></iframe>
+    <iframe style="margin-left:3em;" width="560" height="315" src="https://www.youtube.com/embed/PowCzdLYbFM?rel=0" frameborder="0" allowfullscreen></iframe>
 
 For circuit schematics and datasheets for the components on the skin see :ref:`hardware_index`.
 
@@ -60,7 +60,7 @@ enables the 4 touch sensors.  The third line reads the touch
 status and the ``touch`` variable holds the state of the 4 touch
 buttons (A, B, X, Y).
 
-There is a simple driver `here <http://micropython.org/resources/examples/mpr121.py>`__
+There is a simple driver `here <https://micropython.org/resources/examples/mpr121.py>`__
 which allows you to set the threshold and debounce parameters, and
 easily read the touch status and electrode voltage levels.  Copy
 this script to your pyboard (either flash or SD card, in the top
@@ -83,4 +83,4 @@ initialise the I2C bus using::
     >>> m = mpr121.MPR121(pyb.I2C(2, pyb.I2C.CONTROLLER))
 
 There is also a demo which uses the LCD and the touch sensors together,
-and can be found `here <http://micropython.org/resources/examples/lcddemo.py>`__.
+and can be found `here <https://micropython.org/resources/examples/lcddemo.py>`__.

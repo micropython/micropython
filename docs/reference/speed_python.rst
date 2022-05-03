@@ -239,7 +239,7 @@ bit manipulations. It is invoked using a decorator:
 
 As the above fragment illustrates it is beneficial to use Python type hints to assist the Viper optimiser.
 Type hints provide information on the data types of arguments and of the return value; these
-are a standard Python language feature formally defined here `PEP0484 <https://www.python.org/dev/peps/pep-0484/>`_.
+are a standard Python language feature formally defined here `PEP0484 <https://peps.python.org/pep-0484/>`_.
 Viper supports its own set of types namely ``int``, ``uint`` (unsigned integer), ``ptr``, ``ptr8``,
 ``ptr16`` and ``ptr32``. The ``ptrX`` types are discussed below. Currently the ``uint`` type serves
 a single purpose: as a type hint for a function return value. If such a function returns ``0xffffffff``

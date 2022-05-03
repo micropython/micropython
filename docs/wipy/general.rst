@@ -69,7 +69,7 @@ For example, on a linux shell::
    $ ftp 192.168.1.1
 
 The FTP server on the WiPy doesn't support active mode, only passive, therefore,
-if using the native unix ftp client, just after logging in do::
+if using the native unix ``ftp`` client, just after logging in do::
 
     ftp> passive
 
@@ -207,7 +207,7 @@ You can also configure the Pin to generate interrupts. For instance::
 Now every time a falling edge is seen on the gpio pin, the callback will be
 executed. Caution: mechanical push buttons have "bounce" and pushing or
 releasing a switch will often generate multiple edges.
-See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
+See: https://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
 explanation, along with various techniques for debouncing.
 
 All pin objects go through the pin mapper to come up with one of the

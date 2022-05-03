@@ -391,7 +391,7 @@ use an object termed a mutex (name derived from the notion of mutual exclusion).
 before running the critical section and unlocks it at the end. The ISR tests whether the mutex is locked. If it is,
 it avoids the critical section and returns. The design challenge is defining what the ISR should do in the event
 that access to the critical variables is denied. A simple example of a mutex may be found
-`here <https://github.com/peterhinch/micropython-samples.git>`_. Note that the mutex code does disable interrupts,
+`here <https://github.com/peterhinch/micropython-samples>`_. Note that the mutex code does disable interrupts,
 but only for the duration of eight machine instructions: the benefit of this approach is that other interrupts are
 virtually unaffected.
 
