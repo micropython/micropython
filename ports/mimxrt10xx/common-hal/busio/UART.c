@@ -428,6 +428,10 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
         uint32_t recvd = 0;
         LPUART_TransferGetReceiveCount(self->uart, &self->handle, &recvd);
         LPUART_TransferAbortReceive(self->uart, &self->handle);
+        if (recvd == 0) {
+            *errcode = EAGAIN;
+            return MP_STREAM_ERROR;
+        }
         return recvd;
     }
 
