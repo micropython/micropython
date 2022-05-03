@@ -68,6 +68,14 @@ SECTIONS
         /* bit of a hack right now to exclude all floating point and time critical (e.g. memset, memcpy) code from
          * FLASH ... we will include any thing excluded here in .data below by default */
         *(.init)
+
+        __property_getter_start = .;
+        *(.property_getter)
+        __property_getter_end = .;
+        __property_getset_start = .;
+        *(.property_getset)
+        __property_getset_end = .;
+
         *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a:) .text*)
         *(.fini)
         /* Pull all c'tors into .text */

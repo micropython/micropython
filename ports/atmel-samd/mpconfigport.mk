@@ -8,6 +8,7 @@ INTERNAL_LIBM = 1
 USB_NUM_ENDPOINT_PAIRS = 8
 
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
+CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE ?= 1
 
 ######################################################################
 # Put samd21-only choices here.
