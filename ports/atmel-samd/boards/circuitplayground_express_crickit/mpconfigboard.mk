@@ -18,7 +18,7 @@ CIRCUITPY_KEYPAD = 0
 CIRCUITPY_ONEWIREIO = 0
 
 # Include these Python libraries in firmware.
-FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_CircuitPlayground/frozen_cpx
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Crickit
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Motor
