@@ -328,6 +328,10 @@ STATIC void print_help(char **argv) {
         , heap_size);
     impl_opts_cnt++;
     #endif
+    #if defined(__APPLE__)
+    printf("  realtime -- set thread priority to realtime\n");
+    impl_opts_cnt++;
+    #endif
 
     if (impl_opts_cnt == 0) {
         printf("  (none)\n");
@@ -398,6 +402,15 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
+                #endif
+                #if defined(__APPLE__)
+                } else if (strcmp(argv[a + 1], "realtime") == 0) {
+                    #if MICROPY_PY_THREAD
+                    mp_thread_is_realtime_enabled = true;
+                    #endif
+                    // main thread was already intialized before the option
+                    // was parsed, so we have to enable realtime here.
+                    mp_thread_set_realtime();
                 #endif
                 } else {
                 invalid_arg:
