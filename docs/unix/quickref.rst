@@ -73,6 +73,8 @@ General options:
     - ``-X heapsize=<n>[w][K|M]`` sets the heap size for the garbage collector.
       The suffix ``w`` means words instead of bytes. ``K`` means x1024 and ``M``
       means x1024x1024.
+    - ``-X realtime`` sets thread priority to realtime. This can be used to
+      improve timer precision. Only available on macOS.
 
 
 

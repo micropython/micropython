@@ -192,6 +192,13 @@ void mp_thread_set_state(mp_state_thread_t *state) {
 }
 
 void mp_thread_start(void) {
+    // enable realtime priority if `-X realtime` command line parameter was set
+    #if defined(__APPLE__)
+    if (mp_thread_is_realtime_enabled) {
+        mp_thread_set_realtime();
+    }
+    #endif
+
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
     mp_thread_unix_begin_atomic_section();
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
@@ -310,3 +317,39 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 }
 
 #endif // MICROPY_PY_THREAD
+
+// this is used even when MICROPY_PY_THREAD is disabled
+
+#if defined(__APPLE__)
+#include <mach/mach_error.h>
+#include <mach/mach_time.h>
+#include <mach/thread_act.h>
+#include <mach/thread_policy.h>
+
+bool mp_thread_is_realtime_enabled;
+
+// based on https://developer.apple.com/library/archive/technotes/tn2169/_index.html
+void mp_thread_set_realtime(void) {
+    mach_timebase_info_data_t timebase_info;
+
+    mach_timebase_info(&timebase_info);
+
+    const uint64_t NANOS_PER_MSEC = 1000000ULL;
+    double clock2abs = ((double)timebase_info.denom / (double)timebase_info.numer) * NANOS_PER_MSEC;
+
+    thread_time_constraint_policy_data_t policy;
+    policy.period = 0;
+    policy.computation = (uint32_t)(5 * clock2abs); // 5 ms of work
+    policy.constraint = (uint32_t)(10 * clock2abs);
+    policy.preemptible = FALSE;
+
+    int kr = thread_policy_set(pthread_mach_thread_np(pthread_self()),
+        THREAD_TIME_CONSTRAINT_POLICY,
+        (thread_policy_t)&policy,
+        THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+
+    if (kr != KERN_SUCCESS) {
+        mach_error("thread_policy_set:", kr);
+    }
+}
+#endif
