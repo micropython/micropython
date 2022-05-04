@@ -49,7 +49,12 @@
 //| """Native helpers for driving displays
 //|
 //| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating."""
+//| including synchronizing with refresh rates and partial updating.
+//|
+//| For more a more thorugh explanation and guide for using `displayio`, please
+//| refer to this Learn guide:
+//| https://learn.adafruit.com/circuitpython-display-support-using-displayio
+//| """
 //|
 
 //| import paralleldisplay
