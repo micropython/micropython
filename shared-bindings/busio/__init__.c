@@ -68,10 +68,10 @@
 //| This example will initialize the the device, run
 //| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
 //| hardware. The last step is optional because CircuitPython automatically
-//| resets hardware after a program finishes."""
+//| resets hardware after a program finishes.
 //|
 //| Note that drivers will typically handle communication if provided the bus
-//| instance (such as `busio.I2C(board.SCL, board.SDA)`), and that many of
+//| instance (such as ``busio.I2C(board.SCL, board.SDA)``), and that many of
 //| the methods listed here are lower level functionalities that are needed
 //| for working with custom drivers.
 //|
@@ -80,6 +80,7 @@
 //|
 //| Tutorial for UART:
 //| https://learn.adafruit.com/circuitpython-essentials/circuitpython-uart-serial
+//| """
 //|
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
