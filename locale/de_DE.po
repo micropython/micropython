@@ -634,7 +634,7 @@ msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Die Pufferlänge muss ein vielfaches von 512 sein"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Der Puffer muss ein vielfaches von 512 bytes sein"
 

@@ -630,7 +630,7 @@ msgstr ""
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 

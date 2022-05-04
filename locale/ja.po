@@ -630,7 +630,7 @@ msgstr "バッファ長%dは大きすぎます。%d以下でなければなり�
 msgid "Buffer length must be a multiple of 512"
 msgstr "バッファ長は512の倍数でなければなりません"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "バッファは512の倍数でなければなりません"
 

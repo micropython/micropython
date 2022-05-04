@@ -640,7 +640,7 @@ msgstr "Mevcut arabellek boyutu %d çok büyük. En fazla %d kadar olmalı"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Arabellek boyutu 512'nin katı olmalı"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 

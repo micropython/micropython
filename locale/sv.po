@@ -633,7 +633,7 @@ msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Buffertlängd måste vara en multipel av 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufferten måste vara en multipel av 512 byte"
 

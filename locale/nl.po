@@ -628,7 +628,7 @@ msgstr "Buffer lengte %d te groot. Het moet kleiner zijn dan %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Buffer lengte moet een veelvoud van 512 zijn"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 
