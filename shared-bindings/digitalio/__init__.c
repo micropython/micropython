@@ -71,7 +71,11 @@
 //|       led.value = True
 //|       time.sleep(0.1)
 //|       led.value = False
-//|       time.sleep(0.1)"""
+//|       time.sleep(0.1)
+//|
+//| For more information on using `digitalio`, see this Learn guide:
+//| https://learn.adafruit.com/circuitpython-digital-inputs-and-outputs
+//| """
 //|
 
 STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
