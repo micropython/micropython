@@ -73,10 +73,13 @@
 //|       led.value = False
 //|       time.sleep(0.1)
 //|
-//| For more information on using `digitalio`, see this Learn guide:
+//| For the essentials of `digitalio`, see the CircuitPython Essentials
+//| Learn guide:
+//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-digital-in-out
+//|
+//| For more information on using `digitalio`, see this additional Learn guide:
 //| https://learn.adafruit.com/circuitpython-digital-inputs-and-outputs
 //| """
-//|
 
 STATIC const mp_rom_map_elem_t digitalio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_digitalio) },
