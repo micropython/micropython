@@ -88,10 +88,10 @@
 // Memory allocation hooks
 #include <stdlib.h>
 #include <stdio.h>
-void *m_calloc_mbedtls(size_t nmemb, size_t size);
-void m_free_mbedtls(void *ptr);
-#define MBEDTLS_PLATFORM_STD_CALLOC m_calloc_mbedtls
-#define MBEDTLS_PLATFORM_STD_FREE m_free_mbedtls
+void *m_tracked_calloc(size_t nmemb, size_t size);
+void m_tracked_free(void *ptr);
+#define MBEDTLS_PLATFORM_STD_CALLOC m_tracked_calloc
+#define MBEDTLS_PLATFORM_STD_FREE m_tracked_free
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
 #include "mbedtls/check_config.h"

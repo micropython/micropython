@@ -48,6 +48,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC               (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_ENABLE_FINALISER            (1)
@@ -250,12 +251,6 @@ extern const struct _mp_obj_module_t mp_module_network;
 #define SOCKET_BUILTIN_MODULE
 #endif
 
-#if MICROPY_SSL_MBEDTLS
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
-#else
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
-#endif
-
 #if defined(MICROPY_HW_ETH_MDC)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
@@ -290,10 +285,8 @@ extern const struct _mp_obj_type_t network_lan_type;
     void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]; \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
-    /* root pointers for sub-systems */ \
-    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     /* root pointers defined by a board */ \
-        MICROPY_BOARD_ROOT_POINTERS \
+    MICROPY_BOARD_ROOT_POINTERS \
 
 #define MP_STATE_PORT MP_STATE_VM
 
