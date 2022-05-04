@@ -43,6 +43,12 @@
 //|         ...
 //|
 
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Pin."""
+//|         ...
+//|
+// Provided by mp_generic_unary_op().
+
 static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {
     const mp_map_t *board_map = &board_module_globals.map;
     for (uint8_t i = 0; i < board_map->alloc; i++) {
@@ -80,8 +86,12 @@ STATIC void mcu_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 
 const mp_obj_type_t mcu_pin_type = {
     { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_Pin,
-    .print = mcu_pin_print
+    .print = mcu_pin_print,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        )
 };
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj) {
