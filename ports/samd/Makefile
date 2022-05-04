@@ -89,7 +89,6 @@ SRC_C = \
 	samd_soc.c \
 	tusb_port.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
-	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_delay.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hpl/systick/hpl_systick.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hpl/nvmctrl/hpl_nvmctrl.c \

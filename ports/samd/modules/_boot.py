@@ -15,3 +15,7 @@ uos.mount(vfs, "/")
 
 gc.collect()
 del uos, vfs, gc
+try:
+    import board
+except:
+    pass

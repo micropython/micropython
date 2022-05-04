@@ -58,12 +58,12 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PB11}, // SCK = 24
     {{&machine_pin_type}, PIN_PA00}, // DOTSTAR_CLK = 25
     {{&machine_pin_type}, PIN_PA01}, // DOTSTAR_DATA = 26
-    {{&machine_pin_type}, PIN_PA30}, // SWCLK = 27
-    {{&machine_pin_type}, PIN_PA31}, // SWDIO = 28
-    {{&machine_pin_type}, PIN_PB22}, // FLASH_MOSI = 29
-    {{&machine_pin_type}, PIN_PB03}, // FLASH_MISO = 30
-    {{&machine_pin_type}, PIN_PB23}, // FLASH_SCK = 31
-    {{&machine_pin_type}, PIN_PA27}, // FLASH_CS = 32
+    {{&machine_pin_type}, PIN_PB22}, // FLASH_MOSI = 27
+    {{&machine_pin_type}, PIN_PB03}, // FLASH_MISO = 28
+    {{&machine_pin_type}, PIN_PB23}, // FLASH_SCK = 29
+    {{&machine_pin_type}, PIN_PA27}, // FLASH_CS = 30
+    {{&machine_pin_type}, PIN_PA30}, // SWCLK = 31
+    {{&machine_pin_type}, PIN_PA31}, // SWDIO = 32
 };
 
 const machine_led_obj_t machine_led_obj[] = {
