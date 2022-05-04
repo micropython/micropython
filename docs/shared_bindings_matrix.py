@@ -70,6 +70,9 @@ frozen_excludes = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
 """Files and dirs at the root of a frozen directory that should be ignored.
 This is the same list as in the preprocess_frozen_modules script."""
 
+repository_urls = {}
+"""Cache of repository URLs for frozen modules."""
+
 def get_circuitpython_root_dir():
     """ The path to the root './circuitpython' directory
     """
@@ -168,15 +171,38 @@ def get_settings_from_makefile(port_dir, board_name):
     return settings
 
 def get_repository_url(directory):
-    contents = subprocess.run(
-        ["git", "remote", "get-url", "origin"],
-        encoding="utf-8",
-        errors="replace",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        cwd=directory
-    )
-    return contents.stdout.strip()
+    if directory in repository_urls:
+        return repository_urls[directory]
+    readme = None
+    for readme_path in (
+            os.path.join(directory, "README.rst"),
+            os.path.join(os.path.dirname(directory), "README.rst")
+        ):
+        if os.path.exists(readme_path):
+            readme = readme_path
+            break
+    path = None
+    if readme:
+        with open(readme, "r") as fp:
+            for line in fp.readlines():
+                if m := re.match("\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*", line):
+                    path = m.group(1)
+                    break
+                if m := re.search("<(http[^>]+)>", line):
+                    path = m.group(1)
+                    break
+    if path is None:
+        contents = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=directory
+        )
+        path = contents.stdout.strip()
+    repository_urls[directory] = path
+    return path
 
 def frozen_modules_from_dirs(frozen_mpy_dirs):
     """
