@@ -65,6 +65,7 @@
 #endif
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC       (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
@@ -293,12 +294,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_SSL_MBEDTLS
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
-#else
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
-#endif
-
 #if MICROPY_BLUETOOTH_NIMBLE
 struct _mp_bluetooth_nimble_root_pointers_t;
 struct _mp_bluetooth_nimble_malloc_t;
@@ -354,7 +349,6 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     mp_obj_list_t mod_network_nic_list; \
     \
     /* root pointers for sub-systems */ \
-    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK \
     \
