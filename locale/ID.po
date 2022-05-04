@@ -631,7 +631,7 @@ msgstr "Panjang buffer %d terlalu besar. Itu harus kurang dari %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Panjang buffer harus kelipatan 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 

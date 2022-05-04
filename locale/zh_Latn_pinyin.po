@@ -640,7 +640,7 @@ msgstr "Huǎnchōng qū chángdù%d tài dà. Tā bìxū xiǎoyú%d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Huǎnchōngqū chángdù bìxū wéi 512 de bèishù"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 
