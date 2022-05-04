@@ -220,6 +220,55 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
     }
 
+    // tracked allocation
+    {
+        #define NUM_PTRS (8)
+        #define NUM_BYTES (128)
+        #define FLIP_POINTER(p) ((uint8_t *)((uintptr_t)(p) ^ 0x0f))
+
+        mp_printf(&mp_plat_print, "# tracked allocation\n");
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+
+        uint8_t *ptrs[NUM_PTRS];
+
+        // allocate memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            ptrs[i] = m_tracked_calloc(1, NUM_BYTES);
+            bool all_zero = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (ptrs[i][j] != 0) {
+                    all_zero = false;
+                    break;
+                }
+                ptrs[i][j] = j;
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, all_zero);
+
+            // hide the pointer from the GC and collect
+            ptrs[i] = FLIP_POINTER(ptrs[i]);
+            gc_collect();
+        }
+
+        // check the memory blocks have the correct content
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            bool correct_contents = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (FLIP_POINTER(ptrs[i])[j] != j) {
+                    correct_contents = false;
+                    break;
+                }
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, correct_contents);
+        }
+
+        // free the memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            m_tracked_free(FLIP_POINTER(ptrs[i]));
+        }
+
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+    }
+
     // vstr
     {
         mp_printf(&mp_plat_print, "# vstr\n");
