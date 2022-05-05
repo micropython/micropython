@@ -142,9 +142,9 @@ void common_hal_digitalio_digitalinout_set_pull(
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     digitalio_digitalinout_obj_t *self) {
     gpio_num_t gpio_num = self->pin->number;
-    if (REG_GET_BIT(GPIO_PIN_MUX_REG[gpio_num], FUN_PU) == 1) {
+    if (REG_GET_BIT(GPIO_PIN_MUX_REG[gpio_num], FUN_PU)) {
         return PULL_UP;
-    } else if (REG_GET_BIT(GPIO_PIN_MUX_REG[gpio_num], FUN_PD) == 1) {
+    } else if (REG_GET_BIT(GPIO_PIN_MUX_REG[gpio_num], FUN_PD)) {
         return PULL_DOWN;
     }
     return PULL_NONE;
