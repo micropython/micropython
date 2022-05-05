@@ -360,12 +360,7 @@ STATIC file_descriptor_obj *microbit_file_open(const char *name, size_t name_len
 }
 
 STATIC file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bool write, bool binary) {
-    file_descriptor_obj *res = m_new_obj(file_descriptor_obj);
-    if (binary) {
-        res->base.type = &uos_mbfs_fileio_type;
-    } else {
-        res->base.type = &uos_mbfs_textio_type;
-    }
+    file_descriptor_obj *res = m_new_obj(file_descriptor_obj, binary ? &uos_mbfs_fileio_type : &uos_mbfs_textio_type);
     res->start_chunk = start_chunk;
     res->seek_chunk = start_chunk;
     res->seek_offset = file_system_chunks[start_chunk].header.name_len+2;
@@ -595,8 +590,7 @@ STATIC mp_obj_t uos_mbfs_ilistdir_it_iternext(mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t uos_mbfs_ilistdir(void) {
-    uos_mbfs_ilistdir_it_t *iter = m_new_obj(uos_mbfs_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter;
+    uos_mbfs_ilistdir_it_t *iter = mp_obj_malloc(uos_mbfs_ilistdir_it_t, &mp_type_polymorph_iter);
     iter->iternext = uos_mbfs_ilistdir_it_iternext;
     iter->index = 1;
 

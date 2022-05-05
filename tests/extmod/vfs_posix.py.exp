@@ -7,7 +7,6 @@ hello
 ['test2']
 ['test2']
 <class 'tuple'>
-<class 'tuple'>
 <class 'str'>
 <class 'bytes'>
 []

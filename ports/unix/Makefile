@@ -225,8 +225,6 @@ SRC_C += \
 	mpthreadport.c \
 	input.c \
 	modmachine.c \
-	modos.c \
-	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
@@ -270,12 +268,6 @@ CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
-HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
-ifeq ($(HASCPP17), 1)
-	CXXFLAGS += -std=c++17
-else
-	CXXFLAGS += -std=c++11
-endif
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)

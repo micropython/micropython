@@ -44,7 +44,7 @@ Compatibility is based on the following:
   loading it must support execution of that architecture's code.
 
 If a MicroPython system supports importing .mpy files then the
-``sys.implementation.mpy`` field will exist and return an integer which
+``sys.implementation._mpy`` field will exist and return an integer which
 encodes the version (lower 8 bits), features and native architecture.
 
 Trying to import an .mpy file that fails one of the first four tests will
@@ -58,7 +58,7 @@ If importing an .mpy file fails then try the following:
   by executing::
 
     import sys
-    sys_mpy = sys.implementation.mpy
+    sys_mpy = sys.implementation._mpy
     arch = [None, 'x86', 'x64',
         'armv6', 'armv6m', 'armv7m', 'armv7em', 'armv7emsp', 'armv7emdp',
         'xtensa', 'xtensawin'][sys_mpy >> 10]

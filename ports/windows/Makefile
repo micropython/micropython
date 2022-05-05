@@ -49,14 +49,12 @@ SRC_C = \
 	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
-	ports/unix/modos.c \
 	ports/unix/modmachine.c \
 	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
-	sleep.c \
 	fmode.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
@@ -90,6 +88,8 @@ SRC_QSTR_AUTO_DEPS +=
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
 endif
+
+CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 include $(TOP)/py/mkrules.mk
 

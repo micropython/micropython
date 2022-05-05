@@ -46,6 +46,7 @@ enum {
 };
 
 typedef size_t qstr;
+typedef uint16_t qstr_short_t;
 
 #if MICROPY_QSTR_BYTES_IN_HASH == 1
 typedef uint8_t qstr_hash_t;

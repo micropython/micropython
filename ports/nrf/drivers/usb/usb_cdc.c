@@ -34,6 +34,7 @@
 #include "nrfx_power.h"
 #include "nrfx_uart.h"
 #include "py/ringbuf.h"
+#include "py/stream.h"
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -192,12 +193,24 @@ void usb_cdc_sd_event_handler(uint32_t soc_evt) {
 }
 #endif
 
+uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
+    uintptr_t ret = 0;
+    if (poll_flags & MP_STREAM_POLL_RD) {
+        usb_cdc_loop();
+        if (cdc_rx_any()) {
+            ret |= MP_STREAM_POLL_RD;
+        }
+    }
+    return ret;
+}
+
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         usb_cdc_loop();
         if (cdc_rx_any()) {
             return cdc_rx_char();
         }
+        MICROPY_EVENT_POLL_HOOK
     }
 
     return 0;

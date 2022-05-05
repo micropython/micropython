@@ -33,7 +33,9 @@ if(NOT EXISTS ${MICROPY_BOARD_DIR}/mpconfigboard.cmake)
     message(FATAL_ERROR "Invalid MICROPY_BOARD specified: ${MICROPY_BOARD}")
 endif()
 
-# Include board config
+set(MICROPY_USER_FROZEN_MANIFEST ${MICROPY_FROZEN_MANIFEST})
+
+# Include board config, it may override MICROPY_FROZEN_MANIFEST
 include(${MICROPY_BOARD_DIR}/mpconfigboard.cmake) 
 
 # Set the PICO_BOARD if it's not already set (allow a board to override it).
@@ -70,6 +72,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+    ${MICROPY_DIR}/shared/runtime/interrupt_char.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/pyexec.c
     ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
@@ -97,7 +100,6 @@ set(MICROPY_SOURCE_PORT
     main.c
     modmachine.c
     modrp2.c
-    moduos.c
     modutime.c
     mphalport.c
     mpthreadport.c
@@ -105,6 +107,7 @@ set(MICROPY_SOURCE_PORT
     rp2_pio.c
     tusb_port.c
     uart.c
+    msc_disk.c
 )
 
 set(MICROPY_SOURCE_QSTR
@@ -216,9 +219,13 @@ if (MICROPY_PY_NETWORK_NINAW10)
     )
 endif()
 
-# Define mpy-cross flags and frozen manifest
+# Define mpy-cross flags
 set(MICROPY_CROSS_FLAGS -march=armv7m)
-if (NOT MICROPY_FROZEN_MANIFEST)
+
+# Set the frozen manifest file
+if (MICROPY_USER_FROZEN_MANIFEST)
+    set(MICROPY_FROZEN_MANIFEST ${MICROPY_USER_FROZEN_MANIFEST})
+elseif (NOT MICROPY_FROZEN_MANIFEST)
     set(MICROPY_FROZEN_MANIFEST ${PROJECT_SOURCE_DIR}/boards/manifest.py)
 endif()
 
@@ -230,6 +237,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_SOURCE_PORT}
 )
 
+target_link_libraries(${MICROPY_TARGET} micropy_lib_mbedtls)
 target_link_libraries(${MICROPY_TARGET} usermod)
 
 target_include_directories(${MICROPY_TARGET} PRIVATE

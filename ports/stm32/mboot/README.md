@@ -59,6 +59,13 @@ How to use
    second one use the same configuration names as above but with
    `SPIFLASH2`, ie `MBOOT_SPIFLASH2_ADDR` etc.
 
+   SD card support (read-only, useful in combination with `MBOOT_FSLOAD`)
+   can be enabled with the following options:
+
+    #define MBOOT_ADDRESS_SPACE_64BIT   (1)
+    #define MBOOT_SDCARD_ADDR           (0x100000000ULL)
+    #define MBOOT_SDCARD_BYTE_SIZE      (0x400000000ULL)
+
    To enable loading firmware from a filesystem use:
 
     #define MBOOT_FSLOAD (1)
@@ -137,9 +144,13 @@ are located and what filename to program.  The elements to use are:
 
 * MOUNT: type=2, len=10, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32>)
 
+* MOUNT: type=2, len=14, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u32> <byte-len:u32> <block-size:u32>)
+
+* MOUNT: type=2, len=22, payload=(<mount-point:u8> <fs-type:u8> <base-addr:u64> <byte-len:u64> <block-size:u32>)
+
 * FSLOAD: type=3, len=1+n, payload=(<mount-point:u8> <filename...>)
 
-`u32` means unsigned 32-bit little-endian integer.
+`u32`/`u64` mean unsigned 32-bit/64-bit little-endian integers.
 
 The firmware to load must be a gzip'd DfuSe file (.dfu.gz) and stored within a
 FAT or littlefs formatted partition.
@@ -154,6 +165,11 @@ firmware.dfu.gz stored on the default FAT filesystem:
 
 The 0x80000000 value is the address understood by Mboot as the location of
 the external SPI flash, configured via `MBOOT_SPIFLASH_ADDR`.
+
+To load a file from the SD card (see `MBOOT_SDCARD_ADDR`), assuming it is a
+16GiB card, use:
+
+    fwupdate.update_mpy('firmware.dfu.gz', 0x1_00000000, 0x4_00000000, addr_64bit=True)
 
 Signed and encrypted DFU support
 --------------------------------

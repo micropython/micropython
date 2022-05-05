@@ -13,6 +13,9 @@ from multiprocessing.pool import ThreadPool
 import threading
 import tempfile
 
+# Maximum time to run a PC-based test, in seconds.
+TEST_TIMEOUT = 30
+
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
@@ -109,6 +112,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         return b"SKIP\n"
                     import select
 
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
+
                     def get(required=False):
                         rv = b""
                         while True:
@@ -174,10 +181,15 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+                output_mupy = subprocess.check_output(
+                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT
+                )
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
@@ -429,6 +441,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
+        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":
@@ -472,6 +485,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             for t in tests:
                 if t.startswith("basics/io_"):
                     skip_tests.add(t)
+        elif args.target == "renesas-ra":
+            skip_tests.add(
+                "extmod/utime_time_ns.py"
+            )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
 
@@ -500,6 +517,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
+        skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
         skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
@@ -521,6 +539,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "micropython/opt_level_lineno.py"
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
+        skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
@@ -544,7 +563,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
-        is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
@@ -788,7 +807,7 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf")
+    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf", "renesas-ra")
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -812,6 +831,8 @@ the last matching regex is used:
             if args.target == "pyboard":
                 # run pyboard tests
                 test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+            elif args.target in ("renesas-ra"):
+                test_dirs += ("float", "inlineasm", "renesas-ra")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":

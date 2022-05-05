@@ -18,7 +18,7 @@
 [   8]     literal \.\+
 [   9]   \(rule\|expr_stmt\)(5) (n=2)
            id(d)
-           bytes(bytes)
+[   9]     literal \.\+
 [  10]   \(rule\|expr_stmt\)(5) (n=2)
            id(e)
 [  10]     literal \.\+
@@ -31,7 +31,7 @@
 [  13]   \(rule\|expr_stmt\)(5) (n=2)
            id(h)
 [  13]     \(rule\|atom_expr_normal\)(44) (n=2)
-[  13]       literal const(\.\+)
+[  13]       literal const(\.\+)="fstring: '{}'"
 [  13]       \(rule\|atom_expr_trailers\)(142) (n=2)
 [  13]         \(rule\|trailer_period\)(50) (n=1)
                  id(format)
@@ -39,50 +39,52 @@
 [  13]           \(rule\|arglist\)(164) (n=1)
                    id(b)
 ----------------
-File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
-########
-\.\+63
+File cmdline/cmd_parsetree.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 62 bytes)
+Raw bytecode (code_info_size=13, bytecode_size=49):
+ 20 16 01 60 27 22 23 24 24 24 24 24 25 2a 00 5f
+ 4b 04 16 02 42 3a 51 16 03 10 04 16 05 23 00 16
+ 06 23 01 16 07 23 02 16 08 23 03 16 09 22 80 7b
+ 16 0a 23 04 14 0b 11 05 36 01 16 0c 51 63
 arg names:
 (N_STATE 5)
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=4
-  bc=9 line=5
-  bc=12 line=6
-  bc=16 line=7
-  bc=22 line=8
-  bc=27 line=9
-  bc=32 line=10
-  bc=37 line=11
-  bc=42 line=12
-  bc=48 line=13
+  bc=7 line=5
+  bc=9 line=6
+  bc=12 line=7
+  bc=16 line=8
+  bc=20 line=9
+  bc=24 line=10
+  bc=28 line=11
+  bc=32 line=12
+  bc=37 line=13
 00 BUILD_TUPLE 0
 02 GET_ITER_STACK
-03 FOR_ITER 12
-06 STORE_NAME i
-09 JUMP 3
-12 LOAD_CONST_NONE
-13 STORE_NAME a
-16 LOAD_CONST_STRING 'str'
-19 STORE_NAME b
-22 LOAD_CONST_OBJ \.\+
-24 STORE_NAME c
-27 LOAD_CONST_OBJ \.\+
-29 STORE_NAME d
-32 LOAD_CONST_OBJ \.\+
-34 STORE_NAME e
-37 LOAD_CONST_OBJ \.\+
-39 STORE_NAME f
-42 LOAD_CONST_SMALL_INT 123
-45 STORE_NAME g
-48 LOAD_CONST_OBJ \.\+
-50 LOAD_METHOD format
-53 LOAD_NAME b
-56 CALL_METHOD n=1 nkw=0
-58 STORE_NAME h
-61 LOAD_CONST_NONE
-62 RETURN_VALUE
+03 FOR_ITER 9
+05 STORE_NAME i
+07 JUMP 3
+09 LOAD_CONST_NONE
+10 STORE_NAME a
+12 LOAD_CONST_STRING 'str'
+14 STORE_NAME b
+16 LOAD_CONST_OBJ \.\+='a very long str that will not be interned'
+18 STORE_NAME c
+20 LOAD_CONST_OBJ \.\+=b'bytes'
+22 STORE_NAME d
+24 LOAD_CONST_OBJ \.\+=b'a very long bytes that will not be interned'
+26 STORE_NAME e
+28 LOAD_CONST_OBJ \.\+=123456789012345678901234567890
+30 STORE_NAME f
+32 LOAD_CONST_SMALL_INT 123
+35 STORE_NAME g
+37 LOAD_CONST_OBJ \.\+="fstring: '{}'"
+39 LOAD_METHOD format
+41 LOAD_NAME b
+43 CALL_METHOD n=1 nkw=0
+45 STORE_NAME h
+47 LOAD_CONST_NONE
+48 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+

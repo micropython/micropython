@@ -53,7 +53,6 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/fatfs_port.c
     ${PROJECT_DIR}/help.c
     ${PROJECT_DIR}/modutime.c
-    ${PROJECT_DIR}/moduos.c
     ${PROJECT_DIR}/machine_bitstream.c
     ${PROJECT_DIR}/machine_timer.c
     ${PROJECT_DIR}/machine_pin.c

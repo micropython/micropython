@@ -97,8 +97,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
 
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    mp_obj_bluetooth_uuid_t *self = m_new_obj(mp_obj_bluetooth_uuid_t);
-    self->base.type = &mp_type_bluetooth_uuid;
+    mp_obj_bluetooth_uuid_t *self = mp_obj_malloc(mp_obj_bluetooth_uuid_t, &mp_type_bluetooth_uuid);
 
     if (mp_obj_is_int(all_args[0])) {
         self->type = MP_BLUETOOTH_UUID_TYPE_16;

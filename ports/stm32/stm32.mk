@@ -43,12 +43,12 @@ ifneq ($(BUILDING_MBOOT),1)
 # Select hardware floating-point support.
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
 CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 SUPPORTS_HARDWARE_FP_DOUBLE = 1
 else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0 wl))
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0 wl))
 CFLAGS_CORTEX_M += -msoft-float
 else
 CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
@@ -61,6 +61,7 @@ endif
 CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
 CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
+CFLAGS_MCU_g0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
 CFLAGS_MCU_g4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 CFLAGS_MCU_l0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
 CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4

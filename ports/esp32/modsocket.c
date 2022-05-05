@@ -295,9 +295,16 @@ STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-STATIC mp_obj_t socket_listen(const mp_obj_t arg0, const mp_obj_t arg1) {
-    socket_obj_t *self = MP_OBJ_TO_PTR(arg0);
-    int backlog = mp_obj_get_int(arg1);
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     self->state = SOCKET_STATE_CONNECTED;
     int r = lwip_listen(self->fd, backlog);
     if (r < 0) {
@@ -305,7 +312,7 @@ STATIC mp_obj_t socket_listen(const mp_obj_t arg0, const mp_obj_t arg1) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
     socket_obj_t *self = MP_OBJ_TO_PTR(arg0);

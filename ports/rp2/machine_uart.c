@@ -34,6 +34,7 @@
 #include "hardware/irq.h"
 #include "hardware/uart.h"
 #include "hardware/regs/uart.h"
+#include "pico/mutex.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_UART_BITS (8)
@@ -72,6 +73,16 @@
 #define UART_HWCONTROL_CTS  (1)
 #define UART_HWCONTROL_RTS  (2)
 
+STATIC mutex_t write_mutex_0;
+STATIC mutex_t write_mutex_1;
+STATIC mutex_t read_mutex_0;
+STATIC mutex_t read_mutex_1;
+
+auto_init_mutex(write_mutex_0);
+auto_init_mutex(write_mutex_1);
+auto_init_mutex(read_mutex_0);
+auto_init_mutex(read_mutex_1);
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uart_inst_t *const uart;
@@ -89,18 +100,18 @@ typedef struct _machine_uart_obj_t {
     uint8_t invert;
     uint8_t flow;
     ringbuf_t read_buffer;
-    bool read_lock;
+    mutex_t *read_mutex;
     ringbuf_t write_buffer;
-    bool write_lock;
+    mutex_t *write_mutex;
 } machine_uart_obj_t;
 
 STATIC machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, uart0, 0, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART0_TX, MICROPY_HW_UART0_RX, MICROPY_HW_UART0_CTS, MICROPY_HW_UART0_RTS,
-     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_0, {NULL, 1, 0, 0}, &write_mutex_0},
     {{&machine_uart_type}, uart1, 1, 0, DEFAULT_UART_BITS, UART_PARITY_NONE, DEFAULT_UART_STOP,
      MICROPY_HW_UART1_TX, MICROPY_HW_UART1_RX, MICROPY_HW_UART1_CTS, MICROPY_HW_UART1_RTS,
-     0, 0, 0, 0, {NULL, 1, 0, 0}, 0, {NULL, 1, 0, 0}, 0},
+     0, 0, 0, 0, {NULL, 1, 0, 0}, &read_mutex_1, {NULL, 1, 0, 0}, &write_mutex_1},
 };
 
 STATIC const char *_parity_name[] = {"None", "0", "1"};
@@ -109,19 +120,42 @@ STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"
 /******************************************************************************/
 // IRQ and buffer handling
 
+static inline bool write_mutex_try_lock(machine_uart_obj_t *u) {
+    return mutex_enter_timeout_ms(u->write_mutex, 0);
+}
+
+static inline void write_mutex_unlock(machine_uart_obj_t *u) {
+    mutex_exit(u->write_mutex);
+}
+
+static inline bool read_mutex_try_lock(machine_uart_obj_t *u) {
+    return mutex_enter_timeout_ms(u->read_mutex, 0);
+}
+
+static inline void read_mutex_unlock(machine_uart_obj_t *u) {
+    mutex_exit(u->read_mutex);
+}
+
 // take all bytes from the fifo and store them in the buffer
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
-    while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
-        // get a byte from uart and put into the buffer
-        ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+    if (read_mutex_try_lock(self)) {
+        while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
+            // get a byte from uart and put into the buffer
+            ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+        }
+        read_mutex_unlock(self);
     }
 }
 
 // take bytes from the buffer and put them into the UART FIFO
+// Re-entrancy: quit if an instance already running
 STATIC void uart_fill_tx_fifo(machine_uart_obj_t *self) {
-    while (uart_is_writable(self->uart) && ringbuf_avail(&self->write_buffer) > 0) {
-        // get a byte from the buffer and put it into the uart
-        uart_get_hw(self->uart)->dr = ringbuf_get(&(self->write_buffer));
+    if (write_mutex_try_lock(self)) {
+        while (uart_is_writable(self->uart) && ringbuf_avail(&self->write_buffer) > 0) {
+            // get a byte from the buffer and put it into the uart
+            uart_get_hw(self->uart)->dr = ringbuf_get(&(self->write_buffer));
+        }
+        write_mutex_unlock(self);
     }
 }
 
@@ -129,16 +163,12 @@ STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
     if (uart_get_hw(self->uart)->mis & (UART_UARTMIS_RXMIS_BITS | UART_UARTMIS_RTMIS_BITS)) { // rx interrupt?
         // clear all interrupt bits but tx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_TXIC_BITS);
-        if (!self->read_lock) {
-            uart_drain_rx_fifo(self);
-        }
+        uart_drain_rx_fifo(self);
     }
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
         // clear all interrupt bits but rx
         uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_RXIC_BITS);
-        if (!self->write_lock) {
-            uart_fill_tx_fifo(self);
-        }
+        uart_fill_tx_fifo(self);
     }
 }
 
@@ -270,8 +300,6 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         self->flow = args[ARG_flow].u_int;
     }
 
-    self->read_lock = false;
-
     // Set the RX buffer size if configured.
     size_t rxbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_rxbuf].u_int > 0) {
@@ -393,9 +421,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // get all bytes from the fifo first
-    self->read_lock = true;
     uart_drain_rx_fifo(self);
-    self->read_lock = false;
     return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
@@ -441,9 +467,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
         while (ringbuf_avail(&self->read_buffer) == 0) {
             if (uart_is_readable(self->uart)) {
                 // Force a few incoming bytes to the buffer
-                self->read_lock = true;
                 uart_drain_rx_fifo(self);
-                self->read_lock = false;
                 break;
             }
             if (time_us_64() > t) {  // timed out
@@ -476,9 +500,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     }
 
     // Kickstart the UART transmit.
-    self->write_lock = true;
     uart_fill_tx_fifo(self);
-    self->write_lock = false;
 
     // Send the next characters while busy waiting.
     while (i < size) {
@@ -497,9 +519,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
         ringbuf_put(&(self->write_buffer), *src++);
         ++i;
         t = time_us_64() + timeout_char_us;
-        self->write_lock = true;
         uart_fill_tx_fifo(self);
-        self->write_lock = false;
     }
 
     // Just in case the fifo was drained during refill of the ringbuf.

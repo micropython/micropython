@@ -14,6 +14,10 @@ ifdef USER_C_MODULES
 CMAKE_ARGS += -DUSER_C_MODULES=${USER_C_MODULES}
 endif
 
+ifneq ($(FROZEN_MANIFEST),)
+CMAKE_ARGS += -DMICROPY_FROZEN_MANIFEST=${FROZEN_MANIFEST}
+endif
+
 all:
 	[ -d $(BUILD) ] || cmake -S . -B $(BUILD) -DPICO_BUILD_DOCS=0 ${CMAKE_ARGS}
 	$(MAKE) $(MAKESILENT) -C $(BUILD)
@@ -21,7 +25,7 @@ all:
 clean:
 	$(RM) -rf $(BUILD)
 
-GIT_SUBMODULES += lib/pico-sdk lib/tinyusb
+GIT_SUBMODULES += lib/mbedtls lib/pico-sdk lib/tinyusb
 
 submodules:
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules

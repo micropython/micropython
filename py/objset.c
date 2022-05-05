@@ -174,8 +174,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 STATIC mp_obj_t set_copy(mp_obj_t self_in) {
     check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
-    other->base.type = self->base.type;
+    mp_obj_set_t *other = mp_obj_malloc(mp_obj_set_t, self->base.type);
     mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
@@ -579,8 +578,7 @@ const mp_obj_type_t mp_type_frozenset = {
 #endif
 
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
-    mp_obj_set_t *o = m_new_obj(mp_obj_set_t);
-    o->base.type = &mp_type_set;
+    mp_obj_set_t *o = mp_obj_malloc(mp_obj_set_t, &mp_type_set);
     mp_set_init(&o->set, n_args);
     for (size_t i = 0; i < n_args; i++) {
         mp_set_lookup(&o->set, items[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);

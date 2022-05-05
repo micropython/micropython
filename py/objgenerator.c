@@ -59,13 +59,13 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // allocate the generator object, with room for local stack and exception stack
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
-        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
-    o->base.type = &mp_type_gen_instance;
+    mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
+        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
+        &mp_type_gen_instance);
 
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = 0;
+    o->code_state.ip = self_fun->bytecode;
     o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
     return MP_OBJ_FROM_PTR(o);
@@ -91,27 +91,27 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     // The state for a native generating function is held in the same struct as a bytecode function
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
-    // Determine start of prelude, and extract n_state from it
+    // Determine start of prelude.
     uintptr_t prelude_offset = ((uintptr_t *)self_fun->bytecode)[0];
     #if MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ
     // Prelude is in bytes object in const_table, at index prelude_offset
-    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->const_table[prelude_offset]);
-    prelude_offset = (const byte *)prelude_bytes->data - self_fun->bytecode;
+    mp_obj_str_t *prelude_bytes = MP_OBJ_TO_PTR(self_fun->context->constants.obj_table[prelude_offset]);
+    const uint8_t *prelude_ptr = prelude_bytes->data;
+    #else
+    const uint8_t *prelude_ptr = self_fun->bytecode + prelude_offset;
     #endif
-    const uint8_t *ip = self_fun->bytecode + prelude_offset;
-    size_t n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args;
-    MP_BC_PRELUDE_SIG_DECODE_INTO(ip, n_state, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_args);
-    size_t n_exc_stack = 0;
 
-    // Allocate the generator object, with room for local stack and exception stack
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
-        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
-    o->base.type = &mp_type_gen_instance;
+    // Extract n_state from the prelude.
+    const uint8_t *ip = prelude_ptr;
+    MP_BC_PRELUDE_SIG_DECODE(ip);
+
+    // Allocate the generator object, with room for local stack (exception stack not needed).
+    mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
 
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = (const byte *)prelude_offset;
+    o->code_state.ip = prelude_ptr;
     o->code_state.n_state = n_state;
     mp_setup_code_state(&o->code_state, n_args, n_kw, args);
 
@@ -184,7 +184,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     // Set up the correct globals context for the generator and execute it
     self->code_state.old_globals = mp_globals_get();
-    mp_globals_set(self->code_state.fun_bc->globals);
+    mp_globals_set(self->code_state.fun_bc->context->module.globals);
 
     mp_vm_return_kind_t ret_kind;
 
