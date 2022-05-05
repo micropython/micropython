@@ -191,3 +191,65 @@ if(EXISTS "${MICROPY_LIB_MBEDTLS_DIR}/library/aes.c")
         "${MICROPY_LIB_MBEDTLS_DIR}/include"
     )
 endif()
+
+
+# lwip network stack
+
+set(MICROPY_LIB_LWIP_DIR "${MICROPY_DIR}/lib/lwip/src")
+
+if(EXISTS "${MICROPY_LIB_LWIP_DIR}/core/def.c")
+    add_library(micropy_lib_lwip INTERFACE)
+
+    target_include_directories(micropy_lib_lwip INTERFACE
+        ${MICROPY_LIB_LWIP_DIR}/include
+    )
+
+    target_sources(micropy_lib_lwip INTERFACE
+        ${MICROPY_EXTMOD_DIR}/modlwip.c
+        ${MICROPY_DIR}/shared/netutils/netutils.c
+        ${MICROPY_LIB_LWIP_DIR}/apps/mdns/mdns.c
+        ${MICROPY_LIB_LWIP_DIR}/core/def.c
+        ${MICROPY_LIB_LWIP_DIR}/core/dns.c
+        ${MICROPY_LIB_LWIP_DIR}/core/inet_chksum.c
+        ${MICROPY_LIB_LWIP_DIR}/core/init.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ip.c
+        ${MICROPY_LIB_LWIP_DIR}/core/mem.c
+        ${MICROPY_LIB_LWIP_DIR}/core/memp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/netif.c
+        ${MICROPY_LIB_LWIP_DIR}/core/pbuf.c
+        ${MICROPY_LIB_LWIP_DIR}/core/raw.c
+        ${MICROPY_LIB_LWIP_DIR}/core/stats.c
+        ${MICROPY_LIB_LWIP_DIR}/core/sys.c
+        ${MICROPY_LIB_LWIP_DIR}/core/tcp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/tcp_in.c
+        ${MICROPY_LIB_LWIP_DIR}/core/tcp_out.c
+        ${MICROPY_LIB_LWIP_DIR}/core/timeouts.c
+        ${MICROPY_LIB_LWIP_DIR}/core/udp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/autoip.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/dhcp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/etharp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/icmp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/igmp.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_addr.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv4/ip4_frag.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/dhcp6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ethip6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/icmp6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/inet6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_addr.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/ip6_frag.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/mld6.c
+        ${MICROPY_LIB_LWIP_DIR}/core/ipv6/nd6.c
+        ${MICROPY_LIB_LWIP_DIR}/netif/ethernet.c
+    )
+
+    list(APPEND MICROPY_INC_CORE
+        ${MICROPY_LIB_LWIP_DIR}/include
+    )
+
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_EXTMOD_DIR}/modlwip.c
+    )
+endif()

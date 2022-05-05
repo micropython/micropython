@@ -49,6 +49,7 @@
 
 #if MICROPY_PY_LWIP
 struct netif;
+void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 #else

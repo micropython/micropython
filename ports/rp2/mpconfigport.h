@@ -106,6 +106,7 @@
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
+#define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
@@ -195,6 +196,13 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 // TODO need to look and see if these could/should be spinlock/mutex
 #define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
 #define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+
+// Prevent the "LWIP task" from running when unsafe to do so.
+extern void lwip_lock_acquire(void);
+extern void lwip_lock_release(void);
+#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
+#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
+#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();

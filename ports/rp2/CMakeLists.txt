@@ -70,6 +70,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
+    ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/gchelper_m0.s
     ${MICROPY_DIR}/shared/runtime/gchelper_native.c
@@ -168,6 +169,26 @@ set(PICO_SDK_COMPONENTS
     tinyusb_common
     tinyusb_device
 )
+
+if (MICROPY_PY_LWIP)
+    target_link_libraries(${MICROPY_TARGET} micropy_lib_lwip)
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        lwip_inc
+        hal/phy
+    )
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_LWIP=1
+    )
+
+    list(APPEND MICROPY_SOURCE_PORT mpnetworkport.c)
+
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_EXTMOD_DIR}/modlwip.c
+    )
+
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
+endif()
 
 if(MICROPY_PY_BLUETOOTH)
     list(APPEND MICROPY_SOURCE_PORT mpbthciport.c)
