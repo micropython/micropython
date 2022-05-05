@@ -71,12 +71,15 @@
 #ifndef MICROPY_USE_INTERNAL_ERRNO
 #define MICROPY_USE_INTERNAL_ERRNO              (1)
 #endif
+#define MICROPY_STREAMS_POSIX_API               (1)
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
+#define MICROPY_PY_UERRNO                       (1)
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
+#define MICROPY_THREAD_YIELD()                  mp_handle_pending(true)
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
@@ -87,7 +90,10 @@
 #define MICROPY_PY_URE_MATCH_SPAN_START_END     (1)
 #define MICROPY_PY_UCRYPTOLIB                   (1)
 #define MICROPY_PY_UTIME_MP_HAL                 (1)
+#define MICROPY_PY_URANDOM                      (1)
+#define MICROPY_PY_URANDOM_EXTRA_FUNCS          (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC       (rosc_random_u32())
+#define MICROPY_PY_USELECT                      (1)
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
@@ -163,12 +169,24 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
+#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_LWIP
+extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
+#else
+extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
+#endif
+#define MICROPY_HW_NIC_WIZNET5K              { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#else
+#define MICROPY_HW_NIC_WIZNET5K
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_NINAW10  \
+    MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS

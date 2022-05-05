@@ -136,4 +136,13 @@ enum mp_hal_pin_interrupt_trigger {
 
 void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard);
 
+enum {
+    MP_HAL_MAC_WLAN0 = 0,
+    MP_HAL_MAC_BDADDR,
+    MP_HAL_MAC_ETH0,
+};
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H
