@@ -33,6 +33,7 @@
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"
+#include "pico/unique_id.h"
 
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_ENABLE_USBDEV
 
@@ -163,4 +164,21 @@ uint64_t mp_hal_time_ns(void) {
     rtc_get_datetime(&t);
     uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.min, t.sec);
     return s * 1000000000ULL;
+}
+
+// Generate a random locally administered MAC address (LAA)
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
+    pico_unique_board_id_t pid;
+    pico_get_unique_board_id(&pid);
+    buf[0] = 0x02; // LAA range
+    buf[1] = (pid.id[7] << 4) | (pid.id[6] & 0xf);
+    buf[2] = (pid.id[5] << 4) | (pid.id[4] & 0xf);
+    buf[3] = (pid.id[3] << 4) | (pid.id[2] & 0xf);
+    buf[4] = pid.id[1];
+    buf[5] = (pid.id[0] << 2) | idx;
+}
+
+// A board can override this if needed
+MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
+    mp_hal_generate_laa_mac(idx, buf);
 }

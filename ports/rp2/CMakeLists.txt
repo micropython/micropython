@@ -244,6 +244,53 @@ if (MICROPY_PY_NETWORK_NINAW10)
     )
 endif()
 
+if (MICROPY_PY_WIZNET5K)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_WIZNET5K=1
+        WIZCHIP_PREFIXED_EXPORTS=1
+        _WIZCHIP_=${MICROPY_PY_WIZNET5K}
+        WIZCHIP_YIELD=mpy_wiznet_yield
+    )
+
+    if (MICROPY_PY_LWIP)
+        target_compile_definitions(${MICROPY_TARGET} PRIVATE
+            # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
+            WIZCHIP_USE_MAX_BUFFER=1
+        )
+    endif()
+
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/wiznet5k/
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/
+    )
+
+    list(APPEND MICROPY_SOURCE_LIB
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100/w5100.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5100S/w5100s.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5200/w5200.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5300/w5300.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/W5500/w5500.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/socket.c
+        ${MICROPY_DIR}/lib/wiznet5k/Ethernet/wizchip_conf.c
+        ${MICROPY_DIR}/lib/wiznet5k/Internet/DNS/dns.c
+        ${MICROPY_DIR}/lib/wiznet5k/Internet/DHCP/dhcp.c
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/extmod/modnetwork.c
+        ${MICROPY_DIR}/extmod/modusocket.c
+        ${MICROPY_DIR}/extmod/network_wiznet5k.c
+    )
+
+    list(APPEND MICROPY_SOURCE_QSTR
+        ${MICROPY_DIR}/extmod/modnetwork.c
+        ${MICROPY_DIR}/extmod/modusocket.c
+        ${MICROPY_DIR}/extmod/network_wiznet5k.c
+    )
+
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
+endif()
+
 # Define mpy-cross flags
 set(MICROPY_CROSS_FLAGS -march=armv7m)
 
