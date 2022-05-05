@@ -63,7 +63,7 @@ STATIC samd_flash_obj_t samd_flash_obj = {
 // FLASH stuff
 STATIC mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
-    mp_arg_check_num(n_args, n_kw, 0,0, false);
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&samd_flash_obj);
@@ -90,7 +90,7 @@ STATIC mp_obj_t eraseblock(uint32_t sector_in) {
     uint32_t DEST_ADDR = sector_in; // Number of pages to be erased.
     mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc); // adf4 API call
 
-    flash_erase(&flash_desc,DEST_ADDR,(BLOCK_SIZE / PAGE_SIZE));
+    flash_erase(&flash_desc, DEST_ADDR, (BLOCK_SIZE / PAGE_SIZE));
 
     return mp_const_none;
 }
@@ -121,7 +121,7 @@ STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     }
 
     // Read data to flash (adf4 API)
-    flash_read(&flash_desc,offset,bufinfo.buf,bufinfo.len);
+    flash_read(&flash_desc, offset, bufinfo.buf, bufinfo.len);
 
     return mp_const_none;
 }
@@ -138,7 +138,7 @@ STATIC mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         offset += mp_obj_get_int(args[3]);
     }
     // Write data to flash (adf4 API)
-    flash_write(&flash_desc,offset, bufinfo.buf, bufinfo.len);
+    flash_write(&flash_desc, offset, bufinfo.buf, bufinfo.len);
     // TODO check return value
     return mp_const_none;
 }

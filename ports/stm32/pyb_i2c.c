@@ -541,7 +541,7 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
     // I2C Acknowledge failure
     if (sr1 & I2C_FLAG_AF) {
         hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
-        SET_BIT(hi2c->Instance->CR1,I2C_CR1_STOP);
+        SET_BIT(hi2c->Instance->CR1, I2C_CR1_STOP);
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
     }
 

@@ -402,7 +402,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct timeval tv = {0,};
+    struct timeval tv = {0, };
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
