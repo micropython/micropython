@@ -78,7 +78,7 @@ static inline uint64_t mp_hal_time_ns(void) {
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint
 
-extern uint64_t machine_pin_open_drain_mask;
+extern uint32_t machine_pin_open_drain_mask[];
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
@@ -88,18 +88,18 @@ static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    machine_pin_open_drain_mask[pin / 32] &= ~(1 << (pin % 32));
 }
 
 static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    machine_pin_open_drain_mask[pin / 32] &= ~(1 << (pin % 32));
 }
 
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
     gpio_set_pin_level(pin, 0);
-    machine_pin_open_drain_mask |= 1 << pin;
+    machine_pin_open_drain_mask[pin / 32] |= 1 << (pin % 32);
 }
 
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {

@@ -58,10 +58,10 @@ typedef struct _machine_pin_irq_obj_t {
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 */
 
-uint64_t machine_pin_open_drain_mask;
+uint32_t machine_pin_open_drain_mask[4];
 
 // Open drain behaviour is simulated.
-#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask & (1 << (id)))
+#define GPIO_IS_OPEN_DRAIN(id) (machine_pin_open_drain_mask[id / 32] & (1 << (id % 32)))
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
