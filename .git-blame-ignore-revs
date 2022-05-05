@@ -1,3 +1,6 @@
+#all: Reformat remaining C code that doesn't have a space after a comma.
+5b700b0af90591d6b1a2c087bb8de6b7f1bfdd2d
+
 # ports: Reformat more C and Python source code.
 5c32111fa0e31e451b0f1666bdf926be2fdfd82c
 
