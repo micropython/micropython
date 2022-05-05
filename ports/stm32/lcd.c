@@ -32,10 +32,10 @@
 
 #if MICROPY_HW_HAS_LCD
 
+#include "extmod/font_petme128_8x8.h"
 #include "pin.h"
 #include "bufhelper.h"
 #include "spi.h"
-#include "font_petme128_8x8.h"
 #include "lcd.h"
 
 /// \moduleref pyb
