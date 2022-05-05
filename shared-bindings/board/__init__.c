@@ -47,7 +47,7 @@
 //| the default pins and settings.  For more information about serial communcication
 //| in CircuitPython, see the :mod:`busio`.
 //|
-//| For more information regarding the typical usage of `board`, refer to the CircuitPython
+//| For more information regarding the typical usage of :py:mod:`board`, refer to the CircuitPython
 //| Essentials Learn guide:
 //| https://learn.adafruit.com/circuitpython-essentials/circuitpython-pins-and-modules
 //|
