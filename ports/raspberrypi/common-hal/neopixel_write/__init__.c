@@ -63,7 +63,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     uint32_t pins_we_use = 1 << digitalinout->pin->number;
     bool ok = rp2pio_statemachine_construct(&state_machine,
         neopixel_program, sizeof(neopixel_program) / sizeof(neopixel_program[0]),
-        12800000, // MHz, to get about appropriate sub-bit times in PIO program.
+        12800000, // 12.8MHz, to get appropriate sub-bit times in PIO program.
         NULL, 0, // init program
         NULL, 1, // out
         NULL, 1, // in
