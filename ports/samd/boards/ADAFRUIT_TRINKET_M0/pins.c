@@ -36,6 +36,8 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA09}, // D2
     {{&machine_pin_type}, PIN_PA07}, // D3/ RxD
     {{&machine_pin_type}, PIN_PA06}, // D4/ TxD
+    {{&machine_pin_type}, PIN_PA00}, // DOTSTAR_DATA
+    {{&machine_pin_type}, PIN_PA01}, // DOTSTAR_CLK
 };
 
 const machine_led_obj_t machine_led_obj[] = {

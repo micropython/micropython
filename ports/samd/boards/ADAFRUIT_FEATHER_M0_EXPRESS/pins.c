@@ -33,9 +33,9 @@
 const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA11}, // D0
     {{&machine_pin_type}, PIN_PA10}, // D1
-    {{&machine_pin_type}, PIN_PA14}, // D2
-    {{&machine_pin_type}, PIN_PA09}, // D3/
-    {{&machine_pin_type}, PIN_PA08}, // D4/
+    {{&machine_pin_type}, PIN_PA14}, // D2/FLASH_MISO
+    {{&machine_pin_type}, PIN_PA09}, // D3/FLASH_SCK
+    {{&machine_pin_type}, PIN_PA08}, // D4/FLASH_MOSI
     {{&machine_pin_type}, PIN_PA15}, // D5
     {{&machine_pin_type}, PIN_PA20}, // D6
     {{&machine_pin_type}, PIN_PA21}, // D7
@@ -45,12 +45,22 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA16}, // D11
     {{&machine_pin_type}, PIN_PA19}, // D12
     {{&machine_pin_type}, PIN_PA17}, // D13/
-    {{&machine_pin_type}, PIN_PA02},     // A0
+    {{&machine_pin_type}, PIN_PA02}, // A0 = 14
     {{&machine_pin_type}, PIN_PB08}, // A1
     {{&machine_pin_type}, PIN_PB09}, // A2
     {{&machine_pin_type}, PIN_PA04}, // A3/
     {{&machine_pin_type}, PIN_PA05}, // A4/
-    {{&machine_pin_type}, PIN_PB02}, // A5
+    {{&machine_pin_type}, PIN_PB02}, // A5 = 19
+    {{&machine_pin_type}, PIN_PB22}, // TXD = 20
+    {{&machine_pin_type}, PIN_PB23}, // RXD = 21
+    {{&machine_pin_type}, PIN_PA23}, // SCL = 22
+    {{&machine_pin_type}, PIN_PA22}, // SDA = 23
+    {{&machine_pin_type}, PIN_PA06}, // NEOPIXEL = 24
+    {{&machine_pin_type}, PIN_PA27}, // LED_TX = 25
+    {{&machine_pin_type}, PIN_PB03}, // LED_RX = 26
+    {{&machine_pin_type}, PIN_PA13}, // FLASH_CS = 27
+    {{&machine_pin_type}, PIN_PA30}, // SWCLK = 28
+    {{&machine_pin_type}, PIN_PA31}, // SWDIO = 29
 };
 
 const machine_led_obj_t machine_led_obj[] = {

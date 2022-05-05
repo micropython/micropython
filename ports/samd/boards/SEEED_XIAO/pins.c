@@ -42,6 +42,8 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA07}, // A8/D8
     {{&machine_pin_type}, PIN_PA05}, // A9/D9
     {{&machine_pin_type}, PIN_PA06}, // A10/D10
+    {{&machine_pin_type}, PIN_PA30}, // SWCLK = 11
+    {{&machine_pin_type}, PIN_PA31}, // SWDIO = 12
 };
 
 const machine_led_obj_t machine_led_obj[] = {

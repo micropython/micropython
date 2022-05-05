@@ -31,19 +31,35 @@
 
 // Ensure Declaration in 'pins.h' reflects # of Pins defined here.
 const machine_pin_obj_t machine_pin_obj[] = {
+    {{&machine_pin_type}, PIN_PA16}, // RX_D0
+    {{&machine_pin_type}, PIN_PA17}, // TX_D1
+    {{&machine_pin_type}, PIN_PA07}, // D2,A6
+    {{&machine_pin_type}, PIN_PA19}, // D3
+    {{&machine_pin_type}, PIN_PA20}, // D4
+    {{&machine_pin_type}, PIN_PA21}, // D5,MOSI
+    {{&machine_pin_type}, PIN_PA19}, // D6,MISO
+    {{&machine_pin_type}, PIN_PA20}, // D7,SCK
+    {{&machine_pin_type}, PIN_PA21}, // D8
     {{&machine_pin_type}, PIN_PA02}, // A0,D9
     {{&machine_pin_type}, PIN_PB08}, // A1,D10
     {{&machine_pin_type}, PIN_PB09}, // A2,D11
     {{&machine_pin_type}, PIN_PA04}, // A3,D12
     {{&machine_pin_type}, PIN_PA05}, // A4,D13
     {{&machine_pin_type}, PIN_PA06}, // A5
-    {{&machine_pin_type}, PIN_PA16}, // RX_D0
-    {{&machine_pin_type}, PIN_PA17}, // TX_D1
-    {{&machine_pin_type}, PIN_PA07}, // D2,A6
-    {{&machine_pin_type}, PIN_PA19}, // D3
-    {{&machine_pin_type}, PIN_PA20}, // D4
-    {{&machine_pin_type}, PIN_PA21}, // D5
     {{&machine_pin_type}, PIN_PA00}, // BUTTON
+    {{&machine_pin_type}, PIN_PA03}, // AREF
+    {{&machine_pin_type}, PIN_PA12}, // SDA
+    {{&machine_pin_type}, PIN_PA13}, // SCL
+    {{&machine_pin_type}, PIN_PB03}, // DOTSTAR_DATA
+    {{&machine_pin_type}, PIN_PB02}, // DOTSTAR_CLK
+    {{&machine_pin_type}, PIN_PB10}, // QSPI_SCK = 27
+    {{&machine_pin_type}, PIN_PA08}, // QSPI_DATA0 = 28
+    {{&machine_pin_type}, PIN_PA09}, // QSPI_DATA1 = 29
+    {{&machine_pin_type}, PIN_PA10}, // QSPI_DATA2 = 30
+    {{&machine_pin_type}, PIN_PA11}, // QSPI_DATA3 = 31
+    {{&machine_pin_type}, PIN_PB11}, // QSPI_CS = 32
+    {{&machine_pin_type}, PIN_PA30}, // SWDIO
+    {{&machine_pin_type}, PIN_PA31}, // SWCLK
 };
 
 const machine_led_obj_t machine_led_obj[] = {
