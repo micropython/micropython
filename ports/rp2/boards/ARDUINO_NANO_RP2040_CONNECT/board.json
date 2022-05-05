@@ -17,7 +17,7 @@
     "images": [
         "ABX00052_01.iso_999x750.jpg"
     ],
-    "mcu": "RP2040",
+    "mcu": "rp2040",
     "product": "Arduino Nano RP2040 Connect",
     "thumbnail": "",
     "url": "https://store-usa.arduino.cc/products/arduino-nano-rp2040-connect",
