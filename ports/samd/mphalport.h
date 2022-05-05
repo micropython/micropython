@@ -46,6 +46,7 @@ void mp_hal_set_interrupt_char(int c);
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
+
 static inline mp_uint_t mp_hal_ticks_us(void) {
     #if defined(MCU_SAMD21)
 
@@ -62,11 +63,13 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
     return systick_ms * 1000;
     #endif
 }
+
 // ticks_cpu is limited to a 1 ms period, since the CPU SysTick counter
 // is used for the 1 ms SysTick_Handler interrupt.
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return _system_time_get(0);
+    return (system_time_t)SysTick->VAL;
 }
+
 static inline uint64_t mp_hal_time_ns(void) {
     return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
 }
