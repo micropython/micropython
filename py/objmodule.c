@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/bc.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -132,7 +133,6 @@ const mp_obj_type_t mp_type_module = {
     .attr = module_attr,
 };
 
-#include "py/bc.h"
 mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
     mp_map_elem_t *el = mp_map_lookup(mp_loaded_modules_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
