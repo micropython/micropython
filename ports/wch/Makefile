@@ -20,8 +20,8 @@ CROSS_COMPILE ?= $(TOOLCHAIN_ROOT)riscv-none-embed-
 
 # Project specific
 TARGET = firmware.elf
-SRC_DIR = vendor/src/
-INC_DIR = vendor/inc/
+SRC_DIR = bsp/src/
+INC_DIR = bsp/inc/
 
 # Toolchain
 CC = $(TOOLCHAIN_ROOT)riscv-none-embed-gcc
@@ -29,27 +29,35 @@ DB = $(TOOLCHAIN_ROOT)riscv-none-embed-gdb
 
 # Project sources
 SRC_C = \
-    main.c \
+	main.c \
 	mphalport.c \
+	pin.c \
+	pin_defs_ch32.c \
+	pin_named_pins.c \
+	pins_CH32V307EVT.c \
+	modmachine.c \
+	modutime.c \
+	extmod/utime_mphal.c \
 	shared/libc/string0.c \
-    shared/readline/readline.c \
-    shared/runtime/gchelper_generic.c \
-    shared/runtime/pyexec.c \
-    shared/runtime/stdout_helpers.c \
+	shared/readline/readline.c \
+	shared/runtime/gchelper_generic.c \
+	shared/runtime/pyexec.c \
+	shared/runtime/stdout_helpers.c \
     
 SRC_C += $(wildcard $(SRC_DIR)*.c) 
 
-SRC_S += vendor/startup_ch32v30x_D8C.S
+SRC_S += bsp/startup_ch32v30x_D8C.S
 
 SRC_C += $(SRC_MOD)
 SRC_CXX += $(SRC_MOD_CXX)
 SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
+SRC_QSTR += pin.c pin_named_pins.c pins_CH32V307EVT.c modmachine.c modutime.c
 
 # Project includes
 INCLUDES = -I. -I$(INC_DIR) -I$(BUILD) -I$(TOP)
 
 # Linker Script
-LD_SCRIPT = vendor/ch32v30x.ld
+LD_SCRIPT = bsp/ch32v30x.ld
 
 # Compiler Flags
 CFLAGS  = -march=rv32imac -mabi=ilp32 -msmall-data-limit=8 -mno-save-restore -Os
@@ -75,7 +83,7 @@ $(BUILD)/$(TARGET): $(OBJ)
 prog: $(BUILD)/$(TARGET)
 	$(OPENOCD_ROOT)openocd -f $(OPENOCD_ROOT)wch-riscv.cfg -c init -c halt -c "flash erase_sector wch_riscv 0 last " -c exit
 	$(OPENOCD_ROOT)openocd -f $(OPENOCD_ROOT)wch-riscv.cfg -c init -c halt -c "program $(BUILD)/$(TARGET) 0x08000000" -c exit
-	#$(OPENOCD_ROOT)openocd -f $(OPENOCD_ROOT)wch-riscv.cfg -c init -c halt -c "verify_image $(BUILD)/$(TARGET)" -c exit
+	$(OPENOCD_ROOT)openocd -f $(OPENOCD_ROOT)wch-riscv.cfg -c init -c halt -c "verify_image $(BUILD)/$(TARGET)" -c exit
 	$(OPENOCD_ROOT)openocd -f $(OPENOCD_ROOT)wch-riscv.cfg -c init -c "reset" -c exit || exit 0
 	#miniterm.py - 115200 --raw
 

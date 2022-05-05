@@ -1119,7 +1119,7 @@ typedef struct
 
 
 #define APB1PERIPH_BASE       (PERIPH_BASE)
-#define APB2PERIPH_BASE       (PERIPH_BASE + 0x10000)
+#define APB2PERIPH_BASE       (PERIPH_BASE + 0x10000) 
 #define AHBPERIPH_BASE        (PERIPH_BASE + 0x20000)
 
 #define TIM2_BASE             (APB1PERIPH_BASE + 0x0000)
@@ -1150,7 +1150,7 @@ typedef struct
 
 #define AFIO_BASE             (APB2PERIPH_BASE + 0x0000)
 #define EXTI_BASE             (APB2PERIPH_BASE + 0x0400)
-#define GPIOA_BASE            (APB2PERIPH_BASE + 0x0800)
+#define GPIOA_BASE            (APB2PERIPH_BASE + 0x0800) // 0x40010800,0x40010C00, 0x40011000, 0x40011400, 0x40011800, 0x40011C00, 0x40012000
 #define GPIOB_BASE            (APB2PERIPH_BASE + 0x0C00)
 #define GPIOC_BASE            (APB2PERIPH_BASE + 0x1000)
 #define GPIOD_BASE            (APB2PERIPH_BASE + 0x1400)
