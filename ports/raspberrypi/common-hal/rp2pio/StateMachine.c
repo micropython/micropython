@@ -917,7 +917,7 @@ bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *
         self->loop = *loop;
         self->pending_buffers = pending_buffers;
 
-        if (self->dma_completed) {
+        if (self->dma_completed && self->once.info.len) {
             rp2pio_statemachine_dma_complete(self, SM_DMA_GET_CHANNEL(pio_index, sm));
             self->dma_completed = false;
         }
