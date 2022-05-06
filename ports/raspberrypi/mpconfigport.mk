@@ -1,6 +1,7 @@
 # All raspberrypi ports have longints.
 LONGINT_IMPL = MPZ
 
+CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE ?= 1
 CIRCUITPY_ALARM ?= 1
 
 CIRCUITPY_RP2PIO ?= 1

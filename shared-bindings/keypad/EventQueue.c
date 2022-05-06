@@ -129,12 +129,8 @@ STATIC mp_obj_t keypad_eventqueue_get_overflowed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_get_overflowed_obj, keypad_eventqueue_get_overflowed);
 
-const mp_obj_property_t keypad_eventqueue_overflowed_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_eventqueue_get_overflowed_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(keypad_eventqueue_overflowed_obj,
+    (mp_obj_t)&keypad_eventqueue_get_overflowed_obj);
 
 STATIC const mp_rom_map_elem_t keypad_eventqueue_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_clear),      MP_ROM_PTR(&keypad_eventqueue_clear_obj) },

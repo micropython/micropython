@@ -130,12 +130,9 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(audiomixer_mixervoice_set_level_obj, 1, audiomixer_mixervoice_obj_set_level);
 
-const mp_obj_property_t audiomixer_mixervoice_level_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_level_obj,
-              (mp_obj_t)&audiomixer_mixervoice_set_level_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(audiomixer_mixervoice_level_obj,
+    (mp_obj_t)&audiomixer_mixervoice_get_level_obj,
+    (mp_obj_t)&audiomixer_mixervoice_set_level_obj);
 
 //|     playing: bool
 //|     """True when this voice is being output. (read-only)"""
@@ -149,12 +146,8 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_get_playing(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_playing_obj, audiomixer_mixervoice_obj_get_playing);
 
-const mp_obj_property_t audiomixer_mixervoice_playing_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomixer_mixervoice_get_playing_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomixer_mixervoice_playing_obj,
+    (mp_obj_t)&audiomixer_mixervoice_get_playing_obj);
 
 STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
     // Methods

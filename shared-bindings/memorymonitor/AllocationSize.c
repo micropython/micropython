@@ -105,12 +105,8 @@ STATIC mp_obj_t memorymonitor_allocationsize_obj_get_bytes_per_block(mp_obj_t se
 }
 MP_DEFINE_CONST_FUN_OBJ_1(memorymonitor_allocationsize_get_bytes_per_block_obj, memorymonitor_allocationsize_obj_get_bytes_per_block);
 
-const mp_obj_property_t memorymonitor_allocationsize_bytes_per_block_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&memorymonitor_allocationsize_get_bytes_per_block_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(memorymonitor_allocationsize_bytes_per_block_obj,
+    (mp_obj_t)&memorymonitor_allocationsize_get_bytes_per_block_obj);
 
 //|     def __len__(self) -> int:
 //|         """Returns the number of allocation buckets.

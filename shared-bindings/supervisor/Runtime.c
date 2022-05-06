@@ -69,12 +69,8 @@ STATIC mp_obj_t supervisor_runtime_get_usb_connected(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_usb_connected_obj, supervisor_runtime_get_usb_connected);
 
-const mp_obj_property_t supervisor_runtime_usb_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_usb_connected_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_usb_connected_obj,
+    (mp_obj_t)&supervisor_runtime_get_usb_connected_obj);
 
 //|     serial_connected: bool
 //|     """Returns the USB serial communication status (read-only)."""
@@ -84,12 +80,8 @@ STATIC mp_obj_t supervisor_runtime_get_serial_connected(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, supervisor_runtime_get_serial_connected);
 
-const mp_obj_property_t supervisor_runtime_serial_connected_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_connected_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
+    (mp_obj_t)&supervisor_runtime_get_serial_connected_obj);
 
 //|     serial_bytes_available: int
 //|     """Returns the whether any bytes are available to read
@@ -101,12 +93,8 @@ STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_bytes_available_obj, supervisor_runtime_get_serial_bytes_available);
 
-const mp_obj_property_t supervisor_runtime_serial_bytes_available_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_serial_bytes_available_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_serial_bytes_available_obj,
+    (mp_obj_t)&supervisor_runtime_get_serial_bytes_available_obj);
 
 supervisor_run_reason_t supervisor_get_run_reason(void) {
     return _run_reason;
@@ -124,12 +112,8 @@ STATIC mp_obj_t supervisor_runtime_get_run_reason(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_run_reason_obj, supervisor_runtime_get_run_reason);
 
-const mp_obj_property_t supervisor_runtime_run_reason_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&supervisor_runtime_get_run_reason_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(supervisor_runtime_run_reason_obj,
+    (mp_obj_t)&supervisor_runtime_get_run_reason_obj);
 
 STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_usb_connected), MP_ROM_PTR(&supervisor_runtime_usb_connected_obj) },

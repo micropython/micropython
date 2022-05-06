@@ -166,12 +166,9 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_set_brightness(mp_obj_t self_in, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(is31fl3741_FrameBuffer_set_brightness_obj, is31fl3741_FrameBuffer_set_brightness);
 
-const mp_obj_property_t is31fl3741_FrameBuffer_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_brightness_obj,
-              (mp_obj_t)&is31fl3741_FrameBuffer_set_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(is31fl3741_FrameBuffer_brightness_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_brightness_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_set_brightness_obj);
 
 //|     def refresh(self) -> None:
 //|         """Transmits the color data in the buffer to the pixels so that
@@ -195,12 +192,8 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_get_width(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_FrameBuffer_get_width(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_FrameBuffer_get_width_obj, is31fl3741_FrameBuffer_get_width);
-const mp_obj_property_t is31fl3741_FrameBuffer_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(is31fl3741_FrameBuffer_width_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_width_obj);
 
 //|     height: int
 //|     """The height of the display, in pixels"""
@@ -211,12 +204,8 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_get_height(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(common_hal_is31fl3741_FrameBuffer_get_height(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(is31fl3741_FrameBuffer_get_height_obj, is31fl3741_FrameBuffer_get_height);
-const mp_obj_property_t is31fl3741_FrameBuffer_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&is31fl3741_FrameBuffer_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(is31fl3741_FrameBuffer_height_obj,
+    (mp_obj_t)&is31fl3741_FrameBuffer_get_height_obj);
 
 STATIC const mp_rom_map_elem_t is31fl3741_FrameBuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&is31fl3741_FrameBuffer_deinit_obj) },

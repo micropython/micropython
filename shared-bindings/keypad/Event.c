@@ -76,12 +76,8 @@ STATIC mp_obj_t keypad_event_get_key_number(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_key_number_obj, keypad_event_get_key_number);
 
-const mp_obj_property_t keypad_event_key_number_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_event_get_key_number_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(keypad_event_key_number_obj,
+    (mp_obj_t)&keypad_event_get_key_number_obj);
 
 //|     pressed: bool
 //|     """``True`` if the event represents a key down (pressed) transition.
@@ -94,12 +90,8 @@ STATIC mp_obj_t keypad_event_get_pressed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_pressed_obj, keypad_event_get_pressed);
 
-const mp_obj_property_t keypad_event_pressed_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_event_get_pressed_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(keypad_event_pressed_obj,
+    (mp_obj_t)&keypad_event_get_pressed_obj);
 
 //|     released: bool
 //|     """``True`` if the event represents a key up (released) transition.
@@ -112,12 +104,8 @@ STATIC mp_obj_t keypad_event_get_released(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_released_obj, keypad_event_get_released);
 
-const mp_obj_property_t keypad_event_released_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_event_get_released_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(keypad_event_released_obj,
+    (mp_obj_t)&keypad_event_get_released_obj);
 
 //|     timestamp: int
 //|     """The timestamp."""
@@ -128,12 +116,8 @@ STATIC mp_obj_t keypad_event_get_timestamp(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_event_get_timestamp_obj, keypad_event_get_timestamp);
 
-const mp_obj_property_t keypad_event_timestamp_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&keypad_event_get_timestamp_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(keypad_event_timestamp_obj,
+    (mp_obj_t)&keypad_event_get_timestamp_obj);
 
 
 //|     def __eq__(self, other: object) -> bool:

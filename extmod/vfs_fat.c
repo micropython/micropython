@@ -440,7 +440,7 @@ STATIC const mp_obj_property_t fat_vfs_label_obj = {
     .base.type = &mp_type_property,
     .proxy = {(mp_obj_t)&fat_vfs_getlabel_obj,
               (mp_obj_t)&fat_vfs_setlabel_obj,
-              (mp_obj_t)MP_ROM_NONE},
+              MP_ROM_NONE},
 };
 #endif
 
