@@ -708,6 +708,18 @@ STATIC mp_obj_t rp2pio_statemachine_obj_clear_rxfifo(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_clear_rxfifo_obj, rp2pio_statemachine_obj_clear_rxfifo);
 
+//|     def clear_txstall(self) -> None:
+//|         """Clears the txstall flag."""
+//|         ...
+//|
+STATIC mp_obj_t rp2pio_statemachine_obj_clear_txstall(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_rp2pio_statemachine_clear_txstall(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_clear_txstall_obj, rp2pio_statemachine_obj_clear_txstall);
+
+
 //|     frequency: int
 //|     """The actual state machine frequency. This may not match the frequency requested
 //|     due to internal limitations."""
@@ -735,6 +747,26 @@ const mp_obj_property_t rp2pio_statemachine_frequency_obj = {
               (mp_obj_t)&rp2pio_statemachine_set_frequency_obj,
               MP_ROM_NONE},
 };
+
+//|     txstall: bool
+//|     """True when the state machine has stalled due to a full TX FIFO since the last
+//|        `clear_txstall` call."""
+//|
+
+STATIC mp_obj_t rp2pio_statemachine_obj_get_txstall(mp_obj_t self_in) {
+    rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_rp2pio_statemachine_get_txstall(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_get_txstall_obj, rp2pio_statemachine_obj_get_txstall);
+
+const mp_obj_property_t rp2pio_statemachine_txstall_obj = {
+    .base.type = &mp_type_property,
+    .proxy = {(mp_obj_t)&rp2pio_statemachine_get_txstall_obj,
+              MP_ROM_NONE,
+              MP_ROM_NONE},
+};
+
 
 //|     rxstall: bool
 //|     """True when the state machine has stalled due to a full RX FIFO since the last
@@ -782,6 +814,7 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_restart), MP_ROM_PTR(&rp2pio_statemachine_restart_obj) },
     { MP_ROM_QSTR(MP_QSTR_run), MP_ROM_PTR(&rp2pio_statemachine_run_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear_rxfifo), MP_ROM_PTR(&rp2pio_statemachine_clear_rxfifo_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clear_txstall), MP_ROM_PTR(&rp2pio_statemachine_clear_txstall_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&rp2pio_statemachine_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&rp2pio_statemachine_write_obj) },
@@ -793,6 +826,7 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&rp2pio_statemachine_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_rxstall), MP_ROM_PTR(&rp2pio_statemachine_rxstall_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txstall), MP_ROM_PTR(&rp2pio_statemachine_txstall_obj) },
     { MP_ROM_QSTR(MP_QSTR_in_waiting), MP_ROM_PTR(&rp2pio_statemachine_in_waiting_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine_locals_dict_table);

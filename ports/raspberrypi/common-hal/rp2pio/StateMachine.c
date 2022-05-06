@@ -848,6 +848,18 @@ void common_hal_rp2pio_statemachine_clear_rxfifo(rp2pio_statemachine_obj_t *self
     self->pio->fdebug = stall_mask;
 }
 
+bool common_hal_rp2pio_statemachine_get_txstall(rp2pio_statemachine_obj_t *self) {
+    uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
+    return (self->pio->fdebug & stall_mask) != 0;
+}
+
+void common_hal_rp2pio_statemachine_clear_txstall(rp2pio_statemachine_obj_t *self) {
+    uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
+    uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
+    self->pio->fdebug = stall_mask;
+}
+
+
 size_t common_hal_rp2pio_statemachine_get_in_waiting(rp2pio_statemachine_obj_t *self) {
     uint8_t level = pio_sm_get_rx_fifo_level(self->pio, self->state_machine);
     return level;
