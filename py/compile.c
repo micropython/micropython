@@ -188,7 +188,6 @@ typedef struct _compiler_t {
     mp_emit_common_t emit_common;
 
     emit_t *emit;                                   // current emitter
-    emit_t *emit_bc;
     #if NEED_METHOD_TABLE
     const emit_method_table_t *emit_method_table;   // current emit method table
     #endif
@@ -359,8 +358,7 @@ STATIC void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *
 STATIC void compile_load_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_load(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->load_id, comp->scope_cur, qst);
         #else
@@ -372,8 +370,7 @@ STATIC void compile_load_id(compiler_t *comp, qstr qst) {
 STATIC void compile_store_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->store_id, comp->scope_cur, qst);
         #else
@@ -385,8 +382,7 @@ STATIC void compile_store_id(compiler_t *comp, qstr qst) {
 STATIC void compile_delete_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->delete_id, comp->scope_cur, qst);
         #else
@@ -2154,7 +2150,6 @@ STATIC void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, mp_parse_node_t pn_expr) {
     if (!MP_PARSE_NODE_IS_ID(pn_name)) {
         compile_syntax_error(comp, (mp_parse_node_t)pn_name, MP_ERROR_TEXT("can't assign to expression"));
-        return; // because pn_name is not a valid qstr (in compile_store_id below)
     }
     compile_node(comp, pn_expr);
     EMIT(dup_top);
@@ -2858,7 +2853,6 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             // comes before a star, so counts as a positional parameter
             comp->scope_cur->num_pos_args += 1;
         }
-        mp_emit_common_use_qstr(&comp->emit_common, param_name);
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;
@@ -2872,7 +2866,6 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
                 // comes before a star, so counts as a positional parameter
                 comp->scope_cur->num_pos_args += 1;
             }
-            mp_emit_common_use_qstr(&comp->emit_common, param_name);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
             if (comp->have_star) {
                 // more than one star
@@ -3111,7 +3104,6 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (comp->pass == MP_PASS_SCOPE) {
             scope_find_or_add_id(comp->scope_cur, qstr_arg, ID_INFO_KIND_LOCAL);
             scope->num_pos_args = 1;
-            mp_emit_common_use_qstr(&comp->emit_common, MP_QSTR__star_);
         }
 
         // Set the source line number for the start of the comprehension
@@ -3361,7 +3353,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 }
 #endif
 
-STATIC void scope_compute_things(scope_t *scope, mp_emit_common_t *emit_common) {
+STATIC void scope_compute_things(scope_t *scope) {
     // in MicroPython we put the *x parameter after all other parameters (except **y)
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         id_info_t *id_param = NULL;
@@ -3450,7 +3442,6 @@ STATIC void scope_compute_things(scope_t *scope, mp_emit_common_t *emit_common) 
             }
             scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
-            mp_emit_common_use_qstr(emit_common, MP_QSTR__star_);
         }
     }
 }
@@ -3481,7 +3472,6 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
 
     // compile MP_PASS_SCOPE
     comp->emit = emit_bc;
-    comp->emit_bc = emit_bc;
     #if MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
     #endif
@@ -3519,7 +3509,7 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
         }
         #endif
 
-        scope_compute_things(s, &comp->emit_common);
+        scope_compute_things(s);
     }
 
     // set max number of labels now that it's calculated
