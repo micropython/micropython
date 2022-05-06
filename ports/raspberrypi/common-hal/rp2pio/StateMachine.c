@@ -894,8 +894,8 @@ bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *
     uint8_t pio_index = pio_get_index(self->pio);
     uint8_t sm = self->state_machine;
 
-    int pending_buffers = (once->info.buf != NULL) + (loop->info.buf != NULL);
-    if (!once->info.buf) {
+    int pending_buffers = (once->info.len != 0) + (loop->info.len != 0);
+    if (!once->info.len) {
         once = loop;
     }
 
