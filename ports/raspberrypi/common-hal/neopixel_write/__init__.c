@@ -90,7 +90,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
     }
 
-    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */);
+    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */, false);
 
     // Use a private deinit of the state machine that doesn't reset the pin.
     rp2pio_statemachine_deinit(&state_machine, true);

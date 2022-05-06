@@ -663,7 +663,7 @@ STATIC enum dma_channel_transfer_size _stride_to_dma_size(uint8_t stride) {
 
 static bool _transfer(rp2pio_statemachine_obj_t *self,
     const uint8_t *data_out, size_t out_len, uint8_t out_stride_in_bytes,
-    uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes) {
+    uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes, bool swap_out, bool swap_in) {
     // This implementation is based on SPI but varies because the tx and rx buffers
     // may be different lengths and occur at different times or speeds.
 
@@ -674,13 +674,26 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
     size_t len = MAX(out_len, in_len);
     bool tx = data_out != NULL;
     bool rx = data_in != NULL;
-    if (len >= dma_min_size_threshold) {
+    bool use_dma = len >= dma_min_size_threshold || swap_out || swap_in;
+    if (use_dma) {
         // Use DMA channels to service the two FIFOs
         if (tx) {
             chan_tx = dma_claim_unused_channel(false);
+            // DMA allocation failed...
+            if (chan_tx < 0) {
+                return false;
+            }
         }
         if (rx) {
             chan_rx = dma_claim_unused_channel(false);
+            // DMA allocation failed...
+            if (chan_rx < 0) {
+                // may need to free tx channel
+                if (chan_tx >= 0) {
+                    dma_channel_unclaim(chan_tx);
+                }
+                return false;
+            }
         }
     }
     volatile uint8_t *tx_destination = NULL;
@@ -698,7 +711,6 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
         }
     }
     uint32_t stall_mask = 1 << (PIO_FDEBUG_TXSTALL_LSB + self->state_machine);
-    bool use_dma = (!rx || chan_rx >= 0) && (!tx || chan_tx >= 0);
     if (use_dma) {
         dma_channel_config c;
         uint32_t channel_mask = 0;
@@ -708,6 +720,7 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
             channel_config_set_dreq(&c, self->tx_dreq);
             channel_config_set_read_increment(&c, true);
             channel_config_set_write_increment(&c, false);
+            channel_config_set_bswap(&c, swap_out);
             dma_channel_configure(chan_tx, &c,
                 tx_destination,
                 data_out,
@@ -721,6 +734,7 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
             channel_config_set_dreq(&c, self->rx_dreq);
             channel_config_set_read_increment(&c, false);
             channel_config_set_write_increment(&c, true);
+            channel_config_set_bswap(&c, swap_in);
             dma_channel_configure(chan_rx, &c,
                 data_in,
                 rx_source,
@@ -811,27 +825,27 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
 // TODO: Provide a way around these checks in case someone wants to use the FIFO
 // with manually run code.
 
-bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes) {
+bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes, bool swap) {
     if (!self->out) {
         mp_raise_RuntimeError(translate("No out in program"));
     }
-    return _transfer(self, data, len, stride_in_bytes, NULL, 0, 0);
+    return _transfer(self, data, len, stride_in_bytes, NULL, 0, 0, swap, false);
 }
 
-bool common_hal_rp2pio_statemachine_readinto(rp2pio_statemachine_obj_t *self, uint8_t *data, size_t len, uint8_t stride_in_bytes) {
+bool common_hal_rp2pio_statemachine_readinto(rp2pio_statemachine_obj_t *self, uint8_t *data, size_t len, uint8_t stride_in_bytes, bool swap) {
     if (!self->in) {
         mp_raise_RuntimeError(translate("No in in program"));
     }
-    return _transfer(self, NULL, 0, 0, data, len, stride_in_bytes);
+    return _transfer(self, NULL, 0, 0, data, len, stride_in_bytes, false, swap);
 }
 
 bool common_hal_rp2pio_statemachine_write_readinto(rp2pio_statemachine_obj_t *self,
     const uint8_t *data_out, size_t out_len, uint8_t out_stride_in_bytes,
-    uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes) {
+    uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes, bool swap_out, bool swap_in) {
     if (!self->in || !self->out) {
         mp_raise_RuntimeError(translate("No in or out in program"));
     }
-    return _transfer(self, data_out, out_len, out_stride_in_bytes, data_in, in_len, in_stride_in_bytes);
+    return _transfer(self, data_out, out_len, out_stride_in_bytes, data_in, in_len, in_stride_in_bytes, swap_out, swap_in);
 }
 
 bool common_hal_rp2pio_statemachine_get_rxstall(rp2pio_statemachine_obj_t *self) {
@@ -902,7 +916,7 @@ uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self) {
     return _current_program_offset[pio_index][sm];
 }
 
-bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *self, const sm_buf_info *once, const sm_buf_info *loop, uint8_t stride_in_bytes) {
+bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *self, const sm_buf_info *once, const sm_buf_info *loop, uint8_t stride_in_bytes, bool swap) {
     uint8_t pio_index = pio_get_index(self->pio);
     uint8_t sm = self->state_machine;
 
@@ -911,10 +925,12 @@ bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *
         once = loop;
     }
 
-
     if (SM_DMA_ALLOCATED(pio_index, sm)) {
         if (stride_in_bytes != self->background_stride_in_bytes) {
             mp_raise_ValueError(translate("Mismatched data size"));
+        }
+        if (swap != self->byteswap) {
+            mp_raise_ValueError(translate("Mismatched swap flag"));
         }
 
         while (self->pending_buffers) {
@@ -958,12 +974,14 @@ bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *
     self->pending_buffers = pending_buffers;
     self->dma_completed = false;
     self->background_stride_in_bytes = stride_in_bytes;
+    self->byteswap = swap;
 
     c = dma_channel_get_default_config(channel);
     channel_config_set_transfer_data_size(&c, _stride_to_dma_size(stride_in_bytes));
     channel_config_set_dreq(&c, self->tx_dreq);
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, false);
+    channel_config_set_bswap(&c, swap);
     dma_channel_configure(channel, &c,
         tx_destination,
         once->info.buf,

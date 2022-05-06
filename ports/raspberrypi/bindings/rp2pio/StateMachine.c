@@ -378,7 +378,7 @@ STATIC mp_obj_t rp2pio_statemachine_stop(mp_obj_t self_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop);
 
-//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
+//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None, swap bool = False) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
 //|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
@@ -391,14 +391,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
 //|         ...
 //|
 STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buffer, ARG_start, ARG_end };
+    enum { ARG_buffer, ARG_start, ARG_end, ARG_swap };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_swap,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -420,7 +422,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_write(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes, args[ARG_swap].u_bool);
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
     }
@@ -431,7 +433,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine_write);
 
-//|     def background_write(self, once: Optional[ReadableBuffer]=None, *, loop: Optional[ReadableBuffer]=None) -> None:
+//|     def background_write(self, once: Optional[ReadableBuffer]=None, *, loop: Optional[ReadableBuffer]=None, swap: bool=False) -> None:
 //|         """Write data to the TX fifo in the background, with optional looping.
 //|
 //|         First, if any previous ``once`` or ``loop`` buffer has not been started, this function blocks until they have.
@@ -459,8 +461,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|         where a change in duty cycle requires a special transitional buffer to be used exactly once. Most
 //|         use cases will probably only use one of ``once`` or ``loop``.
 //|
+//|         Having neither ``once`` nor ``loop`` terminates an existing
+//|         background looping write after exactly a whole loop. This is in contrast to
+//|         `stop_background_write, which interrupts an ongoing DMA operation.
+//|
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] once: Data to be written once
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] loop: Data to be written repeatedly
+//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
 //|         """
 //|         ...
 //|
@@ -483,10 +490,11 @@ STATIC void fill_buf_info(sm_buf_info *info, mp_obj_t obj, size_t *stride_in_byt
 }
 
 STATIC mp_obj_t rp2pio_statemachine_background_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_once, ARG_loop };
+    enum { ARG_once, ARG_loop, ARG_swap };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_once,     MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_loop,     MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_swap,   MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -502,7 +510,7 @@ STATIC mp_obj_t rp2pio_statemachine_background_write(size_t n_args, const mp_obj
         return mp_const_none;
     }
 
-    bool ok = common_hal_rp2pio_statemachine_background_write(self, &once_info, &loop_info, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_background_write(self, &once_info, &loop_info, stride_in_bytes, args[ARG_swap].u_bool);
 
     if (mp_hal_is_interrupted()) {
         return mp_const_none;
@@ -515,7 +523,9 @@ STATIC mp_obj_t rp2pio_statemachine_background_write(size_t n_args, const mp_obj
 MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_background_write_obj, 1, rp2pio_statemachine_background_write);
 
 //|     def stop_background_write(self) -> None:
-//|         """Immediately stop a background write, if one is in progress.  Items already in the TX FIFO are not affected."""
+//|         """Immediately stop a background write, if one is in progress.  Any
+//|         DMA in progress is halted, but items already in the TX FIFO are not
+//|         affected."""
 //|
 STATIC mp_obj_t rp2pio_statemachine_obj_stop_background_write(mp_obj_t self_in) {
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -567,7 +577,7 @@ const mp_obj_property_t rp2pio_statemachine_pending_obj = {
               MP_ROM_NONE},
 };
 
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None) -> None:
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, bool swap) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
 //|
@@ -581,16 +591,18 @@ const mp_obj_property_t rp2pio_statemachine_pending_obj = {
 //|
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
-//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
+//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
 //|         ...
 //|
 
 STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buffer, ARG_start, ARG_end };
+    enum { ARG_buffer, ARG_start, ARG_end, ARG_swap };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_swap,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -613,7 +625,7 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
         mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
     }
 
-    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes);
+    bool ok = common_hal_rp2pio_statemachine_readinto(self, ((uint8_t *)bufinfo.buf) + start, length, stride_in_bytes, args[ARG_swap].u_bool);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
@@ -639,11 +651,13 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
+//|         :param bool swap_out: For 2- and 4-byte elements, swap the byte order for the buffer being transmitted (written)"""
+//|         :param bool swap_in: For 2- and 4-rx elements, swap the byte order for the buffer being received (read)"""
 //|         ...
 //|
 
 STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end };
+    enum { ARG_buffer_out, ARG_buffer_in, ARG_out_start, ARG_out_end, ARG_in_start, ARG_in_end, ARG_swap_out, ARG_swap_in };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer_out,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_buffer_in,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -651,6 +665,8 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
         { MP_QSTR_out_end,       MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
         { MP_QSTR_in_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_in_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
+        { MP_QSTR_swap_out,      MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_swap_in,       MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     rp2pio_statemachine_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -689,7 +705,7 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
         out_stride_in_bytes,
         ((uint8_t *)buf_in_info.buf) + in_start,
         in_length,
-        in_stride_in_bytes);
+        in_stride_in_bytes, args[ARG_swap_out].u_bool, args[ARG_swap_in].u_bool);
     if (!ok) {
         mp_raise_OSError(MP_EIO);
     }
