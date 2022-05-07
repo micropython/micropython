@@ -46,6 +46,7 @@
 #define MICROPY_HELPER_REPL                 (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE          (1)
+#define MICROPY_STREAMS_NON_BLOCK           (1)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_CPYTHON_COMPAT              (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
@@ -80,7 +81,6 @@
 #define MICROPY_PY_IO_FILEIO                (1)
 #define MICROPY_PY_IO                       (1)
 #define MICROPY_PY_IO_IOBASE                (1)
-
 // Extended modules
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_MACHINE                  (1)
@@ -103,7 +103,11 @@
 #define mp_type_textio mp_type_vfs_lfs1_textio
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+    const char *readline_hist[8]; \
+    void *samd_uart_rx_buffer[SERCOM_INST_NUM]; \
+    /*
+    void *samd_uart_tx_buffer[SERCOM_INST_NUM]; \
+    */
 
 #define MP_STATE_PORT MP_STATE_VM
 

@@ -89,6 +89,33 @@ void SysTick_Handler(void) {
     }
 }
 
+extern void common_uart_irq_handler(int uart_nr);
+
+void Sercom0_Handler(void) {
+    common_uart_irq_handler(0);
+}
+void Sercom1_Handler(void) {
+    common_uart_irq_handler(1);
+}
+void Sercom2_Handler(void) {
+    common_uart_irq_handler(2);
+}
+void Sercom3_Handler(void) {
+    common_uart_irq_handler(3);
+}
+void Sercom4_Handler(void) {
+    common_uart_irq_handler(4);
+}
+void Sercom5_Handler(void) {
+    common_uart_irq_handler(5);
+}
+void Sercom6_Handler(void) {
+    common_uart_irq_handler(6);
+}
+void Sercom7_Handler(void) {
+    common_uart_irq_handler(7);
+}
+
 const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     (ISR)&_estack,
     &Reset_Handler,
@@ -115,7 +142,21 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     #if defined(MCU_SAMD21)
     USB_Handler_wrapper, // line 7
+    0,
+    &Sercom0_Handler, // line 9
+    &Sercom1_Handler,
+    &Sercom2_Handler,
+    &Sercom3_Handler,
+    &Sercom4_Handler,
+    &Sercom5_Handler,
     #else
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     0,
     #endif
     0,
@@ -149,6 +190,41 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     0,
     0,
+    #if defined(MCU_SAMD51)
+    &Sercom0_Handler, // Sercom0, Line 46
+    &Sercom0_Handler,
+    &Sercom0_Handler,
+    &Sercom0_Handler,
+    &Sercom1_Handler, // Sercom1
+    &Sercom1_Handler,
+    &Sercom1_Handler,
+    &Sercom1_Handler,
+    &Sercom2_Handler, // Sercom2
+    &Sercom2_Handler,
+    &Sercom2_Handler,
+    &Sercom2_Handler,
+    &Sercom3_Handler, // Sercom3
+    &Sercom3_Handler,
+    &Sercom3_Handler,
+    &Sercom3_Handler,
+    &Sercom4_Handler, // Sercom4
+    &Sercom4_Handler,
+    &Sercom4_Handler,
+    &Sercom4_Handler,
+    &Sercom5_Handler, // Sercom5
+    &Sercom5_Handler,
+    &Sercom5_Handler,
+    &Sercom5_Handler,
+    &Sercom6_Handler, // Sercom6
+    &Sercom6_Handler,
+    &Sercom6_Handler,
+    &Sercom6_Handler,
+    &Sercom7_Handler, // Sercom7
+    &Sercom7_Handler,
+    &Sercom7_Handler,
+    &Sercom7_Handler,
+    #else
+    0, // Line 46
     0,
     0,
     0,
@@ -180,14 +256,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,
     0,
     0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    #endif
     0,
     0,
     #if defined(MCU_SAMD51)

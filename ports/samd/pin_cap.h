@@ -1,9 +1,13 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * This file initialises provides and checks pin capabilities as required
+ * for USART, I2C, SPI, PWM, ADC
+ *
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +27,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
 
-#include "py/obj.h"
+typedef struct _pad_config_t {
+    uint8_t alt_fct;
+    uint8_t pad_nr;
+} pad_config_t;
 
-extern const mp_obj_type_t machine_pin_type;
-extern const mp_obj_type_t machine_led_type;
-extern const mp_obj_type_t machine_uart_type;
+#define ALT_FCT_ADC0      1
+#define ALT_FCT_SERCOM1   2
+#define ALT_FCT_SERCOM2   3
+#define ALT_FCT_T2C       4
+#define ALT_FCT_TC        5
 
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+pad_config_t is_sercom_n(int pin_id, uint8_t sercom);
+void pin_cap_set_mux(int pin, uint8_t mux);

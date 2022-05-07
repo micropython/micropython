@@ -22,17 +22,6 @@
 // Please consult the SAM_D51 Datasheet, I/O Multiplexing and Considerations.
 // USART pin assignments: Tx=TX_D1=PA17=SERCOM3/PAD[0], Rx=RX_D0=PA16=SERCOM3/PAD[1]
 #define CPU_FREQ            (120000000)
-#define PERIPHERAL_FREQ     (48000000)
+#define BUS_FREQ            (48000000)
 #define DPLLx_REF_FREQ      (32768)
 #define MICROPY_HW_XOSC32K  (0)
-
-#define MP_PIN_GRP 0 // A-D=0-3
-#define MP_TX_PIN 17
-#define MP_RX_PIN 16 // 'n'
-#define MP_PERIPHERAL_MUX 8 // 'n'th group of 2 pins
-#define USARTx SERCOM3 //
-#define MP_PORT_FUNC 0x33 // Sets PMUXE & PMUXO to the Alternative Function.A-N=0-13
-#define MP_RXPO_PAD 1 // RXPO- Receive Data Pinout
-#define MP_TXPO_PAD 0 // TXPO- Tranmit Data Pinout
-#define MP_SERCOMx SERCOM3_ // APBCMASK
-#define MP_SERCOM_GCLK_ID_x_CORE SERCOM3_GCLK_ID_CORE

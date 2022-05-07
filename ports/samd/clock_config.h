@@ -1,9 +1,11 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * This file provides functions for configuring the clocks.
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +25,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
 
-#include "py/obj.h"
+extern uint32_t cpu_freq;
+extern uint32_t bus_freq;
 
-extern const mp_obj_type_t machine_pin_type;
-extern const mp_obj_type_t machine_led_type;
-extern const mp_obj_type_t machine_uart_type;
-
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+void enable_sercom_clock(int id);

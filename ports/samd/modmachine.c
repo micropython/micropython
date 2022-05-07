@@ -47,9 +47,6 @@
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_init_obj, machine_uart_init);
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_deinit_obj, machine_uart_deinit);
-
 STATIC mp_obj_t machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     NVIC_SystemReset();
@@ -152,12 +149,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_init),           MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_deinit),         MP_ROM_PTR(&machine_uart_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
 
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },

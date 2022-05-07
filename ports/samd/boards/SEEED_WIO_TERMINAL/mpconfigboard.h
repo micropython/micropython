@@ -22,17 +22,6 @@
 // Please consult the SAM_D51 Datasheet, I/O Multiplexing and Considerations.
 // WIO_Terminal USART pin assignments: Tx=BCM14=PB27=SERCOM2/PAD[0], Rx=BCM15=PB26=SERCOM2/PAD[1]
 #define CPU_FREQ            (120000000)
-#define PERIPHERAL_FREQ     (48000000)
+#define BUS_FREQ            (48000000)
 #define DPLLx_REF_FREQ      (32768)
 #define MICROPY_HW_XOSC32K  (0)
-
-#define MP_PIN_GRP 1 // A-D=0-3
-#define MP_TX_PIN 27
-#define MP_RX_PIN 26 // 'n'
-#define MP_PERIPHERAL_MUX 13 // 'n'th group of 2 pins
-#define USARTx SERCOM2 //
-#define MP_PORT_FUNC 0x22 // Sets PMUXE & PMUXO to the Alternative Function.A-N=0-13
-#define MP_RXPO_PAD 1 // RXPO- Receive Data Pinout
-#define MP_TXPO_PAD 0 // TXPO- Tranmit Data Pinout
-#define MP_SERCOMx SERCOM2_ // APBCMASK
-#define MP_SERCOM_GCLK_ID_x_CORE SERCOM2_GCLK_ID_CORE

@@ -36,75 +36,9 @@
 #include "sam.h"
 #include "tusb.h"
 
-uint8_t enable_uart_repl = false;
 uint32_t cpu_freq = CPU_FREQ;
+uint32_t bus_freq = BUS_FREQ;
 
-// "MP" macros defined in "boards/$(BOARD)/mpconfigboard.h"
-mp_obj_t machine_uart_init(void) {
-    // Firstly, assign alternate function SERCOM PADs to GPIO pins.
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 1; // Enable
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PULLEN = 1; // Enable Pull avoiding crosstalk
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 1; // Enable MUX
-    PORT->Group[MP_PIN_GRP].PMUX[MP_PERIPHERAL_MUX].reg = MP_PORT_FUNC; // Sets PMUXE & PMUXO in 1 hit.
-    uint32_t rxpo = MP_RXPO_PAD; // 1=Pad1,3=Pad3 Rx data
-    uint32_t txpo = MP_TXPO_PAD; // 0=pad0,1=Pad2 Tx data
-
-    // Initialise the clocks
-    #if defined(MCU_SAMD21)
-    PM->APBCMASK.bit.MP_SERCOMx = 1; // Enable synchronous clock
-    // Select multiplexer generic clock source and enable.
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | MP_SERCOM_GCLK_ID_x_CORE;
-    // Wait while it updates synchronously.
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    #elif defined(MCU_SAMD51)
-    GCLK->PCHCTRL[MP_SERCOM_GCLK_ID_x_CORE].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
-    MCLK->APBBMASK.bit.MP_SERCOMx = 1;
-    #endif
-
-    // Setup the Peripheral.
-    // Reset (clear) the peripheral registers.
-    while (USARTx->USART.SYNCBUSY.bit.SWRST) {
-    }
-    USARTx->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
-    while (USARTx->USART.SYNCBUSY.bit.SWRST) {
-    }
-
-    // Set the register bits as needed
-    // (CMODE (async),CHSIZE (8),FORM (no parity),SBMODE (1 stop) already 0).
-    USARTx->USART.CTRLA.reg =   // USARTx = SERCOMx set in "boards/$(BOARD)/mpconfigboard.h"
-        SERCOM_USART_CTRLA_DORD // Data order
-        | SERCOM_USART_CTRLA_RXPO(rxpo) // Set Pad#
-        | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
-        | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
-    ;
-    USARTx->USART.CTRLB.reg = SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN; // Enable Rx & Tx
-    while (USARTx->USART.SYNCBUSY.bit.CTRLB) {
-    }
-
-    // USART is driven by the 48MHz clock of GCLK Generator 2
-    uint32_t baud = 63019; // 115200 baud; 65536*(1 - 16 * 115200/48e6)
-    USARTx->USART.BAUD.bit.BAUD = baud; // Set Baud
-    USARTx->USART.CTRLA.bit.ENABLE = 1; // Enable the peripheral
-    // Wait for the Registers to update.
-    while (USARTx->USART.SYNCBUSY.bit.ENABLE) {
-    }
-
-    enable_uart_repl = true;
-    return mp_const_none;
-}
-
-// Disconnect SERCOM from GPIO pins. (Can't SWRST, as that will totally kill USART).
-mp_obj_t machine_uart_deinit(void) {
-    // Reset
-    enable_uart_repl = false;
-    printf("Disabling the Alt-Funct, releasing the USART pins for GPIO... \n");
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_TX_PIN].bit.PMUXEN = 0; // Disable
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PMUXEN = 0; // Disable
-    PORT->Group[MP_PIN_GRP].PINCFG[MP_RX_PIN].bit.PULLEN = 0; // Disable Pull
-
-    return mp_const_none;
-}
 
 static void usb_init(void) {
     // Init USB clock
@@ -316,6 +250,7 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     }
 
     if (full_config) {
+        bus_freq = BUS_FREQ;  // To be changed if CPU_FREQ < 48M
 
         // Peripheral channel 2 is driven by GCLK1 and it feeds DPLL1
         GCLK->PCHCTRL[2].reg = GCLK_PCHCTRL_GEN_GCLK1 | GCLK_PCHCTRL_CHEN;
@@ -329,8 +264,8 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
         OSCCTRL->Dpll[1].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_DIV(1) | OSCCTRL_DPLLCTRLB_LBYPASS |
             OSCCTRL_DPLLCTRLB_REFCLK(0) | OSCCTRL_DPLLCTRLB_WUF;
 
-        div = PERIPHERAL_FREQ / DPLLx_REF_FREQ;
-        frac = (PERIPHERAL_FREQ - div * DPLLx_REF_FREQ) / (DPLLx_REF_FREQ / 32);
+        div = bus_freq / DPLLx_REF_FREQ;
+        frac = (bus_freq - div * DPLLx_REF_FREQ) / (DPLLx_REF_FREQ / 32);
         OSCCTRL->Dpll[1].DPLLRATIO.reg = (frac << 16) + div - 1;
         // enable it again
         OSCCTRL->Dpll[1].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE | OSCCTRL_DPLLCTRLA_RUNSTDBY;
@@ -362,6 +297,5 @@ void samd_init(void) {
     init_clocks(cpu_freq, true);
     SysTick_Config(cpu_freq / 1000);
     init_us_counter();
-    machine_uart_init();
     usb_init();
 }

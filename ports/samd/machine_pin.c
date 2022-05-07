@@ -108,8 +108,8 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     }
     // configure pull. Only to be used with IN mode. The function sets the pin to INPUT.
     uint32_t pull = 0;
-    mp_int_t mode = mp_obj_get_int(args[ARG_mode].u_obj);
-    if (mode == GPIO_MODE_OUT && args[ARG_pull].u_obj != mp_const_none) {
+    mp_int_t dir = mp_hal_get_pin_direction(self->id);
+    if (dir == GPIO_DIRECTION_OUT && args[ARG_pull].u_obj != mp_const_none) {
         mp_raise_ValueError(MP_ERROR_TEXT("OUT incompatible with pull"));
     } else if (args[ARG_pull].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[ARG_pull].u_obj);

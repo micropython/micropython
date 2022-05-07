@@ -105,6 +105,10 @@ static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     machine_pin_open_drain_mask[pin / 32] |= 1 << (pin % 32);
 }
 
+static inline unsigned int mp_hal_get_pin_direction(mp_hal_pin_obj_t pin) {
+    return (PORT->Group[pin / 32].DIR.reg & (1 << (pin % 32))) != 0 ? GPIO_DIRECTION_OUT :  GPIO_DIRECTION_IN;
+}
+
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
     return gpio_get_pin_level(pin);
 }

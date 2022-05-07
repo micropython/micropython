@@ -49,6 +49,7 @@ INC += -I$(TOP)/lib/tinyusb/src
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
+# CFLAGS = $(INC) -Wall -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 
@@ -59,7 +60,7 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
 ifeq ($(DEBUG),1)
-CFLAGS += -Og -ggdb
+CFLAGS += -O0 -ggdb
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
@@ -75,16 +76,19 @@ LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 SRC_C = \
-	main.c \
+	clock_config.c \
 	help.c \
-	modutime.c \
-	modmachine.c \
-	$(BOARD_DIR)/pins.c \
+	main.c \
 	machine_pin.c \
 	machine_led.c \
+	machine_uart.c \
+	modmachine.c \
 	modsamd.c \
-	samd_flash.c \
 	mphalport.c \
+	modutime.c \
+	$(BOARD_DIR)/pins.c \
+	pin_cap.c \
+	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
@@ -132,8 +136,9 @@ endif
 SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
-	machine_pin.c \
 	machine_led.c \
+	machine_pin.c \
+	machine_uart.c \
 	modsamd.c \
 	samd_flash.c \
 
