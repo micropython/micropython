@@ -99,7 +99,6 @@
 #define OFFSETOF_OBJ_FUN_BC_BYTECODE (offsetof(mp_obj_fun_bc_t, bytecode) / sizeof(uintptr_t))
 #define OFFSETOF_MODULE_CONTEXT_OBJ_TABLE (offsetof(mp_module_context_t, constants.obj_table) / sizeof(uintptr_t))
 #define OFFSETOF_MODULE_CONTEXT_GLOBALS (offsetof(mp_module_context_t, module.globals) / sizeof(uintptr_t))
-#define INDEX_OF_MP_FUN_TABLE_IN_CONST_TABLE (0)
 
 // If not already defined, set parent args to same as child call registers
 #ifndef REG_PARENT_RET
@@ -406,6 +405,8 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->code_state_start = SIZEOF_NLR_BUF;
     }
 
+    size_t fun_table_off = mp_emit_common_use_const_obj(emit->emit_common, MP_OBJ_FROM_PTR(&mp_fun_table));
+
     if (emit->do_viper_types) {
         // Work out size of state (locals plus stack)
         // n_state counts all stack and locals, even those in registers
@@ -443,7 +444,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
         ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
         ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
-        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, INDEX_OF_MP_FUN_TABLE_IN_CONST_TABLE);
+        ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, fun_table_off);
 
         // Store function object (passed as first arg) to stack if needed
         if (NEED_FUN_OBJ(emit)) {
@@ -520,7 +521,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_GENERATOR_STATE, LOCAL_IDX_FUN_OBJ(emit));
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_BC_CONTEXT);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_TEMP0, INDEX_OF_MP_FUN_TABLE_IN_CONST_TABLE);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_TEMP0, fun_table_off);
         } else {
             // The locals and stack start after the code_state structure
             emit->stack_start = emit->code_state_start + SIZEOF_CODE_STATE;
@@ -540,7 +541,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             // Load REG_FUN_TABLE with a pointer to mp_fun_table, found in the const_table
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, INDEX_OF_MP_FUN_TABLE_IN_CONST_TABLE);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_FUN_TABLE, fun_table_off);
 
             // Set code_state.fun_bc
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
@@ -1105,7 +1106,7 @@ STATIC exc_stack_entry_t *emit_native_pop_exc_stack(emit_t *emit) {
 }
 
 STATIC void emit_load_reg_with_object(emit_t *emit, int reg, mp_obj_t obj) {
-    size_t table_off = mp_emit_common_alloc_const_obj(emit->emit_common, obj);
+    size_t table_off = mp_emit_common_use_const_obj(emit->emit_common, obj);
     emit_native_mov_reg_state(emit, REG_TEMP0, LOCAL_IDX_FUN_OBJ(emit));
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_OBJ_FUN_BC_CONTEXT);
     ASM_LOAD_REG_REG_OFFSET(emit->as, REG_TEMP0, REG_TEMP0, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
@@ -1211,10 +1212,11 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
             emit_native_label_assign(emit, global_except_label);
             #if N_NLR_SETJMP
             // Reload REG_FUN_TABLE, since it may be clobbered by longjmp
+            size_t fun_table_off = mp_emit_common_use_const_obj(emit->emit_common, MP_OBJ_FROM_PTR(&mp_fun_table));
             emit_native_mov_reg_state(emit, REG_LOCAL_1, LOCAL_IDX_FUN_OBJ(emit));
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_1, REG_LOCAL_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
             ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_1, REG_LOCAL_1, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_LOCAL_1, emit->scope->num_pos_args + emit->scope->num_kwonly_args);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_FUN_TABLE, REG_LOCAL_1, fun_table_off);
             #endif
             ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_1, LOCAL_IDX_EXC_HANDLER_PC(emit));
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_LOCAL_1, nlr_label, false);

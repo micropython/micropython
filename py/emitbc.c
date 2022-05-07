@@ -204,8 +204,7 @@ STATIC void emit_write_bytecode_byte_qstr(emit_t *emit, int stack_adj, byte b, q
 }
 
 STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp_obj_t obj) {
-    emit_write_bytecode_byte_const(emit, stack_adj, b,
-        mp_emit_common_alloc_const_obj(emit->emit_common, obj));
+    emit_write_bytecode_byte_const(emit, stack_adj, b, mp_emit_common_use_const_obj(emit->emit_common, obj));
 }
 
 STATIC void emit_write_bytecode_byte_child(emit_t *emit, int stack_adj, byte b, mp_raw_code_t *rc) {

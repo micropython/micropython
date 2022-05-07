@@ -185,8 +185,6 @@ typedef struct _compiler_t {
     scope_t *scope_head;
     scope_t *scope_cur;
 
-    mp_emit_common_t emit_common;
-
     emit_t *emit;                                   // current emitter
     #if NEED_METHOD_TABLE
     const emit_method_table_t *emit_method_table;   // current emit method table
@@ -196,6 +194,8 @@ typedef struct _compiler_t {
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
     #endif
+
+    mp_emit_common_t emit_common;
 } compiler_t;
 
 /******************************************************************************/
@@ -210,15 +210,11 @@ STATIC void mp_emit_common_init(mp_emit_common_t *emit, qstr source_file) {
     mp_map_elem_t *elem = mp_map_lookup(&emit->qstr_map, MP_OBJ_NEW_QSTR(source_file), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     elem->value = MP_OBJ_NEW_SMALL_INT(0);
     #endif
+    mp_obj_list_init(&emit->const_obj_list, 0);
 }
 
 STATIC void mp_emit_common_start_pass(mp_emit_common_t *emit, pass_kind_t pass) {
     emit->pass = pass;
-    if (pass == MP_PASS_STACK_SIZE) {
-        emit->ct_cur_obj_base = emit->ct_cur_obj;
-    } else if (pass > MP_PASS_STACK_SIZE) {
-        emit->ct_cur_obj = emit->ct_cur_obj_base;
-    }
     if (pass == MP_PASS_CODE_SIZE) {
         if (emit->ct_cur_child == 0) {
             emit->children = NULL;
@@ -229,22 +225,10 @@ STATIC void mp_emit_common_start_pass(mp_emit_common_t *emit, pass_kind_t pass) 
     emit->ct_cur_child = 0;
 }
 
-STATIC void mp_emit_common_finalise(mp_emit_common_t *emit, bool has_native_code) {
-    emit->ct_cur_obj += has_native_code; // allocate an additional slot for &mp_fun_table
-    emit->const_table = m_new0(mp_uint_t, emit->ct_cur_obj);
-    emit->ct_cur_obj = has_native_code; // reserve slot 0 for &mp_fun_table
-    #if MICROPY_EMIT_NATIVE
-    if (has_native_code) {
-        // store mp_fun_table pointer at the start of the constant table
-        emit->const_table[0] = (mp_uint_t)(uintptr_t)&mp_fun_table;
-    }
-    #endif
-}
-
 STATIC void mp_emit_common_populate_module_context(mp_emit_common_t *emit, qstr source_file, mp_module_context_t *context) {
     #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
     size_t qstr_map_used = emit->qstr_map.used;
-    mp_module_context_alloc_tables(context, qstr_map_used, emit->ct_cur_obj);
+    mp_module_context_alloc_tables(context, qstr_map_used, emit->const_obj_list.len);
     for (size_t i = 0; i < emit->qstr_map.alloc; ++i) {
         if (mp_map_slot_is_filled(&emit->qstr_map, i)) {
             size_t idx = MP_OBJ_SMALL_INT_VALUE(emit->qstr_map.table[i].value);
@@ -253,12 +237,12 @@ STATIC void mp_emit_common_populate_module_context(mp_emit_common_t *emit, qstr 
         }
     }
     #else
-    mp_module_context_alloc_tables(context, 0, emit->ct_cur_obj);
+    mp_module_context_alloc_tables(context, 0, emit->const_obj_list.len);
     context->constants.source_file = source_file;
     #endif
 
-    if (emit->ct_cur_obj > 0) {
-        memcpy(context->constants.obj_table, emit->const_table, emit->ct_cur_obj * sizeof(mp_uint_t));
+    for (size_t i = 0; i < emit->const_obj_list.len; ++i) {
+        context->constants.obj_table[i] = emit->const_obj_list.items[i];
     }
 }
 
@@ -3501,22 +3485,12 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     }
 
     // compute some things related to scope and identifiers
-    bool has_native_code = false;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        #if MICROPY_EMIT_NATIVE
-        if (s->emit_options == MP_EMIT_OPT_NATIVE_PYTHON || s->emit_options == MP_EMIT_OPT_VIPER) {
-            has_native_code = true;
-        }
-        #endif
-
         scope_compute_things(s);
     }
 
     // set max number of labels now that it's calculated
     emit_bc_set_max_num_labels(emit_bc, max_num_labels);
-
-    // finalise and allocate the constant table
-    mp_emit_common_finalise(&comp->emit_common, has_native_code);
 
     // compile MP_PASS_STACK_SIZE, MP_PASS_CODE_SIZE, MP_PASS_EMIT
     #if MICROPY_EMIT_NATIVE
@@ -3604,9 +3578,19 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     cm.rc = module_scope->raw_code;
     cm.context = context;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    cm.has_native = has_native_code;
+    cm.has_native = false;
+    #if MICROPY_EMIT_NATIVE
+    if (emit_native != NULL) {
+        cm.has_native = true;
+    }
+    #endif
+    #if MICROPY_EMIT_INLINE_ASM
+    if (comp->emit_inline_asm != NULL) {
+        cm.has_native = true;
+    }
+    #endif
     cm.n_qstr = comp->emit_common.qstr_map.used;
-    cm.n_obj = comp->emit_common.ct_cur_obj;
+    cm.n_obj = comp->emit_common.const_obj_list.len;
     #endif
     if (comp->compile_error == MP_OBJ_NULL) {
         mp_emit_common_populate_module_context(&comp->emit_common, source_file, context);
