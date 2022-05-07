@@ -71,19 +71,19 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
         }
         #if CIRCUITPY_VECTORIO
         layer = mp_obj_cast_to_native_base(
-                    self->members->items[i], &vectorio_circle_type);
+            self->members->items[i], &vectorio_circle_type);
         if (layer != MP_OBJ_NULL) {
             common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_circle_get_draw_protocol(layer));
             continue;
         }
         layer = mp_obj_cast_to_native_base(
-                self->members->items[i], &vectorio_rectangle_type);
+            self->members->items[i], &vectorio_rectangle_type);
         if (layer != MP_OBJ_NULL) {
             common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_rectangle_get_draw_protocol(layer));
             continue;
         }
         layer = mp_obj_cast_to_native_base(
-                self->members->items[i], &vectorio_polygon_type);
+            self->members->items[i], &vectorio_polygon_type);
         if (layer != MP_OBJ_NULL) {
             common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_polygon_get_draw_protocol(layer));
             continue;
@@ -381,7 +381,7 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
-    if (self->hidden == false){
+    if (self->hidden == false) {
         for (int32_t i = self->members->len - 1; i >= 0; i--) {
             mp_obj_t layer;
             #if CIRCUITPY_VECTORIO
