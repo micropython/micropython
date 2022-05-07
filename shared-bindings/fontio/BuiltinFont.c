@@ -76,12 +76,8 @@ STATIC mp_obj_t fontio_builtinfont_obj_get_bitmap(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bitmap_obj, fontio_builtinfont_obj_get_bitmap);
 
-const mp_obj_property_t fontio_builtinfont_bitmap_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&fontio_builtinfont_get_bitmap_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(fontio_builtinfont_bitmap_obj,
+    (mp_obj_t)&fontio_builtinfont_get_bitmap_obj);
 
 //|     def get_bounding_box(self) -> Tuple[int, int]:
 //|         """Returns the maximum bounds of all glyphs in the font in a tuple of two values: width, height."""

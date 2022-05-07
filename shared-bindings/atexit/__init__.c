@@ -34,6 +34,7 @@
 //| These functions are run in the reverse order in which they were registered;
 //| if you register ``A``, ``B``, and ``C``, they will be run in the order ``C``, ``B``, ``A``.
 //|
+//| |see_cpython_module| :mod:`cpython:atexit`.
 //| """
 //| ...
 //|

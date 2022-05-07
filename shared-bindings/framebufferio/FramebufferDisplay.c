@@ -168,12 +168,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_auto_refresh(mp_obj_t s
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_auto_refresh_obj, framebufferio_framebufferdisplay_obj_set_auto_refresh);
 
-const mp_obj_property_t framebufferio_framebufferdisplay_auto_refresh_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_auto_refresh_obj,
-              (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_refresh_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_refresh_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_auto_refresh_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_refresh_obj);
 
 //|     brightness: float
 //|     """The brightness of the display as a float. 0.0 is off and 1.0 is full brightness. When
@@ -205,12 +202,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t sel
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_brightness_obj, framebufferio_framebufferdisplay_obj_set_brightness);
 
-const mp_obj_property_t framebufferio_framebufferdisplay_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_brightness_obj,
-              (mp_obj_t)&framebufferio_framebufferdisplay_set_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_brightness_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_brightness_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_set_brightness_obj);
 
 //|     auto_brightness: bool
 //|     """True when the display brightness is adjusted automatically, based on an ambient
@@ -236,12 +230,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_auto_brightness(mp_obj_
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_auto_brightness_obj, framebufferio_framebufferdisplay_obj_set_auto_brightness);
 
-const mp_obj_property_t framebufferio_framebufferdisplay_auto_brightness_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_auto_brightness_obj,
-              (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_brightness_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_auto_brightness_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_auto_brightness_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_set_auto_brightness_obj);
 
 //|     width: int
 //|     """Gets the width of the framebuffer"""
@@ -252,12 +243,8 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_width(mp_obj_t self_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_width_obj, framebufferio_framebufferdisplay_obj_get_width);
 
-const mp_obj_property_t framebufferio_framebufferdisplay_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_width_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_width_obj);
 
 //|     height: int
 //|     """Gets the height of the framebuffer"""
@@ -268,12 +255,8 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_height(mp_obj_t self_in
 }
 MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_height_obj, framebufferio_framebufferdisplay_obj_get_height);
 
-const mp_obj_property_t framebufferio_framebufferdisplay_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_height_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_height_obj);
 
 //|     rotation: int
 //|     """The rotation of the display as an int in degrees."""
@@ -291,12 +274,9 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_rotation(mp_obj_t self_
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_set_rotation_obj, framebufferio_framebufferdisplay_obj_set_rotation);
 
 
-const mp_obj_property_t framebufferio_framebufferdisplay_rotation_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_rotation_obj,
-              (mp_obj_t)&framebufferio_framebufferdisplay_set_rotation_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_rotation_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_rotation_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_set_rotation_obj);
 
 //|     framebuffer: circuitpython_typing.FrameBuffer
 //|     """The framebuffer being used by the display"""
@@ -308,12 +288,8 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_framebuffer(mp_obj_t se
 }
 MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_framebuffer_obj, framebufferio_framebufferdisplay_obj_get_framebuffer);
 
-const mp_obj_property_t framebufferio_framebufferframebuffer_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&framebufferio_framebufferdisplay_get_framebuffer_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(framebufferio_framebufferframebuffer_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_framebuffer_obj);
 
 
 //|     def fill_row(self, y: int, buffer: WriteableBuffer) -> WriteableBuffer:

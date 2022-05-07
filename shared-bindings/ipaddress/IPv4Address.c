@@ -96,12 +96,8 @@ STATIC mp_obj_t ipaddress_ipv4address_get_packed(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_packed_obj, ipaddress_ipv4address_get_packed);
 
-const mp_obj_property_t ipaddress_ipv4address_packed_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_packed_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(ipaddress_ipv4address_packed_obj,
+    (mp_obj_t)&ipaddress_ipv4address_get_packed_obj);
 
 //|     version: int
 //|     """4 for IPv4, 6 for IPv6"""
@@ -120,12 +116,8 @@ STATIC mp_obj_t ipaddress_ipv4address_get_version(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(ipaddress_ipv4address_get_version_obj, ipaddress_ipv4address_get_version);
 
-const mp_obj_property_t ipaddress_ipv4address_version_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&ipaddress_ipv4address_get_version_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(ipaddress_ipv4address_version_obj,
+    (mp_obj_t)&ipaddress_ipv4address_get_version_obj);
 
 //|     def __eq__(self, other: object) -> bool:
 //|         """Two Address objects are equal if their addresses and address types are equal."""

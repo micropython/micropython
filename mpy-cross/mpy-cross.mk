@@ -6,12 +6,7 @@ include ../py/mkenv.mk
 
 # define main target
 
-ifeq ($(OS),Windows_NT)
-# Detect a MINGW32 build, and change the name of the final executable.
-PROG ?= mpy-cross.exe
-else
 PROG ?= mpy-cross
-endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h

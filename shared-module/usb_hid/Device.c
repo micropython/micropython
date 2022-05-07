@@ -186,7 +186,7 @@ uint8_t common_hal_usb_hid_device_validate_report_id(usb_hid_device_obj_t *self,
     return (uint8_t)report_id_arg;
 }
 
-void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint8_t usage_page, uint8_t usage, size_t num_report_ids, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths) {
+void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t report_descriptor, uint16_t usage_page, uint16_t usage, size_t num_report_ids, uint8_t *report_ids, uint8_t *in_report_lengths, uint8_t *out_report_lengths) {
     if (num_report_ids > CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR) {
         mp_raise_ValueError_varg(translate("More than %d report ids not supported"),
             CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR);
@@ -211,11 +211,11 @@ void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t re
     memcpy(self->out_report_lengths, out_report_lengths, num_report_ids);
 }
 
-uint8_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
+uint16_t common_hal_usb_hid_device_get_usage_page(usb_hid_device_obj_t *self) {
     return self->usage_page;
 }
 
-uint8_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
+uint16_t common_hal_usb_hid_device_get_usage(usb_hid_device_obj_t *self) {
     return self->usage;
 }
 

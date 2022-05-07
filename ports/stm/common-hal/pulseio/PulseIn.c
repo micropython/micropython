@@ -89,7 +89,7 @@ STATIC void pulsein_exti_event_handler(uint8_t num) {
         if (self->len < self->maxlen) {
             self->len++;
         } else {
-            self->start++;
+            self->start = (self->start + 1) % self->maxlen;
         }
     }
 

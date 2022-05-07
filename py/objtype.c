@@ -660,7 +660,8 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
             // be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
             if (proxy[0] == mp_const_none) {
                 mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
             } else {
@@ -740,11 +741,12 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member[0]);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member[0], &n_proxy);
             mp_obj_t dest[2] = {self_in, value};
             if (value == MP_OBJ_NULL) {
                 // delete attribute
-                if (proxy[2] == mp_const_none) {
+                if (n_proxy < 3 || proxy[2] == mp_const_none) {
                     // TODO better error message?
                     return false;
                 } else {
@@ -753,7 +755,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
                 }
             } else {
                 // store attribute
-                if (proxy[1] == mp_const_none) {
+                if (n_proxy < 2 || proxy[1] == mp_const_none) {
                     // TODO better error message?
                     return false;
                 } else {
@@ -1374,7 +1376,8 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // here...
             #if MICROPY_PY_BUILTINS_PROPERTY
             if (mp_obj_is_type(member, &mp_type_property)) {
-                const mp_obj_t *proxy = mp_obj_property_get(member);
+                size_t n_proxy;
+                const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
                 if (proxy[0] == mp_const_none) {
                     mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
                 } else {

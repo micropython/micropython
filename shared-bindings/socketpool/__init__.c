@@ -35,6 +35,9 @@
 //| """
 //| The `socketpool` module provides sockets through a pool. The pools themselves
 //| act like CPython's `socket` module.
+//|
+//| For more information about the `socket` module, see the CPython documentation:
+//| https://docs.python.org/3/library/socket.html
 //| """
 //|
 

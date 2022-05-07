@@ -319,13 +319,10 @@ $(patsubst %.c,$(BUILD)/%.o,$(SRC_PERIPHERALS)): CFLAGS += -Wno-missing-prototyp
 SRC_C += \
 	audio_dma.c \
 	background.c \
-	bindings/samd/Clock.c \
-	bindings/samd/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
 	eic_handler.c \
 	fatfs_port.c \
-	freetouch/adafruit_ptc.c \
 	lib/tinyusb/src/portable/microchip/samd/dcd_samd.c \
 	mphalport.c \
 	reset.c \
@@ -340,8 +337,16 @@ ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX
 SRC_C += shared_timers.c
 endif
 
+ifeq ($(CIRCUITPY_SAMD),1)
+SRC_C += bindings/samd/Clock.c bindings/samd/__init__.c
+endif
+
 ifeq ($(CIRCUITPY_SDIOIO),1)
 SRC_C += ports/atmel-samd/sd_mmc/sd_mmc.c
+endif
+
+ifeq ($(CIRCUITPY_TOUCHIO),1)
+SRC_C += freetouch/adafruit_ptc.c
 endif
 
 # The smallest SAMD51 packages don't have I2S. Everything else does.

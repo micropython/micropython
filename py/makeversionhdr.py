@@ -19,16 +19,14 @@ def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            [tools_describe],
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
+            [tools_describe], stderr=subprocess.STDOUT, universal_newlines=True, shell=True
         ).strip()
     except subprocess.CalledProcessError as er:
         if er.returncode == 128:
             # git exit code of 128 means no repository found
             return None
         git_tag = ""
-    except OSError:
+    except OSError as e:
         return None
     try:
         git_hash = subprocess.check_output(

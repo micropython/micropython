@@ -164,6 +164,9 @@ endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
 endif
+ifeq ($(CIRCUITPY_FLOPPYIO),1)
+SRC_PATTERNS += floppyio/%
+endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
@@ -330,6 +333,9 @@ SRC_PATTERNS += usb_vendor/%
 endif
 ifeq ($(CIRCUITPY_USTACK),1)
 SRC_PATTERNS += ustack/%
+endif
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_PATTERNS += zlib/%
 endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
@@ -542,6 +548,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
@@ -597,6 +604,7 @@ SRC_SHARED_MODULE_ALL = \
 	usb/core/__init__.c \
 	usb/core/Device.c \
 	ustack/__init__.c \
+	zlib/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
@@ -651,6 +659,17 @@ SRC_MOD += $(addprefix lib/protomatter/src/, \
 	core.c \
 )
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
+endif
+
+ifeq ($(CIRCUITPY_ZLIB),1)
+SRC_MOD += $(addprefix lib/uzlib/, \
+	tinflate.c \
+	tinfzlib.c \
+	tinfgzip.c \
+	adler32.c \
+	crc32.c \
+)
+$(BUILD)/lib/uzlib/tinflate.o: CFLAGS += -Wno-missing-braces -Wno-missing-prototypes
 endif
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.

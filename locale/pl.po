@@ -630,7 +630,7 @@ msgstr "Długość %d bufora jest za duża. Musi być mniejsza niż %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Długość bufora musi być wielokrotnością 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufor musi być wielokrotnością 512 bajtów"
 
@@ -1116,6 +1116,11 @@ msgstr "Nie wspierany format"
 msgid "Framebuffer requires %d bytes"
 msgstr "Bufor ramki wymaga %d bajtów"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1541,6 +1546,11 @@ msgstr "Wiadomości ograniczone do 8 bajtów"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Opóźnienie włączenia mikrofonu musi być w zakresie od 0.0 do 1.0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Brak pinu MISO lub MOSI"
@@ -1609,6 +1619,10 @@ msgstr ""
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Za długa nazwa"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -3138,10 +3152,6 @@ msgstr ""
 msgid "division by zero"
 msgstr "dzielenie przez zero"
 
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "divisor must be 4"
-msgstr ""
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
 msgstr ""
@@ -3288,6 +3298,10 @@ msgstr "font musi mieć 2048 bajtów długości"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format wymaga słownika"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"
@@ -4080,63 +4094,8 @@ msgstr "trzeci argument pow() nie może być 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 
-#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
-#: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
-#: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
-#: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
-#: ports/espressif/boards/artisense_rd00/mpconfigboard.h
-#: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
-#: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitm_1_n8/mpconfigboard.h
-#: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
-#: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_saola_1_wroom/mpconfigboard.h
-#: ports/espressif/boards/espressif_saola_1_wrover/mpconfigboard.h
-#: ports/espressif/boards/franzininho_wifi_wroom/mpconfigboard.h
-#: ports/espressif/boards/franzininho_wifi_wrover/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_m/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
-#: ports/espressif/boards/hexky_s2/mpconfigboard.h
-#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_esp32_s2_wroom/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_s2/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
-#: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
-#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
-#: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
-#: ports/espressif/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
-#: ports/espressif/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
-#: ports/espressif/boards/targett_module_clip_wroom/mpconfigboard.h
-#: ports/espressif/boards/targett_module_clip_wrover/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr ""
 

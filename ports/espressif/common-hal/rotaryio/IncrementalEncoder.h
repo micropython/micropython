@@ -35,6 +35,7 @@ typedef struct {
     uint8_t pin_a, pin_b;
     mp_int_t position;
     pcnt_unit_t unit;
+    int8_t divisor; // Number of quadrature edges required per count
 } rotaryio_incrementalencoder_obj_t;
 
 #endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_ROTARYIO_INCREMENTALENCODER_H

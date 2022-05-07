@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-21 22:57+0000\n"
+"PO-Revision-Date: 2022-04-27 18:11+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1-dev\n"
 
 #: main.c
 msgid ""
@@ -643,7 +643,7 @@ msgstr "O tamanho do buffer %d é muito grande. Deve ser menor que %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "O buffer deve ser um múltiplo de 512 bytes"
 
@@ -1135,6 +1135,13 @@ msgstr "O formato não é suportado"
 msgid "Framebuffer requires %d bytes"
 msgstr "O Framebuffer requer %d bytes"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+"A frequência deve ser 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 ou "
+"1008 Mhz"
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1567,6 +1574,11 @@ msgstr "As mensagens estão limitadas a 8 bytes"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "O atraso na inicialização do microfone deve estar entre 0,0 e 1,0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr "O tamanho dos dados é incompatível"
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "O pino MISO ou MOSI está ausente"
@@ -1635,6 +1647,10 @@ msgstr "Erro NVS"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nome muito longo"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr "O novo bitmap deve ter o mesmo tamanho que o bitmap antigo"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -3219,10 +3235,6 @@ msgstr "divido por zero"
 msgid "division by zero"
 msgstr "divisão por zero"
 
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "divisor must be 4"
-msgstr "o divisor deve ser 4"
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
 msgstr "dtype deve ser flutuante ou complexo"
@@ -3369,6 +3381,10 @@ msgstr "a fonte deve ter 2048 bytes de comprimento"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formato requer um dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr "nesta placa, a frequência é de apenas leitura"
 
 #: py/objdeque.c
 msgid "full"
@@ -4171,63 +4187,8 @@ msgstr "O terceiro argumento pow() não pode ser 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "o pow() com 3 argumentos requer números inteiros"
 
-#: ports/espressif/boards/adafruit_esp32s2_camera/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_tft/mpconfigboard.h
-#: ports/espressif/boards/adafruit_feather_esp32s2_tftback_nopsram/mpconfigboard.h
-#: ports/espressif/boards/adafruit_funhouse/mpconfigboard.h
-#: ports/espressif/boards/adafruit_magtag_2.9_grayscale/mpconfigboard.h
-#: ports/espressif/boards/adafruit_metro_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_qtpy_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/adafruit_qtpy_esp32s3_nopsram/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp32-c3s-2m/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp32-c3s/mpconfigboard.h
-#: ports/espressif/boards/ai_thinker_esp_12k_nodemcu/mpconfigboard.h
-#: ports/espressif/boards/artisense_rd00/mpconfigboard.h
-#: ports/espressif/boards/atmegazero_esp32s2/mpconfigboard.h
-#: ports/espressif/boards/crumpspace_crumps2/mpconfigboard.h
-#: ports/espressif/boards/electroniccats_bastwifi/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32c3_devkitm_1_n4/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s2_devkitc_1_n4r2/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_box/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r2/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitc_1_n8r8/mpconfigboard.h
-#: ports/espressif/boards/espressif_esp32s3_devkitm_1_n8/mpconfigboard.h
-#: ports/espressif/boards/espressif_hmi_devkit_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_kaluga_1.3/mpconfigboard.h
-#: ports/espressif/boards/espressif_kaluga_1/mpconfigboard.h
-#: ports/espressif/boards/espressif_saola_1_wroom/mpconfigboard.h
-#: ports/espressif/boards/espressif_saola_1_wrover/mpconfigboard.h
-#: ports/espressif/boards/franzininho_wifi_wroom/mpconfigboard.h
-#: ports/espressif/boards/franzininho_wifi_wrover/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_m/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_ms/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_r/mpconfigboard.h
-#: ports/espressif/boards/gravitech_cucumber_rs/mpconfigboard.h
-#: ports/espressif/boards/hexky_s2/mpconfigboard.h
-#: ports/espressif/boards/hiibot_iots2/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_esp32_s2_wroom/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_s2/mpconfigboard.h
-#: ports/espressif/boards/lilygo_ttgo_t8_s2_st7789/mpconfigboard.h
-#: ports/espressif/boards/lolin_s2_mini/mpconfigboard.h
-#: ports/espressif/boards/lolin_s2_pico/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_c3/mpconfigboard.h
-#: ports/espressif/boards/microdev_micro_s2/mpconfigboard.h
-#: ports/espressif/boards/morpheans_morphesp-240/mpconfigboard.h
-#: ports/espressif/boards/muselab_nanoesp32_s2_wroom/mpconfigboard.h
-#: ports/espressif/boards/muselab_nanoesp32_s2_wrover/mpconfigboard.h
-#: ports/espressif/boards/odt_pixelwing_esp32_s2/mpconfigboard.h
-#: ports/espressif/boards/targett_module_clip_wroom/mpconfigboard.h
-#: ports/espressif/boards/targett_module_clip_wrover/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2_neo/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers2_prerelease/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_feathers3/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_pros3/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_tinys2/mpconfigboard.h
-#: ports/espressif/boards/unexpectedmaker_tinys3/mpconfigboard.h
+#: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr "pressionando o botão de boot na inicialização.\n"
 
@@ -4782,6 +4743,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "divisor must be 4"
+#~ msgstr "o divisor deve ser 4"
 
 #~ msgid ""
 #~ "\n"

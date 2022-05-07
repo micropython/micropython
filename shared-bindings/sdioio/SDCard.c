@@ -218,12 +218,8 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_frequency(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_frequency_obj, sdioio_sdcard_obj_get_frequency);
 
-const mp_obj_property_t sdioio_sdcard_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_frequency_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_frequency_obj,
+    (mp_obj_t)&sdioio_sdcard_get_frequency_obj);
 
 //|     @property
 //|     def width(self) -> int:
@@ -237,12 +233,8 @@ STATIC mp_obj_t sdioio_sdcard_obj_get_width(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_get_width_obj, sdioio_sdcard_obj_get_width);
 
-const mp_obj_property_t sdioio_sdcard_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&sdioio_sdcard_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(sdioio_sdcard_width_obj,
+    (mp_obj_t)&sdioio_sdcard_get_width_obj);
 
 //|     def deinit(self) -> None:
 //|         """Disable permanently.

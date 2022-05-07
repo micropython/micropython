@@ -35,7 +35,14 @@
 #include "supervisor/shared/translate.h"
 
 //| class MP3Decoder:
-//|     """Load a mp3 file for audio playback"""
+//|     """Load a mp3 file for audio playback
+//|
+//|     .. note::
+//|
+//|         ``MP3Decoder`` uses a lot of contiguous memory, so care should be given to
+//|         optimizing memory usage.  More information and recommendations can be found here:
+//|         https://learn.adafruit.com/Memory-saving-tips-for-CircuitPython/reducing-memory-fragmentation
+//|     """
 //|
 //|     def __init__(self, file: typing.BinaryIO, buffer: WriteableBuffer) -> None:
 //|
@@ -44,6 +51,20 @@
 //|         :param typing.BinaryIO file: Already opened mp3 file
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Optional pre-allocated buffer, that will be split in half and used for double-buffering of the data. If not provided, two buffers are allocated internally.  The specific buffer size required depends on the mp3 file.
 //|
+//|         Playback of mp3 audio is CPU intensive, and the
+//|         exact limit depends on many factors such as the particular
+//|         microcontroller, SD card or flash performance, and other
+//|         code in use such as displayio. If playback is garbled,
+//|         skips, or plays as static, first try using a "simpler" mp3:
+//|
+//|           * Use constant bit rate (CBR) not VBR or ABR (variable or average bit rate) when encoding your mp3 file
+//|           * Use a lower sample rate (e.g., 11.025kHz instead of 48kHz)
+//|           * Use a lower bit rate (e.g., 32kbit/s instead of 256kbit/s)
+//|
+//|         Reduce activity taking place at the same time as
+//|         mp3 playback. For instance, only update small portions of a
+//|         displayio screen if audio is playing. Disable auto-refresh
+//|         and explicitly call refresh.
 //|
 //|         Playing a mp3 file from flash::
 //|
@@ -145,12 +166,9 @@ STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_file_obj, audiomp3_mp3file_obj_set_file);
 
-const mp_obj_property_t audiomp3_mp3file_file_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_file_obj,
-              (mp_obj_t)&audiomp3_mp3file_set_file_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(audiomp3_mp3file_file_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_file_obj,
+    (mp_obj_t)&audiomp3_mp3file_set_file_obj);
 
 
 
@@ -174,12 +192,9 @@ STATIC mp_obj_t audiomp3_mp3file_obj_set_sample_rate(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(audiomp3_mp3file_set_sample_rate_obj, audiomp3_mp3file_obj_set_sample_rate);
 
-const mp_obj_property_t audiomp3_mp3file_sample_rate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_sample_rate_obj,
-              (mp_obj_t)&audiomp3_mp3file_set_sample_rate_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(audiomp3_mp3file_sample_rate_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_sample_rate_obj,
+    (mp_obj_t)&audiomp3_mp3file_set_sample_rate_obj);
 
 //|     bits_per_sample: int
 //|     """Bits per sample. (read only)"""
@@ -191,12 +206,8 @@ STATIC mp_obj_t audiomp3_mp3file_obj_get_bits_per_sample(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_bits_per_sample_obj, audiomp3_mp3file_obj_get_bits_per_sample);
 
-const mp_obj_property_t audiomp3_mp3file_bits_per_sample_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_bits_per_sample_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomp3_mp3file_bits_per_sample_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_bits_per_sample_obj);
 
 //|     channel_count: int
 //|     """Number of audio channels. (read only)"""
@@ -208,12 +219,8 @@ STATIC mp_obj_t audiomp3_mp3file_obj_get_channel_count(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_channel_count_obj, audiomp3_mp3file_obj_get_channel_count);
 
-const mp_obj_property_t audiomp3_mp3file_channel_count_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_channel_count_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomp3_mp3file_channel_count_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_channel_count_obj);
 
 //|     rms_level: float
 //|     """The RMS audio level of a recently played moment of audio. (read only)"""
@@ -225,12 +232,8 @@ STATIC mp_obj_t audiomp3_mp3file_obj_get_rms_level(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_rms_level_obj, audiomp3_mp3file_obj_get_rms_level);
 
-const mp_obj_property_t audiomp3_mp3file_rms_level_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_rms_level_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomp3_mp3file_rms_level_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_rms_level_obj);
 
 //|     samples_decoded: int
 //|     """The number of audio samples decoded from the current file. (read only)"""
@@ -242,12 +245,8 @@ STATIC mp_obj_t audiomp3_mp3file_obj_get_samples_decoded(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(audiomp3_mp3file_get_samples_decoded_obj, audiomp3_mp3file_obj_get_samples_decoded);
 
-const mp_obj_property_t audiomp3_mp3file_samples_decoded_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&audiomp3_mp3file_get_samples_decoded_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(audiomp3_mp3file_samples_decoded_obj,
+    (mp_obj_t)&audiomp3_mp3file_get_samples_decoded_obj);
 
 STATIC const mp_rom_map_elem_t audiomp3_mp3file_locals_dict_table[] = {
     // Methods

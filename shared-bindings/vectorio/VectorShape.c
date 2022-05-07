@@ -120,12 +120,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_x(mp_obj_t wrapper_shape, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_x_obj, vectorio_vector_shape_obj_set_x);
 
-const mp_obj_property_t vectorio_vector_shape_x_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_x_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_x_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_x_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_x_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_x_obj);
 
 
 //     y: int
@@ -151,12 +148,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_y(mp_obj_t wrapper_shape, mp_obj_t
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_y_obj, vectorio_vector_shape_obj_set_y);
 
-const mp_obj_property_t vectorio_vector_shape_y_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_y_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_y_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_y_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_y_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_y_obj);
 
 
 //     location: Tuple[int, int]
@@ -181,12 +175,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_location(mp_obj_t wrapper_shape, m
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_location_obj, vectorio_vector_shape_obj_set_location);
 
-const mp_obj_property_t vectorio_vector_shape_location_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_location_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_location_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_location_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_location_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_location_obj);
 
 
 //     pixel_shader: Union[ColorConverter, Palette]
@@ -216,12 +207,9 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t wrapper_shap
 }
 MP_DEFINE_CONST_FUN_OBJ_2(vectorio_vector_shape_set_pixel_shader_obj, vectorio_vector_shape_obj_set_pixel_shader);
 
-const mp_obj_property_t vectorio_vector_shape_pixel_shader_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&vectorio_vector_shape_get_pixel_shader_obj,
-              (mp_obj_t)&vectorio_vector_shape_set_pixel_shader_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(vectorio_vector_shape_pixel_shader_obj,
+    (mp_obj_t)&vectorio_vector_shape_get_pixel_shader_obj,
+    (mp_obj_t)&vectorio_vector_shape_set_pixel_shader_obj);
 
 
 STATIC const mp_rom_map_elem_t vectorio_vector_shape_locals_dict_table[] = {

@@ -50,6 +50,9 @@ typedef struct {
     const mcu_pin_obj_t *tx;
     const mcu_pin_obj_t *cts;
     const mcu_pin_obj_t *rts;
+    const mcu_pin_obj_t *rs485_dir;
+    bool rs485_invert;
+
 } busio_uart_obj_t;
 
 void uart_reset(void);

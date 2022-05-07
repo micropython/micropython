@@ -49,7 +49,33 @@
 //|     w.timeout=2.5 # Set a timeout of 2.5 seconds
 //|     w.mode = WatchDogMode.RAISE
 //|     w.feed()"""
+
+//| class WatchDogTimeout(Exception):
+//|     """Exception raised when the watchdog timer is set to
+//|     ``WatchDogMode.RAISE`` and expires.
 //|
+//|     Example::
+//|
+//|         import microcontroller
+//|         import watchdog
+//|         import time
+//|
+//|         wdt = microcontroller.watchdog
+//|         wdt.timeout = 5
+//|
+//|         while True:
+//|             wdt.mode = watchdog.WatchDogMode.RAISE
+//|             print("Starting loop -- should exit after five seconds")
+//|             try:
+//|                 while True:
+//|                     time.sleep(10)  # Also works with pass
+//|             except watchdog.WatchDogTimeout as e:
+//|                 print("Watchdog expired")
+//|             except Exception as e:
+//|                 print("Other exception")
+//|
+//|         print("Exited loop")
+//|     """
 
 const mp_obj_type_t mp_type_WatchDogTimeout = {
     { &mp_type_type },

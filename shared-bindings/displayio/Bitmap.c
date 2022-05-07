@@ -97,12 +97,8 @@ STATIC mp_obj_t displayio_bitmap_obj_get_width(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_bitmap_get_width_obj, displayio_bitmap_obj_get_width);
 
-const mp_obj_property_t displayio_bitmap_width_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_bitmap_get_width_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_bitmap_width_obj,
+    (mp_obj_t)&displayio_bitmap_get_width_obj);
 
 //|     height: int
 //|     """Height of the bitmap. (read only)"""
@@ -115,12 +111,8 @@ STATIC mp_obj_t displayio_bitmap_obj_get_height(mp_obj_t self_in) {
 
 MP_DEFINE_CONST_FUN_OBJ_1(displayio_bitmap_get_height_obj, displayio_bitmap_obj_get_height);
 
-const mp_obj_property_t displayio_bitmap_height_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&displayio_bitmap_get_height_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(displayio_bitmap_height_obj,
+    (mp_obj_t)&displayio_bitmap_get_height_obj);
 
 //|     def __getitem__(self, index: Union[Tuple[int, int], int]) -> int:
 //|         """Returns the value at the given index. The index can either be an x,y tuple or an int equal

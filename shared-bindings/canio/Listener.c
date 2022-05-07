@@ -150,12 +150,9 @@ STATIC mp_obj_t canio_listener_timeout_set(mp_obj_t self_in, mp_obj_t timeout_in
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(canio_listener_timeout_set_obj, canio_listener_timeout_set);
 
-STATIC const mp_obj_property_t canio_listener_timeout_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&canio_listener_timeout_get_obj,
-              (mp_obj_t)&canio_listener_timeout_set_obj,
-              (mp_obj_t)mp_const_none},
-};
+MP_PROPERTY_GETSET(canio_listener_timeout_obj,
+    (mp_obj_t)&canio_listener_timeout_get_obj,
+    (mp_obj_t)&canio_listener_timeout_set_obj);
 
 
 

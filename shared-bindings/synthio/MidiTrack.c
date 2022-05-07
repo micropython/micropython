@@ -132,12 +132,8 @@ STATIC mp_obj_t synthio_miditrack_obj_get_sample_rate(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_miditrack_get_sample_rate_obj, synthio_miditrack_obj_get_sample_rate);
 
-const mp_obj_property_t synthio_miditrack_sample_rate_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&synthio_miditrack_get_sample_rate_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(synthio_miditrack_sample_rate_obj,
+    (mp_obj_t)&synthio_miditrack_get_sample_rate_obj);
 
 STATIC const mp_rom_map_elem_t synthio_miditrack_locals_dict_table[] = {
     // Methods
