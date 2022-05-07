@@ -381,13 +381,7 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     // Track if any of the layers finishes filling in the given area. We can ignore any remaining
     // layers at that point.
-    //mp_printf(&mp_plat_print, "inside fill area \n");
-    //mp_printf(&mp_plat_print, "%d \n", self->hidden);
-    //mp_printf(&mp_plat_print, "\n");
-
-    //mp_printf(&mp_plat_print, "inside fill area \n");
     if (self->hidden == false){
-        //mp_printf(&mp_plat_print, "not hidden\n");
         for (int32_t i = self->members->len - 1; i >= 0; i--) {
             mp_obj_t layer;
             #if CIRCUITPY_VECTORIO
@@ -418,8 +412,6 @@ bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorsp
             }
         }
     }
-
-
     return false;
 }
 
