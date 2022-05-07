@@ -98,7 +98,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
 
     // We're guaranteed by the init code that some output will be available promptly
     uint8_t quiescent_state;
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, &quiescent_state, 1, 1);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, &quiescent_state, 1, 1, false);
 
     shared_module_softencoder_state_init(self, quiescent_state & 3);
     common_hal_rp2pio_statemachine_set_interrupt_handler(&self->state_machine, incrementalencoder_interrupt_handler, self, PIO_IRQ0_INTF_SM0_RXNEMPTY_BITS);

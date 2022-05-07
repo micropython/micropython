@@ -63,7 +63,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     uint32_t pins_we_use = 1 << digitalinout->pin->number;
     bool ok = rp2pio_statemachine_construct(&state_machine,
         neopixel_program, sizeof(neopixel_program) / sizeof(neopixel_program[0]),
-        12800000, // MHz, to get about appropriate sub-bit times in PIO program.
+        12800000, // 12.8MHz, to get appropriate sub-bit times in PIO program.
         NULL, 0, // init program
         NULL, 1, // out
         NULL, 1, // in
@@ -90,7 +90,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
     }
 
-    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */);
+    common_hal_rp2pio_statemachine_write(&state_machine, pixels, num_bytes, 1 /* stride in bytes */, false);
 
     // Use a private deinit of the state machine that doesn't reset the pin.
     rp2pio_statemachine_deinit(&state_machine, true);
