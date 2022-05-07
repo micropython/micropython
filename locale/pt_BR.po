@@ -1579,6 +1579,10 @@ msgstr "O atraso na inicialização do microfone deve estar entre 0,0 e 1,0"
 msgid "Mismatched data size"
 msgstr "O tamanho dos dados é incompatível"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "O pino MISO ou MOSI está ausente"
@@ -2091,7 +2095,7 @@ msgstr "Erro DeInit RNG"
 msgid "RNG Init Error"
 msgstr "Houve um erro na inicialização do RNG"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "Ainda não há suporte para o RS485 neste dispositivo"
 
