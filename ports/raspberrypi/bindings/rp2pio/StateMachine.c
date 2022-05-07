@@ -391,7 +391,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
-//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
+//|         :param bool swap: For 2- and 4-byte elements, swap (reverse) the byte order"""
 //|         ...
 //|
 STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -467,7 +467,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] once: Data to be written once
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] loop: Data to be written repeatedly
-//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
+//|         :param bool swap: For 2- and 4-byte elements, swap (reverse) the byte order
 //|         """
 //|         ...
 //|
@@ -592,7 +592,7 @@ const mp_obj_property_t rp2pio_statemachine_pending_obj = {
 //|         :param ~circuitpython_typing.WriteableBuffer buffer: Read data into this buffer
 //|         :param int start: Start of the slice of ``buffer`` to read into: ``buffer[start:end]``
 //|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
-//|         :param bool swap: For 2- and 4-byte elements, swap the byte order"""
+//|         :param bool swap: For 2- and 4-byte elements, swap (reverse) the byte order"""
 //|         ...
 //|
 
@@ -651,8 +651,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
 //|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
-//|         :param bool swap_out: For 2- and 4-byte elements, swap the byte order for the buffer being transmitted (written)"""
-//|         :param bool swap_in: For 2- and 4-rx elements, swap the byte order for the buffer being received (read)"""
+//|         :param bool swap_out: For 2- and 4-byte elements, swap (reverse) the byte order for the buffer being transmitted (written)"""
+//|         :param bool swap_in: For 2- and 4-rx elements, swap (reverse) the byte order for the buffer being received (read)"""
 //|         ...
 //|
 
