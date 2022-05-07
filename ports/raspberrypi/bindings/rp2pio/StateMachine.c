@@ -378,7 +378,7 @@ STATIC mp_obj_t rp2pio_statemachine_stop(mp_obj_t self_obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop);
 
-//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None, swap bool = False) -> None:
+//|     def write(self, buffer: ReadableBuffer, *, start: int = 0, end: Optional[int] = None, swap: bool = False) -> None:
 //|         """Write the data contained in ``buffer`` to the state machine. If the buffer is empty, nothing happens.
 //|
 //|         Writes to the FIFO will match the input buffer's element size. For example, bytearray elements
@@ -390,7 +390,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(rp2pio_statemachine_stop_obj, rp2pio_statemachine_stop
 //|
 //|         :param ~circuitpython_typing.ReadableBuffer buffer: Write out the data in this buffer
 //|         :param int start: Start of the slice of ``buffer`` to write out: ``buffer[start:end]``
-//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``"""
+//|         :param int end: End of the slice; this index is not included. Defaults to ``len(buffer)``
 //|         :param bool swap: For 2- and 4-byte elements, swap (reverse) the byte order"""
 //|         ...
 //|
@@ -463,7 +463,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_write_obj, 2, rp2pio_statemachine
 //|
 //|         Having neither ``once`` nor ``loop`` terminates an existing
 //|         background looping write after exactly a whole loop. This is in contrast to
-//|         `stop_background_write, which interrupts an ongoing DMA operation.
+//|         `stop_background_write`, which interrupts an ongoing DMA operation.
 //|
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] once: Data to be written once
 //|         :param ~Optional[circuitpython_typing.ReadableBuffer] loop: Data to be written repeatedly
@@ -577,7 +577,7 @@ const mp_obj_property_t rp2pio_statemachine_pending_obj = {
               MP_ROM_NONE},
 };
 
-//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, bool swap) -> None:
+//|     def readinto(self, buffer: WriteableBuffer, *, start: int = 0, end: Optional[int] = None, swap: bool=False) -> None:
 //|         """Read into ``buffer``. If the number of bytes to read is 0, nothing happens. The buffer
 //|         includes any data added to the fifo even if it was added before this was called.
 //|
@@ -650,8 +650,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(rp2pio_statemachine_readinto_obj, 2, rp2pio_statemach
 //|         :param int out_start: Start of the slice of buffer_out to write out: ``buffer_out[out_start:out_end]``
 //|         :param int out_end: End of the slice; this index is not included. Defaults to ``len(buffer_out)``
 //|         :param int in_start: Start of the slice of ``buffer_in`` to read into: ``buffer_in[in_start:in_end]``
-//|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``"""
-//|         :param bool swap_out: For 2- and 4-byte elements, swap (reverse) the byte order for the buffer being transmitted (written)"""
+//|         :param int in_end: End of the slice; this index is not included. Defaults to ``len(buffer_in)``
+//|         :param bool swap_out: For 2- and 4-byte elements, swap (reverse) the byte order for the buffer being transmitted (written)
 //|         :param bool swap_in: For 2- and 4-rx elements, swap (reverse) the byte order for the buffer being received (read)"""
 //|         ...
 //|
