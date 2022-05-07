@@ -32,6 +32,9 @@
 
 #if CIRCUITPY_VECTORIO
 #include "shared-bindings/vectorio/VectorShape.h"
+#include "shared-bindings/vectorio/Circle.h"
+#include "shared-bindings/vectorio/Rectangle.h"
+#include "shared-bindings/vectorio/Polygon.h"
 #endif
 
 
@@ -66,6 +69,26 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
             displayio_group_set_hidden_by_parent(layer, hidden);
             continue;
         }
+        #if CIRCUITPY_VECTORIO
+        layer = mp_obj_cast_to_native_base(
+                    self->members->items[i], &vectorio_circle_type);
+        if (layer != MP_OBJ_NULL) {
+            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_circle_get_draw_protocol(layer));
+            continue;
+        }
+        layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &vectorio_rectangle_type);
+        if (layer != MP_OBJ_NULL) {
+            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_rectangle_get_draw_protocol(layer));
+            continue;
+        }
+        layer = mp_obj_cast_to_native_base(
+                self->members->items[i], &vectorio_polygon_type);
+        if (layer != MP_OBJ_NULL) {
+            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_polygon_get_draw_protocol(layer));
+            continue;
+        }
+        #endif
     }
 }
 
