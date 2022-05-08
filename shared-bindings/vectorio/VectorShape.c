@@ -78,6 +78,7 @@ vectorio_draw_protocol_impl_t vectorio_vector_shape_draw_protocol_impl = {
     .draw_update_transform = (draw_update_transform_fun)vectorio_vector_shape_update_transform,
     .draw_finish_refresh = (draw_finish_refresh_fun)vectorio_vector_shape_finish_refresh,
     .draw_get_refresh_areas = (draw_get_refresh_areas_fun)vectorio_vector_shape_get_refresh_areas,
+    .draw_set_dirty = (draw_set_dirty_fun)common_hal_vectorio_vector_shape_set_dirty,
 };
 
 // Stub checker does not approve of these shared properties.

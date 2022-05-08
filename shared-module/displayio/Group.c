@@ -70,22 +70,10 @@ void common_hal_displayio_group_set_hidden(displayio_group_t *self, bool hidden)
             continue;
         }
         #if CIRCUITPY_VECTORIO
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_circle_type);
-        if (layer != MP_OBJ_NULL) {
-            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_circle_get_draw_protocol(layer));
-            continue;
-        }
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_rectangle_type);
-        if (layer != MP_OBJ_NULL) {
-            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_rectangle_get_draw_protocol(layer));
-            continue;
-        }
-        layer = mp_obj_cast_to_native_base(
-            self->members->items[i], &vectorio_polygon_type);
-        if (layer != MP_OBJ_NULL) {
-            common_hal_vectorio_vector_shape_set_dirty(common_hal_vectorio_polygon_get_draw_protocol(layer));
+        const vectorio_draw_protocol_t *draw_protocol = mp_proto_get(MP_QSTR_protocol_draw, self->members->items[i]);
+        if (draw_protocol != NULL) {
+            layer = draw_protocol->draw_get_protocol_self(self->members->items[i]);
+            draw_protocol->draw_protocol_impl->draw_set_dirty(layer);
             continue;
         }
         #endif
