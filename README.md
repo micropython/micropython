@@ -26,6 +26,22 @@ If you are only starting with Micropython+LVGL, it's recommended that you use `l
 
 ## Build Instructions
 
+First step is always to clone lv_micropython and update its submodules recursively:
+
+```
+git clone https://github.com/lvgl/lv_micropython.git
+cd lv_micropython
+git submodule update --init --recursive lib/lv_bindings
+```
+
+Next you should build mpy-cross
+
+```
+make -C mpy-cross
+```
+
+Port specific steps usually include updating the port's submodules with `make submodules` and running make for the port itself.
+
 ### Unix (Linux) port
 
 1. `sudo apt-get install build-essential libreadline-dev libffi-dev git pkg-config libsdl2-2.0-0 libsdl2-dev python3.8 parallel`
@@ -69,10 +85,12 @@ Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_
 
 This port uses [Micropython infrastructure for C modules](https://docs.micropython.org/en/latest/develop/cmodules.html#compiling-the-cmodule-into-micropython) and `USER_C_MODULES` must be given:
 
-```
-cd ports/rp2
-make USER_C_MODULES=../../lv_bindings/bindings.cmake
-```
+1. `git clone https://github.com/lvgl/lv_micropython.git`
+2. `cd lv_micropython`
+3. `git submodule update --init --recursive lib/lv_bindings`
+4. `make -C ports/rp2 BOARD=PICO submodules`
+5. `make -j -C mpy-cross`
+6. `make -j -C ports/rp2 BOARD=PICO USER_C_MODULES=../../lib/lv_bindings/bindings.cmake`
 
 ## Super Simple Example
 
