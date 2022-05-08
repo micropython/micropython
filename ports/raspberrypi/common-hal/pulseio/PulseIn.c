@@ -147,9 +147,12 @@ void common_hal_pulseio_pulsein_interrupt(void *self_in) {
                 }
                 // return  pulses that are not too short
                 if (result > MIN_PULSE) {
-                    self->buffer[self->buf_index] = (uint16_t)result;
+                    size_t buf_index = (self->start + self->len) % self->maxlen;
+                    self->buffer[buf_index] = (uint16_t)result;
                     if (self->len < self->maxlen) {
                         self->len++;
+                    } else {
+                        self->start = (self->start + 1) % self->maxlen;
                     }
                     if (self->buf_index < self->maxlen) {
                         self->buf_index++;
@@ -169,7 +172,6 @@ void common_hal_pulseio_pulsein_interrupt(void *self_in) {
         pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
         pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
         self->buf_index = 0;
-        self->start = 0;
     }
 }
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
