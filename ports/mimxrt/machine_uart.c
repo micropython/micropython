@@ -208,7 +208,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     }
 
     // Initialise the UART peripheral if any arguments given, or it was not initialised previously.
-    if (n_args > 1 || self->new) {
+    if (n_args > 0 || kw_args->used > 0 || self->new) {
         self->new = false;
         // may be obsolete
         if (self->config.baudRate_Bps == 0) {
