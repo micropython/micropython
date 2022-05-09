@@ -89,7 +89,9 @@ int32_t flash_bdev_ioctl(uint32_t op, uint32_t arg) {
             return FLASH_MEM_SEG1_NUM_BLOCKS + FLASH_MEM_SEG2_NUM_BLOCKS;
 
         case BDEV_IOCTL_IRQ_HANDLER:
+            #if MICROPY_HW_FLASH_BACKGROUND_CACHE
             flash_bdev_irq_handler();
+            #endif
             return 0;
 
         case BDEV_IOCTL_SYNC: {

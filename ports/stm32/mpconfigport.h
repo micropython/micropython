@@ -144,6 +144,16 @@
 #define MICROPY_PY_UPLATFORM        (1)
 #endif
 
+#ifndef MICROPY_HW_FLASH_BACKGROUND_CACHE
+#if defined(MICROPY_HW_UART_REPL)
+// When UART repl is in use background erase / cache flush of
+// internal flash is unsafe.
+#define MICROPY_HW_FLASH_BACKGROUND_CACHE  (0)
+#else
+#define MICROPY_HW_FLASH_BACKGROUND_CACHE  (1)
+#endif
+#endif
+
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
