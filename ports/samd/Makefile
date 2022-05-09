@@ -79,8 +79,9 @@ SRC_C = \
 	clock_config.c \
 	help.c \
 	main.c \
-	machine_pin.c \
+	machine_adc.c \
 	machine_led.c \
+	machine_pin.c \
 	machine_uart.c \
 	modmachine.c \
 	modsamd.c \
@@ -136,6 +137,7 @@ endif
 SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
+	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_uart.c \

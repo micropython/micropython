@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020-2021 Damien P. George
- * Copyright (c) 2021 Robert Hammelrath
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

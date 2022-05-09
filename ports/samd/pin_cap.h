@@ -34,8 +34,8 @@ typedef struct _sercom_pad_config_t {
 } sercom_pad_config_t;
 
 typedef struct _adc_config_t {
-    uint8_t adc_instance;
-    uint8_t adc_channel;
+    uint8_t device;
+    uint8_t channel;
 } adc_config_t;
 
 #define ALT_FCT_ADC0      1
@@ -45,7 +45,7 @@ typedef struct _adc_config_t {
 #define ALT_FCT_TC        5
 
 sercom_pad_config_t is_sercom_n(int pin_id, uint8_t sercom);
-adc_config_t is_adc(int pin_id);
+adc_config_t is_adc(int pin_id, int32_t flag);
 uint8_t is_eic(int pin_id);
 
 void pin_cap_set_mux(int pin, uint8_t mux);

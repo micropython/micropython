@@ -1,6 +1,10 @@
 #define MICROPY_HW_BOARD_NAME "ItsyBitsy M0 Express"
 #define MICROPY_HW_MCU_NAME   "SAMD21G18A"
 
+// #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
+// #define MICROPY_PY_BUILTINS_COMPLEX     (0)
+// #define MICROPY_PY_MATH                 (0)
+// #define MICROPY_PY_CMATH                (0)
 // MicroPython configs
 // samd_flash.c flash parameters
 // Build a 64k Flash storage at top. 256k-64k=196k

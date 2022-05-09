@@ -252,28 +252,28 @@ sercom_pad_config_t is_sercom_n(int pin_id, uint8_t sercom_nr) {
             }
         }
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("no/wrong UART pin"));
+    mp_raise_ValueError(MP_ERROR_TEXT("no or wrong UART pin"));
 }
 
 // Test, wether the given pin is defined as ADC.
 // If that applies return the adc instance and channel.
 // If not, an error will be raised.
 
-adc_config_t is_adc(int pin_id) {
+adc_config_t is_adc(int pin_id, int32_t flag) {
     for (int i = 0; i < ARRAY_SIZE(pin_cap_table); i++) {
         if (pin_cap_table[i].pin_id == pin_id) { // Pin match
-            if (pin_cap_table[i].adc0 != 0) {
+            if (pin_cap_table[i].adc0 != 0xff && (flag & (1 << pin_cap_table[i].adc0)) == 0) {
                 return (adc_config_t) {0, pin_cap_table[i].adc0};
-                #if defined(MUC_SAMD51)
-            } else if (pin_cap_table[i].adc1 != 0) {
+            #if defined(MUC_SAMD51)
+            } else if (pin_cap_table[i].adc1 != 0xff && (flag & (1 << (pin_cap_table[i].adc1 + 16))) == 0) {
                 return (adc_config_t) {1, pin_cap_table[i].adc1};
-                #endif
+            #endif
             } else {
                 break;
             }
         }
     }
-    mp_raise_ValueError(MP_ERROR_TEXT("no ADC pin"));
+    mp_raise_ValueError(MP_ERROR_TEXT("no or busy ADC pin"));
 }
 
 // Test, whether the given has an EIC assigne and return the
