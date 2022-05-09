@@ -107,7 +107,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const uint16_t usage_page = usage_page_arg;
 
     const mp_int_t usage_arg = args[ARG_usage].u_int;
-    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage_page);
+    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage);
     const uint16_t usage = usage_arg;
 
     mp_obj_t report_ids = args[ARG_report_ids].u_obj;
