@@ -37,7 +37,7 @@
 #define DEFAULT_BUFFER_SIZE (256)
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
-#define USART_BUFFER     0
+#define USART_BUFFER_TX  (0)
 
 Sercom *uart_inst[] = SERCOM_INSTS;
 
@@ -49,14 +49,14 @@ typedef struct _machine_uart_obj_t {
     uint8_t parity;
     uint8_t stop;
     uint8_t tx;
-    pad_config_t tx_pad_config;
+    sercom_pad_config_t tx_pad_config;
     uint8_t rx;
-    pad_config_t rx_pad_config;
+    sercom_pad_config_t rx_pad_config;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
     bool new;
     ringbuf_t read_buffer;
-    #if USART_BUFFER
+    #if USART_BUFFER_TX
     ringbuf_t write_buffer;
     #endif
 } machine_uart_obj_t;
@@ -115,7 +115,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        #if USART_BUFFER
+        #if USART_BUFFER_TX
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         #endif
     };
@@ -179,7 +179,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         }
     }
 
-    #if USART_BUFFER
+    #if USART_BUFFER_TX
     // Set the TX buffer size if configured.
     size_t txbuf_len = DEFAULT_BUFFER_SIZE;
     if (args[ARG_txbuf].u_int > 0) {
@@ -212,7 +212,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
         MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = self->read_buffer.buf;
 
-        #if USART_BUFFER
+        #if USART_BUFFER_TX
         ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
         MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = self->write_buffer.buf;
         #endif
@@ -320,7 +320,7 @@ STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     // Disable interrupts
     uart->USART.INTENCLR.reg = 0xff;
     MP_STATE_PORT(samd_uart_rx_buffer[self->id]) = NULL;
-    #if USART_BUFFER
+    #if USART_BUFFER_TX
     MP_STATE_PORT(samd_uart_tx_buffer[self->id]) = NULL;
     #endif
     return mp_const_none;
