@@ -1,0 +1,17 @@
+# pid.codes ZR
+USB_VID = 0x1209
+USB_PID = 0x5a52
+
+USB_PRODUCT = "RP2.65-F"
+USB_MANUFACTURER = "ZRichard"
+
+CHIP_VARIANT = RP2040
+CHIP_FAMILY = rp2
+
+EXTERNAL_FLASH_DEVICES = "W25Q64JVxQ,W25Q128JVxQ"
+
+CIRCUITPY__EVE = 1
+
+
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
+FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_MIDI
