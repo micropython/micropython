@@ -85,6 +85,7 @@
 #define MICROPY_PY_UTIME_MP_HAL             (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_UOS                      (1)
+#define MICROPY_PY_UOS_INCLUDEFILE          "ports/samd/moduos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
 #define MICROPY_PY_UJSON                    (1)

@@ -5,8 +5,11 @@
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
 #define MICROPY_PY_MATH                 (0)
 #define MICROPY_PY_CMATH                (0)
+#define MICROPY_PY_UOS_URANDOM          (1)
 // Due to a limitation in the TC counter for us, the ticks period is 2**28
 #define MICROPY_PY_UTIME_TICKS_PERIOD   (0x10000000)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
+unsigned long trng_random_u32(void);
 
 // MicroPython configs
 // samd_flash.c flash parameters
