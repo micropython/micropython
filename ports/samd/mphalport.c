@@ -27,10 +27,13 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/stream.h"
+#include "shared/runtime/interrupt_char.h"
+#include "extmod/misc.h"
 #include "samd_soc.h"
 #include "tusb.h"
 
 #if MICROPY_KBD_EXCEPTION
+int mp_interrupt_char = -1;
 
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     (void)itf;
@@ -40,6 +43,7 @@ void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
 }
 
 void mp_hal_set_interrupt_char(int c) {
+    mp_interrupt_char = c;
     tud_cdc_set_wanted_char(c);
 }
 
@@ -76,6 +80,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     if (tud_cdc_connected() && tud_cdc_available()) {
         ret |= MP_STREAM_POLL_RD;
     }
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_uos_dupterm_poll(poll_flags);
+    #endif
     return ret;
 }
 
@@ -88,6 +95,12 @@ int mp_hal_stdin_rx_chr(void) {
                 return buf[0];
             }
         }
+        #if MICROPY_PY_OS_DUPTERM
+        int dupterm_c = mp_uos_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
+        }
+        #endif
         __WFI();
     }
 }
@@ -107,4 +120,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             i += n2;
         }
     }
+    #if MICROPY_PY_OS_DUPTERM
+    mp_uos_dupterm_tx_strn(str, len);
+    #endif
 }

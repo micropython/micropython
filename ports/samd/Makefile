@@ -77,6 +77,7 @@ endif
 
 SRC_C = \
 	clock_config.c \
+	extmod/uos_dupterm.c \
 	help.c \
 	main.c \
 	machine_adc.c \
@@ -135,6 +136,7 @@ endif
 
 # List of sources for qstr extraction
 SRC_QSTR += \
+	extmod/uos_dupterm.c \
 	modutime.c \
 	modmachine.c \
 	machine_adc.c \
