@@ -3031,14 +3031,6 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // they will be computed in this first pass
         scope->stack_size = 0;
         scope->exc_stack_size = 0;
-
-        #if MICROPY_EMIT_NATIVE
-        if (scope->emit_options == MP_EMIT_OPT_NATIVE_PYTHON || scope->emit_options == MP_EMIT_OPT_VIPER) {
-            // allow native code to perfom basic tasks during the pass scope
-            // note: the first argument passed here is mp_emit_common_t, not the native emitter context
-            NATIVE_EMITTER_TABLE->start_pass((void *)&comp->emit_common, comp->pass, scope);
-        }
-        #endif
     }
 
     // compile

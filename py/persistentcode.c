@@ -348,7 +348,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
     // Load children if any.
     if (has_children) {
         n_children = read_uint(reader);
-        children = m_new(mp_raw_code_t *, n_children);
+        children = m_new(mp_raw_code_t *, n_children + (kind == MP_CODE_NATIVE_PY));
         for (size_t i = 0; i < n_children; ++i) {
             children[i] = load_raw_code(reader);
         }
@@ -372,6 +372,17 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
+        const uint8_t *prelude_ptr;
+        #if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE
+        if (kind == MP_CODE_NATIVE_PY) {
+            // Executable code cannot be accessed byte-wise on this architecture, so copy
+            // the prelude to a separate memory region that is byte-wise readable.
+            void *buf = fun_data + prelude_offset;
+            size_t n = fun_data_len - prelude_offset;
+            prelude_ptr = memcpy(m_new(uint8_t, n), buf, n);
+        }
+        #endif
+
         // Relocate and commit code to executable address space
         reloc_info_t ri = {reader, rodata, bss};
         #if defined(MP_PLAT_COMMIT_EXEC)
@@ -394,6 +405,17 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);
         }
         #endif
+
+        if (kind == MP_CODE_NATIVE_PY) {
+            #if !MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE
+            prelude_ptr = fun_data + prelude_offset;
+            #endif
+            if (n_children == 0) {
+                children = (void *)prelude_ptr;
+            } else {
+                children[n_children] = (void *)prelude_ptr;
+            }
+        }
 
         // Assign native code to raw code object
         mp_emit_glue_assign_native(rc, kind,

@@ -394,8 +394,10 @@
 // Convenience definition for whether any native emitter is enabled
 #define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
 
-// Select prelude-as-bytes-object for certain emitters
-#define MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ (MICROPY_EMIT_XTENSAWIN)
+// Some architectures cannot read byte-wise from executable memory.  In this case
+// the prelude for a native function (which usually sits after the machine code)
+// must be separated and placed somewhere where it can be read byte-wise.
+#define MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE (MICROPY_EMIT_XTENSAWIN)
 
 // Convenience definition for whether any inline assembler emitter is enabled
 #define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)

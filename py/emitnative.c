@@ -231,9 +231,7 @@ struct _emit_t {
     exc_stack_entry_t *exc_stack;
 
     int prelude_offset;
-    #if N_PRELUDE_AS_BYTES_OBJ
-    size_t prelude_const_table_offset;
-    #endif
+    int prelude_ptr_index;
     int start_offset;
     int n_state;
     uint16_t code_state_start;
@@ -348,16 +346,6 @@ STATIC void emit_native_mov_reg_qstr_obj(emit_t *emit, int reg_dest, qstr qst) {
 
 STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     DEBUG_printf("start_pass(pass=%u, scope=%p)\n", pass, scope);
-
-    if (pass == MP_PASS_SCOPE) {
-        // Note: the first argument passed here is mp_emit_common_t, not the native emitter context
-        #if N_PRELUDE_AS_BYTES_OBJ
-        if (scope->emit_options == MP_EMIT_OPT_NATIVE_PYTHON) {
-            mp_emit_common_alloc_const_obj((mp_emit_common_t *)emit, mp_const_none);
-        }
-        #endif
-        return;
-    }
 
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
@@ -511,12 +499,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
             emit->code_state_start = 0;
             emit->stack_start = SIZEOF_CODE_STATE;
-            #if N_PRELUDE_AS_BYTES_OBJ
-            // Load index of prelude bytes object in const_table
-            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_const_table_offset);
-            #else
-            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_offset);
-            #endif
+            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_ptr_index);
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
             ASM_ENTRY(emit->as, SIZEOF_NLR_BUF);
 
@@ -562,41 +545,19 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             // Set code_state.fun_bc
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
 
-            // Set code_state.ip, a pointer to the beginning of the prelude
+            // Set code_state.ip, a pointer to the beginning of the prelude.  This pointer is found
+            // either directly in mp_obj_fun_bc_t.child_table (if there are no children), or in
+            // mp_obj_fun_bc_t.child_table[num_children] (if num_children > 0).
             // Need to use some locals for this, so assert that they are available for use
             MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_1);
             MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_2);
             MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_3);
             MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_4);
-            int code_state_ip_local = emit->code_state_start + OFFSETOF_CODE_STATE_IP;
-            #if N_PRELUDE_AS_BYTES_OBJ
-            // Prelude is a bytes object in const_table[prelude_const_table_offset].
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CONTEXT);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, OFFSETOF_MODULE_CONTEXT_OBJ_TABLE);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, emit->prelude_const_table_offset);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, offsetof(mp_obj_str_t, data) / sizeof(uintptr_t));
-            #else
-            MP_STATIC_ASSERT(REG_LOCAL_2 != REG_PARENT_ARG_1);
-            MP_STATIC_ASSERT(REG_LOCAL_2 != REG_PARENT_ARG_2);
-            MP_STATIC_ASSERT(REG_LOCAL_2 != REG_PARENT_ARG_3);
-            MP_STATIC_ASSERT(REG_LOCAL_2 != REG_PARENT_ARG_4);
-            // Prelude is at the end of the machine code
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_BYTECODE);
-            if (emit->pass == MP_PASS_CODE_SIZE) {
-                // Commit to the encoding size based on the value of prelude_offset in this pass.
-                // By using 32768 as the cut-off it is highly unlikely that prelude_offset will
-                // grow beyond 65535 by the end of thiss pass, and so require the larger encoding.
-                emit->prelude_offset_uses_u16_encoding = emit->prelude_offset < 32768;
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CHILD_TABLE);
+            if (emit->prelude_ptr_index != 0) {
+                ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, emit->prelude_ptr_index);
             }
-            if (emit->prelude_offset_uses_u16_encoding) {
-                assert(emit->prelude_offset <= 65535);
-                ASM_MOV_REG_IMM_FIX_U16((emit)->as, REG_LOCAL_2, emit->prelude_offset);
-            } else {
-                ASM_MOV_REG_IMM_FIX_WORD((emit)->as, REG_LOCAL_2, emit->prelude_offset);
-            }
-            ASM_ADD_REG_REG(emit->as, REG_LOCAL_3, REG_LOCAL_2);
-            #endif
-            emit_native_mov_state_reg(emit, code_state_ip_local, REG_LOCAL_3);
+            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_LOCAL_3);
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_N_STATE, emit->n_state, REG_ARG_1);
@@ -657,6 +618,7 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
 
     if (!emit->do_viper_types) {
         emit->prelude_offset = mp_asm_base_get_code_pos(&emit->as->base);
+        emit->prelude_ptr_index = emit->emit_common->ct_cur_child;
 
         size_t n_state = emit->n_state;
         size_t n_exc_stack = 0; // exc-stack not needed for native code
@@ -693,16 +655,6 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
         }
         emit->n_cell = mp_asm_base_get_code_pos(&emit->as->base) - cell_start;
 
-        #if N_PRELUDE_AS_BYTES_OBJ
-        // Create the prelude as a bytes object, and store it in the constant table
-        mp_obj_t prelude = mp_const_none;
-        if (emit->pass == MP_PASS_EMIT) {
-            void *buf = emit->as->base.code_base + emit->prelude_offset;
-            size_t n = emit->as->base.code_offset - emit->prelude_offset;
-            prelude = mp_obj_new_bytes(buf, n);
-        }
-        emit->prelude_const_table_offset = mp_emit_common_alloc_const_obj(emit->emit_common, prelude);
-        #endif
     }
 
     ASM_END_PASS(emit->as);
@@ -725,10 +677,33 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
         void *f = mp_asm_base_get_code(&emit->as->base);
         mp_uint_t f_len = mp_asm_base_get_code_size(&emit->as->base);
 
+        mp_raw_code_t **children = emit->emit_common->children;
+        if (!emit->do_viper_types) {
+            #if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE
+            // Executable code cannot be accessed byte-wise on this architecture, so copy
+            // the prelude to a separate memory region that is byte-wise readable.
+            void *buf = emit->as->base.code_base + emit->prelude_offset;
+            size_t n = emit->as->base.code_offset - emit->prelude_offset;
+            const uint8_t *prelude_ptr = memcpy(m_new(uint8_t, n), buf, n);
+            #else
+            // Point to the prelude directly, at the end of the machine code data.
+            const uint8_t *prelude_ptr = (const uint8_t *)f + emit->prelude_offset;
+            #endif
+
+            // Store the pointer to the prelude using the child_table.
+            assert(emit->prelude_ptr_index == emit->emit_common->ct_cur_child);
+            if (emit->prelude_ptr_index == 0) {
+                children = (void *)prelude_ptr;
+            } else {
+                children = m_renew(mp_raw_code_t *, children, emit->prelude_ptr_index, emit->prelude_ptr_index + 1);
+                children[emit->prelude_ptr_index] = (void *)prelude_ptr;
+            }
+        }
+
         mp_emit_glue_assign_native(emit->scope->raw_code,
             emit->do_viper_types ? MP_CODE_NATIVE_VIPER : MP_CODE_NATIVE_PY,
             f, f_len,
-            emit->emit_common->children,
+            children,
             #if MICROPY_PERSISTENT_CODE_SAVE
             emit->emit_common->ct_cur_child,
             emit->prelude_offset,

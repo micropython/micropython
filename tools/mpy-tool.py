@@ -824,7 +824,7 @@ class RawCode(object):
         for rc in self.children:
             rc.disassemble()
 
-    def freeze_children(self):
+    def freeze_children(self, prelude_ptr=None):
         # Freeze children and generate table of children.
         if len(self.children):
             for rc in self.children:
@@ -834,10 +834,12 @@ class RawCode(object):
             print("static const mp_raw_code_t *const children_%s[] = {" % self.escaped_name)
             for rc in self.children:
                 print("    &raw_code_%s," % rc.escaped_name)
+            if prelude_ptr:
+                print("    (void *)%s," % prelude_ptr)
             print("};")
             print()
 
-    def freeze_raw_code(self, qstr_links=(), type_sig=0):
+    def freeze_raw_code(self, prelude_ptr=None, qstr_links=(), type_sig=0):
         # Generate mp_raw_code_t.
         print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
@@ -849,6 +851,8 @@ class RawCode(object):
         print("    #endif")
         if len(self.children):
             print("    .children = (void *)&children_%s," % self.escaped_name)
+        elif prelude_ptr:
+            print("    .children = (void *)%s," % prelude_ptr)
         else:
             print("    .children = NULL,")
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
@@ -1112,8 +1116,25 @@ class RawCodeNative(RawCode):
 
         print("};")
 
-        self.freeze_children()
-        self.freeze_raw_code(self.qstr_links, self.type_sig)
+        prelude_ptr = None
+        if self.code_kind == MP_CODE_NATIVE_PY:
+            prelude_ptr = "fun_data_%s_prelude_macro" % self.escaped_name
+            print("#if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE")
+            n = len(self.fun_data) - self.prelude_offset
+            print("static const byte fun_data_%s_prelude[%u] = {" % (self.escaped_name, n), end="")
+            for i in range(n):
+                print(" 0x%02x," % self.fun_data[self.prelude_offset + i], end="")
+            print("};")
+            print("#define %s &fun_data_%s_prelude[0]" % (prelude_ptr, self.escaped_name))
+            print("#else")
+            print(
+                "#define %s &fun_data_%s[%u]"
+                % (prelude_ptr, self.escaped_name, self.prelude_offset)
+            )
+            print("#endif")
+
+        self.freeze_children(prelude_ptr)
+        self.freeze_raw_code(prelude_ptr, self.qstr_links, self.type_sig)
 
 
 class MPYSegment:
