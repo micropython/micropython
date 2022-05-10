@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-10 08:16+0000\n"
+"PO-Revision-Date: 2022-05-10 23:52+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1773,7 +1773,7 @@ msgstr "Inget utrymme kvar på enheten"
 
 #: py/moduerrno.c
 msgid "No such device"
-msgstr ""
+msgstr "Ingen sådan enhet"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1889,7 +1889,7 @@ msgstr "Bara en färg kan vara genomskinlig i taget"
 
 #: py/moduerrno.c
 msgid "Operation not permitted"
-msgstr ""
+msgstr "Åtgärden inte tillåten"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
