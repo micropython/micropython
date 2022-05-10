@@ -1772,6 +1772,10 @@ msgid "No space left on device"
 msgstr "Inget utrymme kvar på enheten"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Ingen sådan fil/katalog"
 
@@ -1882,6 +1886,10 @@ msgstr "Endast ett alarm.time kan ställas in."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Bara en färg kan vara genomskinlig i taget"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2566,10 +2574,6 @@ msgstr "Busstyp för display stöds inte"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Formatet stöds inte"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Åtgärd som inte stöds"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4704,6 +4708,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Åtgärd som inte stöds"
 
 #~ msgid "divisor must be 4"
 #~ msgstr "divisor måste vara 4"

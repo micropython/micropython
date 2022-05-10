@@ -1785,6 +1785,10 @@ msgid "No space left on device"
 msgstr "Shèbèi shàng méiyǒu kònggé"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
@@ -1895,6 +1899,10 @@ msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2577,10 +2585,6 @@ msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Bù zhīchí de géshì"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Bù zhīchí de cāozuò"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4716,6 +4720,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Bù zhīchí de cāozuò"
 
 #~ msgid "divisor must be 4"
 #~ msgstr "èr chóng zòu bì xū shì 4"
