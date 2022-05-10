@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-08 16:37+0000\n"
+"PO-Revision-Date: 2022-05-10 23:52+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1792,7 +1792,7 @@ msgstr "Não resta espaço no dispositivo"
 
 #: py/moduerrno.c
 msgid "No such device"
-msgstr ""
+msgstr "Não existe tal dispositivo"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1908,7 +1908,7 @@ msgstr "Apenas uma cor pode ser transparente de cada vez"
 
 #: py/moduerrno.c
 msgid "Operation not permitted"
-msgstr ""
+msgstr "A operação não é permitida"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
