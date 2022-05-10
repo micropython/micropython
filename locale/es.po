@@ -1571,6 +1571,10 @@ msgstr "Micrófono demora de inicio debe estar en el rango 0.0 a 1.0"
 msgid "Mismatched data size"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Falta el pin MISO o MOSI"
@@ -2082,7 +2086,7 @@ msgstr "Error de desinicialización de RNG"
 msgid "RNG Init Error"
 msgstr "Error de inicialización de RNG"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 no esta soportado todavía en este dispositivo"
 
