@@ -34,7 +34,11 @@
 #include "py/gc.h"
 #include "py/mpthread.h"
 #include "gccollect.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "esp_cpu.h"
+#else
 #include "soc/cpu.h"
+#endif
 
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
 

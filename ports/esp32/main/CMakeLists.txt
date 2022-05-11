@@ -120,7 +120,7 @@ set(IDF_COMPONENTS
     sdmmc
     soc
     spi_flash
-    tcpip_adapter
+    #tcpip_adapter
     ulp
     vfs
     xtensa

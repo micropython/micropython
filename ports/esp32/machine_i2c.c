@@ -29,6 +29,9 @@
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "rom/ets_sys.h"
+#endif
 
 #include "driver/i2c.h"
 

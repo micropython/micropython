@@ -207,9 +207,11 @@ STATIC void configure_channel(machine_pwm_obj_t *self) {
 STATIC void set_freq(machine_pwm_obj_t *self, unsigned int freq, ledc_timer_config_t *timer) {
     if (freq != timer->freq_hz) {
         // Find the highest bit resolution for the requested frequency
-        unsigned int i = LEDC_APB_CLK_HZ; // 80 MHz
+        //unsigned int i = LEDC_APB_CLK_HZ; // 80 MHz
+        unsigned int i = APB_CLK_FREQ; // 80 MHz
         if (freq < EMPIRIC_FREQ) {
-            i = LEDC_REF_CLK_HZ; // 1 MHz
+            //i = LEDC_REF_CLK_HZ; // 1 MHz
+            i = REF_CLK_FREQ; // 1 MHz
         }
 
         #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)

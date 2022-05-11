@@ -35,7 +35,11 @@
 #include "esp_system.h"
 #include "nvs_flash.h"
 #include "esp_task.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#include "esp_cpu.h"
+#else
 #include "soc/cpu.h"
+#endif
 #include "esp_log.h"
 
 #if CONFIG_IDF_TARGET_ESP32

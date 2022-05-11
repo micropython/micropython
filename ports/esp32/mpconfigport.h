@@ -164,8 +164,13 @@ void *esp_native_code_commit(void *, size_t, void *);
 // the only disable interrupts on the current CPU.  To full manage exclusion
 // one should use portENTER_CRITICAL/portEXIT_CRITICAL instead.
 #include "freertos/FreeRTOS.h"
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#define MICROPY_BEGIN_ATOMIC_SECTION() portSET_INTERRUPT_MASK_FROM_ISR()
+#define MICROPY_END_ATOMIC_SECTION(state) portCLEAR_INTERRUPT_MASK_FROM_ISR(state)
+#else
 #define MICROPY_BEGIN_ATOMIC_SECTION() portENTER_CRITICAL_NESTED()
 #define MICROPY_END_ATOMIC_SECTION(state) portEXIT_CRITICAL_NESTED(state)
+#endif
 
 #if MICROPY_PY_USOCKET_EVENTS
 #define MICROPY_PY_USOCKET_EVENTS_HANDLER extern void usocket_events_handler(void); usocket_events_handler();
