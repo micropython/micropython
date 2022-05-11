@@ -83,6 +83,10 @@ void mp_hal_wake_main_task_from_isr(void);
 #include "rom/ets_sys.h"
 #include "esp_rom_gpio.h"
 #define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
+#define GPIO_PIN_INTR_POSEDGE GPIO_INTR_POSEDGE
+#define GPIO_PIN_INTR_NEGEDGE GPIO_INTR_NEGEDGE
+#define GPIO_PIN_INTR_LOLEVEL GPIO_INTR_LOW_LEVEL
+#define GPIO_PIN_INTR_HILEVEL GPIO_INTR_HIGH_LEVEL
 #else
 #include "driver/gpio.h"
 #endif
