@@ -423,7 +423,6 @@ mp_uint_t socket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode)
     mp_int_t ret = self->nic_type->recv(self, (byte *)buf, size, errcode);
     if (ret < 0) {
         ret = MP_STREAM_ERROR;
-        *errcode = -(*errcode); // expects a positive error code
     }
     return ret;
 }
@@ -436,7 +435,6 @@ mp_uint_t socket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *e
     mp_int_t ret = self->nic_type->send(self, buf, size, errcode);
     if (ret < 0) {
         ret = MP_STREAM_ERROR;
-        *errcode = -(*errcode); // expects a positive error code
     }
     return ret;
 }
