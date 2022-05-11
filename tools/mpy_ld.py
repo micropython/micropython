@@ -35,7 +35,7 @@ sys.path.append(os.path.dirname(__file__) + "/../py")
 import makeqstrdata as qstrutil
 
 # MicroPython constants
-MPY_VERSION = 5
+MPY_VERSION = 6
 MP_NATIVE_ARCH_X86 = 1
 MP_NATIVE_ARCH_X64 = 2
 MP_NATIVE_ARCH_ARMV7M = 5
@@ -860,11 +860,12 @@ class MPYOutput:
 
     def write_qstr(self, s):
         if s in qstrutil.static_qstr_list:
-            self.write_bytes(bytes([0, qstrutil.static_qstr_list.index(s) + 1]))
+            self.write_uint((qstrutil.static_qstr_list.index(s) + 1) << 1 | 1)
         else:
             s = bytes(s, "ascii")
             self.write_uint(len(s) << 1)
             self.write_bytes(s)
+            self.write_bytes(b"\x00")
 
     def write_reloc(self, base, offset, dest, n):
         need_offset = not (base == self.prev_base and offset == self.prev_offset + 1)
@@ -905,14 +906,19 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.open(fmpy)
 
     # MPY: header
-    out.write_bytes(
-        bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS, QSTR_WINDOW_SIZE]
-        )
-    )
+    out.write_bytes(bytearray([ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
+
+    # MPY: n_qstr
+    out.write_uint(1)
+
+    # MPY: n_obj
+    out.write_uint(0)
+
+    # MPY: qstr table
+    out.write_qstr(fmpy)  # filename
 
     # MPY: kind/len
-    out.write_uint(len(env.full_text) << 2 | (MP_CODE_NATIVE_VIPER - MP_CODE_BYTECODE))
+    out.write_uint(len(env.full_text) << 3 | (MP_CODE_NATIVE_VIPER - MP_CODE_BYTECODE))
 
     # MPY: machine code
     out.write_bytes(env.full_text)
@@ -936,20 +942,15 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
         scope_flags |= MP_SCOPE_FLAG_VIPERBSS
     out.write_uint(scope_flags)
 
-    # MPY: n_obj
-    out.write_uint(0)
-
-    # MPY: n_raw_code
-    out.write_uint(0)
-
-    # MPY: rodata and/or bss
+    # MPY: bss and/or rodata
     if len(env.full_rodata):
         rodata_const_table_idx = 1
         out.write_uint(len(env.full_rodata))
-        out.write_bytes(env.full_rodata)
     if len(env.full_bss):
-        bss_const_table_idx = bool(env.full_rodata) + 1
+        bss_const_table_idx = 2
         out.write_uint(len(env.full_bss))
+    if len(env.full_rodata):
+        out.write_bytes(env.full_rodata)
 
     # MPY: relocation information
     prev_kind = None

@@ -47,8 +47,7 @@ STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size
         return mp_call_method_n_kw(0, 0, dest);
     }
 
-    mp_obj_reversed_t *o = m_new_obj(mp_obj_reversed_t);
-    o->base.type = type;
+    mp_obj_reversed_t *o = mp_obj_malloc(mp_obj_reversed_t, type);
     o->seq = args[0];
     o->cur_index = mp_obj_get_int(mp_obj_len(args[0])); // start at the end of the sequence
 

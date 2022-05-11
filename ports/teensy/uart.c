@@ -314,8 +314,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, uint n_args, uint n
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // create object
-    pyb_uart_obj_t *o = m_new_obj(pyb_uart_obj_t);
-    o->base.type = &pyb_uart_type;
+    pyb_uart_obj_t *o = mp_obj_malloc(pyb_uart_obj_t, &pyb_uart_type);
 
     // work out port
     o->uart_id = 0;

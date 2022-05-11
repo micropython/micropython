@@ -728,14 +728,14 @@ void sdcard_init_pins(mimxrt_sdcard_obj_t *card) {
     const mimxrt_sdcard_obj_pins_t *pins = card->pins;
 
     uint32_t default_config = pin_generate_config(
-        PIN_PULL_UP_47K, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->clk.pin->configRegister);
+        PIN_PULL_UP_47K, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->clk.pin->configRegister);
     #if USDHC_DATA3_PULL_DOWN_ON_BOARD
     // Pull down on the board -> must not enable internal PD.
     uint32_t no_cd_config = pin_generate_config(
-        PIN_PULL_DISABLED, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->data3.pin->configRegister);
+        PIN_PULL_DISABLED, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->data3.pin->configRegister);
     #else
     uint32_t no_cd_config = pin_generate_config(
-        PIN_PULL_DOWN_100K, PIN_MODE_SKIP, PIN_DRIVE_POWER_6, card->pins->data3.pin->configRegister);
+        PIN_PULL_DOWN_100K, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->data3.pin->configRegister);
     #endif // USDHC_DATA3_PULL_DOWN_ON_BOARD
 
     sdcard_init_pin(card->pins->clk.pin, card->pins->clk.af_idx, default_config);  // USDHC1_CLK
@@ -822,7 +822,7 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
         .command = &command,
     };
 
-    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 500);
+    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];

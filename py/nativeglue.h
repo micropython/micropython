@@ -75,7 +75,7 @@ typedef enum {
     MP_F_UNPACK_EX,
     MP_F_DELETE_NAME,
     MP_F_DELETE_GLOBAL,
-    MP_F_MAKE_CLOSURE_FROM_RAW_CODE,
+    MP_F_NEW_CLOSURE,
     MP_F_ARG_CHECK_NUM_SIG,
     MP_F_SETUP_CODE_STATE,
     MP_F_SMALL_INT_FLOOR_DIVIDE,
@@ -112,7 +112,7 @@ typedef struct _mp_fun_table_t {
     void (*set_store)(mp_obj_t self_in, mp_obj_t item);
     mp_obj_t (*list_append)(mp_obj_t self_in, mp_obj_t arg);
     mp_obj_t (*dict_store)(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
-    mp_obj_t (*make_function_from_raw_code)(const mp_raw_code_t *rc, mp_obj_t def_args, mp_obj_t def_kw_args);
+    mp_obj_t (*make_function_from_raw_code)(const mp_raw_code_t *rc, const mp_module_context_t *cm, const mp_obj_t *def_args);
     mp_obj_t (*call_function_n_kw)(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw)(size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args);
@@ -129,7 +129,7 @@ typedef struct _mp_fun_table_t {
     void (*unpack_ex)(mp_obj_t seq, size_t num, mp_obj_t *items);
     void (*delete_name)(qstr qst);
     void (*delete_global)(qstr qst);
-    mp_obj_t (*make_closure_from_raw_code)(const mp_raw_code_t *rc, mp_uint_t n_closed_over, const mp_obj_t *args);
+    mp_obj_t (*new_closure)(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed);
     void (*arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig);
     void (*setup_code_state)(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_int_t (*small_int_floor_divide)(mp_int_t num, mp_int_t denom);
@@ -172,6 +172,12 @@ typedef struct _mp_fun_table_t {
     const mp_obj_fun_builtin_var_t *stream_write_obj;
 } mp_fun_table_t;
 
+#if (MICROPY_EMIT_NATIVE && !MICROPY_DYNAMIC_COMPILER) || MICROPY_ENABLE_DYNRUNTIME
 extern const mp_fun_table_t mp_fun_table;
+#elif MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
+// In dynamic-compiler mode eliminate dependency on entries in mp_fun_table.
+// This only needs to be an independent pointer, content doesn't matter.
+extern const int mp_fun_table;
+#endif
 
 #endif // MICROPY_INCLUDED_PY_NATIVEGLUE_H

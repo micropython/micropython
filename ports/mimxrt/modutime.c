@@ -95,7 +95,16 @@ MP_DEFINE_CONST_FUN_OBJ_1(time_mktime_obj, time_mktime);
 STATIC mp_obj_t time_time(void) {
     snvs_lp_srtc_datetime_t t;
     SNVS_LP_SRTC_GetDatetime(SNVS, &t);
-    return mp_obj_new_int_from_ull(timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second));
+    // EPOCH is 1970 for this port, which leads to the following trouble:
+    // timeutils_seconds_since_epoch() calls timeutils_seconds_since_2000(), and
+    // timeutils_seconds_since_2000() subtracts 2000 from year, but uses
+    // an unsigned number for seconds, That causes an underrun, which is not
+    // fixed by adding the TIMEUTILS_SECONDS_1970_TO_2000.
+    // Masking it to 32 bit for year < 2000 fixes it.
+    return mp_obj_new_int_from_ull(
+        timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.minute, t.second)
+        & (t.year < 2000 ? 0xffffffff : 0xffffffffffff)
+        );
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 

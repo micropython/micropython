@@ -52,49 +52,62 @@ class UserFS:
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x05\xfe\x00\x10',
+    '/mod0.mpy': b'M\x06\xfe\x00\x10',
 
     # test loading of viper and asm
     '/mod1.mpy': (
-        b'M\x05\x0a\x1f\x20' # header
+        b'M\x06\x0a\x1f' # header
 
-        b'\x20' # n bytes, bytecode
-            b'\x00\x08\x02m\x02m' # prelude
+        b'\x02' # n_qstr
+        b'\x00' # n_obj
+
+        b'\x0emod1.py\x00' # qstr0 = "mod1.py"
+        b'\x0aouter\x00' # qstr1 = "outer"
+
+        b'\x2c' # 5 bytes, have children, bytecode
+            b'\x00\x02' # prelude
+            b'\x01' # simple name (qstr index)
             b'\x51' # LOAD_CONST_NONE
             b'\x63' # RETURN_VALUE
 
-            b'\x00\x02' # n_obj, n_raw_code
+        b'\x02' # 2 children
 
-        b'\x22' # n bytes, viper code
-            b'\x00\x00\x00\x00\x00\x00' # dummy machine code
-            b'\x00\x00' # qstr0
-            b'\x01\x0c\x0aprint' # n_qstr, qstr0
-            b'\x00\x00\x00' # scope_flags, n_obj, n_raw_code
+            b'\x42' # 8 bytes, no children, viper code
+                b'\x00\x00\x00\x00\x00\x00' # dummy machine code
+                b'\x00\x00' # slot for qstr0
+                b'\x01\x0c\x0aprint\x00' # n_qstr=1, qstr0
+                b'\x00' # scope_flags
 
-        b'\x23' # n bytes, asm code
-            b'\x00\x00\x00\x00\x00\x00\x00\x00' # dummy machine code
-            b'\x00\x00\x00' # scope_flags, n_pos_args, type_sig
+            b'\x43' # 8 bytes, no children, asm code
+                b'\x00\x00\x00\x00\x00\x00\x00\x00' # dummy machine code
+                b'\x00\x00\x00' # scope_flags, n_pos_args, type_sig
     ),
 
     # test loading viper with additional scope flags and relocation
     '/mod2.mpy': (
-        b'M\x05\x0a\x1f\x20' # header
+        b'M\x06\x0a\x1f' # header
 
-        b'\x20' # n bytes, bytecode
-            b'\x00\x08\x02m\x02m' # prelude
+        b'\x02' # n_qstr
+        b'\x00' # n_obj
+
+        b'\x0emod2.py\x00' # qstr0 = "mod2.py"
+        b'\x0aouter\x00' # qstr1 = "outer"
+
+        b'\x2c' # 5 bytes, have children, bytecode
+            b'\x00\x02' # prelude
+            b'\x01' # simple name (qstr index)
             b'\x51' # LOAD_CONST_NONE
             b'\x63' # RETURN_VALUE
 
-            b'\x00\x01' # n_obj, n_raw_code
+        b'\x01' # 1 child
 
-        b'\x12' # n bytes(=4), viper code
-            b'\x00\x00\x00\x00' # dummy machine code
-            b'\x00' # n_qstr
-            b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
-            b'\x00\x00' # n_obj, n_raw_code
-            b'\x06rodata' # rodata, 6 bytes
-            b'\x04' # bss, 4 bytes
-            b'\x03\x01\x00' # dummy relocation of rodata
+            b'\x22' # 4 bytes, no children, viper code
+                b'\x00\x00\x00\x00' # dummy machine code
+                b'\x00' # n_qstr=0
+                b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
+                b'\x06\x04' # rodata=6 bytes, bss=4 bytes
+                b'rodata' # rodata content
+                b'\x03\x01\x00' # dummy relocation of rodata
     ),
 }
 # fmt: on

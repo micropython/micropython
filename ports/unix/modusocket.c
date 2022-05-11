@@ -46,6 +46,7 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 #include "py/mpthread.h"
+#include "extmod/vfs.h"
 #include <poll.h>
 
 /*
@@ -79,8 +80,7 @@ static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen
 }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
-    mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &mp_type_socket;
+    mp_obj_socket_t *o = mp_obj_malloc(mp_obj_socket_t, &mp_type_socket);
     o->fd = fd;
     o->blocking = true;
     return o;
@@ -222,15 +222,23 @@ STATIC mp_obj_t socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    mp_obj_socket_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = (int)mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     MP_THREAD_GIL_EXIT();
-    int r = listen(self->fd, MP_OBJ_SMALL_INT_VALUE(backlog_in));
+    int r = listen(self->fd, backlog);
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(r, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -394,7 +402,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct timeval tv = {0,};
+    struct timeval tv = {0, };
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
@@ -445,7 +453,7 @@ STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     mp_obj_t *new_args = alloca(n_args * sizeof(mp_obj_t));
     memcpy(new_args + 1, args + 1, (n_args - 1) * sizeof(mp_obj_t));
     new_args[0] = MP_OBJ_NEW_SMALL_INT(self->fd);
-    return mp_builtin_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
+    return mp_vfs_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
 

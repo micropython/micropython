@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "py/mphal.h"
+#include "lib/uzlib/tinf.h"
 #include "mboot.h"
 #include "pack.h"
 #include "vfs.h"
@@ -74,6 +75,7 @@ static inline int input_stream_read(size_t len, uint8_t *buf) {
 
 static int fsload_program_file(bool write_to_flash) {
     // Parse DFU
+    uint32_t crc = 0xffffffff;
     uint8_t buf[512];
     size_t file_offset;
 
@@ -83,6 +85,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset = 11;
+    crc = uzlib_crc32(buf, 11, crc);
 
     // Validate header, version 1
     if (memcmp(buf, "DfuSe\x01", 6) != 0) {
@@ -103,6 +106,7 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
     file_offset += 274;
+    crc = uzlib_crc32(buf, 274, crc);
 
     // Validate target header, with alt being 0
     if (memcmp(buf, "Target\x00", 7) != 0) {
@@ -114,6 +118,7 @@ static int fsload_program_file(bool write_to_flash) {
     uint32_t num_elems = get_le32(buf + 270);
 
     size_t file_offset_target = file_offset;
+    size_t bytes_processed = 0;
 
     // Parse each element
     for (size_t elem = 0; elem < num_elems; ++elem) {
@@ -123,6 +128,7 @@ static int fsload_program_file(bool write_to_flash) {
             return -MBOOT_ERRNO_DFU_READ_ERROR;
         }
         file_offset += 8;
+        crc = uzlib_crc32(buf, 8, crc);
 
         // Get element destination address and size
         uint32_t elem_addr = get_le32(buf);
@@ -151,14 +157,15 @@ static int fsload_program_file(bool write_to_flash) {
             if (res != l) {
                 return -MBOOT_ERRNO_DFU_READ_ERROR;
             }
-            if (write_to_flash) {
-                res = do_write(elem_addr, buf, l);
-                if (res != 0) {
-                    return res;
-                }
-                elem_addr += l;
+            crc = uzlib_crc32(buf, l, crc);
+            res = do_write(elem_addr, buf, l, !write_to_flash);
+            if (res != 0) {
+                return res;
             }
+            elem_addr += l;
             s -= l;
+            bytes_processed += l;
+            mboot_state_change(MBOOT_STATE_FSLOAD_PROGRESS, write_to_flash << 31 | bytes_processed);
         }
 
         file_offset += elem_size;
@@ -178,7 +185,12 @@ static int fsload_program_file(bool write_to_flash) {
         return -MBOOT_ERRNO_DFU_READ_ERROR;
     }
 
-    // TODO validate CRC32
+    // The final 4 bytes of the file are the expected CRC32, so including these
+    // bytes in the CRC calculation should yield a final CRC32 of 0.
+    crc = uzlib_crc32(buf, 16, crc);
+    if (crc != 0) {
+        return -MBOOT_ERRNO_DFU_INVALID_CRC;
+    }
 
     return 0;
 }
@@ -222,20 +234,29 @@ int fsload_process(void) {
             // End of elements.
             return -MBOOT_ERRNO_FSLOAD_NO_MOUNT;
         }
-        uint32_t block_size;
-        if (elem[-1] == 10) {
-            // No block size given, use default.
-            block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
-        } else if (elem[-1] == 14) {
-            // Block size given, extract it.
-            block_size = get_le32(&elem[10]);
+        mboot_addr_t base_addr;
+        mboot_addr_t byte_len;
+        uint32_t block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+        if (elem[-1] == 10 || elem[-1] == 14) {
+            // 32-bit base and length given, extract them.
+            base_addr = get_le32(&elem[2]);
+            byte_len = get_le32(&elem[6]);
+            if (elem[-1] == 14) {
+                // Block size given, extract it.
+                block_size = get_le32(&elem[10]);
+            }
+        #if MBOOT_ADDRESS_SPACE_64BIT
+        } else if (elem[-1] == 22) {
+            // 64-bit base and length given, and block size, so extract them.
+            base_addr = get_le64(&elem[2]);
+            byte_len = get_le64(&elem[10]);
+            block_size = get_le32(&elem[18]);
+        #endif
         } else {
             // Invalid MOUNT element.
             return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
         }
         if (elem[0] == mount_point) {
-            uint32_t base_addr = get_le32(&elem[2]);
-            uint32_t byte_len = get_le32(&elem[6]);
             int ret;
             union {
                 #if MBOOT_VFS_FAT
@@ -277,17 +298,6 @@ int fsload_process(void) {
                 ret = fsload_validate_and_program_file(&ctx, methods, fname);
             }
 
-            // Flash LEDs based on success/failure of update
-            for (int i = 0; i < 4; ++i) {
-                if (ret == 0) {
-                    led_state_all(7);
-                } else {
-                    led_state_all(1);
-                }
-                mp_hal_delay_ms(100);
-                led_state_all(0);
-                mp_hal_delay_ms(100);
-            }
             return ret;
         }
         elem += elem[-1];

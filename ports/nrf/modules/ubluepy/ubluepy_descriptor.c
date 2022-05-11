@@ -53,8 +53,7 @@ STATIC mp_obj_t ubluepy_descriptor_make_new(const mp_obj_type_t *type, size_t n_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_descriptor_obj_t * s = m_new_obj(ubluepy_descriptor_obj_t);
-    s->base.type = type;
+    ubluepy_descriptor_obj_t * s = mp_obj_malloc(ubluepy_descriptor_obj_t, type);
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 

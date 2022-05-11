@@ -6,7 +6,3 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.spiram_sx
     boards/GENERIC_S3_SPIRAM/sdkconfig.board
 )
-
-if(NOT MICROPY_FROZEN_MANIFEST)
-    set(MICROPY_FROZEN_MANIFEST ${MICROPY_PORT_DIR}/boards/manifest.py)
-endif()

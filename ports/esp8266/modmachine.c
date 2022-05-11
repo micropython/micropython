@@ -229,8 +229,7 @@ STATIC void esp_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 
 STATIC mp_obj_t esp_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    esp_timer_obj_t *tim = m_new_obj(esp_timer_obj_t);
-    tim->base.type = &esp_timer_type;
+    esp_timer_obj_t *tim = mp_obj_malloc(esp_timer_obj_t, &esp_timer_type);
     return tim;
 }
 

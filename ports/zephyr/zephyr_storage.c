@@ -32,7 +32,7 @@
 #endif
 
 #ifdef CONFIG_DISK_ACCESS
-#include <disk/disk_access.h>
+#include <storage/disk_access.h>
 #endif
 
 #ifdef CONFIG_FLASH_MAP
@@ -54,8 +54,7 @@ STATIC void zephyr_disk_access_print(const mp_print_t *print, mp_obj_t self_in, 
 
 STATIC mp_obj_t zephyr_disk_access_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    zephyr_disk_access_obj_t *self = m_new_obj(zephyr_disk_access_obj_t);
-    self->base.type = type;
+    zephyr_disk_access_obj_t *self = mp_obj_malloc(zephyr_disk_access_obj_t, type);
     self->pdrv = mp_obj_str_get_str(args[0]);
 
     if (disk_access_init(self->pdrv) != 0) {
@@ -156,8 +155,7 @@ STATIC void zephyr_flash_area_print(const mp_print_t *print, mp_obj_t self_in, m
 
 STATIC mp_obj_t zephyr_flash_area_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
-    zephyr_flash_area_obj_t *self = m_new_obj(zephyr_flash_area_obj_t);
-    self->base.type = type;
+    zephyr_flash_area_obj_t *self = mp_obj_malloc(zephyr_flash_area_obj_t, type);
     self->id = mp_obj_get_int(args[0]);
     self->block_size = mp_obj_get_int(args[1]);
 

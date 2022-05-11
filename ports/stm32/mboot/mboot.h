@@ -26,8 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 #define MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include "py/mphal.h"
 
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
 #define SECTION_NOZERO_BSS __attribute__((section(".nozero_bss")))
@@ -39,9 +38,45 @@
 #define NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+#ifndef MBOOT_BOARD_ENTRY_INIT
+#define MBOOT_BOARD_ENTRY_INIT mboot_entry_init
+#endif
+
+#ifndef MBOOT_ADDRESS_SPACE_64BIT
+#define MBOOT_ADDRESS_SPACE_64BIT (0)
+#endif
+
+// These are for led_state_all() and can be or'd together.
+#define MBOOT_LED_STATE_LED0 (0x01)
+#define MBOOT_LED_STATE_LED1 (0x02)
+#define MBOOT_LED_STATE_LED2 (0x04)
+#define MBOOT_LED_STATE_LED3 (0x08)
+
+// These enum values are passed as the first argument to mboot_state_change() to
+// notify of a change in state of the bootloader activity.  This function has a
+// default implementation in ui.c but can be overridden by a board.  Some states
+// have an argument passed along as the second argument to mboot_state_change().
+// If this argument is unused then 0 is passed in.  A result of an operation is
+// 0 for success and <0 for failure, with a failure being either an MP_Exxx code
+// or MBOOT_ERRNO_xxx code.
+typedef enum {
+    MBOOT_STATE_DFU_START,          // arg: unused
+    MBOOT_STATE_DFU_END,            // arg: unused
+    MBOOT_STATE_FSLOAD_START,       // arg: unused
+    MBOOT_STATE_FSLOAD_END,         // arg: result of fsload operation
+    MBOOT_STATE_FSLOAD_PROGRESS,    // arg: total bytes processed so far, high bit set when doing write pass
+    MBOOT_STATE_ERASE_START,        // arg: address of erase
+    MBOOT_STATE_ERASE_END,          // arg: result of erase
+    MBOOT_STATE_READ_START,         // arg: address of read
+    MBOOT_STATE_READ_END,           // arg: result of read
+    MBOOT_STATE_WRITE_START,        // arg: address of write
+    MBOOT_STATE_WRITE_END,          // arg: result of write
+} mboot_state_t;
+
 enum {
     MBOOT_ERRNO_FLASH_ERASE_DISALLOWED = 200,
     MBOOT_ERRNO_FLASH_ERASE_FAILED,
+    MBOOT_ERRNO_FLASH_READ_DISALLOWED,
     MBOOT_ERRNO_FLASH_WRITE_DISALLOWED,
 
     MBOOT_ERRNO_DFU_INVALID_HEADER = 210,
@@ -49,6 +84,7 @@ enum {
     MBOOT_ERRNO_DFU_INVALID_SIZE,
     MBOOT_ERRNO_DFU_TOO_MANY_TARGETS,
     MBOOT_ERRNO_DFU_READ_ERROR,
+    MBOOT_ERRNO_DFU_INVALID_CRC,
 
     MBOOT_ERRNO_FSLOAD_NO_FSLOAD = 220,
     MBOOT_ERRNO_FSLOAD_NO_MOUNT,
@@ -83,22 +119,63 @@ enum {
     ELEM_MOUNT_LFS2,
 };
 
+// Configure the type used to hold an address in the mboot address space.
+#if MBOOT_ADDRESS_SPACE_64BIT
+typedef uint64_t mboot_addr_t;
+#else
+typedef uint32_t mboot_addr_t;
+#endif
+
+extern volatile uint32_t systick_ms;
 extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
+void led_init(void);
+void led0_update(void);
+void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
+uint64_t get_le64(const uint8_t *b);
 void led_state_all(unsigned int mask);
 
 int hw_page_erase(uint32_t addr, uint32_t *next_addr);
-void hw_read(uint32_t addr, int len, uint8_t *buf);
+void hw_read(mboot_addr_t addr, size_t len, uint8_t *buf);
 int hw_write(uint32_t addr, const uint8_t *src8, size_t len);
 
 int do_page_erase(uint32_t addr, uint32_t *next_addr);
-void do_read(uint32_t addr, int len, uint8_t *buf);
-int do_write(uint32_t addr, const uint8_t *src8, size_t len);
+void do_read(mboot_addr_t addr, size_t len, uint8_t *buf);
+int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
+
+static inline void mboot_entry_init(uint32_t *initial_r0) {
+    // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
+    led_init();
+
+    // set the system clock to be HSE
+    SystemClock_Config();
+
+    #if defined(STM32H7)
+    // Ensure IRQs are enabled (needed coming out of ST bootloader on H7)
+    __set_PRIMASK(0);
+    #endif
+}
+
+#if defined(MBOOT_BOARD_GET_RESET_MODE)
+static inline int mboot_get_reset_mode(void) {
+    return MBOOT_BOARD_GET_RESET_MODE();
+}
+#else
+int mboot_get_reset_mode(void);
+#endif
+
+#if defined(MBOOT_BOARD_STATE_CHANGE)
+static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
+    return MBOOT_BOARD_STATE_CHANGE(state, arg);
+}
+#else
+void mboot_state_change(mboot_state_t state, uint32_t arg);
+#endif
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H

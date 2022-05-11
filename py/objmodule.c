@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/bc.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -62,6 +63,21 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    #if MICROPY_MODULE_ATTR_DELEGATION
+    // Delegate lookup to a module's custom attr method (found in last lot of globals dict).
+    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_map_t *map = &self->globals->map;
+    if (map->table[map->alloc - 1].key == MP_OBJ_NEW_QSTR(MP_QSTRnull)) {
+        ((mp_attr_fun_t)MP_OBJ_TO_PTR(map->table[map->alloc - 1].value))(self_in, attr, dest);
+    }
+    #else
+    (void)self_in;
+    (void)attr;
+    (void)dest;
+    #endif
+}
+
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -74,8 +90,12 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            } else {
+                module_attr_try_delegation(self_in, attr, dest);
             }
         #endif
+        } else {
+            module_attr_try_delegation(self_in, attr, dest);
         }
     } else {
         // delete/store attribute
@@ -91,6 +111,7 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             #endif
             {
                 // can't delete or store to fixed map
+                module_attr_try_delegation(self_in, attr, dest);
                 return;
             }
         }
@@ -122,12 +143,12 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     }
 
     // create new module object
-    mp_obj_module_t *o = m_new_obj(mp_obj_module_t);
-    o->base.type = &mp_type_module;
-    o->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
+    mp_module_context_t *o = m_new_obj(mp_module_context_t);
+    o->module.base.type = &mp_type_module;
+    o->module.globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->module.globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = MP_OBJ_FROM_PTR(o);
@@ -188,6 +209,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #endif
     #if MICROPY_PY_UJSON
     { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
+    #endif
+    #if MICROPY_PY_UOS
+    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
     #endif
     #if MICROPY_PY_URE
     { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
@@ -315,3 +339,19 @@ STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj) {
     }
 }
 #endif
+
+void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values) {
+    for (size_t i = 0; keys[i] != MP_QSTRnull; ++i) {
+        if (attr == keys[i]) {
+            if (dest[0] == MP_OBJ_NULL) {
+                // load attribute (MP_OBJ_NULL returned for deleted items)
+                dest[0] = values[i];
+            } else {
+                // delete or store (delete stores MP_OBJ_NULL)
+                values[i] = dest[1];
+                dest[0] = MP_OBJ_NULL; // indicate success
+            }
+            return;
+        }
+    }
+}

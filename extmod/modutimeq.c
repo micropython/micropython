@@ -77,8 +77,7 @@ STATIC bool time_less_than(struct qentry *item, struct qentry *parent) {
 STATIC mp_obj_t utimeq_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_uint_t alloc = mp_obj_get_int(args[0]);
-    mp_obj_utimeq_t *o = m_new_obj_var(mp_obj_utimeq_t, struct qentry, alloc);
-    o->base.type = type;
+    mp_obj_utimeq_t *o = mp_obj_malloc_var(mp_obj_utimeq_t, struct qentry, alloc, type);
     memset(o->items, 0, sizeof(*o->items) * alloc);
     o->alloc = alloc;
     o->len = 0;

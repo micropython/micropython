@@ -75,7 +75,6 @@ endif
 SRC_C = \
 	main.c \
 	help.c \
-	moduos.c \
 	modutime.c \
 	modmachine.c \
 	$(BOARD_DIR)/pins.c \
@@ -120,7 +119,7 @@ SRC_S = shared/runtime/gchelper_m3.s
 endif
 
 # List of sources for qstr extraction
-SRC_QSTR += moduos.c \
+SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
 	machine_pin.c \

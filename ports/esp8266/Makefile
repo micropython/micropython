@@ -90,7 +90,6 @@ SRC_C = \
 	uart.c \
 	esppwm.c \
 	espapa102.c \
-	modpyb.c \
 	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
@@ -102,7 +101,6 @@ SRC_C = \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
-	moduos.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	posix_helpers.c \

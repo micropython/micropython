@@ -28,7 +28,6 @@
 #define MICROPY_INCLUDED_PY_BC_H
 
 #include "py/runtime.h"
-#include "py/objfun.h"
 
 // bytecode layout:
 //
@@ -50,7 +49,9 @@
 //
 //  source info section:
 //      simple_name : var qstr
-//      source_file : var qstr
+//      argname0    : var qstr
+//      ...         : var qstr
+//      argnameN    : var qstr      N = num_pos_args + num_kwonly_args - 1
 //      <line number info>
 //
 //  closure section:
@@ -58,18 +59,15 @@
 //      ...         : byte
 //      local_numN  : byte          N = n_cells-1
 //
-//  <word alignment padding>        only needed if bytecode contains pointers
-//
 //  <bytecode>
 //
 //
 // constant table layout:
 //
-//  argname0        : obj (qstr)
-//  ...             : obj (qstr)
-//  argnameN        : obj (qstr)    N = num_pos_args + num_kwonly_args
 //  const0          : obj
 //  constN          : obj
+
+#define MP_ENCODE_UINT_MAX_BYTES ((MP_BYTES_PER_OBJ_WORD * 8 + 6) / 7)
 
 #define MP_BC_PRELUDE_SIG_ENCODE(S, E, scope, out_byte, out_env) \
     do {                                                            \
@@ -182,9 +180,9 @@ typedef struct _mp_bytecode_prelude_t {
     uint n_pos_args;
     uint n_kwonly_args;
     uint n_def_pos_args;
-    qstr qstr_block_name;
-    qstr qstr_source_file;
+    qstr qstr_block_name_idx;
     const byte *line_info;
+    const byte *line_info_top;
     const byte *opcodes;
 } mp_bytecode_prelude_t;
 
@@ -198,12 +196,46 @@ typedef struct _mp_exc_stack_t {
     mp_obj_base_t *prev_exc;
 } mp_exc_stack_t;
 
+// Constants associated with a module, to interface bytecode with runtime.
+typedef struct _mp_module_constants_t {
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    qstr_short_t *qstr_table;
+    #else
+    qstr source_file;
+    #endif
+    mp_obj_t *obj_table;
+} mp_module_constants_t;
+
+// State associated with a module.
+typedef struct _mp_module_context_t {
+    mp_obj_module_t module;
+    mp_module_constants_t constants;
+} mp_module_context_t;
+
+// Outer level struct defining a compiled module.
+typedef struct _mp_compiled_module_t {
+    const mp_module_context_t *context;
+    const struct _mp_raw_code_t *rc;
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    bool has_native;
+    size_t n_qstr;
+    size_t n_obj;
+    #endif
+} mp_compiled_module_t;
+
+// Outer level struct defining a frozen module.
+typedef struct _mp_frozen_module_t {
+    const mp_module_constants_t constants;
+    const struct _mp_raw_code_t *rc;
+} mp_frozen_module_t;
+
+// State for an executing function.
 typedef struct _mp_code_state_t {
     // The fun_bc entry points to the underlying function object that is being executed.
     // It is needed to access the start of bytecode and the const_table.
     // It is also needed to prevent the GC from reclaiming the bytecode during execution,
     // because the ip pointer below will always point to the interior of the bytecode.
-    mp_obj_fun_bc_t *fun_bc;
+    struct _mp_obj_fun_bc_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;
@@ -222,17 +254,25 @@ typedef struct _mp_code_state_t {
     // mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
 
+// Allocator may return NULL, in which case data is not stored (can be used to compute size).
+typedef uint8_t *(*mp_encode_uint_allocator_t)(void *env, size_t nbytes);
+
+void mp_encode_uint(void *env, mp_encode_uint_allocator_t allocator, mp_uint_t val);
 mp_uint_t mp_decode_uint(const byte **ptr);
 mp_uint_t mp_decode_uint_value(const byte *ptr);
 const byte *mp_decode_uint_skip(const byte *ptr);
 
-mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp_obj_t inject_exc);
+mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state,
+#ifndef __cplusplus
+    volatile
+#endif
+    mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
-void mp_bytecode_print(const mp_print_t *print, const void *descr, const byte *code, mp_uint_t len, const mp_uint_t *const_table);
-void mp_bytecode_print2(const mp_print_t *print, const byte *code, size_t len, const mp_uint_t *const_table);
-const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip);
-#define mp_bytecode_print_inst(print, code, const_table) mp_bytecode_print2(print, code, 1, const_table)
+void mp_bytecode_print(const mp_print_t *print, const struct _mp_raw_code_t *rc, const mp_module_constants_t *cm);
+void mp_bytecode_print2(const mp_print_t *print, const byte *ip, size_t len, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
+const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start, const byte *ip, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
+#define mp_bytecode_print_inst(print, code, x_table) mp_bytecode_print2(print, code, 1, x_table)
 
 // Helper macros to access pointer with least significant bits holding flags
 #define MP_TAGPTR_PTR(x) ((void *)((uintptr_t)(x) & ~((uintptr_t)3)))
@@ -246,10 +286,26 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
 
 #endif
 
-static inline size_t mp_bytecode_get_source_line(const byte *line_info, size_t bc_offset) {
+static inline void mp_module_context_alloc_tables(mp_module_context_t *context, size_t n_qstr, size_t n_obj) {
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    size_t nq = (n_qstr * sizeof(qstr_short_t) + sizeof(mp_uint_t) - 1) / sizeof(mp_uint_t);
+    size_t no = n_obj;
+    mp_uint_t *mem = m_new(mp_uint_t, nq + no);
+    context->constants.qstr_table = (qstr_short_t *)mem;
+    context->constants.obj_table = (mp_obj_t *)(mem + nq);
+    #else
+    if (n_obj == 0) {
+        context->constants.obj_table = NULL;
+    } else {
+        context->constants.obj_table = m_new(mp_obj_t, n_obj);
+    }
+    #endif
+}
+
+static inline size_t mp_bytecode_get_source_line(const byte *line_info, const byte *line_info_top, size_t bc_offset) {
     size_t source_line = 1;
-    size_t c;
-    while ((c = *line_info)) {
+    while (line_info < line_info_top) {
+        size_t c = *line_info;
         size_t b, l;
         if ((c & 0x80) == 0) {
             // 0b0LLBBBBB encoding

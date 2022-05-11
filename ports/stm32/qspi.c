@@ -52,6 +52,10 @@
 #define MICROPY_HW_QSPI_CS_HIGH_CYCLES  2  // nCS stays high for 2 cycles
 #endif
 
+#ifndef MICROPY_HW_QSPI_MPU_REGION_SIZE
+#define MICROPY_HW_QSPI_MPU_REGION_SIZE ((1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3)) >> 20)
+#endif
+
 #if (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) >= 24
 #define QSPI_CMD 0xec
 #define QSPI_ADSIZE 3
@@ -74,11 +78,37 @@ static inline void qspi_mpu_enable_mapped(void) {
     // for the memory-mapped region, so 3 MPU regions are used to disable access
     // to everything except the valid address space, using holes in the bottom
     // of the regions and nesting them.
-    // At the moment this is hard-coded to 2MiB of QSPI address space.
+    // Note: Disabling a subregion (by setting its corresponding SRD bit to 1)
+    // means another region overlapping the disabled range matches instead.  If no
+    // other enabled region overlaps the disabled subregion, and the access is
+    // unprivileged or the background region is disabled, the MPU issues a fault.
     uint32_t irq_state = mpu_config_start();
+    #if MICROPY_HW_QSPI_MPU_REGION_SIZE > 128
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 64
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 32
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_256MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 16
     mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0f, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 8
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 4
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 2
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 1
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
     mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
+    #else
+    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_4MB));
+    #endif
     mpu_config_end(irq_state);
 }
 
@@ -197,6 +227,10 @@ STATIC void qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t
                 | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
                 | cmd << QUADSPI_CCR_INSTRUCTION_Pos // write opcode
         ;
+
+        // Wait for at least 1 free byte location in the FIFO.
+        while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
+        }
 
         // This assumes len==2
         *(uint16_t *)&QUADSPI->DR = data;
@@ -319,6 +353,14 @@ STATIC void qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr,
 
     QUADSPI->ABR = 0; // alternate byte: disable continuous read mode
     QUADSPI->AR = addr; // address to read from
+
+    #if defined(STM32H7)
+    // Workaround for SR getting set immediately after setting the address.
+    if (QUADSPI->SR & 0x01) {
+        QUADSPI->FCR |= QUADSPI_FCR_CTEF;
+        QUADSPI->AR = addr; // address to read from
+    }
+    #endif
 
     // Read in the data 4 bytes at a time if dest is aligned
     if (((uintptr_t)dest & 3) == 0) {

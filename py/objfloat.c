@@ -195,7 +195,8 @@ const mp_obj_type_t mp_type_float = {
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {
-    mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
+    // Don't use mp_obj_malloc here to avoid extra function call overhead.
+    mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
     o->base.type = &mp_type_float;
     o->value = value;
     return MP_OBJ_FROM_PTR(o);

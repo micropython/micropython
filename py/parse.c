@@ -291,6 +291,16 @@ STATIC void *parser_alloc(parser_t *parser, size_t num_bytes) {
     return ret;
 }
 
+#if MICROPY_COMP_CONST_TUPLE
+STATIC void parser_free_parse_node_struct(parser_t *parser, mp_parse_node_struct_t *pns) {
+    mp_parse_chunk_t *chunk = parser->cur_chunk;
+    if (chunk->data <= (byte *)pns && (byte *)pns < chunk->data + chunk->union_.used) {
+        size_t num_bytes = sizeof(mp_parse_node_struct_t) + sizeof(mp_parse_node_t) * MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+        chunk->union_.used -= num_bytes;
+    }
+}
+#endif
+
 STATIC void push_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t arg_i) {
     if (parser->rule_stack_top >= parser->rule_stack_alloc) {
         rule_stack_t *rs = m_renew(rule_stack_t, parser->rule_stack, parser->rule_stack_alloc, parser->rule_stack_alloc + MICROPY_ALLOC_PARSE_RULE_INC);
@@ -317,6 +327,13 @@ STATIC uint8_t pop_rule(parser_t *parser, size_t *arg_i, size_t *src_line) {
     return rule_id;
 }
 
+#if MICROPY_COMP_CONST_TUPLE
+STATIC uint8_t peek_rule(parser_t *parser, size_t n) {
+    assert(parser->rule_stack_top > n);
+    return parser->rule_stack[parser->rule_stack_top - 1 - n].rule_id;
+}
+#endif
+
 bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
     return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
            || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
@@ -333,17 +350,82 @@ bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
         return true;
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
-        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-        // nodes are 32-bit pointers, but need to extract 64-bit object
-        *o = (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
-        #else
-        *o = (mp_obj_t)pns->nodes[0];
-        #endif
+        *o = mp_parse_node_extract_const_object(pns);
         return mp_obj_is_int(*o);
     } else {
         return false;
     }
 }
+
+#if MICROPY_COMP_CONST_TUPLE
+STATIC bool mp_parse_node_is_const(mp_parse_node_t pn) {
+    if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        // Small integer.
+        return true;
+    } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
+        // Possible str, or constant literal.
+        uintptr_t kind = MP_PARSE_NODE_LEAF_KIND(pn);
+        if (kind == MP_PARSE_NODE_STRING) {
+            return true;
+        } else if (kind == MP_PARSE_NODE_TOKEN) {
+            uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+            return arg == MP_TOKEN_KW_NONE
+                   || arg == MP_TOKEN_KW_FALSE
+                   || arg == MP_TOKEN_KW_TRUE
+                   || arg == MP_TOKEN_ELLIPSIS;
+        }
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
+        // Constant object.
+        return true;
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_atom_paren)) {
+        // Possible empty tuple.
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+        return MP_PARSE_NODE_IS_NULL(pns->nodes[0]);
+    }
+    return false;
+}
+
+STATIC mp_obj_t mp_parse_node_convert_to_obj(mp_parse_node_t pn) {
+    assert(mp_parse_node_is_const(pn));
+    if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
+        mp_int_t arg = MP_PARSE_NODE_LEAF_SMALL_INT(pn);
+        #if MICROPY_DYNAMIC_COMPILER
+        mp_uint_t sign_mask = -((mp_uint_t)1 << (mp_dynamic_compiler.small_int_bits - 1));
+        if (!((arg & sign_mask) == 0 || (arg & sign_mask) == sign_mask)) {
+            // Integer doesn't fit in a small-int, so create a multi-precision int object.
+            return mp_obj_new_int_from_ll(arg);
+        }
+        #endif
+        return MP_OBJ_NEW_SMALL_INT(arg);
+    } else if (MP_PARSE_NODE_IS_LEAF(pn)) {
+        uintptr_t kind = MP_PARSE_NODE_LEAF_KIND(pn);
+        uintptr_t arg = MP_PARSE_NODE_LEAF_ARG(pn);
+        if (kind == MP_PARSE_NODE_STRING) {
+            return MP_OBJ_NEW_QSTR(arg);
+        } else {
+            assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
+            switch (arg) {
+                case MP_TOKEN_KW_NONE:
+                    return mp_const_none;
+                case MP_TOKEN_KW_FALSE:
+                    return mp_const_false;
+                case MP_TOKEN_KW_TRUE:
+                    return mp_const_true;
+                default:
+                    assert(arg == MP_TOKEN_ELLIPSIS);
+                    return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
+            }
+        }
+    } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_const_object)) {
+        mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
+        return mp_parse_node_extract_const_object(pns);
+    } else {
+        assert(MP_PARSE_NODE_IS_STRUCT_KIND(pn, RULE_atom_paren));
+        assert(MP_PARSE_NODE_IS_NULL(((mp_parse_node_struct_t *)pn)->nodes[0]));
+        return mp_const_empty_tuple;
+    }
+}
+#endif
 
 size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
@@ -388,9 +470,6 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
             case MP_PARSE_NODE_STRING:
                 mp_printf(print, "str(%s)\n", qstr_str(arg));
                 break;
-            case MP_PARSE_NODE_BYTES:
-                mp_printf(print, "bytes(%s)\n", qstr_str(arg));
-                break;
             default:
                 assert(MP_PARSE_NODE_LEAF_KIND(pn) == MP_PARSE_NODE_TOKEN);
                 mp_printf(print, "tok(%u)\n", (uint)arg);
@@ -400,11 +479,14 @@ void mp_parse_node_print(const mp_print_t *print, mp_parse_node_t pn, size_t ind
         // node must be a mp_parse_node_struct_t
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)pn;
         if (MP_PARSE_NODE_STRUCT_KIND(pns) == RULE_const_object) {
+            mp_obj_t obj = mp_parse_node_extract_const_object(pns);
             #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-            mp_printf(print, "literal const(%016llx)\n", (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32));
+            mp_printf(print, "literal const(%016llx)=", obj);
             #else
-            mp_printf(print, "literal const(%p)\n", (mp_obj_t)pns->nodes[0]);
+            mp_printf(print, "literal const(%p)=", obj);
             #endif
+            mp_obj_print_helper(print, obj, PRINT_REPR);
+            mp_printf(print, "\n");
         } else {
             size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
             #if MICROPY_DEBUG_PARSE_RULE_NAME
@@ -463,16 +545,28 @@ STATIC mp_parse_node_t make_node_const_object(parser_t *parser, size_t src_line,
     return (mp_parse_node_t)pn;
 }
 
-STATIC mp_parse_node_t mp_parse_node_new_small_int_checked(parser_t *parser, mp_obj_t o_val) {
-    (void)parser;
-    mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o_val);
-    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
-    // A parse node is only 32-bits and the small-int value must fit in 31-bits
-    if (((val ^ (val << 1)) & 0xffffffff80000000) != 0) {
-        return make_node_const_object(parser, 0, o_val);
+// Create a parse node represeting a constant integer value, possibly optimising
+// it by putting the (small) integer value directly in the parse node itself.
+STATIC mp_parse_node_t make_node_const_int(parser_t *parser, size_t src_line, mp_obj_t obj) {
+    if (mp_obj_is_small_int(obj)) {
+        mp_int_t val = MP_OBJ_SMALL_INT_VALUE(obj);
+        #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+        // A parse node is only 32-bits and the small-int value must fit in 31-bits
+        if (((val ^ (val << 1)) & 0xffffffff80000000) != 0) {
+            return make_node_const_object(parser, src_line, obj);
+        }
+        #endif
+        #if MICROPY_DYNAMIC_COMPILER
+        // Check that the integer value fits in target runtime's small-int
+        mp_uint_t sign_mask = -((mp_uint_t)1 << (mp_dynamic_compiler.small_int_bits - 1));
+        if (!((val & sign_mask) == 0 || (val & sign_mask) == sign_mask)) {
+            return make_node_const_object(parser, src_line, obj);
+        }
+        #endif
+        return mp_parse_node_new_small_int(val);
+    } else {
+        return make_node_const_object(parser, src_line, obj);
     }
-    #endif
-    return mp_parse_node_new_small_int(val);
 }
 
 STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
@@ -485,11 +579,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_map_elem_t *elem;
         if (rule_id == RULE_atom
             && (elem = mp_map_lookup(&parser->consts, MP_OBJ_NEW_QSTR(id), MP_MAP_LOOKUP)) != NULL) {
-            if (mp_obj_is_small_int(elem->value)) {
-                pn = mp_parse_node_new_small_int_checked(parser, elem->value);
-            } else {
-                pn = make_node_const_object(parser, lex->tok_line, elem->value);
-            }
+            pn = make_node_const_int(parser, lex->tok_line, elem->value);
         } else {
             pn = mp_parse_node_new_leaf(MP_PARSE_NODE_ID, id);
         }
@@ -499,16 +589,12 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         #endif
     } else if (lex->tok_kind == MP_TOKEN_INTEGER) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
-        if (mp_obj_is_small_int(o)) {
-            pn = mp_parse_node_new_small_int_checked(parser, o);
-        } else {
-            pn = make_node_const_object(parser, lex->tok_line, o);
-        }
+        pn = make_node_const_int(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
         mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
-    } else if (lex->tok_kind == MP_TOKEN_STRING || lex->tok_kind == MP_TOKEN_BYTES) {
-        // Don't automatically intern all strings/bytes.  doc strings (which are usually large)
+    } else if (lex->tok_kind == MP_TOKEN_STRING) {
+        // Don't automatically intern all strings.  Doc strings (which are usually large)
         // will be discarded by the compiler, and so we shouldn't intern them.
         qstr qst = MP_QSTRnull;
         if (lex->vstr.len <= MICROPY_ALLOC_PARSE_INTERN_STRING_LEN) {
@@ -520,14 +606,16 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         }
         if (qst != MP_QSTRnull) {
             // qstr exists, make a leaf node
-            pn = mp_parse_node_new_leaf(lex->tok_kind == MP_TOKEN_STRING ? MP_PARSE_NODE_STRING : MP_PARSE_NODE_BYTES, qst);
+            pn = mp_parse_node_new_leaf(MP_PARSE_NODE_STRING, qst);
         } else {
-            // not interned, make a node holding a pointer to the string/bytes object
-            mp_obj_t o = mp_obj_new_str_copy(
-                lex->tok_kind == MP_TOKEN_STRING ? &mp_type_str : &mp_type_bytes,
-                (const byte *)lex->vstr.buf, lex->vstr.len);
+            // not interned, make a node holding a pointer to the string object
+            mp_obj_t o = mp_obj_new_str_copy(&mp_type_str, (const byte *)lex->vstr.buf, lex->vstr.len);
             pn = make_node_const_object(parser, lex->tok_line, o);
         }
+    } else if (lex->tok_kind == MP_TOKEN_BYTES) {
+        // make a node holding a pointer to the bytes object
+        mp_obj_t o = mp_obj_new_bytes((const byte *)lex->vstr.buf, lex->vstr.len);
+        pn = make_node_const_object(parser, lex->tok_line, o);
     } else {
         pn = mp_parse_node_new_leaf(MP_PARSE_NODE_TOKEN, lex->tok_kind);
     }
@@ -784,14 +872,62 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
     for (size_t i = num_args; i > 0; i--) {
         pop_result(parser);
     }
-    if (mp_obj_is_small_int(arg0)) {
-        push_result_node(parser, mp_parse_node_new_small_int_checked(parser, arg0));
-    } else {
-        // TODO reuse memory for parse node struct?
-        push_result_node(parser, make_node_const_object(parser, 0, arg0));
-    }
+    push_result_node(parser, make_node_const_int(parser, 0, arg0));
 
     return true;
+}
+#endif
+
+#if MICROPY_COMP_CONST_TUPLE
+STATIC bool build_tuple_from_stack(parser_t *parser, size_t src_line, size_t num_args) {
+    for (size_t i = num_args; i > 0;) {
+        mp_parse_node_t pn = peek_result(parser, --i);
+        if (!mp_parse_node_is_const(pn)) {
+            return false;
+        }
+    }
+    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_args, NULL));
+    for (size_t i = num_args; i > 0;) {
+        mp_parse_node_t pn = pop_result(parser);
+        tuple->items[--i] = mp_parse_node_convert_to_obj(pn);
+        if (MP_PARSE_NODE_IS_STRUCT(pn)) {
+            parser_free_parse_node_struct(parser, (mp_parse_node_struct_t *)pn);
+        }
+    }
+    push_result_node(parser, make_node_const_object(parser, src_line, MP_OBJ_FROM_PTR(tuple)));
+    return true;
+}
+
+STATIC bool build_tuple(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args) {
+    if (rule_id == RULE_testlist_comp) {
+        if (peek_rule(parser, 0) == RULE_atom_paren) {
+            // Tuple of the form "(a,)".
+            return build_tuple_from_stack(parser, src_line, num_args);
+        }
+    }
+    if (rule_id == RULE_testlist_comp_3c) {
+        assert(peek_rule(parser, 0) == RULE_testlist_comp_3b);
+        assert(peek_rule(parser, 1) == RULE_testlist_comp);
+        if (peek_rule(parser, 2) == RULE_atom_paren) {
+            // Tuple of the form "(a, b)".
+            if (build_tuple_from_stack(parser, src_line, num_args)) {
+                parser->rule_stack_top -= 2; // discard 2 rules
+                return true;
+            }
+        }
+    }
+    if (rule_id == RULE_testlist_star_expr
+        || rule_id == RULE_testlist
+        || rule_id == RULE_subscriptlist) {
+        // Tuple of the form:
+        //  - x = a, b
+        //  - return a, b
+        //  - for x in a, b: pass
+        //  - x[a, b]
+        return build_tuple_from_stack(parser, src_line, num_args);
+    }
+
+    return false;
 }
 #endif
 
@@ -847,6 +983,13 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
     }
     if (fold_constants(parser, rule_id, num_args)) {
         // we folded this rule so return straight away
+        return;
+    }
+    #endif
+
+    #if MICROPY_COMP_CONST_TUPLE
+    if (build_tuple(parser, src_line, rule_id, num_args)) {
+        // we built a tuple from this rule so return straightaway
         return;
     }
     #endif

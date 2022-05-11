@@ -1,0 +1,21 @@
+name: Check examples
+
+on:
+  push:
+  pull_request:
+    paths:
+      - '.github/workflows/*.yml'
+      - 'examples/**'
+      - 'ports/unix/**'
+      - 'py/**'
+      - 'shared/**'
+
+jobs:
+  embedding:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: make -C examples/embedding
+    - name: Run
+      run: test "$(./examples/embedding/hello-embed)" = "Hello world of easy embedding!"

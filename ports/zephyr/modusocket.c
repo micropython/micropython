@@ -185,11 +185,17 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_connect_obj, socket_connect);
 
-STATIC mp_obj_t socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    socket_obj_t *socket = self_in;
+// method socket.listen([backlog])
+STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
+    socket_obj_t *socket = args[0];
     socket_check_closed(socket);
 
-    mp_int_t backlog = mp_obj_get_int(backlog_in);
+    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
+
     int res = zsock_listen(socket->ctx, backlog);
     RAISE_SOCK_ERRNO(res);
 

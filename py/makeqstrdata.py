@@ -317,26 +317,24 @@ def parse_input_headers(infiles):
     return qcfgs, qstrs
 
 
+def escape_bytes(qstr, qbytes):
+    if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
+        # qstr is all printable ASCII so render it as-is (for easier debugging)
+        return qstr
+    else:
+        # qstr contains non-printable codes so render entire thing as hex pairs
+        return "".join(("\\x%02x" % b) for b in qbytes)
+
+
 def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     qbytes = bytes_cons(qstr, "utf8")
     qlen = len(qbytes)
     qhash = compute_hash(qbytes, cfg_bytes_hash)
-    if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
-        # qstr is all printable ASCII so render it as-is (for easier debugging)
-        qdata = qstr
-    else:
-        # qstr contains non-printable codes so render entire thing as hex pairs
-        qdata = "".join(("\\x%02x" % b) for b in qbytes)
     if qlen >= (1 << (8 * cfg_bytes_len)):
         print("qstr is too long:", qstr)
         assert False
-    qlen_str = ("\\x%02x" * cfg_bytes_len) % tuple(
-        ((qlen >> (8 * i)) & 0xFF) for i in range(cfg_bytes_len)
-    )
-    qhash_str = ("\\x%02x" * cfg_bytes_hash) % tuple(
-        ((qhash >> (8 * i)) & 0xFF) for i in range(cfg_bytes_hash)
-    )
-    return '(const byte*)"%s%s" "%s"' % (qhash_str, qlen_str, qdata)
+    qdata = escape_bytes(qstr, qbytes)
+    return '%d, %d, "%s"' % (qhash, qlen, qdata)
 
 
 def print_qstr_data(qcfgs, qstrs):
@@ -349,10 +347,7 @@ def print_qstr_data(qcfgs, qstrs):
     print("")
 
     # add NULL qstr with no hash or data
-    print(
-        'QDEF(MP_QSTRnull, (const byte*)"%s%s" "")'
-        % ("\\x00" * cfg_bytes_hash, "\\x00" * cfg_bytes_len)
-    )
+    print('QDEF(MP_QSTRnull, 0, 0, "")')
 
     # go through each qstr and print it out
     for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):

@@ -29,9 +29,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+#include "py/objfun.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -40,7 +40,23 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#if !MICROPY_PERSISTENT_CODE
+void mp_encode_uint(void *env, mp_encode_uint_allocator_t allocator, mp_uint_t val) {
+    // We store each 7 bits in a separate byte, and that's how many bytes needed
+    byte buf[MP_ENCODE_UINT_MAX_BYTES];
+    byte *p = buf + sizeof(buf);
+    // We encode in little-ending order, but store in big-endian, to help decoding
+    do {
+        *--p = val & 0x7f;
+        val >>= 7;
+    } while (val != 0);
+    byte *c = allocator(env, buf + sizeof(buf) - p);
+    if (c != NULL) {
+        while (p != buf + sizeof(buf) - 1) {
+            *c++ = *p++ | 0x80;
+        }
+        *c = *p;
+    }
+}
 
 mp_uint_t mp_decode_uint(const byte **ptr) {
     mp_uint_t unum = 0;
@@ -71,8 +87,6 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     }
     return ptr;
 }
-
-#endif
 
 STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
@@ -107,17 +121,14 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
 //    - code_state->fun_bc should contain a pointer to the function object
-//    - code_state->ip should contain the offset in bytes from the pointer
-//      code_state->fun_bc->bytecode to the entry n_state (0 for bytecode, non-zero for native)
+//    - code_state->ip should contain a pointer to the beginning of the prelude
+//    - code_state->n_state should be the number of objects in the local state
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
 
     // get the function object that we want to set up (could be bytecode or native code)
     mp_obj_fun_bc_t *self = code_state->fun_bc;
-
-    // ip comes in as an offset into bytecode, so turn it into a true pointer
-    code_state->ip = self->bytecode + (size_t)code_state->ip;
 
     #if MICROPY_STACKLESS
     code_state->prev = NULL;
@@ -134,6 +145,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     // Decode prelude
     size_t n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args;
     MP_BC_PRELUDE_SIG_DECODE_INTO(code_state->ip, n_state_unused, n_exc_stack_unused, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args);
+    MP_BC_PRELUDE_SIZE_DECODE(code_state->ip);
     (void)n_state_unused;
     (void)n_exc_stack_unused;
 
@@ -194,14 +206,20 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             *var_pos_kw_args = dict;
         }
 
-        // get pointer to arg_names array
-        const mp_obj_t *arg_names = (const mp_obj_t *)self->const_table;
-
         for (size_t i = 0; i < n_kw; i++) {
             // the keys in kwargs are expected to be qstr objects
             mp_obj_t wanted_arg_name = kwargs[2 * i];
+
+            // get pointer to arg_names array
+            const uint8_t *arg_names = code_state->ip;
+            arg_names = mp_decode_uint_skip(arg_names);
+
             for (size_t j = 0; j < n_pos_args + n_kwonly_args; j++) {
-                if (wanted_arg_name == arg_names[j]) {
+                qstr arg_qstr = mp_decode_uint(&arg_names);
+                #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+                arg_qstr = self->context->constants.qstr_table[arg_qstr];
+                #endif
+                if (wanted_arg_name == MP_OBJ_NEW_QSTR(arg_qstr)) {
                     if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
                         mp_raise_msg_varg(&mp_type_TypeError,
                             MP_ERROR_TEXT("function got multiple values for argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
@@ -248,17 +266,25 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
 
         // Check that all mandatory keyword args are specified
         // Fill in default kw args if we have them
+        const uint8_t *arg_names = mp_decode_uint_skip(code_state->ip);
+        for (size_t i = 0; i < n_pos_args; i++) {
+            arg_names = mp_decode_uint_skip(arg_names);
+        }
         for (size_t i = 0; i < n_kwonly_args; i++) {
+            qstr arg_qstr = mp_decode_uint(&arg_names);
+            #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+            arg_qstr = self->context->constants.qstr_table[arg_qstr];
+            #endif
             if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
-                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, arg_names[n_pos_args + i], MP_MAP_LOOKUP);
+                    elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, MP_OBJ_NEW_QSTR(arg_qstr), MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
                     code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
-                        MP_ERROR_TEXT("function missing required keyword argument '%q'"), MP_OBJ_QSTR_VALUE(arg_names[n_pos_args + i]));
+                        MP_ERROR_TEXT("function missing required keyword argument '%q'"), arg_qstr);
                 }
             }
         }
@@ -273,12 +299,8 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         }
     }
 
-    // read the size part of the prelude
-    const byte *ip = code_state->ip;
-    MP_BC_PRELUDE_SIZE_DECODE(ip);
-
-    // jump over code info (source file and line-number mapping)
-    ip += n_info;
+    // jump over code info (source file, argument names and line-number mapping)
+    const uint8_t *ip = code_state->ip + n_info;
 
     // bytecode prelude: initialise closed over variables
     for (; n_cell; --n_cell) {
@@ -286,11 +308,6 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         code_state->state[n_state - 1 - local_num] =
             mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
     }
-
-    #if !MICROPY_PERSISTENT_CODE
-    // so bytecode is aligned
-    ip = MP_ALIGN(ip, sizeof(mp_uint_t));
-    #endif
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;
@@ -318,7 +335,11 @@ uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) 
                 }
             }
         } else if (f == MP_BC_FORMAT_OFFSET) {
-            ip += 2;
+            if ((*ip & 0x80) == 0) {
+                ip += 1;
+            } else {
+                ip += 2;
+            }
         }
         ip += extra_byte;
     }

@@ -99,12 +99,14 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
     switch (event->event_id) {
+        #if MICROPY_PY_NETWORK_WLAN
         case SYSTEM_EVENT_STA_START:
         case SYSTEM_EVENT_STA_CONNECTED:
         case SYSTEM_EVENT_STA_GOT_IP:
         case SYSTEM_EVENT_STA_DISCONNECTED:
             network_wlan_event_handler(event);
             break;
+        #endif
         case SYSTEM_EVENT_GOT_IP6:
             ESP_LOGI("network", "Got IPv6");
             break;

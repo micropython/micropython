@@ -53,7 +53,7 @@ void PWM_SetupPwm_u16(PWM_Type *base, pwm_submodule_t subModule, pwm_signal_para
 
     // Divide the clock by the prescale value
     pwmClock = (srcClock_Hz / (1U << ((base->SM[subModule].CTRL & PWM_CTRL_PRSC_MASK) >> PWM_CTRL_PRSC_SHIFT)));
-    pulseCnt = pwmClock / pwmFreq_Hz;
+    pulseCnt = (pwmClock + (pwmFreq_Hz - 1) / 2) / pwmFreq_Hz;
     base->SM[subModule].INIT = 0;
     base->SM[subModule].VAL1 = pulseCnt - 1;
 
@@ -93,9 +93,9 @@ void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
 
     // Divide the clock by the prescale value
     pwmClock = (srcClock_Hz / (1U << ((base->SM[subModule].CTRL & PWM_CTRL_PRSC_MASK) >> PWM_CTRL_PRSC_SHIFT)));
-    pulseCnt = pwmClock / pwmFreq_Hz;
+    pulseCnt = (pwmClock + (pwmFreq_Hz - 1) / 2) / pwmFreq_Hz;
     base->SM[subModule].INIT = 0;
-    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / PWM_FULL_SCALE;
+    base->SM[subModule].VAL0 = ((uint32_t)duty_cycle * pulseCnt) / PWM_FULL_SCALE - 1;
     base->SM[subModule].VAL1 = pulseCnt - 1;
 
     base->SM[subModule].OCTRL = (base->SM[subModule].OCTRL & ~PWM_OCTRL_POLX_MASK) | PWM_OCTRL_POLX(!invert);
@@ -137,7 +137,7 @@ status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uin
     }
 
     // Counter values to generate a PWM signal
-    periodCount = (srcClock_Hz / pwmFreqHz) - 1;
+    periodCount = ((srcClock_Hz + (pwmFreqHz - 1) / 2) / pwmFreqHz) - 2;
     highCount = (periodCount * dutyCycleU16) / PWM_FULL_SCALE;
     lowCount = periodCount - highCount;
 

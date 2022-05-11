@@ -113,8 +113,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     // Get I2C Object.
-    machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
-    self->base.type = &machine_i2c_type;
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->i2c_id = i2c_id;
     self->i2c_hw_id = i2c_index_table[i2c_id];  // the hw i2c number 1..n
     self->i2c_inst = i2c_base_ptr_table[self->i2c_hw_id];

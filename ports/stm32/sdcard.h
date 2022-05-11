@@ -30,6 +30,8 @@
 #define SDCARD_BLOCK_SIZE (512)
 
 void sdcard_init(void);
+void sdcard_select_sd(void);
+void sdcard_select_mmc(void);
 bool sdcard_is_present(void);
 bool sdcard_power_on(void);
 void sdcard_power_off(void);

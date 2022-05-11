@@ -85,11 +85,11 @@ bool lpuart_set_iomux(int8_t uart) {
     if (TX.muxRegister != 0) {
         IOMUXC_SetPinMux(TX.muxRegister, TX.muxMode, TX.inputRegister, TX.inputDaisy, TX.configRegister, 0U);
         IOMUXC_SetPinConfig(TX.muxRegister, TX.muxMode, TX.inputRegister, TX.inputDaisy, TX.configRegister,
-            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, PIN_DRIVE_POWER_6, TX.configRegister));
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, PIN_DRIVE_6, TX.configRegister));
 
         IOMUXC_SetPinMux(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister, 0U);
         IOMUXC_SetPinConfig(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister,
-            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_POWER_6, RX.configRegister));
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_6, RX.configRegister));
         return true;
     } else {
         return false;
@@ -277,8 +277,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     // Create the UART object and fill it with defaults.
     uint8_t uart_hw_id = uart_index_table[uart_id];  // the hw uart number 1..n
-    machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
-    self->base.type = &machine_uart_type;
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->id = uart_id;
     self->lpuart = uart_base_ptr_table[uart_hw_id];
     self->invert = false;

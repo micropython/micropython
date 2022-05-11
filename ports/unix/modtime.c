@@ -45,7 +45,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
     msec_sleep(tv->tv_sec * 1000.0 + tv->tv_usec / 1000.0);
     return 0;
 }
-#define sleep_select(a,b,c,d,e) msec_sleep_tv((e))
+#define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
 #else
 #define sleep_select select
 #endif

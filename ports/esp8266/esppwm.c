@@ -121,9 +121,9 @@ void ICACHE_FLASH_ATTR
 pwm_start(void) {
     uint8 i, j;
     PWM_DBG("--Function pwm_start() is called\n");
-    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n",pwm_gpio,pwm_channel_num);
-    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n",pwm_out_io_num[0],pwm_out_io_num[1],pwm_out_io_num[2]);
-    PWM_DBG("pwm.period:%d,pwm.duty[0]:%d,[1]:%d,[2]:%d\n",pwm.period,pwm.duty[0],pwm.duty[1],pwm.duty[2]);
+    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n", pwm_gpio, pwm_channel_num);
+    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n", pwm_out_io_num[0], pwm_out_io_num[1], pwm_out_io_num[2]);
+    PWM_DBG("pwm.period:%d,pwm.duty[0]:%d,[1]:%d,[2]:%d\n", pwm.period, pwm.duty[0], pwm.duty[1], pwm.duty[2]);
 
     LOCK_PWM(critical);   // enter critical
 
@@ -137,7 +137,7 @@ pwm_start(void) {
     for (i = 0; i < pwm_channel_num; i++) {
         uint32 us = pwm.period * pwm.duty[i] / PWM_DEPTH;
         local_single[i].h_time = US_TO_RTC_TIMER_TICKS(us);
-        PWM_DBG("i:%d us:%d ht:%d\n",i,us,local_single[i].h_time);
+        PWM_DBG("i:%d us:%d ht:%d\n", i, us, local_single[i].h_time);
         local_single[i].gpio_set = 0;
         local_single[i].gpio_clear = 1 << pin_num[pwm_out_io_num[i]];
     }
@@ -145,12 +145,12 @@ pwm_start(void) {
     local_single[pwm_channel_num].h_time = US_TO_RTC_TIMER_TICKS(pwm.period);
     local_single[pwm_channel_num].gpio_set = pwm_gpio;
     local_single[pwm_channel_num].gpio_clear = 0;
-    PWM_DBG("i:%d period:%d ht:%d\n",pwm_channel_num,pwm.period,local_single[pwm_channel_num].h_time);
+    PWM_DBG("i:%d period:%d ht:%d\n", pwm_channel_num, pwm.period, local_single[pwm_channel_num].h_time);
     // step 2: sort, small to big
     pwm_insert_sort(local_single, pwm_channel_num + 1);
 
     *local_channel = pwm_channel_num + 1;
-    PWM_DBG("1channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n",*local_channel,local_single[0].h_time,local_single[1].h_time,local_single[2].h_time,local_single[3].h_time);
+    PWM_DBG("1channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n", *local_channel, local_single[0].h_time, local_single[1].h_time, local_single[2].h_time, local_single[3].h_time);
     // step 3: combine same duty channels
     for (i = pwm_channel_num; i > 0; i--) {
         if (local_single[i].h_time == local_single[i - 1].h_time) {
@@ -164,7 +164,7 @@ pwm_start(void) {
             (*local_channel)--;
         }
     }
-    PWM_DBG("2channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n",*local_channel,local_single[0].h_time,local_single[1].h_time,local_single[2].h_time,local_single[3].h_time);
+    PWM_DBG("2channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n", *local_channel, local_single[0].h_time, local_single[1].h_time, local_single[2].h_time, local_single[3].h_time);
     // step 4: cacl delt time
     for (i = *local_channel - 1; i > 0; i--) {
         local_single[i].h_time -= local_single[i - 1].h_time;
@@ -203,7 +203,7 @@ pwm_start(void) {
     }
 
     UNLOCK_PWM(critical);   // leave critical
-    PWM_DBG("3channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n",*local_channel,local_single[0].h_time,local_single[1].h_time,local_single[2].h_time,local_single[3].h_time);
+    PWM_DBG("3channel:%d,single[0]:%d,[1]:%d,[2]:%d,[3]:%d\n", *local_channel, local_single[0].h_time, local_single[1].h_time, local_single[2].h_time, local_single[3].h_time);
 }
 
 /******************************************************************************
@@ -365,9 +365,9 @@ pwm_init(void) {
 int ICACHE_FLASH_ATTR
 pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func) {
     PWM_DBG("--Function pwm_add() is called. channel:%d\n", channel);
-    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n",pwm_gpio,pwm_channel_num);
-    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n",pwm_out_io_num[0],pwm_out_io_num[1],pwm_out_io_num[2]);
-    PWM_DBG("pwm.duty[0]:%d,[1]:%d,[2]:%d\n",pwm.duty[0],pwm.duty[1],pwm.duty[2]);
+    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n", pwm_gpio, pwm_channel_num);
+    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n", pwm_out_io_num[0], pwm_out_io_num[1], pwm_out_io_num[2]);
+    PWM_DBG("pwm.duty[0]:%d,[1]:%d,[2]:%d\n", pwm.duty[0], pwm.duty[1], pwm.duty[2]);
     int channel = -1;
     for (int i = 0; i < PWM_CHANNEL; ++i) {
         if (pin_num[i] == pin_id) {
@@ -401,10 +401,10 @@ pwm_add(uint8_t pin_id, uint32_t pin_mux, uint32_t pin_func) {
 bool ICACHE_FLASH_ATTR
 pwm_delete(uint8 channel) {
     PWM_DBG("--Function pwm_delete() is called. channel:%d\n", channel);
-    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n",pwm_gpio,pwm_channel_num);
-    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n",pwm_out_io_num[0],pwm_out_io_num[1],pwm_out_io_num[2]);
-    PWM_DBG("pwm.duty[0]:%d,[1]:%d,[2]:%d\n",pwm.duty[0],pwm.duty[1],pwm.duty[2]);
-    uint8 i,j;
+    PWM_DBG("pwm_gpio:%x,pwm_channel_num:%d\n", pwm_gpio, pwm_channel_num);
+    PWM_DBG("pwm_out_io_num[0]:%d,[1]:%d,[2]:%d\n", pwm_out_io_num[0], pwm_out_io_num[1], pwm_out_io_num[2]);
+    PWM_DBG("pwm.duty[0]:%d,[1]:%d,[2]:%d\n", pwm.duty[0], pwm.duty[1], pwm.duty[2]);
+    uint8 i, j;
     for (i = 0; i < pwm_channel_num; i++) {
         if (pwm_out_io_num[i] == channel) { // exist
             LOCK_PWM(critical);   // enter critical

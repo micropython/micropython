@@ -31,7 +31,7 @@
 
 #if MICROPY_PY_FRAMEBUF
 
-#include "ports/stm32/font_petme128_8x8.h"
+#include "extmod/font_petme128_8x8.h"
 
 typedef struct _mp_obj_framebuf_t {
     mp_obj_base_t base;
@@ -266,8 +266,7 @@ STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
 STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
-    mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
-    o->base.type = type;
+    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, type);
     o->buf_obj = args[0];
 
     mp_buffer_info_t bufinfo;
@@ -628,8 +627,7 @@ STATIC const mp_obj_type_t mp_type_framebuf = {
 
 // this factory function is provided for backwards compatibility with old FrameBuffer1 class
 STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args) {
-    mp_obj_framebuf_t *o = m_new_obj(mp_obj_framebuf_t);
-    o->base.type = &mp_type_framebuf;
+    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, &mp_type_framebuf);
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);

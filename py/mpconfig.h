@@ -328,6 +328,14 @@
 #define MICROPY_PERSISTENT_CODE (MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE || MICROPY_MODULE_FROZEN_MPY)
 #endif
 
+// Whether bytecode uses a qstr_table to map internal qstr indices in the bytecode
+// to global qstr values in the runtime (behaviour when feature is enabled), or
+// just stores global qstr values directly in the bytecode.  This must be enabled
+// if MICROPY_PERSISTENT_CODE is enabled.
+#ifndef MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+#define MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE (MICROPY_PERSISTENT_CODE)
+#endif
+
 // Whether to emit x64 native code
 #ifndef MICROPY_EMIT_X64
 #define MICROPY_EMIT_X64 (0)
@@ -431,6 +439,12 @@
 // Whether to enable constant folding; eg 1+2 rewritten as 3
 #ifndef MICROPY_COMP_CONST_FOLDING
 #define MICROPY_COMP_CONST_FOLDING (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
+#endif
+
+// Whether to compile constant tuples immediately to their respective objects; eg (1, True)
+// Otherwise the tuple will be built at runtime
+#ifndef MICROPY_COMP_CONST_TUPLE
+#define MICROPY_COMP_CONST_TUPLE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
 // Whether to enable optimisations for constant literals, eg OrderedDict
@@ -605,6 +619,11 @@
 // Hook to run code during time consuming garbage collector operations
 #ifndef MICROPY_GC_HOOK_LOOP
 #define MICROPY_GC_HOOK_LOOP
+#endif
+
+// Whether to provide m_tracked_calloc, m_tracked_free functions
+#ifndef MICROPY_TRACKED_ALLOC
+#define MICROPY_TRACKED_ALLOC (0)
 #endif
 
 // Whether to enable finalisers in the garbage collector (ie call __del__)
@@ -814,6 +833,12 @@ typedef double mp_float_t;
 #define MICROPY_STREAMS_POSIX_API (0)
 #endif
 
+// Whether modules can use MP_MODULE_ATTR_DELEGATION_ENTRY() to delegate failed
+// attribute lookups.
+#ifndef MICROPY_MODULE_ATTR_DELEGATION
+#define MICROPY_MODULE_ATTR_DELEGATION (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to call __init__ when importing builtin modules for the first time
 #ifndef MICROPY_MODULE_BUILTIN_INIT
 #define MICROPY_MODULE_BUILTIN_INIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -877,6 +902,11 @@ typedef double mp_float_t;
 // Support for internal scheduler
 #ifndef MICROPY_ENABLE_SCHEDULER
 #define MICROPY_ENABLE_SCHEDULER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether the scheduler supports scheduling static nodes with C callbacks
+#ifndef MICROPY_SCHEDULER_STATIC_NODES
+#define MICROPY_SCHEDULER_STATIC_NODES (0)
 #endif
 
 // Maximum number of entries in the scheduler
@@ -1342,6 +1372,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SYS_ATEXIT (0)
 #endif
 
+// Whether to provide sys.{ps1,ps2} mutable attributes, to control REPL prompts
+#ifndef MICROPY_PY_SYS_PS1_PS2
+#define MICROPY_PY_SYS_PS1_PS2 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 // Whether to provide "sys.settrace" function
 #ifndef MICROPY_PY_SYS_SETTRACE
 #define MICROPY_PY_SYS_SETTRACE (0)
@@ -1361,6 +1396,17 @@ typedef double mp_float_t;
 // This is implemented per-port
 #ifndef MICROPY_PY_SYS_STDIO_BUFFER
 #define MICROPY_PY_SYS_STDIO_BUFFER (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide sys.tracebacklimit mutable attribute
+#ifndef MICROPY_PY_SYS_TRACEBACKLIMIT
+#define MICROPY_PY_SYS_TRACEBACKLIMIT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
+// Whether the sys module supports attribute delegation
+// This is enabled automatically when needed by other features
+#ifndef MICROPY_PY_SYS_ATTR_DELEGATION
+#define MICROPY_PY_SYS_ATTR_DELEGATION (MICROPY_PY_SYS_PS1_PS2 || MICROPY_PY_SYS_TRACEBACKLIMIT)
 #endif
 
 // Whether to provide "uerrno" module
@@ -1445,6 +1491,14 @@ typedef double mp_float_t;
 // Whether to support the "separators" argument to dump, dumps
 #ifndef MICROPY_PY_UJSON_SEPARATORS
 #define MICROPY_PY_UJSON_SEPARATORS (1)
+#endif
+
+#ifndef MICROPY_PY_UOS
+#define MICROPY_PY_UOS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_UOS_STATVFS
+#define MICROPY_PY_UOS_STATVFS (MICROPY_PY_UOS)
 #endif
 
 #ifndef MICROPY_PY_URE
@@ -1555,6 +1609,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_SOFTSPI (0)
 #endif
 
+// The default backlog value for socket.listen(backlog)
+#ifndef MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT
+#define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (2)
+#endif
+
 #ifndef MICROPY_PY_USSL
 #define MICROPY_PY_USSL (0)
 #endif
@@ -1658,6 +1717,20 @@ typedef double mp_float_t;
 // like __attribute__((aligned(4))).
 #ifndef MICROPY_OBJ_BASE_ALIGNMENT
 #define MICROPY_OBJ_BASE_ALIGNMENT
+#endif
+
+// String used for the banner, and sys.version additional information
+#ifndef MICROPY_BANNER_NAME_AND_VERSION
+#define MICROPY_BANNER_NAME_AND_VERSION "MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
+#endif
+
+// String used for the second part of the banner, and sys.implementation._machine
+#ifndef MICROPY_BANNER_MACHINE
+#ifdef MICROPY_HW_BOARD_NAME
+#define MICROPY_BANNER_MACHINE MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME
+#else
+#define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
+#endif
 #endif
 
 // On embedded platforms, these will typically enable/disable irqs.

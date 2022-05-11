@@ -116,7 +116,11 @@ int main(int argc, char **argv) {
         #endif
 
         // Execute _boot.py to set up the filesystem.
+        #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+        pyexec_frozen_module("_boot_fat.py");
+        #else
         pyexec_frozen_module("_boot.py");
+        #endif
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");

@@ -41,10 +41,6 @@ def op_split(path):
     return (head, r[1])
 
 
-def op_basename(path):
-    return op_split(path)[1]
-
-
 # Expects *file* name
 def _makedirs(name, mode=0o777):
     ret = False
@@ -205,7 +201,6 @@ def install_pkg(pkg_spec, install_path):
     assert len(packages) == 1
     package_url = packages[0]["url"]
     print("Installing %s %s from %s" % (pkg_spec, latest_ver, package_url))
-    package_fname = op_basename(package_url)
     f1 = url_open(package_url)
     try:
         f2 = uzlib.DecompIO(f1, gzdict_sz)

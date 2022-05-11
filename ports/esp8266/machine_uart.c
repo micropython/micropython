@@ -202,8 +202,7 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     // create instance
-    pyb_uart_obj_t *self = m_new_obj(pyb_uart_obj_t);
-    self->base.type = &pyb_uart_type;
+    pyb_uart_obj_t *self = mp_obj_malloc(pyb_uart_obj_t, &pyb_uart_type);
     self->uart_id = uart_id;
     self->baudrate = 115200;
     self->bits = 8;

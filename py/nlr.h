@@ -167,7 +167,7 @@ NORETURN void nlr_jump_fail(void *val);
 
 #if !MICROPY_NLR_SETJMP
 #define nlr_push(val) \
-    assert(MP_STATE_THREAD(nlr_top) != val),nlr_push(val)
+    assert(MP_STATE_THREAD(nlr_top) != val), nlr_push(val)
 
 /*
 #define nlr_push(val) \

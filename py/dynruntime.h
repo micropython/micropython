@@ -30,6 +30,7 @@
 // MicroPython runtime API defined in py/obj.h and py/runtime.h.
 
 #include "py/nativeglue.h"
+#include "py/objfun.h"
 #include "py/objstr.h"
 #include "py/objtype.h"
 
@@ -125,6 +126,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_get_array(o, len, items)     (mp_obj_get_array_dyn((o), (len), (items)))
 #define mp_obj_list_append(list, item)      (mp_fun_table.list_append((list), (item)))
 
+#define mp_obj_malloc_helper(n, t)          (mp_obj_malloc_helper_dyn(n, t))
+
 static inline mp_obj_t mp_obj_new_str_of_type_dyn(const mp_obj_type_t *type, const byte *data, size_t len) {
     if (type == &mp_type_str) {
         return mp_obj_new_str((const char *)data, len);
@@ -162,6 +165,12 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     return mp_fun_table.call_function_n_kw(mp_fun_table.load_name(MP_QSTR_len), 1, &o);
 }
 
+static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
+}
+
 /******************************************************************************/
 // General runtime functions
 
@@ -177,8 +186,8 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
 #define mp_unary_op(op, obj)        (mp_fun_table.unary_op((op), (obj)))
 #define mp_binary_op(op, lhs, rhs)  (mp_fun_table.binary_op((op), (lhs), (rhs)))
 
-#define mp_make_function_from_raw_code(rc, def_args, def_kw_args) \
-    (mp_fun_table.make_function_from_raw_code((rc), (def_args), (def_kw_args)))
+#define mp_make_function_from_raw_code(rc, context, def_args) \
+    (mp_fun_table.make_function_from_raw_code((rc), (context), (def_args)))
 
 #define mp_call_function_n_kw(fun, n_args, n_kw, args) \
     (mp_fun_table.call_function_n_kw((fun), (n_args) | ((n_kw) << 8), args))
@@ -187,11 +196,10 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     (mp_fun_table.arg_check_num_sig((n_args), (n_kw), MP_OBJ_FUN_MAKE_SIG((n_args_min), (n_args_max), (takes_kw))))
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
-    mp_obj_t old_globals = mp_fun_table.swap_globals(self->globals); \
+    mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
     mp_raw_code_t rc; \
     rc.kind = MP_CODE_NATIVE_VIPER; \
     rc.scope_flags = 0; \
-    rc.const_table = (void *)self->const_table; \
     (void)rc;
 
 #define MP_DYNRUNTIME_INIT_EXIT \
@@ -199,7 +207,7 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     return mp_const_none;
 
 #define MP_DYNRUNTIME_MAKE_FUNCTION(f) \
-    (mp_make_function_from_raw_code((rc.fun_data = (f), &rc), MP_OBJ_NULL, MP_OBJ_NULL))
+    (mp_make_function_from_raw_code((rc.fun_data = (f), &rc), self->context, NULL))
 
 #define mp_import_name(name, fromlist, level) \
     (mp_fun_table.import_name((name), (fromlist), (level)))

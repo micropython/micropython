@@ -41,7 +41,7 @@ class SingletonGenerator:
 
     def __next__(self):
         if self.state is not None:
-            _task_queue.push_sorted(cur_task, self.state)
+            _task_queue.push(cur_task, self.state)
             self.state = None
             return None
         else:
@@ -115,11 +115,11 @@ class IOQueue:
             # print('poll', s, sm, ev)
             if ev & ~select.POLLOUT and sm[0] is not None:
                 # POLLIN or error
-                _task_queue.push_head(sm[0])
+                _task_queue.push(sm[0])
                 sm[0] = None
             if ev & ~select.POLLIN and sm[1] is not None:
                 # POLLOUT or error
-                _task_queue.push_head(sm[1])
+                _task_queue.push(sm[1])
                 sm[1] = None
             if sm[0] is None and sm[1] is None:
                 self._dequeue(s)
@@ -142,7 +142,7 @@ def create_task(coro):
     if not hasattr(coro, "send"):
         raise TypeError("coroutine expected")
     t = Task(coro, globals())
-    _task_queue.push_head(t)
+    _task_queue.push(t)
     return t
 
 
@@ -167,7 +167,7 @@ def run_until_complete(main_task=None):
             _io_queue.wait_io_event(dt)
 
         # Get next task to run and continue it
-        t = _task_queue.pop_head()
+        t = _task_queue.pop()
         cur_task = t
         try:
             # Continue running the coroutine, it's responsible for rescheduling itself
@@ -195,10 +195,15 @@ def run_until_complete(main_task=None):
                 if t.state is True:
                     # "None" indicates that the task is complete and not await'ed on (yet).
                     t.state = None
+                elif callable(t.state):
+                    # The task has a callback registered to be called on completion.
+                    t.state(t, er)
+                    t.state = False
+                    waiting = True
                 else:
                     # Schedule any other tasks waiting on the completion of this task.
                     while t.state.peek():
-                        _task_queue.push_head(t.state.pop_head())
+                        _task_queue.push(t.state.pop())
                         waiting = True
                     # "False" indicates that the task is complete and has been await'ed on.
                     t.state = False
@@ -206,7 +211,7 @@ def run_until_complete(main_task=None):
                     # An exception ended this detached task, so queue it for later
                     # execution to handle the uncaught exception if no other task retrieves
                     # the exception in the meantime (this is handled by Task.throw).
-                    _task_queue.push_head(t)
+                    _task_queue.push(t)
                 # Save return value of coro to pass up to caller.
                 t.data = er
             elif t.state is None:
@@ -251,7 +256,7 @@ class Loop:
     def stop():
         global _stop_task
         if _stop_task is not None:
-            _task_queue.push_head(_stop_task)
+            _task_queue.push(_stop_task)
             # If stop() is called again, do nothing
             _stop_task = None
 

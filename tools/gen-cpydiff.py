@@ -85,6 +85,16 @@ def readfiles():
             class_, desc, cause, workaround, code = [
                 x.rstrip() for x in list(filter(None, re.split(SPLIT, text)))
             ]
+
+            # remove black `fmt: on/off/skip` comments
+            code = "".join(
+                # skip comments are inline, so we replace just the comment
+                re.sub(r"\s*# fmt: skip", "", x)
+                for x in code.splitlines(keepends=True)
+                # on/off comments are on their own line, so we omit the entire line
+                if not re.match(r"\s*# fmt: (on|off)\s*", x)
+            )
+
             output = Output(test, class_, desc, cause, workaround, code, "", "", "")
             files.append(output)
         except IndexError:
