@@ -35,7 +35,18 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+
+aaaaa
+
+#include "driver/gptimer.h"
+#else
+
+bbbbb
+
 #include "driver/timer.h"
+#endif
+
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 1)
 #include "hal/timer_ll.h"
 #define HAVE_TIMER_LL (1)
