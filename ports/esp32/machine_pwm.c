@@ -34,6 +34,7 @@
 
 #include "driver/ledc.h"
 #include "esp_err.h"
+#include "soc/gpio_sig_map.h"
 
 #define PWM_DBG(...)
 // #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");
@@ -164,11 +165,19 @@ STATIC void pwm_deinit(int channel_idx) {
             // Disable ledc signal for the pin
             // gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
             if (mode == LEDC_LOW_SPEED_MODE) {
+                #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+                gpio_iomux_out(pin, LEDC_LS_SIG_OUT0_IDX + channel, false);
+                #else
                 gpio_matrix_out(pin, LEDC_LS_SIG_OUT0_IDX + channel, false, true);
+                #endif
             } else {
                 #if LEDC_SPEED_MODE_MAX > 1
                 #if CONFIG_IDF_TARGET_ESP32
+                #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+                gpio_iomux_out(pin, LEDC_HS_SIG_OUT0_IDX + channel, false);
+                #else
                 gpio_matrix_out(pin, LEDC_HS_SIG_OUT0_IDX + channel, false, true);
+                #endif
                 #else
                 #error Add supported CONFIG_IDF_TARGET_ESP32_xxx
                 #endif

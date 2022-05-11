@@ -36,14 +36,9 @@
 #include "mphalport.h"
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-
-aaaaa
-
 #include "driver/gptimer.h"
+#define timer_config_t gptimer_config_t
 #else
-
-bbbbb
-
 #include "driver/timer.h"
 #endif
 
