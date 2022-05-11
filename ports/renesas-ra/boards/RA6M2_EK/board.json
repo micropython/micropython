@@ -17,7 +17,7 @@
         "ek_ra6m2_j3_pins.jpg",
         "ek_ra6m2_j4_pins.jpg"
     ],
-    "mcu": "RA6M2",
+    "mcu": "ra6m2",
     "product": "EK-RA6M2",
     "thumbnail": "",
     "url": "https://www.renesas.com/products/microcontrollers-microprocessors/ra-cortex-m-mcus/ek-ra6m2-evaluation-kit-ra6m2-mcu-group",
