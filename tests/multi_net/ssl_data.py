@@ -1,7 +1,13 @@
 # Simple test creating an SSL connection and transferring some data
 # This test won't run under CPython because it requires key/cert
 
-import ubinascii as binascii, usocket as socket, ussl as ssl
+import ubinascii as binascii, usocket as socket
+
+try:
+    import ussl as ssl
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 PORT = 8000
 
