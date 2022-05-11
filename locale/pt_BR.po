@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-21 22:57+0000\n"
+"PO-Revision-Date: 2022-05-08 16:37+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: main.c
 msgid ""
@@ -643,7 +643,7 @@ msgstr "O tamanho do buffer %d é muito grande. Deve ser menor que %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "O comprimento do Buffer deve ser um múltiplo de 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "O buffer deve ser um múltiplo de 512 bytes"
 
@@ -1135,6 +1135,13 @@ msgstr "O formato não é suportado"
 msgid "Framebuffer requires %d bytes"
 msgstr "O Framebuffer requer %d bytes"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+"A frequência deve ser 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 ou "
+"1008 Mhz"
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1567,6 +1574,15 @@ msgstr "As mensagens estão limitadas a 8 bytes"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "O atraso na inicialização do microfone deve estar entre 0,0 e 1,0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr "O tamanho dos dados é incompatível"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr "Sinalizador de troca incompatível"
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "O pino MISO ou MOSI está ausente"
@@ -1635,6 +1651,10 @@ msgstr "Erro NVS"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nome muito longo"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr "O novo bitmap deve ter o mesmo tamanho que o bitmap antigo"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2075,7 +2095,7 @@ msgstr "Erro DeInit RNG"
 msgid "RNG Init Error"
 msgstr "Houve um erro na inicialização do RNG"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "Ainda não há suporte para o RS485 neste dispositivo"
 
@@ -3109,7 +3129,7 @@ msgstr "divisão complexa por zero"
 msgid "complex values not supported"
 msgstr "os valores complexos não compatíveis"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "compressão do cabeçalho"
 
@@ -3365,6 +3385,10 @@ msgstr "a fonte deve ter 2048 bytes de comprimento"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formato requer um dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr "nesta placa, a frequência é de apenas leitura"
 
 #: py/objdeque.c
 msgid "full"

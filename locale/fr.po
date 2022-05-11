@@ -638,7 +638,7 @@ msgstr "La longueur du tampon %d est trop grande. Il doit être inférieur à %d
 msgid "Buffer length must be a multiple of 512"
 msgstr "La longueur de la mémoire tampon doit être un multiple de 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "La mémoire tampon doit être un multiple de 512"
 
@@ -1138,6 +1138,11 @@ msgstr "Format non supporté"
 msgid "Framebuffer requires %d bytes"
 msgstr "FrameBuffer nécessite %d octets"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1574,6 +1579,15 @@ msgstr "Messages limités à 8 octets"
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Broche MISO ou MOSI manquante"
@@ -1644,6 +1658,10 @@ msgstr "Erreur NVS"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Nom trop long"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2081,7 +2099,7 @@ msgstr "Erreur de désinitialisation du RNG"
 msgid "RNG Init Error"
 msgstr "Erreur d'initialisation du RNG"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 n'est pas encore supporté sur cet appareil"
 
@@ -3117,7 +3135,7 @@ msgstr "division complexe par zéro"
 msgid "complex values not supported"
 msgstr "valeurs complexes non supportées"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "entête de compression"
 
@@ -3373,6 +3391,10 @@ msgstr "la police doit être longue de 2048 octets"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "le format nécessite un dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"

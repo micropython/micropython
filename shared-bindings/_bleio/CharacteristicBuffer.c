@@ -173,12 +173,8 @@ STATIC mp_obj_t bleio_characteristic_buffer_obj_get_in_waiting(mp_obj_t self_in)
 }
 MP_DEFINE_CONST_FUN_OBJ_1(bleio_characteristic_buffer_get_in_waiting_obj, bleio_characteristic_buffer_obj_get_in_waiting);
 
-const mp_obj_property_t bleio_characteristic_buffer_in_waiting_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&bleio_characteristic_buffer_get_in_waiting_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(bleio_characteristic_buffer_in_waiting_obj,
+    (mp_obj_t)&bleio_characteristic_buffer_get_in_waiting_obj);
 
 //|     def reset_input_buffer(self) -> None:
 //|         """Discard any unread characters in the input buffer."""

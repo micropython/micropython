@@ -72,7 +72,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         NULL, 0, 0, 0x1f, // set pins
         clock_pin, 1, 0, 0x1f, // sideset pins
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
@@ -157,9 +157,9 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t *se
     size_t output_count = 0;
     common_hal_rp2pio_statemachine_clear_rxfifo(&self->state_machine);
     // Do one read to get the mic going and throw it away.
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t));
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t), false);
     while (output_count < output_buffer_length && !common_hal_rp2pio_statemachine_get_rxstall(&self->state_machine)) {
-        common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t));
+        common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t), false);
         // Call filter_sample just one place so it can be inlined.
         uint16_t value = filter_sample(samples);
         if (self->bit_depth == 8) {

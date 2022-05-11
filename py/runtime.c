@@ -1087,7 +1087,8 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             // be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(member);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(member, &n_proxy);
             if (proxy[0] == mp_const_none) {
                 mp_raise_AttributeError(MP_ERROR_TEXT("unreadable attribute"));
             } else {
@@ -1226,15 +1227,16 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            const mp_obj_t *proxy = mp_obj_property_get(elem->value);
+            size_t n_proxy;
+            const mp_obj_t *proxy = mp_obj_property_get(elem->value, &n_proxy);
             mp_obj_t dest[2] = {base, value};
             if (value == MP_OBJ_NULL) {
                 // delete attribute
-                if (proxy[2] != mp_const_none) {
+                if (n_proxy == 3 && proxy[2] != mp_const_none) {
                     mp_call_function_n_kw(proxy[2], 1, 0, dest);
                     return;
                 }
-            } else if (proxy[1] != mp_const_none) {
+            } else if (n_proxy > 1 && proxy[1] != mp_const_none) {
                 mp_call_function_n_kw(proxy[1], 2, 0, dest);
                 return;
             }

@@ -47,11 +47,11 @@
 #include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
-// 416 ns is 1/3 of the 1250ns period of a 800khz signal.
-#define WS2812_T0H_NS (416)
-#define WS2812_T0L_NS (416 * 2)
-#define WS2812_T1H_NS (416 * 2)
-#define WS2812_T1L_NS (416)
+// Use closer to WS2812-style timings instead of WS2812B, to accommodate more varieties.
+#define WS2812_T0H_NS (316)
+#define WS2812_T0L_NS (316 * 3)
+#define WS2812_T1H_NS (700)
+#define WS2812_T1L_NS (564)
 
 static uint32_t ws2812_t0h_ticks = 0;
 static uint32_t ws2812_t1h_ticks = 0;

@@ -630,7 +630,7 @@ msgstr "バッファ長%dは大きすぎます。%d以下でなければなり�
 msgid "Buffer length must be a multiple of 512"
 msgstr "バッファ長は512の倍数でなければなりません"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "バッファは512の倍数でなければなりません"
 
@@ -1116,6 +1116,11 @@ msgstr "非対応の形式"
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr "このタイマーを使う既存のPWMOutと周波数を一致させる必要があります"
@@ -1541,6 +1546,15 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr "マイクのスタートアップディレイは 0.0 から 1.0 の間でなければなりません"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "MISOまたはMOSIピンがありません"
@@ -1609,6 +1623,10 @@ msgstr ""
 #: py/qstr.c
 msgid "Name too long"
 msgstr "名前が長すぎます"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2033,7 +2051,7 @@ msgstr "RNG解体エラー"
 msgid "RNG Init Error"
 msgstr "乱数生成器の初期化エラー"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -3036,7 +3054,7 @@ msgstr "複素数ゼロ除算"
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "圧縮ヘッダー"
 
@@ -3291,6 +3309,10 @@ msgstr "fontは2048バイト長でなければなりません"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formatにはdictが必要"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"

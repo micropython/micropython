@@ -112,10 +112,6 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("Invalid buffer size"));
     }
 
-    if ((rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_NotImplementedError(translate("RS485 Not yet supported on this device"));
-    }
-
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
     if (uart_status[uart_id] != STATUS_FREE) {
@@ -126,6 +122,29 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->rx_pin = pin_init(uart_id, rx, 1);
     self->cts_pin = pin_init(uart_id, cts, 2);
     self->rts_pin = pin_init(uart_id, rts, 3);
+
+    if (rs485_dir != NULL) {
+        uint8_t pin = rs485_dir->number;
+        self->rs485_dir_pin = pin;
+        self->rs485_invert = rs485_invert;
+
+        gpio_init(pin);
+
+        claim_pin(rs485_dir);
+
+        gpio_disable_pulls(pin);
+
+        // Turn on "strong" pin driving (more current available).
+        hw_write_masked(&padsbank0_hw->io[pin],
+            PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB,
+                PADS_BANK0_GPIO0_DRIVE_BITS);
+
+        gpio_put(self->rs485_dir_pin, rs485_invert);
+        gpio_set_dir(self->rs485_dir_pin, GPIO_OUT);
+    } else {
+        self->rs485_dir_pin = NO_PIN;
+    }
+
     uart_status[uart_id] = STATUS_BUSY;
 
 
@@ -179,16 +198,23 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     reset_pin_number(self->rx_pin);
     reset_pin_number(self->cts_pin);
     reset_pin_number(self->rts_pin);
+    reset_pin_number(self->rs485_dir_pin);
     self->tx_pin = NO_PIN;
     self->rx_pin = NO_PIN;
     self->cts_pin = NO_PIN;
     self->rts_pin = NO_PIN;
+    self->rs485_dir_pin = NO_PIN;
 }
 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
         mp_raise_ValueError(translate("No TX pin"));
+    }
+
+    if (self->rs485_dir_pin != NO_PIN) {
+        uart_tx_wait_blocking(self->uart);
+        gpio_put(self->rs485_dir_pin, !self->rs485_invert);
     }
 
     size_t left_to_write = len;
@@ -201,7 +227,10 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
         }
         RUN_BACKGROUND_TASKS;
     }
-
+    if (self->rs485_dir_pin != NO_PIN) {
+        uart_tx_wait_blocking(self->uart);
+        gpio_put(self->rs485_dir_pin, self->rs485_invert);
+    }
     return len;
 }
 

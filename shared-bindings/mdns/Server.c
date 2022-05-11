@@ -99,12 +99,9 @@ static mp_obj_t mdns_server_set_hostname(mp_obj_t self, mp_obj_t hostname) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mdns_server_set_hostname_obj, mdns_server_set_hostname);
 
-const mp_obj_property_t mdns_server_hostname_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_server_get_hostname_obj,
-               (mp_obj_t)&mdns_server_set_hostname_obj,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETSET(mdns_server_hostname_obj,
+    (mp_obj_t)&mdns_server_get_hostname_obj,
+    (mp_obj_t)&mdns_server_set_hostname_obj);
 
 //|     instance_name: str
 //|     """Human readable name to describe the device."""
@@ -123,12 +120,9 @@ STATIC mp_obj_t mdns_server_set_instance_name(mp_obj_t self, mp_obj_t new_instan
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mdns_server_set_instance_name_obj, mdns_server_set_instance_name);
 
-const mp_obj_property_t mdns_server_instance_name_obj = {
-    .base.type = &mp_type_property,
-    .proxy = { (mp_obj_t)&mdns_server_get_instance_name_obj,
-               (mp_obj_t)&mdns_server_set_instance_name_obj,
-               MP_ROM_NONE },
-};
+MP_PROPERTY_GETSET(mdns_server_instance_name_obj,
+    (mp_obj_t)&mdns_server_get_instance_name_obj,
+    (mp_obj_t)&mdns_server_set_instance_name_obj);
 
 
 //|     def find(self, service_type: str, protocol: str, *, timeout: float = 1) -> Tuple[RemoteService]:

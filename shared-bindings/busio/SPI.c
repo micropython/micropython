@@ -299,7 +299,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(busio_spi_write_obj, 1, busio_spi_write);
 //|
 //|         :param WriteableBuffer buffer: read bytes into this buffer
 //|         :param int start: beginning of buffer slice
-//|         :param int end: end of buffer slice; if not specified, use ``len(buffer)``
+//|         :param int end: end of buffer slice; if not specified, it will be the equivalent value
+//|             of ``len(buffer)`` and for any value provided it will take the value of
+//|             ``min(end, len(buffer))``
 //|         :param int write_value: value to write while reading
 //|         """
 //|         ...
@@ -423,12 +425,8 @@ STATIC mp_obj_t busio_spi_obj_get_frequency(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(busio_spi_get_frequency_obj, busio_spi_obj_get_frequency);
 
-const mp_obj_property_t busio_spi_frequency_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&busio_spi_get_frequency_obj,
-              MP_ROM_NONE,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETTER(busio_spi_frequency_obj,
+    (mp_obj_t)&busio_spi_get_frequency_obj);
 #endif // CIRCUITPY_BUSIO_SPI
 
 

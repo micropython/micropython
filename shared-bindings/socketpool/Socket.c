@@ -46,6 +46,12 @@
 //|        recv that do not allocate bytes objects."""
 //|
 
+//|     def __hash__(self) -> int:
+//|         """Returns a hash for the Socket."""
+//|         ...
+//|
+// Provided by mp_generic_unary_op().
+
 //|     def __enter__(self) -> Socket:
 //|         """No-op used by Context Managers."""
 //|         ...
@@ -366,20 +372,6 @@ STATIC mp_obj_t socketpool_socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_settimeout_obj, socketpool_socket_settimeout);
 
-//|     def __hash__(self) -> int:
-//|         """Returns a hash for the Socket."""
-//|         ...
-//|
-STATIC mp_obj_t socketpool_socket_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH: {
-            return mp_obj_id(self_in);
-        }
-        default:
-            return MP_OBJ_NULL; // op not supported
-    }
-}
-
 STATIC const mp_rom_map_elem_t socketpool_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&socketpool_socket___exit___obj) },
@@ -407,6 +399,6 @@ const mp_obj_type_t socketpool_socket_type = {
     .name = MP_QSTR_Socket,
     .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
     MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = socketpool_socket_unary_op,
+        .unary_op = mp_generic_unary_op,
         )
 };

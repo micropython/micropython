@@ -213,12 +213,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_direction_obj, digitalio_digitalinout_obj_set_direction);
 
-const mp_obj_property_t digitalio_digitalio_direction_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&digitalio_digitalinout_get_direction_obj,
-              (mp_obj_t)&digitalio_digitalinout_set_direction_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(digitalio_digitalio_direction_obj,
+    (mp_obj_t)&digitalio_digitalinout_get_direction_obj,
+    (mp_obj_t)&digitalio_digitalinout_set_direction_obj);
 
 //|     value: bool
 //|     """The digital logic level of the pin."""
@@ -243,12 +240,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_value_obj, digitalio_digitalinout_obj_set_value);
 
-const mp_obj_property_t digitalio_digitalinout_value_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&digitalio_digitalinout_get_value_obj,
-              (mp_obj_t)&digitalio_digitalinout_set_value_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(digitalio_digitalinout_value_obj,
+    (mp_obj_t)&digitalio_digitalinout_get_value_obj,
+    (mp_obj_t)&digitalio_digitalinout_set_value_obj);
 
 //|     drive_mode: DriveMode
 //|     """The pin drive mode. One of:
@@ -287,12 +281,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_o
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_drive_mode_obj, digitalio_digitalinout_obj_set_drive_mode);
 
-const mp_obj_property_t digitalio_digitalio_drive_mode_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&digitalio_digitalinout_get_drive_mode_obj,
-              (mp_obj_t)&digitalio_digitalinout_set_drive_mode_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(digitalio_digitalio_drive_mode_obj,
+    (mp_obj_t)&digitalio_digitalinout_get_drive_mode_obj,
+    (mp_obj_t)&digitalio_digitalinout_set_drive_mode_obj);
 
 //|     pull: Optional[Pull]
 //|     """The pin pull direction. One of:
@@ -333,12 +324,9 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
 }
 MP_DEFINE_CONST_FUN_OBJ_2(digitalio_digitalinout_set_pull_obj, digitalio_digitalinout_obj_set_pull);
 
-const mp_obj_property_t digitalio_digitalio_pull_obj = {
-    .base.type = &mp_type_property,
-    .proxy = {(mp_obj_t)&digitalio_digitalinout_get_pull_obj,
-              (mp_obj_t)&digitalio_digitalinout_set_pull_obj,
-              MP_ROM_NONE},
-};
+MP_PROPERTY_GETSET(digitalio_digitalio_pull_obj,
+    (mp_obj_t)&digitalio_digitalinout_get_pull_obj,
+    (mp_obj_t)&digitalio_digitalinout_set_pull_obj);
 
 STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
     // instance methods

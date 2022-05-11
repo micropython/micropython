@@ -164,6 +164,9 @@ endif
 ifeq ($(CIRCUITPY_VECTORIO),1)
 SRC_PATTERNS += vectorio/%
 endif
+ifeq ($(CIRCUITPY_FLOPPYIO),1)
+SRC_PATTERNS += floppyio/%
+endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
 endif
@@ -545,6 +548,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \

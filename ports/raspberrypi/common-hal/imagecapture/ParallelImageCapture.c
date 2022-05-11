@@ -112,7 +112,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         NULL, 0, 0, 0, // sideset pins
         #endif
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         (1 << vertical_sync->number) | (1 << horizontal_reference->number) | (1 << data_clock->number), // wait gpio pins
         true, // exclusive pin use
         false, 32, false, // out settings
@@ -153,7 +153,7 @@ void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecaptur
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4, false);
 
     pio_sm_set_enabled(pio, sm, false);
 }

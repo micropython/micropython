@@ -83,7 +83,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['templates']
+templates_path = ['templates', "docs/templates"]
 
 # The suffix of source filenames.
 source_suffix = {

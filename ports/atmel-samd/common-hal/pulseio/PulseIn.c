@@ -132,7 +132,7 @@ void pulsein_interrupt_handler(uint8_t channel) {
         if (self->len < self->maxlen) {
             self->len++;
         } else {
-            self->start++;
+            self->start = (self->start + 1) % self->maxlen;
         }
     }
     self->last_overflow = current_overflow;

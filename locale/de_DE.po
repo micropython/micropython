@@ -634,7 +634,7 @@ msgstr "Die Pufferlänge %d ist zu groß. Sie muss kleiner als %d sein"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Die Pufferlänge muss ein vielfaches von 512 sein"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Der Puffer muss ein vielfaches von 512 bytes sein"
 
@@ -1125,6 +1125,11 @@ msgstr "Format nicht unterstützt"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framepuffer benötigt %d bytes"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1557,6 +1562,15 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Fehlender MISO- oder MOSI-Pin"
@@ -1625,6 +1639,10 @@ msgstr "NVS-Fehler"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Name zu lang"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2058,7 +2076,7 @@ msgstr "RNG DeInit-Fehler"
 msgid "RNG Init Error"
 msgstr "RNG Init-Fehler"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 wird von diesem Gerät nicht unterstützt"
 
@@ -3097,7 +3115,7 @@ msgstr "Komplexe Division durch null"
 msgid "complex values not supported"
 msgstr "Komplexe Zahlen nicht unterstützt"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "kompression header"
 
@@ -3352,6 +3370,10 @@ msgstr "Die Schriftart (font) muss 2048 Byte lang sein"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "Format erfordert ein Wörterbuch (dict)"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr ""
 
 #: py/objdeque.c
 msgid "full"

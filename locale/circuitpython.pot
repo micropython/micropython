@@ -623,7 +623,7 @@ msgstr ""
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
@@ -1107,6 +1107,11 @@ msgstr ""
 msgid "Framebuffer requires %d bytes"
 msgstr ""
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
@@ -1530,6 +1535,15 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
@@ -1597,6 +1611,10 @@ msgstr ""
 
 #: py/qstr.c
 msgid "Name too long"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
@@ -1732,6 +1750,10 @@ msgid "No space left on device"
 msgstr ""
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr ""
 
@@ -1836,6 +1858,10 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
+msgstr ""
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
 msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
@@ -2019,7 +2045,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -2501,10 +2527,6 @@ msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr ""
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
@@ -3019,7 +3041,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr ""
 
@@ -3271,6 +3293,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "format requires a dict"
+msgstr ""
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
 msgstr ""
 
 #: py/objdeque.c

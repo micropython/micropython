@@ -140,7 +140,7 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
     const compressed_string_t *desc = NULL;
     switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
         case EPERM:
-            desc = MP_ERROR_TEXT("Permission denied");
+            desc = MP_ERROR_TEXT("Operation not permitted");
             break;
         case ENOENT:
             desc = MP_ERROR_TEXT("No such file/directory");
@@ -155,7 +155,7 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
             desc = MP_ERROR_TEXT("File exists");
             break;
         case ENODEV:
-            desc = MP_ERROR_TEXT("Unsupported operation");
+            desc = MP_ERROR_TEXT("No such device");
             break;
         case EINVAL:
             desc = MP_ERROR_TEXT("Invalid argument");

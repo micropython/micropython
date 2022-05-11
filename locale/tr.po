@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-01-16 13:56+0000\n"
-"Last-Translator: Gökhan Koçmarlı <gokhankocmarli@gmail.com>\n"
+"PO-Revision-Date: 2022-04-19 17:07+0000\n"
+"Last-Translator: Siyabend Ürün <urunsiyabend@gmail.com>\n"
 "Language-Team: none\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.12-dev\n"
 
 #: main.c
 msgid ""
@@ -30,6 +30,9 @@ msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"Program otomatik yeniden yükleme tarafından durduruldu. Birazdan tekrar "
+"yüklenecek.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -513,7 +516,7 @@ msgstr "Dizi değerleri tekil bytelar olmalıdır."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "En az %d %q belirtilmeli (%d değil)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -568,23 +571,24 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr ""
+msgstr "Bit derinliği 1-6 aralığında olmalı, %d değil"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr ""
+msgstr "Bit derinliği 8'in katı olacak şekilde olmalı."
 
 #: shared-bindings/bitmaptools/__init__.c
+#, fuzzy
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "Bitmap boyutu ve bit başına değer uyuşmalı"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
-msgstr ""
+msgstr "Önyükleme cihazı ilk cihaz olmalı (arayüz #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "Hem RX hem de TX akış kontrolü için gerekli"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -595,12 +599,12 @@ msgstr ""
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "Parlaklık 0-1.0 aralığında olmalı"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Parlaklık ayarlanabilir değil"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
@@ -614,35 +618,35 @@ msgstr ""
 #: shared-module/usb_hid/Device.c
 #, c-format
 msgid "Buffer incorrect size. Should be %d bytes."
-msgstr ""
+msgstr "Geçersiz arabellek boyutu. %d kadar olmalı"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "Arabellek bayt dizisi değil"
 
 #: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
-msgstr ""
+msgstr "Arabellek çok küçük"
 
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "Mevcut arabellek boyutu %d çok büyük. En fazla %d kadar olmalı"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Arabellek boyutu 512'nin katı olmalı"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
 #: shared-bindings/bitbangio/I2C.c
 msgid "Buffer must be at least length 1"
-msgstr ""
+msgstr "Arabellek boyutu en az 1 olmalı"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
@@ -651,7 +655,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "Arabellek boyutları aynı olmalı"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -659,7 +663,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
-msgstr ""
+msgstr "Veriyolu pini %d kullanımda"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
@@ -667,15 +671,15 @@ msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Bytes must be between 0 and 255."
-msgstr ""
+msgstr "Baytlar 0-255 aralığında olmalı"
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
-msgstr ""
+msgstr "CBC blokları 16 baytın katları şeklinde olmalı"
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr ""
+msgstr "CIRCUITPY sürücüsü bulunamadı veya oluşturulamadı"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -705,17 +709,17 @@ msgstr ""
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "USB aygıtları şu an değiştirilemez"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Yeni Adapter oluşturulamaz, _bleio.adapter; kullanın"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c
 msgid "Cannot delete values"
-msgstr ""
+msgstr "Değerler silinemez"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
@@ -1118,6 +1122,11 @@ msgstr ""
 #: shared-module/framebufferio/FramebufferDisplay.c
 #, c-format
 msgid "Framebuffer requires %d bytes"
+msgstr ""
+
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
@@ -1543,6 +1552,15 @@ msgstr ""
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr ""
@@ -1610,6 +1628,10 @@ msgstr ""
 
 #: py/qstr.c
 msgid "Name too long"
+msgstr ""
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
@@ -2035,7 +2057,7 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr ""
 
@@ -3035,7 +3057,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr ""
 
@@ -3287,6 +3309,10 @@ msgstr ""
 
 #: py/objstr.c
 msgid "format requires a dict"
+msgstr ""
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
 msgstr ""
 
 #: py/objdeque.c

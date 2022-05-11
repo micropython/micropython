@@ -40,9 +40,7 @@
 
 //| """Manipulation of c-style data
 //|
-//| This module implements a subset of the corresponding CPython module,
-//| as described below. For more information, refer to the original CPython
-//| documentation: struct.
+//| |see_cpython_module| :mod:`cpython:struct`.
 //|
 //| Supported size/byte order prefixes: *@*, *<*, *>*, *!*.
 //|

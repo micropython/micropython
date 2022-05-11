@@ -157,7 +157,7 @@ STATIC void check_for_deinit(keypad_keymatrix_obj_t *self) {
 //|     """
 //|
 
-//|     def key_number_to_row_column(self, row: int, column: int) -> Tuple[int]:
+//|     def key_number_to_row_column(self, key_number: int) -> Tuple[int]:
 //|         """Return the row and column for the given key number.
 //|         The row is ``key_number // len(column_pins)``.
 //|         The column is ``key_number % len(column_pins)``.

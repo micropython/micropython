@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-23 08:58+0000\n"
+"PO-Revision-Date: 2022-05-10 08:16+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.12.1\n"
 
 #: main.c
 msgid ""
@@ -633,7 +633,7 @@ msgstr "Buffertlängd %d för stor. Den måste vara mindre än %d"
 msgid "Buffer length must be a multiple of 512"
 msgstr "Buffertlängd måste vara en multipel av 512"
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Bufferten måste vara en multipel av 512 byte"
 
@@ -1122,18 +1122,25 @@ msgstr "Formatet stöds inte"
 msgid "Framebuffer requires %d bytes"
 msgstr "Framebuffer kräver %d byte"
 
+#: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
+msgid ""
+"Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
+msgstr ""
+"Frekvens måste vara en av 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 "
+"eller 1008 Mhz"
+
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
-msgstr "Frekvensen måste matcha befintlig PWMOut med denna timer"
+msgstr "Frekvensen måste matcha befintlig PWMOut med den här timern"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
-msgstr "Funktion kräver lås"
+msgstr "Funktionen kräver lås"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
-msgstr "Generiskt fel"
+msgstr "Allmänt fel"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1550,6 +1557,15 @@ msgid "Microphone startup delay must be in range 0.0 to 1.0"
 msgstr ""
 "Startfördröjningen för mikrofonen måste vara i intervallet 0,0 till 1,0"
 
+#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched data size"
+msgstr "Datastorlek matchar inte"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Mismatched swap flag"
+msgstr "Felaktig swapflagga"
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "MISO- eller MOSI-pinne saknas"
@@ -1618,6 +1634,10 @@ msgstr "NVS-fel"
 #: py/qstr.c
 msgid "Name too long"
 msgstr "Name är för långt"
+
+#: shared-bindings/displayio/TileGrid.c
+msgid "New bitmap must be same size as old bitmap"
+msgstr "Ny bitmapp måste ha samma storlek som tidigare bitmapp"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -2051,7 +2071,7 @@ msgstr "RNG DeInit-fel"
 msgid "RNG Init Error"
 msgstr "RNG Init-fel"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c
 msgid "RS485 Not yet supported on this device"
 msgstr "RS485 stöds ännu inte på den här enheten"
 
@@ -3073,7 +3093,7 @@ msgstr "komplex division med noll"
 msgid "complex values not supported"
 msgstr "komplexa värden stöds inte"
 
-#: extmod/moduzlib.c shared-module/zlib/DecompIO.c
+#: extmod/moduzlib.c
 msgid "compression header"
 msgstr "komprimeringsheader"
 
@@ -3329,6 +3349,10 @@ msgstr "typsnitt måste vara 2048 bytes långt"
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formatet kräver en dict"
+
+#: shared-bindings/microcontroller/Processor.c
+msgid "frequency is read-only for this board"
+msgstr "frekvens är skrivskyddad för detta kort"
 
 #: py/objdeque.c
 msgid "full"

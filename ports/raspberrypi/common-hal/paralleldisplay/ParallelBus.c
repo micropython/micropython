@@ -103,7 +103,7 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         NULL, 0, 0, 0, // first set pin
         write, 1, 0, 1, // first sideset pin
         false, // No sideset enable
-        NULL, // jump pin
+        NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
         true, // exclusive pin usage
         true, 8, true, // TX, auto pull every 8 bits. shift left to output msb first
@@ -161,7 +161,7 @@ void common_hal_paralleldisplay_parallelbus_send(mp_obj_t obj, display_byte_type
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
 
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1);
+    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1, false);
 }
 
 void common_hal_paralleldisplay_parallelbus_end_transaction(mp_obj_t obj) {
