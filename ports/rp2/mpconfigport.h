@@ -61,6 +61,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
@@ -103,6 +104,8 @@
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
+#define MICROPY_PY_USSL                         (1)
+#define MICROPY_PY_USSL_FINALISER               (1)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
@@ -181,6 +184,12 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
+#if MICROPY_SSL_MBEDTLS
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
+#else
+#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
+#endif
+
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__rp2), (mp_obj_t)&mp_module_rp2 }, \
@@ -211,6 +220,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
     NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
     MICROPY_PORT_ROOT_POINTER_NINAW10 \
+    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
         MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
