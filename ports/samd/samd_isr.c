@@ -23,17 +23,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+#include "py/runtime.h"
+#include "py/mphal.h"
 #include "samd_soc.h"
+#include "pendsv.h"
+#include "softtimer.h"
 
 typedef void (*ISR)(void);
 
 extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 extern void Default_Handler(void);
+extern void SysTick_Handler(void);
+extern void PendSV_Handler(void);
 
 const ISR isr_vector[];
-uint32_t systick_ms;
-uint32_t systick_ms_upper;
+volatile uint32_t systick_ms;
+volatile uint32_t systick_ms_upper;
 
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
@@ -83,9 +88,14 @@ void Reset_Handler(void) {
 // }
 
 void SysTick_Handler(void) {
-    systick_ms += 1;
+    uint32_t next_tick = systick_ms + 1;
+    systick_ms = next_tick;
     if (systick_ms == 0) {
         systick_ms_upper += 1;
+    }
+
+    if (soft_timer_next == next_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
     }
 }
 
@@ -132,7 +142,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     &Default_Handler,   //  SVC_Handler
     &Default_Handler,   //  DebugMon_Handler
     0,
-    &Default_Handler,   //  PendSV_Handler
+    &PendSV_Handler,    //  PendSV_Handler
     &SysTick_Handler,   //  SysTick_Handler
     0,                  //  0 Power Manager (PM)
     0,                  //  1 System Control (SYSCTRL)
@@ -291,7 +301,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     &Default_Handler, // SVC_Handler
     &Default_Handler, // DebugMon_Handler
     0,
-    &Default_Handler, // PendSV_Handler
+    &PendSV_Handler,  //  PendSV_Handler
     &SysTick_Handler, // SysTick_Handler
     0,                //  0 Power Manager (PM)
     0,                //  1 Main Clock (MCLK)

@@ -84,15 +84,18 @@ SRC_C = \
 	machine_led.c \
 	machine_pin.c \
 	machine_uart.c \
+	machine_timer.c \
 	modmachine.c \
 	modsamd.c \
 	mphalport.c \
 	modutime.c \
 	$(BOARD_DIR)/pins.c \
+	pendsv.c \
 	pin_cap.c \
 	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
+	softtimer.c \
 	tusb_port.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_atomic.c \
 	lib/asf4/$(MCU_SERIES_LOWER)/hal/src/hal_flash.c \
@@ -142,6 +145,7 @@ SRC_QSTR += \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
+	machine_timer.c \
 	machine_uart.c \
 	modsamd.c \
 	samd_flash.c \

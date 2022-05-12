@@ -31,6 +31,7 @@
 #include "py/stackctrl.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "softtimer.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void uart_deinit_all(void);
@@ -66,6 +67,7 @@ void samd_main(void) {
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         uart_deinit_all();
         adc_deinit_all();
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

@@ -101,7 +101,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        __WFI();
+        MICROPY_EVENT_POLL_HOOK
     }
 }
 
@@ -113,7 +113,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
                 n = CFG_TUD_CDC_EP_BUFSIZE;
             }
             while (n > tud_cdc_write_available()) {
-                __WFI();
+                MICROPY_EVENT_POLL_HOOK
             }
             uint32_t n2 = tud_cdc_write(str + i, n);
             tud_cdc_write_flush();
