@@ -38,7 +38,8 @@
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #include "rom/ets_sys.h"
 #include "rom/rtc.h"
-#include "esp_clk.h"
+#include "esp_private/esp_clk.h"
+#include "esp_mac.h"
 #else
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/rom/rtc.h"

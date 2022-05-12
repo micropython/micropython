@@ -136,7 +136,11 @@ STATIC mp_obj_t esp_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");
+        //#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        //esp_netif_init();
+        //#else
         tcpip_adapter_init();
+        //#endif
         ESP_LOGD("modnetwork", "Initializing Event Loop");
         esp_exceptions(esp_event_loop_init(event_handler, NULL));
         ESP_LOGD("modnetwork", "esp_event_loop_init done");
@@ -148,8 +152,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_initialize_obj, esp_initialize);
 
 STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    tcpip_adapter_ip_info_t info;
-    tcpip_adapter_dns_info_t dns_info;
+    esp_netif_ip_info_t info;
+    esp_netif_dns_info_t dns_info;
     tcpip_adapter_get_ip_info(self->if_id, &info);
     tcpip_adapter_get_dns_info(self->if_id, DNS_MAIN, &dns_info);
     if (n_args == 1) {

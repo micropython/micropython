@@ -53,9 +53,13 @@ void uart_stdout_init(void) {
 
     uart_driver_install(MICROPY_HW_UART_REPL, rxbuf, txbuf, 0, NULL, 0);
 
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    // TODO
+    #else
     uart_isr_handle_t handle;
     uart_isr_free(MICROPY_HW_UART_REPL);
     uart_isr_register(MICROPY_HW_UART_REPL, uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
+    #endif
     uart_enable_rx_intr(MICROPY_HW_UART_REPL);
 }
 

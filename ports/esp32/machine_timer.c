@@ -36,8 +36,9 @@
 #include "mphalport.h"
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
-#include "driver/gptimer.h"
-#define timer_config_t gptimer_config_t
+//#include "driver/gptimer.h"
+//#define timer_config_t gptimer_config_t
+#include "driver/timer.h"
 #else
 #include "driver/timer.h"
 #endif
@@ -50,8 +51,8 @@
 #define TIMER_INTR_SEL TIMER_INTR_LEVEL
 #define TIMER_DIVIDER  8
 
-// TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
+// APB_CLK_FREQ is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
+#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
 

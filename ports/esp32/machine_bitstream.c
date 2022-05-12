@@ -27,6 +27,7 @@
 #include "py/mpconfig.h"
 #include "py/mphal.h"
 #include "modesp32.h"
+//#include "driver/gpio.h"
 #include "rom/gpio.h"
 #include "soc/gpio_reg.h"
 #include "soc/gpio_sig_map.h"

@@ -35,6 +35,8 @@
 #include "modmachine.h"
 
 #include "driver/spi_master.h"
+#include "soc/spi_pins.h"
+#include "soc/gpio_sig_map.h"
 
 // SPI mappings by device, naming used by IDF old/new
 // upython   | ESP32     | ESP32S2   | ESP32S3 | ESP32C3
@@ -151,7 +153,11 @@ STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     for (int i = 0; i < 3; i++) {
         if (pins[i] != -1) {
             gpio_pad_select_gpio(pins[i]);
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+            gpio_iomux_out(pins[i], SIG_GPIO_OUT_IDX, false);
+            #else
             gpio_matrix_out(pins[i], SIG_GPIO_OUT_IDX, false, false);
+            #endif
             gpio_set_direction(pins[i], GPIO_MODE_INPUT);
         }
     }
