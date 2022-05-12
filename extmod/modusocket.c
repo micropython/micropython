@@ -310,8 +310,9 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (self->nic == MP_OBJ_NULL) {
-        // not connected
-        return mp_const_none;
+        // bind to default NIC.
+        uint8_t ip[4] = {0, 0, 0, 0};
+        socket_select_nic(self, ip);
     }
 
     mp_int_t level = mp_obj_get_int(args[1]);
