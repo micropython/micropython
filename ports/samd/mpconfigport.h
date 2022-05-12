@@ -108,6 +108,7 @@
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
+    void *machine_pin_irq_objects[16]; \
     void *samd_uart_rx_buffer[SERCOM_INST_NUM]; \
     /*
     void *samd_uart_tx_buffer[SERCOM_INST_NUM]; \
@@ -150,12 +151,12 @@ static inline void restore_irq_pri(uint32_t basepri) {
 #define IRQ_PRI_PENDSV          ((1 << __NVIC_PRIO_BITS) - 1)
 
 static inline uint32_t raise_irq_pri(uint32_t pri) {
-    (void) pri;
+    (void)pri;
     return 0;
 }
 
 static inline void restore_irq_pri(uint32_t basepri) {
-    (void) basepri;
+    (void)basepri;
 }
 #endif
 

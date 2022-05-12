@@ -35,6 +35,7 @@ extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 extern void Default_Handler(void);
 extern void SysTick_Handler(void);
 extern void PendSV_Handler(void);
+extern void EIC_Handler(void);
 
 const ISR isr_vector[];
 volatile uint32_t systick_ms;
@@ -148,7 +149,7 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,                  //  1 System Control (SYSCTRL)
     0,                  //  2 Watchdog Timer (WDT)
     0,                  //  3 Real-Time Counter (RTC)
-    0,                  //  4 External Interrupt Controller (EIC)
+    &EIC_Handler,       //  4 External Interrupt Controller (EIC)
     0,                  //  5 Non-Volatile Memory Controller (NVMCTRL)
     0,                  //  6 Direct Memory Access Controller (DMAC)
     USB_Handler_wrapper,//  7 Universal Serial Bus (USB)
@@ -305,9 +306,9 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     &SysTick_Handler, // SysTick_Handler
     0,                //  0 Power Manager (PM)
     0,                //  1 Main Clock (MCLK)
-    0,                //  2 Oscillators Control (OSCCTRL): OSCCTRL_XOSCFAIL_0, OSCCTRL_XOSCRDY_0 
-    0,                //  3 Oscillators Control (OSCCTRL): OSCCTRL_XOSCFAIL_1, OSCCTRL_XOSCRDY_1 
-    0,                //  4 Oscillators Control (OSCCTRL): OSCCTRL_DFLLLOCKC, OSCCTRL_DFLLLOCKF, OSCCTRL_DFLLOOB, OSCCTRL_DFLLRCS, OSCCTRL_DFLLRDY 
+    0,                //  2 Oscillators Control (OSCCTRL): OSCCTRL_XOSCFAIL_0, OSCCTRL_XOSCRDY_0
+    0,                //  3 Oscillators Control (OSCCTRL): OSCCTRL_XOSCFAIL_1, OSCCTRL_XOSCRDY_1
+    0,                //  4 Oscillators Control (OSCCTRL): OSCCTRL_DFLLLOCKC, OSCCTRL_DFLLLOCKF, OSCCTRL_DFLLOOB, OSCCTRL_DFLLRCS, OSCCTRL_DFLLRDY
     0,                //  5 Oscillators Control (OSCCTRL): OSCCTRL_DPLLLCKF_0, OSCCTRL_DPLLLCKR_0, OSCCTRL_DPLLLDRTO_0, OSCCTRL_DPLLLTO_0
     0,                //  6 Oscillators Control (OSCCTRL): OSCCTRL_DPLLLCKF_1, OSCCTRL_DPLLLCKR_1, OSCCTRL_DPLLLDRTO_1, OSCCTRL_DPLLLTO_1
     0,                //  7 32kHz Oscillators Control (OSC32KCTRL)
@@ -315,22 +316,22 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     0,                //  9 Supply Controller (SUPC): SUPC_BOD12DET, SUPC_BOD33DET
     0,                // 10 Watchdog Timer (WDT)
     0,                // 11 Real-Time Counter (RTC)
-    0,                // 12 External Interrupt Controller (EIC): EIC_EXTINT_0
-    0,                // 13 External Interrupt Controller (EIC): EIC_EXTINT_1
-    0,                // 14 External Interrupt Controller (EIC): EIC_EXTINT_2
-    0,                // 15 External Interrupt Controller (EIC): EIC_EXTINT_3
-    0,                // 16 External Interrupt Controller (EIC): EIC_EXTINT_4
-    0,                // 17 External Interrupt Controller (EIC): EIC_EXTINT_5
-    0,                // 18 External Interrupt Controller (EIC): EIC_EXTINT_6
-    0,                // 19 External Interrupt Controller (EIC): EIC_EXTINT_7
-    0,                // 20 External Interrupt Controller (EIC): EIC_EXTINT_8
-    0,                // 21 External Interrupt Controller (EIC): EIC_EXTINT_9
-    0,                // 22 External Interrupt Controller (EIC): EIC_EXTINT_10
-    0,                // 23 External Interrupt Controller (EIC): EIC_EXTINT_11
-    0,                // 24 External Interrupt Controller (EIC): EIC_EXTINT_12
-    0,                // 25 External Interrupt Controller (EIC): EIC_EXTINT_13
-    0,                // 26 External Interrupt Controller (EIC): EIC_EXTINT_14
-    0,                // 27 External Interrupt Controller (EIC): EIC_EXTINT_15
+    &EIC_Handler,     // 12 External Interrupt Controller (EIC): EIC_EXTINT_0
+    &EIC_Handler,     // 13 External Interrupt Controller (EIC): EIC_EXTINT_1
+    &EIC_Handler,     // 14 External Interrupt Controller (EIC): EIC_EXTINT_2
+    &EIC_Handler,     // 15 External Interrupt Controller (EIC): EIC_EXTINT_3
+    &EIC_Handler,     // 16 External Interrupt Controller (EIC): EIC_EXTINT_4
+    &EIC_Handler,     // 17 External Interrupt Controller (EIC): EIC_EXTINT_5
+    &EIC_Handler,     // 18 External Interrupt Controller (EIC): EIC_EXTINT_6
+    &EIC_Handler,     // 19 External Interrupt Controller (EIC): EIC_EXTINT_7
+    &EIC_Handler,     // 20 External Interrupt Controller (EIC): EIC_EXTINT_8
+    &EIC_Handler,     // 21 External Interrupt Controller (EIC): EIC_EXTINT_9
+    &EIC_Handler,     // 22 External Interrupt Controller (EIC): EIC_EXTINT_10
+    &EIC_Handler,     // 23 External Interrupt Controller (EIC): EIC_EXTINT_11
+    &EIC_Handler,     // 24 External Interrupt Controller (EIC): EIC_EXTINT_12
+    &EIC_Handler,     // 25 External Interrupt Controller (EIC): EIC_EXTINT_13
+    &EIC_Handler,     // 26 External Interrupt Controller (EIC): EIC_EXTINT_14
+    &EIC_Handler,     // 27 External Interrupt Controller (EIC): EIC_EXTINT_15
     0,                // 28 Frequency Meter (FREQM)
     0,                // 29 Non-Volatile Memory Controller (NVMCTRL): NVMCTRL_0 - _7
     0,                // 30 Non-Volatile Memory Controller (NVMCTRL): NVMCTRL_8 - _10

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016-2021 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath (pin.irq)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +29,14 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "shared/runtime/mpirq.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 #include "samd_soc.h"
 #include "pins.h" // boards/<BOARD>/
+#include "pin_cap.h"
+#include "sam.h"
+#include "utils.h"
 
 // ASF4 (MCU package specific pin defs in 'boards')
 #include "hal_gpio.h"
@@ -45,18 +50,17 @@
 
 #define GPIO_STRENGTH_2MA (0)
 #define GPIO_STRENGTH_8MA (1)
+#define GPIO_IRQ_EDGE_RISE (1)
+#define GPIO_IRQ_EDGE_FALL (2)
 
-// asf4 hpl_gpio.h gpio_pull_mode
-
-/*
 typedef struct _machine_pin_irq_obj_t {
     mp_irq_obj_t base;
     uint32_t flags;
     uint32_t trigger;
+    uint8_t pin_id;
 } machine_pin_irq_obj_t;
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
-*/
 
 uint32_t machine_pin_open_drain_mask[4];
 
@@ -65,7 +69,7 @@ uint32_t machine_pin_open_drain_mask[4];
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", self->id);
+    mp_printf(print, "GPIO P%c%02u", "ABCD"[self->id / 32], self->id % 32);
 }
 
 STATIC void pin_validate_drive(bool strength) {
@@ -257,6 +261,142 @@ STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_drive_obj, 1, 2, machine_pin_drive);
 
+
+// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
+STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = 3} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // Get the IRQ object.
+    uint8_t eic_id = is_eic(self->id);
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
+    if (irq != NULL && irq->pin_id != self->id) {
+        mp_raise_ValueError(MP_ERROR_TEXT("IRQ already used"));
+    }
+
+    // Allocate the IRQ object if it doesn't already exist.
+    if (irq == NULL) {
+        irq = m_new_obj(machine_pin_irq_obj_t);
+        irq->base.base.type = &mp_irq_type;
+        irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
+        irq->base.parent = MP_OBJ_FROM_PTR(self);
+        irq->base.handler = mp_const_none;
+        irq->base.ishard = false;
+        irq->pin_id = 0xff;
+        MP_STATE_PORT(machine_pin_irq_objects[eic_id]) = irq;
+    }
+    // (Re-)configure the irq.
+    if (n_args > 1 || kw_args->used != 0) {
+
+        // set the mux config of the pin.
+        pin_cap_set_mux(self->id, 0);
+
+        // Configure IRQ.
+        #if defined(MCU_SAMD21)
+
+        uint32_t irq_num = 4;
+        // Disable all IRQs from the affected source while data is updated.
+        NVIC_DisableIRQ(irq_num);
+        // Disable EIC
+        EIC->CTRL.bit.ENABLE = 0;
+        while (EIC->STATUS.bit.SYNCBUSY != 0) {
+        }
+        EIC->INTENCLR.reg = (1 << eic_id);
+        // Enable the clocks
+        PM->APBAMASK.bit.EIC_ |= 1;
+        GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | EIC_GCLK_ID;
+
+        #elif defined(MCU_SAMD51)
+
+        uint32_t irq_num = eic_id + 12;
+        // Disable all IRQs from the affected source while data is updated.
+        NVIC_DisableIRQ(irq_num);
+        // Disable EIC
+        EIC->CTRLA.bit.ENABLE = 0;
+        while (EIC->SYNCBUSY.bit.ENABLE != 0) {
+        }
+        EIC->INTENCLR.reg = (1 << eic_id);
+        // Enable the clocks
+        MCLK->APBAMASK.bit.EIC_ |= 1;
+        GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK4;
+
+        #endif
+        // Clear the pending interrupts flag
+        EIC->INTENCLR.reg = (1 << eic_id);
+
+        // Update IRQ data.
+        irq->base.handler = args[ARG_handler].u_obj;
+        irq->base.ishard = args[ARG_hard].u_bool;
+        irq->flags = 0;
+        irq->trigger = args[ARG_trigger].u_int;
+        irq->pin_id = self->id;
+
+        // Enable IRQ if a handler is given.
+        if (args[ARG_handler].u_obj != mp_const_none) {
+            // Set EIC channel mode
+            EIC->CONFIG[eic_id / 8].reg |= irq->trigger << ((eic_id % 8) * 4);
+            EIC->INTENSET.reg = (1 << eic_id);
+            EIC->INTFLAG.reg |= (1 << eic_id);
+        }
+
+        // Enable EIC (again)
+        #if defined(MCU_SAMD21)
+        EIC->CTRL.bit.ENABLE = 1;
+        while (EIC->STATUS.bit.SYNCBUSY != 0) {
+        }
+        #elif defined(MCU_SAMD51)
+        EIC->CTRLA.bit.ENABLE = 1;
+        while (EIC->SYNCBUSY.bit.ENABLE != 0) {
+        }
+        #endif
+        // Enable interrupt again
+        NVIC_EnableIRQ(irq_num);
+    }
+    return MP_OBJ_FROM_PTR(irq);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+
+void pin_irq_deinit_all(void) {
+
+    EIC->INTENCLR.reg = 0xffff;  // Disable all interrupts from the EIC.
+    for (int i = 0; i < 16; i++) { // Clear all irq object pointers
+        MP_STATE_PORT(machine_pin_irq_objects[i]) = NULL;
+    }
+    // Disable all irq's at the NVIC controller
+    #if defined(MCU_SAMD21)
+    NVIC_DisableIRQ(4);
+    #elif defined(MCU_SAMD51)
+    for (int i = 12; i < 20; i++) {
+        NVIC_DisableIRQ(i);
+    }
+    #endif
+}
+
+// Common EIC handler for all events.
+void EIC_Handler() {
+    uint32_t mask = 1;
+    uint32_t isr = EIC->INTFLAG.reg;
+    for (int eic_id = 0; eic_id < 16; eic_id++, mask <<= 1) {
+        // Did the ISR fire?
+        if (isr & mask) {
+            EIC->INTFLAG.reg |= mask; // clear the ISR flag
+            machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
+            if (irq != NULL) {
+                irq->flags = irq->trigger;
+                mp_irq_handler(&irq->base);
+                break;
+            }
+        }
+    }
+}
+
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
@@ -268,6 +408,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&machine_pin_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_drive), MP_ROM_PTR(&machine_pin_drive_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
 
 
     // { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
@@ -282,8 +423,8 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(GPIO_PULL_DOWN) },
     { MP_ROM_QSTR(MP_QSTR_LOW_POWER), MP_ROM_INT(GPIO_STRENGTH_2MA) },
     { MP_ROM_QSTR(MP_QSTR_HIGH_POWER), MP_ROM_INT(GPIO_STRENGTH_8MA) },
-    // { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
-    // { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(GPIO_IRQ_EDGE_RISE) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(GPIO_IRQ_EDGE_FALL) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
@@ -317,24 +458,39 @@ const mp_obj_type_t machine_pin_type = {
     .locals_dict = (mp_obj_t)&machine_pin_locals_dict,
 };
 
-/*
+static uint8_t find_eic_id(int pin) {
+    for (int eic_id = 0; eic_id < 16; eic_id++) {
+        machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
+        if (irq != NULL && irq->pin_id == pin) {
+            return eic_id;
+        }
+    }
+    return 0xff;
+}
+
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
-    gpio_set_irq_enabled(self->id, GPIO_IRQ_ALL, false);
-    irq->flags = 0;
-    irq->trigger = new_trigger;
-    gpio_set_irq_enabled(self->id, new_trigger, true);
+    uint8_t eic_id = find_eic_id(self->id);
+    if (eic_id != 0xff) {
+        machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
+        EIC->INTENCLR.reg |= (1 << eic_id);
+        irq->flags = 0;
+        irq->trigger = new_trigger;
+        EIC->INTENSET.reg |= (1 << eic_id);
+    }
     return 0;
 }
 
 STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
-    if (info_type == MP_IRQ_INFO_FLAGS) {
-        return irq->flags;
-    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
-        return irq->trigger;
+    uint8_t eic_id = find_eic_id(self->id);
+    if (eic_id != 0xff) {
+        machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
+        if (info_type == MP_IRQ_INFO_FLAGS) {
+            return irq->flags;
+        } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+            return irq->trigger;
+        }
     }
     return 0;
 }
@@ -343,7 +499,6 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
-*/
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &machine_pin_type)) {
