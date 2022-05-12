@@ -88,7 +88,7 @@ int vprintf_null(const char *format, va_list ap) {
 }
 
 void mp_task(void *pvParameter) {
-    volatile uint32_t sp = (uint32_t)get_sp();
+    volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
     #if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_SIZE / sizeof(uintptr_t));
     #endif

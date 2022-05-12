@@ -31,6 +31,7 @@
 
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
+#include "soc/gpio_struct.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
