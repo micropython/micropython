@@ -3,8 +3,7 @@
 
 #include "components/driver/include/driver/gpio.h"
 
-void board_init(void) {
-    
+void board_init(void) {    
 }
 
 bool board_requests_safe_mode(void) {
