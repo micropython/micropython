@@ -30,6 +30,41 @@ typedef void * system_event_t;
 
 #include "esp_event.h"
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+#define tcpip_adapter_init         esp_netif_init
+#define tcpip_adapter_dhcpc_stop   esp_netif_dhcpc_stop
+#define tcpip_adapter_set_ip_info  esp_netif_set_ip_info
+#define tcpip_adapter_set_dns_info esp_netif_set_dns_info
+#define tcpip_adapter_dhcps_start  esp_netif_dhcps_start
+#define tcpip_adapter_dhcps_stop   esp_netif_dhcps_stop
+
+#define ESP_ERR_TCPIP_ADAPTER_INVALID_PARAMS       ESP_ERR_ESP_NETIF_INVALID_PARAMS
+#define ESP_ERR_TCPIP_ADAPTER_IF_NOT_READY         ESP_ERR_ESP_NETIF_IF_NOT_READY
+#define ESP_ERR_TCPIP_ADAPTER_DHCPC_START_FAILED   ESP_ERR_ESP_NETIF_DHCPC_START_FAILED
+#define ESP_ERR_TCPIP_ADAPTER_DHCP_ALREADY_STOPPED ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED
+#define ESP_ERR_TCPIP_ADAPTER_NO_MEM               ESP_ERR_ESP_NETIF_NO_MEM
+
+#define SYSTEM_EVENT_STA_START        WIFI_EVENT_STA_START
+#define SYSTEM_EVENT_STA_CONNECTED    WIFI_EVENT_STA_CONNECTED
+#define SYSTEM_EVENT_STA_DISCONNECTED WIFI_EVENT_STA_DISCONNECTED
+#define SYSTEM_EVENT_STA_GOT_IP       IP_EVENT_STA_GOT_IP
+#define SYSTEM_EVENT_GOT_IP6          IP_EVENT_GOT_IP6
+
+#define SYSTEM_EVENT_ETH_START        WIFI_EVENT_STA_START
+#define SYSTEM_EVENT_ETH_STOP         WIFI_EVENT_STA_STOP
+#define SYSTEM_EVENT_ETH_CONNECTED    WIFI_EVENT_STA_CONNECTED
+#define SYSTEM_EVENT_ETH_DISCONNECTED WIFI_EVENT_STA_DISCONNECTED
+#define SYSTEM_EVENT_ETH_GOT_IP       IP_EVENT_ETH_GOT_IP
+
+#define tcpip_adapter_get_ip_info  esp_netif_get_ip_info
+#define tcpip_adapter_set_ip_info  esp_netif_set_ip_info
+#define tcpip_adapter_get_dns_info esp_netif_get_dns_info
+#define tcpip_adapter_set_dns_info esp_netif_set_dns_info
+#define tcpip_adapter_dhcpc_start  esp_netif_dhcpc_start
+#define tcpip_adapter_dhcpc_stop   esp_netif_dhcpc_stop
+
+#endif
+
 enum { PHY_LAN8720, PHY_IP101, PHY_RTL8201, PHY_DP83848, PHY_KSZ8041 };
 enum { ETH_INITIALIZED, ETH_STARTED, ETH_STOPPED, ETH_CONNECTED, ETH_DISCONNECTED, ETH_GOT_IP };
 

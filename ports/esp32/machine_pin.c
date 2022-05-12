@@ -29,7 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "driver/rtc_io.h"
 #include "soc/gpio_struct.h"
 

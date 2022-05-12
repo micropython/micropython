@@ -121,6 +121,7 @@ set(IDF_COMPONENTS
     soc
     spi_flash
     #tcpip_adapter
+    esp_netif
     ulp
     vfs
     xtensa
