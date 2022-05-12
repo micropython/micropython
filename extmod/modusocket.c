@@ -451,7 +451,8 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
     }
     if (self->nic == MP_OBJ_NULL) {
         if (request == MP_STREAM_POLL) {
-            return MP_STREAM_POLL_NVAL;
+            // New sockets are writable and not connected.
+            return MP_STREAM_POLL_HUP | MP_STREAM_POLL_WR;
         }
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
