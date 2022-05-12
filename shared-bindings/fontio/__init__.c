@@ -35,6 +35,12 @@
 
 //| """Core font related data structures"""
 //|
+//| .. note:: This library is intended only for low-level usage.  For working with
+//|     fonts in CircuitPython see the
+//|     `adafruit_bitmap_font library <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_.
+//|     For infromation on creating custom fonts for use in CircuitPython, see
+//|     `this Learn guide <https://learn.adafruit.com/custom-fonts-for-pyportal-circuitpython-display>`_
+//|
 
 STATIC const mp_rom_map_elem_t fontio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_fontio) },
