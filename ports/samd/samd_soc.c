@@ -89,8 +89,8 @@ void init_us_counter(void) {
     }
     #elif defined(MCU_SAMD51)
 
-    // Peripheral channel 9 is driven by GCLK3, 16 MHz.
-    GCLK->PCHCTRL[TC0_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
+    // Peripheral channel 9 is driven by GCLK4, 16 MHz.
+    GCLK->PCHCTRL[TC0_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK4 | GCLK_PCHCTRL_CHEN;
 
     MCLK->APBAMASK.bit.TC0_ = 1; // Enable TC0 clock
     MCLK->APBAMASK.bit.TC1_ = 1; // Enable TC1 clock
