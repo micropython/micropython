@@ -62,6 +62,7 @@ typedef void * system_event_t;
 #define tcpip_adapter_set_dns_info esp_netif_set_dns_info
 #define tcpip_adapter_dhcpc_start  esp_netif_dhcpc_start
 #define tcpip_adapter_dhcpc_stop   esp_netif_dhcpc_stop
+#define tcpip_adapter_get_hostname esp_netif_get_hostname
 
 #endif
 

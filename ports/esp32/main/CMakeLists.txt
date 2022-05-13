@@ -120,8 +120,6 @@ set(IDF_COMPONENTS
     sdmmc
     soc
     spi_flash
-    #tcpip_adapter
-    esp_netif
     ulp
     vfs
     xtensa
@@ -129,6 +127,8 @@ set(IDF_COMPONENTS
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 1 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
     list(APPEND IDF_COMPONENTS esp_netif)
+else()
+    list(APPEND IDF_COMPONENTS tcpip_adapter)
 endif()
 
 if(IDF_VERSION_MINOR GREATER_EQUAL 2 OR IDF_VERSION_MAJOR GREATER_EQUAL 5)
