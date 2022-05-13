@@ -283,10 +283,6 @@ void reset_port(void) {
     watchdog_reset();
     #endif
 
-    #if CIRCUITPY_BLEIO
-    bleio_reset();
-    #endif
-
     #if CIRCUITPY_WIFI
     wifi_reset();
     #endif

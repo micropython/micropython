@@ -31,6 +31,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "py/gc.h"
 #include "py/misc.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
@@ -42,6 +43,17 @@
 void ble_event_reset(void) {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_event_handler_entries) = NULL;
+}
+
+void ble_event_remove_heap_handlers(void) {
+    ble_event_handler_entry_t *it = MP_STATE_VM(ble_event_handler_entries);
+    while (it != NULL) {
+        // If the param is on the heap, then delete the handler.
+        if (HEAP_PTR(it->param)) {
+            ble_event_remove_handler(it->func, it->param);
+        }
+        it = it->next;
+    }
 }
 
 void ble_event_add_handler_entry(ble_event_handler_entry_t *entry,
