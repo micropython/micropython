@@ -75,6 +75,7 @@ extension_by_board = {
     "espressif_esp32c3_devkitm_1_n4": BIN,
     "lilygo_ttgo_t-01c3": BIN,
     "microdev_micro_c3": BIN,
+    "lilygo_ttgo_t-oi-plus": BIN,
     # broadcom
     "raspberrypi_zero": KERNEL_IMG,
     "raspberrypi_zero_w": KERNEL_IMG,
