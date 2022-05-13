@@ -82,6 +82,7 @@ void mp_hal_wake_main_task_from_isr(void);
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 #include "rom/ets_sys.h"
 //#include "esp_rom_gpio.h"
+#include "rom/gpio.h"
 #define gpio_pad_select_gpio esp_rom_gpio_pad_select_gpio
 #define GPIO_PIN_INTR_POSEDGE GPIO_INTR_POSEDGE
 #define GPIO_PIN_INTR_NEGEDGE GPIO_INTR_NEGEDGE

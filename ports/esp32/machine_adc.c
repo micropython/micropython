@@ -29,7 +29,8 @@
 
 #include "esp_log.h"
 
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "driver/adc.h"
 
 #include "py/runtime.h"

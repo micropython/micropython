@@ -33,7 +33,8 @@
 
 #if MICROPY_PY_MACHINE_DAC
 
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "driver/dac.h"
 
 typedef struct _mdac_obj_t {

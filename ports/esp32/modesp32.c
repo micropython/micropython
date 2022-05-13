@@ -30,7 +30,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include "soc/rtc_cntl_reg.h"
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
