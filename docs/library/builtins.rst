@@ -214,7 +214,7 @@ Exceptions
 .. exception:: ReloadException
 
    `ReloadException` is used internally to deal with soft restarts.
-   
+
    Not a part of the CPython standard library
 
 .. exception:: StopAsyncIteration
