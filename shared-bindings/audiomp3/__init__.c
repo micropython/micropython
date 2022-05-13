@@ -31,7 +31,12 @@
 
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 
-//| """Support for MP3-compressed audio files"""
+//| """Support for MP3-compressed audio files
+//|
+//| For more infomration about working with MP3 files in CircuitPython,
+//| see `this CircuitPython Essentials Learn guide page
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-mp3-audio>`_.
+//| """
 //|
 
 STATIC const mp_rom_map_elem_t audiomp3_module_globals_table[] = {
