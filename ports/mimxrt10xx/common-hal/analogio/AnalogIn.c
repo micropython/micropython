@@ -42,7 +42,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     adc_config_t config = {0};
 
     if (pin->adc == NULL) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
 
     ADC_GetDefaultConfig(&config);

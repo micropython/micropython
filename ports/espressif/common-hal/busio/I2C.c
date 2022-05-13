@@ -42,7 +42,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     //
     // 46 is also input-only so it'll never work.
     if (scl->number == 45 || scl->number == 46 || sda->number == 45 || sda->number == 46) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS

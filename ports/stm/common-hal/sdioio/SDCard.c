@@ -115,7 +115,7 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
     if (sdio_taken) {
         mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
     } else {
-        mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_SDIO);
+        raise_ValueError_invalid_pin();
     }
 }
 

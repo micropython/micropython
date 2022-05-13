@@ -101,9 +101,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bytes);
 
     bool have_tx = tx != NULL;
     bool have_rx = rx != NULL;

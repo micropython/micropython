@@ -129,14 +129,10 @@ STATIC mp_obj_t sdioio_sdcard_configure(size_t n_args, const mp_obj_t *pos_args,
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t frequency = args[ARG_frequency].u_int;
-    if (frequency < 0) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_baudrate);
-    }
-
+    mp_int_t frequency = mp_arg_validate_int_min(args[ARG_frequency].u_int, 0, MP_QSTR_frequency);
     uint8_t width = args[ARG_width].u_int;
     if (width != 0 && width != 1 && width != 4) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+        mp_arg_error_invalid(MP_QSTR_width);
     }
 
     if (!common_hal_sdioio_sdcard_configure(self, frequency, width)) {

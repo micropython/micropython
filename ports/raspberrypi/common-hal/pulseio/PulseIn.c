@@ -49,7 +49,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
 
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
+        m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->pin = pin->number;
     self->maxlen = maxlen;
@@ -237,7 +237,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self,
         index += self->len;
     }
     if (index < 0 || index >= self->len) {
-        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     return value;

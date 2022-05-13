@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/busio/I2C.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl,
     const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
@@ -40,7 +41,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     }
 
     if (scl->number != PIN_I2C0_BCK || sda->number != PIN_I2C0_BDT) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     claim_pin(scl);

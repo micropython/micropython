@@ -40,9 +40,8 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         mp_obj_t *tuple_items;
         mp_obj_tuple_get(items[i], &tuple_len, &tuple_items);
 
-        if (tuple_len != 2) {
-            mp_raise_ValueError_varg(translate("%q must be a tuple of length 2"), MP_QSTR_point);
-        }
+        mp_arg_validate_length(tuple_len, 2, MP_QSTR_point);
+
         mp_int_t x;
         mp_int_t y;
         if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
@@ -103,7 +102,7 @@ void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t p
 
 void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio_event_t notification) {
     if (self->on_dirty.obj != NULL) {
-        mp_raise_TypeError(translate("polygon can only be registered in one parent"));
+        mp_raise_TypeError(translate("can only have one parent"));
     }
     self->on_dirty = notification;
 }

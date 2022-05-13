@@ -117,7 +117,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->timeout_ms = timeout * 1000;
 
     if (self->character_bits != 7 && self->character_bits != 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
+        mp_arg_validate_int_range(self->character_bits, 7, 8, MP_QSTR_bits);
     }
 
     DBGPrintf(&mp_plat_print, "uart_construct: tx:%p rx:%p rts:%p cts:%p rs485:%p\n", tx, rx, rts, cts, rs485_dir);
@@ -350,7 +350,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
         if (!self->ringbuf) {
             LPUART_Deinit(self->uart);
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            m_malloc_fail(receiver_buffer_size);
         }
 
         LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);

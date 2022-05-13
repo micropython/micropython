@@ -164,12 +164,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits != 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
+    mp_arg_validate_int(bits, 8, MP_QSTR_bits);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_ValueError(translate("RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
     // Find a free UART peripheral.
@@ -189,9 +187,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
+    mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     if (parity == BUSIO_UART_PARITY_ODD) {
         mp_raise_ValueError(translate("Odd parity is not supported"));
@@ -234,7 +230,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             // (This is a macro.)
         } else if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
             nrfx_uarte_uninit(self->uarte);
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            m_malloc_fail(receiver_buffer_size);
         }
 
         self->rx_pin_number = rx->number;

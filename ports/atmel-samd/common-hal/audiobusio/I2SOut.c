@@ -255,7 +255,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     }
     uint8_t channel_count = audiosample_channel_count(sample);
     if (channel_count > 2) {
-        mp_raise_ValueError(translate("Too many channels in sample."));
+        mp_raise_ValueError(translate("Too many channels in sample"));
     }
     #ifdef SAMD21
     uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_TX) | I2S_SERCTRL_TXSAME_SAME | I2S_SERCTRL_EXTEND_MSBIT | I2S_SERCTRL_TXDEFAULT_ONE | I2S_SERCTRL_SLOTADJ_LEFT;

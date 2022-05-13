@@ -193,8 +193,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     self->inbuf = m_malloc(self->inbuf_length, false);
     if (self->inbuf == NULL) {
         common_hal_audiomp3_mp3file_deinit(self);
-        mp_raise_msg(&mp_type_MemoryError,
-            translate("Couldn't allocate input buffer"));
+        m_malloc_fail(self->inbuf_length);
     }
     self->decoder = MP3InitDecoder();
     if (self->decoder == NULL) {
@@ -214,15 +213,13 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
         self->buffers[0] = m_malloc(MAX_BUFFER_LEN, false);
         if (self->buffers[0] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate first buffer"));
+            m_malloc_fail(MAX_BUFFER_LEN);
         }
 
         self->buffers[1] = m_malloc(MAX_BUFFER_LEN, false);
         if (self->buffers[1] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
-            mp_raise_msg(&mp_type_MemoryError,
-                translate("Couldn't allocate second buffer"));
+            m_malloc_fail(MAX_BUFFER_LEN);
         }
     }
 

@@ -34,6 +34,7 @@
 
 #include "samd/sercom.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate.h"
 
 #include "common-hal/busio/__init__.h"
@@ -76,7 +77,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->sda_pin = NO_PIN;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
@@ -122,15 +123,12 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     // The maximum frequency divisor gives a clock rate of around 48MHz/2/255
     // but set_baudrate does not diagnose this problem. (This is not the
     // exact cutoff, but no frequency well under 100kHz is available)
-    if (frequency < 95000) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
-    }
-
-    if (i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
+    if (frequency < 95000 &&
+        i2c_m_sync_set_baudrate(&self->i2c_desc, 0, frequency / 1000) != ERR_NONE) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
         common_hal_busio_i2c_deinit(self);
-        mp_raise_ValueError(translate("Unsupported baudrate"));
+        mp_raise_ValueError(translate("Unsupported frequency"));
     }
 
     self->sda_pin = sda->number;

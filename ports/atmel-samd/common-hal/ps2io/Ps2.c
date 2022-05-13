@@ -79,7 +79,7 @@ static void resume_interrupt(ps2io_ps2_obj_t *self) {
     disable_interrupt(self);
 
     self->state = STATE_IDLE;
-    gpio_set_pin_function(self->clk_pin, GPIO_PIN_FUNCTION_A);
+    gpio_set_pin_function(self->clock_pin, GPIO_PIN_FUNCTION_A);
     uint32_t mask = 1 << self->channel;
     EIC->INTFLAG.reg = mask << EIC_INTFLAG_EXTINT_Pos;
     EIC->INTENSET.reg = mask << EIC_INTENSET_EXTINT_Pos;
@@ -90,14 +90,14 @@ static void resume_interrupt(ps2io_ps2_obj_t *self) {
 static void clk_hi(ps2io_ps2_obj_t *self) {
     // External pull-up
     // Must set pull after setting direction.
-    gpio_set_pin_direction(self->clk_pin, GPIO_DIRECTION_IN);
-    gpio_set_pin_pull_mode(self->clk_pin, GPIO_PULL_OFF);
+    gpio_set_pin_direction(self->clock_pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(self->clock_pin, GPIO_PULL_OFF);
 }
 
 static bool wait_clk_lo(ps2io_ps2_obj_t *self, uint32_t us) {
     clk_hi(self);
     common_hal_mcu_delay_us(1);
-    while (gpio_get_pin_level(self->clk_pin) && us) {
+    while (gpio_get_pin_level(self->clock_pin) && us) {
         --us;
         common_hal_mcu_delay_us(1);
     }
@@ -107,7 +107,7 @@ static bool wait_clk_lo(ps2io_ps2_obj_t *self, uint32_t us) {
 static bool wait_clk_hi(ps2io_ps2_obj_t *self, uint32_t us) {
     clk_hi(self);
     common_hal_mcu_delay_us(1);
-    while (!gpio_get_pin_level(self->clk_pin) && us) {
+    while (!gpio_get_pin_level(self->clock_pin) && us) {
         --us;
         common_hal_mcu_delay_us(1);
     }
@@ -115,9 +115,9 @@ static bool wait_clk_hi(ps2io_ps2_obj_t *self, uint32_t us) {
 }
 
 static void clk_lo(ps2io_ps2_obj_t *self) {
-    gpio_set_pin_pull_mode(self->clk_pin, GPIO_PULL_OFF);
-    gpio_set_pin_direction(self->clk_pin, GPIO_DIRECTION_OUT);
-    gpio_set_pin_level(self->clk_pin, 0);
+    gpio_set_pin_pull_mode(self->clock_pin, GPIO_PULL_OFF);
+    gpio_set_pin_direction(self->clock_pin, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(self->clock_pin, 0);
 }
 
 static void data_hi(ps2io_ps2_obj_t *self) {
@@ -244,19 +244,19 @@ void ps2_interrupt_handler(uint8_t channel) {
 }
 
 void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
-    const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *clk_pin) {
-    if (!clk_pin->has_extint) {
-        mp_raise_RuntimeError(translate("No hardware support on clk pin"));
+    const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *clock_pin) {
+    if (!clock_pin->has_extint) {
+        mp_arg_error_invalid(MP_QSTR_clock_pin);
     }
-    if (eic_get_enable() && !eic_channel_free(clk_pin->extint_channel)) {
+    if (eic_get_enable() && !eic_channel_free(clock_pin->extint_channel)) {
         mp_raise_RuntimeError(translate("EXTINT channel already in use"));
     }
 
     clk_hi(self);
     data_hi(self);
 
-    self->channel = clk_pin->extint_channel;
-    self->clk_pin = clk_pin->number;
+    self->channel = clock_pin->extint_channel;
+    self->clock_pin = clock_pin->number;
     self->data_pin = data_pin->number;
     self->state = STATE_IDLE;
     self->bufcount = 0;
@@ -264,19 +264,19 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
     self->bufposw = 0;
     self->waiting_cmd_response = false;
 
-    set_eic_channel_data(clk_pin->extint_channel, (void *)self);
+    set_eic_channel_data(clock_pin->extint_channel, (void *)self);
 
     // Check to see if the EIC is enabled and start it up if its not.'
     if (eic_get_enable() == 0) {
         turn_on_external_interrupt_controller();
     }
 
-    gpio_set_pin_function(clk_pin->number, GPIO_PIN_FUNCTION_A);
+    gpio_set_pin_function(clock_pin->number, GPIO_PIN_FUNCTION_A);
     gpio_set_pin_function(data_pin->number, GPIO_PIN_FUNCTION_A);
 
     turn_on_cpu_interrupt(self->channel);
 
-    claim_pin(clk_pin);
+    claim_pin(clock_pin);
     claim_pin(data_pin);
 
     // Set config will enable the EIC.
@@ -284,7 +284,7 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
 }
 
 bool common_hal_ps2io_ps2_deinited(ps2io_ps2_obj_t *self) {
-    return self->clk_pin == NO_PIN;
+    return self->clock_pin == NO_PIN;
 }
 
 void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
@@ -293,9 +293,9 @@ void common_hal_ps2io_ps2_deinit(ps2io_ps2_obj_t *self) {
     }
     set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->channel);
-    reset_pin_number(self->clk_pin);
+    reset_pin_number(self->clock_pin);
     reset_pin_number(self->data_pin);
-    self->clk_pin = NO_PIN;
+    self->clock_pin = NO_PIN;
     self->data_pin = NO_PIN;
 }
 

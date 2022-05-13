@@ -41,6 +41,7 @@
 #include "samd/pins.h"
 #include "samd/timers.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
@@ -152,7 +153,7 @@ void pulsein_reset() {
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     if (!pin->has_extint) {
-        mp_raise_RuntimeError(translate("No hardware support on pin"));
+        raise_ValueError_invalid_pin();
     }
     if (eic_get_enable() && !eic_channel_free(pin->extint_channel)) {
         mp_raise_RuntimeError(translate("EXTINT channel already in use"));
@@ -160,7 +161,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
 
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
+        m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->channel = pin->extint_channel;
     self->pin = pin->number;
@@ -344,15 +345,14 @@ bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
     return (EIC->INTENSET.reg & (mask << EIC_INTENSET_EXTINT_Pos)) == 0;
 }
 
-uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self,
-    int16_t index) {
+uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_t index) {
     common_hal_mcu_disable_interrupts();
     if (index < 0) {
         index += self->len;
     }
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
-        mp_raise_IndexError_varg(translate("%q index out of range"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

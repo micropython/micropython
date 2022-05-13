@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/i2cperipheral/I2CPeripheral.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "common-hal/busio/I2C.h"
 
 #include "shared/runtime/interrupt_char.h"
@@ -42,7 +43,7 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
     uint32_t sda_pinmux, scl_pinmux;
     Sercom *sercom = samd_i2c_get_sercom(scl, sda, &sercom_index, &sda_pinmux, &scl_pinmux);
     if (sercom == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     self->sercom = sercom;
 

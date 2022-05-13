@@ -88,7 +88,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     uint16_t maxlen, bool idle_state) {
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
     if (self->buffer == NULL) {
-        mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), maxlen * sizeof(uint16_t));
+        m_malloc_fail(maxlen * sizeof(uint16_t));
     }
     self->pin = pin;
     self->maxlen = maxlen;

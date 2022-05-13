@@ -51,7 +51,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
 
     // No ADC function on pin
     if (pin->adc_unit == 0x00) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
     // TODO: add ADC traits to structure?
 

@@ -58,7 +58,7 @@ STATIC USART_TypeDef *assign_uart_or_throw(busio_uart_obj_t *self, bool pin_eval
         if (uart_taken) {
             mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
-            mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_UART);
+            raise_ValueError_invalid_pin();
         }
     }
 }
@@ -164,12 +164,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     // Other errors
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
-    if (bits != 8 && bits != 9) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
+    mp_arg_validate_length_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
+    mp_arg_validate_int_range(bits, 8, 9, MP_QSTR_bits);
+
     if (USARTx == NULL) {  // this can only be hit if the periph file is wrong
         mp_raise_ValueError(translate("Internal define error"));
     }
@@ -211,7 +208,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     self->handle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART Init Error"));
+        mp_raise_ValueError(translate("UART init error"));
 
     }
 
@@ -221,7 +218,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             self->ringbuf = (ringbuf_t) { receiver_buffer, receiver_buffer_size };
         } else {
             if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-                mp_raise_ValueError(translate("UART Buffer allocation error"));
+                m_malloc_fail(receiver_buffer_size);
             }
         }
         common_hal_mcu_pin_claim(rx);
@@ -408,11 +405,11 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 
     // Otherwise de-init and set new rate
     if (HAL_UART_DeInit(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART De-init error"));
+        mp_raise_ValueError(translate("UART de-init error"));
     }
     self->handle.Init.BaudRate = baudrate;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART Re-init error"));
+        mp_raise_ValueError(translate("UART re-init error"));
     }
 
     self->baudrate = baudrate;

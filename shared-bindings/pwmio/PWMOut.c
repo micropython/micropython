@@ -41,10 +41,10 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
         case PWMOUT_OK:
             break;
         case PWMOUT_INVALID_PIN:
-            mp_raise_ValueError(translate("Invalid pin"));
+            raise_ValueError_invalid_pin();
             break;
         case PWMOUT_INVALID_FREQUENCY:
-            mp_raise_ValueError(translate("Invalid PWM frequency"));
+            mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_INVALID_FREQUENCY_ON_PIN:
             mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
@@ -212,9 +212,9 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_duty_cycle(mp_obj_t self_in, mp_obj_t duty_
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     mp_int_t duty = mp_obj_get_int(duty_cycle);
-    if (duty < 0 || duty > 0xffff) {
-        mp_raise_ValueError(translate("PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"));
-    }
+
+    mp_arg_validate_int_range(duty, 0, 0xffff, MP_QSTR_duty_cycle);
+
     common_hal_pwmio_pwmout_set_duty_cycle(self, duty);
     return mp_const_none;
 }
@@ -251,7 +251,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     }
     mp_int_t freq = mp_obj_get_int(frequency);
     if (freq == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     common_hal_pwmio_pwmout_set_frequency(self, freq);
     return mp_const_none;

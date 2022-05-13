@@ -113,10 +113,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    if (args[ARG_bits].u_int < 5 || args[ARG_bits].u_int > 9) {
-        mp_raise_ValueError(translate("bits must be in range 5 to 9"));
-    }
-    uint8_t bits = args[ARG_bits].u_int;
+    uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
 
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
@@ -125,10 +122,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
         parity = BUSIO_UART_PARITY_ODD;
     }
 
-    uint8_t stop = args[ARG_stop].u_int;
-    if (stop != 1 && stop != 2) {
-        mp_raise_ValueError(translate("stop must be 1 or 2"));
-    }
+    uint8_t stop = (uint8_t)mp_arg_validate_int_range(args[ARG_stop].u_int, 1, 2, MP_QSTR_stop);
 
     mp_float_t timeout = mp_obj_get_float(args[ARG_timeout].u_obj);
     validate_timeout(timeout);

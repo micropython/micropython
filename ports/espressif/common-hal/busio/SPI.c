@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "driver/spi_common_internal.h"
 
@@ -101,7 +102,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     set_spi_config(self, 250000, 0, 0, 8);
