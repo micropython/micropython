@@ -42,6 +42,12 @@
 
 STATIC const mp_obj_type_t socket_type;
 
+STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "<socket fd=%d timeout=%d domain=%d type=%d proto=%d bound=%b>",
+        self->fileno, self->timeout, self->domain, self->type, self->proto, self->bound);
+}
+
 // constructor socket(family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None)
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
@@ -469,6 +475,7 @@ STATIC const mp_stream_p_t socket_stream_p = {
 STATIC const mp_obj_type_t socket_type = {
     { &mp_type_type },
     .name = MP_QSTR_socket,
+    .print = socket_print,
     .make_new = socket_make_new,
     .protocol = &socket_stream_p,
     .locals_dict = (mp_obj_dict_t *)&socket_locals_dict,
