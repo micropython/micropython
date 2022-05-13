@@ -37,7 +37,7 @@
 //| information about working with QR codes, see
 //| `this Learn guide <https://learn.adafruit.com/scan-qr-codes-with-circuitpython>`_.
 //|
-//| .. note:: This library only handles decoding QR codes.  If you are looking
+//| .. note:: This module only handles decoding QR codes.  If you are looking
 //|     to generate a QR code, use the
 //|     `adafruit_miniqr library <https://github.com/adafruit/Adafruit_CircuitPython_miniQR>`_"""
 //|

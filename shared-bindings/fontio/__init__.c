@@ -35,7 +35,7 @@
 
 //| """Core font related data structures
 //|
-//| .. note:: This library is intended only for low-level usage.  For working with
+//| .. note:: This module is intended only for low-level usage.  For working with
 //|     fonts in CircuitPython see the `adafruit_bitmap_font library
 //|     <https://github.com/adafruit/Adafruit_CircuitPython_Bitmap_Font>`_.
 //|     For information on creating custom fonts for use in CircuitPython, see

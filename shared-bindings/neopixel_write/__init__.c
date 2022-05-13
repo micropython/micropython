@@ -95,7 +95,7 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|
 //| .. note::
 //|
-//|     This library is typically not used by user level code.
+//|     This module is typically not used by user level code.
 //|
 //|     For more information on actually using NeoPixels, refer to the `CircuitPython
 //|     Essentials Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-neopixel>`_
