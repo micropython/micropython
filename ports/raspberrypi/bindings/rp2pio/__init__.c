@@ -30,7 +30,14 @@
 #include "bindings/rp2pio/StateMachine.h"
 #include "bindings/rp2pio/__init__.h"
 
-//| """Hardware interface to RP2 series' programmable IO (PIO) peripheral."""
+//| """Hardware interface to RP2 series' programmable IO (PIO) peripheral.
+//|
+//| .. note:: This module is intended to be used with the `adafruit_pioasm library
+//|     <https://github.com/adafruit/Adafruit_CircuitPython_PIOASM>`_.  For an
+//|     introduction and guide to working with PIO in CircuitPython, see `this
+//|     Learn guide <https://learn.adafruit.com/intro-to-rp2040-pio-with-circuitpython>`_.
+//|
+//| """
 //|
 
 //| def pins_are_sequential(pins: List[microcontroller.Pin]) -> bool:
