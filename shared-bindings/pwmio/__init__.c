@@ -59,9 +59,8 @@
 //| hardware after program completion. Use ``deinit()`` or a ``with`` statement
 //| to do it yourself.
 //|
-//| For the essentials of `pwmio`, see the CircuitPython Essentials
-//| Learn guide:
-//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-pwm
+//| For the essentials of `pwmio`, see the `CircuitPython Essentials
+//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-pwm>`_.
 //| """
 //|
 

@@ -51,9 +51,9 @@
 //| The `displayio` module contains classes to manage display output
 //| including synchronizing with refresh rates and partial updating.
 //|
-//| For more a more thorugh explanation and guide for using `displayio`, please
-//| refer to this Learn guide:
-//| https://learn.adafruit.com/circuitpython-display-support-using-displayio
+//| For more a more thorough explanation and guide for using `displayio`, please
+//| refer to `this Learn guide
+//| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
 //| """
 //|
 

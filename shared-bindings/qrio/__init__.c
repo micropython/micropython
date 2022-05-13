@@ -31,9 +31,15 @@
 #include "py/obj.h"
 #include "py/enum.h"
 
-//| """`qrio` module.
+//| """Low-level QR code decoding
 //|
-//| Provides the `QRDecoder` object."""
+//| Provides the `QRDecoder` object used for decoding QR codes.  For more
+//| information about working with QR codes, see
+//| `this Learn guide <https://learn.adafruit.com/scan-qr-codes-with-circuitpython>`_.
+//|
+//| .. note:: This module only handles decoding QR codes.  If you are looking
+//|     to generate a QR code, use the
+//|     `adafruit_miniqr library <https://github.com/adafruit/Adafruit_CircuitPython_miniQR>`_"""
 //|
 
 STATIC const mp_rom_map_elem_t qrio_module_globals_table[] = {

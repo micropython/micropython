@@ -43,7 +43,13 @@
 #include "extmod/vfs_posix.h"
 #endif
 
-//| """Collection of bitmap manipulation tools"""
+//| """Collection of bitmap manipulation tools
+//|
+//| .. note:: If you're looking for information about displaying bitmaps on
+//|     screens in CircuitPython, see `this Learn guide
+//|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
+//|     for information about using the :py:mod:`displayio` module.
+//| """
 //|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
