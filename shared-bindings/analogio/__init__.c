@@ -59,12 +59,11 @@
 //| :py:meth:`~analogio.AnalogIn.deinit` the hardware. The last step is optional
 //| because CircuitPython will do it automatically after the program finishes.
 //|
-//| For the essentials of `analogio`, see the CircuitPython Essentials
-//| Learn guide:
-//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-analog-in
+//| For the essentials of `analogio`, see the `CircuitPython Essentials
+//| Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-analog-in>`_
 //|
-//| For more information on using `analogio`, see this additional Learn guide:
-//| https://learn.adafruit.com/circuitpython-basics-analog-inputs-and-outputs
+//| For more information on using `analogio`, see `this additional Learn guide
+//| <https://learn.adafruit.com/circuitpython-basics-analog-inputs-and-outputs>`_
 //| """
 //|
 
