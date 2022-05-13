@@ -107,6 +107,10 @@ msgstr ""
 msgid "%q must be %d-%d"
 msgstr ""
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr ""
@@ -623,7 +627,7 @@ msgstr ""
 msgid "Buffer length must be a multiple of 512"
 msgstr ""
 
-#: ports/stm/common-hal/sdioio/SDCard.c
+#: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr ""
 
