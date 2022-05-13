@@ -275,7 +275,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get the IRQ object.
-    uint8_t eic_id = is_eic(self->id);
+    uint8_t eic_id = get_pin_cap_info(self->id)->eic;
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
     if (irq != NULL && irq->pin_id != self->id) {
         mp_raise_ValueError(MP_ERROR_TEXT("IRQ already used"));
@@ -296,7 +296,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     if (n_args > 1 || kw_args->used != 0) {
 
         // set the mux config of the pin.
-        pin_cap_set_mux(self->id, 0);
+        mp_hal_set_pin_mux(self->id, ALT_FCT_EIC);
 
         // Configure IRQ.
         #if defined(MCU_SAMD21)

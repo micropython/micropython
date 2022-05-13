@@ -49,6 +49,19 @@ void mp_hal_set_interrupt_char(int c) {
 
 #endif
 
+
+void mp_hal_set_pin_mux(mp_hal_pin_obj_t pin, uint8_t mux) {
+    int pin_grp = pin / 32;
+    int port_grp = (pin % 32) / 2;
+    PORT->Group[pin_grp].PINCFG[pin % 32].bit.PMUXEN = 1; // Enable Mux
+    if (pin & 1) {
+        PORT->Group[pin_grp].PMUX[port_grp].bit.PMUXO = mux;
+    } else {
+        PORT->Group[pin_grp].PMUX[port_grp].bit.PMUXE = mux;
+    }
+}
+
+
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms > 10) {
         uint32_t t0 = systick_ms;

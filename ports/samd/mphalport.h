@@ -84,6 +84,7 @@ static inline uint64_t mp_hal_time_ns(void) {
 extern uint32_t machine_pin_open_drain_mask[];
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+void mp_hal_set_pin_mux(mp_hal_pin_obj_t pin, uint8_t mux);
 
 static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;

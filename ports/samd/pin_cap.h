@@ -28,6 +28,42 @@
  * THE SOFTWARE.
  */
 
+#if defined(MCU_SAMD21)
+
+typedef struct {
+    uint8_t pin_id;
+    uint8_t eic;
+    uint8_t adc0;
+    uint8_t sercom1;
+    uint8_t sercom2;
+    uint8_t tcc1;
+    uint8_t tcc2;
+} pin_cap_t;
+
+#define ALT_FCT_TC        4
+#define ALT_FCT_TCC1      4
+#define ALT_FCT_TCC2      5
+
+#elif defined(MCU_SAMD51)
+
+typedef struct {
+    uint8_t pin_id;
+    uint8_t eic;
+    uint8_t adc0;
+    uint8_t adc1;
+    uint8_t sercom1;
+    uint8_t sercom2;
+    uint8_t tc;
+    uint8_t tcc1;
+    uint8_t tcc2;
+} pin_cap_t;
+
+#define ALT_FCT_TC        4
+#define ALT_FCT_TCC1      5
+#define ALT_FCT_TCC2      6
+
+#endif
+
 typedef struct _sercom_pad_config_t {
     uint8_t alt_fct;
     uint8_t pad_nr;
@@ -38,14 +74,18 @@ typedef struct _adc_config_t {
     uint8_t channel;
 } adc_config_t;
 
-#define ALT_FCT_ADC0      1
+typedef struct _pwm_config_t {
+    uint8_t alt_fct;
+    uint8_t device_channel;
+} pwm_config_t;
+
+#define ALT_FCT_EIC       0
+#define ALT_FCT_ADC       1
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
-#define ALT_FCT_T2C       4
-#define ALT_FCT_TC        5
 
 sercom_pad_config_t is_sercom_n(int pin_id, uint8_t sercom);
 adc_config_t is_adc(int pin_id, int32_t flag);
+pwm_config_t is_pwm(int pin_id, int wanted_dev, uint8_t used_dev[]);
 uint8_t is_eic(int pin_id);
-
-void pin_cap_set_mux(int pin, uint8_t mux);
+const pin_cap_t *get_pin_cap_info(int pin_id);

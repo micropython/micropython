@@ -226,5 +226,5 @@ static void adc_init(machine_adc_obj_t *self) {
         #endif
     }
     // Set the port as given in self->id as ADC
-    pin_cap_set_mux(self->id, 1);
+    mp_hal_set_pin_mux(self->id, ALT_FCT_ADC);
 }

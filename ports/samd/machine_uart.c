@@ -218,8 +218,8 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         #endif
 
         // Step 1: Configure the Pin mux.
-        pin_cap_set_mux(self->rx, self->rx_pad_config.alt_fct);
-        pin_cap_set_mux(self->tx, self->tx_pad_config.alt_fct);
+        mp_hal_set_pin_mux(self->rx, self->rx_pad_config.alt_fct);
+        mp_hal_set_pin_mux(self->tx, self->tx_pad_config.alt_fct);
 
         // Next: Set up the clocks
         enable_sercom_clock(self->id);
