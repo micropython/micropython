@@ -272,6 +272,11 @@ def support_matrix_by_board(use_branded_name=True):
                 board_modules.append(base[module]['name'])
         board_modules.sort()
 
+        if "CIRCUITPY_BUILD_EXTENSIONS" in settings:
+            board_extensions = settings["CIRCUITPY_BUILD_EXTENSIONS"]
+        else:
+            raise "Board extensions undefined."
+
         frozen_modules = []
         if "FROZEN_MPY_DIRS" in settings:
             frozen_modules = frozen_modules_from_dirs(settings["FROZEN_MPY_DIRS"])
@@ -279,7 +284,9 @@ def support_matrix_by_board(use_branded_name=True):
                 frozen_modules.sort()
 
         # generate alias boards too
-        board_matrix = [(board_name, (board_modules, frozen_modules))]
+        board_matrix = [(
+            board_name, (board_modules, frozen_modules, board_extensions)
+        )]
         if entry.name in aliases_by_board:
             for alias in aliases_by_board[entry.name]:
                 if use_branded_name:
@@ -287,7 +294,9 @@ def support_matrix_by_board(use_branded_name=True):
                         alias = aliases_brand_names[alias]
                     else:
                         alias = alias.replace("_"," ").title()
-                board_matrix.append( (alias, (board_modules, frozen_modules)) )
+                board_matrix.append((
+                    alias, (board_modules, frozen_modules, board_extensions),
+                ))
 
         return board_matrix # this is now a list of (board,modules)
 
