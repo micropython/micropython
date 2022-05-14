@@ -68,6 +68,7 @@ submodules = []
 if target == "test":
     submodules = ["extmod/", "lib/", "tools/", "extmod/ulab", "lib/berkeley-db-1.xx"]
 elif target == "docs":
+    # NOTE: must match .readthedocs.yml as this script is not run by readthedocs
     submodules = ["extmod/ulab/", "frozen/"]
 elif target == "mpy-cross-mac":
     submodules = ["tools/"]  # for huffman
