@@ -90,6 +90,20 @@ int nina_bsp_deinit(void) {
     return 0;
 }
 
+int nina_bsp_atomic_enter(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+    return 0;
+}
+
+int nina_bsp_atomic_exit(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
+    return 0;
+}
+
 int nina_bsp_read_irq(void) {
     return mp_hal_pin_read(MICROPY_HW_NINA_GPIO0);
 }

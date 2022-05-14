@@ -325,20 +325,25 @@ error_out:
 static int nina_send_command_read_ack(uint32_t cmd, uint32_t nargs, uint32_t width, nina_args_t *args) {
     uint16_t size = 1;
     uint8_t rval = SPI_ERR;
+    nina_bsp_atomic_enter();
     if (nina_send_command(cmd, nargs, width, args) != 0 ||
         nina_read_response(cmd, 1, ARG_8BITS, NINA_VALS({&size, &rval})) != 0) {
-        return -1;
+        rval = -1;
     }
+    nina_bsp_atomic_exit();
     return rval;
 }
 
 static int nina_send_command_read_vals(uint32_t cmd, uint32_t nargs,
     uint32_t argsw, nina_args_t *args, uint32_t nvals, uint32_t valsw, nina_vals_t *vals) {
+    int ret = 0;
+    nina_bsp_atomic_enter();
     if (nina_send_command(cmd, nargs, argsw, args) != 0 ||
         nina_read_response(cmd, nvals, valsw, vals) != 0) {
-        return -1;
+        ret = -1;
     }
-    return 0;
+    nina_bsp_atomic_exit();
+    return ret;
 }
 
 static void nina_fix_mac_addr(uint8_t *mac) {
