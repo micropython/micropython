@@ -154,7 +154,7 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
 // It also requires an additional root pointer for the SPI object.
-#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi;
+#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi; struct _machine_timer_obj_t *mp_wifi_timer; struct _mp_obj_list_t *mp_wifi_sockpoll_list;
 extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
