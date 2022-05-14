@@ -331,6 +331,12 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
         val = mp_obj_get_int_truncated(args[3]);
         optval = &val;
         optlen = sizeof(val);
+    } else if (opt == 20 && args[3] == mp_const_none) {
+        optval = MP_OBJ_NULL;
+        optlen = 0;
+    } else if (opt == 20 && mp_obj_is_callable(args[3])) {
+        optval = args[3];
+        optlen = sizeof(optval);
     } else {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
