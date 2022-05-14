@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-10 23:52+0000\n"
+"PO-Revision-Date: 2022-05-14 12:35+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -115,6 +115,10 @@ msgstr "o comprimento %q deve ser >=1"
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "o %q deve ser %d-%d"
+
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr "%q deve ser 1 quando %q for verdadeiro"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-10 23:52+0000\n"
+"PO-Revision-Date: 2022-05-14 12:35+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -114,6 +114,10 @@ msgstr "längden på %q måste vara >= 1"
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
+
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr "%q måste vara 1 när %q är sann"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"

@@ -119,6 +119,10 @@ msgstr "%q boyutu >=1 olmalıdır"
 msgid "%q must be %d-%d"
 msgstr "%q, %d-%d olmalıdır"
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr "%q <= %d olmalıdır"

@@ -114,6 +114,10 @@ msgstr ""
 msgid "%q must be %d-%d"
 msgstr ""
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr ""

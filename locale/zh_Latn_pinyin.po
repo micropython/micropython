@@ -118,6 +118,10 @@ msgstr "%q cháng dù bì xū >= 1"
 msgid "%q must be %d-%d"
 msgstr "%q bì xū wéi %d-%d"
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr "%q bì xū <= %d"
