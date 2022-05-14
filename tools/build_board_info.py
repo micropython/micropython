@@ -13,14 +13,15 @@ import base64
 from datetime import date
 from sh.contrib import git
 
-sys.path.append("../docs")
-import shared_bindings_matrix
-
 sys.path.append("adabot")
 import adabot.github_requests as github
 
-from shared_bindings_matrix import SUPPORTED_PORTS
-from shared_bindings_matrix import aliases_by_board
+sys.path.append("../docs")
+from shared_bindings_matrix import (
+    SUPPORTED_PORTS,
+    aliases_by_board,
+    support_matrix_by_board,
+)
 
 BIN = ("bin",)
 UF2 = ("uf2",)
@@ -125,20 +126,11 @@ def get_board_mapping():
                 extensions = extension_by_port[port]
                 extensions = extension_by_board.get(board_path.name, extensions)
                 aliases = aliases_by_board.get(board_path.name, [])
-                frozen_libraries = []
-                with open(os.path.join(board_path, "mpconfigboard.mk")) as mpconfig:
-                    frozen_lines = [
-                        line for line in mpconfig if line.startswith("FROZEN_MPY_DIRS")
-                    ]
-                    frozen_libraries.extend(
-                        [line[line.rfind("/") + 1 :].strip() for line in frozen_lines]
-                    )
                 boards[board_id] = {
                     "port": port,
                     "extensions": extensions,
                     "download_count": 0,
                     "aliases": aliases,
-                    "frozen_libraries": frozen_libraries,
                 }
                 for alias in aliases:
                     boards[alias] = {
@@ -285,7 +277,7 @@ def generate_download_info():
 
     languages = get_languages()
 
-    support_matrix = shared_bindings_matrix.support_matrix_by_board(use_branded_name=False)
+    support_matrix = support_matrix_by_board(use_branded_name=False)
 
     new_stable = "-" not in new_tag
 
@@ -322,10 +314,10 @@ def generate_download_info():
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix[alias],
+                        "modules": support_matrix[alias][0],
                         "languages": languages,
                         "extensions": board_info["extensions"],
-                        "frozen_libraries": board_info["frozen_libraries"],
+                        "frozen_libraries": [frozen[0] for frozen in support_matrix[alias][1]],
                     }
                     current_info[alias]["downloads"] = alias_info["download_count"]
                     current_info[alias]["versions"].append(new_version)
