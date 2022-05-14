@@ -7,6 +7,11 @@
 // Enable networking and sockets.
 #define MICROPY_PY_NETWORK              (1)
 #define MICROPY_PY_USOCKET              (1)
+#define MICROPY_PY_WEBREPL              (1)
+#define MICROPY_PY_UWEBSOCKET           (1)
+#define MICROPY_PY_UHASHLIB_SHA1        (1)
+#define MICROPY_PY_OS_DUPTERM           (1)
+#define mp_builtin_open mp_vfs_open
 
 // Enable USB Mass Storage with FatFS filesystem.
 #define MICROPY_HW_USB_MSC              (1)
