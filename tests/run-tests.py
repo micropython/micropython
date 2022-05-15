@@ -529,6 +529,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "misc/print_exception.py"
         )  # because native doesn't have proper traceback info
         skip_tests.add("misc/sys_exc_info.py")  # sys.exc_info() is not supported for native
+        skip_tests.add("misc/sys_settrace_features.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_generator.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_loop.py")  # sys.settrace() not supported
         skip_tests.add(
             "micropython/emg_exc.py"
         )  # because native doesn't have proper traceback info
