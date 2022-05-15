@@ -92,6 +92,11 @@ This port uses [Micropython infrastructure for C modules](https://docs.micropyth
 5. `make -j -C mpy-cross`
 6. `make -j -C ports/rp2 BOARD=PICO USER_C_MODULES=../../lib/lv_bindings/bindings.cmake`
 
+#### Troubleshooting
+
+If you experience unstable behaviour, it is worth checking the value of *MICROPY_HW_FLASH_STORAGE_BASE* against the value of *__flash_binary_end* from the firmware.elf.map file.
+If the storage base is lower than the binary end, parts of the firmware will be overwritten when the micropython filesystem is initialised.
+
 ## Super Simple Example
 
 First, LVGL needs to be imported and initialized
