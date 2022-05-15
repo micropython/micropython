@@ -546,7 +546,7 @@ function ci_unix_settrace_build {
 }
 
 function ci_unix_settrace_run_tests {
-    ci_unix_run_tests_helper "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
+    ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
 }
 
 function ci_unix_settrace_stackless_build {
@@ -555,7 +555,7 @@ function ci_unix_settrace_stackless_build {
 }
 
 function ci_unix_settrace_stackless_run_tests {
-    ci_unix_run_tests_helper "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
+    ci_unix_run_tests_full_helper standard "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
 }
 
 function ci_unix_macos_build {
