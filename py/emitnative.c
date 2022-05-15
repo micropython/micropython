@@ -63,7 +63,7 @@
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
-//  emit->code_state_start:     mp_code_state_t
+//  emit->code_state_start:     mp_code_state_native_t
 //  emit->stack_start:          Python object stack             | emit->n_state
 //                              locals (reversed, L0 at end)    |
 //
@@ -71,7 +71,7 @@
 //  0=emit->stack_start:        nlr_buf_t
 //
 //  Then REG_GENERATOR_STATE points to:
-//  0=emit->code_state_start:   mp_code_state_t
+//  0=emit->code_state_start:   mp_code_state_native_t
 //  emit->stack_start:          Python object stack             | emit->n_state
 //                              locals (reversed, L0 at end)    |
 //
@@ -88,12 +88,12 @@
 #else
 #define SIZEOF_NLR_BUF (sizeof(nlr_buf_t) / sizeof(uintptr_t))
 #endif
-#define SIZEOF_CODE_STATE (sizeof(mp_code_state_t) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_STATE (offsetof(mp_code_state_t, state) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_FUN_BC (offsetof(mp_code_state_t, fun_bc) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_IP (offsetof(mp_code_state_t, ip) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_SP (offsetof(mp_code_state_t, sp) / sizeof(uintptr_t))
-#define OFFSETOF_CODE_STATE_N_STATE (offsetof(mp_code_state_t, n_state) / sizeof(uintptr_t))
+#define SIZEOF_CODE_STATE (sizeof(mp_code_state_native_t) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_STATE (offsetof(mp_code_state_native_t, state) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_FUN_BC (offsetof(mp_code_state_native_t, fun_bc) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_IP (offsetof(mp_code_state_native_t, ip) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_SP (offsetof(mp_code_state_native_t, sp) / sizeof(uintptr_t))
+#define OFFSETOF_CODE_STATE_N_STATE (offsetof(mp_code_state_native_t, n_state) / sizeof(uintptr_t))
 #define OFFSETOF_OBJ_FUN_BC_CONTEXT (offsetof(mp_obj_fun_bc_t, context) / sizeof(uintptr_t))
 #define OFFSETOF_OBJ_FUN_BC_CHILD_TABLE (offsetof(mp_obj_fun_bc_t, child_table) / sizeof(uintptr_t))
 #define OFFSETOF_OBJ_FUN_BC_BYTECODE (offsetof(mp_obj_fun_bc_t, bytecode) / sizeof(uintptr_t))
@@ -412,7 +412,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // generate code for entry to function
 
-    // Work out start of code state (mp_code_state_t or reduced version for viper)
+    // Work out start of code state (mp_code_state_native_t or reduced version for viper)
     emit->code_state_start = 0;
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         emit->code_state_start = SIZEOF_NLR_BUF;

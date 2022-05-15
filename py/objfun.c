@@ -209,7 +209,6 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
-    code_state->ip = _fun_bc->bytecode; \
     code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
