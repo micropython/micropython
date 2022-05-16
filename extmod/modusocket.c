@@ -48,9 +48,9 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
         self->fileno, self->timeout, self->domain, self->type, self->proto, self->bound);
 }
 
-// constructor socket(family=AF_INET, type=SOCK_STREAM, proto=0, fileno=None)
+// constructor socket(domain=AF_INET, type=SOCK_STREAM, proto=0)
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 4, false);
+    mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     // create socket object (not bound to any NIC yet)
     mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
@@ -62,12 +62,12 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     s->proto = 0;
     s->bound = false;
     s->fileno = -1;
-    if (n_args >= 1) {
+    if (n_args > 0) {
         s->domain = mp_obj_get_int(args[0]);
-        if (n_args >= 2) {
+        if (n_args > 1) {
             s->type = mp_obj_get_int(args[1]);
-            if (n_args >= 4) {
-                s->fileno = mp_obj_get_int(args[3]);
+            if (n_args > 2) {
+                s->proto = mp_obj_get_int(args[2]);
             }
         }
     }
