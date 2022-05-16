@@ -27,17 +27,9 @@ Compatibility is based on the following:
 * Version of the .mpy file: the version of the file must match the version
   supported by the system loading it.
 
-* Bytecode features used in the .mpy file: there are two bytecode features
-  which must match between the file and the system: unicode support and
-  inline caching of map lookups in the bytecode.
-
 * Small integer bits: the .mpy file will require a minimum number of bits in
   a small integer and the system loading it must support at least this many
   bits.
-
-* Qstr compression window size: the .mpy file will require a minimum window
-  size for qstr decompression and the system loading it must have a window
-  greater or equal to this size.
 
 * Native architecture: if the .mpy file contains native machine code then
   it will specify the architecture of that machine code and the system
@@ -66,8 +58,6 @@ If importing an .mpy file fails then try the following:
     print('mpy flags:', end='')
     if arch:
         print(' -march=' + arch, end='')
-    if not sys_mpy & 0x200:
-        print(' -mno-unicode', end='')
     print()
 
 * Check the validity of the .mpy file by inspecting the first two bytes of
