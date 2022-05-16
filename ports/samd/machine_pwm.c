@@ -44,7 +44,7 @@ typedef struct _machine_pwm_obj_t {
     uint8_t channel2;
     uint16_t prescaler;
     uint32_t period;  // full period count ticks
-    uint32_t duty ;
+    uint32_t duty;
 } machine_pwm_obj_t;
 
 #define PWM_NOT_INIT    (0)
@@ -214,7 +214,7 @@ void pwm_deinit_all(void) {
     }
 }
 
-// Switch off the device related to a channel. 
+// Switch off the device related to a channel.
 // That stops all channels, but keeps the configuration
 // Calling pwm.freq(n) will start them again
 STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {

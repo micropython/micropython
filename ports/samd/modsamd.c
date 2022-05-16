@@ -25,13 +25,50 @@
  */
 
 #include "py/runtime.h"
+#include "py/mphal.h"
+
+#include "sam.h"
+#include "pin_cap.h"
 #include "samd_soc.h"
 
 extern const mp_obj_type_t samd_flash_type;
 
+STATIC mp_obj_t samd_pin_info(mp_obj_t pin_obj) {
+    mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_obj);
+    const pin_cap_t *pin_cap = get_pin_cap_info(pin);
+    if (pin_cap) {
+        #if defined(MCU_SAMD21)
+        mp_obj_t tuple[6] = {
+            tuple[0] = mp_obj_new_int(pin_cap->eic),
+            tuple[1] = mp_obj_new_int(pin_cap->adc0),
+            tuple[2] = mp_obj_new_int(pin_cap->sercom1),
+            tuple[3] = mp_obj_new_int(pin_cap->sercom2),
+            tuple[4] = mp_obj_new_int(pin_cap->tcc1),
+            tuple[5] = mp_obj_new_int(pin_cap->tcc2),
+        };
+        return mp_obj_new_tuple(6, tuple);
+        #elif defined(MCU_SAMD51)
+        mp_obj_t tuple[8] = {
+            tuple[0] = mp_obj_new_int(pin_cap->eic),
+            tuple[1] = mp_obj_new_int(pin_cap->adc0),
+            tuple[2] = mp_obj_new_int(pin_cap->adc1),
+            tuple[3] = mp_obj_new_int(pin_cap->sercom1),
+            tuple[4] = mp_obj_new_int(pin_cap->sercom2),
+            tuple[5] = mp_obj_new_int(pin_cap->tc),
+            tuple[6] = mp_obj_new_int(pin_cap->tcc1),
+            tuple[7] = mp_obj_new_int(pin_cap->tcc2),
+        };
+        return mp_obj_new_tuple(8, tuple);
+        #endif
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(samd_pin_info_obj, samd_pin_info);
+
 STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_samd) },
-    { MP_ROM_QSTR(MP_QSTR_Flash), MP_ROM_PTR(&samd_flash_type) },
+    { MP_ROM_QSTR(MP_QSTR_Flash),    MP_ROM_PTR(&samd_flash_type) },
+    { MP_ROM_QSTR(MP_QSTR_pin_info), MP_ROM_PTR(&samd_pin_info_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);
 
