@@ -617,7 +617,6 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
-    //  uint  size of qstr window
     byte header[4] = {
         'M',
         MPY_VERSION,
