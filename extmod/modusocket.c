@@ -235,6 +235,40 @@ STATIC mp_obj_t socket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_send_obj, socket_send);
 
+STATIC mp_obj_t socket_sendall(mp_obj_t self_in, mp_obj_t buf_in) {
+    mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->nic == MP_OBJ_NULL) {
+        // not connected
+        mp_raise_OSError(MP_EPIPE);
+    }
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+
+    int _errno;
+    mp_uint_t ret = 0;
+    if (self->timeout == 0) {
+        ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+        if (ret == -1) {
+            mp_raise_OSError(_errno);
+        } else if (bufinfo.len > ret) {
+            mp_raise_OSError(MP_EAGAIN);
+        }
+    } else {
+        // TODO: In CPython3.5, socket timeout should apply to the
+        // entire sendall() operation, not to individual send() chunks.
+        while (bufinfo.len != 0) {
+            ret = self->nic_type->send(self, bufinfo.buf, bufinfo.len, &_errno);
+            if (ret == -1) {
+                mp_raise_OSError(_errno);
+            }
+            bufinfo.len -= ret;
+            bufinfo.buf = (char *)bufinfo.buf + ret;
+        }
+    }
+    return mp_obj_new_int_from_uint(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_sendall_obj, socket_sendall);
+
 // method socket.recv(bufsize)
 STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {
     mod_network_socket_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -412,6 +446,7 @@ STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_accept), MP_ROM_PTR(&socket_accept_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&socket_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&socket_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendall), MP_ROM_PTR(&socket_sendall_obj) },
     { MP_ROM_QSTR(MP_QSTR_recv), MP_ROM_PTR(&socket_recv_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendto), MP_ROM_PTR(&socket_sendto_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvfrom), MP_ROM_PTR(&socket_recvfrom_obj) },
