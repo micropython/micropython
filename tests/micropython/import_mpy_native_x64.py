@@ -52,11 +52,11 @@ class UserFS:
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x06\xfe\x00\x10',
+    '/mod0.mpy': b'M\x06\xfc\x00\x10',
 
     # test loading of viper and asm
     '/mod1.mpy': (
-        b'M\x06\x0a\x1f' # header
+        b'M\x06\x08\x1f' # header
 
         b'\x02' # n_qstr
         b'\x00' # n_obj
@@ -85,7 +85,7 @@ user_files = {
 
     # test loading viper with additional scope flags and relocation
     '/mod2.mpy': (
-        b'M\x06\x0a\x1f' # header
+        b'M\x06\x08\x1f' # header
 
         b'\x02' # n_qstr
         b'\x00' # n_obj
