@@ -2998,12 +2998,14 @@ cleanup:
     return err;
 }
 
+#ifndef LFS2_NO_MALLOC
 static int lfs2_file_rawopen(lfs2_t *lfs2, lfs2_file_t *file,
         const char *path, int flags) {
     static const struct lfs2_file_config defaults = {0};
     int err = lfs2_file_rawopencfg(lfs2, file, path, flags, &defaults);
     return err;
 }
+#endif
 
 static int lfs2_file_rawclose(lfs2_t *lfs2, lfs2_file_t *file) {
 #ifndef LFS2_READONLY
