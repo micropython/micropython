@@ -88,6 +88,7 @@ def run_benchmark_on_target(target, script):
 def run_benchmarks(target, param_n, param_m, n_average, test_list):
     skip_complex = run_feature_test(target, "complex") != "complex"
     skip_native = run_feature_test(target, "native_check") != "native"
+    target_had_error = False
 
     for test_file in sorted(test_list):
         print(test_file + ": ", end="")
@@ -147,6 +148,8 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
                 error = "FAIL truth"
 
         if error is not None:
+            if not error.startswith("SKIP"):
+                target_had_error = True
             print(error)
         else:
             t_avg, t_sd = compute_stats(times)
@@ -161,6 +164,8 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
                 print("  scores:", scores)
 
         sys.stdout.flush()
+
+    return target_had_error
 
 
 def parse_output(filename):
@@ -279,11 +284,14 @@ def main():
 
     print("N={} M={} n_average={}".format(N, M, n_average))
 
-    run_benchmarks(target, N, M, n_average, tests)
+    target_had_error = run_benchmarks(target, N, M, n_average, tests)
 
     if isinstance(target, pyboard.Pyboard):
         target.exit_raw_repl()
         target.close()
+
+    if target_had_error:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
