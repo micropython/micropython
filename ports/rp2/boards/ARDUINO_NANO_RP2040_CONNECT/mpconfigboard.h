@@ -8,6 +8,9 @@
 #define MICROPY_PY_NETWORK              (1)
 #define MICROPY_PY_USOCKET              (1)
 
+// Disable internal error numbers.
+#define MICROPY_USE_INTERNAL_ERRNO      (0)
+
 // Enable USB Mass Storage with FatFS filesystem.
 #define MICROPY_HW_USB_MSC              (1)
 #define MICROPY_HW_USB_VID              (0x2341)
