@@ -83,8 +83,9 @@ SRC_C = \
 	machine_adc.c \
 	machine_led.c \
 	machine_pin.c \
-	machine_uart.c \
 	machine_timer.c \
+	machine_uart.c \
+	machine_wdt.c \
 	modmachine.c \
 	modsamd.c \
 	mphalport.c \
@@ -149,6 +150,7 @@ SRC_QSTR += \
 	machine_pwm.c \
 	machine_timer.c \
 	machine_uart.c \
+	machine_wdt.c \
 	modsamd.c \
 	samd_flash.c \
 	shared/runtime/mpirq.c \

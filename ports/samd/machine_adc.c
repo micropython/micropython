@@ -53,6 +53,8 @@ static uint8_t resolution[] = {
     ADC_CTRLB_RESSEL_8BIT_Val, ADC_CTRLB_RESSEL_10BIT_Val, ADC_CTRLB_RESSEL_12BIT_Val
 };
 
+extern mp_int_t log2i(mp_int_t num);
+
 STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
@@ -87,10 +89,8 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
     if (bits >= 8 && bits <= 12) {
         self->bits = bits;
     }
-    uint16_t avg = args[ARG_average].u_int;
-    for (self->avg = 0; avg > 1 && self->avg <= 10; self->avg++) {
-        avg /= 2;
-    }
+    uint32_t avg = log2i(args[ARG_average].u_int);
+    self->avg = (avg <= 10 ? avg : 10);
 
     // flag the device/channel as being in use.
     busy_flags |= (1 << (self->adc_config.device * 16 + self->adc_config.channel));

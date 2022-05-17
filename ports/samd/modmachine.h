@@ -34,5 +34,6 @@ extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
+extern const mp_obj_type_t machine_wdt_type;
 
 #endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H

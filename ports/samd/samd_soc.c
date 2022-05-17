@@ -114,6 +114,7 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     // GCLK1: 32768 Hz from 32K ULP or 32k Crystal
     // GCLK2: 48MHz from DFLL for USB and SERCOM
     // GCLK3: 1Mhz for TC0/1 counter
+    // GCLK8: 1kHz clock for WDT
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
     NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
