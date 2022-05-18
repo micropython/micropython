@@ -123,7 +123,7 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self,
                 mp_raise_ValueError(translate("Invalid argument"));
                 break;
             case PROTOMATTER_ERR_MALLOC:
-                mp_raise_msg(&mp_type_MemoryError, NULL);
+                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
                 break;
             default:
                 mp_raise_msg_varg(&mp_type_RuntimeError,

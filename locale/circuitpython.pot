@@ -1022,6 +1022,10 @@ msgstr ""
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr ""
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "Failed to allocate %q buffer"
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "Failed to allocate RX buffer"
