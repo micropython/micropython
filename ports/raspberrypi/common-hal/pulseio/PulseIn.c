@@ -38,7 +38,7 @@
 
 #define NO_PIN 0xff
 #define MAX_PULSE 65535
-#define MIN_PULSE 10
+#define MIN_PULSE 0
 
 static const uint16_t pulsein_program[] = {
     0x4001, //  1: in     pins, 1
@@ -75,24 +75,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         false, // Not user-interruptible.
         0, -1); // wrap settings
 
-    pio_sm_set_enabled(self->state_machine.pio,self->state_machine.state_machine, false);
-    pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
-    self->last_level = self->idle_state;
-    self->level_count = 0;
-    self->buf_index = 0;
+    common_hal_pulseio_pulsein_pause(self);
 
-    pio_sm_set_in_pins(self->state_machine.pio,self->state_machine.state_machine,pin->number);
     common_hal_rp2pio_statemachine_set_interrupt_handler(&(self->state_machine),&common_hal_pulseio_pulsein_interrupt,self,PIO_IRQ0_INTE_SM0_RXNEMPTY_BITS);
 
-    // exec a set pindirs to 0 for input
-    pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0xe080);
-    // exec the appropriate wait for pin
-    if (self->idle_state == true) {
-        pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x2020);
-    } else {
-        pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x20a0);
-    }
-    pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
+    common_hal_pulseio_pulsein_resume(self, 0);
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
@@ -113,9 +100,10 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
 void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     pio_sm_restart(self->state_machine.pio, self->state_machine.state_machine);
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
+    pio_sm_clear_fifos(self->state_machine.pio,self->state_machine.state_machine);
     self->last_level = self->idle_state;
     self->level_count = 0;
-    self->buf_index = 0;
+    self->paused = true;
 }
 void common_hal_pulseio_pulsein_interrupt(void *self_in) {
     pulseio_pulsein_obj_t *self = self_in;
@@ -134,7 +122,7 @@ void common_hal_pulseio_pulsein_interrupt(void *self_in) {
             } else {
                 uint32_t result = self->level_count;
                 self->last_level = level;
-                self->level_count = 0;
+                self->level_count = 1;
                 // Pulses that are longer than MAX_PULSE will return MAX_PULSE
                 if (result > MAX_PULSE) {
                     result = MAX_PULSE;
@@ -148,28 +136,15 @@ void common_hal_pulseio_pulsein_interrupt(void *self_in) {
                     } else {
                         self->start = (self->start + 1) % self->maxlen;
                     }
-                    if (self->buf_index < self->maxlen) {
-                        self->buf_index++;
-                    } else {
-                        self->start = 0;
-                        self->buf_index = 0;
-                    }
                 }
             }
         }
     }
-
-// check for a pulse thats too long (MAX_PULSE us) or maxlen reached,  and reset
-    if ((self->level_count > MAX_PULSE) || (self->buf_index >= self->maxlen)) {
-        pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, false);
-        pio_sm_init(self->state_machine.pio, self->state_machine.state_machine, self->state_machine.offset, &self->state_machine.sm_config);
-        pio_sm_restart(self->state_machine.pio,self->state_machine.state_machine);
-        pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
-        self->buf_index = 0;
-    }
 }
 void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
     uint16_t trigger_duration) {
+
+    common_hal_pulseio_pulsein_pause(self);
     // Send the trigger pulse.
     if (trigger_duration > 0) {
         gpio_set_function(self->pin,GPIO_FUNC_SIO);
@@ -177,11 +152,8 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
         gpio_put(self->pin, !self->idle_state);
         common_hal_mcu_delay_us((uint32_t)trigger_duration);
         gpio_set_function(self->pin,GPIO_FUNC_PIO0);
-        common_hal_mcu_delay_us(125);
     }
 
-    // Reconfigure the pin for PIO
-    gpio_set_function(self->pin, GPIO_FUNC_PIO0);
     // exec a wait for the selected pin to change state
     if (self->idle_state == true) {
         pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x2020);
@@ -189,12 +161,11 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
         pio_sm_exec(self->state_machine.pio,self->state_machine.state_machine,0x20a0);
     }
     pio_sm_set_enabled(self->state_machine.pio, self->state_machine.state_machine, true);
+    self->paused = false;
 }
 
 void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
-    self->start = 0;
     self->len = 0;
-    self->buf_index = 0;
 }
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
@@ -204,12 +175,6 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     uint16_t value = self->buffer[self->start];
     self->start = (self->start + 1) % self->maxlen;
     self->len--;
-    // if we are empty reset buffer pointer and counters
-    if (self->len == 0) {
-        self->start = 0;
-        self->buf_index = 0;
-        self->level_count = 0;
-    }
     return value;
 }
 
@@ -222,7 +187,7 @@ uint16_t common_hal_pulseio_pulsein_get_len(pulseio_pulsein_obj_t *self) {
 }
 
 bool common_hal_pulseio_pulsein_get_paused(pulseio_pulsein_obj_t *self) {
-    return true;
+    return self->paused;
 }
 
 uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self,
