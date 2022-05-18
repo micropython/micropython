@@ -37,6 +37,11 @@
 #define MICROPY_ALLOC_PATH_MAX              (256)
 #define MICROPY_QSTR_BYTES_IN_HASH          (1)
 
+// MicroPython emitters
+#define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#define MICROPY_EMIT_THUMB                  (0)
+#define MICROPY_EMIT_INLINE_THUMB           (0)
+
 // Compiler configuration
 #define MICROPY_COMP_CONST                  (1)
 
