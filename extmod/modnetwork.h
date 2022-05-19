@@ -86,9 +86,10 @@ typedef struct _mod_network_socket_obj_t {
     uint32_t proto  : 5;
     uint32_t bound  : 1;
     int32_t fileno  : 16;
+    int32_t timeout;
+    mp_obj_t callback;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
-    int32_t timeout;
     void *state;
     #endif
 } mod_network_socket_obj_t;

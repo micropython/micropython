@@ -71,9 +71,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
             }
         }
     }
-
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
     s->timeout = -1;
+    s->callback = MP_OBJ_NULL;
+    #if MICROPY_PY_USOCKET_EXTENDED_STATE
     s->state = NULL;
     #endif
 
@@ -169,8 +169,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->proto = self->proto;
     socket2->bound = false;
     socket2->fileno = -1;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
     socket2->timeout = -1;
+    socket2->callback = MP_OBJ_NULL;
+    #if MICROPY_PY_USOCKET_EXTENDED_STATE
     socket2->state = NULL;
     #endif
 
