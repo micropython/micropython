@@ -64,7 +64,10 @@ class multitest:
     def get_network_ip():
         try:
             import network
-            ip = network.WLAN().ifconfig()[0]
+            if hasattr(network, "WLAN"):
+                ip = network.WLAN().ifconfig()[0]
+            else:
+                ip = network.LAN().ifconfig()[0]
         except:
             ip = HOST_IP
         return ip
