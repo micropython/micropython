@@ -430,8 +430,9 @@ void asm_thumb_mov_reg_pcrel(asm_thumb_t *as, uint rlo_dest, uint label) {
     mp_int_t rel = dest - as->base.code_offset;
     rel |= 1; // to stay in Thumb state when jumping to this address
     #if MICROPY_EMIT_THUMB_ARMV7M
-    rel -= 4 + 4; // adjust for mov_reg_i16 and then PC+4 prefetch of add_reg_reg
+    rel -= 6 + 4; // adjust for mov_reg_i16, sxth_rlo_rlo and then PC+4 prefetch of add_reg_reg
     asm_thumb_mov_reg_i16(as, ASM_THUMB_OP_MOVW, rlo_dest, rel); // 4 bytes
+    asm_thumb_sxth_rlo_rlo(as, rlo_dest, rlo_dest); // 2 bytes
     #else
     rel -= 8 + 4; // adjust for four instructions and then PC+4 prefetch of add_reg_reg
     // 6 bytes
