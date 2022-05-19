@@ -63,12 +63,14 @@
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
+//                              exc_handler_unwind [optional word]
 //  emit->code_state_start:     mp_code_state_native_t
 //  emit->stack_start:          Python object stack             | emit->n_state
 //                              locals (reversed, L0 at end)    |
 //
 // C stack layout for native generator functions:
 //  0=emit->stack_start:        nlr_buf_t
+//                              exc_handler_unwind [optional word]
 //
 //  Then REG_GENERATOR_STATE points to:
 //  0=emit->code_state_start:   mp_code_state_native_t
@@ -77,6 +79,7 @@
 //
 // C stack layout for viper functions:
 //  0:                          nlr_buf_t [optional]
+//                              exc_handler_unwind [optional word]
 //  emit->code_state_start:     fun_obj, old_globals [optional]
 //  emit->stack_start:          Python object stack             | emit->n_state
 //                              locals (reversed, L0 at end)    |
@@ -120,6 +123,9 @@
 #define NEED_GLOBAL_EXC_HANDLER(emit) ((emit)->scope->exc_stack_size > 0 \
     || ((emit)->scope->scope_flags & (MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_REFGLOBALS)))
 
+// Whether a slot is needed to store LOCAL_IDX_EXC_HANDLER_UNWIND
+#define NEED_EXC_HANDLER_UNWIND(emit) ((emit)->scope->exc_stack_size > 0)
+
 // Whether registers can be used to store locals (only true if there are no
 // exception handlers, because otherwise an nlr_jump will restore registers to
 // their state at the start of the function and updates to locals will be lost)
@@ -128,7 +134,7 @@
 // Indices within the local C stack for various variables
 #define LOCAL_IDX_EXC_VAL(emit) (NLR_BUF_IDX_RET_VAL)
 #define LOCAL_IDX_EXC_HANDLER_PC(emit) (NLR_BUF_IDX_LOCAL_1)
-#define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (NLR_BUF_IDX_LOCAL_2)
+#define LOCAL_IDX_EXC_HANDLER_UNWIND(emit) (SIZEOF_NLR_BUF) // this needs a dedicated variable outside nlr_buf_t
 #define LOCAL_IDX_RET_VAL(emit) (NLR_BUF_IDX_LOCAL_3)
 #define LOCAL_IDX_FUN_OBJ(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_FUN_BC)
 #define LOCAL_IDX_OLD_GLOBALS(emit) ((emit)->code_state_start + OFFSETOF_CODE_STATE_IP)
@@ -403,6 +409,9 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->code_state_start = 0;
     if (NEED_GLOBAL_EXC_HANDLER(emit)) {
         emit->code_state_start = SIZEOF_NLR_BUF;
+        if (NEED_EXC_HANDLER_UNWIND(emit)) {
+            emit->code_state_start += 1;
+        }
     }
 
     size_t fun_table_off = mp_emit_common_use_const_obj(emit->emit_common, MP_OBJ_FROM_PTR(&mp_fun_table));
@@ -498,11 +507,13 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         emit->n_state = scope->num_locals + scope->stack_size;
 
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
-            emit->code_state_start = 0;
-            emit->stack_start = SIZEOF_CODE_STATE;
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_ptr_index);
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
-            ASM_ENTRY(emit->as, SIZEOF_NLR_BUF);
+            ASM_ENTRY(emit->as, emit->code_state_start);
+
+            // Reset the state size for the state pointed to by REG_GENERATOR_STATE
+            emit->code_state_start = 0;
+            emit->stack_start = SIZEOF_CODE_STATE;
 
             // Put address of code_state into REG_GENERATOR_STATE
             #if N_X86
@@ -1188,14 +1199,12 @@ STATIC void emit_native_global_exc_entry(emit_t *emit) {
 
             // Wrap everything in an nlr context
             emit_native_label_assign(emit, nlr_label);
-            ASM_MOV_REG_LOCAL(emit->as, REG_LOCAL_2, LOCAL_IDX_EXC_HANDLER_UNWIND(emit));
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 0);
             emit_call(emit, MP_F_NLR_PUSH);
             #if N_NLR_SETJMP
             ASM_MOV_REG_LOCAL_ADDR(emit->as, REG_ARG_1, 2);
             emit_call(emit, MP_F_SETJMP);
             #endif
-            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_LOCAL_2);
             ASM_JUMP_IF_REG_NONZERO(emit->as, REG_RET, global_except_label, true);
 
             // Clear PC of current code block, and jump there to resume execution
