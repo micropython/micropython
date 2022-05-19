@@ -549,16 +549,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
             // Set code_state.ip, a pointer to the beginning of the prelude.  This pointer is found
             // either directly in mp_obj_fun_bc_t.child_table (if there are no children), or in
             // mp_obj_fun_bc_t.child_table[num_children] (if num_children > 0).
-            // Need to use some locals for this, so assert that they are available for use
-            MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_1);
-            MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_2);
-            MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_3);
-            MP_STATIC_ASSERT(REG_LOCAL_3 != REG_PARENT_ARG_4);
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CHILD_TABLE);
+            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CHILD_TABLE);
             if (emit->prelude_ptr_index != 0) {
-                ASM_LOAD_REG_REG_OFFSET(emit->as, REG_LOCAL_3, REG_LOCAL_3, emit->prelude_ptr_index);
+                ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, emit->prelude_ptr_index);
             }
-            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_LOCAL_3);
+            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_PARENT_ARG_1);
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_N_STATE, emit->n_state, REG_ARG_1);
