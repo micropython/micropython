@@ -94,6 +94,13 @@ void common_uart_irq_handler(int uart_id) {
     }
 }
 
+void sercom_enable(Sercom *uart, int state) {
+    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
+    // Wait for the Registers to update.
+    while (uart->USART.SYNCBUSY.bit.ENABLE) {
+    }
+}
+
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
@@ -270,10 +277,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
         #endif
 
-        uart->USART.CTRLA.bit.ENABLE = 1; // Enable the peripheral
-        // Wait for the Registers to update.
-        while (uart->USART.SYNCBUSY.bit.ENABLE) {
-        }
+        sercom_enable(uart, 1);
     }
 
     return MP_OBJ_FROM_PTR(self);
@@ -335,6 +339,26 @@ STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
+STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    uint32_t break_time_us = 13 * 1000000 / self->baudrate;
+
+    // Wait for the TX queue & register to clear
+    // Since the flags are not safe, just wait sufficiently long.
+    // Once tx buffering is implemented, wait as well for the buffer to clear.
+    mp_hal_delay_us(2 * break_time_us);
+    // Disable MUX
+    PORT->Group[self->tx / 32].PINCFG[self->tx % 32].bit.PMUXEN = 0;
+    // Set TX pin to low for break time
+    mp_hal_pin_low(self->tx);
+    mp_hal_delay_us(break_time_us);
+    mp_hal_pin_high(self->tx);
+    // Enable Mux again
+    mp_hal_set_pin_mux(self->tx, self->tx_pad_config.alt_fct);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
+
 void uart_deinit_all(void) {
     for (int i = 0; i < SERCOM_INST_NUM; i++) {
         if (uart_table[i] != NULL) {
@@ -348,6 +372,7 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
