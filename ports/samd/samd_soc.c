@@ -214,10 +214,10 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
 
         #else
         // Set GCLK1 to DPLL0_REF_FREQ as defined in mpconfigboard.h (e.g. 32768 Hz)
-        // GCLK->GENCTRL[1].reg = (48000000 / DPLL0_REF_FREQ) << GCLK_GENCTRL_DIV_Pos | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        GCLK->GENCTRL[1].reg = (48000000 / DPLLx_REF_FREQ) << GCLK_GENCTRL_DIV_Pos | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
 
         // Setup GCLK1 for 32kHz ULP
-        GCLK->GENCTRL[1].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K;
+        // GCLK->GENCTRL[1].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K;
         while (GCLK->SYNCBUSY.bit.GENCTRL1) {
         }
         #endif // MICROPY_HW_CRYSTAL
