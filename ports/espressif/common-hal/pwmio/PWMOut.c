@@ -217,7 +217,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     // Calculate duty cycle
     uint32_t duty_bits = calculate_duty_cycle(frequency);
     if (duty_bits == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     self->duty_resolution = duty_bits;
     ledc_set_freq(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num, frequency);

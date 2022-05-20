@@ -57,10 +57,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t scale = args[ARG_scale].u_int;
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_int_t scale = mp_arg_validate_int_min(args[ARG_scale].u_int, 1, MP_QSTR_scale);
 
     displayio_group_t *self = m_new_obj(displayio_group_t);
     self->base.type = &displayio_group_type;
@@ -114,10 +111,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_group_get_scale_obj, displayio_group_obj_get
 STATIC mp_obj_t displayio_group_obj_set_scale(mp_obj_t self_in, mp_obj_t scale_obj) {
     displayio_group_t *self = native_group(self_in);
 
-    mp_int_t scale = mp_obj_get_int(scale_obj);
-    if (scale < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_scale);
-    }
+    mp_int_t scale = mp_arg_validate_int_min(mp_obj_get_int(scale_obj), 1, MP_QSTR_scale);
+
     common_hal_displayio_group_set_scale(self, scale);
     return mp_const_none;
 }

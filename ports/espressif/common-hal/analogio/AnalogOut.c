@@ -49,7 +49,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     } else if (pin == &pin_GPIO18) {
         self->channel = DAC_CHANNEL_2;
     } else {
-        mp_raise_ValueError(translate("Invalid DAC pin supplied"));
+        raise_ValueError_invalid_pin();
     }
     dac_output_enable(self->channel);
     #else

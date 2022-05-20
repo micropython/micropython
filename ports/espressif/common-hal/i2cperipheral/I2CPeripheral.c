@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 
 #include "common-hal/i2cperipheral/I2CPeripheral.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_peripheral_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda,
@@ -39,7 +40,7 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
     // support I2C on these pins.
     // Also 46 is input-only so it'll never work.
     if (scl->number == 45 || scl->number == 46 || sda->number == 45 || sda->number == 46) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (num_addresses > 1) {
@@ -72,7 +73,7 @@ void common_hal_i2cperipheral_i2c_peripheral_construct(i2cperipheral_i2c_periphe
         if (err == ESP_FAIL) {
             mp_raise_OSError(MP_EIO);
         } else {
-            mp_raise_ValueError(translate("Invalid argument"));
+            mp_arg_error_invalid(MP_QSTR_I2CPeripheral);
         }
     }
 

@@ -51,7 +51,7 @@
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     const mcu_pin_obj_t *pin) {
     if (pin->adc_index == 0 || pin->adc_channel == ADC_CHANNEL_MAX) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
     common_hal_mcu_pin_claim(pin);
     self->pin = pin;
@@ -80,7 +80,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     } else if (self->pin->adc_index == ADC_UNIT_2) {
         adc2_config_channel_atten((adc2_channel_t)self->pin->adc_channel, ATTENUATION);
     } else {
-        mp_raise_ValueError(translate("Invalid Pin"));
+        raise_ValueError_invalid_pin();
     }
 
     // Automatically select calibration process depending on status of efuse

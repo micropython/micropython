@@ -100,7 +100,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
 
     const bleio_characteristic_properties_t properties = args[ARG_properties].u_int;
     if (properties & ~CHAR_PROP_ALL) {
-        mp_raise_ValueError(translate("Invalid properties"));
+        mp_arg_error_invalid(MP_QSTR_properties);
     }
 
     const bleio_attribute_security_mode_t read_perm = args[ARG_read_perm].u_int;
@@ -109,10 +109,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     const bleio_attribute_security_mode_t write_perm = args[ARG_write_perm].u_int;
     common_hal_bleio_attribute_security_mode_check_valid(write_perm);
 
-    const mp_int_t max_length_int = args[ARG_max_length].u_int;
-    if (max_length_int < 0) {
-        mp_raise_ValueError(translate("max_length must be >= 0"));
-    }
+    const mp_int_t max_length_int = mp_arg_validate_int_min(args[ARG_max_length].u_int, 0, MP_QSTR_max_length);
+
     const size_t max_length = (size_t)max_length_int;
     const bool fixed_length = args[ARG_fixed_length].u_bool;
     mp_obj_t initial_value = args[ARG_initial_value].u_obj;

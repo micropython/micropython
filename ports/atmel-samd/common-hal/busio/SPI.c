@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/busio/SPI.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
@@ -33,7 +34,6 @@
 
 #include "supervisor/board.h"
 #include "common-hal/busio/__init__.h"
-#include "common-hal/microcontroller/Pin.h"
 
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_spi_m_sync.h"
@@ -133,7 +133,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     // Set up SPI clocks on SERCOM.

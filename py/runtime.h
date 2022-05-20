@@ -92,15 +92,22 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
+NORETURN void mp_arg_error_invalid(qstr arg_name);
+mp_int_t mp_arg_validate_int(mp_int_t i, mp_int_t required_i, qstr arg_name);
 mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);
 mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t j, qstr arg_name);
 mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name);
 #endif
+mp_uint_t mp_arg_validate_length_min(mp_uint_t length, mp_uint_t min, qstr arg_name);
+mp_uint_t mp_arg_validate_length_max(mp_uint_t length, mp_uint_t max, qstr arg_name);
 mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_t max, qstr arg_name);
+mp_uint_t mp_arg_validate_length(mp_uint_t length, mp_uint_t required_length, qstr arg_name);
+mp_int_t mp_arg_validate_index_range(mp_int_t index, mp_int_t min, mp_int_t max, qstr arg_name);
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name);
-mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name);
+mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name);
+mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name);
 
 static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) {
     return MP_STATE_THREAD(dict_locals);

@@ -45,6 +45,7 @@
 #include "peripheral_clk_config.h"
 #include "hpl_gclk_config.h"
 
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/translate.h"
@@ -282,11 +283,11 @@ static void frequencyin_samd51_stop_dpll(void) {
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t* self, const mcu_pin_obj_t* pin, const uint16_t capture_period) {
 
     if (!pin->has_extint) {
-        mp_raise_RuntimeError(translate("No hardware support on pin"));
+        raise_ValueError_invalid_pin();
     }
-    if ((capture_period == 0) || (capture_period > 500)) {
-        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
-    }
+
+    mp_arg_validate_int_range(capture_period, 0, 500, MP_QSTR_capture_period);
+
     uint32_t mask = 1 << pin->extint_channel;
     if (eic_get_enable() == 1 &&
     #ifdef SAMD21
@@ -569,9 +570,7 @@ uint16_t common_hal_frequencyio_frequencyin_get_capture_period(frequencyio_frequ
 }
 
 void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period) {
-    if ((capture_period == 0) || (capture_period > 500)) {
-        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
-    }
+    mp_arg_validate_int_range(capture_period, 1, 500, MP_QSTR_capture_period);
 
     self->capture_period = capture_period;
 

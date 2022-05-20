@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
 #include "components/driver/include/driver/uart.h"
@@ -101,9 +102,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bytes);
 
     bool have_tx = tx != NULL;
     bool have_rx = rx != NULL;
@@ -158,7 +157,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
+        mp_raise_RuntimeError(translate("UART init"));
     }
     // On the debug uart, enable pattern detection to look for CTRL+C
     #ifdef CIRCUITPY_DEBUG_UART_RX
@@ -265,7 +264,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         rts_num = rs485_dir->number;
     }
     if (uart_set_pin(self->uart_num, tx_num, rx_num, rts_num, cts_num) != ESP_OK) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 }
 
@@ -376,7 +375,7 @@ uint32_t common_hal_busio_uart_get_baudrate(busio_uart_obj_t *self) {
 void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrate) {
     if (baudrate > UART_BITRATE_MAX ||
         uart_set_baudrate(self->uart_num, baudrate) != ESP_OK) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
+        mp_arg_error_invalid(MP_QSTR_baudrate);
     }
 }
 
