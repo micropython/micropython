@@ -152,7 +152,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
                 break;
             #if defined(TCC4_GCLK_ID)
             case 3:
-                MCLK->APBDMASK.reg |= MCLK_APBDMASK_TCC3;
+                MCLK->APBCMASK.reg |= MCLK_APBCMASK_TCC3;
                 break;
             case 4:
                 MCLK->APBDMASK.reg |= MCLK_APBDMASK_TCC4;
