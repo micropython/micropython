@@ -74,9 +74,23 @@ msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr "%d адресные пины, %d rgb пины и %d плитки указывают высоту %d а не %d"
 
+#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/rtc/RTC.c
+#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
+#: ports/mimxrt10xx/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c
+msgid "%q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
 msgstr "%q и %q содержат пины-дупликаты"
+
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "%q and %q must be different"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -90,12 +104,7 @@ msgstr "%q сбой: %d"
 msgid "%q in use"
 msgstr "%q используется"
 
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c py/obj.c py/objstr.c
-#: py/objstrunicode.c
+#: py/obj.c py/objstr.c py/objstrunicode.c
 msgid "%q index out of range"
 msgstr "Индекс %q вне диапазона"
 
@@ -103,13 +112,33 @@ msgstr "Индекс %q вне диапазона"
 msgid "%q indices must be integers, not %s"
 msgstr "Индексы %q должны быть целыми числами, а не %s"
 
+#: shared-module/bitbangio/SPI.c
+msgid "%q init failed"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q length must be %d"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
 msgstr "Длинна %q должна быть %d-%d"
 
-#: shared-bindings/busio/I2C.c shared-bindings/usb_hid/Device.c
+#: py/argcheck.c
+msgid "%q length must be <= %d"
+msgstr ""
+
+#: py/argcheck.c
+msgid "%q length must be >= %d"
+msgstr ""
+
+#: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
 msgstr "Длинна %q должна быть >= 1"
+
+#: py/argcheck.c
+msgid "%q must be %d"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -127,14 +156,10 @@ msgstr "%q должен быть <= %d"
 msgid "%q must be >= %d"
 msgstr "%q должен быть >= %d"
 
-#: py/argcheck.c shared-bindings/memorymonitor/AllocationAlarm.c
+#: py/argcheck.c
 msgid "%q must be >= 0"
 msgstr "%q должен быть >= 0"
 
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-#: shared-bindings/_bleio/PacketBuffer.c shared-bindings/displayio/Group.c
-#: shared-bindings/displayio/Shape.c
-#: shared-bindings/memorymonitor/AllocationAlarm.c
 #: shared-bindings/vectorio/Circle.c shared-bindings/vectorio/Rectangle.c
 msgid "%q must be >= 1"
 msgstr "%q должен быть >= 1"
@@ -143,14 +168,9 @@ msgstr "%q должен быть >= 1"
 msgid "%q must be a string"
 msgstr "%q должен быть строкой"
 
-#: shared-module/vectorio/Polygon.c
-msgid "%q must be a tuple of length 2"
-msgstr "%q должен быть кортежем длинной 2"
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-#: shared-module/vectorio/VectorShape.c
-msgid "%q must be between %d and %d"
-msgstr "%q должен быть между %d и %d"
+#: py/argcheck.c
+msgid "%q must be an int"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
@@ -168,7 +188,11 @@ msgstr "%q должен быть во 2-й степени"
 msgid "%q out of bounds"
 msgstr "%q за пределом"
 
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c
+#: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q вне диапазона"
@@ -176,10 +200,6 @@ msgstr "%q вне диапазона"
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 msgid "%q pin invalid"
 msgstr "Пин %q не допустим"
-
-#: shared-bindings/fontio/BuiltinFont.c
-msgid "%q should be an int"
-msgstr "%q должен быть int"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q with a report ID of 0 must be of length 1"
@@ -343,10 +363,6 @@ msgstr "'yield from' внутри асинхронной функции"
 msgid "'yield' outside function"
 msgstr "'yield' вне функции"
 
-#: shared-module/vectorio/VectorShape.c
-msgid "(x,y) integers required"
-msgstr "Требуются целые числа (x,y)"
-
 #: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*x должно быть целью назначения"
@@ -381,10 +397,6 @@ msgstr "ADC2 используется WiFi"
 #, c-format
 msgid "Address must be %d bytes long"
 msgstr "Адрес должен быть длиной %d байт"
-
-#: shared-bindings/_bleio/Address.c
-msgid "Address type out of range"
-msgstr "Тип адреса вне диапазона"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -476,25 +488,6 @@ msgstr "Уже запущен"
 msgid "Already scanning for wifi networks"
 msgstr "Поиск сетей wifi уже происходит"
 
-#: ports/cxd56/common-hal/analogio/AnalogIn.c
-msgid "AnalogIn not supported on given pin"
-msgstr "AnalogIn не поддерживается на данном пине"
-
-#: ports/cxd56/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-msgid "AnalogOut functionality not supported"
-msgstr "Функциональность AnalogOut не поддерживается"
-
-#: shared-bindings/analogio/AnalogOut.c
-msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-msgstr "AnalogOut имеет только 16 бит. Значение должно быть меньше 65536."
-
-#: ports/atmel-samd/common-hal/analogio/AnalogOut.c
-msgid "AnalogOut not supported on given pin"
-msgstr "AnalogOut не поддерживается на данном пине"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
 msgstr "Другой PWMAudioOut уже активен"
@@ -570,11 +563,6 @@ msgstr ""
 "Битовый тактовый генератор и выбор слова должны использовать один источник "
 "тактирования"
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-#, c-format
-msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-msgstr "Битовая глубина должна быть от 1 до 6 включительно, а не %d"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
 msgstr "Битовая глубина должна быть кратна 8."
@@ -616,11 +604,6 @@ msgstr "Буфер + сдвиг слишком малы %d %d %d"
 msgid "Buffer elements must be 4 bytes long or less"
 msgstr "Элементы буфера должны иметь длину не более 4 байт"
 
-#: shared-module/usb_hid/Device.c
-#, c-format
-msgid "Buffer incorrect size. Should be %d bytes."
-msgstr "Неправильный размер буфера. Должен быть %d байт."
-
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
 msgstr "Буфер не является байтовым массивом (bytearray)."
@@ -630,7 +613,6 @@ msgstr "Буфер не является байтовым массивом (byte
 msgid "Buffer is too small"
 msgstr "Буфер слишком мал"
 
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -644,10 +626,6 @@ msgstr "Размер буфера должен быть кратен 512"
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Буфер должен быть кратен 512"
-
-#: shared-bindings/bitbangio/I2C.c
-msgid "Buffer must be at least length 1"
-msgstr "Буфер должен быть размером не менее 1"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
@@ -670,10 +648,6 @@ msgstr "Пин шины %d уже используется"
 msgid "Byte buffer must be 16 bytes."
 msgstr "Буфер байтов должен быть размером 16 байтам."
 
-#: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
-msgid "Bytes must be between 0 and 255."
-msgstr "Bytes должен быть в диапазоне от 0 до 255."
-
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
 msgstr "Блоки CBC должны быть кратны 16 байтам"
@@ -689,6 +663,10 @@ msgstr "CRC или контрольная сумма неправильная"
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
 msgstr "Вызовите super().__init__() перед обращением к родному объекту."
+
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Camera init"
+msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
@@ -743,18 +721,10 @@ msgstr ""
 "Невозможно иметь ответы сканирования для расширенных, подключаемых "
 "объявлений (advertisements)."
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Cannot output both channels on the same pin"
-msgstr "Невозможно вывести оба канала на один пин"
-
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
 msgstr ""
 "Невозможно установить подтяжку на пине, предназначенном только для ввода."
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot read without MISO pin."
-msgstr "Считывание невозможно без пина MISO."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
@@ -767,8 +737,8 @@ msgstr "Невозможно перемонтировать '/' пока он в
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present."
-msgstr "Невозможно перезагрузится в загрузчик так как он отсутствует."
+msgid "Cannot reset into bootloader because no bootloader is present"
+msgstr ""
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -788,21 +758,20 @@ msgid "Cannot subclass slice"
 msgstr "Срез субкласса невозможен"
 
 #: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins."
-msgstr "Передача данных невозможна без пинов MOSI и MISO."
+msgid "Cannot transfer without MOSI and MISO pins"
+msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Невозможно изменить частоту на таймере, который уже используется"
 
-#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
+msgid "Cannot wake on pin edge, only level"
+msgstr ""
+
+#: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
 msgstr "Невозможно проснуться по спаду/росту на пине. Только по уровню."
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot write without MOSI pin."
-msgstr "Запись невозможна без пина MOSI."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -816,10 +785,6 @@ msgstr "Код ядра CircuitPython сильно крашнулся. Упс!\n
 msgid "CircuitPython was unable to allocate the heap."
 msgstr "CircuitPython не смог выделить heap."
 
-#: shared-module/bitbangio/SPI.c
-msgid "Clock pin init failed."
-msgstr "Не удалось инициализировать пин Clock."
-
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
 msgstr "Длинна такта слишком велика"
@@ -827,11 +792,6 @@ msgstr "Длинна такта слишком велика"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Источник тактирования уже используется"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "Command must be an int between 0 and 255"
-msgstr "Команда должна быть целым числом (int) от 0 до 255"
 
 #: shared-bindings/_bleio/Connection.c
 msgid ""
@@ -844,35 +804,6 @@ msgstr ""
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
 msgstr "Файл .mpy поврежден"
-
-#: ports/cxd56/common-hal/camera/Camera.c
-msgid "Could not initialize Camera"
-msgstr "Не удалось инициализировать камеру"
-
-#: ports/cxd56/common-hal/gnss/GNSS.c
-msgid "Could not initialize GNSS"
-msgstr "Не удалось инициализировать GNSS"
-
-#: ports/cxd56/common-hal/sdioio/SDCard.c
-msgid "Could not initialize SDCard"
-msgstr "Не удалось инициализировать SD карту"
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c
-msgid "Could not initialize UART"
-msgstr "Не удалось инициализировать UART"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init channel"
-msgstr "Не удалось повторно инициализировать канал"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init timer"
-msgstr "Не удалось повторно инициализировать таймер"
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not restart PWM"
-msgstr "Не удалось перезапустить ШИМ"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -893,20 +824,6 @@ msgstr "Не удалось запустить прерывание, RX заня
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate decoder"
 msgstr "Не удалось выделить место для декодера"
-
-#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate first buffer"
-msgstr "Не удалось выделить первый буфер"
-
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate input buffer"
-msgstr "Не удалось выделить входной буфер"
-
-#: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
-#: shared-module/audiomp3/MP3Decoder.c
-msgid "Couldn't allocate second buffer"
-msgstr "Не удалось выделить второй буфер"
 
 #: supervisor/shared/safe_mode.c
 msgid "Crash into the HardFault_Handler."
@@ -956,10 +873,6 @@ msgstr "Емкость destination меньше, чем destination_length."
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
 msgstr "Устройство используется"
-
-#: ports/cxd56/common-hal/digitalio/DigitalInOut.c
-msgid "DigitalInOut not supported on given pin"
-msgstr "DigitalInOut не поддерживается на данном пине"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -1016,11 +929,6 @@ msgstr "Ожидалось(ся) %q"
 msgid "Expected an alarm"
 msgstr "Ожидался сигнал"
 
-#: shared-module/adafruit_pixelbuf/PixelBuf.c
-#, c-format
-msgid "Expected tuple of length %d, got %d"
-msgstr "Ожидался кортеж длины %d, получен %d"
-
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
@@ -1046,22 +954,6 @@ msgstr "Не удалось отправить команду."
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Не удалось получить mutex, ошибка 0x%04x"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c
-msgid "Failed to allocate RX buffer"
-msgstr "Не удалось выделить буфер RX"
-
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
-#: ports/stm/common-hal/pulseio/PulseIn.c
-#, c-format
-msgid "Failed to allocate RX buffer of %d bytes"
-msgstr "Не удалось выделить буфер RX размером %d байт"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
@@ -1133,11 +1025,6 @@ msgstr ""
 msgid "Format not supported"
 msgstr "Формат не поддерживается"
 
-#: shared-module/framebufferio/FramebufferDisplay.c
-#, c-format
-msgid "Framebuffer requires %d bytes"
-msgstr "Фреймбуфер требует %d байт"
-
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
@@ -1153,6 +1040,10 @@ msgstr ""
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
 msgstr "Функция требует блокировки"
+
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "GNSS init"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
@@ -1181,17 +1072,13 @@ msgstr "Оборудование занято, попробуйте исполь
 msgid "Hardware in use, try alternative pins"
 msgstr "Оборудование используется, попробуйте использовать другие пины"
 
-#: shared-bindings/wifi/Radio.c
-msgid "Hostname must be between 1 and 253 characters"
-msgstr "Имя хоста должно содержать от 1 до 253 символов"
-
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
 msgstr "Операция ввода-вывода на закрытом файле"
 
 #: ports/stm/common-hal/busio/I2C.c
-msgid "I2C Init Error"
-msgstr "Ошибка инициализации I2C"
+msgid "I2C init error"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
@@ -1305,75 +1192,33 @@ msgstr "Внутренняя ошибка"
 msgid "Internal error #%d"
 msgstr "Внутренняя ошибка #%d"
 
-#: shared-bindings/sdioio/SDCard.c shared-module/usb_hid/Device.c
+#: py/argcheck.c
 msgid "Invalid %q"
 msgstr "Недопустимый %q"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr "Недопустимый пин %q"
-
-#: ports/stm/common-hal/busio/I2C.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Invalid %q pin selection"
-msgstr "Неверный выбор пина %q"
 
 #: ports/stm/common-hal/analogio/AnalogIn.c
 msgid "Invalid ADC Unit value"
 msgstr "Недопустимое значение единицы АЦП"
-
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "Invalid AuthMode"
-msgstr "Недопустимый AuthMode"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Недопустимый параметр BLE"
 
-#: shared-module/displayio/OnDiskBitmap.c
-msgid "Invalid BMP file"
-msgstr "Неправилный файл BMP"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
 msgstr "Неверный BSSID"
-
-#: ports/espressif/common-hal/analogio/AnalogOut.c
-#: ports/stm/common-hal/analogio/AnalogOut.c
-msgid "Invalid DAC pin supplied"
-msgstr "Передан неверный пин ЦАП"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Неверный MAC-адрес"
 
-#: shared-bindings/synthio/__init__.c
-msgid "Invalid MIDI file"
-msgstr "Неверный MIDI-файл"
-
-#: ports/atmel-samd/common-hal/pwmio/PWMOut.c
-#: ports/cxd56/common-hal/pwmio/PWMOut.c
-#: ports/espressif/common-hal/pwmio/PWMOut.c
-#: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
-#: ports/nrf/common-hal/pwmio/PWMOut.c
-#: ports/raspberrypi/common-hal/pwmio/PWMOut.c shared-bindings/pwmio/PWMOut.c
-msgid "Invalid PWM frequency"
-msgstr "Недопустимая частота ШИМ"
-
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "Invalid Pin"
-msgstr "Неверный пин"
-
-#: ports/espressif/bindings/espidf/__init__.c
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/espressif/esp_error.c py/moduerrno.c
-#: shared-module/rgbmatrix/RGBMatrix.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
+#: py/moduerrno.c
 msgid "Invalid argument"
 msgstr "Недопустимый аргумент"
 
@@ -1381,41 +1226,10 @@ msgstr "Недопустимый аргумент"
 msgid "Invalid bits per value"
 msgstr "Недопустимое бит-на-значение"
 
-#: ports/nrf/common-hal/busio/UART.c ports/raspberrypi/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
-msgid "Invalid buffer size"
-msgstr "Неверный размер буфера"
-
-#: shared-bindings/adafruit_pixelbuf/PixelBuf.c
-msgid "Invalid byteorder string"
-msgstr "Недействительная строка byteorder"
-
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-msgid "Invalid capture period. Valid range: 1 - 500"
-msgstr "Неверный период захвата. Допустимый диапазон: 1 - 500"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid channel count"
-msgstr "Недействительное количество каналов"
-
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#, c-format
-msgid "Invalid data_count %d"
-msgstr "Недействительный data_count %d"
-
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
 msgstr "Неверный data_pins[%d]"
-
-#: shared-bindings/digitalio/DigitalInOut.c
-msgid "Invalid direction."
-msgstr "Неверное направление."
-
-#: shared-module/audiocore/WaveFile.c
-msgid "Invalid file"
-msgstr "Неверный файл"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1425,77 +1239,13 @@ msgstr "Неверный размер блока формата"
 msgid "Invalid memory access."
 msgstr "Неправильный доступ к памяти."
 
-#: extmod/vfs_fat_file.c
-msgid "Invalid mode"
-msgstr ""
-
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
 msgstr "Неверный MAC-адрес multicast"
 
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-msgid "Invalid number of bits"
-msgstr "Неверное количество бит"
-
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid phase"
-msgstr "Неверная фаза"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/touchio/TouchIn.c
-#: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
-#: ports/espressif/common-hal/touchio/TouchIn.c
-#: ports/nrf/common-hal/alarm/pin/PinAlarm.c shared-bindings/pwmio/PWMOut.c
-#: shared-module/rgbmatrix/RGBMatrix.c
-msgid "Invalid pin"
-msgstr "Недопустимый пин"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for left channel"
-msgstr "Недопустимый пин для левого канала"
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for right channel"
-msgstr "Недопустимый пин для правого канала"
-
-#: ports/atmel-samd/common-hal/busio/I2C.c
-#: ports/atmel-samd/common-hal/busio/SPI.c
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/atmel-samd/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/cxd56/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/cxd56/common-hal/busio/UART.c ports/cxd56/common-hal/sdioio/SDCard.c
-#: ports/espressif/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/espressif/common-hal/canio/CAN.c
-#: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/usb_host/Port.c ports/nrf/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/I2C.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/UART.c shared-bindings/busio/SPI.c
 #: shared-bindings/busio/UART.c
 msgid "Invalid pins"
 msgstr "Недопустимые пины"
-
-#: shared-bindings/bitbangio/SPI.c shared-bindings/busio/SPI.c
-#: shared-bindings/displayio/FourWire.c
-msgid "Invalid polarity"
-msgstr "Неправильная полярность"
-
-#: shared-bindings/_bleio/Characteristic.c
-msgid "Invalid properties"
-msgstr "Недопустимые свойства"
-
-#: shared-bindings/microcontroller/__init__.c
-msgid "Invalid run mode."
-msgstr "Неверный режим работы."
-
-#: shared-module/_bleio/Attribute.c
-msgid "Invalid security_mode"
-msgstr "Неверный security_mode"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
@@ -1508,23 +1258,6 @@ msgstr "Неверный сокет для TLS"
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
 msgstr "Неверное состояние"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid voice"
-msgstr "Неверный voice"
-
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Invalid voice count"
-msgstr "Неверный счетчик voice"
-
-#: shared-module/audiocore/WaveFile.c
-msgid "Invalid wave file"
-msgstr "Неверный wave-файл"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "Invalid word/bit length"
-msgstr "Недопустимая длина слова/бита"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1539,24 +1272,16 @@ msgid "LHS of keyword arg must be an id"
 msgstr "LHS ключевого слова arg должен быть идентификатором(id)"
 
 #: shared-module/displayio/Group.c
-msgid "Layer already in a group."
-msgstr "Слой уже в группе."
+msgid "Layer already in a group"
+msgstr ""
 
 #: shared-module/displayio/Group.c
-msgid "Layer must be a Group or TileGrid subclass."
-msgstr "Слой должен быть группой (Group) или субклассом TileGrid."
+msgid "Layer must be a Group or TileGrid subclass"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
 msgstr "MAC адрес был недействительным"
-
-#: shared-module/bitbangio/SPI.c
-msgid "MISO pin init failed."
-msgstr "Не удалось инициализировать пин MISO."
-
-#: shared-module/bitbangio/SPI.c
-msgid "MOSI pin init failed."
-msgstr "Не удалось инициализировать пин MOSI."
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -1566,10 +1291,6 @@ msgstr ""
 #, c-format
 msgid "Maximum x value when mirrored is %d"
 msgstr "Максимальное значение x при зеркальном отображении - %d"
-
-#: shared-bindings/canio/Message.c
-msgid "Messages limited to 8 bytes"
-msgstr "Сообщения ограничены 8 байтами"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
@@ -1584,9 +1305,13 @@ msgstr ""
 msgid "Mismatched swap flag"
 msgstr ""
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
 msgstr "Отсутствует пин MISO или MOSI"
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "Missing MISO or MOSI pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1623,11 +1348,6 @@ msgstr "Отсутствует first_set_pin. Инструкция %d устан
 #, c-format
 msgid "Missing jmp_pin. Instruction %d jumps on pin"
 msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
-
-#: shared-module/usb_hid/Device.c
-#, c-format
-msgid "More than %d report ids not supported"
-msgstr "Не поддерживается более %d идентификаторов отчетов (report ids)"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1689,14 +1409,22 @@ msgid "No I2C device at address: 0x%x"
 msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
 msgstr "Нет пина MISO"
 
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
+msgid "No MISO pin"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MOSI Pin"
 msgstr "Нет пина MOSI"
+
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
+msgid "No MOSI pin"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
@@ -1735,16 +1463,6 @@ msgstr "Свободные GCLK отсутствуют"
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
 msgstr "Отсутствует аппаратный генератор случайных чисел"
-
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-msgid "No hardware support on clk pin"
-msgstr "Отсутствует аппаратная поддержка пина clk"
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-msgid "No hardware support on pin"
-msgstr "Отсутствует аппаратная поддержка на пине"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
@@ -1895,10 +1613,13 @@ msgid "Only one address is allowed"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
-#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
-#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
+msgid "Only one alarm.time alarm can be set"
+msgstr ""
+
+#: ports/espressif/common-hal/alarm/time/TimeAlarm.c
+#: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
 msgstr ""
 
@@ -1930,11 +1651,6 @@ msgstr ""
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr ""
 
-#: shared-bindings/bitops/__init__.c
-#, c-format
-msgid "Output buffer must be at least %d bytes"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Oversample must be multiple of 8."
 msgstr ""
@@ -1945,12 +1661,11 @@ msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
-"PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+"PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "PWM restart"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
@@ -1969,28 +1684,13 @@ msgstr ""
 msgid "Permission denied"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
 msgstr "Пин не может вывести из глубокого сна"
 
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Pin count must be at least 1"
-msgstr "Количество пинов должно быть не менее 1"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
 msgstr "Слишком большое количество пинов"
-
-#: ports/atmel-samd/common-hal/analogio/AnalogIn.c
-#: ports/cxd56/common-hal/analogio/AnalogIn.c
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogIn.c
-#: ports/nrf/common-hal/analogio/AnalogIn.c
-#: ports/raspberrypi/common-hal/analogio/AnalogIn.c
-#: ports/stm/common-hal/analogio/AnalogIn.c
-msgid "Pin does not have ADC capabilities"
-msgstr "Пин не имеет возможности АЦП"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
@@ -2064,15 +1764,7 @@ msgid "Program does OUT without loading OSR"
 msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Program must contain at least one 16-bit instruction."
-msgstr ""
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Program too large"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2096,8 +1788,9 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
-msgid "RS485 Not yet supported on this device"
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "RS485"
 msgstr ""
 
 #: ports/espressif/common-hal/busio/UART.c
@@ -2105,19 +1798,8 @@ msgstr ""
 msgid "RS485 inversion specified when not in RS485 mode"
 msgstr ""
 
-#: ports/cxd56/common-hal/rtc/RTC.c ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
-msgid "RTC calibration is not supported on this board"
-msgstr ""
-
 #: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
-msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -2169,6 +1851,10 @@ msgstr ""
 msgid "SD card CSD format not supported"
 msgstr ""
 
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "SDCard init"
+msgstr ""
+
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -2179,29 +1865,20 @@ msgstr ""
 msgid "SDIO Init Error %d"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
-msgid "SPI Init Error"
-msgstr ""
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "SPI Re-initialization error"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
+msgstr ""
+
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI init error"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
 msgstr ""
 
-#: shared-bindings/audiomixer/Mixer.c
-msgid "Sample rate must be positive"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#, c-format
-msgid "Sample rate too high. It must be less than %d"
+#: ports/stm/common-hal/busio/SPI.c
+msgid "SPI re-init"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -2220,14 +1897,6 @@ msgstr ""
 
 #: shared-bindings/ssl/SSLContext.c
 msgid "Server side context cannot have hostname"
-msgstr ""
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Set pin count must be between 1 and 5"
-msgstr "Число Set пинов должно быть от 1 до 5"
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "Side set pin count must be between 1 and 5"
 msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
@@ -2263,10 +1932,6 @@ msgstr "Укажите точно один из data0 или data_pins"
 
 #: extmod/modure.c
 msgid "Splitting with sub-captures"
-msgstr ""
-
-#: shared-bindings/supervisor/__init__.c
-msgid "Stack size must be at least 256"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -2357,10 +2022,6 @@ msgid "Tile index out of bounds"
 msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c
-msgid "Tile value out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/TileGrid.c
 msgid "Tile width must exactly divide bitmap width"
 msgstr ""
 
@@ -2379,6 +2040,9 @@ msgid "To exit, please reset the board without "
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "Too many channels in sample"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
 msgstr ""
@@ -2411,23 +2075,20 @@ msgid "Tuple or struct_time argument required"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART Buffer allocation error"
+msgid "UART de-init"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "UART init"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART De-init error"
+msgid "UART re-init"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART Init Error"
-msgstr ""
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "UART Re-init error"
-msgstr ""
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "UART write error"
+msgid "UART write"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
@@ -2564,12 +2225,6 @@ msgid ""
 "declined or ignored."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/cxd56/common-hal/busio/I2C.c
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
-msgid "Unsupported baudrate"
-msgstr ""
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
 msgstr ""
@@ -2642,10 +2297,6 @@ msgid ""
 "Visit circuitpython.org for more information.\n"
 "\n"
 "To list built-in modules type `help(\"modules\")`.\n"
-msgstr ""
-
-#: shared-bindings/wifi/Radio.c
-msgid "WiFi password must be between 8 and 63 characters"
 msgstr ""
 
 #: main.c
@@ -2800,10 +2451,6 @@ msgstr ""
 msgid "bits must be 32 or less"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "bits must be in range 5 to 9"
-msgstr ""
-
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
 msgstr ""
@@ -2841,11 +2488,6 @@ msgstr ""
 msgid "byteorder is not a string"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c
-msgid "bytes > 8 bits not supported"
-msgstr ""
-
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2854,7 +2496,7 @@ msgstr ""
 msgid "bytes value out of range"
 msgstr ""
 
-#: ports/atmel-samd/bindings/samd/Clock.c ports/atmel-samd/common-hal/rtc/RTC.c
+#: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
 msgstr ""
 
@@ -2862,12 +2504,9 @@ msgstr ""
 msgid "calibration is read only"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/rtc/RTC.c
-msgid "calibration value out of range +/-127"
-msgstr ""
-
+#: shared-module/vectorio/Circle.c shared-module/vectorio/Polygon.c
 #: shared-module/vectorio/Rectangle.c
-msgid "can only be registered in one parent"
+msgid "can only have one parent"
 msgstr ""
 
 #: py/emitinlinethumb.c
@@ -3038,6 +2677,10 @@ msgstr ""
 msgid "casting"
 msgstr ""
 
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "channel re-init"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr ""
@@ -3048,10 +2691,6 @@ msgstr ""
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
-msgstr ""
-
-#: shared-module/vectorio/Circle.c
-msgid "circle can only be registered in one parent"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3478,6 +3117,10 @@ msgstr ""
 msgid "indices must be integers, slices, or Boolean lists"
 msgstr ""
 
+#: ports/espressif/common-hal/busio/I2C.c
+msgid "init I2C"
+msgstr ""
+
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
 msgstr ""
@@ -3728,19 +3371,11 @@ msgstr ""
 msgid "matrix is not positive definite"
 msgstr ""
 
-#: ports/espressif/common-hal/wifi/Radio.c
-msgid "max_connections must be between 0 and 10"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/Descriptor.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
-msgstr ""
-
-#: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
-msgid "max_length must be >= 0"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -4113,10 +3748,6 @@ msgstr ""
 msgid "poll on file not available on win32"
 msgstr ""
 
-#: shared-module/vectorio/Polygon.c
-msgid "polygon can only be registered in one parent"
-msgstr ""
-
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
 msgstr ""
@@ -4161,14 +3792,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
-msgstr ""
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "pull_threshold must be between 1 and 32"
-msgstr ""
-
-#: ports/raspberrypi/bindings/rp2pio/StateMachine.c
-msgid "push_threshold must be between 1 and 32"
 msgstr ""
 
 #: extmod/modutimeq.c
@@ -4341,10 +3964,6 @@ msgstr ""
 msgid "step must be non-zero"
 msgstr ""
 
-#: shared-bindings/busio/UART.c
-msgid "stop must be 1 or 2"
-msgstr ""
-
 #: shared-bindings/random/__init__.c
 msgid "stop not reachable from start"
 msgstr ""
@@ -4393,10 +4012,6 @@ msgstr ""
 msgid "threshold must be in the range 0-65536"
 msgstr ""
 
-#: shared-bindings/rgbmatrix/RGBMatrix.c
-msgid "tile must be greater than zero"
-msgstr ""
-
 #: shared-bindings/time/__init__.c
 msgid "time.struct_time() takes a 9-sequence"
 msgstr ""
@@ -4416,16 +4031,16 @@ msgstr ""
 msgid "timeout must be < 655.35 secs"
 msgstr ""
 
-#: shared-bindings/_bleio/CharacteristicBuffer.c
-msgid "timeout must be >= 0.0"
-msgstr ""
-
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
 msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
+msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "timer re-init"
 msgstr ""
 
 #: shared-bindings/time/__init__.c
@@ -4619,13 +4234,7 @@ msgstr ""
 msgid "watchdog timeout must be greater than 0"
 msgstr ""
 
-#: shared-bindings/bitops/__init__.c
-#, c-format
-msgid "width must be from 2 to 8 (inclusive), not %d"
-msgstr ""
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
-#: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "width must be greater than zero"
 msgstr ""
 
@@ -4696,6 +4305,238 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q должен быть кортежем длинной 2"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q должен быть между %d и %d"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q должен быть int"
+
+#~ msgid "(x,y) integers required"
+#~ msgstr "Требуются целые числа (x,y)"
+
+#~ msgid "Address type out of range"
+#~ msgstr "Тип адреса вне диапазона"
+
+#~ msgid "AnalogIn not supported on given pin"
+#~ msgstr "AnalogIn не поддерживается на данном пине"
+
+#~ msgid "AnalogOut functionality not supported"
+#~ msgstr "Функциональность AnalogOut не поддерживается"
+
+#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+#~ msgstr "AnalogOut имеет только 16 бит. Значение должно быть меньше 65536."
+
+#~ msgid "AnalogOut not supported on given pin"
+#~ msgstr "AnalogOut не поддерживается на данном пине"
+
+#, c-format
+#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+#~ msgstr "Битовая глубина должна быть от 1 до 6 включительно, а не %d"
+
+#, c-format
+#~ msgid "Buffer incorrect size. Should be %d bytes."
+#~ msgstr "Неправильный размер буфера. Должен быть %d байт."
+
+#~ msgid "Buffer must be at least length 1"
+#~ msgstr "Буфер должен быть размером не менее 1"
+
+#~ msgid "Bytes must be between 0 and 255."
+#~ msgstr "Bytes должен быть в диапазоне от 0 до 255."
+
+#~ msgid "Cannot output both channels on the same pin"
+#~ msgstr "Невозможно вывести оба канала на один пин"
+
+#~ msgid "Cannot read without MISO pin."
+#~ msgstr "Считывание невозможно без пина MISO."
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present."
+#~ msgstr "Невозможно перезагрузится в загрузчик так как он отсутствует."
+
+#~ msgid "Cannot transfer without MOSI and MISO pins."
+#~ msgstr "Передача данных невозможна без пинов MOSI и MISO."
+
+#~ msgid "Cannot write without MOSI pin."
+#~ msgstr "Запись невозможна без пина MOSI."
+
+#~ msgid "Clock pin init failed."
+#~ msgstr "Не удалось инициализировать пин Clock."
+
+#~ msgid "Command must be an int between 0 and 255"
+#~ msgstr "Команда должна быть целым числом (int) от 0 до 255"
+
+#~ msgid "Could not initialize Camera"
+#~ msgstr "Не удалось инициализировать камеру"
+
+#~ msgid "Could not initialize GNSS"
+#~ msgstr "Не удалось инициализировать GNSS"
+
+#~ msgid "Could not initialize SDCard"
+#~ msgstr "Не удалось инициализировать SD карту"
+
+#~ msgid "Could not initialize UART"
+#~ msgstr "Не удалось инициализировать UART"
+
+#~ msgid "Could not re-init channel"
+#~ msgstr "Не удалось повторно инициализировать канал"
+
+#~ msgid "Could not re-init timer"
+#~ msgstr "Не удалось повторно инициализировать таймер"
+
+#~ msgid "Could not restart PWM"
+#~ msgstr "Не удалось перезапустить ШИМ"
+
+#~ msgid "Couldn't allocate first buffer"
+#~ msgstr "Не удалось выделить первый буфер"
+
+#~ msgid "Couldn't allocate input buffer"
+#~ msgstr "Не удалось выделить входной буфер"
+
+#~ msgid "Couldn't allocate second buffer"
+#~ msgstr "Не удалось выделить второй буфер"
+
+#~ msgid "DigitalInOut not supported on given pin"
+#~ msgstr "DigitalInOut не поддерживается на данном пине"
+
+#, c-format
+#~ msgid "Expected tuple of length %d, got %d"
+#~ msgstr "Ожидался кортеж длины %d, получен %d"
+
+#~ msgid "Failed to allocate RX buffer"
+#~ msgstr "Не удалось выделить буфер RX"
+
+#, c-format
+#~ msgid "Failed to allocate RX buffer of %d bytes"
+#~ msgstr "Не удалось выделить буфер RX размером %d байт"
+
+#, c-format
+#~ msgid "Framebuffer requires %d bytes"
+#~ msgstr "Фреймбуфер требует %d байт"
+
+#~ msgid "Hostname must be between 1 and 253 characters"
+#~ msgstr "Имя хоста должно содержать от 1 до 253 символов"
+
+#~ msgid "I2C Init Error"
+#~ msgstr "Ошибка инициализации I2C"
+
+#~ msgid "Invalid %q pin selection"
+#~ msgstr "Неверный выбор пина %q"
+
+#~ msgid "Invalid AuthMode"
+#~ msgstr "Недопустимый AuthMode"
+
+#~ msgid "Invalid BMP file"
+#~ msgstr "Неправилный файл BMP"
+
+#~ msgid "Invalid DAC pin supplied"
+#~ msgstr "Передан неверный пин ЦАП"
+
+#~ msgid "Invalid MIDI file"
+#~ msgstr "Неверный MIDI-файл"
+
+#~ msgid "Invalid PWM frequency"
+#~ msgstr "Недопустимая частота ШИМ"
+
+#~ msgid "Invalid Pin"
+#~ msgstr "Неверный пин"
+
+#~ msgid "Invalid buffer size"
+#~ msgstr "Неверный размер буфера"
+
+#~ msgid "Invalid byteorder string"
+#~ msgstr "Недействительная строка byteorder"
+
+#~ msgid "Invalid capture period. Valid range: 1 - 500"
+#~ msgstr "Неверный период захвата. Допустимый диапазон: 1 - 500"
+
+#~ msgid "Invalid channel count"
+#~ msgstr "Недействительное количество каналов"
+
+#, c-format
+#~ msgid "Invalid data_count %d"
+#~ msgstr "Недействительный data_count %d"
+
+#~ msgid "Invalid direction."
+#~ msgstr "Неверное направление."
+
+#~ msgid "Invalid file"
+#~ msgstr "Неверный файл"
+
+#~ msgid "Invalid number of bits"
+#~ msgstr "Неверное количество бит"
+
+#~ msgid "Invalid phase"
+#~ msgstr "Неверная фаза"
+
+#~ msgid "Invalid pin"
+#~ msgstr "Недопустимый пин"
+
+#~ msgid "Invalid pin for left channel"
+#~ msgstr "Недопустимый пин для левого канала"
+
+#~ msgid "Invalid pin for right channel"
+#~ msgstr "Недопустимый пин для правого канала"
+
+#~ msgid "Invalid polarity"
+#~ msgstr "Неправильная полярность"
+
+#~ msgid "Invalid properties"
+#~ msgstr "Недопустимые свойства"
+
+#~ msgid "Invalid run mode."
+#~ msgstr "Неверный режим работы."
+
+#~ msgid "Invalid security_mode"
+#~ msgstr "Неверный security_mode"
+
+#~ msgid "Invalid voice"
+#~ msgstr "Неверный voice"
+
+#~ msgid "Invalid voice count"
+#~ msgstr "Неверный счетчик voice"
+
+#~ msgid "Invalid wave file"
+#~ msgstr "Неверный wave-файл"
+
+#~ msgid "Invalid word/bit length"
+#~ msgstr "Недопустимая длина слова/бита"
+
+#~ msgid "Layer already in a group."
+#~ msgstr "Слой уже в группе."
+
+#~ msgid "Layer must be a Group or TileGrid subclass."
+#~ msgstr "Слой должен быть группой (Group) или субклассом TileGrid."
+
+#~ msgid "MISO pin init failed."
+#~ msgstr "Не удалось инициализировать пин MISO."
+
+#~ msgid "MOSI pin init failed."
+#~ msgstr "Не удалось инициализировать пин MOSI."
+
+#~ msgid "Messages limited to 8 bytes"
+#~ msgstr "Сообщения ограничены 8 байтами"
+
+#, c-format
+#~ msgid "More than %d report ids not supported"
+#~ msgstr "Не поддерживается более %d идентификаторов отчетов (report ids)"
+
+#~ msgid "No hardware support on clk pin"
+#~ msgstr "Отсутствует аппаратная поддержка пина clk"
+
+#~ msgid "No hardware support on pin"
+#~ msgstr "Отсутствует аппаратная поддержка на пине"
+
+#~ msgid "Pin count must be at least 1"
+#~ msgstr "Количество пинов должно быть не менее 1"
+
+#~ msgid "Pin does not have ADC capabilities"
+#~ msgstr "Пин не имеет возможности АЦП"
+
+#~ msgid "Set pin count must be between 1 and 5"
+#~ msgstr "Число Set пинов должно быть от 1 до 5"
 
 #~ msgid ""
 #~ "\n"
