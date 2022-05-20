@@ -121,11 +121,11 @@ static void camera_start_preview() {
 void common_hal_camera_construct(camera_obj_t *self) {
     if (camera_dev.fd < 0) {
         if (video_initialize(camera_dev.devpath) < 0) {
-            mp_raise_ValueError_varg(translate("Could not initialize %q"), MP_QSTR_Camera);
+            mp_raise_RuntimeError(translate("Camera init"));
         }
         camera_dev.fd = open(camera_dev.devpath, 0);
         if (camera_dev.fd < 0) {
-            mp_raise_ValueError_varg(translate("Could not initialize %q"), MP_QSTR_Camera);
+            mp_raise_RuntimeError(translate("Camera init"));
         }
     }
 

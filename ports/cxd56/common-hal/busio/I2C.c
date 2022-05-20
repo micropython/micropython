@@ -37,7 +37,7 @@
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl,
     const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     if (frequency != I2C_SPEED_STANDARD && frequency != I2C_SPEED_FAST) {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     if (scl->number != PIN_I2C0_BCK || sda->number != PIN_I2C0_BDT) {

@@ -237,7 +237,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self,
         index += self->len;
     }
     if (index < 0 || index >= self->len) {
-        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
+        mp_arg_validate_index_range(index, 0, self->len, MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     return value;

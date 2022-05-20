@@ -59,13 +59,13 @@ void common_hal_canio_can_construct(canio_can_obj_t *self, const mcu_pin_obj_t *
 
     const mcu_periph_obj_t *mcu_tx = find_pin_function(mcu_can_tx_list, can_tx_len, tx, -1);
     if (!mcu_tx) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_tx);
+        raise_ValueError_invalid_pin_name(MP_QSTR_tx);
     }
     int periph_index = mcu_tx->periph_index;
 
     const mcu_periph_obj_t *mcu_rx = find_pin_function(mcu_can_rx_list, can_rx_len, rx, periph_index);
     if (!mcu_rx) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_rx);
+        raise_ValueError_invalid_pin_name(MP_QSTR_rx);
     }
 
     if (reserved_can[periph_index]) {

@@ -93,7 +93,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t periph_index = 0; // origin 0 corrected
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert == true)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
     // Can have both pins, or either
@@ -168,7 +168,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_arg_validate_int_range(bits, 8, 9, MP_QSTR_bits);
 
     if (USARTx == NULL) {  // this can only be hit if the periph file is wrong
-        mp_raise_ValueError(translate("Internal define error"));
+        mp_raise_RuntimeError(translate("Internal define error"));
     }
 
     // GPIO Init
@@ -208,7 +208,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     self->handle.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART init error"));
+        mp_raise_RuntimeError(translate("UART init"));
 
     }
 
@@ -232,7 +232,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // start the interrupt series
     if ((HAL_UART_GetState(&self->handle) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) {
-        mp_raise_ValueError(translate("Could not start interrupt, RX busy"));
+        mp_raise_RuntimeError(translate("Could not start interrupt, RX busy"));
     }
 
     // start the receive interrupt chain
@@ -335,7 +335,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
             Status = HAL_UART_GetState(&self->handle);
         }
     } else {
-        mp_raise_ValueError(translate("UART write error"));
+        mp_raise_RuntimeError(translate("UART write"));
     }
 
     return len;
@@ -405,11 +405,11 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self, uint32_t baudrat
 
     // Otherwise de-init and set new rate
     if (HAL_UART_DeInit(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART de-init error"));
+        mp_raise_RuntimeError(translate("UART de-init"));
     }
     self->handle.Init.BaudRate = baudrate;
     if (HAL_UART_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("UART re-init error"));
+        mp_raise_RuntimeError(translate("UART re-init"));
     }
 
     self->baudrate = baudrate;

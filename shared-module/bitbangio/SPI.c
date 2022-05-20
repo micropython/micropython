@@ -123,7 +123,7 @@ void shared_module_bitbangio_spi_unlock(bitbangio_spi_obj_t *self) {
 // Writes out the given data.
 bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t *data, size_t len) {
     if (len > 0 && !self->has_mosi) {
-        mp_raise_ValueError(translate("Cannot write without MOSI pin"));
+        mp_raise_ValueError(translate("No MOSI pin"));
     }
     uint32_t delay_half = self->delay_half;
 
@@ -178,7 +178,7 @@ bool shared_module_bitbangio_spi_write(bitbangio_spi_obj_t *self, const uint8_t 
 // Reads in len bytes while outputting zeroes.
 bool shared_module_bitbangio_spi_read(bitbangio_spi_obj_t *self, uint8_t *data, size_t len, uint8_t write_data) {
     if (len > 0 && !self->has_miso) {
-        mp_raise_ValueError(translate("Cannot read without MISO pin"));
+        mp_raise_ValueError(translate("No MISO pin"));
     }
 
     uint32_t delay_half = self->delay_half;

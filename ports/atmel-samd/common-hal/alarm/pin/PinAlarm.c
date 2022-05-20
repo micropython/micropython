@@ -261,7 +261,7 @@ static void pinalarm_set_alarms_deep(size_t n_alarms, const mp_obj_t *alarms) {
             }
         }
         if (t->n < 0) {
-            mp_raise_ValueError(translate("Pin cannot wake from deep sleep"));
+            raise_ValueError_invalid_pin();
         }
 
         // It is strange, but to my experiment, interrupt during sleep

@@ -143,13 +143,14 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     #ifdef SAM_D5X_E5X
     self->right_channel = NULL;
     if (left_channel != &pin_PA02 && left_channel != &pin_PA05) {
-        mp_raise_ValueError(translate("Invalid pin for left channel"));
+        raise_ValueError_invalid_pin_name(MP_QSTR_left_channel);
     }
     if (right_channel != NULL && right_channel != &pin_PA02 && right_channel != &pin_PA05) {
-        mp_raise_ValueError(translate("Invalid pin for right channel"));
+        raise_ValueError_invalid_pin_name(MP_QSTR_right_channel);
     }
     if (right_channel == left_channel) {
-        mp_raise_ValueError(translate("Cannot output both channels on the same pin"));
+        mp_raise_ValueError_varg(translate("%q and %q must be different"),
+            MP_QSTR_left_channel, MP_QSTR_right_channel);
     }
     claim_pin(left_channel);
     if (right_channel != NULL) {

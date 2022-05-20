@@ -121,7 +121,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
             self->clock_unit = 1;
     #endif
     } else {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_clock);
+        raise_ValueError_invalid_pin_name(MP_QSTR_clock);
     }
 
     self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
@@ -152,7 +152,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t* self,
         self->serializer = 1;
     #endif
     } else {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data);
+        raise_ValueError_invalid_pin_name(MP_QSTR_data);
     }
 
     if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {

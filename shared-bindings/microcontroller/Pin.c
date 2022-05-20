@@ -202,3 +202,7 @@ NORETURN void raise_ValueError_invalid_pin(void) {
 NORETURN void raise_ValueError_invalid_pins(void) {
     mp_arg_error_invalid(MP_QSTR_pins);
 }
+
+NORETURN void raise_ValueError_invalid_pin_name(qstr pin_name) {
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), pin_name);
+}

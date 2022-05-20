@@ -306,7 +306,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         get_busclock(self->handle.Instance));
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("SPI re-initialization error"));
+        mp_raise_RuntimeError(translate("SPI re-init"));
     }
 
     self->baudrate = baudrate;

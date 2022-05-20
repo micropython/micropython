@@ -77,7 +77,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->tx_pin = NO_PIN;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
     mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
@@ -183,7 +183,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (usart_async_init(usart_desc_p, sercom, self->buffer, self->buffer_length, NULL) != ERR_NONE) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
+        mp_raise_RuntimeError(translate("UART init"));
     }
 
     // usart_async_init() sets a number of defaults based on a prototypical SERCOM

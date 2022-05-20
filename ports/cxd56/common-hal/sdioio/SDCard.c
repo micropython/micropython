@@ -59,7 +59,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     }
 
     if (open_blockdriver("/dev/mmcsd0", 0, &self->inode) < 0) {
-        mp_raise_ValueError_varg(translate("Could not initialize %q"), MP_QSTR_SDCard);
+        mp_raise_RuntimeError(translate("SDCard init"));
     }
 
     self->inode->u.i_bops->geometry(self->inode, &geo);

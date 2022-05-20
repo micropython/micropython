@@ -183,10 +183,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (rx && !rx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_rx);
     }
     if (tx && !tx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_tx);
     }
 
     if (uart_taken) {
@@ -233,7 +233,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if ((rts != NULL) && (rts_config == NULL)) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
+            raise_ValueError_invalid_pin_name(MP_QSTR_rts);
         }
     }
 
@@ -247,7 +247,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if (cts_config == NULL) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
+            raise_ValueError_invalid_pin_name(MP_QSTR_cts);
         }
     }
 

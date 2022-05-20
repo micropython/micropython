@@ -128,7 +128,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
         common_hal_busio_i2c_deinit(self);
-        mp_raise_ValueError(translate("Unsupported frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     self->sda_pin = sda->number;

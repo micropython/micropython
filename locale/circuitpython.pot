@@ -80,6 +80,10 @@ msgstr ""
 msgid "%q and %q contain duplicate pins"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+msgid "%q and %q must be different"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr ""
@@ -179,9 +183,9 @@ msgstr ""
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#: ports/stm/common-hal/pulseio/PulseIn.c shared-bindings/canio/Match.c
+#: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
+#: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr ""
 
@@ -646,6 +650,10 @@ msgstr ""
 msgid "Call super().__init__() before accessing native object."
 msgstr ""
 
+#: ports/cxd56/common-hal/camera/Camera.c
+msgid "Camera init"
+msgstr ""
+
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
 msgstr ""
@@ -693,16 +701,8 @@ msgstr ""
 msgid "Cannot have scan responses for extended, connectable advertisements."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Cannot output both channels on the same pin"
-msgstr ""
-
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr ""
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot read without MISO pin"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -752,10 +752,6 @@ msgstr ""
 msgid "Cannot wake on pin edge. Only level."
 msgstr ""
 
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot write without MOSI pin"
-msgstr ""
-
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
 msgstr ""
@@ -784,28 +780,6 @@ msgstr ""
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
-
-#: ports/cxd56/common-hal/camera/Camera.c ports/cxd56/common-hal/gnss/GNSS.c
-#: ports/cxd56/common-hal/sdioio/SDCard.c
-msgid "Could not initialize %q"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/espressif/common-hal/busio/UART.c
-msgid "Could not initialize UART"
-msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init channel"
-msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not re-init timer"
-msgstr ""
-
-#: ports/stm/common-hal/pwmio/PWMOut.c
-msgid "Could not restart PWM"
 msgstr ""
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
@@ -1038,6 +1012,10 @@ msgstr ""
 msgid "Function requires lock"
 msgstr ""
 
+#: ports/cxd56/common-hal/gnss/GNSS.c
+msgid "GNSS init"
+msgstr ""
+
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
 msgstr ""
@@ -1182,12 +1160,7 @@ msgstr ""
 msgid "Invalid %q"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-#: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
-#: ports/stm/common-hal/canio/CAN.c ports/stm/common-hal/sdioio/SDCard.c
+#: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
 msgstr ""
 
@@ -1208,8 +1181,7 @@ msgstr ""
 msgid "Invalid MAC address"
 msgstr ""
 
-#: ports/espressif/bindings/espidf/__init__.c
-#: ports/espressif/common-hal/busio/I2C.c ports/espressif/esp_error.c
+#: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
 msgid "Invalid argument"
 msgstr ""
@@ -1235,15 +1207,7 @@ msgstr ""
 msgid "Invalid multicast MAC address"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for left channel"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Invalid pin for right channel"
-msgstr ""
-
-#: ports/espressif/common-hal/busio/UART.c shared-bindings/busio/UART.c
+#: shared-bindings/busio/UART.c
 msgid "Invalid pins"
 msgstr ""
 
@@ -1412,7 +1376,7 @@ msgstr ""
 msgid "No MISO Pin"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MISO pin"
 msgstr ""
 
@@ -1421,7 +1385,7 @@ msgstr ""
 msgid "No MOSI Pin"
 msgstr ""
 
-#: ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MOSI pin"
 msgstr ""
 
@@ -1658,6 +1622,10 @@ msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
 msgstr ""
 
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "PWM restart"
+msgstr ""
+
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
 msgstr ""
@@ -1676,10 +1644,6 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-msgid "Pin cannot wake from deep sleep"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1777,7 +1741,8 @@ msgstr ""
 msgid "RNG Init Error"
 msgstr ""
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
 msgstr ""
 
@@ -1788,11 +1753,6 @@ msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/stm/common-hal/busio/UART.c
-msgid "RTS/CTS/RS485 Not yet supported on this device"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -1844,6 +1804,10 @@ msgstr ""
 msgid "SD card CSD format not supported"
 msgstr ""
 
+#: ports/cxd56/common-hal/sdioio/SDCard.c
+msgid "SDCard init"
+msgstr ""
+
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
@@ -1867,7 +1831,7 @@ msgid "SPI peripheral in use"
 msgstr ""
 
 #: ports/stm/common-hal/busio/SPI.c
-msgid "SPI re-initialization error"
+msgid "SPI re-init"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -2062,19 +2026,20 @@ msgid "Tuple or struct_time argument required"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART de-init error"
+msgid "UART de-init"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+msgid "UART init"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART init error"
+msgid "UART re-init"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
-msgid "UART re-init error"
-msgstr ""
-
-#: ports/stm/common-hal/busio/UART.c
-msgid "UART write error"
+msgid "UART write"
 msgstr ""
 
 #: shared-module/usb_hid/Device.c
@@ -2211,10 +2176,6 @@ msgid ""
 "declined or ignored."
 msgstr ""
 
-#: ports/cxd56/common-hal/busio/I2C.c ports/espressif/common-hal/busio/UART.c
-msgid "Unsupported baudrate"
-msgstr ""
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
 msgstr ""
@@ -2225,10 +2186,6 @@ msgstr ""
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/I2C.c ports/stm/common-hal/busio/I2C.c
-msgid "Unsupported frequency"
 msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
@@ -2671,6 +2628,10 @@ msgstr ""
 msgid "casting"
 msgstr ""
 
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "channel re-init"
+msgstr ""
+
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
 msgstr ""
@@ -3105,6 +3066,10 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
+msgstr ""
+
+#: ports/espressif/common-hal/busio/I2C.c
+msgid "init I2C"
 msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
@@ -4023,6 +3988,10 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
+msgstr ""
+
+#: ports/stm/common-hal/pwmio/PWMOut.c
+msgid "timer re-init"
 msgstr ""
 
 #: shared-bindings/time/__init__.c

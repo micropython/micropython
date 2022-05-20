@@ -113,7 +113,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (err == ESP_FAIL) {
             mp_raise_OSError(MP_EIO);
         } else {
-            mp_raise_ValueError(translate("Invalid argument"));
+            mp_raise_RuntimeError(translate("init I2C"));
         }
     }
 

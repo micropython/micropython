@@ -120,7 +120,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_I2C);
+            raise_ValueError_invalid_pins();
         }
     }
 
@@ -155,7 +155,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     } else if (frequency == 100000) {
         self->handle.Init.Timing = CPY_I2CSTANDARD_TIMINGR;
     } else {
-        mp_raise_ValueError(translate("Unsupported frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     #else
     self->handle.Init.ClockSpeed = frequency;
