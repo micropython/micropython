@@ -61,7 +61,7 @@ typedef struct _mp_machine_i2c_p_t {
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
     int (*write)(mp_obj_base_t *obj, const uint8_t *src, size_t len);
-    int (*transfer)(mp_obj_base_t *obj, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
+    int (*transfer)(mp_obj_base_t *obj, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags);
     int (*transfer_single)(mp_obj_base_t *obj, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags);
 } mp_machine_i2c_p_t;
 
@@ -76,7 +76,7 @@ typedef struct _mp_machine_soft_i2c_obj_t {
 extern const mp_obj_type_t mp_machine_soft_i2c_type;
 extern const mp_obj_dict_t mp_machine_i2c_locals_dict;
 
-int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
-int mp_machine_soft_i2c_transfer(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags);
+int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags);
+int mp_machine_soft_i2c_transfer(mp_obj_base_t *self, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MACHINE_I2C_H

@@ -142,7 +142,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
             };
             mp_hal_pin_open_drain(self->scl);
             mp_hal_pin_open_drain(self->sda);
-            ret = mp_machine_soft_i2c_transfer(&soft_i2c.base, addr, 1, &bufs, flags);
+            ret = mp_machine_soft_i2c_transfer(&soft_i2c.base, addr, 1, 0, &bufs, flags);
             gpio_set_function(self->scl, GPIO_FUNC_I2C);
             gpio_set_function(self->sda, GPIO_FUNC_I2C);
             return ret;

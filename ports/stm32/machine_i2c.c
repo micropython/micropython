@@ -102,31 +102,45 @@ void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t
     i2c_init(self->i2c, self->scl, self->sda, freq, timeout_ms);
 }
 
-int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     size_t remain_len = 0;
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nwrite + nread; ++i) {
         remain_len += bufs[i].len;
     }
 
-    int ret = i2c_start_addr(self->i2c, flags & MP_MACHINE_I2C_FLAG_READ, addr, remain_len, flags & MP_MACHINE_I2C_FLAG_STOP);
-    if (ret < 0) {
-        return ret;
-    }
-
     int num_acks = 0; // only valid for write; for read it'll be 0
-    for (; n--; ++bufs) {
-        remain_len -= bufs->len;
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            ret = i2c_read(self->i2c, bufs->buf, bufs->len, remain_len);
-        } else {
-            ret = i2c_write(self->i2c, bufs->buf, bufs->len, remain_len);
-        }
+
+    if (nwrite) {
+        int ret = i2c_start_addr(self->i2c, 0, addr, remain_len, flags & MP_MACHINE_I2C_FLAG_STOP);
         if (ret < 0) {
             return ret;
         }
-        num_acks += ret;
+
+        for (; nwrite--; ++bufs) {
+            remain_len -= bufs->len;
+            ret = i2c_write(self->i2c, bufs->buf, bufs->len, remain_len);
+            if (ret < 0) {
+                return ret;
+            }
+            num_acks += ret;
+        }
+    }
+
+    if (nread) {
+        int ret = i2c_start_addr(self->i2c, 1, addr, remain_len, flags & MP_MACHINE_I2C_FLAG_STOP);
+        if (ret < 0) {
+            return ret;
+        }
+
+        for (; nread--; ++bufs) {
+            remain_len -= bufs->len;
+            ret = i2c_read(self->i2c, bufs->buf, bufs->len, remain_len);
+            if (ret < 0) {
+                return ret;
+            }
+        }
     }
 
     return num_acks;

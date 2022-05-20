@@ -184,7 +184,7 @@ STATIC int mp_hal_i2c_read_byte(machine_i2c_obj_t *self, uint8_t *val, int nack)
 // return value:
 //  >=0 - success; for read it's 0, for write it's number of acks received
 //   <0 - error, with errno being the negative of the return value
-int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
 
     // start the I2C transaction
@@ -193,29 +193,22 @@ int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n
         return ret;
     }
 
-    // write the slave address
-    ret = mp_hal_i2c_write_byte(self, (addr << 1) | (flags & MP_MACHINE_I2C_FLAG_READ));
-    if (ret < 0) {
-        return ret;
-    } else if (ret != 0) {
-        // nack received, release the bus cleanly
-        mp_hal_i2c_stop(self);
-        return -MP_ENODEV;
-    }
-
     int transfer_ret = 0;
-    for (; n--; ++bufs) {
-        size_t len = bufs->len;
-        uint8_t *buf = bufs->buf;
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            // read bytes from the slave into the given buffer(s)
-            while (len--) {
-                ret = mp_hal_i2c_read_byte(self, buf++, (n | len) == 0);
-                if (ret != 0) {
-                    return ret;
-                }
-            }
-        } else {
+
+    if (nwrite) {
+        // write the slave address for writing
+        ret = mp_hal_i2c_write_byte(self, addr << 1);
+        if (ret < 0) {
+            return ret;
+        } else if (ret != 0) {
+            // nack received, release the bus cleanly
+            mp_hal_i2c_stop(self);
+            return -MP_ENODEV;
+        }
+
+        for (; nwrite--; ++bufs) {
+            size_t len = bufs->len;
+            uint8_t *buf = bufs->buf;
             // write bytes from the given buffer(s) to the slave
             while (len--) {
                 ret = mp_hal_i2c_write_byte(self, *buf++);
@@ -223,10 +216,34 @@ int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n
                     return ret;
                 } else if (ret != 0) {
                     // nack received, stop sending
-                    n = 0;
+                    nwrite = 0;
                     break;
                 }
                 ++transfer_ret; // count the number of acks
+            }
+        }
+    }
+
+    if (nread) {
+        // write the slave address for reading
+        ret = mp_hal_i2c_write_byte(self, (addr << 1) | 1);
+        if (ret < 0) {
+            return ret;
+        } else if (ret != 0) {
+            // nack received, release the bus cleanly
+            mp_hal_i2c_stop(self);
+            return -MP_ENODEV;
+        }
+
+        for (; nread--; ++bufs) {
+            size_t len = bufs->len;
+            uint8_t *buf = bufs->buf;
+            // read bytes from the slave into the given buffer(s)
+            while (len--) {
+                ret = mp_hal_i2c_read_byte(self, buf++, (nread | len) == 0);
+                if (ret != 0) {
+                    return ret;
+                }
             }
         }
     }
@@ -250,42 +267,55 @@ int mp_machine_soft_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SOFTI2C
 
 // For use by ports that require a single buffer of data for a read/write transfer
-int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
-    size_t len;
+int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     uint8_t *buf;
-    if (n == 1) {
+    size_t writelen = 0, readlen = 0;
+    if (nwrite + nread == 1) {
         // Use given single buffer
-        len = bufs[0].len;
+        if (nwrite == 1) {
+            writelen = bufs[0].len;
+        } else {
+            readlen = bufs[0].len;
+        }
         buf = bufs[0].buf;
     } else {
         // Combine buffers into a single one
-        len = 0;
-        for (size_t i = 0; i < n; ++i) {
-            len += bufs[i].len;
+        writelen = 0;
+        for (size_t i = 0; i < nwrite; ++i) {
+            writelen += bufs[i].len;
         }
-        buf = m_new(uint8_t, len);
-        if (!(flags & MP_MACHINE_I2C_FLAG_READ)) {
-            len = 0;
-            for (size_t i = 0; i < n; ++i) {
-                memcpy(buf + len, bufs[i].buf, bufs[i].len);
-                len += bufs[i].len;
-            }
+        readlen = 0;
+        for (size_t i = 0; i < nread; ++i) {
+            readlen += bufs[i].len;
+        }
+        buf = m_new(uint8_t, MAX(writelen, readlen));
+
+        size_t len = 0;
+        for (size_t i = 0; i < nwrite; ++i) {
+            memcpy(buf + len, bufs[i].buf, bufs[i].len);
+            len += bufs[i].len;
         }
     }
 
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
-    int ret = i2c_p->transfer_single(self, addr, len, buf, flags);
 
-    if (n > 1) {
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            // Copy data from single buffer to individual ones
-            len = 0;
-            for (size_t i = 0; i < n; ++i) {
-                memcpy(bufs[i].buf, buf + len, bufs[i].len);
-                len += bufs[i].len;
-            }
+    int ret = 0;
+    if (writelen) {
+        ret = i2c_p->transfer_single(self, addr, writelen, buf, flags);
+    }
+
+    if (readlen && ret >= 0) {
+        ret = i2c_p->transfer_single(self, addr, readlen, buf, flags | MP_MACHINE_I2C_FLAG_READ);
+        // Copy data from single buffer to individual ones
+        size_t len = 0;
+        for (size_t i = 0; i < nread; ++i) {
+            memcpy(bufs[i].buf, buf + len, bufs[i].len);
+            len += bufs[i].len;
         }
-        m_del(uint8_t, buf, len);
+    }
+
+    if (nwrite + nread > 1) {
+        m_del(uint8_t, buf, MAX(writelen, readlen));
     }
 
     return ret;
@@ -294,15 +324,15 @@ int mp_machine_i2c_transfer_adaptor(mp_obj_base_t *self, uint16_t addr, size_t n
 STATIC int mp_machine_i2c_readfrom(mp_obj_base_t *self, uint16_t addr, uint8_t *dest, size_t len, bool stop) {
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
     mp_machine_i2c_buf_t buf = {.len = len, .buf = dest};
-    unsigned int flags = MP_MACHINE_I2C_FLAG_READ | (stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
-    return i2c_p->transfer(self, addr, 1, &buf, flags);
+    unsigned int flags = stop ? MP_MACHINE_I2C_FLAG_STOP : 0;
+    return i2c_p->transfer(self, addr, 0, 1, &buf, flags);
 }
 
 STATIC int mp_machine_i2c_writeto(mp_obj_base_t *self, uint16_t addr, const uint8_t *src, size_t len, bool stop) {
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
     mp_machine_i2c_buf_t buf = {.len = len, .buf = (uint8_t *)src};
     unsigned int flags = stop ? MP_MACHINE_I2C_FLAG_STOP : 0;
-    return i2c_p->transfer(self, addr, 1, &buf, flags);
+    return i2c_p->transfer(self, addr, 1, 0, &buf, flags);
 }
 
 /******************************************************************************/
@@ -484,7 +514,7 @@ STATIC mp_obj_t machine_i2c_writevto(size_t n_args, const mp_obj_t *args) {
 
     // Do the I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
-    int ret = i2c_p->transfer(self, addr, nbufs, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
+    int ret = i2c_p->transfer(self, addr, nbufs, 0, bufs, stop ? MP_MACHINE_I2C_FLAG_STOP : 0);
     mp_local_free(bufs);
 
     if (ret < 0) {
@@ -514,13 +544,15 @@ STATIC int read_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t a
     uint8_t memaddr_buf[4];
     size_t memaddr_len = fill_memaddr_buf(&memaddr_buf[0], memaddr, addrsize);
 
-    int ret = mp_machine_i2c_writeto(self, addr, memaddr_buf, memaddr_len, false);
-    if (ret != memaddr_len) {
-        // must generate STOP
-        mp_machine_i2c_writeto(self, addr, NULL, 0, true);
-        return ret;
-    }
-    return mp_machine_i2c_readfrom(self, addr, buf, len, true);
+    // Create partial write and read buffers
+    mp_machine_i2c_buf_t bufs[2] = {
+        {.len = memaddr_len, .buf = memaddr_buf},
+        {.len = len, .buf = buf},
+    };
+
+    // Do I2C transfer
+    mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
+    return i2c_p->transfer(self, addr, 1, 1, bufs, MP_MACHINE_I2C_FLAG_STOP);
 }
 
 STATIC int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t addrsize, const uint8_t *buf, size_t len) {
@@ -538,7 +570,7 @@ STATIC int write_mem(mp_obj_t self_in, uint16_t addr, uint32_t memaddr, uint8_t 
 
     // Do I2C transfer
     mp_machine_i2c_p_t *i2c_p = (mp_machine_i2c_p_t *)self->type->protocol;
-    return i2c_p->transfer(self, addr, 2, bufs, MP_MACHINE_I2C_FLAG_STOP);
+    return i2c_p->transfer(self, addr, 2, 0, bufs, MP_MACHINE_I2C_FLAG_STOP);
 }
 
 STATIC const mp_arg_t machine_i2c_mem_allowed_args[] = {

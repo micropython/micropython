@@ -75,23 +75,32 @@ STATIC void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint3
     i2c_driver_install(self->port, I2C_MODE_MASTER, 0, 0, 0);
 }
 
-int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
+int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t nwrite, size_t nread, mp_machine_i2c_buf_t *bufs, unsigned int flags) {
     machine_hw_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, addr << 1 | (flags & MP_MACHINE_I2C_FLAG_READ), true);
-
     int data_len = 0;
-    for (; n--; ++bufs) {
-        if (flags & MP_MACHINE_I2C_FLAG_READ) {
-            i2c_master_read(cmd, bufs->buf, bufs->len, n == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
-        } else {
+
+    if (nwrite) {
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, addr << 1, true);
+
+        for (; nwrite--; ++bufs) {
             if (bufs->len != 0) {
                 i2c_master_write(cmd, bufs->buf, bufs->len, true);
             }
+            data_len += bufs->len;
         }
-        data_len += bufs->len;
+    }
+
+    if (nread) {
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, addr << 1 | 1, true);
+
+        for (; nread--; ++bufs) {
+            i2c_master_read(cmd, bufs->buf, bufs->len, nread == 0 ? I2C_MASTER_LAST_NACK : I2C_MASTER_ACK);
+            data_len += bufs->len;
+        }
     }
 
     if (flags & MP_MACHINE_I2C_FLAG_STOP) {
