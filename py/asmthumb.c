@@ -55,6 +55,9 @@
 
 #define OP_LDR_W_HI(reg_base) (0xf8d0 | (reg_base))
 #define OP_LDR_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
+
+#define OP_LDRH_W_HI(reg_base) (0xf8b0 | (reg_base))
+#define OP_LDRH_W_LO(reg_dest, imm12) ((reg_dest) << 12 | (imm12))
 #endif
 
 static inline byte *asm_thumb_get_cur_to_write_bytes(asm_thumb_t *as, int n) {
@@ -449,6 +452,35 @@ static inline void asm_thumb_ldr_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uin
 }
 #endif
 
+#if !MICROPY_EMIT_THUMB_ARMV7M
+// emits code for: reg_dest = reg_base + offset << offset_shift
+static void asm_thumb_add_reg_reg_offset(asm_thumb_t *as, uint reg_dest, uint reg_base, uint offset, uint offset_shift) {
+    if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8) {
+        if (offset << offset_shift < 256) {
+            if (reg_dest != reg_base) {
+                asm_thumb_mov_reg_reg(as, reg_dest, reg_base);
+            }
+            asm_thumb_add_rlo_i8(as, reg_dest, offset << offset_shift);
+        } else if (UNSIGNED_FIT8(offset) && reg_dest != reg_base) {
+            asm_thumb_mov_rlo_i8(as, reg_dest, offset);
+            asm_thumb_lsl_rlo_rlo_i5(as, reg_dest, reg_dest, offset_shift);
+            asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_base);
+        } else if (reg_dest != reg_base) {
+            asm_thumb_mov_rlo_i16(as, reg_dest, offset << offset_shift);
+            asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_dest);
+        } else {
+            uint reg_other = reg_dest ^ 7;
+            asm_thumb_op16(as, OP_PUSH_RLIST((1 << reg_other)));
+            asm_thumb_mov_rlo_i16(as, reg_other, offset << offset_shift);
+            asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_other);
+            asm_thumb_op16(as, OP_POP_RLIST((1 << reg_other)));
+        }
+    } else {
+        assert(0); // should never be called for ARMV6M
+    }
+}
+#endif
+
 void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint word_offset) {
     if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8 && UNSIGNED_FIT5(word_offset)) {
         asm_thumb_ldr_rlo_rlo_i5(as, reg_dest, reg_base, word_offset);
@@ -456,35 +488,27 @@ void asm_thumb_ldr_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint re
         #if MICROPY_EMIT_THUMB_ARMV7M
         asm_thumb_ldr_reg_reg_i12(as, reg_dest, reg_base, word_offset);
         #else
-        word_offset -= 31;
-        if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8) {
-            if (UNSIGNED_FIT8(word_offset) && (word_offset < 64 || reg_dest != reg_base)) {
-                if (word_offset < 64) {
-                    if (reg_dest != reg_base) {
-                        asm_thumb_mov_reg_reg(as, reg_dest, reg_base);
-                    }
-                    asm_thumb_add_rlo_i8(as, reg_dest, word_offset * 4);
-                } else {
-                    asm_thumb_mov_rlo_i8(as, reg_dest, word_offset);
-                    asm_thumb_lsl_rlo_rlo_i5(as, reg_dest, reg_dest, 2);
-                    asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_base);
-                }
-            } else {
-                if (reg_dest != reg_base) {
-                    asm_thumb_mov_rlo_i16(as, reg_dest, word_offset * 4);
-                    asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_dest);
-                } else {
-                    uint reg_other = reg_dest ^ 7;
-                    asm_thumb_op16(as, OP_PUSH_RLIST((1 << reg_other)));
-                    asm_thumb_mov_rlo_i16(as, reg_other, word_offset * 4);
-                    asm_thumb_add_rlo_rlo_rlo(as, reg_dest, reg_dest, reg_other);
-                    asm_thumb_op16(as, OP_POP_RLIST((1 << reg_other)));
-                }
-            }
-        } else {
-            assert(0); // should never be called for ARMV6M
-        }
+        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, word_offset - 31, 2);
         asm_thumb_ldr_rlo_rlo_i5(as, reg_dest, reg_dest, 31);
+        #endif
+    }
+}
+
+#if MICROPY_EMIT_THUMB_ARMV7M
+static inline void asm_thumb_ldrh_reg_reg_i12(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset) {
+    asm_thumb_op32(as, OP_LDRH_W_HI(reg_base), OP_LDRH_W_LO(reg_dest, uint16_offset * 2));
+}
+#endif
+
+void asm_thumb_ldrh_reg_reg_i12_optimised(asm_thumb_t *as, uint reg_dest, uint reg_base, uint uint16_offset) {
+    if (reg_dest < ASM_THUMB_REG_R8 && reg_base < ASM_THUMB_REG_R8 && UNSIGNED_FIT5(uint16_offset)) {
+        asm_thumb_ldrh_rlo_rlo_i5(as, reg_dest, reg_base, uint16_offset);
+    } else {
+        #if MICROPY_EMIT_THUMB_ARMV7M
+        asm_thumb_ldrh_reg_reg_i12(as, reg_dest, reg_base, uint16_offset);
+        #else
+        asm_thumb_add_reg_reg_offset(as, reg_dest, reg_base, uint16_offset - 31, 1);
+        asm_thumb_ldrh_rlo_rlo_i5(as, reg_dest, reg_dest, 31);
         #endif
     }
 }
