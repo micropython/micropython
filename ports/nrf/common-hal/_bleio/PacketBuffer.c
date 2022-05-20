@@ -380,9 +380,11 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
                !mp_hal_is_interrupted()) {
             RUN_BACKGROUND_TASKS;
         }
+        if (mp_hal_is_interrupted()) {
+            return -1;
+        }
     }
-    if (self->conn_handle == BLE_CONN_HANDLE_INVALID ||
-        mp_hal_is_interrupted()) {
+    if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
         return -1;
     }
 

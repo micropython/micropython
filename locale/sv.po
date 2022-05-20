@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-04-26 15:40+0000\n"
+"PO-Revision-Date: 2022-05-14 12:35+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -114,6 +114,10 @@ msgstr "längden på %q måste vara >= 1"
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "%q måste vara %d-%d"
+
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr "%q måste vara 1 när %q är sann"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
@@ -1564,7 +1568,7 @@ msgstr "Datastorlek matchar inte"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched swap flag"
-msgstr ""
+msgstr "Felaktig swapflagga"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
@@ -1772,6 +1776,10 @@ msgid "No space left on device"
 msgstr "Inget utrymme kvar på enheten"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr "Ingen sådan enhet"
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Ingen sådan fil/katalog"
 
@@ -1882,6 +1890,10 @@ msgstr "Endast ett alarm.time kan ställas in."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Bara en färg kan vara genomskinlig i taget"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr "Åtgärden inte tillåten"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2566,10 +2578,6 @@ msgstr "Busstyp för display stöds inte"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Formatet stöds inte"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Åtgärd som inte stöds"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4704,6 +4712,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Åtgärd som inte stöds"
 
 #~ msgid "divisor must be 4"
 #~ msgstr "divisor måste vara 4"

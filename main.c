@@ -277,10 +277,10 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     memorymonitor_reset();
     #endif
 
-    filesystem_flush();
-    stop_mp();
-    free_memory(heap);
-    supervisor_move_memory();
+    // Disable user related BLE state that uses the micropython heap.
+    #if CIRCUITPY_BLEIO
+    bleio_user_reset();
+    #endif
 
     #if CIRCUITPY_CANIO
     common_hal_canio_reset();
@@ -297,6 +297,12 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     #endif
     reset_port();
     reset_board();
+
+    // Free the heap last because other modules may reference heap memory and need to shut down.
+    filesystem_flush();
+    stop_mp();
+    free_memory(heap);
+    supervisor_move_memory();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
@@ -645,6 +651,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
     // Done waiting, start the board back up.
 
+    // We delay resetting BLE until after the wait in case we're transferring
+    // more files over.
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
+    #endif
+
     // free code allocation if unused
     if ((next_code_options & next_code_stickiness_situation) == 0) {
         free_memory(next_code_allocation);
@@ -888,6 +900,7 @@ int __attribute__((used)) main(void) {
     serial_init();
 
     #if CIRCUITPY_BLEIO
+    bleio_reset();
     supervisor_bluetooth_enable_workflow();
     supervisor_start_bluetooth();
     #endif

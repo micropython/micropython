@@ -110,6 +110,10 @@ msgstr ""
 msgid "%q must be %d-%d"
 msgstr ""
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr ""
@@ -1762,6 +1766,10 @@ msgid "No space left on device"
 msgstr "Geen ruimte meer beschikbaar op apparaat"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Bestand/map bestaat niet"
 
@@ -1873,6 +1881,10 @@ msgstr "Slechts één alarm.time alarm kan worden ingesteld."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Er kan maar één kleur per keer transparant zijn"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2548,10 +2560,6 @@ msgstr "Niet-ondersteund beeldscherm bus type"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Niet-ondersteunde format"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Niet-ondersteunde operatie"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4682,6 +4690,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Niet-ondersteunde operatie"
 
 #~ msgid "Brightness must be between 0 and 255"
 #~ msgstr "Helderheid moet tussen de 0 en 255 liggen"

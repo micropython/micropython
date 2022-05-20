@@ -170,14 +170,20 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
     }
 
+    const bool sh1107_addressing = args[ARG_SH1107_addressing].u_bool;
+    const mp_int_t color_depth = args[ARG_color_depth].u_int;
+    if (sh1107_addressing && color_depth != 1) {
+        mp_raise_ValueError_varg(translate("%q must be 1 when %q is True"), MP_QSTR_color_depth, MP_QSTR_SH1107_addressing);
+    }
+
     primary_display_t *disp = allocate_display_or_raise();
     displayio_display_obj_t *self = &disp->display;
-    ;
+
     self->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(
         self,
         display_bus, args[ARG_width].u_int, args[ARG_height].u_int, args[ARG_colstart].u_int, args[ARG_rowstart].u_int, rotation,
-        args[ARG_color_depth].u_int, args[ARG_grayscale].u_bool,
+        color_depth, args[ARG_grayscale].u_bool,
         args[ARG_pixels_in_byte_share_row].u_bool,
         args[ARG_bytes_per_cell].u_bool,
         args[ARG_reverse_pixels_in_byte].u_bool,
@@ -194,7 +200,7 @@ STATIC mp_obj_t displayio_display_make_new(const mp_obj_type_t *type, size_t n_a
         args[ARG_auto_refresh].u_bool,
         args[ARG_native_frames_per_second].u_int,
         args[ARG_backlight_on_high].u_bool,
-        args[ARG_SH1107_addressing].u_bool
+        sh1107_addressing
         );
 
     return self;

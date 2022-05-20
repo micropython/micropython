@@ -55,6 +55,9 @@
 //|
 //| For both light sleep and deep sleep, if CircuitPython is connected to a host computer,
 //| maintaining the connection takes priority and power consumption may not be reduced.
+//|
+//| For more information about working with alarms and light/deep sleep in CircuitPython,
+//| see `this Learn guide <https://learn.adafruit.com/deep-sleep-with-circuitpython>`_.
 //| """
 
 //| sleep_memory: SleepMemory

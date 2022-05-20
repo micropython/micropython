@@ -113,6 +113,10 @@ msgstr "%q panjang harus >= 1"
 msgid "%q must be %d-%d"
 msgstr "%q harus %d-%d"
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr "%q harus <= %d"
@@ -1769,6 +1773,10 @@ msgid "No space left on device"
 msgstr "Tidak ada ruang yang tersisa di perangkat"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Tidak ada file/direktori"
 
@@ -1878,6 +1886,10 @@ msgstr ""
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
+msgstr ""
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
 msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
@@ -2555,10 +2567,6 @@ msgstr "Tipe bus tampilan tidak didukung"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Format tidak didukung"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Operasi yang tidak didukung"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4675,6 +4683,9 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Operasi yang tidak didukung"
 
 #~ msgid ""
 #~ "\n"

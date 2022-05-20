@@ -42,9 +42,9 @@
 //| CircuitPython does not have an OS, so this module provides this functionality
 //| directly.
 
-//| For more information regarding using the `storage` module, refer to the CircuitPython
-//| Essentials Learn guide:
-//| https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage
+//| For more information regarding using the `storage` module, refer to the `CircuitPython
+//| Essentials Learn guide
+//| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage>`_.
 //| """
 //|
 

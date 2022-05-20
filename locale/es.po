@@ -116,6 +116,10 @@ msgstr ""
 msgid "%q must be %d-%d"
 msgstr "%q debe ser %d-%d"
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr ""
@@ -1785,6 +1789,10 @@ msgid "No space left on device"
 msgstr "No queda espacio en el dispositivo"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "No existe el archivo/directorio"
 
@@ -1896,6 +1904,10 @@ msgstr "Solamente una alarm.time puede ser configurada."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Solo un color puede ser transparente a la vez"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2582,10 +2594,6 @@ msgstr "Sin capacidad de bus tipo display"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Formato no soportado"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Operación no soportada"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4723,6 +4731,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Operación no soportada"
 
 #~ msgid ""
 #~ "\n"

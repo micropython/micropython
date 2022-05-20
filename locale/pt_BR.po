@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-08 16:37+0000\n"
+"PO-Revision-Date: 2022-05-14 12:35+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.12.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -115,6 +115,10 @@ msgstr "o comprimento %q deve ser >=1"
 #: py/argcheck.c
 msgid "%q must be %d-%d"
 msgstr "o %q deve ser %d-%d"
+
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr "%q deve ser 1 quando %q for verdadeiro"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
@@ -1791,6 +1795,10 @@ msgid "No space left on device"
 msgstr "Não resta espaço no dispositivo"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr "Não existe tal dispositivo"
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "Este arquivo/diretório não existe"
 
@@ -1901,6 +1909,10 @@ msgstr "Apenas um alarme alarm.time pode ser definido."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Apenas uma cor pode ser transparente de cada vez"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr "A operação não é permitida"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2595,10 +2607,6 @@ msgstr "Não há suporte para o tipo do display bus"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Formato não suportado"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Operação não suportada"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4747,6 +4755,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Operação não suportada"
 
 #~ msgid "divisor must be 4"
 #~ msgstr "o divisor deve ser 4"

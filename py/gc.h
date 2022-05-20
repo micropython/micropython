@@ -35,11 +35,16 @@
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / MP_BYTES_PER_OBJ_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)
 
+#define HEAP_PTR(ptr) ( \
+    MP_STATE_MEM(gc_pool_start) != 0                     /* Not on the heap if it isn't inited */ \
+    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
+    )
+
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
     ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
-    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
+    && HEAP_PTR(ptr) \
     )
 
 void gc_init(void *start, void *end);

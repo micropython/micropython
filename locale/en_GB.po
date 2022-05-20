@@ -114,6 +114,10 @@ msgstr "%q length must be >= 1"
 msgid "%q must be %d-%d"
 msgstr "%q must be %d-%d"
 
+#: shared-bindings/displayio/Display.c
+msgid "%q must be 1 when %q is True"
+msgstr ""
+
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
 msgstr ""
@@ -1763,6 +1767,10 @@ msgid "No space left on device"
 msgstr "No space left on device"
 
 #: py/moduerrno.c
+msgid "No such device"
+msgstr ""
+
+#: py/moduerrno.c
 msgid "No such file/directory"
 msgstr "No such file/directory"
 
@@ -1872,6 +1880,10 @@ msgstr "Only one alarm.time alarm can be set."
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
 msgstr "Only one colour can be transparent at a time"
+
+#: py/moduerrno.c
+msgid "Operation not permitted"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -2551,10 +2563,6 @@ msgstr "Unsupported display bus type"
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
 msgstr "Unsupported format"
-
-#: py/moduerrno.c
-msgid "Unsupported operation"
-msgstr "Unsupported operation"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -4676,6 +4684,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Unsupported operation"
 
 #~ msgid ""
 #~ "\n"
