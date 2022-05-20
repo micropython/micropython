@@ -292,3 +292,4 @@
 [submodule "ports/espressif/boards/mixgo_ce_udisk/cp_lib"]
 	path = ports/espressif/boards/mixgo_ce_udisk/cp_lib
 	url = https://github.com/dahanzimin/circuitpython_lib.git
+	
