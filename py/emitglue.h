@@ -49,11 +49,6 @@ typedef enum {
     MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
-typedef struct _mp_qstr_link_entry_t {
-    uint16_t off;
-    uint16_t qst;
-} mp_qstr_link_entry_t;
-
 // compiled bytecode: instance in RAM, referenced by outer scope, usually freed after first (and only) use
 // mpy file: instance in RAM, created when .mpy file is loaded (same comments as above)
 // frozen: instance in ROM
@@ -78,8 +73,6 @@ typedef struct _mp_raw_code_t {
     #endif
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
-    uint16_t n_qstr;
-    mp_qstr_link_entry_t *qstr_link;
     #endif
     #endif
     #if MICROPY_EMIT_MACHINE_CODE
@@ -104,7 +97,6 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #if MICROPY_PERSISTENT_CODE_SAVE
     size_t n_children,
     uint16_t prelude_offset,
-    uint16_t n_qstr, mp_qstr_link_entry_t *qstr_link,
     #endif
     mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t type_sig);
 

@@ -10,8 +10,6 @@
 
 // Word indices of REG_LOCAL_x in nlr_buf_t
 #define NLR_BUF_IDX_LOCAL_1 (3) // r4
-#define NLR_BUF_IDX_LOCAL_2 (4) // r5
-#define NLR_BUF_IDX_LOCAL_3 (5) // r6
 
 #define N_THUMB (1)
 #define EXPORT_FUN(name) emit_native_thumb_##name

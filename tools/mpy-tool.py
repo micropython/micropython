@@ -839,7 +839,7 @@ class RawCode(object):
             print("};")
             print()
 
-    def freeze_raw_code(self, prelude_ptr=None, qstr_links=(), type_sig=0):
+    def freeze_raw_code(self, prelude_ptr=None, type_sig=0):
         # Generate mp_raw_code_t.
         print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
@@ -879,8 +879,6 @@ class RawCode(object):
             print("    #endif")
         print("    #if MICROPY_EMIT_MACHINE_CODE")
         print("    .prelude_offset = %u," % self.prelude_offset)
-        print("    .n_qstr = %u," % len(qstr_links))
-        print("    .qstr_link = NULL,")  # TODO
         print("    #endif")
         print("    #endif")
         print("    #if MICROPY_EMIT_MACHINE_CODE")
@@ -1038,47 +1036,6 @@ class RawCodeNative(RawCode):
             ip += sz
         self.disassemble_children()
 
-    def _asm_thumb_rewrite_mov(self, pc, val):
-        print("    (%u & 0xf0) | (%s >> 12)," % (self.fun_data[pc], val), end="")
-        print(" (%u & 0xfb) | (%s >> 9 & 0x04)," % (self.fun_data[pc + 1], val), end="")
-        print(" (%s & 0xff)," % (val,), end="")
-        print(" (%u & 0x07) | (%s >> 4 & 0x70)," % (self.fun_data[pc + 3], val))
-
-    def _link_qstr(self, pc, kind, qst):
-        if kind == 0:
-            # Generic 16-bit link
-            print("    %s & 0xff, %s >> 8," % (qst, qst))
-            return 2
-        else:
-            # Architecture-specific link
-            is_obj = kind == 2
-            if is_obj:
-                qst = "((uintptr_t)MP_OBJ_NEW_QSTR(%s))" % qst
-            if config.native_arch in (
-                MP_NATIVE_ARCH_X86,
-                MP_NATIVE_ARCH_X64,
-                MP_NATIVE_ARCH_ARMV6,
-                MP_NATIVE_ARCH_XTENSA,
-                MP_NATIVE_ARCH_XTENSAWIN,
-            ):
-                print(
-                    "    %s & 0xff, (%s >> 8) & 0xff, (%s >> 16) & 0xff, %s >> 24,"
-                    % (qst, qst, qst, qst)
-                )
-                return 4
-            elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
-                if is_obj:
-                    # qstr object, movw and movt
-                    self._asm_thumb_rewrite_mov(pc, qst)
-                    self._asm_thumb_rewrite_mov(pc + 4, "(%s >> 16)" % qst)
-                    return 8
-                else:
-                    # qstr number, movw instruction
-                    self._asm_thumb_rewrite_mov(pc, qst)
-                    return 4
-            else:
-                assert 0
-
     def freeze(self):
         if self.scope_flags & ~0x0F:
             raise FreezeError("unable to freeze code with relocations")
@@ -1098,21 +1055,13 @@ class RawCodeNative(RawCode):
         i = 0
         qi = 0
         while i < i_top:
-            if qi < len(self.qstr_links) and i == self.qstr_links[qi][0]:
-                # link qstr
-                qi_off, qi_kind, qi_val = self.qstr_links[qi]
-                i += self._link_qstr(i, qi_kind, qi_val.qstr_id)
-                qi += 1
-            else:
-                # copy machine code (max 16 bytes)
-                i16 = min(i + 16, i_top)
-                if qi < len(self.qstr_links):
-                    i16 = min(i16, self.qstr_links[qi][0])
-                print("   ", end="")
-                for ii in range(i, i16):
-                    print(" 0x%02x," % self.fun_data[ii], end="")
-                print()
-                i = i16
+            # copy machine code (max 16 bytes)
+            i16 = min(i + 16, i_top)
+            print("   ", end="")
+            for ii in range(i, i16):
+                print(" 0x%02x," % self.fun_data[ii], end="")
+            print()
+            i = i16
 
         print("};")
 
@@ -1134,7 +1083,7 @@ class RawCodeNative(RawCode):
             print("#endif")
 
         self.freeze_children(prelude_ptr)
-        self.freeze_raw_code(prelude_ptr, self.qstr_links, self.type_sig)
+        self.freeze_raw_code(prelude_ptr, self.type_sig)
 
 
 class MPYSegment:

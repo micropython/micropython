@@ -75,38 +75,6 @@ typedef struct _reloc_info_t {
     uint8_t *bss;
 } reloc_info_t;
 
-#if MICROPY_EMIT_THUMB
-STATIC void asm_thumb_rewrite_mov(uint8_t *pc, uint16_t val) {
-    // high part
-    *(uint16_t *)pc = (*(uint16_t *)pc & 0xfbf0) | (val >> 1 & 0x0400) | (val >> 12);
-    // low part
-    *(uint16_t *)(pc + 2) = (*(uint16_t *)(pc + 2) & 0x0f00) | (val << 4 & 0x7000) | (val & 0x00ff);
-
-}
-#endif
-
-STATIC void arch_link_qstr(uint8_t *pc, bool is_obj, qstr qst) {
-    mp_uint_t val = qst;
-    if (is_obj) {
-        val = (mp_uint_t)MP_OBJ_NEW_QSTR(qst);
-    }
-    #if MICROPY_EMIT_X86 || MICROPY_EMIT_X64 || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN
-    pc[0] = val & 0xff;
-    pc[1] = (val >> 8) & 0xff;
-    pc[2] = (val >> 16) & 0xff;
-    pc[3] = (val >> 24) & 0xff;
-    #elif MICROPY_EMIT_THUMB
-    if (is_obj) {
-        // qstr object, movw and movt
-        asm_thumb_rewrite_mov(pc, val); // movw
-        asm_thumb_rewrite_mov(pc + 4, val >> 16); // movt
-    } else {
-        // qstr number, movw instruction
-        asm_thumb_rewrite_mov(pc, val); // movw
-    }
-    #endif
-}
-
 void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
     // Relocate native code
     reloc_info_t *ri = ri_in;
@@ -285,9 +253,6 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
                 } else if ((off & 3) == 3) {
                     // Generic, aligned qstr-object link
                     *(mp_obj_t *)dest = MP_OBJ_NEW_QSTR(qst);
-                } else {
-                    // Architecture-specific link
-                    arch_link_qstr(dest, (off & 3) == 2, qst);
                 }
             }
         }
@@ -424,7 +389,6 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
             #if MICROPY_PERSISTENT_CODE_SAVE
             n_children,
             prelude_offset,
-            0, NULL,
             #endif
             native_scope_flags, native_n_pos_args, native_type_sig
             );
@@ -605,11 +569,7 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (rc->kind == MP_CODE_NATIVE_PY || rc->kind == MP_CODE_NATIVE_VIPER) {
         // Save qstr link table for native code
-        mp_print_uint(print, rc->n_qstr);
-        for (size_t i = 0; i < rc->n_qstr; ++i) {
-            mp_print_uint(print, rc->qstr_link[i].off);
-            save_qstr(print, rc->qstr_link[i].qst);
-        }
+        mp_print_uint(print, 0);
     }
 
     if (rc->kind == MP_CODE_NATIVE_PY) {

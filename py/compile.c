@@ -3323,7 +3323,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
                 NULL,
                 #if MICROPY_PERSISTENT_CODE_SAVE
                 0,
-                0, 0, NULL,
+                0,
                 #endif
                 0, comp->scope_cur->num_pos_args, type_sig);
         }
