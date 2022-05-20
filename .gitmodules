@@ -286,3 +286,6 @@
 [submodule "frozen/Adafruit_CircuitPython_FakeRequests"]
 	path = frozen/Adafruit_CircuitPython_FakeRequests
 	url = https://github.com/adafruit/Adafruit_CircuitPython_FakeRequests.git
+[submodule "ports/espressif/boards/mixgo_ce_udisk/cp_lib"]
+	path = ports/espressif/boards/mixgo_ce_udisk/cp_lib
+	url = https://github.com/dahanzimin/circuitpython_lib.git

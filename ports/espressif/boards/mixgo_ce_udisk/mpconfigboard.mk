@@ -20,5 +20,5 @@ CIRCUITPY_MODULE=wroom
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
-FROZEN_MPY_DIRS += boards/$(BOARD)/mixgoce_lib
+FROZEN_MPY_DIRS += boards/$(BOARD)/cp_lib/mixgoce_lib
 
