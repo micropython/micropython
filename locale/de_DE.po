@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-03-24 15:57+0000\n"
+"PO-Revision-Date: 2022-05-20 19:25+0000\n"
 "Last-Translator: Fabian Affolter <mail@fabian-affolter.ch>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -117,7 +117,7 @@ msgstr "%q muss %d-%d sein"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q muss 1 sein, wenn %q wahr ist"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
@@ -895,7 +895,7 @@ msgstr "Konnte first buffer nicht zuteilen"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Couldn't allocate input buffer"
-msgstr "Eingabepuffer konnte nicht reserviert werden"
+msgstr "Eingabepuffer konnte nicht zugewiesen werden"
 
 #: shared-module/audiocore/WaveFile.c shared-module/audiomixer/Mixer.c
 #: shared-module/audiomp3/MP3Decoder.c
@@ -908,7 +908,7 @@ msgstr "Absturz in den HardFault_Handler."
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Channel Init Error"
-msgstr "DAC Kanal Initialisierungsfehler"
+msgstr "DAC-Kanal-Initialisierungsfehler"
 
 #: ports/stm/common-hal/analogio/AnalogOut.c
 msgid "DAC Device Init Error"
@@ -1133,6 +1133,8 @@ msgstr "Framepuffer benötigt %d bytes"
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
+"Die Frequenz muss 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 oder 1008 "
+"MHz betragen"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1569,11 +1571,11 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
-msgstr ""
+msgstr "Nicht übereinstimmende Datengröße"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched swap flag"
-msgstr ""
+msgstr "Nicht übereinstimmendes Swap-Flag"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
@@ -1646,7 +1648,7 @@ msgstr "Name zu lang"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
-msgstr ""
+msgstr "Neue Bitmap muss die gleiche Größe wie alte Bitmap haben"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -1782,7 +1784,7 @@ msgstr "Kein Speicherplatz mehr verfügbar auf dem Gerät"
 
 #: py/moduerrno.c
 msgid "No such device"
-msgstr ""
+msgstr "Kein solches Gerät"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1899,7 +1901,7 @@ msgstr "Nur eine Farbe kann transparent sein zu einer Zeit"
 
 #: py/moduerrno.c
 msgid "Operation not permitted"
-msgstr ""
+msgstr "Operation nicht erlaubt"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Operation or feature not supported"
@@ -3381,7 +3383,7 @@ msgstr "Format erfordert ein Wörterbuch (dict)"
 
 #: shared-bindings/microcontroller/Processor.c
 msgid "frequency is read-only for this board"
-msgstr ""
+msgstr "Frequenz ist für dieses Board schreibgeschützt"
 
 #: py/objdeque.c
 msgid "full"
