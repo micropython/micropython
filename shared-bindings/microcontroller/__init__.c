@@ -119,7 +119,7 @@ STATIC mp_obj_t mcu_on_next_reset(mp_obj_t run_mode_obj) {
     } else if (run_mode_obj == MP_OBJ_FROM_PTR(&mcu_runmode_bootloader_obj)) {
         run_mode = RUNMODE_BOOTLOADER;
     } else {
-        mp_raise_ValueError(translate("Invalid run mode."));
+        mp_arg_error_invalid(MP_QSTR_run_mode);
     }
     common_hal_mcu_on_next_reset(run_mode);
     return mp_const_none;

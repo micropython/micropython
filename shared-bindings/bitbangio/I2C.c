@@ -188,9 +188,7 @@ STATIC void readfrom(bitbangio_i2c_obj_t *self, mp_int_t address, mp_obj_t buffe
 
     size_t length = bufinfo.len;
     normalize_buffer_bounds(&start, end, &length);
-    if (length == 0) {
-        mp_raise_ValueError(translate("Buffer must be at least length 1"));
-    }
+    mp_arg_validate_length_min(length, 1, MP_QSTR_buffer);
 
     uint8_t status = shared_module_bitbangio_i2c_read(self, address, ((uint8_t *)bufinfo.buf) + start, length);
     if (status != 0) {

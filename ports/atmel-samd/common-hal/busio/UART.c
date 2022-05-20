@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
 #include "mpconfigport.h"
@@ -76,12 +77,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->tx_pin = NO_PIN;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_ValueError(translate("RTS/CTS/RS485 Not yet supported on this device"));
+        mp_raise_NotImplementedError(translate("RS485"));
     }
 
-    if (bits > 8) {
-        mp_raise_NotImplementedError(translate("bytes > 8 bits not supported"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
 
     bool have_tx = tx != NULL;
     bool have_rx = rx != NULL;
@@ -145,7 +144,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
     }
     if (sercom == NULL) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     if (!have_tx) {
         tx_pad = 0;
@@ -175,7 +174,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
             if (self->buffer == NULL) {
                 common_hal_busio_uart_deinit(self);
-                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate RX buffer of %d bytes"), self->buffer_length * sizeof(uint8_t));
+                m_malloc_fail(self->buffer_length * sizeof(uint8_t));
             }
         }
     } else {
@@ -184,7 +183,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (usart_async_init(usart_desc_p, sercom, self->buffer, self->buffer_length, NULL) != ERR_NONE) {
-        mp_raise_ValueError(translate("Could not initialize UART"));
+        mp_raise_RuntimeError(translate("UART init"));
     }
 
     // usart_async_init() sets a number of defaults based on a prototypical SERCOM

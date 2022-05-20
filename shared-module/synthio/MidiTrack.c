@@ -32,13 +32,17 @@
 #define BYTES_PER_SAMPLE (BITS_PER_SAMPLE / 8)
 #define SILENCE 0x80
 
+STATIC NORETURN void raise_midi_stream_error(uint32_t pos) {
+    mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), pos);
+}
+
 STATIC uint8_t parse_note(const uint8_t *buffer, uint32_t len, uint32_t *pos) {
     if (*pos + 1 >= len) {
-        mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), *pos);
+        raise_midi_stream_error(*pos);
     }
     uint8_t note = buffer[(*pos)++];
     if (note > 127 || buffer[(*pos)++] > 127) {
-        mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), *pos);
+        raise_midi_stream_error(*pos);
     }
     return note;
 }
@@ -84,7 +88,7 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
         } while ((c & 0x80) && (pos < len));
 
         if (c & 0x80) {
-            mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), pos);
+            raise_midi_stream_error(pos);
         }
 
         dur += delta * sample_rate / tempo;
@@ -128,14 +132,14 @@ void common_hal_synthio_miditrack_construct(synthio_miditrack_obj_t *self,
             case 12:
             case 13: // one data byte to ignore
                 if (pos >= len || buffer[pos++] > 127) {
-                    mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), pos);
+                    raise_midi_stream_error(pos);
                 }
                 break;
             case 15: // the full syntax is too complicated, just assume it's "End of Track" event
                 pos = len;
                 break;
             default: // invalid event
-                mp_raise_ValueError_varg(translate("Error in MIDI stream at position %d"), pos);
+                raise_midi_stream_error(pos);
         }
     }
     terminate_span(self, &dur, &max_dur);

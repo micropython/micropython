@@ -65,7 +65,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         self->channel = DAC_CHANNEL_2;
         self->dac_index = 1;
     } else {
-        mp_raise_ValueError(translate("Invalid DAC pin supplied"));
+        raise_ValueError_invalid_pin();
     }
 
     // Only init if the shared DAC is empty or reset

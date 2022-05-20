@@ -98,10 +98,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(fontio_builtinfont_get_bounding_box_obj, fontio_builti
 STATIC mp_obj_t fontio_builtinfont_obj_get_glyph(mp_obj_t self_in, mp_obj_t codepoint_obj) {
     fontio_builtinfont_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_int_t codepoint;
-    if (!mp_obj_get_int_maybe(codepoint_obj, &codepoint)) {
-        mp_raise_ValueError_varg(translate("%q should be an int"), MP_QSTR_codepoint);
-    }
+    mp_int_t codepoint = mp_arg_validate_type_int(codepoint_obj, MP_QSTR_codepoint);
     return common_hal_fontio_builtinfont_get_glyph(self, codepoint);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(fontio_builtinfont_get_glyph_obj, fontio_builtinfont_obj_get_glyph);

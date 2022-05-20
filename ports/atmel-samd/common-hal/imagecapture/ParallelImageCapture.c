@@ -63,16 +63,16 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     }
     // The peripheral supports 8, 10, 12, or 14 data bits, but the code only supports 8 at present
     if (data_count != 8) {
-        mp_raise_ValueError_varg(translate("Invalid data_count %d"), data_count);
+        mp_arg_error_invalid(MP_QSTR_datacount);
     }
     if (vertical_sync && vertical_sync->number != PIN_PCC_DEN1) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_vsync);
+        raise_ValueError_invalid_pin_name(MP_QSTR_vsync);
     }
     if (horizontal_reference && horizontal_reference->number != PIN_PCC_DEN2) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_href);
+        raise_ValueError_invalid_pin_name(MP_QSTR_href);
     }
     if (data_clock->number != PIN_PCC_CLK) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data_clock);
+        raise_ValueError_invalid_pin_name(MP_QSTR_data_clock);
     }
     // technically, 0 was validated as free already but check again
     for (int i = 0; i < data_count; i++) {

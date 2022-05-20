@@ -234,7 +234,7 @@ static void pinalarm_set_alarms_light(size_t n_alarms, const mp_obj_t *alarms) {
             // raise ValueError here
             MP_FALLTHROUGH
         case PINALARM_ERR_NOEXTINT:
-            mp_raise_RuntimeError(translate("No hardware support on pin"));
+            raise_ValueError_invalid_pin();
         case PINALARM_ERR_NOCHANNEL:
             mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
         default:
@@ -261,7 +261,7 @@ static void pinalarm_set_alarms_deep(size_t n_alarms, const mp_obj_t *alarms) {
             }
         }
         if (t->n < 0) {
-            mp_raise_ValueError(translate("Pin cannot wake from Deep Sleep"));
+            raise_ValueError_invalid_pin();
         }
 
         // It is strange, but to my experiment, interrupt during sleep

@@ -209,7 +209,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
             authmode = WIFI_AUTH_WPA_WPA2_PSK;
             break;
         default:
-            mp_raise_ValueError(translate("Invalid AuthMode"));
+            mp_arg_error_invalid(MP_QSTR_authmode);
             break;
     }
 
@@ -221,9 +221,8 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     config->ap.channel = channel;
     config->ap.authmode = authmode;
 
-    if (max_connections < 0 || max_connections > 10) {
-        mp_raise_ValueError(translate("max_connections must be between 0 and 10"));
-    }
+    mp_arg_validate_int_range(max_connections, 0, 10, MP_QSTR_max_connections);
+
     config->ap.max_connection = max_connections;
 
     esp_wifi_set_config(WIFI_IF_AP, config);

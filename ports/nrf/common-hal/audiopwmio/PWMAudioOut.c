@@ -263,9 +263,8 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
         &spacing);
     self->sample_channel_count = audiosample_channel_count(sample);
 
-    if (max_buffer_length > UINT16_MAX) {
-        mp_raise_ValueError_varg(translate("Buffer length %d too big. It must be less than %d"), max_buffer_length, UINT16_MAX);
-    }
+    mp_arg_validate_length_max(max_buffer_length, UINT16_MAX, MP_QSTR_buffer);
+
     uint16_t buffer_length = (uint16_t)max_buffer_length;
     self->buffers[0] = m_malloc(buffer_length * 2 * sizeof(uint16_t), false);
     if (!self->single_buffer) {

@@ -106,9 +106,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_reload_obj, supervisor_reload);
 STATIC mp_obj_t supervisor_set_next_stack_limit(mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
 
-    if (size < 256) {
-        mp_raise_ValueError(translate("Stack size must be at least 256"));
-    }
+    mp_arg_validate_int_min(size, 256, MP_QSTR_size);
+
     set_next_stack_size(size);
 
     return mp_const_none;

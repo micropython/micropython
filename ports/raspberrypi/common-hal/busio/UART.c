@@ -32,6 +32,7 @@
 #include "supervisor/shared/tick.h"
 #include "shared/runtime/interrupt_char.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
@@ -66,7 +67,7 @@ static uint8_t pin_init(const uint8_t uart, const mcu_pin_obj_t *pin, const uint
         return NO_PIN;
     }
     if (!(((pin->number % 4) == pin_type) && ((((pin->number + 4) / 8) % NUM_UARTS) == uart))) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
     claim_pin(pin);
     gpio_set_function(pin->number, GPIO_FUNC_UART);
@@ -104,13 +105,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_float_t timeout, uint16_t receiver_buffer_size, byte *receiver_buffer,
     bool sigint_enabled) {
 
-    if (bits > 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
-
-    if (receiver_buffer_size == 0) {
-        mp_raise_ValueError(translate("Invalid buffer size"));
-    }
+    mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
+    mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
@@ -167,7 +163,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         // in the long-lived pool is not strictly necessary)
         // (This is a macro.)
         if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            m_malloc_fail(receiver_buffer_size);
         }
         active_uarts[uart_id] = self;
         if (uart_id == 1) {

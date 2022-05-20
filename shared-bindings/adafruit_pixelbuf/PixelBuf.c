@@ -44,6 +44,10 @@
 #include "extmod/ulab/code/ndarray.h"
 #endif
 
+static NORETURN void invalid_byteorder(void) {
+    mp_arg_error_invalid(MP_QSTR_byteorder);
+}
+
 static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t *parsed);
 
 //| class PixelBuf:
@@ -124,7 +128,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     size_t bo_len;
     const char *byteorder = mp_obj_str_get_data(byteorder_obj, &bo_len);
     if (bo_len < 3 || bo_len > 4) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     parsed->order_string = byteorder_obj;
 
@@ -136,7 +140,7 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     char *w = strchr(byteorder, 'W');
     int num_chars = (dotstar ? 1 : 0) + (w ? 1 : 0) + (r ? 1 : 0) + (g ? 1 : 0) + (b ? 1 : 0);
     if ((num_chars < parsed->bpp) || !(r && b && g)) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     parsed->is_dotstar = dotstar ? true : false;
     parsed->has_white = w ? true : false;
@@ -146,10 +150,10 @@ static void parse_byteorder(mp_obj_t byteorder_obj, pixelbuf_byteorder_details_t
     parsed->byteorder.w = w ? w - byteorder : 0;
     // The dotstar brightness byte is always first (as it goes with the pixel start bits)
     if (dotstar && byteorder[0] != 'P') {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
     if (parsed->has_white && parsed->is_dotstar) {
-        mp_raise_ValueError(translate("Invalid byteorder string"));
+        invalid_byteorder();
     }
 }
 

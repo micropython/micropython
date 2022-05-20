@@ -91,19 +91,9 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t voice_count = args[ARG_voice_count].u_int;
-    if (voice_count < 1 || voice_count > 255) {
-        mp_raise_ValueError(translate("Invalid voice count"));
-    }
-
-    mp_int_t channel_count = args[ARG_channel_count].u_int;
-    if (channel_count < 1 || channel_count > 2) {
-        mp_raise_ValueError(translate("Invalid channel count"));
-    }
-    mp_int_t sample_rate = args[ARG_sample_rate].u_int;
-    if (sample_rate < 1) {
-        mp_raise_ValueError(translate("Sample rate must be positive"));
-    }
+    mp_int_t voice_count = mp_arg_validate_int_range(args[ARG_voice_count].u_int, 1, 255, MP_QSTR_voice_count);
+    mp_int_t channel_count = mp_arg_validate_int_range(args[ARG_channel_count].u_int, 1, 2, MP_QSTR_channel_count);
+    mp_int_t sample_rate = mp_arg_validate_int_min(args[ARG_sample_rate].u_int, 1, MP_QSTR_sample_rate);
     mp_int_t bits_per_sample = args[ARG_bits_per_sample].u_int;
     if (bits_per_sample != 8 && bits_per_sample != 16) {
         mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
@@ -222,7 +212,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_arg
 
     uint8_t v = args[ARG_voice].u_int;
     if (v > (self->voice_count - 1)) {
-        mp_raise_ValueError(translate("Invalid voice"));
+        mp_arg_error_invalid(MP_QSTR_voice);
     }
     audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
     mp_obj_t sample = args[ARG_sample].u_obj;
@@ -248,7 +238,7 @@ STATIC mp_obj_t audiomixer_mixer_obj_stop_voice(size_t n_args, const mp_obj_t *p
 
     uint8_t v = args[ARG_voice].u_int;
     if (v > (self->voice_count - 1)) {
-        mp_raise_ValueError(translate("Invalid voice"));
+        mp_arg_error_invalid(MP_QSTR_voice);
     }
     audiomixer_mixervoice_obj_t *voice = MP_OBJ_TO_PTR(self->voice[v]);
     common_hal_audiomixer_mixervoice_stop(voice);

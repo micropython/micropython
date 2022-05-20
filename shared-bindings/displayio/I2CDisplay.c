@@ -98,10 +98,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_i2cdisplay_reset_obj, displayio_i2cdisplay_o
 //|         ...
 //|
 STATIC mp_obj_t displayio_i2cdisplay_obj_send(mp_obj_t self, mp_obj_t command_obj, mp_obj_t data_obj) {
-    mp_int_t command_int = MP_OBJ_SMALL_INT_VALUE(command_obj);
-    if (!mp_obj_is_small_int(command_obj) || command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_int_t command_int = mp_obj_get_int(command_obj);
+    mp_arg_validate_int_range(command_int, 0, 255, MP_QSTR_command);
+
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_obj, &bufinfo, MP_BUFFER_READ);
