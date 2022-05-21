@@ -116,7 +116,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         // Avoid PWM types and functions when the module isn't enabled
         #if (CIRCUITPY_PWMIO)
-        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 50000, false);
+        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 500, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
