@@ -249,6 +249,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
             cmdlist = [MICROPYTHON, "-X", "emit=" + args.emit]
             if args.heapsize is not None:
                 cmdlist.extend(["-X", "heapsize=" + args.heapsize])
+            if sys.platform == "darwin":
+                cmdlist.extend(["-X", "realtime"])
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:

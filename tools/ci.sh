@@ -572,10 +572,9 @@ function ci_unix_macos_build {
 
 function ci_unix_macos_run_tests {
     # Issues with macOS tests:
-    # - OSX has poor time resolution and these uasyncio tests do not have correct output
     # - import_pkg7 has a problem with relative imports
     # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && ./run-tests.py --exclude 'uasyncio_(basic|gather|heaplock|lock|wait_task)' --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    (cd tests && ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
 }
 
 function ci_unix_qemu_mips_setup {
