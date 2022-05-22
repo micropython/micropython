@@ -938,6 +938,10 @@ msgstr "Commando verzenden mislukt."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Fout tijdens verkrijgen mutex, err 0x%04x"
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "Failed to allocate %q buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
 msgstr "Kon WiFi geheugen niet toewijzen"

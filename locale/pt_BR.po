@@ -956,6 +956,10 @@ msgstr "Falha ao enviar comando."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Houve uma falha na aquisição do mutex, err 0x%04x"
 
+#: shared-module/rgbmatrix/RGBMatrix.c
+msgid "Failed to allocate %q buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
 msgstr "Houve uma falha na alocação da memória do Wifi"
