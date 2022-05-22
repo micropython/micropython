@@ -39,9 +39,9 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif /* DEBUG */
 	
-	mp_import_stat_t stat_b = mp_import_stat("boot.py");
-    if (stat_b != MP_IMPORT_STAT_FILE){
-        FATFS *fatfs = &((fs_user_mount_t *) MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    mp_import_stat_t stat_b = mp_import_stat("boot.py");
+    if (stat_b != MP_IMPORT_STAT_FILE) {
+        FATFS *fatfs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
         FIL fs;
         UINT char_written = 0;
         const byte buffer[] = "#Serial port upload mode\nimport storage\nstorage.remount(\"/\", False)\nstorage.disable_usb_drive()\n";
@@ -49,13 +49,13 @@ void board_init(void) {
         f_open(fatfs, &fs, "/boot.py", FA_WRITE | FA_CREATE_ALWAYS);
         f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
         f_close(&fs);
-        //Delete code.Py, use main.py
+        // Delete code.Py, use main.py
         mp_import_stat_t stat_c = mp_import_stat("code.py");
-        if (stat_c == MP_IMPORT_STAT_FILE){
+        if (stat_c == MP_IMPORT_STAT_FILE) {
             f_unlink(fatfs,"/code.py");
         }
     }
-	
+
 }
 
 bool board_requests_safe_mode(void) {
