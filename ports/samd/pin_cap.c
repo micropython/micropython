@@ -34,7 +34,6 @@
 #include "py/misc.h"
 #include "pin_cap.h"
 #include "sam.h"
-#include "utils.h"
 
 #define PA(pin)  (pin)
 #define PB(pin)  32 + (pin)
@@ -219,7 +218,7 @@ const pin_cap_t pin_cap_table[] = {
 // in case of no match (which should not happen).
 
 const pin_cap_t *get_pin_cap_info(int pin_id) {
-    for (int i = 0; i < ARRAY_SIZE(pin_cap_table); i++) {
+    for (int i = 0; i < MP_ARRAY_SIZE(pin_cap_table); i++) {
         if (pin_cap_table[i].pin_id == pin_id) { // Pin match
             return &pin_cap_table[i];
         }

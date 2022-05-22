@@ -30,7 +30,6 @@
 
 #include "py/runtime.h"
 #include "sam.h"
-#include "utils.h"
 
 #if defined(MCU_SAMD21)
 int sercom_gclk_id[] = {

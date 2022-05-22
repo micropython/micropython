@@ -25,11 +25,9 @@
  */
 
 #include <stdint.h>
-#include "sam.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
-#include "pendsv.h"
 #include "softtimer.h"
 
 #define TICKS_PERIOD 0x80000000

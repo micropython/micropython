@@ -29,7 +29,6 @@
 #include "py/stream.h"
 #include "py/ringbuf.h"
 #include "sam.h"
-#include "utils.h"
 #include "pin_cap.h"
 #include "clock_config.h"
 

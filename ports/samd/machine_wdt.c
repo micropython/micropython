@@ -83,9 +83,6 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     // Enable APBx clocks and GCLK clock
     PM->APBAMASK.reg |= PM_APBAMASK_WDT;
-    // Set GCLK8 to 1 kHz and enable it.
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK8 | GCLK_CLKCTRL_ID_WDT;
     // Configure and enable the WDT
     WDT->CONFIG.reg = log2i(timeout) - 3;

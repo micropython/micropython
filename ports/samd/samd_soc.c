@@ -89,8 +89,8 @@ void init_us_counter(void) {
     }
     #elif defined(MCU_SAMD51)
 
-    // Peripheral channel 9 is driven by GCLK4, 16 MHz.
-    GCLK->PCHCTRL[TC0_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK4 | GCLK_PCHCTRL_CHEN;
+    // Peripheral channel 9 is driven by GCLK3, 16 MHz.
+    GCLK->PCHCTRL[TC0_GCLK_ID].reg = GCLK_PCHCTRL_GEN_GCLK3 | GCLK_PCHCTRL_CHEN;
 
     MCLK->APBAMASK.bit.TC0_ = 1; // Enable TC0 clock
     MCLK->APBAMASK.bit.TC1_ = 1; // Enable TC1 clock
@@ -112,8 +112,8 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     // SAMD21 Clock settings
     // GCLK0: 48MHz from DFLL
     // GCLK1: 32768 Hz from 32K ULP or 32k Crystal
-    // GCLK2: 48MHz from DFLL for USB and SERCOM
-    // GCLK3: 1Mhz for TC0/1 counter
+    // GCLK2: 48MHz from DFLL for Peripherals
+    // GCLK3: 1Mhz for the us-counter (TC3/TC4)
     // GCLK8: 1kHz clock for WDT
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
@@ -145,7 +145,6 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(2);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
-
     // // Enable 32768 Hz on GCLK1
     // GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
     // GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(1);
@@ -157,6 +156,11 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(3);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
+    // Set GCLK8 to 1 kHz.
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
 
     #elif defined(MCU_SAMD51)
 
@@ -164,8 +168,7 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     // GCLK0: 48MHz from DFLL or 48 - 200 MHz from DPLL0 (SAMD51)
     // GCLK1: DPLLx_REF_FREQ 32768 Hz from 32KULP or 32k Crystal
     // GCLK2: 48MHz from DPLL1 for USB and SERCOM
-    // GCLK3: 48Mhz from DFLL
-    // GCLK4: 16Mhz for TC0/1 counter
+    // GCLK3: 16Mhz for the us-counter (TC0/TC1)
     // DPLL0: 48 - 200 MHz
     // DPLL1: 48 MHz
 
@@ -179,9 +182,8 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
     // Setup GCLK0 to 120MHz
     // Setup GCLK1 to drive peripheral channel 2
     // Setup DPLL1 to 48Mhz
-    // Setup GCLK2 to 48MHz for USB and SERCOM
-    // Setup GCLK3 to 48MHz for USB and SERCOM alt source
-    // Setup GCLK4 to 16MHz and route to TC0/TC1
+    // Setup GCLK2 to 48MHz for Peripherals
+    // Setup GCLK3 to 16MHz and route to TC0/TC1
 
     // Setup GCLK0 for 48MHz as default state to keep the MCU running during config change.
     GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
@@ -275,19 +277,14 @@ void init_clocks(uint32_t cpu_freq, uint8_t full_config) {
         while (!(OSCCTRL->Dpll[1].DPLLSTATUS.bit.CLKRDY == 1)) {
         }
 
-        // Setup GCLK2 for DPLL1 output (48 or 48-200MHz)
+        // Setup GCLK2 for DPLL1 output (48 MHz)
         GCLK->GENCTRL[2].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL1;
         while (GCLK->SYNCBUSY.bit.GENCTRL2) {
         }
 
-        // Setup GCLK3 for 48MHz, Used alternatively for USART. USB
-        GCLK->GENCTRL[3].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        // Setup GCLK3 for 16MHz, Used for TC0/1 counter
+        GCLK->GENCTRL[3].reg = 3 << GCLK_GENCTRL_DIV_Pos | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL1;
         while (GCLK->SYNCBUSY.bit.GENCTRL3) {
-        }
-
-        // Setup GCLK4 for 16MHz, Used for TC0/1 counter
-        GCLK->GENCTRL[4].reg = 3 << GCLK_GENCTRL_DIV_Pos | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL1;
-        while (GCLK->SYNCBUSY.bit.GENCTRL4) {
         }
     }
     #endif // defined(MCU_SAMD51)

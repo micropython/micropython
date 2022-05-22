@@ -232,6 +232,9 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     static const uint16_t prescaler_table[] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
     Tcc *tcc = self->instance;
+    if (freq < 1) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
+    }
 
     // Get the actual settings of prescaler & period from the unit
     // To be able for cope for changes.
@@ -249,9 +252,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     self->prescaler = prescaler_table[index];
 
     uint32_t period = PWM_MASTER_CLK / self->prescaler / freq;
-    if (period >= max_period[self->device]) {
-        mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
-    } else if (period < 2) {
+    if (period < 2) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too large"));
     }
     // check, if the prescaler has to be changed
