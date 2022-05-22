@@ -455,6 +455,10 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             // not a package.  This will be caught on the next iteration
             // because the file will not exist.
         }
+
+        // Loading a module thrashes the heap significantly so we explicitly clean up
+        // afterwards.
+        gc_collect();
     }
 
     if (outer_module_obj != MP_OBJ_NULL && VERIFY_PTR(MP_OBJ_TO_PTR(outer_module_obj))) {
