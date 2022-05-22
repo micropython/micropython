@@ -38,7 +38,7 @@ void board_init(void) {
     common_hal_never_reset_pin(&pin_GPIO43);
     common_hal_never_reset_pin(&pin_GPIO44);
     #endif /* DEBUG */
-	
+
     mp_import_stat_t stat_b = mp_import_stat("boot.py");
     if (stat_b != MP_IMPORT_STAT_FILE) {
         FATFS *fatfs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
