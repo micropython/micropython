@@ -9,6 +9,7 @@ try:
     float(123)
     micropython.heap_unlock()
 except:
+    micropython.heap_unlock()
     print("SKIP")
     raise SystemExit
 
