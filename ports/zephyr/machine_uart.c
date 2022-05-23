@@ -29,8 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/uart.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/uart.h>
 
 #include "py/runtime.h"
 #include "py/stream.h"

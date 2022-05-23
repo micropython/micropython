@@ -1,4 +1,4 @@
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #include "shared/runtime/interrupt_char.h"
 
 void mp_hal_init(void);

@@ -29,8 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/gpio.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/gpio.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"

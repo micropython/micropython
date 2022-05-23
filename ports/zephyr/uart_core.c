@@ -27,8 +27,8 @@
 #include "py/mpconfig.h"
 #include "src/zephyr_getchar.h"
 // Zephyr headers
-#include <drivers/uart.h>
-#include <console/console.h>
+#include <zephyr/drivers/uart.h>
+#include <zephyr/console/console.h>
 
 /*
  * Core UART functions to implement for a port

@@ -31,14 +31,14 @@
 #include "py/stream.h"
 
 #include <stdio.h>
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 // Zephyr's generated version header
 #include <version.h>
-#include <net/net_context.h>
-#include <net/net_pkt.h>
-#include <net/dns_resolve.h>
+#include <zephyr/net/net_context.h>
+#include <zephyr/net/net_pkt.h>
+#include <zephyr/net/dns_resolve.h>
 #ifdef CONFIG_NET_SOCKETS
-#include <net/socket.h>
+#include <zephyr/net/socket.h>
 #endif
 
 #define DEBUG_PRINT 0

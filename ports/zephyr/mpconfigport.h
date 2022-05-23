@@ -28,8 +28,8 @@
 // Include Zephyr's autoconf.h, which should be made first by Zephyr makefiles
 #include "autoconf.h"
 // Included here to get basic Zephyr environment (macros, etc.)
-#include <zephyr.h>
-#include <drivers/spi.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/spi.h>
 
 // Usually passed from Makefile
 #ifndef MICROPY_HEAP_SIZE

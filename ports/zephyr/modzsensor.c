@@ -28,8 +28,8 @@
 
 #include "py/runtime.h"
 
-#include <zephyr.h>
-#include <drivers/sensor.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/sensor.h>
 
 #if MICROPY_PY_ZSENSOR
 
