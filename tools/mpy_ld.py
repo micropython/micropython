@@ -38,6 +38,7 @@ import makeqstrdata as qstrutil
 MPY_VERSION = 6
 MP_NATIVE_ARCH_X86 = 1
 MP_NATIVE_ARCH_X64 = 2
+MP_NATIVE_ARCH_ARMV6M = 4
 MP_NATIVE_ARCH_ARMV7M = 5
 MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
@@ -82,7 +83,14 @@ def asm_jump_x86(entry):
     return struct.pack("<BI", 0xE9, entry - 5)
 
 
-def asm_jump_arm(entry):
+def asm_jump_thumb(entry):
+    # Only signed values that fit in 12 bits are supported
+    b_off = entry - 4
+    assert b_off >> 11 == 0 or b_off >> 11 == -1, b_off
+    return struct.pack("<H", 0xE000 | (b_off >> 1 & 0x07FF))
+
+
+def asm_jump_thumb2(entry):
     b_off = entry - 4
     if b_off >> 11 == 0 or b_off >> 11 == -1:
         # Signed value fits in 12 bits
@@ -129,13 +137,21 @@ ARCH_DATA = {
         (R_X86_64_GOTPCREL, R_X86_64_REX_GOTPCRELX),
         asm_jump_x86,
     ),
+    "armv6m": ArchData(
+        "EM_ARM",
+        MP_NATIVE_ARCH_ARMV6M << 2,
+        2,
+        4,
+        (R_ARM_GOT_BREL,),
+        asm_jump_thumb,
+    ),
     "armv7m": ArchData(
         "EM_ARM",
         MP_NATIVE_ARCH_ARMV7M << 2,
         2,
         4,
         (R_ARM_GOT_BREL,),
-        asm_jump_arm,
+        asm_jump_thumb2,
     ),
     "armv7emsp": ArchData(
         "EM_ARM",
@@ -143,7 +159,7 @@ ARCH_DATA = {
         2,
         4,
         (R_ARM_GOT_BREL,),
-        asm_jump_arm,
+        asm_jump_thumb2,
     ),
     "armv7emdp": ArchData(
         "EM_ARM",
@@ -151,7 +167,7 @@ ARCH_DATA = {
         2,
         4,
         (R_ARM_GOT_BREL,),
-        asm_jump_arm,
+        asm_jump_thumb2,
     ),
     "xtensa": ArchData(
         "EM_XTENSA",
