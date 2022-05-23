@@ -28,8 +28,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/spi.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/spi.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"

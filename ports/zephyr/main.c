@@ -29,16 +29,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <zephyr.h>
+#include <zephyr/zephyr.h>
 #ifdef CONFIG_NETWORKING
-#include <net/net_context.h>
+#include <zephyr/net/net_context.h>
 #endif
 
 #ifdef CONFIG_USB_DEVICE_STACK
-#include <usb/usb_device.h>
+#include <zephyr/usb/usb_device.h>
 #endif
 
-#include <storage/flash_map.h>
+#include <zephyr/storage/flash_map.h>
 
 #include "py/mperrno.h"
 #include "py/builtin.h"
