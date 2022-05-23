@@ -63,7 +63,7 @@
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
         #endif
     #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
     #endif
     #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
 #elif MICROPY_EMIT_ARM
