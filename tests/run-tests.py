@@ -122,11 +122,15 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
         else:
             cleanup_script_filename = False
 
-        subprocess.check_output(
-            [MPYCROSS]
-            + args.mpy_cross_flags.split()
-            + ["-o", mpy_filename, "-X", "emit=" + args.emit, script_filename]
-        )
+        try:
+            subprocess.check_output(
+                [MPYCROSS]
+                + args.mpy_cross_flags.split()
+                + ["-o", mpy_filename, "-X", "emit=" + args.emit, script_filename],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as er:
+            return True, b"mpy-cross crash\n" + er.output
 
         with open(mpy_filename, "rb") as f:
             script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
@@ -140,11 +144,16 @@ def prepare_script_for_target(args, *, script_filename=None, script_text=None, f
         print("error: using emit={} must go via .mpy".format(args.emit))
         sys.exit(1)
 
-    return script_text
+    return False, script_text
 
 
 def run_script_on_remote_target(pyb, args, test_file, is_special):
-    script = prepare_script_for_target(args, script_filename=test_file, force_plain=is_special)
+    had_crash, script = prepare_script_for_target(
+        args, script_filename=test_file, force_plain=is_special
+    )
+    if had_crash:
+        return True, script
+
     try:
         had_crash = False
         pyb.enter_raw_repl()

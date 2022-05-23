@@ -120,7 +120,10 @@ def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
 
         # Process script through mpy-cross if needed
         if isinstance(target, pyboard.Pyboard) or args.via_mpy:
-            test_script_target = prepare_script_for_target(args, script_text=test_script)
+            crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
+            if crash:
+                print("CRASH:", test_script_target)
+                continue
         else:
             test_script_target = test_script
 
