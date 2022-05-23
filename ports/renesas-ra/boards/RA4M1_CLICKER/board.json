@@ -1,0 +1,22 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+	"UART",
+	"SPI",
+	"I2C",
+	"ADC"
+    ],
+    "id": "RA4M1-CLICKER",
+    "images": [
+        "ra4m1_clicker_board.jpg",
+        "ra4m1_clicker_pins.jpg"
+    ],
+    "mcu": "RA4M1",
+    "product": "Mikroe RA4M1 Clicker",
+    "thumbnail": "",
+    "url": "https://www.mikroe.com/ra4m1-clicker",
+    "vendor": "MikroElektronika"
+}

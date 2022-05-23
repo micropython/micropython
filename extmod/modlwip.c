@@ -1778,4 +1778,9 @@ const mp_obj_module_t mp_module_lwip = {
     .globals = (mp_obj_dict_t *)&mp_module_lwip_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_lwip, mp_module_lwip, MICROPY_PY_LWIP);
+
+// On LWIP-ports, this is the usocket module (replaces extmod/modusocket.c).
+MP_REGISTER_MODULE(MP_QSTR_socket, mp_module_lwip, MICROPY_PY_LWIP);
+
 #endif // MICROPY_PY_LWIP

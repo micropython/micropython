@@ -159,20 +159,6 @@ extern const struct _mp_print_t mp_debug_print;
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t esp_module;
-extern const struct _mp_obj_module_t network_module;
-extern const struct _mp_obj_module_t utime_module;
-extern const struct _mp_obj_module_t mp_module_lwip;
-extern const struct _mp_obj_module_t mp_module_onewire;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_esp), MP_ROM_PTR(&esp_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) }, \
-    { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&network_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&utime_module) }, \
-    { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
-
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \

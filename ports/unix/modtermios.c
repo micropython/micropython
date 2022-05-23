@@ -148,3 +148,5 @@ const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_termios_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_termios, mp_module_termios, MICROPY_PY_TERMIOS);

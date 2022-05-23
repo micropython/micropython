@@ -34,14 +34,8 @@
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t os_module;
-extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t time_module;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
-
 // extra constants
+extern const struct _mp_obj_module_t pyb_module;
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
 

@@ -1,9 +1,9 @@
 File cmdline/cmd_showbc.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 63 bytes)
 Raw bytecode (code_info_size=18, bytecode_size=45):
  10 20 01 60 20 84 7d 64 60 88 07 64 60 69 20 62
- 64 20 32 00 16 02 32 01 16 02 81 2a 01 53 33 02
- 16 02 32 03 16 02 54 32 04 10 03 34 02 16 03 19
- 03 32 05 16 02 80 10 04 2a 01 1b 05 69 51 63
+ 64 20 32 00 16 05 32 01 16 05 81 2a 01 53 33 02
+ 16 05 32 03 16 05 54 32 04 10 02 34 02 16 02 19
+ 02 32 05 16 05 80 10 03 2a 01 1b 04 69 51 63
 arg names:
 (N_STATE 3)
 (N_EXC_STACK 0)
@@ -49,7 +49,7 @@ arg names:
 44 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 45\[46\] bytes)
 Raw bytecode (code_info_size=8\[46\], bytecode_size=370):
- a8 12 9\[bf\] 03 02 60 60 26 22 24 64 22 24 25 25 24
+ a8 12 9\[bf\] 03 05 60 60 26 22 24 64 22 24 25 25 24
  26 23 63 22 22 25 23 23 2f 6c 25 65 25 25 69 68
  26 65 27 6a 62 20 23 62 2a 29 69 24 25 28 67 26
 ########
@@ -405,7 +405,7 @@ arg names:
 369 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 59 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=51):
- a8 10 0a 02 80 82 34 38 81 57 c0 57 c1 57 c2 57
+ a8 10 0a 05 80 82 34 38 81 57 c0 57 c1 57 c2 57
  c3 57 c4 57 c5 57 c6 57 c7 57 c8 c9 82 57 ca 57
  cb 57 cc 57 cd 57 ce 57 cf 57 26 10 57 26 11 57
  26 12 26 13 b9 24 13 f2 59 51 63
@@ -464,7 +464,7 @@ arg names:
 50 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 20 bytes)
 Raw bytecode (code_info_size=9, bytecode_size=11):
- a1 01 0b 02 06 80 88 40 00 82 2a 01 53 b0 21 00
+ a1 01 0b 05 06 80 88 40 00 82 2a 01 53 b0 21 00
  01 c1 51 63
 arg names: a
 (N_STATE 5)
@@ -483,7 +483,7 @@ arg names: a
 10 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 21 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=13):
- 88 40 0a 02 80 8f 23 23 51 67 59 81 67 59 81 5e
+ 88 40 0a 05 80 8f 23 23 51 67 59 81 67 59 81 5e
  51 68 59 51 63
 arg names:
 (N_STATE 2)
@@ -507,7 +507,7 @@ arg names:
 12 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'Class' (descriptor: \.\+, bytecode @\.\+ 1\[56\] bytes)
 Raw bytecode (code_info_size=\[56\], bytecode_size=10):
- 00 \.\+ 11 0c 16 0d 10 03 16 0e 51 63
+ 00 \.\+ 11 0f 16 10 10 02 16 11 51 63
 arg names:
 (N_STATE 1)
 (N_EXC_STACK 0)
@@ -522,7 +522,7 @@ arg names:
 09 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 18 bytes)
 Raw bytecode (code_info_size=6, bytecode_size=12):
- 19 08 02 0f 80 9c 12 10 12 11 b0 15 02 36 00 59
+ 19 08 05 12 80 9c 12 13 12 14 b0 15 05 36 00 59
  51 63
 arg names: self
 (N_STATE 4)
@@ -539,7 +539,7 @@ arg names: self
 11 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<genexpr>' (descriptor: \.\+, bytecode @\.\+ 28 bytes)
 Raw bytecode (code_info_size=9, bytecode_size=19):
- c3 40 0c 12 04 04 04 80 3b 53 b2 53 53 4b 0b c3
+ c3 40 0c 09 03 03 03 80 3b 53 b2 53 53 4b 0b c3
  25 01 44 39 25 00 67 59 42 33 51 63
 arg names: * * *
 (N_STATE 9)
@@ -562,7 +562,7 @@ arg names: * * *
 18 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<listcomp>' (descriptor: \.\+, bytecode @\.\+ 26 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=18):
- 4b 0c 14 04 04 04 80 3c 2b 00 b2 5f 4b 0b c3 25
+ 4b 0c 0a 03 03 03 80 3c 2b 00 b2 5f 4b 0b c3 25
  01 44 39 25 00 2f 14 42 33 63
 arg names: * * *
 (N_STATE 10)
@@ -582,7 +582,7 @@ arg names: * * *
 17 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block '<dictcomp>' (descriptor: \.\+, bytecode @\.\+ 28 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=20):
- 53 0c 15 04 04 04 80 3d 2c 00 b2 5f 4b 0d c3 25
+ 53 0c 0b 03 03 03 80 3d 2c 00 b2 5f 4b 0d c3 25
  01 44 39 25 00 25 00 2f 19 42 31 63
 arg names: * * *
 (N_STATE 11)
@@ -603,7 +603,7 @@ arg names: * * *
 19 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'closure' (descriptor: \.\+, bytecode @\.\+ 20 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=12):
- 19 0c 16 04 80 6f 25 23 25 00 81 f2 c1 81 27 00
+ 19 0c 0c 03 80 6f 25 23 25 00 81 f2 c1 81 27 00
  29 00 51 63
 arg names: *
 (N_STATE 4)
@@ -623,7 +623,7 @@ arg names: *
 11 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 13 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=5):
- 9a 01 0a 02 04 09 80 8b b1 25 00 f2 63
+ 9a 01 0a 05 03 08 80 8b b1 25 00 f2 63
 arg names: * b
 (N_STATE 4)
 (N_EXC_STACK 0)

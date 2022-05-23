@@ -185,10 +185,7 @@ typedef struct _compiler_t {
     scope_t *scope_head;
     scope_t *scope_cur;
 
-    mp_emit_common_t emit_common;
-
     emit_t *emit;                                   // current emitter
-    emit_t *emit_bc;
     #if NEED_METHOD_TABLE
     const emit_method_table_t *emit_method_table;   // current emit method table
     #endif
@@ -197,6 +194,8 @@ typedef struct _compiler_t {
     emit_inline_asm_t *emit_inline_asm;                                   // current emitter for inline asm
     const emit_inline_asm_method_table_t *emit_inline_asm_method_table;   // current emit method table for inline asm
     #endif
+
+    mp_emit_common_t emit_common;
 } compiler_t;
 
 /******************************************************************************/
@@ -211,15 +210,11 @@ STATIC void mp_emit_common_init(mp_emit_common_t *emit, qstr source_file) {
     mp_map_elem_t *elem = mp_map_lookup(&emit->qstr_map, MP_OBJ_NEW_QSTR(source_file), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
     elem->value = MP_OBJ_NEW_SMALL_INT(0);
     #endif
+    mp_obj_list_init(&emit->const_obj_list, 0);
 }
 
 STATIC void mp_emit_common_start_pass(mp_emit_common_t *emit, pass_kind_t pass) {
     emit->pass = pass;
-    if (pass == MP_PASS_STACK_SIZE) {
-        emit->ct_cur_obj_base = emit->ct_cur_obj;
-    } else if (pass > MP_PASS_STACK_SIZE) {
-        emit->ct_cur_obj = emit->ct_cur_obj_base;
-    }
     if (pass == MP_PASS_CODE_SIZE) {
         if (emit->ct_cur_child == 0) {
             emit->children = NULL;
@@ -230,22 +225,10 @@ STATIC void mp_emit_common_start_pass(mp_emit_common_t *emit, pass_kind_t pass) 
     emit->ct_cur_child = 0;
 }
 
-STATIC void mp_emit_common_finalise(mp_emit_common_t *emit, bool has_native_code) {
-    emit->ct_cur_obj += has_native_code; // allocate an additional slot for &mp_fun_table
-    emit->const_table = m_new0(mp_uint_t, emit->ct_cur_obj);
-    emit->ct_cur_obj = has_native_code; // reserve slot 0 for &mp_fun_table
-    #if MICROPY_EMIT_NATIVE
-    if (has_native_code) {
-        // store mp_fun_table pointer at the start of the constant table
-        emit->const_table[0] = (mp_uint_t)(uintptr_t)&mp_fun_table;
-    }
-    #endif
-}
-
 STATIC void mp_emit_common_populate_module_context(mp_emit_common_t *emit, qstr source_file, mp_module_context_t *context) {
     #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
     size_t qstr_map_used = emit->qstr_map.used;
-    mp_module_context_alloc_tables(context, qstr_map_used, emit->ct_cur_obj);
+    mp_module_context_alloc_tables(context, qstr_map_used, emit->const_obj_list.len);
     for (size_t i = 0; i < emit->qstr_map.alloc; ++i) {
         if (mp_map_slot_is_filled(&emit->qstr_map, i)) {
             size_t idx = MP_OBJ_SMALL_INT_VALUE(emit->qstr_map.table[i].value);
@@ -254,12 +237,12 @@ STATIC void mp_emit_common_populate_module_context(mp_emit_common_t *emit, qstr 
         }
     }
     #else
-    mp_module_context_alloc_tables(context, 0, emit->ct_cur_obj);
+    mp_module_context_alloc_tables(context, 0, emit->const_obj_list.len);
     context->constants.source_file = source_file;
     #endif
 
-    if (emit->ct_cur_obj > 0) {
-        memcpy(context->constants.obj_table, emit->const_table, emit->ct_cur_obj * sizeof(mp_uint_t));
+    for (size_t i = 0; i < emit->const_obj_list.len; ++i) {
+        context->constants.obj_table[i] = emit->const_obj_list.items[i];
     }
 }
 
@@ -359,8 +342,7 @@ STATIC void compile_generic_all_nodes(compiler_t *comp, mp_parse_node_struct_t *
 STATIC void compile_load_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_load(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->load_id, comp->scope_cur, qst);
         #else
@@ -372,8 +354,7 @@ STATIC void compile_load_id(compiler_t *comp, qstr qst) {
 STATIC void compile_store_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->store_id, comp->scope_cur, qst);
         #else
@@ -385,8 +366,7 @@ STATIC void compile_store_id(compiler_t *comp, qstr qst) {
 STATIC void compile_delete_id(compiler_t *comp, qstr qst) {
     if (comp->pass == MP_PASS_SCOPE) {
         mp_emit_common_get_id_for_modification(comp->scope_cur, qst);
-    }
-    {
+    } else {
         #if NEED_METHOD_TABLE
         mp_emit_common_id_op(comp->emit, &comp->emit_method_table->delete_id, comp->scope_cur, qst);
         #else
@@ -2154,7 +2134,6 @@ STATIC void compile_lambdef(compiler_t *comp, mp_parse_node_struct_t *pns) {
 STATIC void compile_namedexpr_helper(compiler_t *comp, mp_parse_node_t pn_name, mp_parse_node_t pn_expr) {
     if (!MP_PARSE_NODE_IS_ID(pn_name)) {
         compile_syntax_error(comp, (mp_parse_node_t)pn_name, MP_ERROR_TEXT("can't assign to expression"));
-        return; // because pn_name is not a valid qstr (in compile_store_id below)
     }
     compile_node(comp, pn_expr);
     EMIT(dup_top);
@@ -2858,7 +2837,6 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
             // comes before a star, so counts as a positional parameter
             comp->scope_cur->num_pos_args += 1;
         }
-        mp_emit_common_use_qstr(&comp->emit_common, param_name);
     } else {
         assert(MP_PARSE_NODE_IS_STRUCT(pn));
         pns = (mp_parse_node_struct_t *)pn;
@@ -2872,7 +2850,6 @@ STATIC void compile_scope_func_lambda_param(compiler_t *comp, mp_parse_node_t pn
                 // comes before a star, so counts as a positional parameter
                 comp->scope_cur->num_pos_args += 1;
             }
-            mp_emit_common_use_qstr(&comp->emit_common, param_name);
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == pn_star) {
             if (comp->have_star) {
                 // more than one star
@@ -3031,14 +3008,6 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         // they will be computed in this first pass
         scope->stack_size = 0;
         scope->exc_stack_size = 0;
-
-        #if MICROPY_EMIT_NATIVE
-        if (scope->emit_options == MP_EMIT_OPT_NATIVE_PYTHON || scope->emit_options == MP_EMIT_OPT_VIPER) {
-            // allow native code to perfom basic tasks during the pass scope
-            // note: the first argument passed here is mp_emit_common_t, not the native emitter context
-            NATIVE_EMITTER_TABLE->start_pass((void *)&comp->emit_common, comp->pass, scope);
-        }
-        #endif
     }
 
     // compile
@@ -3119,7 +3088,6 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         if (comp->pass == MP_PASS_SCOPE) {
             scope_find_or_add_id(comp->scope_cur, qstr_arg, ID_INFO_KIND_LOCAL);
             scope->num_pos_args = 1;
-            mp_emit_common_use_qstr(&comp->emit_common, MP_QSTR__star_);
         }
 
         // Set the source line number for the start of the comprehension
@@ -3369,7 +3337,7 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
 }
 #endif
 
-STATIC void scope_compute_things(scope_t *scope, mp_emit_common_t *emit_common) {
+STATIC void scope_compute_things(scope_t *scope) {
     // in MicroPython we put the *x parameter after all other parameters (except **y)
     if (scope->scope_flags & MP_SCOPE_FLAG_VARARGS) {
         id_info_t *id_param = NULL;
@@ -3458,7 +3426,6 @@ STATIC void scope_compute_things(scope_t *scope, mp_emit_common_t *emit_common) 
             }
             scope->num_pos_args += num_free; // free vars are counted as params for passing them into the function
             scope->num_locals += num_free;
-            mp_emit_common_use_qstr(emit_common, MP_QSTR__star_);
         }
     }
 }
@@ -3489,7 +3456,6 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
 
     // compile MP_PASS_SCOPE
     comp->emit = emit_bc;
-    comp->emit_bc = emit_bc;
     #if MICROPY_EMIT_NATIVE
     comp->emit_method_table = &emit_bc_method_table;
     #endif
@@ -3519,22 +3485,12 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     }
 
     // compute some things related to scope and identifiers
-    bool has_native_code = false;
     for (scope_t *s = comp->scope_head; s != NULL && comp->compile_error == MP_OBJ_NULL; s = s->next) {
-        #if MICROPY_EMIT_NATIVE
-        if (s->emit_options == MP_EMIT_OPT_NATIVE_PYTHON || s->emit_options == MP_EMIT_OPT_VIPER) {
-            has_native_code = true;
-        }
-        #endif
-
-        scope_compute_things(s, &comp->emit_common);
+        scope_compute_things(s);
     }
 
     // set max number of labels now that it's calculated
     emit_bc_set_max_num_labels(emit_bc, max_num_labels);
-
-    // finalise and allocate the constant table
-    mp_emit_common_finalise(&comp->emit_common, has_native_code);
 
     // compile MP_PASS_STACK_SIZE, MP_PASS_CODE_SIZE, MP_PASS_EMIT
     #if MICROPY_EMIT_NATIVE
@@ -3622,9 +3578,19 @@ mp_compiled_module_t mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr so
     cm.rc = module_scope->raw_code;
     cm.context = context;
     #if MICROPY_PERSISTENT_CODE_SAVE
-    cm.has_native = has_native_code;
+    cm.has_native = false;
+    #if MICROPY_EMIT_NATIVE
+    if (emit_native != NULL) {
+        cm.has_native = true;
+    }
+    #endif
+    #if MICROPY_EMIT_INLINE_ASM
+    if (comp->emit_inline_asm != NULL) {
+        cm.has_native = true;
+    }
+    #endif
     cm.n_qstr = comp->emit_common.qstr_map.used;
-    cm.n_obj = comp->emit_common.ct_cur_obj;
+    cm.n_obj = comp->emit_common.const_obj_list.len;
     #endif
     if (comp->compile_error == MP_OBJ_NULL) {
         mp_emit_common_populate_module_context(&comp->emit_common, source_file, context);

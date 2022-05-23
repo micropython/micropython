@@ -75,4 +75,6 @@ const mp_obj_module_t mp_module_uplatform = {
     .globals = (mp_obj_dict_t *)&modplatform_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_uplatform, mp_module_uplatform, MICROPY_PY_UPLATFORM);
+
 #endif // MICROPY_PY_UPLATFORM

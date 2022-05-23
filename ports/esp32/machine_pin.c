@@ -41,7 +41,7 @@
 #include "modesp32.h"
 
 #if CONFIG_IDF_TARGET_ESP32C3
-#include "hal/gpio_ll.h"
+#include "soc/usb_serial_jtag_reg.h"
 #endif
 
 // Used to implement a range of pull capabilities
@@ -290,7 +290,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 
     #if CONFIG_IDF_TARGET_ESP32C3
     if (self->id == 18 || self->id == 19) {
-        CLEAR_PERI_REG_MASK(USB_DEVICE_CONF0_REG, USB_DEVICE_USB_PAD_ENABLE);
+        CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
 

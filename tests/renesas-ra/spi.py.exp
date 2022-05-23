@@ -1,0 +1,9 @@
+Warning: SPI(-1, ...) is deprecated, use SoftSPI(...) instead
+ValueError -1
+SPI(0, baudrate=500000, polarity=0, phase=0, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=500000, polarity=0, phase=0, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=500000, polarity=1, phase=0, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=400000, polarity=1, phase=0, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=400000, polarity=0, phase=0, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=400000, polarity=0, phase=1, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)
+SPI(0, baudrate=400000, polarity=0, phase=1, bits=8, firstbit=0, sck=P102, mosi=P101, miso=P100)

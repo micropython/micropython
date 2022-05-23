@@ -98,8 +98,7 @@ STATIC mp_import_stat_t mp_vfs_posix_import_stat(void *self_in, const char *path
 STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    mp_obj_vfs_posix_t *vfs = m_new_obj(mp_obj_vfs_posix_t);
-    vfs->base.type = type;
+    mp_obj_vfs_posix_t *vfs = mp_obj_malloc(mp_obj_vfs_posix_t, type);
     vstr_init(&vfs->root, 0);
     if (n_args == 1) {
         vstr_add_str(&vfs->root, mp_obj_str_get_str(args[0]));
@@ -229,8 +228,7 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_posix_ilistdir_it_t *iter = m_new_obj(vfs_posix_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter;
+    vfs_posix_ilistdir_it_t *iter = mp_obj_malloc(vfs_posix_ilistdir_it_t, &mp_type_polymorph_iter);
     iter->iternext = vfs_posix_ilistdir_it_iternext;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);

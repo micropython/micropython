@@ -209,7 +209,6 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
-    code_state->ip = _fun_bc->bytecode; \
     code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
@@ -393,8 +392,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
         def_kw_args = def_args[1];
         n_extra_args += 1;
     }
-    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
-    o->base.type = &mp_type_fun_bc;
+    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args, &mp_type_fun_bc);
     o->bytecode = code;
     o->context = context;
     o->child_table = child_table;
@@ -536,8 +534,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
 };
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
-    mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
-    o->base.type = &mp_type_fun_asm;
+    mp_obj_fun_asm_t *o = mp_obj_malloc(mp_obj_fun_asm_t, &mp_type_fun_asm);
     o->n_args = n_args;
     o->fun_data = fun_data;
     o->type_sig = type_sig;

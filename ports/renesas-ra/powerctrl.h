@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2018 Damien P. George
+ * Copyright (c) 2022 Renesas Electronics Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +24,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_RA_POWERCTRL_H
+#define MICROPY_INCLUDED_RA_POWERCTRL_H
 
-#include <windows.h>
-#include <errno.h>
-#include <limits.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-HANDLE waitTimer = NULL;
+void SystemClock_Config(void);
 
-void init_sleep(void) {
-    waitTimer = CreateWaitableTimer(NULL, TRUE, NULL);
-}
+NORETURN void powerctrl_mcu_reset(void);
+NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);
+void powerctrl_check_enter_bootloader(void);
 
-void deinit_sleep(void) {
-    if (waitTimer != NULL) {
-        CloseHandle(waitTimer);
-        waitTimer = NULL;
-    }
-}
+void powerctrl_enter_stop_mode(void);
+void powerctrl_enter_standby_mode(void);
 
-int usleep_impl(__int64 usec) {
-    if (waitTimer == NULL) {
-        errno = EAGAIN;
-        return -1;
-    }
-    if (usec < 0 || usec > LLONG_MAX / 10) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    LARGE_INTEGER ft;
-    ft.QuadPart = -10 * usec; // 100 nanosecond interval, negative value = relative time
-    if (SetWaitableTimer(waitTimer, &ft, 0, NULL, NULL, 0) == 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    if (WaitForSingleObject(waitTimer, INFINITE) != WAIT_OBJECT_0) {
-        errno = EAGAIN;
-        return -1;
-    }
-    return 0;
-}
-
-#ifdef _MSC_VER // mingw and the likes provide their own usleep()
-int usleep(__int64 usec) {
-    return usleep_impl(usec);
-}
-#endif
-
-void msec_sleep(double msec) {
-    const double usec = msec * 1000.0;
-    usleep_impl(usec > (double)LLONG_MAX ? LLONG_MAX : (__int64)usec);
-}
+#endif // MICROPY_INCLUDED_RA_POWERCTRL_H

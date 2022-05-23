@@ -92,8 +92,7 @@ STATIC void range_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
 STATIC mp_obj_t range_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 3, false);
 
-    mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
-    o->base.type = type;
+    mp_obj_range_t *o = mp_obj_malloc(mp_obj_range_t, type);
     o->start = 0;
     o->step = 1;
 
@@ -168,8 +167,7 @@ STATIC mp_obj_t range_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
         if (mp_obj_is_type(index, &mp_type_slice)) {
             mp_bound_slice_t slice;
             mp_seq_get_fast_slice_indexes(len, index, &slice);
-            mp_obj_range_t *o = m_new_obj(mp_obj_range_t);
-            o->base.type = &mp_type_range;
+            mp_obj_range_t *o = mp_obj_malloc(mp_obj_range_t, &mp_type_range);
             o->start = self->start + slice.start * self->step;
             o->stop = self->start + slice.stop * self->step;
             o->step = slice.step * self->step;

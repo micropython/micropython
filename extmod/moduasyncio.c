@@ -87,8 +87,7 @@ STATIC int task_lt(mp_pairheap_t *n1, mp_pairheap_t *n2) {
 STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    mp_obj_task_queue_t *self = m_new_obj(mp_obj_task_queue_t);
-    self->base.type = type;
+    mp_obj_task_queue_t *self = mp_obj_malloc(mp_obj_task_queue_t, type);
     self->heap = (mp_obj_task_t *)mp_pairheap_new(task_lt);
     return MP_OBJ_FROM_PTR(self);
 }
@@ -310,5 +309,7 @@ const mp_obj_module_t mp_module_uasyncio = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__uasyncio, mp_module_uasyncio, MICROPY_PY_UASYNCIO);
 
 #endif // MICROPY_PY_UASYNCIO

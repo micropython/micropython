@@ -80,8 +80,7 @@ static inline mp_obj_t mp_obj_from_sockaddr(const struct sockaddr *addr, socklen
 }
 
 STATIC mp_obj_socket_t *socket_new(int fd) {
-    mp_obj_socket_t *o = m_new_obj(mp_obj_socket_t);
-    o->base.type = &mp_type_socket;
+    mp_obj_socket_t *o = mp_obj_malloc(mp_obj_socket_t, &mp_type_socket);
     o->fd = fd;
     o->blocking = true;
     return o;
@@ -403,7 +402,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 
 STATIC mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
-    struct timeval tv = {0,};
+    struct timeval tv = {0, };
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
@@ -702,3 +701,5 @@ const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket, MICROPY_PY_SOCKET);

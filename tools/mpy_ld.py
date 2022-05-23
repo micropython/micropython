@@ -48,9 +48,7 @@ MP_CODE_NATIVE_VIPER = 4
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
-MICROPY_PY_BUILTINS_STR_UNICODE = 2
 MP_SMALL_INT_BITS = 31
-QSTR_WINDOW_SIZE = 32
 
 # ELF constants
 R_386_32 = 1
@@ -117,7 +115,7 @@ class ArchData:
 ARCH_DATA = {
     "x86": ArchData(
         "EM_386",
-        MP_NATIVE_ARCH_X86 << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_X86 << 2,
         2,
         4,
         (R_386_PC32, R_386_GOT32, R_386_GOT32X),
@@ -125,7 +123,7 @@ ARCH_DATA = {
     ),
     "x64": ArchData(
         "EM_X86_64",
-        MP_NATIVE_ARCH_X64 << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_X64 << 2,
         2,
         8,
         (R_X86_64_GOTPCREL, R_X86_64_REX_GOTPCRELX),
@@ -133,7 +131,7 @@ ARCH_DATA = {
     ),
     "armv7m": ArchData(
         "EM_ARM",
-        MP_NATIVE_ARCH_ARMV7M << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_ARMV7M << 2,
         2,
         4,
         (R_ARM_GOT_BREL,),
@@ -141,7 +139,7 @@ ARCH_DATA = {
     ),
     "armv7emsp": ArchData(
         "EM_ARM",
-        MP_NATIVE_ARCH_ARMV7EMSP << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_ARMV7EMSP << 2,
         2,
         4,
         (R_ARM_GOT_BREL,),
@@ -149,7 +147,7 @@ ARCH_DATA = {
     ),
     "armv7emdp": ArchData(
         "EM_ARM",
-        MP_NATIVE_ARCH_ARMV7EMDP << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_ARMV7EMDP << 2,
         2,
         4,
         (R_ARM_GOT_BREL,),
@@ -157,7 +155,7 @@ ARCH_DATA = {
     ),
     "xtensa": ArchData(
         "EM_XTENSA",
-        MP_NATIVE_ARCH_XTENSA << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_XTENSA << 2,
         2,
         4,
         (R_XTENSA_32, R_XTENSA_PLT),
@@ -165,7 +163,7 @@ ARCH_DATA = {
     ),
     "xtensawin": ArchData(
         "EM_XTENSA",
-        MP_NATIVE_ARCH_XTENSAWIN << 2 | MICROPY_PY_BUILTINS_STR_UNICODE,
+        MP_NATIVE_ARCH_XTENSAWIN << 2,
         4,
         4,
         (R_XTENSA_32, R_XTENSA_PLT),

@@ -108,7 +108,6 @@ STATIC int usage(char **argv) {
         "\n"
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-        "-mno-unicode : don't support unicode in compiled strings\n"
         "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
         "\n"
         "Implementation specific options:\n", argv[0]
@@ -203,7 +202,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
-    mp_dynamic_compiler.py_builtins_str_unicode = 1;
     #if defined(__i386__)
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
@@ -261,10 +259,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return usage(argv);
                 }
                 // TODO check that small_int_bits is within range of host's capabilities
-            } else if (strcmp(argv[a], "-mno-unicode") == 0) {
-                mp_dynamic_compiler.py_builtins_str_unicode = 0;
-            } else if (strcmp(argv[a], "-municode") == 0) {
-                mp_dynamic_compiler.py_builtins_str_unicode = 1;
             } else if (strncmp(argv[a], "-march=", sizeof("-march=") - 1) == 0) {
                 const char *arch = argv[a] + sizeof("-march=") - 1;
                 if (strcmp(arch, "x86") == 0) {

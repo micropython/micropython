@@ -59,6 +59,8 @@ const mp_obj_module_t mp_module___main__ = {
     .globals = (mp_obj_dict_t *)&MP_STATE_VM(dict_main),
 };
 
+MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__, 1);
+
 void mp_init(void) {
     qstr_init();
 
@@ -1067,8 +1069,7 @@ STATIC const mp_obj_type_t mp_type_checked_fun = {
 };
 
 STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
-    mp_obj_checked_fun_t *o = m_new_obj(mp_obj_checked_fun_t);
-    o->base.type = &mp_type_checked_fun;
+    mp_obj_checked_fun_t *o = mp_obj_malloc(mp_obj_checked_fun_t, &mp_type_checked_fun);
     o->type = type;
     o->fun = fun;
     return MP_OBJ_FROM_PTR(o);

@@ -31,7 +31,7 @@
 #define USBULPI_TIMEOUT_COUNT   (100)
 
 #define USB_OTG_READ_REG32(reg)  (*(__IO uint32_t *)(reg))
-#define USB_OTG_WRITE_REG32(reg,value) (*(__IO uint32_t *)(reg) = (value))
+#define USB_OTG_WRITE_REG32(reg, value) (*(__IO uint32_t *)(reg) = (value))
 
 /**
   * @brief  Read CR value
