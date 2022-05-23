@@ -29,6 +29,7 @@
 
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "supervisor/shared/translate.h"
@@ -96,7 +97,7 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
     if (scl->number == sda->number) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     // Find a free instance.

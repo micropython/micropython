@@ -120,7 +120,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (i2c_taken) {
             mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
         } else {
-            mp_raise_ValueError_varg(translate("Invalid %q pin selection"), MP_QSTR_I2C);
+            raise_ValueError_invalid_pins();
         }
     }
 
@@ -155,7 +155,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     } else if (frequency == 100000) {
         self->handle.Init.Timing = CPY_I2CSTANDARD_TIMINGR;
     } else {
-        mp_raise_ValueError(translate("Unsupported baudrate"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     #else
     self->handle.Init.ClockSpeed = frequency;
@@ -171,7 +171,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     self->handle.State = HAL_I2C_STATE_RESET;
     if (HAL_I2C_Init(&(self->handle)) != HAL_OK) {
-        mp_raise_RuntimeError(translate("I2C Init Error"));
+        mp_raise_RuntimeError(translate("I2C init error"));
     }
     common_hal_mcu_pin_claim(sda);
     common_hal_mcu_pin_claim(scl);

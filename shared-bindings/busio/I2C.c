@@ -210,9 +210,7 @@ STATIC mp_obj_t busio_i2c_readfrom_into(size_t n_args, const mp_obj_t *pos_args,
     int32_t start = args[ARG_start].u_int;
     const int32_t end = args[ARG_end].u_int;
     normalize_buffer_bounds(&start, end, &length);
-    if (length == 0) {
-        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_buffer);
-    }
+    mp_arg_validate_length_min(length, 1, MP_QSTR_buffer);
 
     uint8_t status =
         common_hal_busio_i2c_read(self, args[ARG_address].u_int, ((uint8_t *)bufinfo.buf) + start, length);

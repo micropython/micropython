@@ -70,7 +70,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         #endif
 
         default:
-            mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
+            raise_ValueError_invalid_pin();
             return;
     }
 

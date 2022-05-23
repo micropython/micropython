@@ -63,10 +63,10 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    mp_int_t minimum_block_count = args[ARG_minimum_block_count].u_int;
-    if (minimum_block_count < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_minimum_block_count);
-    }
+
+    mp_int_t minimum_block_count =
+        mp_arg_validate_int_min(args[ARG_minimum_block_count].u_int, 1, MP_QSTR_minimum_block_count);
+
 
     memorymonitor_allocationalarm_obj_t *self = m_new_obj(memorymonitor_allocationalarm_obj_t);
     self->base.type = &memorymonitor_allocationalarm_type;
@@ -90,9 +90,8 @@ STATIC mp_obj_t memorymonitor_allocationalarm_make_new(const mp_obj_type_t *type
 //|
 STATIC mp_obj_t memorymonitor_allocationalarm_obj_ignore(mp_obj_t self_in, mp_obj_t count_obj) {
     mp_int_t count = mp_obj_get_int(count_obj);
-    if (count < 0) {
-        mp_raise_ValueError_varg(translate("%q must be >= 0"), MP_QSTR_count);
-    }
+    mp_arg_validate_int_min(count, 0, MP_QSTR_count);
+
     common_hal_memorymonitor_allocationalarm_set_ignore(self_in, count);
     return self_in;
 }

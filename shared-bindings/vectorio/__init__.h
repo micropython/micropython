@@ -17,6 +17,7 @@ typedef bool (*draw_fill_area_fun)(mp_obj_t draw_protocol_self, const _displayio
 typedef bool (*draw_get_dirty_area_fun)(mp_obj_t draw_protocol_self, displayio_area_t *current_dirty_area);
 typedef void (*draw_update_transform_fun)(mp_obj_t draw_protocol_self, displayio_buffer_transform_t *group_transform);
 typedef void (*draw_finish_refresh_fun)(mp_obj_t draw_protocol_self);
+typedef void (*draw_set_dirty_fun)(mp_obj_t draw_protocol_self);
 typedef displayio_area_t *(*draw_get_refresh_areas_fun)(mp_obj_t draw_protocol_self, displayio_area_t *tail);
 
 typedef struct _vectorio_draw_protocol_impl_t {
@@ -25,6 +26,7 @@ typedef struct _vectorio_draw_protocol_impl_t {
     draw_update_transform_fun draw_update_transform;
     draw_finish_refresh_fun draw_finish_refresh;
     draw_get_refresh_areas_fun draw_get_refresh_areas;
+    draw_set_dirty_fun draw_set_dirty;
 } vectorio_draw_protocol_impl_t;
 
 // Draw protocol

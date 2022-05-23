@@ -63,9 +63,7 @@
     (u32 & 0x1        ? '1' : '0')
 
 static void short_bound_check(mp_int_t i, qstr name) {
-    if (i < SHRT_MIN || i > SHRT_MAX) {
-        mp_raise_ValueError_varg(translate("%q must be between %d and %d"), name, SHRT_MIN, SHRT_MAX);
-    }
+    mp_arg_validate_int_range(i, SHRT_MIN, SHRT_MAX, name);
 }
 
 inline __attribute__((always_inline))
@@ -277,9 +275,7 @@ void common_hal_vectorio_vector_shape_set_location(vectorio_vector_shape_t *self
     size_t tuple_len = 0;
     mp_obj_t *tuple_items;
     mp_obj_tuple_get(xy, &tuple_len, &tuple_items);
-    if (tuple_len != 2) {
-        mp_raise_TypeError(translate("(x,y) integers required"));
-    }
+    mp_arg_validate_length(tuple_len, 2, MP_QSTR_location);
 
     mp_int_t x;
     mp_int_t y;

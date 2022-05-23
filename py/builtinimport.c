@@ -282,7 +282,7 @@ STATIC void evaluate_relative_import(mp_int_t level, const char **module_name, s
     #endif
 
     // If we have a __path__ in the globals dict, then we're a package.
-    bool is_pkg = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP);
+    bool is_pkg = mp_map_lookup(&mp_globals_get()->map, MP_OBJ_NEW_QSTR(MP_QSTR___path__), MP_MAP_LOOKUP) != NULL;
 
     #if DEBUG_PRINT
     DEBUG_printf("Current module/package: ");
@@ -455,6 +455,10 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             // not a package.  This will be caught on the next iteration
             // because the file will not exist.
         }
+
+        // Loading a module thrashes the heap significantly so we explicitly clean up
+        // afterwards.
+        gc_collect();
     }
 
     if (outer_module_obj != MP_OBJ_NULL && VERIFY_PTR(MP_OBJ_TO_PTR(outer_module_obj))) {

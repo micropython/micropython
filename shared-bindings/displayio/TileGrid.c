@@ -464,9 +464,8 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
             return MP_OBJ_NULL; // op not supported
         } else {
             mp_int_t value = mp_obj_get_int(value_obj);
-            if (value < 0 || value > 255) {
-                mp_raise_ValueError(translate("Tile value out of bounds"));
-            }
+            mp_arg_validate_int_range(value, 0, 255, MP_QSTR_tile);
+
             common_hal_displayio_tilegrid_set_tile(self, x, y, value);
         }
     }

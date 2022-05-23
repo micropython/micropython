@@ -117,13 +117,13 @@ void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self,
         common_hal_rgbmatrix_rgbmatrix_deinit(self);
         switch (stat) {
             case PROTOMATTER_ERR_PINS:
-                mp_raise_ValueError(translate("Invalid pin"));
+                raise_ValueError_invalid_pin();
                 break;
             case PROTOMATTER_ERR_ARG:
-                mp_raise_ValueError(translate("Invalid argument"));
+                mp_arg_error_invalid(MP_QSTR_args);
                 break;
             case PROTOMATTER_ERR_MALLOC:
-                mp_raise_msg(&mp_type_MemoryError, NULL);
+                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
                 break;
             default:
                 mp_raise_msg_varg(&mp_type_RuntimeError,

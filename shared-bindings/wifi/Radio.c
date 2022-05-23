@@ -87,9 +87,7 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
     mp_buffer_info_t hostname;
     mp_get_buffer_raise(hostname_in, &hostname, MP_BUFFER_READ);
 
-    if (hostname.len < 1 || hostname.len > 253) {
-        mp_raise_ValueError(translate("Hostname must be between 1 and 253 characters"));
-    }
+    mp_arg_validate_length_range(hostname.len, 1, 253, MP_QSTR_hostname);
 
     #ifndef CONFIG_IDF_TARGET_ESP32C3
     regex_t regex; // validate hostname according to RFC 1123
@@ -269,9 +267,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
             authmode = (1 << AUTHMODE_WPA) | (1 << AUTHMODE_WPA2) | (1 << AUTHMODE_PSK);
         }
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
-        if (password.len > 0 && (password.len < 8 || password.len > 63)) {
-            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters"));
-        }
+        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
     } else {
         authmode = 1;
     }
@@ -342,9 +338,7 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     password.len = 0;
     if (args[ARG_password].u_obj != MP_OBJ_NULL) {
         mp_get_buffer_raise(args[ARG_password].u_obj, &password, MP_BUFFER_READ);
-        if (password.len > 0 && (password.len < 8 || password.len > 63)) {
-            mp_raise_ValueError(translate("WiFi password must be between 8 and 63 characters"));
-        }
+        mp_arg_validate_length_range(password.len, 8, 63, MP_QSTR_password);
     }
 
     #define MAC_ADDRESS_LENGTH 6

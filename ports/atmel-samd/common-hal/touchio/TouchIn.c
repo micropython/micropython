@@ -31,6 +31,7 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/mphal.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/touchio/TouchIn.h"
 #include "supervisor/shared/translate.h"
 
@@ -60,7 +61,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     const mcu_pin_obj_t *pin) {
     if (!pin->has_touch) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        raise_ValueError_invalid_pin();
     }
     claim_pin(pin);
 

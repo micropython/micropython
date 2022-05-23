@@ -82,7 +82,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     // TODO: Check to see if we're sharing the SPI with a native APA102.
 
     if (instance_index > 1) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     if (instance_index == 0) {

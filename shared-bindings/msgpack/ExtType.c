@@ -47,10 +47,8 @@ STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    int code = args[ARG_code].u_int;
-    if (code < 0 || code > 127) {
-        mp_raise_AttributeError(translate("code outside range 0~127"));
-    }
+    int code = mp_arg_validate_int_range(args[ARG_code].u_int, 0, 127, MP_QSTR_code);
+
     self->code = code;
 
     mp_obj_t data = args[ARG_data].u_obj;
