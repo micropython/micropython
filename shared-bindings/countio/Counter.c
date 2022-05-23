@@ -30,7 +30,7 @@
 //|             import countio
 //|
 //|             # Count rising edges only.
-//|             pin_counter = countio.Counter(board.D1, edge=Edge.RISE)
+//|             pin_counter = countio.Counter(board.D1, edge=countio.Edge.RISE)
 //|             # Reset the count after 100 counts.
 //|             while True:
 //|                 if pin_counter.count >= 100:
