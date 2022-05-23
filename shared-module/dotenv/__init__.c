@@ -35,7 +35,7 @@
 
 STATIC uint8_t consume_spaces(FIL *active_file) {
     uint8_t character = ' ';
-    size_t quantity_read = 1;
+    UINT quantity_read = 1;
     while (unichar_isspace(character) && quantity_read > 0) {
         f_read(active_file, &character, 1, &quantity_read);
     }
@@ -46,7 +46,7 @@ STATIC uint8_t consume_spaces(FIL *active_file) {
 // key. File pointer is left after the = after the key.
 STATIC bool key_matches(FIL *active_file, const char *key) {
     uint8_t character = ' ';
-    size_t quantity_read = 1;
+    UINT quantity_read = 1;
     character = consume_spaces(active_file);
     bool quoted = false;
     if (character == '\'') {
@@ -90,7 +90,7 @@ STATIC bool key_matches(FIL *active_file, const char *key) {
 
 STATIC bool next_line(FIL *active_file) {
     uint8_t character = ' ';
-    size_t quantity_read = 1;
+    UINT quantity_read = 1;
     bool quoted = false;
     bool escaped = false;
     // Track comments because they last until the end of the line.
@@ -117,7 +117,7 @@ STATIC bool next_line(FIL *active_file) {
 
 STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
     uint8_t character = ' ';
-    size_t quantity_read = 1;
+    UINT quantity_read = 1;
     // Consume spaces before =
     character = consume_spaces(active_file);
     if (character != '=') {
