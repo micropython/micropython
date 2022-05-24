@@ -65,8 +65,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
     uint16_t value = adc_read();
 
-    // Map value to from 12 to 16 bits
-    return value << 4;
+    // Stretch 12-bit ADC reading to 16-bit range
+    return (value << 4) | (value >> 8);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
