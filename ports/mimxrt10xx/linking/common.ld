@@ -74,7 +74,6 @@ SECTIONS
         _etext = .;        /* define a global symbol at end of code */
         __etext = .;       /* define a global symbol at end of code */
     } > FLASH_FIRMWARE
-
     _ld_filesystem_start = ORIGIN(FLASH_FATFS);
     _ld_filesystem_end = _ld_filesystem_start + LENGTH(FLASH_FATFS);
 
@@ -126,6 +125,8 @@ SECTIONS
     _ld_dtcm_data_destination = ADDR(.dtcm_data);
     _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
     _ld_dtcm_data_size = SIZEOF(.dtcm_data);
+
+    _flashimagelen = _ld_dtcm_data_flash_copy + _ld_dtcm_data_size - flash_config_location;
 
     .dtcm_bss :
     {
