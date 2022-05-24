@@ -81,8 +81,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     }
 
-    // Shift the value to be 16 bit
-    return ADC_GetChannelConversionValue(self->pin->adc, ADC_CHANNEL_GROUP) << 4;
+    // Stretch 12-bit ADC reading to 16 bits via 24-bit interim result
+    return (ADC_GetChannelConversionValue(self->pin->adc, ADC_CHANNEL_GROUP) * 0x1001) >> 8;
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {
