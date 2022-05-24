@@ -36,6 +36,23 @@
 #include "py/mpstate.h"
 #include "py/asmthumb.h"
 
+#ifdef _MSC_VER
+#include <intrin.h>
+
+static uint32_t mp_clz(uint32_t x) {
+    unsigned long lz = 0;
+    return _BitScanReverse(&lz, x) ? (sizeof(x) * 8 - 1) - lz : 0;
+}
+
+static uint32_t mp_ctz(uint32_t x) {
+    unsigned long tz = 0;
+    return _BitScanForward(&tz, x) ? tz : 0;
+}
+#else
+#define mp_clz(x) __builtin_clz(x)
+#define mp_ctz(x) __builtin_ctz(x)
+#endif
+
 #define UNSIGNED_FIT5(x) ((uint32_t)(x) < 32)
 #define UNSIGNED_FIT7(x) ((uint32_t)(x) < 128)
 #define UNSIGNED_FIT8(x) (((x) & 0xffffff00) == 0)
@@ -356,8 +373,8 @@ void asm_thumb_mov_reg_i32_optimised(asm_thumb_t *as, uint reg_dest, int i32) {
             i32 = -i32;
         }
 
-        uint clz = __builtin_clz(i32);
-        uint ctz = i32 ? __builtin_ctz(i32) : 0;
+        uint clz = mp_clz(i32);
+        uint ctz = i32 ? mp_ctz(i32) : 0;
         assert(clz + ctz <= 32);
         if (clz + ctz >= 24) {
             asm_thumb_mov_rlo_i8(as, rlo_dest, (i32 >> ctz) & 0xff);
