@@ -71,12 +71,16 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t rx_pad = 255; // Unset pad
     uint32_t tx_pinmux = 0;
     uint8_t tx_pad = 255; // Unset pad
+    uint32_t rts_pinmux = 0;
+    uint32_t cts_pinmux = 0;
 
     // Set state so the object is deinited to start.
     self->rx_pin = NO_PIN;
     self->tx_pin = NO_PIN;
+    self->rts_pin = NO_PIN;
+    self->cts_pin = NO_PIN;
 
-    if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
+    if ((rs485_dir != NULL) || (rs485_invert)) {
         mp_raise_NotImplementedError(translate("RS485"));
     }
 
@@ -84,6 +88,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     bool have_tx = tx != NULL;
     bool have_rx = rx != NULL;
+    bool have_rts = rts != NULL;
+    bool have_cts = cts != NULL;
+
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
@@ -122,6 +129,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             #endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
+            if (have_cts) {
+                cts_pinmux = PINMUX(cts->number, (i == 0) ? MUX_C : MUX_D);
+            }
             if (rx == NULL) {
                 sercom = potential_sercom;
                 break;
@@ -134,6 +144,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 rx->sercom[j].pad != tx_pad) {
                 rx_pinmux = PINMUX(rx->number, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
+                if (have_rts) {
+                    rts_pinmux = PINMUX(rts->number, (j == 0) ? MUX_C : MUX_D);
+                }
                 sercom = sercom_insts[rx->sercom[j].index];
                 sercom_index = rx->sercom[j].index;
                 break;
@@ -193,21 +206,32 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Set pads computed for this SERCOM.
     // TXPO:
     // 0x0: TX pad 0; no RTS/CTS
-    // 0x1: TX pad 2; no RTS/CTS
-    // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3 (not used by us right now)
-    // So divide by 2 to map pad to value.
+    // 0x1: resevered
+    // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3
+    // 0x3: TX pad 0; RTS: pad 2; no CTS
     // RXPO:
     // 0x0: RX pad 0
     // 0x1: RX pad 1
     // 0x2: RX pad 2
     // 0x3: RX pad 3
 
+    // Default to TXPO with no RTS/CTS
+    uint8_t computed_txpo = 0;
+    // If we have both CTS (with or without RTS), use second pinout
+    if (have_cts) {
+        computed_txpo = 2;
+    }
+    // If we have RTS only, use the third pinout
+    if (have_rts && !have_cts) {
+        computed_txpo = 3;
+    }
+
     // Doing a group mask and set of the registers saves 60 bytes over setting the bitfields individually.
 
     sercom->USART.CTRLA.reg &= ~(SERCOM_USART_CTRLA_TXPO_Msk |
         SERCOM_USART_CTRLA_RXPO_Msk |
         SERCOM_USART_CTRLA_FORM_Msk);
-    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(tx_pad / 2) |
+    sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_TXPO(computed_txpo) |
         SERCOM_USART_CTRLA_RXPO(rx_pad) |
         (parity == BUSIO_UART_PARITY_NONE ? 0 : SERCOM_USART_CTRLA_FORM(1));
 
@@ -257,6 +281,26 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         self->rx_pin = NO_PIN;
     }
 
+    if (have_rts) {
+        gpio_set_pin_direction(rts->number, GPIO_DIRECTION_OUT);
+        gpio_set_pin_pull_mode(rts->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(rts->number, rts_pinmux);
+        self->rts_pin = rts->number;
+        claim_pin(rts);
+    } else {
+        self->rts_pin = NO_PIN;
+    }
+
+    if (have_cts) {
+        gpio_set_pin_direction(cts->number, GPIO_DIRECTION_IN);
+        gpio_set_pin_pull_mode(cts->number, GPIO_PULL_OFF);
+        gpio_set_pin_function(cts->number, cts_pinmux);
+        self->cts_pin = cts->number;
+        claim_pin(cts);
+    } else {
+        self->cts_pin = NO_PIN;
+    }
+
     usart_async_enable(usart_desc_p);
 }
 
@@ -270,6 +314,8 @@ void common_hal_busio_uart_never_reset(busio_uart_obj_t *self) {
             never_reset_sercom(hw);
             never_reset_pin_number(self->rx_pin);
             never_reset_pin_number(self->tx_pin);
+            never_reset_pin_number(self->rts_pin);
+            never_reset_pin_number(self->cts_pin);
         }
     }
     return;
@@ -289,8 +335,12 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     usart_async_deinit(usart_desc_p);
     reset_pin_number(self->rx_pin);
     reset_pin_number(self->tx_pin);
+    reset_pin_number(self->rts_pin);
+    reset_pin_number(self->cts_pin);
     self->rx_pin = NO_PIN;
     self->tx_pin = NO_PIN;
+    self->rts_pin = NO_PIN;
+    self->cts_pin = NO_PIN;
 }
 
 // Read characters.
