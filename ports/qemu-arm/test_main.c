@@ -5,7 +5,7 @@
 #include <malloc.h>
 #include <setjmp.h>
 
-#include "py/obj.h"
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"

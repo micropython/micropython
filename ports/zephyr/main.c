@@ -41,6 +41,7 @@
 #include <storage/flash_map.h>
 
 #include "py/mperrno.h"
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
