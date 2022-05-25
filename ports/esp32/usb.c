@@ -84,6 +84,10 @@ void usb_init(void) {
     usb_cdc_connected = 0;
     ESP_ERROR_CHECK(tusb_cdc_acm_init(&amc_cfg));
 
+#if CONFIG_USB_MSC_ENABLED
+    ESP_ERROR_CHECK(usb_msc_init());
+#endif // CONFIG_USB_MSC_ENABLED
+
 }
 
 void usb_tx_strn(const char *str, size_t len) {

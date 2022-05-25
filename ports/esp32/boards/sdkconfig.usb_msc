@@ -1,0 +1,6 @@
+#
+# Massive Storage Class (MSC)
+#
+CONFIG_USB_MSC_ENABLED=y
+CONFIG_USB_MSC_BUFSIZE=4096
+# end of Massive Storage Class (MSC)
