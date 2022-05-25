@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-05-14 12:35+0000\n"
+"PO-Revision-Date: 2022-05-25 11:17+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -83,7 +83,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "%q"
-msgstr ""
+msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -91,7 +91,7 @@ msgstr "%q e %q contêm pinos duplicados"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
-msgstr ""
+msgstr "%q e %q devem ser diferentes"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -115,11 +115,11 @@ msgstr "Os índices %q devem ser inteiros, e não %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
-msgstr ""
+msgstr "a inicialização do %q falhou"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "O comprimento de %q deve ser %d"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
@@ -127,11 +127,11 @@ msgstr "o comprimento %q deve ser %d-%d"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "o comprimento de %q deve ser <= %d"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "o comprimento de %q deve ser >= %d"
 
 #: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
@@ -139,7 +139,7 @@ msgstr "o comprimento %q deve ser >=1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q deve ser %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -171,7 +171,7 @@ msgstr "%q deve ser uma string"
 
 #: py/argcheck.c
 msgid "%q must be an int"
-msgstr ""
+msgstr "%q deve ser um inteiro"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
@@ -672,7 +672,7 @@ msgstr "Chame super().__init__() antes de acessar o objeto nativo."
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Camera init"
-msgstr ""
+msgstr "Inicialização da câmera"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
@@ -743,6 +743,7 @@ msgstr "Não é possível montar '/' quando estiver visível pelo USB."
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
 msgstr ""
+"Não é possível redefinir no bootloader pois nenhum bootloader está presente"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -763,7 +764,7 @@ msgstr "Não é possível subclassificar a fatia"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins"
-msgstr ""
+msgstr "Não é possível transferir sem os pinos MOSI e MISO"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -771,7 +772,7 @@ msgstr "Não é possível variar a frequência em um timer que já esteja em uso
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr ""
+msgstr "Não é possível acordar na borda do pino, nível apenas"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
@@ -958,7 +959,7 @@ msgstr "Houve uma falha na aquisição do mutex, err 0x%04x"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
-msgstr ""
+msgstr "Houve uma falha ao alocar o buffer %q"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
@@ -1048,7 +1049,7 @@ msgstr "A função requer bloqueio"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "GNSS init"
-msgstr ""
+msgstr "Inicialização do GNSS"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
@@ -1083,7 +1084,7 @@ msgstr "Operação I/O no arquivo fechado"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C init error"
-msgstr ""
+msgstr "Erro de inicialização do I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
@@ -1279,11 +1280,11 @@ msgstr "O LHS da palavra-chave arg deve ser um ID"
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group"
-msgstr ""
+msgstr "Camada já está num grupo"
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
-msgstr ""
+msgstr "A camada deve ser uma subclasse Group ou TileGrid"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
@@ -1317,7 +1318,7 @@ msgstr "O pino MISO ou MOSI está ausente"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI pin"
-msgstr ""
+msgstr "Falta o pino MISO ou o MOSI"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1420,7 +1421,7 @@ msgstr "Nenhum pino MISO"
 
 #: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MISO pin"
-msgstr ""
+msgstr "Nenhum pino MISO"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1429,7 +1430,7 @@ msgstr "Nenhum pino MOSI"
 
 #: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MOSI pin"
-msgstr ""
+msgstr "Nenhum pino MOSI"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
@@ -1623,7 +1624,7 @@ msgstr "Apenas um endereço é permitido"
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set"
-msgstr ""
+msgstr "Apenas um alarme alarm.time pode ser definido"
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1675,7 +1676,7 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
-msgstr ""
+msgstr "Reinício do PWM"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
@@ -1803,7 +1804,7 @@ msgstr "Houve um erro na inicialização do RNG"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
-msgstr ""
+msgstr "RS485"
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -1865,7 +1866,7 @@ msgstr "O formato CSD do Cartão SD não é compatível"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "SDCard init"
-msgstr ""
+msgstr "Inicialização do cartão SD"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -1883,7 +1884,7 @@ msgstr "A configuração SPI falhou"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI init error"
-msgstr ""
+msgstr "Erro de inicialização do SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -1891,7 +1892,7 @@ msgstr "O periférico SPI está em uso"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI re-init"
-msgstr ""
+msgstr "Reinicialização do SPI"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
@@ -2064,7 +2065,7 @@ msgstr "Para sair, por favor, reinicie a placa sem "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
-msgstr ""
+msgstr "Muitos canais na amostra"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -2099,20 +2100,20 @@ msgstr "O argumento de tupla ou struct_time é necessário"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
-msgstr ""
+msgstr "descontinuar o início UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "UART init"
-msgstr ""
+msgstr "inicialização do UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
-msgstr ""
+msgstr "Reinicialização do UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
-msgstr ""
+msgstr "Escrita UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2544,7 +2545,7 @@ msgstr "Calibração é somente leitura"
 #: shared-module/vectorio/Circle.c shared-module/vectorio/Polygon.c
 #: shared-module/vectorio/Rectangle.c
 msgid "can only have one parent"
-msgstr ""
+msgstr "pode ter apenas um principal"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -2720,7 +2721,7 @@ msgstr "fundição"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "channel re-init"
-msgstr ""
+msgstr "reinício do canal"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -3165,7 +3166,7 @@ msgstr "os índices devem ser números inteiros, fatias ou listas booleanas"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "init I2C"
-msgstr ""
+msgstr "inicialização do I2C"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
@@ -4100,7 +4101,7 @@ msgstr "o tempo limite na espera pelo cartão v2"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr ""
+msgstr "reinicialização do temporizador"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
