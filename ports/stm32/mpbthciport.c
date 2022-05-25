@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/mpbthci.h"
@@ -99,10 +100,6 @@ void mp_bluetooth_hci_poll_now_default(void) {
 #include <string.h>
 #include "rfcore.h"
 
-STATIC uint16_t hci_uart_rx_buf_cur;
-STATIC uint16_t hci_uart_rx_buf_len;
-STATIC uint8_t hci_uart_rx_buf_data[256];
-
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     (void)port;
     (void)baudrate;
@@ -110,8 +107,6 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32 rfcore)\n");
 
     rfcore_ble_init();
-    hci_uart_rx_buf_cur = 0;
-    hci_uart_rx_buf_len = 0;
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
@@ -137,29 +132,17 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     return 0;
 }
 
-// Callback to copy data into local hci_uart_rx_buf_data buffer for subsequent use.
-STATIC int mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
-    (void)env;
-    if (hci_uart_rx_buf_len + len > MP_ARRAY_SIZE(hci_uart_rx_buf_data)) {
-        len = MP_ARRAY_SIZE(hci_uart_rx_buf_data) - hci_uart_rx_buf_len;
+// Callback to forward data from rfcore to the bluetooth hci handler.
+STATIC void mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
+    mp_bluetooth_hci_uart_readchar_t handler = (mp_bluetooth_hci_uart_readchar_t)env;
+    for (size_t i = 0; i < len; ++i) {
+        handler(buf[i]);
     }
-    memcpy(hci_uart_rx_buf_data + hci_uart_rx_buf_len, buf, len);
-    hci_uart_rx_buf_len += len;
-    return 0;
 }
 
-int mp_bluetooth_hci_uart_readchar(void) {
-    if (hci_uart_rx_buf_cur >= hci_uart_rx_buf_len) {
-        hci_uart_rx_buf_cur = 0;
-        hci_uart_rx_buf_len = 0;
-        rfcore_ble_check_msg(mp_bluetooth_hci_uart_msg_cb, NULL);
-    }
-
-    if (hci_uart_rx_buf_cur < hci_uart_rx_buf_len) {
-        return hci_uart_rx_buf_data[hci_uart_rx_buf_cur++];
-    } else {
-        return -1;
-    }
+int mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_readchar_t handler) {
+    size_t len = rfcore_ble_check_msg(mp_bluetooth_hci_uart_msg_cb, (void *)handler);
+    return (len > 0) ? len : -1;
 }
 
 #else

@@ -384,6 +384,12 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
 #endif
 
+#if defined(STM32WB)
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+#else
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+#endif
+
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
 
