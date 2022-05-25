@@ -105,10 +105,6 @@ __attribute__((always_inline)) static inline mp_uint_t disable_irq(void) {
 #define MICROPY_HW_ENABLE_TIMER     (0)
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_I2C1      (0)
-#define MICROPY_HW_ENABLE_SPI1      (0)
-#define MICROPY_HW_ENABLE_SPI3      (0)
-#define MICROPY_HW_ENABLE_CC3K      (0)
 
 #define MICROPY_HW_LED1             (pin_C5)
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)
