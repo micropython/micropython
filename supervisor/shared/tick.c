@@ -98,9 +98,6 @@ void supervisor_tick(void) {
     filesystem_tick();
     #endif
 
-    #ifdef CIRCUITPY_AUTORELOAD_DELAY_MS
-    autoreload_tick();
-    #endif
 
     #if CIRCUITPY_KEYPAD
     keypad_tick();
