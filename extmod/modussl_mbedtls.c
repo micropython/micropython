@@ -53,7 +53,7 @@ typedef struct _mp_obj_ssl_socket_t {
     mbedtls_ctr_drbg_context ctr_drbg;
     mbedtls_ssl_context ssl;
     mbedtls_ssl_config conf;
-    mbedtls_x509_crt cacert;
+    mbedtls_x509_crt ca_cert;
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
 } mp_obj_ssl_socket_t;
@@ -63,6 +63,8 @@ struct ssl_args {
     mp_arg_val_t cert;
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
+    mp_arg_val_t cert_reqs;
+    mp_arg_val_t ca_cert;
     mp_arg_val_t do_handshake;
 };
 
@@ -167,7 +169,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     int ret;
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
-    mbedtls_x509_crt_init(&o->cacert);
+    mbedtls_x509_crt_init(&o->ca_cert);
     mbedtls_x509_crt_init(&o->cert);
     mbedtls_pk_init(&o->pkey);
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
@@ -191,7 +193,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_NONE);
+    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -237,6 +239,18 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
     }
 
+    if (args->ca_cert.u_obj != mp_const_none) {
+    	size_t ca_cert_len;
+    	const byte *ca_cert = (const byte *)mp_obj_str_get_data(args->ca_cert.u_obj, &ca_cert_len);
+    	// len should include terminating null
+    	ret = mbedtls_x509_crt_parse(&o->ca_cert, ca_cert, ca_cert_len + 1);
+        if (ret != 0) {
+            ret = MBEDTLS_ERR_X509_BAD_INPUT_DATA; // use general error for all cert errors
+            goto cleanup;
+        }
+        mbedtls_ssl_conf_ca_chain(&o->conf, &o->ca_cert, NULL);
+    }
+
     if (args->do_handshake.u_bool) {
         while ((ret = mbedtls_ssl_handshake(&o->ssl)) != 0) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -246,6 +260,15 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
             MICROPY_EVENT_POLL_HOOK
             #endif
         }
+
+        if (args->cert_reqs.u_int != 0) {
+			// We might get any of the MBEDTLS_X509_BADCERT_XXX or MBEDTLS_X509_BADCRL_XXX errors see x509.h
+			ret = mbedtls_ssl_get_verify_result(&o->ssl);
+			if ((ret & args->cert_reqs.u_int) != 0){
+				printf("mbedtls_cert error: %x\n", ret);
+				goto cleanup;
+			}
+        }
     }
 
     return o;
@@ -253,12 +276,12 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
 cleanup:
     mbedtls_pk_free(&o->pkey);
     mbedtls_x509_crt_free(&o->cert);
-    mbedtls_x509_crt_free(&o->cacert);
+    mbedtls_x509_crt_free(&o->ca_cert);
     mbedtls_ssl_free(&o->ssl);
     mbedtls_ssl_config_free(&o->conf);
     mbedtls_ctr_drbg_free(&o->ctr_drbg);
     mbedtls_entropy_free(&o->entropy);
-
+	// ToDo: How to return cert verification Errors?
     if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
         mp_raise_OSError(MP_ENOMEM);
     } else if (ret == MBEDTLS_ERR_PK_BAD_INPUT_DATA) {
@@ -346,7 +369,7 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     if (request == MP_STREAM_CLOSE) {
         mbedtls_pk_free(&self->pkey);
         mbedtls_x509_crt_free(&self->cert);
-        mbedtls_x509_crt_free(&self->cacert);
+        mbedtls_x509_crt_free(&self->ca_cert);
         mbedtls_ssl_free(&self->ssl);
         mbedtls_ssl_config_free(&self->conf);
         mbedtls_ctr_drbg_free(&self->ctr_drbg);
@@ -395,6 +418,8 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_ca_certs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 
