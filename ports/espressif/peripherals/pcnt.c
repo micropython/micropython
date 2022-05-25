@@ -29,48 +29,50 @@
 #define PCNT_UNIT_ACTIVE    1
 #define PCNT_UNIT_INACTIVE  0
 
-static uint8_t pcnt_unit_state[4];
+static uint8_t pcnt_unit_state[PCNT_UNIT_MAX];
 
 void peripherals_pcnt_reset(void) {
-    for (uint8_t i = 0; i <= 3; i++) {
+    for (uint8_t i = 0; i < PCNT_UNIT_MAX; i++) {
         pcnt_unit_state[i] = PCNT_UNIT_INACTIVE;
     }
 }
 
-int peripherals_pcnt_get_unit(pcnt_config_t pcnt_config) {
+static int peripherals_pcnt_get_unit(pcnt_config_t *pcnt_config) {
     // Look for available pcnt unit
-    for (uint8_t i = 0; i <= 3; i++) {
+    for (uint8_t i = 0; i < PCNT_UNIT_MAX; i++) {
         if (pcnt_unit_state[i] == PCNT_UNIT_INACTIVE) {
-            pcnt_config.unit = (pcnt_unit_t)i;
+            pcnt_config->unit = (pcnt_unit_t)i;
             pcnt_unit_state[i] = PCNT_UNIT_ACTIVE;
-            break;
-        } else if (i == 3) {
-            return -1;
+            return i;
         }
     }
 
-    return pcnt_config.unit;
+    return -1;
 }
 
-int peripherals_pcnt_init(pcnt_config_t pcnt_config) {
-    // Look for available pcnt unit
+void peripherals_pcnt_reinit(pcnt_config_t *pcnt_config) {
+    // Reinitialize a pcnt unit that has already been allocated.
 
+    // Initialize PCNT unit
+    pcnt_unit_config(pcnt_config);
+
+    // Initialize PCNT's counter
+    pcnt_counter_pause(pcnt_config->unit);
+    pcnt_counter_clear(pcnt_config->unit);
+
+    // Everything is set up, now go to counting
+    pcnt_counter_resume(pcnt_config->unit);
+}
+
+int peripherals_pcnt_init(pcnt_config_t *pcnt_config) {
     const int8_t unit = peripherals_pcnt_get_unit(pcnt_config);
     if (unit == -1) {
         return -1;
     }
 
-    // Initialize PCNT unit
-    pcnt_unit_config(&pcnt_config);
+    peripherals_pcnt_reinit(pcnt_config);
 
-    // Initialize PCNT's counter
-    pcnt_counter_pause(pcnt_config.unit);
-    pcnt_counter_clear(pcnt_config.unit);
-
-    // Everything is set up, now go to counting
-    pcnt_counter_resume(pcnt_config.unit);
-
-    return pcnt_config.unit;
+    return pcnt_config->unit;
 }
 
 void peripherals_pcnt_deinit(pcnt_unit_t *unit) {
