@@ -36,7 +36,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     claim_pin(pin);
 
     // Prepare configuration for the PCNT unit
-    const pcnt_config_t pcnt_config = {
+    pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = pin->number,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
@@ -48,7 +48,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     };
 
     // Initialize PCNT unit
-    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
     }

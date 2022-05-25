@@ -69,7 +69,7 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
 
 static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     // Prepare configuration for the PCNT unit
-    const pcnt_config_t pcnt_config = {
+    pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = self->pin,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
@@ -83,7 +83,7 @@ static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     };
 
     // initialize PCNT
-    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
     }
