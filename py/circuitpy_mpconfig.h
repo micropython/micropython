@@ -311,14 +311,6 @@ typedef long mp_off_t;
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
 #endif
 
-#if CIRCUITPY_GAMEPADSHIFT
-// Scan gamepad every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
-#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
-#else
-#define GAMEPAD_ROOT_POINTERS
-#endif
-
 #if CIRCUITPY_KEYPAD
 #define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
 #else
@@ -419,7 +411,6 @@ struct _supervisor_allocation_node;
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     FLASH_ROOT_POINTERS \
     KEYPAD_ROOT_POINTERS \
-    GAMEPAD_ROOT_POINTERS \
     BOARD_UART_ROOT_POINTER \
     WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \

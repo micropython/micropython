@@ -80,10 +80,6 @@ shared-bindings/framebufferio/FramebufferDisplay.rst shared-bindings/framebuffer
 shared-bindings/framebufferio/__init__.rst shared-bindings/framebufferio/
 shared-bindings/frequencyio/FrequencyIn.rst shared-bindings/frequencyio/#frequencyio.FrequencyIn
 shared-bindings/frequencyio/__init__.rst shared-bindings/frequencyio/
-shared-bindings/gamepad/GamePad.rst shared-bindings/gamepad/#gamepad.GamePad
-shared-bindings/gamepad/__init__.rst shared-bindings/gamepad/
-shared-bindings/gamepadshift/GamePadShift.rst shared-bindings/gamepadshift/#gamepadshift.GamePadShift
-shared-bindings/gamepadshift/__init__.rst shared-bindings/gamepadshift/
 shared-bindings/gnss/__init__.rst shared-bindings/gnss/
 shared-bindings/i2cperipheral/__init__.rst shared-bindings/i2cperipheral/
 shared-bindings/i2csecondary/__init__.rst shared-bindings/i2csecondary/
