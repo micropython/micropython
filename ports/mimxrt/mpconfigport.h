@@ -188,11 +188,6 @@ uint32_t trng_random_u32(void);
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
 #define mp_type_textio mp_type_vfs_lfs2_textio
 
-// Use VFS's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
 // Hooks to add builtins
 
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
@@ -224,9 +219,6 @@ static inline void restore_irq_pri(uint32_t basepri) {
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #if defined(MICROPY_HW_ETH_MDC)
 extern const struct _mp_obj_type_t network_lan_type;

@@ -85,13 +85,6 @@
 #define mp_type_fileio fatfs_type_fileio
 #define mp_type_textio fatfs_type_textio
 
-// use vfs's functions for import stat and builtin open
-#if MICROPY_VFS
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-#endif
-
 // Enable micro:bit filesystem by default.
 #ifndef MICROPY_MBFS
 #define MICROPY_MBFS (1)

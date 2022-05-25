@@ -214,8 +214,6 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
 #define mp_type_fileio mp_type_vfs_posix_fileio
 #define mp_type_textio mp_type_vfs_posix_textio
 
@@ -272,9 +270,6 @@ void mp_unix_mark_exec(void);
 #define nan(x) NAN
 #endif
 #endif
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
 

@@ -125,15 +125,6 @@
 #define mp_type_textio mp_type_vfs_lfs2_textio
 #endif
 
-// Use VFS's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// Hooks to add builtins
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
 #if MICROPY_PY_NETWORK
 #define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
 #else

@@ -135,15 +135,6 @@
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
 
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open),  MP_ROM_PTR(&mp_builtin_open_obj) },   \
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_machine) },  \
