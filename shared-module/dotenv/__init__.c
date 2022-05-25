@@ -162,6 +162,10 @@ STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
         }
         // Unquoted values are ended by a newline or comment.
         if (!quoted && (character == '\n' || character == '#')) {
+            if (character == '\n') {
+                // Rewind one so the next_line can find the \n.
+                f_lseek(active_file, f_tell(active_file) - 1);
+            }
             break;
         }
         if (!quoted && unichar_isspace(character)) {
