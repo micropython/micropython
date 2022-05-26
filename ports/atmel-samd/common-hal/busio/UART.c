@@ -129,8 +129,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             #endif
             tx_pinmux = PINMUX(tx->number, (i == 0) ? MUX_C : MUX_D);
             tx_pad = tx->sercom[i].pad;
-            if (have_cts) {
-                cts_pinmux = PINMUX(cts->number, (i == 0) ? MUX_C : MUX_D);
+            if (have_rts) {
+                rts_pinmux = PINMUX(rts->number, (i == 0) ? MUX_C : MUX_D);
             }
             if (rx == NULL) {
                 sercom = potential_sercom;
@@ -144,8 +144,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
                 rx->sercom[j].pad != tx_pad) {
                 rx_pinmux = PINMUX(rx->number, (j == 0) ? MUX_C : MUX_D);
                 rx_pad = rx->sercom[j].pad;
-                if (have_rts) {
-                    rts_pinmux = PINMUX(rts->number, (j == 0) ? MUX_C : MUX_D);
+                if (have_cts) {
+                    cts_pinmux = PINMUX(cts->number, (j == 0) ? MUX_C : MUX_D);
                 }
                 sercom = sercom_insts[rx->sercom[j].index];
                 sercom_index = rx->sercom[j].index;
