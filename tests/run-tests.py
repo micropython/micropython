@@ -897,7 +897,16 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf", "renesas-ra")
+    EXTERNAL_TARGETS = (
+        "pyboard",
+        "wipy",
+        "esp8266",
+        "esp32",
+        "minimal",
+        "nrf",
+        "renesas-ra",
+        "rp2",
+    )
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
@@ -910,6 +919,10 @@ the last matching regex is used:
                 args.mpy_cross_flags = "-march=xtensa"
             elif args.target == "esp32":
                 args.mpy_cross_flags = "-march=xtensawin"
+            elif args.target == "rp2":
+                args.mpy_cross_flags = "-march=armv6m"
+            elif args.target == "pyboard":
+                args.mpy_cross_flags = "-march=armv7emsp"
             else:
                 args.mpy_cross_flags = "-march=armv7m"
 
@@ -931,6 +944,8 @@ the last matching regex is used:
                 test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "renesas-ra")
+            elif args.target == "rp2":
+                test_dirs += ("float", "stress", "inlineasm")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
