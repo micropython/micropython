@@ -39,8 +39,16 @@ void USB_2_Handler_wrapper(void);
 void USB_3_Handler_wrapper(void);
 
 void init_clocks(uint32_t cpu_freq, uint8_t full_config);
+void common_uart_irq_handler(int uart_nr);
+void common_spi_irq_handler(int spi_nr);
+void sercom_enable(Sercom *spi, int state);
+void sercom_register_irq(int sercom_id, int mode);
 
 extern uint32_t cpu_freq;
 extern uint32_t bus_freq;
+
+#define SERCOM_IRQ_TYPE_UART  (0)
+#define SERCOM_IRQ_TYPE_SPI   (1)
+#define SERCOM_IRQ_TYPE_I2C   (2)
 
 #endif // MICROPY_INCLUDED_SAMD_SAMD_SOC_H

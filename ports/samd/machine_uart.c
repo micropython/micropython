@@ -28,7 +28,8 @@
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "py/ringbuf.h"
-#include "sam.h"
+#include "modmachine.h"
+#include "samd_soc.h"
 #include "pin_cap.h"
 #include "clock_config.h"
 
@@ -37,8 +38,6 @@
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
 #define USART_BUFFER_TX  (0)
-
-Sercom *uart_inst[] = SERCOM_INSTS;
 
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
@@ -60,8 +59,7 @@ typedef struct _machine_uart_obj_t {
     #endif
 } machine_uart_obj_t;
 
-extern const mp_obj_type_t machine_uart_type;
-
+Sercom *sercom_instance[] = SERCOM_INSTS;
 machine_uart_obj_t *uart_table[SERCOM_INST_NUM] = {};
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
@@ -80,7 +78,7 @@ void common_uart_irq_handler(int uart_id) {
     machine_uart_obj_t *self = uart_table[uart_id];
     // Handle IRQ
     if (self != NULL) {
-        Sercom *uart = uart_inst[self->id];
+        Sercom *uart = sercom_instance[self->id];
         if (uart->USART.INTFLAG.bit.RXC != 0) {
             // Now handler the incoming data
             uart_drain_rx_fifo(self, uart);
@@ -231,7 +229,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         enable_sercom_clock(self->id);
 
         // Next: Configure the USART
-        Sercom *uart = uart_inst[self->id];
+        Sercom *uart = sercom_instance[self->id];
         // Reset (clear) the peripheral registers.
         while (uart->USART.SYNCBUSY.bit.SWRST) {
         }
@@ -275,6 +273,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         #elif defined(MCU_SAMD51)
         NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
         #endif
+        sercom_register_irq(self->id, SERCOM_IRQ_TYPE_UART);
 
         sercom_enable(uart, 1);
     }
@@ -317,7 +316,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 
 STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    Sercom *uart = uart_inst[self->id];
+    Sercom *uart = sercom_instance[self->id];
     // clear table entry of uart
     uart_table[self->id] = NULL;
     // Disable interrupts
@@ -333,7 +332,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     // get all bytes from the fifo first
-    uart_drain_rx_fifo(self, uart_inst[self->id]);
+    uart_drain_rx_fifo(self, sercom_instance[self->id]);
     return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
@@ -385,7 +384,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     uint64_t t = mp_hal_ticks_ms() + self->timeout;
     uint64_t timeout_char = self->timeout_char;
     uint8_t *dest = buf_in;
-    Sercom *uart = uart_inst[self->id];
+    Sercom *uart = sercom_instance[self->id];
 
     // t.b.d. Cater timeout for timer wrap after 50 days.
     for (size_t i = 0; i < size; i++) {
@@ -416,7 +415,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t remaining = size;
     const uint8_t *src = buf_in;
-    Sercom *uart = uart_inst[self->id];
+    Sercom *uart = sercom_instance[self->id];
 
     while (remaining--) {
         while (!(uart->USART.INTFLAG.bit.DRE)) {
@@ -431,7 +430,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
 STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
-    Sercom *uart = uart_inst[self->id];
+    Sercom *uart = sercom_instance[self->id];
     if (request == MP_STREAM_POLL) {
         uintptr_t flags = arg;
         ret = 0;

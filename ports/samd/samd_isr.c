@@ -100,32 +100,43 @@ void SysTick_Handler(void) {
     }
 }
 
-extern void common_uart_irq_handler(int uart_nr);
+static uint8_t sercom_irq_type[SERCOM_INST_NUM] = {};
+void (*sercom_irq_handler_table[2])(int num) = {common_uart_irq_handler, common_spi_irq_handler};
+
+void sercom_register_irq(int sercom_id, int mode) {
+    sercom_irq_type[sercom_id] = mode;
+}
+
+static inline void common_sercom_irq_handler(int sercom_id) {
+    sercom_irq_handler_table[sercom_irq_type[sercom_id]](sercom_id);
+}
 
 void Sercom0_Handler(void) {
-    common_uart_irq_handler(0);
+    common_sercom_irq_handler(0);
 }
 void Sercom1_Handler(void) {
-    common_uart_irq_handler(1);
+    common_sercom_irq_handler(1);
 }
 void Sercom2_Handler(void) {
-    common_uart_irq_handler(2);
+    common_sercom_irq_handler(2);
 }
 void Sercom3_Handler(void) {
-    common_uart_irq_handler(3);
+    common_sercom_irq_handler(3);
 }
 void Sercom4_Handler(void) {
-    common_uart_irq_handler(4);
+    common_sercom_irq_handler(4);
 }
 void Sercom5_Handler(void) {
-    common_uart_irq_handler(5);
+    common_sercom_irq_handler(5);
 }
+#if defined(MCU_SAMD51)
 void Sercom6_Handler(void) {
-    common_uart_irq_handler(6);
+    common_sercom_irq_handler(6);
 }
 void Sercom7_Handler(void) {
-    common_uart_irq_handler(7);
+    common_sercom_irq_handler(7);
 }
+#endif
 
 #if defined(MCU_SAMD21)
 const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {

@@ -237,7 +237,7 @@ sercom_pad_config_t is_sercom_n(int pin_id, uint8_t sercom_nr) {
     } else if ((pct_ptr->sercom2 >> 4) == sercom_nr) {
         return (sercom_pad_config_t) {ALT_FCT_SERCOM2, pct_ptr->sercom2 & 0x0f};
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("wrong UART device"));
+        mp_raise_ValueError(MP_ERROR_TEXT("wrong serial device"));
     }
 }
 
