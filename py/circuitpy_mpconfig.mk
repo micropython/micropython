@@ -57,8 +57,7 @@ CFLAGS += -DMICROPY_PY_USELECT_SELECT=$(MICROPY_PY_USELECT_SELECT)
 CIRCUITPY_AESIO ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_AESIO=$(CIRCUITPY_AESIO)
 
-# TODO: CIRCUITPY_ALARM will gradually be added to
-# as many ports as possible
+# TODO: CIRCUITPY_ALARM will gradually be added to as many ports as possible
 # so make this 1 or CIRCUITPY_FULL_BUILD eventually
 CIRCUITPY_ALARM ?= 0
 CFLAGS += -DCIRCUITPY_ALARM=$(CIRCUITPY_ALARM)

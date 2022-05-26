@@ -168,8 +168,8 @@ CFLAGS += \
 	-mcpu=cortex-m0plus \
 	-msoft-float \
 	-mfloat-abi=soft \
-	-DSAMD21
-        -flto-partition=one
+	-DSAMD21 \
+	-flto-partition=one
 endif
 ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS += \
