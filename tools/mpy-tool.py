@@ -1278,7 +1278,6 @@ def read_mpy(filename):
         if header[1] != config.MPY_VERSION:
             raise MPYReadError(filename, "incompatible .mpy version")
         feature_byte = header[2]
-        config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_byte & 2) != 0
         mpy_native_arch = feature_byte >> 2
         if mpy_native_arch != MP_NATIVE_ARCH_NONE:
             if config.native_arch == MP_NATIVE_ARCH_NONE:
@@ -1537,7 +1536,7 @@ def merge_mpy(raw_codes, output_file):
         header = bytearray(4)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2 | config.MICROPY_PY_BUILTINS_STR_UNICODE << 1
+        header[2] = config.native_arch << 2
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
 
