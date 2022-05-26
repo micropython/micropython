@@ -91,7 +91,7 @@ ifeq ($(DEBUG), 1)
 else
   OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
   CFLAGS += -DNDEBUG -ggdb3
-  CFLAGS += -flto -flto-partition=none
+  # If -flto is needed, give it in OPTIMIZATION_FLAGS per board
 endif
 
 ifeq ($(NRF_DEBUG_PRINT), 1)

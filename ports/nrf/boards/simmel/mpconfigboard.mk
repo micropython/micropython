@@ -48,6 +48,6 @@ CIRCUITPY_ZLIB = 0
 #CIRCUITPY_ENABLE_MPY_NATIVE = 1
 
 # Override optimization to keep binary small
-OPTIMIZATION_FLAGS = -Os
+OPTIMIZATION_FLAGS = -Os -flto -flto-partition=one
 SUPEROPT_VM = 0
 SUPEROPT_GC = 0

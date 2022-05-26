@@ -40,4 +40,4 @@ SUPEROPT_GC = 0
 SUPEROPT_VM = 0
 
 # Override optimization to keep binary small
-OPTIMIZATION_FLAGS = -Os
+OPTIMIZATION_FLAGS = -Os -flto -flto-partition=one

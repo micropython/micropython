@@ -30,6 +30,6 @@ CIRCUITPY_USB = 0
 MICROPY_PY_ASYNC_AWAIT = 0
 
 # Override optimization to keep binary small
-OPTIMIZATION_FLAGS = -Os
+OPTIMIZATION_FLAGS = -Os -flto -flto-partition=one
 SUPEROPT_VM = 0
 SUPEROPT_GC = 0
