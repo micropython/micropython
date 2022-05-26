@@ -941,7 +941,7 @@ the last matching regex is used:
             )
             if args.target == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+                test_dirs += ("float", "stress", "pyb", "inlineasm")
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "renesas-ra")
             elif args.target == "rp2":
