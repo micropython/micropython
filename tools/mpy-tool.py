@@ -976,7 +976,6 @@ class RawCodeNative(RawCode):
         kind,
         fun_data,
         prelude_offset,
-        qstr_links,
         scope_flags,
         n_pos_args,
         type_sig,
@@ -989,7 +988,6 @@ class RawCodeNative(RawCode):
             self.scope_flags = scope_flags
             self.n_pos_args = n_pos_args
 
-        self.qstr_links = qstr_links
         self.type_sig = type_sig
         if config.native_arch in (
             MP_NATIVE_ARCH_X86,
@@ -1196,15 +1194,6 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
         rc = RawCodeBytecode(cm_escaped_name, qstr_table, obj_table, fun_data)
     else:
         # Create native raw code.
-        qstr_links = []
-        if kind in (MP_CODE_NATIVE_PY, MP_CODE_NATIVE_VIPER):
-            # Read qstr link table.
-            n_qstr_link = reader.read_uint()
-            for _ in range(n_qstr_link):
-                off = reader.read_uint()
-                qst = read_qstr(reader, segments)
-                qstr_links.append((off >> 2, off & 3, qst))
-
         native_scope_flags = 0
         native_n_pos_args = 0
         native_type_sig = 0
@@ -1242,7 +1231,6 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
             kind,
             fun_data,
             prelude_offset,
-            qstr_links,
             native_scope_flags,
             native_n_pos_args,
             native_type_sig,
