@@ -203,10 +203,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // which don't necessarily match what we need. After calling it, set the values
     // specific to this instantiation of UART.
 
-    // Set pads computed for this SERCOM.
+    // Set pads computed for this SERCOM. Refer to the datasheet for details on pads.
     // TXPO:
     // 0x0: TX pad 0; no RTS/CTS
-    // 0x1: resevered
+    // 0x1: reserved
     // 0x2: TX pad 0; RTS: pad 2, CTS: pad 3
     // 0x3: TX pad 0; RTS: pad 2; no CTS
     // RXPO:
