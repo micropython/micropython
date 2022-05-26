@@ -158,6 +158,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
+ifeq ($(CIRCUITPY_DOTENV),1)
+SRC_PATTERNS += dotenv/%
+endif
 ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
 SRC_PATTERNS += paralleldisplay/%
 endif
@@ -545,6 +548,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotenv/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
