@@ -55,7 +55,6 @@
 #define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M        (0)
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)

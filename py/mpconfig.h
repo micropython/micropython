@@ -361,11 +361,6 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
-// Whether to enable ARMv7-M instruction support in the Thumb2 inline assembler
-#ifndef MICROPY_EMIT_INLINE_THUMB_ARMV7M
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
-#endif
-
 // Whether to enable float support in the Thumb2 inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
