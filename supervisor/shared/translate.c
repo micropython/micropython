@@ -134,19 +134,3 @@ char *decompress(const compressed_string_t *compressed, char *decompressed) {
     decompressed[length - 1] = '\0';
     return decompressed;
 }
-
-inline
-// gcc10 -flto has issues with this being always_inline for debug builds.
-#if CIRCUITPY_DEBUG < 1
-__attribute__((always_inline))
-#endif
-const compressed_string_t *translate(const char *original) {
-    #ifndef NO_QSTR
-    #define QDEF(id, hash, len, str)
-    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
-    #include "genhdr/qstrdefs.generated.h"
-#undef TRANSLATION
-#undef QDEF
-    #endif
-    return NULL;
-}

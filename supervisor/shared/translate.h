@@ -27,7 +27,9 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
 #define MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
 
+#include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 // The format of the compressed data is:
 // - the size of the uncompressed string in UTF-8 bytes, encoded as a
@@ -77,7 +79,7 @@ typedef struct compressed_string {
 // Return the compressed, translated version of a source string
 // Usually, due to LTO, this is optimized into a load of a constant
 // pointer.
-const compressed_string_t *translate(const char *c);
+// const compressed_string_t *translate(const char *c);
 void serial_write_compressed(const compressed_string_t *compressed);
 char *decompress(const compressed_string_t *compressed, char *decompressed);
 uint16_t decompress_length(const compressed_string_t *compressed);
@@ -89,5 +91,21 @@ uint16_t decompress_length(const compressed_string_t *compressed);
 #else
 #define MP_ERROR_TEXT(x) translate(x)
 #endif
+
+static inline
+// gcc10 -flto has issues with this being always_inline for debug builds.
+#if CIRCUITPY_DEBUG < 1
+__attribute__((always_inline))
+#endif
+const compressed_string_t *translate(const char *original) {
+    #ifndef NO_QSTR
+    #define QDEF(id, hash, len, str)
+    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
+    #include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
+#undef QDEF
+    #endif
+    return NULL;
+}
 
 #endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
