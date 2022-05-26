@@ -18,6 +18,11 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+.. function:: wake_on_ulp(wake)
+
+    Configure whether or not the Ultra-Low-Power co-processor can wake the
+    device from sleep. *wake* should be a boolean value.
+
 .. function:: wake_on_ext0(pin, level)
 
     Configure how EXT0 wakes the device from sleep.  *pin* can be ``None``

@@ -144,6 +144,12 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
         }
     }
 
+    if (machine_rtc_config.wake_on_ulp) {
+        if (esp_sleep_enable_ulp_wakeup() != ESP_OK) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_ulp_wakeup() failed"));
+        }
+    }
+
     #endif
 
     switch (wake_type) {
