@@ -685,10 +685,17 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || \
+    defined(STM32F427xx) || defined(STM32F437xx) || \
+    defined(STM32F429xx) || defined(STM32F439xx) || \
+    defined(STM32WB55xx) || defined(STM32WB35xx)
     // Disable SysTick Interrupt
     // Note: This seems to be required at least on the H7 REV Y,
     // otherwise the MCU will leave stop mode immediately on entry.
+    // Note: According to ST Errata ES0206 Rev 18, Section 2.2.1 this is needed
+    // for STM32F427xx, STM32F437xx, STM32F429xx and STM32F439xx
+    // Note: According to ST Errata ES0394 Rev 11, Section 2.2.17 this is needed
+    // for STM32WB55xx and STM32WB35xx
     SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
     #endif
 
@@ -849,7 +856,10 @@ void powerctrl_enter_stop_mode(void) {
     MICROPY_BOARD_LEAVE_STOP
     #endif
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || \
+    defined(STM32F427xx) || defined(STM32F437xx) || \
+    defined(STM32F429xx) || defined(STM32F439xx) || \
+    defined(STM32WB55xx) || defined(STM32WB35xx)
     // Enable SysTick Interrupt
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     #endif
