@@ -59,6 +59,21 @@ struct _emit_inline_asm_t {
     qstr *label_lookup;
 };
 
+#if MICROPY_DYNAMIC_COMPILER
+
+static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
+    return MP_NATIVE_ARCH_ARMV7EMSP <= mp_dynamic_compiler.native_arch
+           && mp_dynamic_compiler.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP;
+}
+
+#else
+
+static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
+    return MICROPY_EMIT_INLINE_THUMB_FLOAT;
+}
+
+#endif
+
 STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }
@@ -216,7 +231,6 @@ STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp
     return 0;
 }
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
 STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     if (reg_str[0] == 's' && reg_str[1] != '\0') {
@@ -243,7 +257,6 @@ malformed:
             MP_ERROR_TEXT("'%s' expects an FPU register"), op));
     return 0;
 }
-#endif
 
 STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     // a register list looks like {r0, r1, r2} and is parsed as a Python set
@@ -409,10 +422,10 @@ STATIC const format_9_10_op_t format_9_10_op_table[] = {
 };
 #undef X
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
 // actual opcodes are: 0xee00 | op.hi_nibble, 0x0a00 | op.lo_nibble
-typedef struct _format_vfp_op_t { byte op;
-                                  char name[3];
+typedef struct _format_vfp_op_t {
+    byte op;
+    char name[3];
 } format_vfp_op_t;
 STATIC const format_vfp_op_t format_vfp_op_table[] = {
     { 0x30, "add" },
@@ -420,7 +433,6 @@ STATIC const format_vfp_op_t format_vfp_op_table[] = {
     { 0x20, "mul" },
     { 0x80, "div" },
 };
-#endif
 
 // shorthand alias for whether we allow ARMv7-M instructions
 #define ARMV7M asm_thumb_allow_armv7m(&emit->as)
@@ -439,8 +451,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     size_t op_len;
     const char *op_str = (const char *)qstr_data(op, &op_len);
 
-    #if MICROPY_EMIT_INLINE_THUMB_FLOAT
-    if (op_str[0] == 'v') {
+    if (emit_inline_thumb_allow_float(emit) && op_str[0] == 'v') {
         // floating point operations
         if (n_args == 2) {
             mp_uint_t op_code = 0x0ac0, op_code_hi;
@@ -535,7 +546,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         }
         return;
     }
-    #endif
 
     if (n_args == 0) {
         if (op == MP_QSTR_nop) {
