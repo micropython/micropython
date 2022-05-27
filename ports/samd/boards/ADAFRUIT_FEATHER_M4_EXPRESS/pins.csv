@@ -1,0 +1,34 @@
+# Pin rows contain Pin number and pin name.
+# Pin rows start with PIN_
+# LED rows start with LED_
+# If the pin name is omitted, the pin number is added as name.
+# Rows for empty entries have to start with '-'
+# Empty lines and lines starting with PIN_ or LED_ are ignored
+
+PIN_PB17,D0
+PIN_PB16,D1
+PIN_PA14,D4
+PIN_PA16,D5
+PIN_PA18,D6
+-
+PIN_PB03,D8
+PIN_PA19,D9
+PIN_PA20,D10
+PIN_PA21,D11
+PIN_PA22,D12
+PIN_PA23,D13
+PIN_PA02,A0
+PIN_PA05,A1
+PIN_PB08,A2
+PIN_PB09,A3
+PIN_PA04,A4
+PIN_PB06,A5
+PIN_PA13,SCL
+PIN_PA12,SDA
+PIN_PB23,MOSI
+PIN_PB22,MISO
+PIN_PA17,SCK
+PIN_PB01,VDIV
+PIN_PA03,AREF
+
+LED_PA17,LED

@@ -46,6 +46,11 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(BUILD)/pins.h
+
 MAKE_PIN_CAP = boards/make-pin-cap.py
 MUX_TABLE_CSV = boards/mux-table-$(MCU_SERIES).csv
 GEN_PIN_CAP = pin_cap_table.c
@@ -86,6 +91,10 @@ SRC_C = \
 	help.c \
 	main.c \
 	machine_adc.c \
+	modutime.c \
+	modmachine.c \
+	$(BUILD)/pins.c \
+	machine_pin.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_spi.c \
@@ -96,7 +105,6 @@ SRC_C = \
 	modsamd.c \
 	mphalport.c \
 	modutime.c \
-	$(BOARD_DIR)/pins.c \
 	pendsv.c \
 	pin_cap.c \
 	samd_flash.c \
@@ -197,5 +205,9 @@ pin_cap.c: $(BUILD)/$(GEN_PIN_CAP)
 $(BUILD)/$(GEN_PIN_CAP): $(MUX_TABLE_CSV)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PIN_CAP) --csv $(MUX_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_CAP) --mcu $(MCU_SERIES)
+
+$(GEN_PINS_SRC): $(BOARD_PINS)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk
