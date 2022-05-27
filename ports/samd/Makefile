@@ -56,6 +56,11 @@ LDFLAGS += $(LDFLAGS_MOD)
 
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(BUILD)/pins.h
+
 # Tune for Debugging or Optimization
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
@@ -79,7 +84,7 @@ SRC_C = \
 	help.c \
 	modutime.c \
 	modmachine.c \
-	$(BOARD_DIR)/pins.c \
+	$(BUILD)/pins.c \
 	machine_pin.c \
 	machine_led.c \
 	modsamd.c \
@@ -159,5 +164,9 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
+
+$(GEN_PINS_SRC): $(BOARD_PINS)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk
