@@ -398,6 +398,25 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
 }
 
+void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
+    esp_netif_dhcpc_start(self->netif);
+}
+
+void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
+    esp_netif_dhcpc_stop(self->netif);
+}
+
+void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway) {
+    common_hal_wifi_radio_stop_dhcp_client(self); // Must stop DHCP to set a manual address
+
+    esp_netif_ip_info_t ip_info;
+    ipaddress_ipaddress_to_esp_idf_ip4(ipv4, &ip_info.ip);
+    ipaddress_ipaddress_to_esp_idf_ip4(netmask, &ip_info.netmask);
+    ipaddress_ipaddress_to_esp_idf_ip4(gateway, &ip_info.gw);
+
+    esp_netif_set_ip_info(self->netif, &ip_info);
+}
+
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {
     esp_ping_config_t ping_config = ESP_PING_DEFAULT_CONFIG();
     ipaddress_ipaddress_to_esp_idf(ip_address, &ping_config.target_addr);
