@@ -92,7 +92,7 @@ typedef enum {
 #define NATIVE_EMITTER(f) emit_native_table[mp_dynamic_compiler.native_arch]->emit_##f
 #define NATIVE_EMITTER_TABLE emit_native_table[mp_dynamic_compiler.native_arch]
 
-STATIC const emit_method_table_t * emit_native_table[] = {
+STATIC const emit_method_table_t *emit_native_table[] = {
     NULL,
     &emit_native_x86_method_table,
     &emit_native_x64_method_table,
@@ -131,7 +131,7 @@ STATIC const emit_method_table_t * emit_native_table[] = {
 #define ASM_EMITTER(f) emit_asm_table[mp_dynamic_compiler.native_arch]->asm_##f
 #define ASM_EMITTER_TABLE emit_asm_table[mp_dynamic_compiler.native_arch]
 
-STATIC const emit_inline_asm_method_table_t * emit_asm_table[] = {
+STATIC const emit_inline_asm_method_table_t *emit_asm_table[] = {
     NULL,
     NULL,
     NULL,
@@ -3527,7 +3527,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
 
             switch (s->emit_options) {
 
-            #if MICROPY_EMIT_NATIVE
+                #if MICROPY_EMIT_NATIVE
                 case MP_EMIT_OPT_NATIVE_PYTHON:
                 case MP_EMIT_OPT_VIPER:
                     if (emit_native == NULL) {
@@ -3536,7 +3536,7 @@ mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_f
                     comp->emit_method_table = NATIVE_EMITTER_TABLE;
                     comp->emit = emit_native;
                     break;
-            #endif // MICROPY_EMIT_NATIVE
+                #endif // MICROPY_EMIT_NATIVE
 
                 default:
                     comp->emit = emit_bc;

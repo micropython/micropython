@@ -62,7 +62,7 @@ $(BUILD)/%.o: %.c | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdef
 	$(call compile_c)
 
 vpath %.cpp . $(TOP) $(USER_C_MODULES)
-$(BUILD)/%.o: %.cpp
+$(BUILD)/%.o: %.cpp | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.enum.h
 	$(call compile_cxx)
 
 QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -x c
