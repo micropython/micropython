@@ -27,6 +27,7 @@
  */
 
 #include "modmachine.h"
+#include "sam.h"
 #include "pins.h"
 
 // Ensure Declaration in 'pins.h' reflects # of Pins defined here.
