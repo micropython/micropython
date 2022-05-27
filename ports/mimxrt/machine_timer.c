@@ -30,7 +30,7 @@
 #include "py/mphal.h"
 #include "fsl_pit.h"
 #include "modmachine.h"
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 
 #define TIMER_MODE_ONE_SHOT (0)
 #define TIMER_MODE_PERIODIC (1)

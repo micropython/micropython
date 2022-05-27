@@ -32,7 +32,7 @@
 #include "fsl_common.h"
 #include "fsl_lpuart.h"
 #include "fsl_iomuxc.h"
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)

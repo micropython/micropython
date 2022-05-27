@@ -40,7 +40,7 @@
 #include "modmachine.h"
 #include "dma_manager.h"
 
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 #include "fsl_iomuxc.h"
 #include "fsl_dmamux.h"
 #include "fsl_edma.h"

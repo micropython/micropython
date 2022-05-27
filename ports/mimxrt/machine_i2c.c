@@ -29,7 +29,7 @@
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"

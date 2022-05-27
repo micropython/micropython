@@ -30,7 +30,7 @@
 #include "py/mperrno.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 
 #include "fsl_cache.h"
 #include "fsl_dmamux.h"

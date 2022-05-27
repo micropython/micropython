@@ -66,6 +66,7 @@ CFLAGS += -Wno-error=unused-parameter
 
 INC += -I.
 INC += -Ihal
+INC += -Iboards
 INC += -I$(BOARD_DIR)
 INC += -I$(BUILD)
 INC += -I$(TOP)
@@ -88,6 +89,7 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
+	-DCLOCK_CONFIG_H='<$(MCU_SERIES)_clock_config.h>' \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 
@@ -214,7 +216,7 @@ endif
 
 SRC_C += \
 	board_init.c \
-	$(BOARD_DIR)/clock_config.c \
+	boards/$(MCU_SERIES)_clock_config.c \
 	dma_manager.c \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \

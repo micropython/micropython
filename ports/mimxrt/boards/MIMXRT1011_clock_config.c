@@ -30,7 +30,7 @@ processor_version: 0.0.1
 board: MIMXRT1010-EVK
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 #include "fsl_iomuxc.h"
 
 /*******************************************************************************
