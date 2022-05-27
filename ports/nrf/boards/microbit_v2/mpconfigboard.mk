@@ -28,8 +28,3 @@ CIRCUITPY_ULAB = 0
 CIRCUITPY_USB = 0
 
 MICROPY_PY_ASYNC_AWAIT = 0
-
-# Override optimization to keep binary small
-OPTIMIZATION_FLAGS = -Os
-SUPEROPT_VM = 0
-SUPEROPT_GC = 0
