@@ -33,6 +33,8 @@
 
 #include "supervisor/linker.h"
 
+#include "supervisor/shared/translate/translate.h"
+
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,

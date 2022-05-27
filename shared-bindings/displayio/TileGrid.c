@@ -38,7 +38,7 @@
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Shape.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class TileGrid:
 //|     """A grid of tiles sourced out of one bitmap

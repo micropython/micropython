@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +24,29 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+#pragma once
 
-#include "shared-bindings/analogio/AnalogOut.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
-void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self, const mcu_pin_obj_t *pin) {
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_AnalogOut);
-}
+#include "supervisor/shared/translate/compressed_string.h"
 
-bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return true;
-}
-
-void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-}
-
-void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self, uint16_t value) {
+#if CIRCUITPY_LTO == 0
+static
+#endif
+inline
+// gcc10 -flto has issues with this being always_inline for debug builds.
+#if CIRCUITPY_DEBUG < 1
+__attribute__((always_inline))
+#endif
+const compressed_string_t *translate(const char *original) {
+    #ifndef NO_QSTR
+    #define QDEF(id, hash, len, str)
+    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
+    #include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
+#undef QDEF
+    #endif
+    return NULL;
 }

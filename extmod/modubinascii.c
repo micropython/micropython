@@ -11,6 +11,8 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 
+#include "supervisor/shared/translate/translate.h"
+
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {

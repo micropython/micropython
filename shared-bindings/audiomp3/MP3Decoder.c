@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class MP3Decoder:
 //|     """Load a mp3 file for audio playback

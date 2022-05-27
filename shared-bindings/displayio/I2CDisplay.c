@@ -37,7 +37,7 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class I2CDisplay:
 //|     """Manage updating a display over I2C in the background while Python code runs.

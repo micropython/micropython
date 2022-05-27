@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
-#define MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -83,29 +82,3 @@ typedef struct compressed_string {
 void serial_write_compressed(const compressed_string_t *compressed);
 char *decompress(const compressed_string_t *compressed, char *decompressed);
 uint16_t decompress_length(const compressed_string_t *compressed);
-
-
-// Map MicroPython's error messages to our translations.
-#if defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME
-#define MP_ERROR_TEXT(x) (x)
-#else
-#define MP_ERROR_TEXT(x) translate(x)
-#endif
-
-static inline
-// gcc10 -flto has issues with this being always_inline for debug builds.
-#if CIRCUITPY_DEBUG < 1
-__attribute__((always_inline))
-#endif
-const compressed_string_t *translate(const char *original) {
-    #ifndef NO_QSTR
-    #define QDEF(id, hash, len, str)
-    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
-    #include "genhdr/qstrdefs.generated.h"
-#undef TRANSLATION
-#undef QDEF
-    #endif
-    return NULL;
-}
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_TRANSLATE_H

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -134,3 +134,7 @@ char *decompress(const compressed_string_t *compressed, char *decompressed) {
     decompressed[length - 1] = '\0';
     return decompressed;
 }
+
+#if CIRCUITPY_LTO == 1
+#include "supervisor/shared/translate/translate_impl.h"
+#endif

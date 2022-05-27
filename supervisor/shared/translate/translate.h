@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2019 Artur Pacholec
+ * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,22 +24,32 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+#pragma once
 
-#include "shared-bindings/analogio/AnalogOut.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 
-void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self, const mcu_pin_obj_t *pin) {
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_AnalogOut);
-}
+#include "supervisor/shared/translate/compressed_string.h"
 
-bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    return true;
-}
+// Map MicroPython's error messages to our translations.
+#if defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME
+#define MP_ERROR_TEXT(x) (x)
+#else
+#define MP_ERROR_TEXT(x) translate(x)
+#endif
 
-void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-}
+// translate() is a giant function with many strcmp calls. The assumption is
+// that the build process will optimize this away and replace it with the
+// appropriate compressed data for each call site.
 
-void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self, uint16_t value) {
-}
+#if CIRCUITPY_LTO == 0
+// Without LTO, we need to include a copy of this function in each compilation
+// unit so that the compile stage can do the optimization. Otherwise the linker
+// will leave this as a giant function and have each call site call into it.
+#include "supervisor/shared/translate/translate_impl.h"
+#else
+// In link time optimized (LTO) builds, we can compile this once into a .o and
+// at link time the calls will be optimized.
+const compressed_string_t *translate(const char *c);
+#endif

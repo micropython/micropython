@@ -15,7 +15,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
-	supervisor/shared/translate.c \
+	supervisor/shared/translate/translate.c \
   supervisor/shared/workflow.c
 
 ifeq ($(DISABLE_FILESYSTEM),1)

@@ -28,7 +28,7 @@
 #include "py/obj.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Manage additional terminal sources
 //|

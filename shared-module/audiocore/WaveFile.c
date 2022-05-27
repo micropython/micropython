@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiocore/WaveFile.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 struct wave_format_chunk {
     uint16_t audio_format;

@@ -28,7 +28,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // The HAL is sparse on obtaining register information, so we use the LLs here.
 #if (CPY_STM32H7)

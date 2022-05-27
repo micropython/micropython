@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include STM32_HAL_H
 #include "shared-bindings/microcontroller/Pin.h"

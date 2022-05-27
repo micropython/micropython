@@ -36,7 +36,7 @@
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 
 #include "shared-bindings/microcontroller/__init__.h"

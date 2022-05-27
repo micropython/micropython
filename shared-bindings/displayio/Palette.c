@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Palette:
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to

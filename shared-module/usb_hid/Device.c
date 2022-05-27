@@ -31,7 +31,7 @@
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/__init__.h"
 #include "shared-module/usb_hid/Device.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 #include "tusb.h"
 

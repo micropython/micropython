@@ -27,6 +27,7 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""

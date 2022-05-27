@@ -78,6 +78,8 @@ endif
 SUPEROPT_GC = 0
 SUPEROPT_VM = 0
 
+CIRCUITPY_LTO = one
+
 ifeq ($(CIRCUITPY_FULL_BUILD),0)
 # On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
 CFLAGS_BOARD = -fweb -frename-registers
@@ -93,6 +95,12 @@ ifeq ($(CHIP_FAMILY),samd51)
 
 # No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+ifeq ($(CIRCUITPY_FULL_BUILD),1)
+CIRCUITPY_LTO ?= balanced
+else
+CIRCUITPY_LTO ?= one
+endif
 
 # The ?='s allow overriding in mpconfigboard.mk.
 

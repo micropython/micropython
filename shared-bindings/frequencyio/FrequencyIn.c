@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class FrequencyIn:
 //|     """Read a frequency signal

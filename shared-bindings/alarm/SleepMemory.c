@@ -31,7 +31,7 @@
 #include "py/runtime0.h"
 
 #include "shared-bindings/alarm/SleepMemory.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class SleepMemory:
 //|     """Store raw bytes in RAM that persists during deep sleep.

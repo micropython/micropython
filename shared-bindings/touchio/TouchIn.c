@@ -36,7 +36,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/touchio/TouchIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class TouchIn:
 //|     """Read the state of a capacitive touch sensor

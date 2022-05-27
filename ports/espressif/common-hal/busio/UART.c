@@ -38,7 +38,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 uint8_t never_reset_uart_mask = 0;
