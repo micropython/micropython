@@ -322,6 +322,24 @@ MP_PROPERTY_GETSET(displayio_tilegrid_transpose_xy_obj,
     (mp_obj_t)&displayio_tilegrid_get_transpose_xy_obj,
     (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj);
 
+//|     def contains(self, touch_tuple: tuple) -> bool:
+//|         """returns true if first two values in touch_tuple represent an x,y coordinate
+//|            inside the tilegrid rectangle bounds"""
+//|
+STATIC mp_obj_t displayio_tilegrid_obj_contains(mp_obj_t self_in, mp_obj_t touch_tuple) {
+    displayio_tilegrid_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_obj_t *touch_tuple_items;
+    mp_obj_get_array_fixed_n(touch_tuple, 3, &touch_tuple_items);
+    uint16_t x = 0;
+    uint16_t y = 0;
+    x = mp_obj_get_int(touch_tuple_items[0]);
+    y = mp_obj_get_int(touch_tuple_items[1]);
+
+    return mp_obj_new_bool(common_hal_displayio_tilegrid_contains(self, x, y));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(displayio_tilegrid_contains_obj, displayio_tilegrid_obj_contains);
+
 //|     pixel_shader: Union[ColorConverter, Palette]
 //|     """The pixel shader of the tilegrid."""
 //|
@@ -484,6 +502,7 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_flip_x), MP_ROM_PTR(&displayio_tilegrid_flip_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_flip_y), MP_ROM_PTR(&displayio_tilegrid_flip_y_obj) },
     { MP_ROM_QSTR(MP_QSTR_transpose_xy), MP_ROM_PTR(&displayio_tilegrid_transpose_xy_obj) },
+    { MP_ROM_QSTR(MP_QSTR_contains), MP_ROM_PTR(&displayio_tilegrid_contains_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_shader), MP_ROM_PTR(&displayio_tilegrid_pixel_shader_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&displayio_tilegrid_bitmap_obj) },
 };

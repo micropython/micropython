@@ -342,6 +342,17 @@ void common_hal_displayio_tilegrid_set_transpose_xy(displayio_tilegrid_t *self, 
     self->moved = true;
 }
 
+bool common_hal_displayio_tilegrid_contains(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
+    uint16_t right_edge = self->x + (self->width_in_tiles * self->tile_width);
+    uint16_t bottom_edge = self->y + (self->height_in_tiles * self->tile_height);
+    if (x >= self->x && x <= right_edge &&
+        y >= self->y && y <= bottom_edge) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y) {
     self->top_left_x = x;
     self->top_left_y = y;
