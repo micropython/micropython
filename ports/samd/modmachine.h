@@ -31,7 +31,4 @@
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_led_type;
 
-mp_obj_t machine_uart_init(void);
-mp_obj_t machine_uart_deinit(void);
-
 #endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H

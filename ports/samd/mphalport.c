@@ -71,9 +71,6 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        if (USARTx->USART.INTFLAG.bit.RXC) {
-            return USARTx->USART.DATA.bit.DATA;
-        }
         if (tud_cdc_connected() && tud_cdc_available()) {
             uint8_t buf[1];
             uint32_t count = tud_cdc_read(buf, sizeof(buf));
@@ -99,10 +96,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             tud_cdc_write_flush();
             i += n2;
         }
-    }
-    while (len--) {
-        while (!(USARTx->USART.INTFLAG.bit.DRE)) {
-        }
-        USARTx->USART.DATA.bit.DATA = *str++;
     }
 }
