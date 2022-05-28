@@ -27,4 +27,4 @@ unsigned long trng_random_u32(void);
 #define CPU_FREQ            (120000000)
 #define BUS_FREQ            (48000000)
 #define DPLLx_REF_FREQ      (32768)
-#define MICROPY_HW_XOSC32K  (0)
+#define MICROPY_HW_XOSC32K  (1)
