@@ -1,6 +1,6 @@
 import network
 import socket
-import ussl
+import ssl
 
 CA = b"""-----BEGIN CERTIFICATE-----
 MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/
@@ -25,7 +25,10 @@ Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
 
 wlan = network.WLAN(network.STA_IF) # create station interface
 wlan.active(True)       # activate the interface
-wlan.connect('xyz', 'xyz') # connect to an AP
+if not wlan.isconnected():
+    if wlan.status() == network.STAT_CONNECTING:
+        wlan.disconnect()
+    wlan.connect('xyz', 'xyz') # connect to an AP
 
 while True:
     if wlan.isconnected():
@@ -37,16 +40,15 @@ ai = ai[0]
 s = socket.socket()
 s.connect(ai[-1])
 # s.setblocking(False)
-s2 = ussl.wrap_socket(s)
+s2 = ssl.wrap_socket(s)
 cert = s2.getpeercert(True)
-print(cert)
 s2.close()
 
 s = socket.socket()
 s.connect(ai[-1])
 s.setblocking(False)
 try:
-    s2 = ussl.wrap_socket(s, server_hostname=host, cert_reqs=0xffffff)
+    s2 = ssl.wrap_socket(s, server_hostname=host, cert_reqs=0xffffff)
 except OSError:
     pass
 else:
@@ -58,7 +60,7 @@ s = socket.socket()
 s.connect(ai[-1])
 s.setblocking(False)
 try:
-    s2 = ussl.wrap_socket(s, server_hostname=host, ca_certs=CA, cert_reqs=0xffffff)
+    s2 = ssl.wrap_socket(s, server_hostname=host, ca_certs=CA, cert_reqs=0xffffff)
 except OSError:
     raise Exception('This should not have raised an error!')
 finally:
