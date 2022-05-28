@@ -53,7 +53,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     uint8_t *init_sequence, uint16_t init_sequence_len, const mcu_pin_obj_t *backlight_pin,
     uint16_t brightness_command, mp_float_t brightness, bool auto_brightness,
     bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
-    bool backlight_on_high, bool SH1107_addressing) {
+    bool backlight_on_high, bool SH1107_addressing, uint16_t backlight_pwm_frequency) {
 
     // Turn off auto-refresh as we init.
     self->auto_refresh = false;
@@ -116,7 +116,7 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     if (backlight_pin != NULL && common_hal_mcu_pin_is_free(backlight_pin)) {
         // Avoid PWM types and functions when the module isn't enabled
         #if (CIRCUITPY_PWMIO)
-        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, 500, false);
+        pwmout_result_t result = common_hal_pwmio_pwmout_construct(&self->backlight_pwm, backlight_pin, 0, backlight_pwm_frequency, false);
         if (result != PWMOUT_OK) {
             self->backlight_inout.base.type = &digitalio_digitalinout_type;
             common_hal_digitalio_digitalinout_construct(&self->backlight_inout, backlight_pin);
