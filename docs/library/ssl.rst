@@ -72,7 +72,7 @@ This applies for the esp32
    * *key* server key
    * *cert* server cert
    * *server_hostname* for SNI
-   * *cert_reqs* Or-ed flags from x509.h https://tls.mbed.org/api/x509_8h_source.html which errors NOT to tolerate. If set to zero all cert validation errors are accapted, if set to 0xffffff all errors will raise.
+   * *cert_reqs* Or-ed flags from x509.h https://tls.mbed.org/api/x509_8h_source.html which errors NOT to tolerate. If set to zero all cert validation errors are accapted, if set to 0xffffff all errors will raise, set to 0xffffff to be secure by default which deviates from cpython.
    * *ca_certs* ca certificates
    * *do_handshake* if the handshake should be performed
 
