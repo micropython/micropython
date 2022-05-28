@@ -46,12 +46,17 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
+MAKE_PIN_CAP = boards/make-pin-cap.py
+MUX_TABLE_CSV = boards/mux-table-$(MCU_SERIES).csv
+GEN_PIN_CAP = pin_cap_table.c
+
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 # CFLAGS = $(INC) -Wall -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += -DPIN_CAP_TABLE_C='<$(BUILD)/$(GEN_PIN_CAP)>' \
 
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += $(LDFLAGS_MOD)
@@ -186,5 +191,11 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
+
+pin_cap.c: $(BUILD)/$(GEN_PIN_CAP)
+
+$(BUILD)/$(GEN_PIN_CAP): $(MUX_TABLE_CSV)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PIN_CAP) --csv $(MUX_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_CAP) --mcu $(MCU_SERIES)
 
 include $(TOP)/py/mkrules.mk
