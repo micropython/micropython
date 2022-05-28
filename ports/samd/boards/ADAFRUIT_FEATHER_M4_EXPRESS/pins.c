@@ -54,7 +54,7 @@ const machine_pin_obj_t machine_pin_obj[] = {
     {{&machine_pin_type}, PIN_PA13}, // SCL
     {{&machine_pin_type}, PIN_PA12}, // SDA
     {{&machine_pin_type}, PIN_PB23}, // MOSI
-    {{&machine_pin_type}, PIN_PA22}, // MISO
+    {{&machine_pin_type}, PIN_PB22}, // MISO
     {{&machine_pin_type}, PIN_PA17}, // SCK
     {{&machine_pin_type}, PIN_PB01}, // VDIV
     {{&machine_pin_type}, PIN_PA03}, // AREF
