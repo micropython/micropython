@@ -65,9 +65,17 @@ void common_spi_irq_handler(int spi_id) {
     // Handle IRQ
     if (self != NULL) {
         Sercom *spi = sercom_instance[self->id];
-        if (spi->SPI.INTFLAG.bit.RXC != 0 && self->rxlen > 0) {
-            *(self->dest)++ = spi->SPI.DATA.bit.DATA;
-            self->rxlen--;
+        if (spi->SPI.INTFLAG.bit.RXC != 0) {
+            if (self->rxlen > 0) {
+                *(self->dest)++ = spi->SPI.DATA.bit.DATA;
+                self->rxlen--;
+            } else {
+                // Just in the unlikely case there is data but no space in the buffer
+                // discard the data and clear the intflag
+                uint32_t temp;
+                (void)temp;
+                temp = spi->SPI.DATA.bit.DATA;
+            }
         }
     }
 }

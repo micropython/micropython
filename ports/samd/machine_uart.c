@@ -68,9 +68,17 @@ STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0,
 
 // take all bytes from the fifo and store them in the buffer
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
-    while (uart->USART.INTFLAG.bit.RXC != 0 && ringbuf_free(&self->read_buffer) > 0) {
-        // get a byte from uart and put into the buffer
-        ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+    while (uart->USART.INTFLAG.bit.RXC != 0) {
+        if (ringbuf_free(&self->read_buffer) > 0) {
+            // get a byte from uart and put into the buffer
+            ringbuf_put(&(self->read_buffer), uart->USART.DATA.bit.DATA);
+        } else {
+            // if the buffer is full, discard the data for now
+            // t.b.d.: flow control
+            uint32_t temp;
+            (void)temp;
+            temp = uart->USART.DATA.bit.DATA;
+        }
     }
 }
 
