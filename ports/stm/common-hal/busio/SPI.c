@@ -206,6 +206,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     spi_clock_enable(1 << (self->sck->periph_index - 1));
     reserved_spi[self->sck->periph_index - 1] = true;
 
+    // Always start at 250khz which is what SD cards need. They are sensitive to
+    // SPI bus noise before they are put into SPI mode.
+    const uint32_t default_baudrate = 250000UL;
+
     self->handle.Instance = SPIx;
     self->handle.Init.Mode = SPI_MODE_MASTER;
     // Direction change only required for RX-only, see RefMan RM0090:884
@@ -218,7 +222,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CLKPolarity = SPI_POLARITY_LOW;
     self->handle.Init.CLKPhase = SPI_PHASE_1EDGE;
     self->handle.Init.NSS = SPI_NSS_SOFT;
-    self->handle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+    self->handle.Init.BaudRatePrescaler = stm32_baud_to_spi_div(default_baudrate, &self->prescaler, get_busclock(self->handle.Instance));
     self->handle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     self->handle.Init.TIMode = SPI_TIMODE_DISABLE;
     self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -226,8 +230,8 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     if (HAL_SPI_Init(&self->handle) != HAL_OK) {
         mp_raise_ValueError(translate("SPI init error"));
     }
-    self->baudrate = (get_busclock(SPIx) / 16);
-    self->prescaler = 16;
+    self->baudrate = default_baudrate;
+    // self->prescaler = 16; // Initialised above by stm32_baud_to_spi_div
     self->half_duplex = half_duplex;
     self->polarity = 0;
     self->phase = 0;
@@ -381,7 +385,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
 
 uint32_t common_hal_busio_spi_get_frequency(busio_spi_obj_t *self) {
     // returns actual frequency
-    uint32_t result = HAL_RCC_GetPCLK2Freq() / self->prescaler;
+    uint32_t result = get_busclock(self->handle.Instance) / self->prescaler;
     return result;
 }
 
