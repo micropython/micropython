@@ -40,8 +40,8 @@ typedef struct _machine_pwm_obj_t {
     Tcc *instance;
     uint8_t pin_id;
     uint8_t device;
-    uint8_t channel1;
-    uint8_t channel2;
+    uint8_t channel;
+    uint8_t output;
     uint16_t prescaler;
     uint32_t period;  // full period count ticks
     uint32_t duty;
@@ -80,7 +80,8 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM P%c%02u device=%u channel=%u", "ABCD"[self->pin_id / 32], self->pin_id % 32, self->device, self->channel1);
+    mp_printf(print, "PWM P%c%02u device=%u channel=%u output=%u",
+        "ABCD"[self->pin_id / 32], self->pin_id % 32, self->device, self->channel, self->output);
 }
 
 // PWM(pin)
@@ -115,7 +116,8 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->instance = tcc_instance[device];
     self->device = device;
     self->pin_id = pin_id;
-    self->channel1 = config.device_channel & 0x0f;
+    self->channel = (config.device_channel & 0x0f) % tcc_channel_count[device];
+    self->output = config.device_channel & 0x0f;
     self->prescaler = 1;
     self->period = 1; // Use an invalid but safe value
     self->duty = 0;
@@ -175,7 +177,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         if (device_status[device] != PWM_INIT_CLK) {
             pwm_stop_device(device);
         }
-        uint32_t mask = 1 << (self->channel1 + TCC_DRVCTRL_INVEN0_Pos);
+        uint32_t mask = 1 << (self->output + TCC_DRVCTRL_INVEN0_Pos);
         if (invert) {
             tcc->DRVCTRL.reg |= mask;
         } else {
@@ -292,21 +294,21 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(self->instance->CC[self->channel1].reg * PWM_FULL_SCALE / self->period);
+    return MP_OBJ_NEW_SMALL_INT(self->instance->CC[self->channel].reg * PWM_FULL_SCALE / (self->instance->PER.reg + 1));
 }
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     self->duty = duty_u16;
-    self->instance->CC[self->channel1].reg = (uint64_t)duty_u16 * self->period / PWM_FULL_SCALE;
-    duty_type_flags[self->device] |= 1 << self->channel1;
+    self->instance->CC[self->channel].reg = (uint64_t)duty_u16 * (self->instance->PER.reg + 1) / PWM_FULL_SCALE;
+    duty_type_flags[self->device] |= 1 << self->channel;
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(1000000000ULL * self->instance->CC[self->channel1].reg * self->prescaler / PWM_MASTER_CLK);
+    return MP_OBJ_NEW_SMALL_INT(1000000000ULL * self->instance->CC[self->channel].reg * self->prescaler / PWM_MASTER_CLK);
 }
 
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     self->duty = duty_ns;
-    self->instance->CC[self->channel1].reg = (uint64_t)duty_ns * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
-    duty_type_flags[self->device] &= ~(1 << self->channel1);
+    self->instance->CC[self->channel].reg = (uint64_t)duty_ns * PWM_MASTER_CLK / self->prescaler / 1000000000ULL;
+    duty_type_flags[self->device] &= ~(1 << self->channel);
 }

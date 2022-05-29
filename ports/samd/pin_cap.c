@@ -94,13 +94,7 @@ pwm_config_t is_pwm(int pin_id, int wanted_dev, uint8_t device_status[]) {
     const pin_cap_t *pct_ptr = get_pin_cap_info(pin_id);
     uint8_t tcc1 = pct_ptr->tcc1;
     uint8_t tcc2 = pct_ptr->tcc2;
-    // check for unsupported channel (temporary)
-    if ((tcc1 & 0x0f) >= tcc_channel_count[tcc1 >> 4]) {
-        tcc1 = 0xff;
-    }
-    if ((tcc2 & 0x0f) >= tcc_channel_count[tcc2 >> 4]) {
-        tcc2 = 0xff;
-    }
+
     if (wanted_dev != -1) {
         if ((tcc1 >> 4) == wanted_dev) {
             return (pwm_config_t) {ALT_FCT_TCC1, tcc1};
