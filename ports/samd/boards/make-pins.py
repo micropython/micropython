@@ -15,6 +15,8 @@ typedef struct _machine_pin_obj_t {
     char *name;
 } machine_pin_obj_t;
 
+int pin_find(mp_obj_t pin, const machine_pin_obj_t machine_pin_obj[], int table_size);
+
 """
 
 led_header_prefix = """typedef struct _machine_led_obj_t {
@@ -33,19 +35,19 @@ class Pins:
 
     def parse_csv_file(self, filename):
         with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
+            rows = csv.reader(csvfile, skipinitialspace=True)
             for row in rows:
                 # Pin numbers must start with "PIN_"
                 # LED numbers must start with "LED_"
                 if len(row) > 0:
-                    if row[0].strip().startswith("PIN_"):
+                    if row[0].startswith("PIN_"):
                         if len(row) == 1:
                             self.board_pins.append([row[0], row[0][4:]])
                         else:
                             self.board_pins.append([row[0], row[1]])
-                    elif row[0].strip().startswith("LED_"):
+                    elif row[0].startswith("LED_"):
                         self.board_leds.append(["PIN_" + row[0][4:], row[1]])
-                    elif row[0].strip().startswith("-"):
+                    elif row[0].startswith("-"):
                         self.board_pins.append(["-1", ""])
 
     def print_pins(self, pins_filename):

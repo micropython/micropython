@@ -27,6 +27,7 @@
  * Uses pins.h & pins.c to create board (MCU package) specific 'machine_pin_obj' array.
  */
 
+#include "string.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/mpirq.h"
@@ -75,6 +76,24 @@ STATIC void pin_validate_drive(bool strength) {
     if (strength != GPIO_STRENGTH_2MA && strength != GPIO_STRENGTH_8MA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
+}
+
+int pin_find(mp_obj_t pin, const machine_pin_obj_t machine_pin_obj[], int table_size) {
+    int wanted_pin = -1;
+    if (mp_obj_is_small_int(pin)) {
+        // Pin defined by the index of pin table
+        wanted_pin = mp_obj_get_int(pin);
+    } else if (mp_obj_is_str(pin)) {
+        // Search by name
+        size_t slen;
+        const char *s = mp_obj_str_get_data(pin, &slen);
+        for (wanted_pin = 0; wanted_pin < table_size; wanted_pin++) {
+            if (strncmp(s, machine_pin_obj[wanted_pin].name, slen) == 0) {
+                break;
+            }
+        }
+    }
+    return wanted_pin;
 }
 
 // Pin.init(mode, pull=None, *, value=None, drive=0). No 'alt' yet.
@@ -131,7 +150,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
-    int wanted_pin = mp_obj_get_int(args[0]);
+    int wanted_pin = pin_find(args[0], machine_pin_obj, MP_ARRAY_SIZE(machine_pin_obj));
 
     const machine_pin_obj_t *self = NULL;
     if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj)) {
