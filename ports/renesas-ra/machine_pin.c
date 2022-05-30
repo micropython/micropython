@@ -38,13 +38,7 @@
 #include "pin.h"
 #include "extint.h"
 
-// Pin class variables
-STATIC bool pin_class_debug;
-
 void machine_pin_init(void) {
-    MP_STATE_PORT(pin_class_mapper) = mp_const_none;
-    MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
-    pin_class_debug = false;
 }
 
 void machine_pin_deinit(void) {
@@ -57,72 +51,18 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t user_obj) {
     // If a pin was provided, then use it
     if (mp_obj_is_type(user_obj, &machine_pin_type)) {
         pin_obj = MP_OBJ_TO_PTR(user_obj);
-        if (pin_class_debug) {
-            printf("Pin map passed pin ");
-            mp_obj_print(MP_OBJ_FROM_PTR(pin_obj), PRINT_STR);
-            printf("\n");
-        }
         return pin_obj;
-    }
-
-    if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
-        mp_obj_t o = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
-        if (o != mp_const_none) {
-            if (!mp_obj_is_type(o, &machine_pin_type)) {
-                mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
-            }
-            if (pin_class_debug) {
-                printf("Pin.mapper maps ");
-                mp_obj_print(user_obj, PRINT_REPR);
-                printf(" to ");
-                mp_obj_print(o, PRINT_STR);
-                printf("\n");
-            }
-            return MP_OBJ_TO_PTR(o);
-        }
-        // The pin mapping function returned mp_const_none, fall through to
-        // other lookup methods.
-    }
-
-    if (MP_STATE_PORT(pin_class_map_dict) != mp_const_none) {
-        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_STATE_PORT(pin_class_map_dict));
-        mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
-        if (elem != NULL && elem->value != MP_OBJ_NULL) {
-            mp_obj_t o = elem->value;
-            if (pin_class_debug) {
-                printf("Pin.map_dict maps ");
-                mp_obj_print(user_obj, PRINT_REPR);
-                printf(" to ");
-                mp_obj_print(o, PRINT_STR);
-                printf("\n");
-            }
-            return MP_OBJ_TO_PTR(o);
-        }
     }
 
     // See if the pin name matches a board pin
     pin_obj = pin_find_named_pin(&pin_board_pins_locals_dict, user_obj);
     if (pin_obj) {
-        if (pin_class_debug) {
-            printf("Pin.board maps ");
-            mp_obj_print(user_obj, PRINT_REPR);
-            printf(" to ");
-            mp_obj_print(MP_OBJ_FROM_PTR(pin_obj), PRINT_STR);
-            printf("\n");
-        }
         return pin_obj;
     }
 
     // See if the pin name matches a cpu pin
     pin_obj = pin_find_named_pin(&pin_cpu_pins_locals_dict, user_obj);
     if (pin_obj) {
-        if (pin_class_debug) {
-            printf("Pin.cpu maps ");
-            mp_obj_print(user_obj, PRINT_REPR);
-            printf(" to ");
-            mp_obj_print(MP_OBJ_FROM_PTR(pin_obj), PRINT_STR);
-            printf("\n");
-        }
         return pin_obj;
     }
 
@@ -276,58 +216,6 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, c
     }
 }
 
-/// \classmethod mapper([fun])
-/// Get or set the pin mapper function.
-STATIC mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
-    if (n_args > 1) {
-        MP_STATE_PORT(pin_class_mapper) = args[1];
-        return mp_const_none;
-    }
-    return MP_STATE_PORT(pin_class_mapper);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, MP_ROM_PTR(&pin_mapper_fun_obj));
-
-/// \classmethod dict([dict])
-/// Get or set the pin mapper dictionary.
-STATIC mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
-    if (n_args > 1) {
-        MP_STATE_PORT(pin_class_map_dict) = args[1];
-        return mp_const_none;
-    }
-    return MP_STATE_PORT(pin_class_map_dict);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, MP_ROM_PTR(&pin_map_dict_fun_obj));
-
-#if 0
-/// \classmethod af_list()
-/// Returns an array of alternate functions available for this pin.
-STATIC mp_obj_t pin_af_list(mp_obj_t self_in) {
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t result = mp_obj_new_list(0, NULL);
-
-    const pin_af_obj_t *af = self->af;
-    for (mp_uint_t i = 0; i < self->num_af; i++, af++) {
-        mp_obj_list_append(result, MP_OBJ_FROM_PTR(af));
-    }
-    return result;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_list_obj, pin_af_list);
-#endif
-
-/// \classmethod debug([state])
-/// Get or set the debugging state (`True` or `False` for on or off).
-STATIC mp_obj_t pin_debug(size_t n_args, const mp_obj_t *args) {
-    if (n_args > 1) {
-        pin_class_debug = mp_obj_is_true(args[1]);
-        return mp_const_none;
-    }
-    return mp_obj_new_bool(pin_class_debug);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_debug_fun_obj, 1, 2, pin_debug);
-STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_debug_obj, MP_ROM_PTR(&pin_debug_fun_obj));
-
 // pin.init(mode, pull)
 STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
@@ -356,33 +244,6 @@ STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
-// pin.mode()
-STATIC mp_obj_t machine_pin_mode(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(pin_get_mode(MP_OBJ_TO_PTR(self_in)));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_mode_obj, machine_pin_mode);
-
-// pin.pull()
-STATIC mp_obj_t machine_pin_pull(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(pin_get_pull(MP_OBJ_TO_PTR(self_in)));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_pull_obj, machine_pin_pull);
-
-// pin.drive()
-STATIC mp_obj_t machine_pin_drive(mp_obj_t self_in) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("Pin.drive() is not supported yet"));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_drive_obj, machine_pin_drive);
-
-// pin.toggle()
-STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_hal_pin_toggle(self);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
-
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
 STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -406,15 +267,6 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-/// \method af()
-/// Returns the currently configured alternate-function of the pin. The
-/// integer returned will match one of the allowed constants for the af
-/// argument to the init function.
-STATIC mp_obj_t machine_pin_af(mp_obj_t self_in) {
-    return MP_OBJ_NEW_SMALL_INT(pin_get_af(MP_OBJ_TO_PTR(self_in)));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_af_obj, machine_pin_af);
-
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
@@ -424,24 +276,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_pin_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_low), MP_ROM_PTR(&machine_pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_high), MP_ROM_PTR(&machine_pin_high_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mode), MP_ROM_PTR(&machine_pin_mode_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pull), MP_ROM_PTR(&machine_pin_pull_obj) },
-    { MP_ROM_QSTR(MP_QSTR_drive), MP_ROM_PTR(&machine_pin_drive_obj) },
-    { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
-    #if 0
-    { MP_ROM_QSTR(MP_QSTR_af_list), MP_ROM_PTR(&pin_af_list) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_af),      MP_ROM_PTR(&machine_pin_af_obj) },
-
-    // class methods
-    { MP_ROM_QSTR(MP_QSTR_mapper),  MP_ROM_PTR(&pin_mapper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_dict),    MP_ROM_PTR(&pin_map_dict_obj) },
-    { MP_ROM_QSTR(MP_QSTR_debug),   MP_ROM_PTR(&pin_debug_obj) },
 
     // class attributes
     { MP_ROM_QSTR(MP_QSTR_board),   MP_ROM_PTR(&pin_board_pins_obj_type) },
     { MP_ROM_QSTR(MP_QSTR_cpu),     MP_ROM_PTR(&pin_cpu_pins_obj_type) },
-
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(GPIO_MODE_INPUT) },
@@ -547,16 +385,6 @@ const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_
     return NULL;
 }
 
-const pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn, uint8_t unit) {
-    const pin_af_obj_t *af = pin->af;
-    for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
-        if (af->fn == fn && af->unit == unit) {
-            return af;
-        }
-    }
-    return NULL;
-}
-
 const pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx) {
     const pin_af_obj_t *af = pin->af;
     for (mp_uint_t i = 0; i < pin->num_af; i++, af++) {
@@ -566,77 +394,3 @@ const pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t
     }
     return NULL;
 }
-
-// ====================================================================
-// PinAF
-// ====================================================================
-
-/// \moduleref pyb
-/// \class PinAF - Pin Alternate Functions
-///
-/// A Pin represents a physical pin on the microcprocessor. Each pin
-/// can have a variety of functions (GPIO, I2C SDA, etc). Each PinAF
-/// object represents a particular function for a pin.
-///
-/// Usage Model:
-///
-///     x3 = pyb.Pin.board.X3
-///     x3_af = x3.af_list()
-///
-/// x3_af will now contain an array of PinAF objects which are availble on
-/// pin X3.
-///
-/// For the pyboard, x3_af would contain:
-///     [Pin.AF1_TIM2, Pin.AF2_TIM5, Pin.AF3_TIM9, Pin.AF7_USART2]
-///
-/// Normally, each peripheral would configure the af automatically, but sometimes
-/// the same function is available on multiple pins, and having more control
-/// is desired.
-///
-/// To configure X3 to expose TIM2_CH3, you could use:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=pyb.Pin.AF1_TIM2)
-/// or:
-///    pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=1)
-
-/// \method __str__()
-/// Return a string describing the alternate function.
-STATIC void pin_af_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    pin_af_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "Pin.%q", self->name);
-}
-
-/// \method index()
-/// Return the alternate function index.
-STATIC mp_obj_t pin_af_index(mp_obj_t self_in) {
-    pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(af->idx);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_index_obj, pin_af_index);
-
-/// \method name()
-/// Return the name of the alternate function.
-STATIC mp_obj_t pin_af_name(mp_obj_t self_in) {
-    pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_QSTR(af->name);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_name_obj, pin_af_name);
-
-STATIC mp_obj_t pin_af_reg(mp_obj_t self_in) {
-    pin_af_obj_t *af = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT((uintptr_t)af->reg);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_reg_obj, pin_af_reg);
-
-STATIC const mp_rom_map_elem_t pin_af_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&pin_af_index_obj) },
-    { MP_ROM_QSTR(MP_QSTR_name), MP_ROM_PTR(&pin_af_name_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reg), MP_ROM_PTR(&pin_af_reg_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(pin_af_locals_dict, pin_af_locals_dict_table);
-
-const mp_obj_type_t pin_af_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinAF,
-    .print = pin_af_obj_print,
-    .locals_dict = (mp_obj_dict_t *)&pin_af_locals_dict,
-};

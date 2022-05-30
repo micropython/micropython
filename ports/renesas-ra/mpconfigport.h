@@ -176,9 +176,6 @@
     \
     mp_obj_t pyb_switch_callback; \
     \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    \
     mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]; \
     \
     /* pointers to all Timer objects (if they have been created) */ \
