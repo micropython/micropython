@@ -1,0 +1,8 @@
+# Faster flash
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+
+# Network name
+CONFIG_LWIP_LOCAL_HOSTNAME="Espoir"
+
+# Single core CPU
+CONFIG_FREERTOS_UNICORE=y

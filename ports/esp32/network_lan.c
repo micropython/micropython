@@ -131,6 +131,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
         #endif
+        #if ESP_IDF_VERSION_MINOR >= 4      // KSZ8081 is new in ESP-IDF v4.4
+        args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #endif
         args[ARG_phy_type].u_int != PHY_DP83848) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid phy type"));
     }
@@ -161,6 +164,11 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         case PHY_KSZ8041:
             #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
             self->phy = esp_eth_phy_new_ksz8041(&phy_config);
+            break;
+            #endif
+        case PHY_KSZ8081:
+            #if ESP_IDF_VERSION_MINOR >= 4      // KSZ8081 is new in ESP-IDF v4.4
+            self->phy = esp_eth_phy_new_ksz8081(&phy_config);
             break;
             #endif
         default:

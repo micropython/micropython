@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "Ethernet",
+        "PoE+",
+        "USB-C",
+        "mikroBUS"
+    ],
+    "id": "espoir",
+    "images": [
+        "espoir_iso.jpg",
+        "espoir_top.jpg",
+        "espoir_bot.jpg"
+    ],
+    "mcu": "esp32",
+    "product": "Espoir",
+    "thumbnail": "",
+    "url": "https://www.connaxio.com/electronics/espoir/",
+    "vendor": "Connaxio"
+}
