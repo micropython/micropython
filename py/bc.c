@@ -337,35 +337,3 @@ void mp_setup_code_state_native(mp_code_state_native_t *code_state, size_t n_arg
     mp_setup_code_state_helper((mp_code_state_t *)code_state, n_args, n_kw, args);
 }
 #endif
-
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
-
-// The following table encodes the number of bytes that a specific opcode
-// takes up.  Some opcodes have an extra byte, defined by MP_BC_MASK_EXTRA_BYTE.
-uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) {
-    uint f = MP_BC_FORMAT(*ip);
-    const byte *ip_start = ip;
-    if (f == MP_BC_FORMAT_QSTR) {
-        ip += 3;
-    } else {
-        int extra_byte = (*ip & MP_BC_MASK_EXTRA_BYTE) == 0;
-        ip += 1;
-        if (f == MP_BC_FORMAT_VAR_UINT) {
-            if (count_var_uint) {
-                while ((*ip++ & 0x80) != 0) {
-                }
-            }
-        } else if (f == MP_BC_FORMAT_OFFSET) {
-            if ((*ip & 0x80) == 0) {
-                ip += 1;
-            } else {
-                ip += 2;
-            }
-        }
-        ip += extra_byte;
-    }
-    *opcode_size = ip - ip_start;
-    return f;
-}
-
-#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE

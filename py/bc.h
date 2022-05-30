@@ -292,12 +292,6 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 #define MP_TAGPTR_TAG1(x) ((uintptr_t)(x) & 2)
 #define MP_TAGPTR_MAKE(ptr, tag) ((void *)((uintptr_t)(ptr) | (tag)))
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
-
-uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
-
-#endif
-
 static inline void mp_module_context_alloc_tables(mp_module_context_t *context, size_t n_qstr, size_t n_obj) {
     #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
     size_t nq = (n_qstr * sizeof(qstr_short_t) + sizeof(mp_uint_t) - 1) / sizeof(mp_uint_t);

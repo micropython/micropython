@@ -326,30 +326,6 @@ def mp_small_int_fits(i):
     return -0x2000 <= i <= 0x1FFF
 
 
-# this function mirrors that in py/bc.c
-def mp_opcode_format(bytecode, ip, count_var_uint):
-    opcode = bytecode[ip]
-    ip_start = ip
-    f = (0x000003A4 >> (2 * ((opcode) >> 4))) & 3
-    if f == MP_BC_FORMAT_QSTR:
-        ip += 3
-    else:
-        extra_byte = (opcode & MP_BC_MASK_EXTRA_BYTE) == 0
-        ip += 1
-        if f == MP_BC_FORMAT_VAR_UINT:
-            if count_var_uint:
-                while bytecode[ip] & 0x80 != 0:
-                    ip += 1
-                ip += 1
-        elif f == MP_BC_FORMAT_OFFSET:
-            if bytecode[ip] & 0x80 == 0:
-                ip += 1
-            else:
-                ip += 2
-        ip += extra_byte
-    return f, ip - ip_start
-
-
 def mp_opcode_decode(bytecode, ip):
     opcode = bytecode[ip]
     ip_start = ip
