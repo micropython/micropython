@@ -361,13 +361,25 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     vstr_add_byte(&lex->fstring_args, '(');
                     // remember the start of this argument (if we need it for f'{a=}').
                     size_t i = lex->fstring_args.len;
-                    // extract characters inside the { until we reach the
-                    // format specifier or closing }.
-                    // (MicroPython limitation) note: this is completely unaware of
-                    // Python syntax and will not handle any expression containing '}' or ':'.
-                    // e.g. f'{"}"}' or f'{foo({})}'.
+                    // Extract characters inside the { until the bracket level
+                    // is zero and we reach the conversion specifier '!',
+                    // format specifier ':', or closing '}'. The conversion
+                    // and format specifiers are left unchanged in the format
+                    // string to be handled by str.format.
+                    // (MicroPython limitation) note: this is completely
+                    // unaware of Python syntax and will not handle any
+                    // expression containing '}' or ':'. e.g. f'{"}"}' or f'
+                    // {foo({})}'. However, detection of the '!' will
+                    // specifically ensure that it's followed by [rs] and
+                    // then either the format specifier or the closing
+                    // brace. This allows the use of e.g. != in expressions.
                     unsigned int nested_bracket_level = 0;
-                    while (!is_end(lex) && (nested_bracket_level != 0 || !is_char_or(lex, ':', '}'))) {
+                    while (!is_end(lex) && (nested_bracket_level != 0
+                                            || !(is_char_or(lex, ':', '}')
+                                                 || (is_char(lex, '!')
+                                                     && is_char_following_or(lex, 'r', 's')
+                                                     && is_char_following_following_or(lex, ':', '}'))))
+                           ) {
                         unichar c = CUR_CHAR(lex);
                         if (c == '[' || c == '{') {
                             nested_bracket_level += 1;
