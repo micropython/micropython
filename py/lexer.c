@@ -367,7 +367,10 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     // Python syntax and will not handle any expression containing '}' or ':'.
                     // e.g. f'{"}"}' or f'{foo({})}'.
                     unsigned int nested_bracket_level = 0;
-                    while (!is_end(lex) && (nested_bracket_level != 0 || !is_char_or(lex, ':', '}'))) {
+                    while (!is_end(lex) && (nested_bracket_level != 0 || (
+                                !is_char_or(lex, ':', '}')
+                            && !(is_char(lex, '!') && !is_char_following(lex, '='))
+                    ))) {
                         unichar c = CUR_CHAR(lex);
                         if (c == '[' || c == '{') {
                             nested_bracket_level += 1;
