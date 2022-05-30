@@ -150,6 +150,9 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if ESP_IDF_VERSION_MINOR >= 3      // KSZ8041 is new in ESP-IDF v4.3
         args[ARG_phy_type].u_int != PHY_KSZ8041 &&
         #endif
+        #if ESP_IDF_VERSION_MINOR >= 4      // KSZ8081 is new in ESP-IDF v4.4
+        args[ARG_phy_type].u_int != PHY_KSZ8081 &&
+        #endif
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         args[ARG_phy_type].u_int != PHY_KSZ8851SNL &&
@@ -235,6 +238,11 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if ESP_IDF_VERSION_MINOR >= 3 // KSZ8041 is new in ESP-IDF v4.3
         case PHY_KSZ8041:
             self->phy = esp_eth_phy_new_ksz8041(&phy_config);
+            break;
+        #endif
+        #if ESP_IDF_VERSION_MINOR >= 4 // KSZ8081 is new in ESP-IDF v4.4
+        case PHY_KSZ8081:
+            self->phy = esp_eth_phy_new_ksz8081(&phy_config);
             break;
         #endif
         #endif

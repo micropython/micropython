@@ -270,6 +270,10 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     // PHY_KSZ8041 is new in ESP-IDF v4.3
     { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8041), MP_ROM_INT(PHY_KSZ8041) },
     #endif
+    #if ESP_IDF_VERSION_MINOR >= 4
+    // PHY_KSZ8081 is new in ESP-IDF v4.4
+    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8081), MP_ROM_INT(PHY_KSZ8081) },
+    #endif
 
     #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
     { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8851SNL), MP_ROM_INT(PHY_KSZ8851SNL) },
