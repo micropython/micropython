@@ -101,7 +101,11 @@ void SysTick_Handler(void) {
 }
 
 static uint8_t sercom_irq_type[SERCOM_INST_NUM] = {};
-void (*sercom_irq_handler_table[2])(int num) = {common_uart_irq_handler, common_spi_irq_handler};
+void (*sercom_irq_handler_table[])(int num) = {
+    common_uart_irq_handler,
+    common_spi_irq_handler,
+    common_i2c_irq_handler
+};
 
 void sercom_register_irq(int sercom_id, int mode) {
     sercom_irq_type[sercom_id] = mode;

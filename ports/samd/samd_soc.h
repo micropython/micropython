@@ -41,6 +41,7 @@ void USB_3_Handler_wrapper(void);
 void init_clocks(uint32_t cpu_freq, uint8_t full_config);
 void common_uart_irq_handler(int uart_nr);
 void common_spi_irq_handler(int spi_nr);
+void common_i2c_irq_handler(int i2c_nr);
 void sercom_enable(Sercom *spi, int state);
 void sercom_register_irq(int sercom_id, int mode);
 

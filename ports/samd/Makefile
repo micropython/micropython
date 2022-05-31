@@ -94,8 +94,7 @@ SRC_C = \
 	machine_adc.c \
 	modutime.c \
 	modmachine.c \
-	$(BUILD)/pins.c \
-	machine_pin.c \
+	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_spi.c \
@@ -108,6 +107,7 @@ SRC_C = \
 	modutime.c \
 	pendsv.c \
 	pin_cap.c \
+	$(BUILD)/pins.c \
 	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
@@ -160,6 +160,7 @@ SRC_QSTR += \
 	modutime.c \
 	modmachine.c \
 	machine_adc.c \
+	machine_i2c.c \
 	machine_led.c \
 	machine_pin.c \
 	machine_pwm.c \

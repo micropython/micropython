@@ -105,6 +105,7 @@
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UASYNCIO                 (1)
+#define MICROPY_PY_MACHINE_I2C              (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
