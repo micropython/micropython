@@ -472,6 +472,6 @@ const mp_obj_module_t mp_module_usocket = {
     .globals = (mp_obj_dict_t *)&mp_module_usocket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket, MICROPY_PY_USOCKET);
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket);
 
 #endif // MICROPY_PY_USOCKET

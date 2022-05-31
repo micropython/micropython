@@ -255,7 +255,7 @@ const mp_obj_module_t mp_module_urandom = {
     .globals = (mp_obj_dict_t *)&mp_module_urandom_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_urandom, mp_module_urandom, MICROPY_PY_URANDOM);
+MP_REGISTER_MODULE(MP_QSTR_urandom, mp_module_urandom);
 #endif
 
 #endif // MICROPY_PY_URANDOM

@@ -310,6 +310,6 @@ const mp_obj_module_t mp_module_uwebsocket = {
     .globals = (mp_obj_dict_t *)&uwebsocket_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uwebsocket, mp_module_uwebsocket, MICROPY_PY_UWEBSOCKET);
+MP_REGISTER_MODULE(MP_QSTR_uwebsocket, mp_module_uwebsocket);
 
 #endif // MICROPY_PY_UWEBSOCKET

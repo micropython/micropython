@@ -89,7 +89,7 @@ def process_file(f):
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
     elif args.mode == _MODE_MODULE:
-        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?,\s*.*?\);")
+        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
     output = []
     last_fname = None
     for line in f:

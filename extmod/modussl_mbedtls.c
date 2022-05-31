@@ -418,6 +418,6 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl, MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS);
+MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl);
 
 #endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS

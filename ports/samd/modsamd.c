@@ -40,4 +40,4 @@ const mp_obj_module_t mp_module_samd = {
     .globals = (mp_obj_dict_t *)&samd_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_samd, mp_module_samd, 1);
+MP_REGISTER_MODULE(MP_QSTR_samd, mp_module_samd);

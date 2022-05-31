@@ -118,7 +118,7 @@ const mp_obj_module_t mp_module_uheapq = {
     .globals = (mp_obj_dict_t *)&mp_module_uheapq_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uheapq, mp_module_uheapq, MICROPY_PY_UHEAPQ);
+MP_REGISTER_MODULE(MP_QSTR_uheapq, mp_module_uheapq);
 #endif
 
 #endif // MICROPY_PY_UHEAPQ

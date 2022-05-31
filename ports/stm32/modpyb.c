@@ -58,6 +58,8 @@
 
 char pyb_country_code[2];
 
+#if MICROPY_PY_PYB
+
 STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
     pyb_hard_fault_debug = mp_obj_is_true(value);
     return mp_const_none;
@@ -266,4 +268,6 @@ const mp_obj_module_t pyb_module = {
     .globals = (mp_obj_dict_t *)&pyb_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module, MICROPY_PY_PYB);
+MP_REGISTER_MODULE(MP_QSTR_pyb, pyb_module);
+
+#endif // MICROPY_PY_PYB

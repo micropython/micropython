@@ -300,6 +300,6 @@ const mp_obj_module_t mp_module_thread = {
     .globals = (mp_obj_dict_t *)&mp_module_thread_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__thread, mp_module_thread, MICROPY_PY_THREAD);
+MP_REGISTER_MODULE(MP_QSTR__thread, mp_module_thread);
 
 #endif // MICROPY_PY_THREAD

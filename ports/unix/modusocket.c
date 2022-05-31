@@ -49,6 +49,8 @@
 #include "extmod/vfs.h"
 #include <poll.h>
 
+#if MICROPY_PY_SOCKET
+
 /*
   The idea of this module is to implement reasonable minimum of
   socket-related functions to write typical clients and servers.
@@ -702,4 +704,6 @@ const mp_obj_module_t mp_module_socket = {
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket, MICROPY_PY_SOCKET);
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_socket);
+
+#endif // MICROPY_PY_SOCKET

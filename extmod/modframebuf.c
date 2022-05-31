@@ -668,7 +668,7 @@ const mp_obj_module_t mp_module_framebuf = {
     .globals = (mp_obj_dict_t *)&framebuf_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_framebuf, mp_module_framebuf, MICROPY_PY_FRAMEBUF);
+MP_REGISTER_MODULE(MP_QSTR_framebuf, mp_module_framebuf);
 #endif
 
 #endif // MICROPY_PY_FRAMEBUF

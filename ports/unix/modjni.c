@@ -35,6 +35,8 @@
 
 #include <jni.h>
 
+#if MICROPY_PY_JNI
+
 #define JJ(call, ...) (*env)->call(env, __VA_ARGS__)
 #define JJ1(call) (*env)->call(env)
 #define MATCH(s, static) (!strncmp(s, static, sizeof(static) - 1))
@@ -713,4 +715,6 @@ const mp_obj_module_t mp_module_jni = {
     .globals = (mp_obj_dict_t *)&mp_module_jni_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_jni, mp_module_jni, MICROPY_PY_JNI);
+MP_REGISTER_MODULE(MP_QSTR_jni, mp_module_jni);
+
+#endif // MICROPY_PY_JNI

@@ -59,7 +59,7 @@ const mp_obj_module_t mp_module___main__ = {
     .globals = (mp_obj_dict_t *)&MP_STATE_VM(dict_main),
 };
 
-MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__, 1);
+MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__);
 
 void mp_init(void) {
     qstr_init();

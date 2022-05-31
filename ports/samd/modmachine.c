@@ -35,6 +35,8 @@
 #include "hpl_gclk_base.h"
 #include "hpl_pm_base.h"
 
+#if MICROPY_PY_MACHINE
+
 #if defined(MCU_SAMD21)
 #define DBL_TAP_ADDR ((volatile uint32_t *)(0x20000000 + 32 * 1024 - 4))
 #elif defined(MCU_SAMD51)
@@ -129,4 +131,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine, MICROPY_PY_MACHINE);
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

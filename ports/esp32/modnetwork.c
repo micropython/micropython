@@ -298,4 +298,4 @@ const mp_obj_module_t mp_module_network = {
 
 // Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
 // with the common implementation provided by extmod/modnetwork.c.
-MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network, 1);
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);

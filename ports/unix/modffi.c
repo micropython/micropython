@@ -38,6 +38,8 @@
 #include "py/objint.h"
 #include "py/gc.h"
 
+#if MICROPY_PY_FFI
+
 /*
  * modffi uses character codes to encode a value type, based on "struct"
  * module type codes, with some extensions and overridings.
@@ -632,4 +634,6 @@ const mp_obj_module_t mp_module_ffi = {
     .globals = (mp_obj_dict_t *)&mp_module_ffi_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ffi, mp_module_ffi, MICROPY_PY_FFI);
+MP_REGISTER_MODULE(MP_QSTR_ffi, mp_module_ffi);
+
+#endif // MICROPY_PY_FFI
