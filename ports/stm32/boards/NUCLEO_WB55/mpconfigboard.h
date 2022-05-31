@@ -65,3 +65,7 @@
 // Bluetooth config
 #define MICROPY_HW_BLE_UART_ID       (0)
 #define MICROPY_HW_BLE_UART_BAUDRATE (115200)
+
+// Configure ram isr / functions for board.
+extern void ram_isr_fn_init();
+#define MICROPY_BOARD_STARTUP ram_isr_fn_init
