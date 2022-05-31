@@ -270,6 +270,9 @@ SRC_ASF += \
 	hpl/oscctrl/hpl_oscctrl.c \
 	hpl/trng/hpl_trng.c \
 
+# Ignore these errors
+$(BUILD)/asf4/same54/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
+
 else ifeq ($(CHIP_FAMILY), same51)
 SRC_ASF += \
 	hal/src/hal_rand_sync.c \

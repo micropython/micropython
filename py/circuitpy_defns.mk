@@ -69,7 +69,7 @@ endif
 
 CIRCUITPY_LTO ?= 0
 ifneq ($(CIRCUITPY_LTO),0)
-CFLAGS += -DCIRCUITPY_LTO=1 -flto=auto -flto-partition=$(CIRCUITPY_LTO)
+CFLAGS += -DCIRCUITPY_LTO=1 -flto=$(shell $(NPROC)) -flto-partition=$(CIRCUITPY_LTO)
 else
 CFLAGS += -DCIRCUITPY_LTO=0
 endif

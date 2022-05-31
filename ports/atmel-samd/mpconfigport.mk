@@ -124,6 +124,12 @@ ifeq ($(CHIP_FAMILY),same51)
 # No native touchio on SAME51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
 
+ifeq ($(CIRCUITPY_FULL_BUILD),1)
+CIRCUITPY_LTO ?= balanced
+else
+CIRCUITPY_LTO ?= one
+endif
+
 # The ?='s allow overriding in mpconfigboard.mk.
 
 CIRCUITPY_ALARM ?= 1
