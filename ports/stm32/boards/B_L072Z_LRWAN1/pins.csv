@@ -29,17 +29,26 @@ LED_RED,PB7
 ,PA3
 ,PA4
 ,PA5
-,PA6
-,PA7
+SX_MISO,PA6
+SX_MOSI,PA7
 ,PA8
 ,PA9
 ,PA10
 ,PA11
-,PA12
+SX_TCXO_VCC,PA12
+# Note about SX_TCXO_VCC: Unlike all of the other SX_ pins, PA12 is only
+# connected to TCXO_VCC on the Discovery Board and will have a different
+# connection on custom hardware using the same Murata module.
+#
+# By default it also does nothing, need to move jumper JP9 to make it control
+# TCXO_VCC at all. Note PA12 is by default also USB DP so need to disable
+# USB - call pyb.usb_mode(None) or rebuild without MICROPY_HW_ENABLE_USB -
+# in order to use it at all.
 ,PA13
 ,PA14
-,PA15
+SX_CS,PA15
 ,PB2
+SX_SCK,PB3
 ,PB5
 ,PB6
 ,PB7
@@ -49,3 +58,8 @@ LED_RED,PB7
 ,PB13
 ,PB14
 ,PB15
+SX_RESET,PC0
+SX_DIO0,PB4
+SX_DIO1,PB1
+SX_DIO2,PB0
+SX_DIO3,PC13
