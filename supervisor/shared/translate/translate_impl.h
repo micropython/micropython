@@ -32,7 +32,7 @@
 
 #include "supervisor/shared/translate/compressed_string.h"
 
-#if CIRCUITPY_LTO == 0
+#if CIRCUITPY_TRANSLATE_OBJECT == 0
 static
 #endif
 inline

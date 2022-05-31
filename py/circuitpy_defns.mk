@@ -51,7 +51,8 @@ BASE_CFLAGS = \
 	-DCIRCUITPY_SOFTWARE_SAFE_MODE=0x0ADABEEF \
 	-DCIRCUITPY_CANARY_WORD=0xADAF00 \
 	-DCIRCUITPY_SAFE_RESTART_WORD=0xDEADBEEF \
-	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\""
+	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
+	--param max-inline-insns-single=500
 
 #        Use these flags to debug build times and header includes.
 #        -ftime-report
@@ -72,6 +73,16 @@ CFLAGS += -DCIRCUITPY_LTO=1 -flto=auto -flto-partition=$(CIRCUITPY_LTO)
 else
 CFLAGS += -DCIRCUITPY_LTO=0
 endif
+
+# Produce an object file for translate.c instead of including it in a header.
+# The header version can be optimized on non-LTO builds *if* inlining is allowed
+# otherwise, it blows up the binary sizes with tons of translate copies.
+ifeq ($(CIRCUITPY_LTO), 0)
+CIRCUITPY_TRANSLATE_OBJECT ?= 0
+else
+CIRCUITPY_TRANSLATE_OBJECT ?= 1
+endif
+CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
 
 ###
 # Handle frozen modules.

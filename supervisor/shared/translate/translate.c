@@ -135,6 +135,6 @@ char *decompress(const compressed_string_t *compressed, char *decompressed) {
     return decompressed;
 }
 
-#if CIRCUITPY_LTO == 1
+#if CIRCUITPY_TRANSLATE_OBJECT == 1
 #include "supervisor/shared/translate/translate_impl.h"
 #endif

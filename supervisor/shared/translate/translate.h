@@ -43,7 +43,7 @@
 // that the build process will optimize this away and replace it with the
 // appropriate compressed data for each call site.
 
-#if CIRCUITPY_LTO == 0
+#if CIRCUITPY_TRANSLATE_OBJECT == 0
 // Without LTO, we need to include a copy of this function in each compilation
 // unit so that the compile stage can do the optimization. Otherwise the linker
 // will leave this as a giant function and have each call site call into it.
