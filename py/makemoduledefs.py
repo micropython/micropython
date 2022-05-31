@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# This pre-processor parses provided objects' c files for
+# This pre-processor parses a single file containing a list of
 # MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
 # These are used to generate a header with the required entries for
 # "mp_rom_map_elem_t mp_builtin_module_table[]" in py/objmodule.c
@@ -9,45 +9,21 @@ from __future__ import print_function
 
 import re
 import io
-import os
 import argparse
 
 
-pattern = re.compile(r"[\n;]\s*MP_REGISTER_MODULE\((.*?),\s*(.*?),\s*(.*?)\);", flags=re.DOTALL)
+pattern = re.compile(r"\s*MP_REGISTER_MODULE\((.*?),\s*(.*?),\s*(.*?)\);", flags=re.DOTALL)
 
 
-def find_c_file(obj_file, vpath):
-    """Search vpaths for the c file that matches the provided object_file.
+def find_module_registrations(filename):
+    """Find any MP_REGISTER_MODULE definitions in the provided file.
 
-    :param str obj_file: object file to find the matching c file for
-    :param List[str] vpath: List of base paths, similar to gcc vpath
-    :return: str path to c file or None
-    """
-    c_file = None
-    relative_c_file = os.path.splitext(obj_file)[0] + ".c"
-    relative_c_file = relative_c_file.lstrip("/\\")
-    for p in vpath:
-        possible_c_file = os.path.join(p, relative_c_file)
-        if os.path.exists(possible_c_file):
-            c_file = possible_c_file
-            break
-
-    return c_file
-
-
-def find_module_registrations(c_file):
-    """Find any MP_REGISTER_MODULE definitions in the provided c file.
-
-    :param str c_file: path to c file to check
+    :param str filename: path to file to check
     :return: List[(module_name, obj_module, enabled_define)]
     """
     global pattern
 
-    if c_file is None:
-        # No c file to match the object file, skip
-        return set()
-
-    with io.open(c_file, encoding="utf-8") as c_file_obj:
+    with io.open(filename, encoding="utf-8") as c_file_obj:
         return set(re.findall(pattern, c_file_obj.read()))
 
 
@@ -93,19 +69,10 @@ def generate_module_table_header(modules):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--vpath", default=".", help="comma separated list of folders to search for c files in"
-    )
-    parser.add_argument("files", nargs="*", help="list of c files to search")
+    parser.add_argument("file", nargs=1, help="file with MP_REGISTER_MODULE definitions")
     args = parser.parse_args()
 
-    vpath = [p.strip() for p in args.vpath.split(",")]
-
-    modules = set()
-    for obj_file in args.files:
-        c_file = find_c_file(obj_file, vpath)
-        modules |= find_module_registrations(c_file)
-
+    modules = find_module_registrations(args.file[0])
     generate_module_table_header(sorted(modules))
 
 

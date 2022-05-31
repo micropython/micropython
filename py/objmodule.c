@@ -34,7 +34,11 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+#ifndef NO_QSTR
+// Only include module definitions when not doing qstr extraction, because the
+// qstr extraction stage also generates this module definition header file.
 #include "genhdr/moduledefs.h"
+#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
@@ -161,10 +165,8 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    #ifdef MICROPY_REGISTERED_MODULES
     // builtin modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
-    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
