@@ -64,6 +64,7 @@ typedef enum {
     MBOOT_STATE_DFU_END,            // arg: unused
     MBOOT_STATE_FSLOAD_START,       // arg: unused
     MBOOT_STATE_FSLOAD_END,         // arg: result of fsload operation
+    MBOOT_STATE_FSLOAD_PASS_START,  // arg: pass number, 0 or 1 (verify and write respectively)
     MBOOT_STATE_FSLOAD_PROGRESS,    // arg: total bytes processed so far, high bit set when doing write pass
     MBOOT_STATE_ERASE_START,        // arg: address of erase
     MBOOT_STATE_ERASE_END,          // arg: result of erase

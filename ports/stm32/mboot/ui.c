@@ -228,6 +228,10 @@ void mboot_state_change(mboot_state_t state, uint32_t arg) {
             }
             break;
 
+        case MBOOT_STATE_FSLOAD_PASS_START:
+            led_state_all(arg == 0 ? 2 : 4);
+            break;
+
         case MBOOT_STATE_FSLOAD_PROGRESS:
             break;
 
