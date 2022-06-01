@@ -398,6 +398,12 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self) {
     return common_hal_ipaddress_new_ipv4address(self->dns_info.ip.u_addr.ip4.addr);
 }
 
+void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dns_addr) {
+    esp_netif_dns_info_t dns_addr;
+    ipaddress_ipaddress_to_esp_idf_ip4(ipv4_dns_addr, &dns_addr.ip.u_addr.ip4);
+    esp_netif_set_dns_info(self->netif, ESP_NETIF_DNS_MAIN, &dns_addr);
+}
+
 void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self) {
     esp_netif_dhcpc_start(self->netif);
 }

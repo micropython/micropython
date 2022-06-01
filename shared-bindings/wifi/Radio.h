@@ -98,6 +98,7 @@ extern wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, 
 
 extern mp_obj_t common_hal_wifi_radio_get_ap_info(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_dns(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_set_ipv4_dns(wifi_radio_obj_t *self, mp_obj_t ipv4_dns_addr);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_gateway(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_gateway_ap(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_subnet(wifi_radio_obj_t *self);

@@ -459,8 +459,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_address_ap_obj, wifi_radio_get_ipv
 MP_PROPERTY_GETTER(wifi_radio_ipv4_address_ap_obj,
     (mp_obj_t)&wifi_radio_get_ipv4_address_ap_obj);
 
-//|     ipv4_dns: Optional[ipaddress.IPv4Address]
-//|     """IP v4 Address of the DNS server in use when connected to an access point. None otherwise."""
+//|     ipv4_dns: ipaddress.IPv4Address
+//|     """IP v4 Address of the DNS server to be used."""
 //|
 STATIC mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
     return common_hal_wifi_radio_get_ipv4_dns(self);
@@ -468,8 +468,16 @@ STATIC mp_obj_t wifi_radio_get_ipv4_dns(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ipv4_dns_obj, wifi_radio_get_ipv4_dns);
 
-MP_PROPERTY_GETTER(wifi_radio_ipv4_dns_obj,
-    (mp_obj_t)&wifi_radio_get_ipv4_dns_obj);
+STATIC mp_obj_t wifi_radio_set_ipv4_dns(mp_obj_t self, mp_obj_t ipv4_dns_addr) {
+    common_hal_wifi_radio_set_ipv4_dns(self, ipv4_dns_addr);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_ipv4_dns_obj, wifi_radio_set_ipv4_dns);
+
+MP_PROPERTY_GETSET(wifi_radio_ipv4_dns_obj,
+    (mp_obj_t)&wifi_radio_get_ipv4_dns_obj,
+    (mp_obj_t)&wifi_radio_set_ipv4_dns_obj);
 
 //|     ap_info: Optional[Network]
 //|     """Network object containing BSSID, SSID, authmode, channel, country and RSSI when connected to an access point. None otherwise."""
@@ -480,7 +488,7 @@ STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 
-//|     def wifi_radio_start_dhcp_client(self) -> None:
+//|     def start_dhcp(self) -> None:
 //|         """Starts the DHCP client."""
 //|         ...
 //|
@@ -490,7 +498,7 @@ STATIC mp_obj_t wifi_radio_start_dhcp_client(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_start_dhcp_client_obj, wifi_radio_start_dhcp_client);
 
-//|     def wifi_radio_stop_dhcp_client(self) -> None:
+//|     def stop_dhcp(self) -> None:
 //|         """Stops the DHCP client. Needed to assign a static IP address."""
 //|         ...
 //|
