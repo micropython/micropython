@@ -1357,7 +1357,7 @@ void stm32_main(uint32_t initial_r0) {
     }
     #endif
 
-    if ((initial_r0 & 0xffffff00) == 0x70ad0000) {
+    if ((initial_r0 & 0xffffff00) == MBOOT_INITIAL_R0_KEY) {
         goto enter_bootloader;
     }
 
@@ -1401,7 +1401,7 @@ enter_bootloader:
     mboot_pack_init();
     #endif
 
-    if ((initial_r0 & 0xffffff80) == 0x70ad0080) {
+    if ((initial_r0 & 0xffffff80) == MBOOT_INITIAL_R0_KEY_FSLOAD) {
         mboot_state_change(MBOOT_STATE_FSLOAD_START, 0);
         int ret = -1;
         #if MBOOT_FSLOAD
