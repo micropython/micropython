@@ -68,20 +68,15 @@ CFLAGS += -DCIRCUITPY_DEBUG=0
 endif
 
 CIRCUITPY_LTO ?= 0
-ifneq ($(CIRCUITPY_LTO),0)
-CFLAGS += -DCIRCUITPY_LTO=1 -flto=$(shell $(NPROC)) -flto-partition=$(CIRCUITPY_LTO)
-else
-CFLAGS += -DCIRCUITPY_LTO=0
+CIRCUITPY_LTO_PARTITION ?= balanced
+ifeq ($(CIRCUITPY_LTO),1)
+CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION)
 endif
 
 # Produce an object file for translate.c instead of including it in a header.
 # The header version can be optimized on non-LTO builds *if* inlining is allowed
 # otherwise, it blows up the binary sizes with tons of translate copies.
-ifeq ($(CIRCUITPY_LTO), 0)
-CIRCUITPY_TRANSLATE_OBJECT ?= 0
-else
-CIRCUITPY_TRANSLATE_OBJECT ?= 1
-endif
+CIRCUITPY_TRANSLATE_OBJECT ?= $(CIRCUITPY_LTO)
 CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
 
 ###
