@@ -61,7 +61,8 @@ CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERI
 # CFLAGS = $(INC) -Wall -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
-CFLAGS += -DPIN_CAP_TABLE_C='<$(BUILD)/$(GEN_PIN_CAP)>' \
+CFLAGS += -DPIN_CAP_TABLE_C='<$(BUILD)/$(GEN_PIN_CAP)>'
+CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
 
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += $(LDFLAGS_MOD)

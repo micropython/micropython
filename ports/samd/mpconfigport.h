@@ -28,6 +28,8 @@
 
 // Board specific definitions
 #include "mpconfigboard.h"
+// MCU-Specific definitions
+#include MPCONFIG_MCU_H
 
 
 // Memory allocation policies
@@ -136,39 +138,6 @@ __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     __disable_irq();
     return state;
 }
-
-#if defined(MCU_SAMD51)
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
-
-static inline uint32_t raise_irq_pri(uint32_t pri) {
-    uint32_t basepri = __get_BASEPRI();
-    // If non-zero, the processor does not process any exception with a
-    // priority value greater than or equal to BASEPRI.
-    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
-    //   - Rn is non-zero and the current BASEPRI value is 0
-    //   - Rn is non-zero and less than the current BASEPRI value
-    pri <<= (8 - __NVIC_PRIO_BITS);
-    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
-    return basepri;
-}
-
-// "basepri" should be the value returned from raise_irq_pri
-static inline void restore_irq_pri(uint32_t basepri) {
-    __set_BASEPRI(basepri);
-}
-#else
-#define IRQ_PRI_PENDSV          ((1 << __NVIC_PRIO_BITS) - 1)
-
-static inline uint32_t raise_irq_pri(uint32_t pri) {
-    (void)pri;
-    return 0;
-}
-
-static inline void restore_irq_pri(uint32_t basepri) {
-    (void)basepri;
-}
-#endif
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
