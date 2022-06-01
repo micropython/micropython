@@ -1585,6 +1585,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_I2C (0)
 #endif
 
+// Whether the low-level I2C transfer function supports a separate write as the first transfer
+#ifndef MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (0)
+#endif
+
 // Whether to provide the "machine.SoftI2C" class
 #ifndef MICROPY_PY_MACHINE_SOFTI2C
 #define MICROPY_PY_MACHINE_SOFTI2C (0)

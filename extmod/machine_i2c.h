@@ -45,6 +45,11 @@
 #define MP_MACHINE_I2C_FLAG_READ (0x01) // if not set then it's a write
 #define MP_MACHINE_I2C_FLAG_STOP (0x02)
 
+#if MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+// If set, the first mp_machine_i2c_buf_t in a transfer is a write.
+#define MP_MACHINE_I2C_FLAG_WRITE1 (0x04)
+#endif
+
 typedef struct _mp_machine_i2c_buf_t {
     size_t len;
     uint8_t *buf;
