@@ -87,6 +87,7 @@
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
