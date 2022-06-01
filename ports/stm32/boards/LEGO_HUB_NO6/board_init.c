@@ -133,7 +133,7 @@ void board_mboot_led_state(int led, int state) {
     hub_display_update();
 }
 
-int board_mboot_get_reset_mode(void) {
+int board_mboot_get_reset_mode(uint32_t *initial_r0) {
     board_button_init();
     int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (board_button_state()) {

@@ -136,7 +136,7 @@ void led0_update(void) {
 /******************************************************************************/
 // User button
 
-#if !defined(MBOOT_BOARD_GET_RESET_MODE)
+#ifdef MICROPY_HW_USRSW_PIN
 
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
@@ -158,7 +158,7 @@ static int usrbtn_state(void) {
     return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
 }
 
-int mboot_get_reset_mode(void) {
+int mboot_get_reset_mode_default(void) {
     usrbtn_init();
     int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
@@ -198,9 +198,7 @@ int mboot_get_reset_mode(void) {
 /******************************************************************************/
 // State change
 
-#if !defined(MBOOT_BOARD_STATE_CHANGE)
-
-void mboot_state_change(mboot_state_t state, uint32_t arg) {
+void mboot_state_change_default(mboot_state_t state, uint32_t arg) {
     switch (state) {
         case MBOOT_STATE_DFU_START:
             led_state_all(0);
@@ -255,5 +253,3 @@ void mboot_state_change(mboot_state_t state, uint32_t arg) {
             break;
     }
 }
-
-#endif

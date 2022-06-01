@@ -1346,9 +1346,7 @@ void stm32_main(uint32_t initial_r0) {
     SCB_EnableDCache();
     #endif
 
-    #if defined(MBOOT_BOARD_EARLY_INIT)
-    MBOOT_BOARD_EARLY_INIT();
-    #endif
+    MBOOT_BOARD_EARLY_INIT(&initial_r0);
 
     #ifdef MBOOT_BOOTPIN_PIN
     mp_hal_pin_config(MBOOT_BOOTPIN_PIN, MP_HAL_PIN_MODE_INPUT, MBOOT_BOOTPIN_PULL, 0);
@@ -1361,7 +1359,7 @@ void stm32_main(uint32_t initial_r0) {
         goto enter_bootloader;
     }
 
-    int reset_mode = mboot_get_reset_mode();
+    int reset_mode = MBOOT_BOARD_GET_RESET_MODE(&initial_r0);
     if (reset_mode != BOARDCTRL_RESET_MODE_BOOTLOADER) {
         // Bootloader mode was not selected so try to enter the application,
         // passing through the reset_mode.  This will return if the application

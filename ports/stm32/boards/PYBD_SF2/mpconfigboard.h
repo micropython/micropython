@@ -221,5 +221,5 @@ extern struct _spi_bdev_t spi_bdev2;
 #define MBOOT_SPIFLASH2_SPIFLASH    (&spi_bdev2.spiflash)
 #define MBOOT_SPIFLASH2_CONFIG      (&spiflash2_config)
 
-#define MBOOT_BOARD_EARLY_INIT mboot_board_early_init
+#define MBOOT_BOARD_EARLY_INIT(initial_r0) mboot_board_early_init()
 void mboot_board_early_init(void);

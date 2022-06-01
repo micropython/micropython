@@ -127,7 +127,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MBOOT_BOARD_LED_INIT                     board_mboot_led_init
 #define MBOOT_BOARD_LED_STATE                    board_mboot_led_state
 
-#define MBOOT_BOARD_EARLY_INIT                   board_init
+#define MBOOT_BOARD_EARLY_INIT(initial_r0)       board_init()
 #define MBOOT_BOARD_CLEANUP                      board_mboot_cleanup
 #define MBOOT_BOARD_GET_RESET_MODE               board_mboot_get_reset_mode
 
@@ -138,5 +138,5 @@ void board_init(void);
 void board_mboot_cleanup(int reset_mode);
 void board_mboot_led_init(void);
 void board_mboot_led_state(int led, int state);
-int board_mboot_get_reset_mode(void);
+int board_mboot_get_reset_mode(uint32_t *initial_r0);
 void *btstack_chipset_cc256x_instance(void);

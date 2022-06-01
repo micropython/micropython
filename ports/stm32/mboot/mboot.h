@@ -38,8 +38,20 @@
 #define NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+#ifndef MBOOT_BOARD_EARLY_INIT
+#define MBOOT_BOARD_EARLY_INIT(initial_r0)
+#endif
+
 #ifndef MBOOT_BOARD_ENTRY_INIT
-#define MBOOT_BOARD_ENTRY_INIT mboot_entry_init
+#define MBOOT_BOARD_ENTRY_INIT(initial_r0) mboot_entry_init_default()
+#endif
+
+#ifndef MBOOT_BOARD_GET_RESET_MODE
+#define MBOOT_BOARD_GET_RESET_MODE(initial_r0) mboot_get_reset_mode_default()
+#endif
+
+#ifndef MBOOT_BOARD_STATE_CHANGE
+#define MBOOT_BOARD_STATE_CHANGE(state, arg) mboot_state_change_default((state), (arg))
 #endif
 
 #ifndef MBOOT_ADDRESS_SPACE_64BIT
@@ -154,7 +166,7 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
 
-static inline void mboot_entry_init(uint32_t *initial_r0) {
+static inline void mboot_entry_init_default(void) {
     // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
     led_init();
 
@@ -167,20 +179,15 @@ static inline void mboot_entry_init(uint32_t *initial_r0) {
     #endif
 }
 
-#if defined(MBOOT_BOARD_GET_RESET_MODE)
-static inline int mboot_get_reset_mode(void) {
-    return MBOOT_BOARD_GET_RESET_MODE();
-}
-#else
-int mboot_get_reset_mode(void);
-#endif
+int mboot_get_reset_mode_default(void);
+void mboot_state_change_default(mboot_state_t state, uint32_t arg);
 
-#if defined(MBOOT_BOARD_STATE_CHANGE)
 static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
+    #if defined(MBOOT_BOARD_STATE_CHANGE)
     return MBOOT_BOARD_STATE_CHANGE(state, arg);
+    #else
+    return mboot_state_change_default(state, arg);
+    #endif
 }
-#else
-void mboot_state_change(mboot_state_t state, uint32_t arg);
-#endif
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
