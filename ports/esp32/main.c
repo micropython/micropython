@@ -161,7 +161,11 @@ soft_reset:
     #endif
 
     // run boot-up scripts
+    #if CONFIG_USB_MSC_ENABLED
+    pyexec_frozen_module("_boot_fat.py");
+    #else
     pyexec_frozen_module("_boot.py");
+    #endif
     pyexec_file_if_exists("boot.py");
     if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");
