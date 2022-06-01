@@ -110,74 +110,75 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     } else if (clock_pin == &pin_PB11) {
         self->clock_unit = 1;
     #endif
-    #endif
+    #else
     #ifdef SAM_D5X_E5X
     if (clock_pin == &pin_PA10 || clock_pin == &pin_PB16) {
         self->clock_unit = 0;
     } else if (clock_pin == &pin_PB12
                #if defined(PIN_PB28) && !defined(IGNORE_PIN_PB28)
-               || data_pin == &pin_PB28) {
-               #else
+               || data_pin == &pin_PB28
+               #endif
                ) {
-        #endif
         self->clock_unit = 1;
     #endif
-} else {
-    raise_ValueError_invalid_pin_name(MP_QSTR_clock);
-}
+        #endif
+    } else {
+        raise_ValueError_invalid_pin_name(MP_QSTR_clock);
+    }
 
-self->data_pin = data_pin;     // PA07, PA19 -> SD0, PA08, PB16 -> SD1
+    self->data_pin = data_pin; // PA07, PA19 -> SD0, PA08, PB16 -> SD1
 
     #ifdef SAMD21
-if (false
+    if (false
         #if defined(PIN_PA07) && !defined(IGNORE_PIN_PA07)
-    || data_pin == &pin_PA07
+        || data_pin == &pin_PA07
         #endif
         #if defined(PIN_PA19) && !defined(IGNORE_PIN_PA19)
-    || data_pin == &pin_PA19
+        || data_pin == &pin_PA19
         #endif
-    ) {
-    self->serializer = 0;
-} else if (false
-        #if defined(PIN_PA08) && !defined(IGNORE_PIN_PA08)
-           || data_pin == &pin_PA08
+        ) {
+        self->serializer = 0;
+    } else if (false
+               #if defined(PIN_PA08) && !defined(IGNORE_PIN_PA08)
+               || data_pin == &pin_PA08
+               #endif
+               #if defined(PIN_PB16) && !defined(IGNORE_PIN_PB16)
+               || data_pin == &pin_PB16
+               #endif
+               ) {
+        self->serializer = 1;
+    #else
+    #ifdef SAM_D5X_E5X
+    if (data_pin == &pin_PB10 || data_pin == &pin_PA22) {
+        self->serializer = 1;
+    #endif
         #endif
-        #if defined(PIN_PB16) && !defined(IGNORE_PIN_PB16)
-           || data_pin == &pin_PB16
-       #endif
-           ) {
-    self->serializer = 1;
-    #endif
-    #ifdef SAM_D5X_E5X
-if (data_pin == &pin_PB10 || data_pin == &pin_PA22) {
-    self->serializer = 1;
-    #endif
-}else {
-    raise_ValueError_invalid_pin_name(MP_QSTR_data);
-}
-
-if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
-    mp_raise_NotImplementedError(translate("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported."));
-}
-
-turn_on_i2s();
-
-if (I2S->CTRLA.bit.ENABLE == 0) {
-    I2S->CTRLA.bit.SWRST = 1;
-    while (I2S->CTRLA.bit.SWRST == 1) {
+    } else {
+        raise_ValueError_invalid_pin_name(MP_QSTR_data);
     }
-} else {
-    #ifdef SAMD21
-    if ((I2S->CTRLA.vec.SEREN & (1 << self->serializer)) != 0) {
-        mp_raise_RuntimeError(translate("Serializer in use"));
+
+    if (!(bit_depth == 16 || bit_depth == 8) || !mono || oversample != OVERSAMPLING) {
+        mp_raise_NotImplementedError(translate("Only 8 or 16 bit mono with " MP_STRINGIFY(OVERSAMPLING) "x oversampling is supported."));
     }
-    #endif
-    #ifdef SAM_D5X_E5X
-    if (I2S->CTRLA.bit.RXEN == 1) {
-        mp_raise_RuntimeError(translate("Serializer in use"));
+
+    turn_on_i2s();
+
+    if (I2S->CTRLA.bit.ENABLE == 0) {
+        I2S->CTRLA.bit.SWRST = 1;
+        while (I2S->CTRLA.bit.SWRST == 1) {
+        }
+    } else {
+        #ifdef SAMD21
+        if ((I2S->CTRLA.vec.SEREN & (1 << self->serializer)) != 0) {
+            mp_raise_RuntimeError(translate("Serializer in use"));
+        }
+        #endif
+        #ifdef SAM_D5X_E5X
+        if (I2S->CTRLA.bit.RXEN == 1) {
+            mp_raise_RuntimeError(translate("Serializer in use"));
+        }
+        #endif
     }
-    #endif
-}
     #ifdef SAM_D5X_E5X
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_J
     #endif
@@ -185,62 +186,62 @@ if (I2S->CTRLA.bit.ENABLE == 0) {
     #define GPIO_I2S_FUNCTION GPIO_PIN_FUNCTION_G
     #endif
 
-uint32_t clock_divisor = (uint32_t)roundf(48000000.0f / sample_rate / oversample);
-float mic_clock_freq = 48000000.0f / clock_divisor;
-self->sample_rate = mic_clock_freq / oversample;
-if (mic_clock_freq < MIN_MIC_CLOCK || clock_divisor == 0) {
-    mp_raise_ValueError(translate("sampling rate out of range"));
-}
-// Find a free GCLK to generate the MCLK signal.
-uint8_t gclk = find_free_gclk(clock_divisor);
-if (gclk > GCLK_GEN_NUM) {
-    mp_raise_RuntimeError(translate("Unable to find free GCLK"));
-}
-self->gclk = gclk;
+    uint32_t clock_divisor = (uint32_t)roundf(48000000.0f / sample_rate / oversample);
+    float mic_clock_freq = 48000000.0f / clock_divisor;
+    self->sample_rate = mic_clock_freq / oversample;
+    if (mic_clock_freq < MIN_MIC_CLOCK || clock_divisor == 0) {
+        mp_raise_ValueError(translate("sampling rate out of range"));
+    }
+    // Find a free GCLK to generate the MCLK signal.
+    uint8_t gclk = find_free_gclk(clock_divisor);
+    if (gclk > GCLK_GEN_NUM) {
+        mp_raise_RuntimeError(translate("Unable to find free GCLK"));
+    }
+    self->gclk = gclk;
 
-enable_clock_generator(self->gclk, CLOCK_48MHZ, clock_divisor);
-connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
+    enable_clock_generator(self->gclk, CLOCK_48MHZ, clock_divisor);
+    connect_gclk_to_peripheral(self->gclk, I2S_GCLK_ID_0 + self->clock_unit);
 
-// Clock unit configuration
+    // Clock unit configuration
 
-uint32_t clkctrl = I2S_CLKCTRL_MCKSEL_GCLK |
-    I2S_CLKCTRL_NBSLOTS(2) |
-    I2S_CLKCTRL_FSWIDTH_SLOT |
-    I2S_CLKCTRL_SLOTSIZE_16;
+    uint32_t clkctrl = I2S_CLKCTRL_MCKSEL_GCLK |
+        I2S_CLKCTRL_NBSLOTS(2) |
+        I2S_CLKCTRL_FSWIDTH_SLOT |
+        I2S_CLKCTRL_SLOTSIZE_16;
 
-// Serializer configuration
+    // Serializer configuration
     #ifdef SAMD21
-uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
+    uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
     #endif
     #ifdef SAM_D5X_E5X
-uint32_t serctrl = (self->clock_unit << I2S_RXCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
+    uint32_t serctrl = (self->clock_unit << I2S_RXCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_PDM2) | SERCTRL(DATASIZE_32);
     #endif
 
-// Configure the I2S peripheral
-i2s_set_enable(false);
+    // Configure the I2S peripheral
+    i2s_set_enable(false);
 
-I2S->CLKCTRL[self->clock_unit].reg = clkctrl;
+    I2S->CLKCTRL[self->clock_unit].reg = clkctrl;
     #ifdef SAMD21
-I2S->SERCTRL[self->serializer].reg = serctrl;
+    I2S->SERCTRL[self->serializer].reg = serctrl;
     #endif
     #ifdef SAM_D5X_E5X
-I2S->RXCTRL.reg = serctrl;
+    I2S->RXCTRL.reg = serctrl;
     #endif
 
-i2s_set_enable(true);
+    i2s_set_enable(true);
 
-// Run the clock all the time. This eliminates startup delay for the microphone,
-// which can be 10-100ms. Turn serializer on as needed.
-i2s_set_clock_unit_enable(self->clock_unit, true);
+    // Run the clock all the time. This eliminates startup delay for the microphone,
+    // which can be 10-100ms. Turn serializer on as needed.
+    i2s_set_clock_unit_enable(self->clock_unit, true);
 
-claim_pin(clock_pin);
-claim_pin(data_pin);
+    claim_pin(clock_pin);
+    claim_pin(data_pin);
 
-gpio_set_pin_function(self->clock_pin->number, GPIO_I2S_FUNCTION);
-gpio_set_pin_function(self->data_pin->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->clock_pin->number, GPIO_I2S_FUNCTION);
+    gpio_set_pin_function(self->data_pin->number, GPIO_I2S_FUNCTION);
 
-self->bytes_per_sample = oversample >> 3;
-self->bit_depth = bit_depth;
+    self->bytes_per_sample = oversample >> 3;
+    self->bit_depth = bit_depth;
 }
 
 bool common_hal_audiobusio_pdmin_deinited(audiobusio_pdmin_obj_t *self) {
