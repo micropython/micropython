@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-02 04:53+0000\n"
+"PO-Revision-Date: 2022-06-03 01:35+0000\n"
 "Last-Translator: ajs256 <alex.sirota@icloud.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -147,7 +147,7 @@ msgstr "%q doit être %d-%d"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr "%q doit être à 1 alors que %q est True"
+msgstr "%q doit être 1 quand %q est True"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
