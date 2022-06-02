@@ -28,8 +28,6 @@
 #include "storage.h"
 #include "spi.h"
 
-#define CMD_EXIT_4_BYTE_ADDRESS_MODE (0xE9)
-
 STATIC const spi_proto_cfg_t spi_bus = {
     .spi = &spi_obj[1], // SPI2 hardware peripheral
     .baudrate = 25000000,
@@ -50,15 +48,3 @@ const mp_spiflash_config_t spiflash_config = {
 };
 
 spi_bdev_t spi_bdev;
-
-int32_t board_bdev_ioctl(void) {
-    int32_t ret = spi_bdev_ioctl(&spi_bdev, BDEV_IOCTL_INIT, (uint32_t)&spiflash_config);
-
-    // Exit 4-byte address mode
-    uint8_t cmd = CMD_EXIT_4_BYTE_ADDRESS_MODE;
-    mp_hal_pin_write(MICROPY_HW_SPIFLASH_CS, 0);
-    spi_proto.transfer(MP_OBJ_FROM_PTR(&spi_bus), 1, &cmd, NULL);
-    mp_hal_pin_write(MICROPY_HW_SPIFLASH_CS, 1);
-
-    return ret;
-}

@@ -78,6 +78,10 @@
 #define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY   (921600)
 #define MICROPY_HW_BLE_BTSTACK_CHIPSET_INSTANCE  btstack_chipset_cc256x_instance()
 
+// External SPI flash starts in 32-bit addressing mode, so make all SPI flash
+// transfers use the explicit 32-bit addressing instructions.
+#define MICROPY_HW_SPI_ADDR_IS_32BIT(addr)       (1)
+
 // SPI flash, for R/W storage
 // The first 1MiB is skipped because it's used by the built-in bootloader
 // Note: MICROPY_HW_SPIFLASH_OFFSET_BYTES must be a multiple of MP_SPIFLASH_ERASE_BLOCK_SIZE
@@ -92,11 +96,9 @@
 #define MICROPY_HW_SPIFLASH_MOSI                 (MICROPY_HW_SPI2_MOSI)
 
 // SPI flash, block device config
-extern int32_t board_bdev_ioctl(void);
-extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
     (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? board_bdev_ioctl() : \
+    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
     spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
     )
 
@@ -133,6 +135,9 @@ extern struct _spi_bdev_t spi_bdev;
 
 /******************************************************************************/
 // Function declarations
+
+extern const struct _mp_spiflash_config_t spiflash_config;
+extern struct _spi_bdev_t spi_bdev;
 
 void board_init(void);
 void board_mboot_cleanup(int reset_mode);
