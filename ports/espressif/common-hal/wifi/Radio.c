@@ -412,7 +412,7 @@ void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self) {
     esp_netif_dhcpc_stop(self->netif);
 }
 
-void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway) {
+void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns) {
     common_hal_wifi_radio_stop_dhcp_client(self); // Must stop DHCP to set a manual address
 
     esp_netif_ip_info_t ip_info;
@@ -421,6 +421,10 @@ void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv
     ipaddress_ipaddress_to_esp_idf_ip4(gateway, &ip_info.gw);
 
     esp_netif_set_ip_info(self->netif, &ip_info);
+
+    if (ipv4_dns != MP_OBJ_NULL) {
+        common_hal_wifi_radio_set_ipv4_dns(self, ipv4_dns);
+    }
 }
 
 mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout) {

@@ -106,7 +106,7 @@ extern mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self)
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_ipv4_address_ap(wifi_radio_obj_t *self);
 
-extern void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway);
+extern void common_hal_wifi_radio_set_ipv4_address(wifi_radio_obj_t *self, mp_obj_t ipv4, mp_obj_t netmask, mp_obj_t gateway, mp_obj_t ipv4_dns_addr);
 
 extern mp_int_t common_hal_wifi_radio_ping(wifi_radio_obj_t *self, mp_obj_t ip_address, mp_float_t timeout);
 
