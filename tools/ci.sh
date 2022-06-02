@@ -468,6 +468,30 @@ function ci_unix_coverage_run_tests {
     ci_unix_run_tests_full_helper coverage
 }
 
+function ci_unix_coverage_run_mpy_merge_tests {
+    mptop=$(pwd)
+    outdir=$(mktemp -d)
+    allmpy=()
+
+    # Compile a selection of tests to .mpy and execute them, collecting the output.
+    # None of the tests should SKIP.
+    for inpy in $mptop/tests/basics/[acdel]*.py; do
+        test=$(basename $inpy .py)
+        echo $test
+        outmpy=$outdir/$test.mpy
+        $mptop/mpy-cross/mpy-cross -o $outmpy $inpy
+        (cd $outdir && $mptop/ports/unix/micropython-coverage -m $test >> out-individual)
+        allmpy+=($outmpy)
+    done
+
+    # Merge all the tests into one .mpy file, and then execute it.
+    python3 $mptop/tools/mpy-tool.py --merge -o $outdir/merged.mpy ${allmpy[@]}
+    (cd $outdir && $mptop/ports/unix/micropython-coverage -m merged > out-merged)
+
+    # Make sure the outputs match.
+    diff $outdir/out-individual $outdir/out-merged && /bin/rm -rf $outdir
+}
+
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
     (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
