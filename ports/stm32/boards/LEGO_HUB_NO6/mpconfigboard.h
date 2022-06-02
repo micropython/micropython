@@ -123,7 +123,26 @@
 /******************************************************************************/
 // Bootloader configuration
 
+// Configure CPU frequency to 96MHz, to make updates from SPI flash faster
+#define MBOOT_CLK_PLLM                           (MICROPY_HW_CLK_VALUE / 1000000)
+#define MBOOT_CLK_PLLN                           (192)
+#define MBOOT_CLK_PLLP                           (RCC_PLLP_DIV2)
+#define MBOOT_CLK_PLLQ                           (4)
+#define MBOOT_CLK_AHB_DIV                        (RCC_SYSCLK_DIV1)
+#define MBOOT_CLK_APB1_DIV                       (RCC_HCLK_DIV4)
+#define MBOOT_CLK_APB2_DIV                       (RCC_HCLK_DIV2)
+#define MBOOT_FLASH_LATENCY                      FLASH_LATENCY_3
+
+#define MBOOT_FSLOAD                             (1)
+#define MBOOT_VFS_FAT                            (1)
 #define MBOOT_LEAVE_BOOTLOADER_VIA_RESET         (0)
+
+#define MBOOT_SPIFLASH_ADDR                      (0x80000000)
+#define MBOOT_SPIFLASH_BYTE_SIZE                 (32 * 1024 * 1024)
+#define MBOOT_SPIFLASH_LAYOUT                    "/0x80000000/8192*4Kg"
+#define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE     (1)
+#define MBOOT_SPIFLASH_SPIFLASH                  (&board_mboot_spiflash)
+#define MBOOT_SPIFLASH_CONFIG                    (&board_mboot_spiflash_config)
 
 #define MBOOT_LED1                               0
 #define MBOOT_BOARD_LED_INIT                     board_mboot_led_init
@@ -138,6 +157,8 @@
 
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
+extern const struct _mp_spiflash_config_t board_mboot_spiflash_config;
+extern struct _mp_spiflash_t board_mboot_spiflash;
 
 void board_init(void);
 void board_mboot_cleanup(int reset_mode);
