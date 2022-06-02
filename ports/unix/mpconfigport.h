@@ -253,6 +253,17 @@ void mp_unix_mark_exec(void);
 #define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
 #endif
 
+#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+// Support for seeding the random module on import.
+#include <stddef.h>
+void mp_hal_get_random(size_t n, void *buf);
+static inline unsigned long mp_urandom_seed_init(void) {
+    unsigned long r;
+    mp_hal_get_random(sizeof(r), &r);
+    return r;
+}
+#endif
+
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
