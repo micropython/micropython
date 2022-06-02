@@ -108,6 +108,8 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool have_rx = rx != NULL;
     bool have_rts = rts != NULL;
     bool have_cts = cts != NULL;
+
+    uart_config_t uart_config = {0};
     bool have_rs485_dir = rs485_dir != NULL;
     if (!have_tx && !have_rx) {
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
@@ -135,25 +137,26 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     uart_mode_t mode = UART_MODE_UART;
-    uart_hw_flowcontrol_t flow_control = UART_HW_FLOWCTRL_DISABLE;
+    uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
     if (have_rs485_dir) {
         mode = UART_MODE_RS485_HALF_DUPLEX;
         if (!rs485_invert) {
+            // This one is not in the set
             uart_set_line_inverse(self->uart_num, UART_SIGNAL_DTR_INV);
         }
     } else if (have_rts && have_cts) {
-        flow_control = UART_HW_FLOWCTRL_CTS_RTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS_RTS;
     } else if (have_rts) {
-        flow_control = UART_HW_FLOWCTRL_RTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_RTS;
     } else if (have_rts) {
-        flow_control = UART_HW_FLOWCTRL_CTS;
+        uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS;
     }
 
     if (receiver_buffer_size <= UART_FIFO_LEN) {
         receiver_buffer_size = UART_FIFO_LEN + 8;
     }
 
-    uint8_t rx_threshold = UART_FIFO_LEN - 8;
+    uart_config.rx_flow_ctrl_thresh = UART_FIFO_LEN - 8;
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
@@ -175,55 +178,62 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         CONFIG_PTHREAD_TASK_PRIO_DEFAULT,
         &self->event_task,
         xPortGetCoreID());
-    uart_set_hw_flow_ctrl(self->uart_num, flow_control, rx_threshold);
+    // uart_set_hw_flow_ctrl(self->uart_num, uart_config.flow_control, uart_config.rx_flow_ctrl_thresh);
 
     // Set baud rate
-    common_hal_busio_uart_set_baudrate(self, baudrate);
+    // common_hal_busio_uart_set_baudrate(self, baudrate);
+    uart_config.baud_rate = baudrate;
 
-    uart_word_length_t word_length = UART_DATA_8_BITS;
+    uart_config.data_bits = UART_DATA_8_BITS;
     switch (bits) {
         // Shared bindings prevents data < 7 bits.
         // case 5:
-        //     word_length = UART_DATA_5_BITS;
+        //     uart_config.data_bits = UART_DATA_5_BITS;
         //     break;
         // case 6:
-        //     word_length = UART_DATA_6_BITS;
+        //     uart_config.data_bits = UART_DATA_6_BITS;
         //     break;
         case 7:
-            word_length = UART_DATA_7_BITS;
+            uart_config.data_bits = UART_DATA_7_BITS;
             break;
         case 8:
-            word_length = UART_DATA_8_BITS;
+            uart_config.data_bits = UART_DATA_8_BITS;
             break;
         default:
             // Won't hit this because shared-bindings limits to 7-9 bits. We error on 9 above.
             break;
     }
-    uart_set_word_length(self->uart_num, word_length);
+    // uart_set_word_length(self->uart_num, uart_config.data_bits);
 
-    uart_parity_t parity_mode = UART_PARITY_DISABLE;
+    uart_config.parity = UART_PARITY_DISABLE;
     switch (parity) {
         case BUSIO_UART_PARITY_NONE:
-            parity_mode = UART_PARITY_DISABLE;
+            uart_config.parity = UART_PARITY_DISABLE;
             break;
         case BUSIO_UART_PARITY_EVEN:
-            parity_mode = UART_PARITY_EVEN;
+            uart_config.parity = UART_PARITY_EVEN;
             break;
         case BUSIO_UART_PARITY_ODD:
-            parity_mode = UART_PARITY_ODD;
+            uart_config.parity = UART_PARITY_ODD;
             break;
         default:
             // Won't reach here because the input is an enum that is completely handled.
             break;
     }
-    uart_set_parity(self->uart_num, parity_mode);
+    // uart_set_parity(self->uart_num, uart_config.parity);
 
     // Stop is 1 or 2 always.
-    uart_stop_bits_t stop_bits = UART_STOP_BITS_1;
+    uart_config.stop_bits = UART_STOP_BITS_1;
     if (stop == 2) {
-        stop_bits = UART_STOP_BITS_2;
+        uart_config.stop_bits = UART_STOP_BITS_2;
     }
-    uart_set_stop_bits(self->uart_num, stop_bits);
+    // uart_set_stop_bits(self->uart_num, stop_bits);
+    uart_config.source_clk = UART_SCLK_APB; // guessing here...
+
+    // config all in one?
+    if (uart_param_config(self->uart_num, &uart_config) != ESP_OK) {
+        mp_raise_RuntimeError(translate("UART init"));
+    }
 
     self->tx_pin = NULL;
     self->rx_pin = NULL;
