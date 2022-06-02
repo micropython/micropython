@@ -190,7 +190,7 @@ endif
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

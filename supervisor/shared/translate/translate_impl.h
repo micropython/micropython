@@ -32,6 +32,14 @@
 
 #include "supervisor/shared/translate/compressed_string.h"
 
+#ifndef NO_QSTR
+#define QDEF(id, hash, len, str)
+#define TRANSLATION(english_id, number) extern compressed_string_t translation##number;
+#include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
+#undef QDEF
+#endif
+
 #if CIRCUITPY_TRANSLATE_OBJECT == 0
 static
 #endif
@@ -43,7 +51,7 @@ __attribute__((always_inline))
 const compressed_string_t *translate(const char *original) {
     #ifndef NO_QSTR
     #define QDEF(id, hash, len, str)
-    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
+    #define TRANSLATION(english_id, number) if (strcmp(original, english_id) == 0) { return &translation##number; } else
     #include "genhdr/qstrdefs.generated.h"
 #undef TRANSLATION
 #undef QDEF
