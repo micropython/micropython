@@ -216,7 +216,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_urandom_uniform_obj, mod_urandom_uniform);
 #endif // MICROPY_PY_URANDOM_EXTRA_FUNCS
 
 #if SEED_ON_IMPORT
-STATIC mp_obj_t mod_urandom___init__() {
+STATIC mp_obj_t mod_urandom___init__(void) {
     // This module may be imported by more than one name so need to ensure
     // that it's only ever seeded once.
     static bool seeded = false;
