@@ -97,3 +97,32 @@ To scan for BLE devices:
     >>> ble.gap_scan(2000, 625, 625)
 
 Use help("modules") to see available built-in modules.
+
+Updating MicroPython from the Hub's filesystem
+----------------------------------------------
+
+You can update the MicroPython application firmware using the instructions above
+for installing the firmware for the first time.  The Hub also supports updating
+the application firmware from within MicroPython itself, using the on-board
+filesystem.
+
+To use this feature, build the firmware (see above for details) then gzip it and
+copy the resulting file to the Hub (eg using mpremote):
+
+    $ make BOARD=LEGO_HUB_NO6
+    $ gzip boards/LEGO_HUB_NO6/firmware.dfu
+    $ mpremote cp boards/LEGO_HUB_NO6/firmware.dfu.gz :
+
+Then get a REPL on the Hub and execute:
+
+    >>> import appupdate
+    >>> appupdate.update_app("firmware.dfu.gz")
+
+You can alternatively run this REPL command using mpremote:
+
+    $ mpremote exec --no-follow "import appupdate; appupdate.update_app('firmware.dfu.gz')"
+
+At that point the Hub should restart and the LED on the central button will flash
+different colours.  Once the update is complete the LED will stop flashing and the
+Hub will appear again as a USB device.  The application firmware is now updated
+and you can remove the firmware.dfu.gz file if desired.
