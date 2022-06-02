@@ -124,11 +124,11 @@ void board_mboot_led_init(void) {
 
 void board_mboot_led_state(int led, int state) {
     if (state) {
-        hub_display_set(28, 0x7fff);
-        hub_display_set(31, 0x7fff);
+        hub_display_set(28 + led, 0x7fff);
+        hub_display_set(31 + led, 0x7fff);
     } else {
-        hub_display_set(28, 0);
-        hub_display_set(31, 0);
+        hub_display_set(28 + led, 0);
+        hub_display_set(31 + led, 0);
     }
     hub_display_update();
 }

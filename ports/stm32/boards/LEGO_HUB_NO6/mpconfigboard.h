@@ -145,6 +145,8 @@
 #define MBOOT_SPIFLASH_CONFIG                    (&board_mboot_spiflash_config)
 
 #define MBOOT_LED1                               0
+#define MBOOT_LED2                               1
+#define MBOOT_LED3                               2
 #define MBOOT_BOARD_LED_INIT                     board_mboot_led_init
 #define MBOOT_BOARD_LED_STATE                    board_mboot_led_state
 
