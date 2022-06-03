@@ -400,7 +400,8 @@ def compute_huffman_coding(translations, compression_filename):
         # words[] array.
 
         scores = sorted(
-            ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items()), key=lambda x: x[1]
+            ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items() if occ > 1),
+            key=lambda x: x[1],
         )
 
         # Pick the one with the highest score.  The score must be negative.
