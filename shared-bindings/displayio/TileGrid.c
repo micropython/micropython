@@ -323,8 +323,8 @@ MP_PROPERTY_GETSET(displayio_tilegrid_transpose_xy_obj,
     (mp_obj_t)&displayio_tilegrid_set_transpose_xy_obj);
 
 //|     def contains(self, touch_tuple: tuple) -> bool:
-//|         """returns true if first two values in touch_tuple represent an x,y coordinate
-//|            inside the tilegrid rectangle bounds"""
+//|         """Returns True if the first two values in ``touch_tuple`` represent an x,y coordinate
+//|            inside the tilegrid rectangle bounds."""
 //|
 STATIC mp_obj_t displayio_tilegrid_obj_contains(mp_obj_t self_in, mp_obj_t touch_tuple) {
     displayio_tilegrid_t *self = MP_OBJ_TO_PTR(self_in);
