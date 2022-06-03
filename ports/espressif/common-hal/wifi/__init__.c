@@ -189,6 +189,16 @@ void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_addre
     IP_ADDR4(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
 }
 
+void ipaddress_ipaddress_to_esp_idf_ip4(mp_obj_t ip_address, esp_ip4_addr_t *esp_ip_address) {
+    if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
+        mp_raise_ValueError(translate("Only IPv4 addresses supported"));
+    }
+    mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
+    size_t len;
+    const char *bytes = mp_obj_str_get_data(packed, &len);
+    esp_netif_set_ip4_addr(esp_ip_address, bytes[0], bytes[1], bytes[2], bytes[3]);
+}
+
 void common_hal_wifi_gc_collect(void) {
     common_hal_wifi_radio_gc_collect(&common_hal_wifi_radio_obj);
 }
