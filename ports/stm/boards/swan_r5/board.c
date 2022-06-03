@@ -59,8 +59,6 @@ void board_init(void) {
     //  Without this, USB does not function.
     HAL_InitTick((1UL << __NVIC_PRIO_BITS) - 1UL);
 
-    initialize_discharge_pin();
-
     __HAL_RCC_GPIOE_CLK_ENABLE();
     GPIO_InitTypeDef GPIO_InitStruct;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -78,6 +76,7 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
+    initialize_discharge_pin();
 }
 
 void board_deinit(void) {
