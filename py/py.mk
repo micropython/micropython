@@ -266,7 +266,7 @@ $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/compression.generated.
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
 
-PY_O += $(PY_BUILD)/translations-$(TRANSLATION).o
+PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o
 
 $(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
