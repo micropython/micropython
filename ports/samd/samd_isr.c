@@ -32,6 +32,7 @@ extern uint32_t _estack, _sidata, _sdata, _edata, _sbss, _ebss;
 
 const ISR isr_vector[];
 uint32_t systick_ms;
+volatile uint32_t systick_ms_upper;
 
 void Reset_Handler(void) __attribute__((naked));
 void Reset_Handler(void) {
@@ -81,7 +82,11 @@ void Default_Handler(void) {
 }
 
 void SysTick_Handler(void) {
-    systick_ms += 1;
+    uint32_t next_tick = systick_ms + 1;
+    systick_ms = next_tick;
+    if (systick_ms == 0) {
+        systick_ms_upper += 1;
+    }
 }
 
 const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
