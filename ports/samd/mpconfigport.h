@@ -97,6 +97,8 @@
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UASYNCIO                 (1)
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
 
 #define MP_STATE_PORT MP_STATE_VM
 
