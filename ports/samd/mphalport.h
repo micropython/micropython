@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019-2021 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,25 +28,49 @@
 #define MICROPY_INCLUDED_SAMD_MPHALPORT_H
 
 #include "py/mpconfig.h"
-#include "py/ringbuf.h"
 
 // ASF4
 #include "hal_gpio.h"
+#include "hpl_time_measure.h"
+#include "sam.h"
 
 extern int mp_interrupt_char;
-extern ringbuf_t stdin_ringbuf;
 extern volatile uint32_t systick_ms;
+extern volatile uint32_t systick_ms_upper;
 
 void mp_hal_set_interrupt_char(int c);
+
+#define mp_hal_delay_us_fast  mp_hal_delay_us
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
+
 static inline mp_uint_t mp_hal_ticks_us(void) {
+    #if defined(MCU_SAMD21)
+
+    return REG_TC4_COUNT32_COUNT;
+
+    #elif defined(MCU_SAMD51)
+
+    TC0->COUNT32.CTRLBSET.reg = TC_CTRLBSET_CMD_READSYNC;
+    while (TC0->COUNT32.CTRLBSET.reg != 0) {
+    }
+    return REG_TC0_COUNT32_COUNT >> 3;
+
+    #else
     return systick_ms * 1000;
+    #endif
 }
+
+// ticks_cpu is limited to a 1 ms period, since the CPU SysTick counter
+// is used for the 1 ms SysTick_Handler interrupt.
 static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return 0;
+    return (system_time_t)SysTick->VAL;
+}
+
+static inline uint64_t mp_hal_time_ns(void) {
+    return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
 }
 
 // C-level pin HAL
@@ -55,9 +80,10 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint
 
-extern uint32_t machine_pin_open_drain_mask;
+extern uint32_t machine_pin_open_drain_mask[];
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
+void mp_hal_set_pin_mux(mp_hal_pin_obj_t pin, uint8_t mux);
 
 static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
     return pin;
@@ -65,18 +91,22 @@ static inline unsigned int mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    machine_pin_open_drain_mask[pin / 32] &= ~(1 << (pin % 32));
 }
 
 static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
-    machine_pin_open_drain_mask &= ~(1 << pin);
+    machine_pin_open_drain_mask[pin / 32] &= ~(1 << (pin % 32));
 }
 
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
     gpio_set_pin_level(pin, 0);
-    machine_pin_open_drain_mask |= 1 << pin;
+    machine_pin_open_drain_mask[pin / 32] |= 1 << (pin % 32);
+}
+
+static inline unsigned int mp_hal_get_pin_direction(mp_hal_pin_obj_t pin) {
+    return (PORT->Group[pin / 32].DIR.reg & (1 << (pin % 32))) >> (pin % 32);
 }
 
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
@@ -87,7 +117,14 @@ static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {
     gpio_set_pin_level(pin, v);
 }
 
-/*
+static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {
+    gpio_set_pin_level(pin, 0);
+}
+
+static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
+    gpio_set_pin_level(pin, 1);
+}
+
 static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
 }
@@ -95,6 +132,5 @@ static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
 }
-*/
 
 #endif // MICROPY_INCLUDED_SAMD_MPHALPORT_H
