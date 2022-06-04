@@ -83,16 +83,16 @@ LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 SRC_C = \
-	main.c \
 	help.c \
+	machine_led.c \
+	machine_pin.c \
+	main.c \
 	modutime.c \
 	modmachine.c \
-	$(BUILD)/pins.c \
-	machine_pin.c \
-	machine_led.c \
 	modsamd.c \
-	samd_flash.c \
 	mphalport.c \
+	$(BUILD)/pins.c \
+	samd_flash.c \
 	samd_isr.c \
 	samd_soc.c \
 	tusb_port.c \
@@ -130,10 +130,10 @@ endif
 
 # List of sources for qstr extraction
 SRC_QSTR += \
+	machine_led.c \
+	machine_pin.c \
 	modutime.c \
 	modmachine.c \
-	machine_pin.c \
-	machine_led.c \
 	modsamd.c \
 	samd_flash.c \
 	shared/readline/readline.c \
