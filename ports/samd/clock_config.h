@@ -1,9 +1,11 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * This file provides functions for configuring the clocks.
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +25,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_SAMD_SOC_H
-#define MICROPY_INCLUDED_SAMD_SAMD_SOC_H
 
-#include <stdint.h>
-#include "sam.h"
-#include "clock_config.h"
-
-void samd_init(void);
-void samd_main(void);
-
-void USB_Handler_wrapper(void);
-void USB_0_Handler_wrapper(void);
-void USB_1_Handler_wrapper(void);
-void USB_2_Handler_wrapper(void);
-void USB_3_Handler_wrapper(void);
-
-void common_uart_irq_handler(int uart_nr);
-void common_spi_irq_handler(int spi_nr);
-void common_i2c_irq_handler(int i2c_nr);
-void sercom_enable(Sercom *spi, int state);
-void sercom_register_irq(int sercom_id, int mode);
-
-#define SERCOM_IRQ_TYPE_UART  (0)
-#define SERCOM_IRQ_TYPE_SPI   (1)
-#define SERCOM_IRQ_TYPE_I2C   (2)
-
-#endif // MICROPY_INCLUDED_SAMD_SAMD_SOC_H
+void init_clocks(uint32_t cpu_freq);
+void set_cpu_freq(uint32_t cpu_freq);
+uint32_t get_cpu_freq(void);
+uint32_t get_apb_freq(void);
+void enable_sercom_clock(int id);

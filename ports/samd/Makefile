@@ -83,6 +83,7 @@ LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 SRC_C = \
+	clock_config.c \
 	help.c \
 	machine_led.c \
 	machine_pin.c \
