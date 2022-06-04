@@ -101,7 +101,7 @@ static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
-    gpio_set_pin_level(pin, 0);
+    gpio_set_pin_pull_mode(pin, GPIO_PULL_UP);
     machine_pin_open_drain_mask[pin / 32] |= 1 << (pin % 32);
 }
 
@@ -127,10 +127,12 @@ static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
 
 static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_OUT);
+    gpio_set_pin_level(pin, 0);
 }
 
 static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_pin_direction(pin, GPIO_DIRECTION_IN);
+    gpio_set_pin_pull_mode(pin, GPIO_PULL_UP);
 }
 
 #endif // MICROPY_INCLUDED_SAMD_MPHALPORT_H
