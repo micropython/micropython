@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "py/obj.h"
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "shared-bindings/gamepadshift/GamePadShift.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/util.h"
 
-//| """Tracks button presses read through a shift register.
-//|
-//| .. note:: `gamepadshift` is deprecated in CircuitPython 7.0.0 and will be removed in 8.0.0.
-//|    Use `keypad` instead.
-//| """
-//|
-STATIC const mp_rom_map_elem_t gamepadshift_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_gamepadshift) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_GamePadShift),  MP_ROM_PTR(&gamepadshift_type)},
-};
-
-STATIC MP_DEFINE_CONST_DICT(gamepadshift_module_globals, gamepadshift_module_globals_table);
-
-const mp_obj_module_t gamepadshift_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&gamepadshift_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_gamepadshift, gamepadshift_module, CIRCUITPY_GAMEPADSHIFT);
+// Allocation free version that returns the full length of the value.
+mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t value_len);

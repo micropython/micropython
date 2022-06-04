@@ -125,8 +125,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         value = 0;
     }
 
-    // Map value to from 14 to 16 bits
-    return value << 2;
+    // Stretch 14-bit ADC reading to 16-bit range
+    return (value << 2) | (value >> 12);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

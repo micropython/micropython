@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,9 @@
  * THE SOFTWARE.
  */
 
+// Micropython setup
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT___INIT___H
+#define MICROPY_HW_BOARD_NAME       "MixGo CE"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT___INIT___H
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO45)

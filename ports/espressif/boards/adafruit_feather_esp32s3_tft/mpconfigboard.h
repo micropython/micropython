@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include "shared-module/gamepadshift/__init__.h"
+// Micropython setup
 
-#include "py/mpstate.h"
-#include "shared-bindings/gamepadshift/GamePadShift.h"
+#define MICROPY_HW_BOARD_NAME       "Adafruit Feather ESP32-S3 TFT"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-void gamepadshift_tick(void) {
-    void *singleton = MP_STATE_VM(gamepad_singleton);
-    if (singleton == NULL || !mp_obj_is_type(MP_OBJ_FROM_PTR(singleton), &gamepadshift_type)) {
-        return;
-    }
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO33)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO34)
 
-    gamepadshift_obj_t *self = MP_OBJ_TO_PTR(singleton);
-    uint8_t current = 0;
-    uint8_t bit = 1;
-    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 1);
-    for (int i = 0; i < 8; ++i) {
-        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 0);
-        if (common_hal_digitalio_digitalinout_get_value(self->data_pin)) {
-            current |= bit;
-        }
-        common_hal_digitalio_digitalinout_set_value(self->clock_pin, 1);
-        bit <<= 1;
-    }
-    common_hal_digitalio_digitalinout_set_value(self->latch_pin, 0);
-    self->pressed |= self->last & current;
-    self->last = current;
-}
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO41)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO42)
 
-void gamepadshift_reset(void) {
-    MP_STATE_VM(gamepad_singleton) = NULL;
-}
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO2)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO1)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO38)

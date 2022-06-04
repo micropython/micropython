@@ -289,3 +289,6 @@
 [submodule "frozen/pew-pewpew-lcd"]
 	path = frozen/pew-pewpew-lcd
 	url = https://github.com/pypewpew/pew-pewpew-lcd.git
+[submodule "frozen/mixgo_cp_lib"]
+	path = frozen/mixgo_cp_lib
+	url = https://github.com/dahanzimin/circuitpython_lib.git

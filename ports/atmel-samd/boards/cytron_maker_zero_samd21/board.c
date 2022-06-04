@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,19 @@
  * THE SOFTWARE.
  */
 
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "hal/include/hal_gpio.h"
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H
+void board_init(void) {
+}
 
-#include "shared-module/gamepadshift/GamePadShift.h"
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-extern const mp_obj_type_t gamepadshift_type;
+void reset_board(void) {
+}
 
-void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
-    digitalio_digitalinout_obj_t *clock_pin,
-    digitalio_digitalinout_obj_t *data_pin,
-    digitalio_digitalinout_obj_t *latch_pin);
-
-void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_GAMEPADSHIFT_GAMEPADSHIFT_H
+void board_deinit(void) {
+}

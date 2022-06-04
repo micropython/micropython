@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H
-#define MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
+#include "py/objtuple.h"
 
-typedef struct {
-    mp_obj_base_t base;
-    digitalio_digitalinout_obj_t *data_pin;
-    digitalio_digitalinout_obj_t *clock_pin;
-    digitalio_digitalinout_obj_t *latch_pin;
-    volatile uint8_t pressed;
-    volatile uint8_t last;
-} gamepadshift_obj_t;
+#include "shared-module/dotenv/__init__.h"
 
-#endif  // MICROPY_INCLUDED_GAMEPADSHIFT_GAMEPADSHIFT_H
+mp_obj_t common_hal_dotenv_get_key(const char *path, const char *key);
+
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_DOTENV___INIT___H

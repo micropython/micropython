@@ -213,7 +213,7 @@ typedef long mp_off_t;
 #define MICROPY_CPYTHON_COMPAT                (CIRCUITPY_FULL_BUILD)
 #endif
 #define MICROPY_PY_BUILTINS_POW3              (CIRCUITPY_BUILTINS_POW3)
-#define MICROPY_PY_FSTRINGS                   (MICROPY_CPYTHON_COMPAT)
+#define MICROPY_PY_FSTRINGS                   (1)
 #define MICROPY_MODULE_WEAK_LINKS             (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS        (CIRCUITPY_FULL_BUILD)
 #ifndef MICROPY_PY_BUILTINS_COMPLEX
@@ -309,14 +309,6 @@ typedef long mp_off_t;
 #else
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
-#endif
-
-#if CIRCUITPY_GAMEPADSHIFT
-// Scan gamepad every 32ms
-#define CIRCUITPY_GAMEPAD_TICKS 0x1f
-#define GAMEPAD_ROOT_POINTERS mp_obj_t gamepad_singleton;
-#else
-#define GAMEPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_KEYPAD
@@ -419,7 +411,6 @@ struct _supervisor_allocation_node;
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     FLASH_ROOT_POINTERS \
     KEYPAD_ROOT_POINTERS \
-    GAMEPAD_ROOT_POINTERS \
     BOARD_UART_ROOT_POINTER \
     WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \

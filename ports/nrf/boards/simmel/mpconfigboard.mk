@@ -46,8 +46,3 @@ CIRCUITPY_ZLIB = 0
 
 # Enable micropython.native
 #CIRCUITPY_ENABLE_MPY_NATIVE = 1
-
-# Override optimization to keep binary small
-OPTIMIZATION_FLAGS = -Os
-SUPEROPT_VM = 0
-SUPEROPT_GC = 0

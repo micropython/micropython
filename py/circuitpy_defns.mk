@@ -158,6 +158,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
+ifeq ($(CIRCUITPY_DOTENV),1)
+SRC_PATTERNS += dotenv/%
+endif
 ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
 SRC_PATTERNS += paralleldisplay/%
 endif
@@ -181,9 +184,6 @@ ifeq ($(CIRCUITPY_FUTURE),1)
 SRC_PATTERNS += __future__/%
 endif
 
-ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
-SRC_PATTERNS += gamepadshift/%
-endif
 ifeq ($(CIRCUITPY_GETPASS),1)
 SRC_PATTERNS += getpass/%
 endif
@@ -548,13 +548,12 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotenv/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
-	gamepadshift/GamePadShift.c \
-	gamepadshift/__init__.c \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \

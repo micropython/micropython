@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Radomir Dopieralski for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,25 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpstate.h"
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/gamepadshift/GamePadShift.h"
-#include "shared-module/gamepadshift/GamePadShift.h"
-#include "supervisor/shared/tick.h"
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-void common_hal_gamepadshift_gamepadshift_init(gamepadshift_obj_t *gamepadshift,
-    digitalio_digitalinout_obj_t *clock_pin,
-    digitalio_digitalinout_obj_t *data_pin,
-    digitalio_digitalinout_obj_t *latch_pin) {
-    common_hal_digitalio_digitalinout_switch_to_input(data_pin, PULL_NONE);
-    gamepadshift->data_pin = data_pin;
-    common_hal_digitalio_digitalinout_switch_to_output(clock_pin, 0,
-        DRIVE_MODE_PUSH_PULL);
-    gamepadshift->clock_pin = clock_pin;
-    common_hal_digitalio_digitalinout_switch_to_output(latch_pin, 1,
-        DRIVE_MODE_PUSH_PULL);
-    gamepadshift->latch_pin = latch_pin;
-
-    gamepadshift->last = 0;
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
 }
 
-void common_hal_gamepadshift_gamepadshift_deinit(gamepadshift_obj_t *gamepadshift) {
-    MP_STATE_VM(gamepad_singleton) = NULL;
-    supervisor_disable_tick();
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+
+}
+
+void board_deinit(void) {
 }
