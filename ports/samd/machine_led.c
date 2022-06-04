@@ -30,12 +30,10 @@
 #include "py/mphal.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
-#include "pins.h" // boards/<BOARD>/
+#include "pins.h"
 
 // ASF4 (MCU package specific pin defs in 'boards')
 #include "hal_gpio.h"
-#include "hpl_gpio.h"
-#include "hal_atomic.h"
 
 STATIC void machine_led_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_led_obj_t *self = self_in;
@@ -70,7 +68,7 @@ mp_obj_t mp_led_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted LED object
-    int wanted_led = mp_obj_get_int(args[0]);
+    int wanted_led = pin_find(args[0], (const machine_pin_obj_t *)machine_led_obj, MP_ARRAY_SIZE(machine_led_obj));
     const machine_led_obj_t *self = NULL;
     if (0 <= wanted_led && wanted_led < MP_ARRAY_SIZE(machine_led_obj)) {
         self = (machine_led_obj_t *)&machine_led_obj[wanted_led];
