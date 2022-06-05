@@ -51,8 +51,17 @@ void samd_main(void) {
         pyexec_frozen_module("_boot.py");
 
         // Execute user scripts.
-        pyexec_file_if_exists("boot.py");
-        pyexec_file_if_exists("main.py");
+        int ret = pyexec_file_if_exists("boot.py");
+        if (ret & PYEXEC_FORCED_EXIT) {
+            goto soft_reset_exit;
+        }
+        // Do not execute main.py if boot.py failed
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+            ret = pyexec_file_if_exists("main.py");
+            if (ret & PYEXEC_FORCED_EXIT) {
+                goto soft_reset_exit;
+            }
+        }
 
         for (;;) {
             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
@@ -66,6 +75,7 @@ void samd_main(void) {
             }
         }
 
+    soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
         adc_deinit_all();
         pin_irq_deinit_all();
