@@ -104,9 +104,6 @@ void SysTick_Handler(void) {
 
 // Temporary Handlers to allow builds.
 // Will be removed when the respecitve module is added.
-void EIC_Handler(void) {
-}
-
 void PendSV_Handler(void) {
 }
 
