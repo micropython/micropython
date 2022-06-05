@@ -48,6 +48,7 @@
 #define MICROPY_HELPER_REPL                 (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE          (1)
+#define MICROPY_STREAMS_NON_BLOCK           (1)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_CPYTHON_COMPAT              (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS       (1)

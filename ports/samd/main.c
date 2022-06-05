@@ -36,6 +36,7 @@ extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
 extern void pin_irq_deinit_all(void);
 extern void pwm_deinit_all(void);
+extern void uart_deinit_all(void);
 
 void samd_main(void) {
     mp_stack_set_top(&_estack);
@@ -68,6 +69,7 @@ void samd_main(void) {
         adc_deinit_all();
         pin_irq_deinit_all();
         pwm_deinit_all();
+        uart_deinit_all();
         gc_sweep_all();
         mp_deinit();
     }
