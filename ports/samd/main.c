@@ -33,6 +33,7 @@
 #include "shared/runtime/pyexec.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
+extern void adc_deinit_all(void);
 
 void samd_main(void) {
     mp_stack_set_top(&_estack);
@@ -62,6 +63,7 @@ void samd_main(void) {
         }
 
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        adc_deinit_all();
         gc_sweep_all();
         mp_deinit();
     }
