@@ -45,12 +45,22 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
+MAKE_PIN_AF = boards/make-pin-af.py
+PIN_AF_TABLE_CSV = boards/pin-af-table-$(MCU_SERIES).csv
+GEN_PIN_AF = pin_af_table.c
+
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+GEN_PINS_SRC = $(BUILD)/pins.c
+GEN_PINS_HDR = $(BUILD)/pins.h
+
 CFLAGS_MCU_SAMD21 = -mtune=cortex-m0plus -mcpu=cortex-m0plus -msoft-float
 CFLAGS_MCU_SAMD51 = -mtune=cortex-m4 -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERIES)) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
+CFLAGS += -DPIN_AF_TABLE_C='<$(BUILD)/$(GEN_PIN_AF)>'
 
 QSTR_GLOBAL_DEPENDENCIES += boards/mpconfig_$(MCU_SERIES_LOWER).h
 
@@ -58,11 +68,6 @@ LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += $(LDFLAGS_MOD)
 
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = $(BOARD_DIR)/pins.csv
-GEN_PINS_SRC = $(BUILD)/pins.c
-GEN_PINS_HDR = $(BUILD)/pins.h
 
 # Tune for Debugging or Optimization
 CFLAGS += -g  # always include debug info in the ELF
@@ -92,6 +97,7 @@ SRC_C = \
 	modmachine.c \
 	modsamd.c \
 	mphalport.c \
+	pin_af.c \
 	$(BUILD)/pins.c \
 	samd_flash.c \
 	samd_isr.c \
@@ -169,6 +175,13 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
+
+pin_af.c: $(BUILD)/$(GEN_PIN_AF)
+
+$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV)
+	$(ECHO) "Create $@"
+	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
+
 
 $(GEN_PINS_SRC): $(BOARD_PINS)
 	$(ECHO) "Create $@"
