@@ -109,9 +109,9 @@ void PendSV_Handler(void) {
 
 
 static uint8_t sercom_irq_type[SERCOM_INST_NUM] = {};
+// Temporarily commented until the module is added
 void (*sercom_irq_handler_table[])(int num) = {
-    // Temporarily commented until the module is added
-    NULL, // common_uart_irq_handler,
+    common_uart_irq_handler,
     NULL, // common_spi_irq_handler,
     NULL  // common_i2c_irq_handler
 };
