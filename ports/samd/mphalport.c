@@ -61,6 +61,10 @@ void mp_hal_set_pin_mux(mp_hal_pin_obj_t pin, uint8_t mux) {
     }
 }
 
+void mp_hal_clr_pin_mux(mp_hal_pin_obj_t pin) {
+    int pin_grp = pin / 32;
+    PORT->Group[pin_grp].PINCFG[pin % 32].bit.PMUXEN = 0; // Disable Mux
+}
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     if (ms > 10) {
