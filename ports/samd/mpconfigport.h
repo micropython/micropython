@@ -38,14 +38,20 @@
 #define MICROPY_ALLOC_PATH_MAX              (256)
 #define MICROPY_QSTR_BYTES_IN_HASH          (1)
 
+// MicroPython emitters
+#define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#define MICROPY_EMIT_THUMB                  (0)
+#define MICROPY_EMIT_INLINE_THUMB           (0)
+
 // Compiler configuration
-#define MICROPY_COMP_CONST                  (0)
+#define MICROPY_COMP_CONST                  (1)
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_ENABLE_FINALISER            (1)
 #define MICROPY_KBD_EXCEPTION               (1)
 #define MICROPY_HELPER_REPL                 (1)
+#define MICROPY_REPL_AUTO_INDENT            (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ENABLE_SOURCE_LINE          (1)
 #define MICROPY_STREAMS_NON_BLOCK           (1)
@@ -66,15 +72,16 @@
 #define MICROPY_PY_BUILTINS_SET             (0)
 #define MICROPY_PY_BUILTINS_FROZENSET       (0)
 #define MICROPY_PY_BUILTINS_PROPERTY        (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE       (0)
+#define MICROPY_PY_BUILTINS_ENUMERATE       (1)
 #define MICROPY_PY_BUILTINS_FILTER          (0)
 #define MICROPY_PY_BUILTINS_REVERSED        (0)
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED  (1)
-#define MICROPY_PY_BUILTINS_MIN_MAX         (0)
+#define MICROPY_PY_BUILTINS_MIN_MAX         (1)
+#define MICROPY_PY_BUILTINS_INPUT           (1)
 #define MICROPY_PY___FILE__                 (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_ATTRTUPLE                (0)
+#define MICROPY_PY_ATTRTUPLE                (1)
 #define MICROPY_PY_COLLECTIONS              (0)
 #define MICROPY_PY_SYS                      (1)
 #define MICROPY_PY_SYS_PLATFORM             "samd"
