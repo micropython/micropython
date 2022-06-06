@@ -92,7 +92,6 @@ int pin_find(mp_obj_t pin, const machine_pin_obj_t machine_pin_obj[], int table_
     return wanted_pin;
 }
 
-
 // Pin.init(mode, pull=None, *, value=None, drive=0). No 'alt' yet.
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_pull, ARG_value, ARG_drive, ARG_alt };
@@ -157,7 +156,6 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     if (self == NULL || self->base.type == NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
     }
-    self = (machine_pin_obj_t *)&machine_pin_obj[wanted_pin];
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
