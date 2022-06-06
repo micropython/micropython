@@ -70,7 +70,9 @@ endif
 CIRCUITPY_LTO ?= 0
 CIRCUITPY_LTO_PARTITION ?= balanced
 ifeq ($(CIRCUITPY_LTO),1)
-CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION)
+CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION) -DCIRCUITPY_LTO=1
+else
+CFLAGS += -DCIRCUITPY_LTO=0
 endif
 
 # Produce an object file for translate.c instead of including it in a header.

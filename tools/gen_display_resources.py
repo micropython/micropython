@@ -139,11 +139,41 @@ displayio_palette_t supervisor_terminal_color = {
 
 c_file.write(
     """\
-displayio_tilegrid_t supervisor_terminal_text_grid = {{
+displayio_tilegrid_t supervisor_terminal_scroll_area_text_grid = {{
     .base = {{ .type = &displayio_tilegrid_type }},
     .bitmap = (displayio_bitmap_t*) &supervisor_terminal_font_bitmap,
     .pixel_shader = &supervisor_terminal_color,
-    .x = 16,
+    .x = 0,
+    .y = 0,
+    .pixel_width = {1},
+    .pixel_height = {2},
+    .bitmap_width_in_tiles = {0},
+    .tiles_in_bitmap = {0},
+    .width_in_tiles = 1,
+    .height_in_tiles = 1,
+    .tile_width = {1},
+    .tile_height = {2},
+    .tiles = NULL,
+    .partial_change = false,
+    .full_change = false,
+    .hidden = false,
+    .hidden_by_parent = false,
+    .moved = false,
+    .inline_tiles = false,
+    .in_group = true
+}};
+""".format(
+        len(all_characters), tile_x, tile_y
+    )
+)
+
+c_file.write(
+    """\
+displayio_tilegrid_t supervisor_terminal_title_bar_text_grid = {{
+    .base = {{ .type = &displayio_tilegrid_type }},
+    .bitmap = (displayio_bitmap_t*) &supervisor_terminal_font_bitmap,
+    .pixel_shader = &supervisor_terminal_color,
+    .x = 0,
     .y = 0,
     .pixel_width = {1},
     .pixel_height = {2},
@@ -228,7 +258,8 @@ terminalio_terminal_obj_t supervisor_terminal = {
     .font = &supervisor_terminal_font,
     .cursor_x = 0,
     .cursor_y = 0,
-    .tilegrid = NULL
+    .scroll_area = NULL,
+    .title_bar = NULL
 };
 """
 )

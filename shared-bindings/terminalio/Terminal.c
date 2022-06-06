@@ -38,31 +38,52 @@
 #include "supervisor/shared/translate/translate.h"
 
 //| class Terminal:
-//|     """Display a character stream with a TileGrid"""
+//|     """Display a character stream with a TileGrid
 //|
-//|     def __init__(self, tilegrid: displayio.TileGrid, font: fontio.BuiltinFont) -> None:
+//|        ASCII control:
+//|        * ``\\r`` - Move cursor to column 1
+//|        * ``\\n`` - Move cursor down a row
+//|        * ``\\b`` - Move cursor left one if possible
+//|
+//|        OSC control sequences:
+//|        * ``ESC ] 0; <s> ESC \\`` - Set title bar to <s>
+//|        * ``ESC ] ####; <s> ESC \\`` - Ignored
+//|
+//|        VT100 control sequences:
+//|        * ``ESC [ K`` - Clear the remainder of the line
+//|        * ``ESC [ #### D`` - Move the cursor to the left by ####
+//|        * ``ESC [ 2 J`` - Erase the entire display
+//|        * ``ESC [ nnnn ; mmmm H`` - Move the cursor to mmmm, nnnn.
+//|     """
+//|
+//|     def __init__(self, scroll_area: displayio.TileGrid, font: fontio.BuiltinFont, *, title_bar: displayio.TileGrid = None) -> None:
 //|         """Terminal manages tile indices and cursor position based on VT100 commands. The font should be
 //|         a `fontio.BuiltinFont` and the TileGrid's bitmap should match the font's bitmap."""
 //|         ...
 //|
 
 STATIC mp_obj_t terminalio_terminal_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_tilegrid, ARG_font };
+    enum { ARG_scroll_area, ARG_font, ARG_title_bar };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_tilegrid, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_scroll_area, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_font, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_title_bar, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_tilegrid_t *tilegrid = mp_arg_validate_type(args[ARG_tilegrid].u_obj, &displayio_tilegrid_type, MP_QSTR_tilegrid);
+    displayio_tilegrid_t *scroll_area = mp_arg_validate_type(args[ARG_scroll_area].u_obj, &displayio_tilegrid_type, MP_QSTR_scroll_area);
+    displayio_tilegrid_t *title_bar = NULL;
+    if (args[ARG_title_bar].u_obj != mp_const_none) {
+        title_bar = mp_arg_validate_type(args[ARG_title_bar].u_obj, &displayio_tilegrid_type, MP_QSTR_title_bar);
+    }
 
     fontio_builtinfont_t *font = mp_arg_validate_type(args[ARG_font].u_obj, &fontio_builtinfont_type, MP_QSTR_font);
 
     terminalio_terminal_obj_t *self = m_new_obj(terminalio_terminal_obj_t);
     self->base.type = &terminalio_terminal_type;
 
-    common_hal_terminalio_terminal_construct(self, tilegrid, font);
+    common_hal_terminalio_terminal_construct(self, scroll_area, font, title_bar);
     return MP_OBJ_FROM_PTR(self);
 }
 
