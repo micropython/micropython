@@ -220,7 +220,7 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // Pin.high() Totem-pole (push-pull)
 STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
@@ -232,7 +232,7 @@ STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
 // Pin.toggle(). Only TOGGLE pins set as OUTPUT.
 STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
@@ -254,7 +254,7 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
 // Pin.drive(). Normal (0) is 2mA, High (1) allows 8mA.
 STATIC mp_obj_t machine_pin_drive(size_t n_args, const mp_obj_t *args) {
