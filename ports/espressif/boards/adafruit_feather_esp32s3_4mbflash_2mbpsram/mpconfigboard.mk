@@ -5,9 +5,6 @@ USB_MANUFACTURER = "Adafruit"
 
 IDF_TARGET = esp32s3
 
-# Make room for build
-CIRCUITPY_ULAB = 0
-
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = MPZ
 
