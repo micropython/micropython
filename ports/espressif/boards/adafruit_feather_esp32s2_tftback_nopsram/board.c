@@ -101,7 +101,8 @@ void board_init(void) {
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // not SH1107
+        false, // not SH1107
+        50000); // backlight pwm frequency
         */
 }
 

@@ -109,7 +109,8 @@ void board_init(void) {
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        false); // SH1107_addressing
+        false, // SH1107_addressing
+        50000); // backlight pwm frequency
 
     // Enabling the Power of the 40-pin at the back
     CTR_5V.base.type = &digitalio_digitalinout_type;

@@ -103,7 +103,8 @@ void board_init(void) {
         true, // auto_refresh
         60, // native_frames_per_second
         true, // backlight_on_high
-        true); // SH1107_addressing
+        true, // SH1107_addressing
+        50000); // backlight pwm frequency
 }
 
 bool board_requests_safe_mode(void) {
