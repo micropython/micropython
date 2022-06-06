@@ -281,7 +281,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         #elif defined(MCU_SAMD51)
         NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
         #endif
-        sercom_register_irq(self->id, SERCOM_IRQ_TYPE_UART);
+        sercom_register_irq(self->id, &common_uart_irq_handler);
 
         sercom_enable(uart, 1);
     }

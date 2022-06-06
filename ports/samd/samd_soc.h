@@ -39,11 +39,8 @@ void USB_1_Handler_wrapper(void);
 void USB_2_Handler_wrapper(void);
 void USB_3_Handler_wrapper(void);
 
-void common_uart_irq_handler(int uart_nr);
-void common_spi_irq_handler(int spi_nr);
-void common_i2c_irq_handler(int i2c_nr);
 void sercom_enable(Sercom *spi, int state);
-void sercom_register_irq(int sercom_id, int mode);
+void sercom_register_irq(int sercom_id, void (*sercom_irq_handler));
 
 #define SERCOM_IRQ_TYPE_UART  (0)
 #define SERCOM_IRQ_TYPE_SPI   (1)
