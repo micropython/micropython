@@ -188,7 +188,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     i2c->I2CM.BAUD.reg = get_apb_freq() / (2 * self->freq) - 5 - (get_apb_freq() / 1000000) * RISETIME_NS / 2000;
 
     // Enable interrupts
-    sercom_register_irq(self->id, SERCOM_IRQ_TYPE_SPI);
+    sercom_register_irq(self->id, &common_i2c_irq_handler);
     #if defined(MCU_SAMD21)
     NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
     #elif defined(MCU_SAMD51)

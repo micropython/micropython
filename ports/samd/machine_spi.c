@@ -218,7 +218,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
             #elif defined(MCU_SAMD51)
             NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
             #endif
-            sercom_register_irq(self->id, SERCOM_IRQ_TYPE_SPI);
+            sercom_register_irq(self->id, &common_spi_irq_handler);
         }
 
         sercom_enable(spi, 1);

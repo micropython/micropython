@@ -108,21 +108,17 @@ void PendSV_Handler(void) {
 }
 
 
-static uint8_t sercom_irq_type[SERCOM_INST_NUM] = {};
+void (*sercom_irq_handler_table[SERCOM_INST_NUM])(int num) = {};
 
-void (*sercom_irq_handler_table[])(int num) = {
-    common_uart_irq_handler,
-    common_spi_irq_handler,
-    common_i2c_irq_handler
-};
-
-void sercom_register_irq(int sercom_id, int mode) {
-    sercom_irq_type[sercom_id] = mode;
+void sercom_register_irq(int sercom_id, void (*sercom_irq_handler)) {
+    if (sercom_id < SERCOM_INST_NUM) {
+        sercom_irq_handler_table[sercom_id] = sercom_irq_handler;
+    }
 }
 
 static inline void common_sercom_irq_handler(int sercom_id) {
-    if (sercom_irq_handler_table[sercom_irq_type[sercom_id]]) {
-        sercom_irq_handler_table[sercom_irq_type[sercom_id]](sercom_id);
+    if (sercom_irq_handler_table[sercom_id]) {
+        sercom_irq_handler_table[sercom_id](sercom_id);
     }
 }
 
