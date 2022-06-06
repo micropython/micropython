@@ -27,9 +27,9 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "samd_soc.h"
-// includes for Softtimer
-// #include "pendsv.h"
-// #include "softtimer.h"
+
+#include "pendsv.h"
+#include "shared/runtime/softtimer.h"
 
 typedef void (*ISR)(void);
 
@@ -97,16 +97,10 @@ void SysTick_Handler(void) {
         systick_ms_upper += 1;
     }
 
-    // if (soft_timer_next == next_tick) {
-    //     pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
-    // }
+    if (soft_timer_next == next_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+    }
 }
-
-// Temporary Handlers to allow builds.
-// Will be removed when the respecitve module is added.
-void PendSV_Handler(void) {
-}
-
 
 void (*sercom_irq_handler_table[SERCOM_INST_NUM])(int num) = {};
 
