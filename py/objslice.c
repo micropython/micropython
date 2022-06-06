@@ -30,7 +30,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 /******************************************************************************/
 /* slice object                                                               */

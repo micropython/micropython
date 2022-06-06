@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // I2C timing specs for the H7 and F7

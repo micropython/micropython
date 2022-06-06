@@ -84,14 +84,6 @@ INC += -I../../lib/mp-readline
 INC += -I../../lib/tinyusb/src
 INC += -I../../supervisor/shared/usb
 
-ifeq ($(MCU_CHIP),nrf52833)
-  OPTIMIZATION_FLAGS ?= -Os -flto -flto-partition=one
-else
-  ifeq ($(INTERNAL_FLASH_FILESYSTEM),1)
-    OPTIMIZATION_FLAGS ?= -Os -flto
-  endif
-endif
-
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3

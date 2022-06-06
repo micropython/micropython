@@ -34,7 +34,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Bitmap:
 //|     """Stores values of a certain size in a 2D array

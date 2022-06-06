@@ -36,7 +36,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""

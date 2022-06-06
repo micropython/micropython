@@ -33,7 +33,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PortOut:
 //|     """Sends midi messages to a computer over USB"""

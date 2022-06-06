@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/objproperty.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 
 //| class OnDiskBitmap:

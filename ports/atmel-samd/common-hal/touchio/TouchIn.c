@@ -33,7 +33,7 @@
 #include "py/mphal.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/touchio/TouchIn.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Native touchio only exists for SAMD21
 #ifdef SAMD21

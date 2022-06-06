@@ -67,7 +67,7 @@ SRC_C += \
 	shared/runtime/gchelper_generic.c \
 	supervisor/stub/safe_mode.c \
 	supervisor/stub/stack.c \
-	supervisor/shared/translate.c
+	supervisor/shared/translate/translate.c
 
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
@@ -78,6 +78,6 @@ endif
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
 
 include $(TOP)/py/mkrules.mk

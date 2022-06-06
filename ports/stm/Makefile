@@ -88,8 +88,6 @@ else
 	CFLAGS += -DNDEBUG
 	OPTIMIZATION_FLAGS ?= -O2 -fno-inline-functions
 	CFLAGS += -ggdb3
-	# TODO: Test with -flto
-	# CFLAGS += -flto
 endif
 
 # to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk

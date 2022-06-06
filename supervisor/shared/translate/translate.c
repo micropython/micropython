@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -135,18 +135,6 @@ char *decompress(const compressed_string_t *compressed, char *decompressed) {
     return decompressed;
 }
 
-inline
-// gcc10 -flto has issues with this being always_inline for debug builds.
-#if CIRCUITPY_DEBUG < 1
-__attribute__((always_inline))
+#if CIRCUITPY_TRANSLATE_OBJECT == 1
+#include "supervisor/shared/translate/translate_impl.h"
 #endif
-const compressed_string_t *translate(const char *original) {
-    #ifndef NO_QSTR
-    #define QDEF(id, hash, len, str)
-    #define TRANSLATION(id, firstbyte, ...) if (strcmp(original, id) == 0) { static const compressed_string_t v = { .data = firstbyte, .tail = { __VA_ARGS__ } }; return &v; } else
-    #include "genhdr/qstrdefs.generated.h"
-#undef TRANSLATION
-#undef QDEF
-    #endif
-    return NULL;
-}

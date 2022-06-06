@@ -8,7 +8,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "extmod/vfs_posix.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if (defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX) || (defined(MICROPY_VFS_POSIX_FILE) && MICROPY_VFS_POSIX_FILE)
 

@@ -28,7 +28,7 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "components/driver/include/driver/adc_common.h"
 #include "components/esp_adc_cal/include/esp_adc_cal.h"

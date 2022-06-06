@@ -7,7 +7,7 @@
 
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Rectangle:
 //|     def __init__(self, pixel_shader: Union[displayio.ColorConverter, displayio.Palette], width: int, height: int, x: int, y: int) -> None:

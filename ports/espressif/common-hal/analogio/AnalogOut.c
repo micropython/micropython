@@ -33,7 +33,7 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #include "components/driver/include/driver/dac_common.h"

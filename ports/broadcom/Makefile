@@ -107,7 +107,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # BCM CLFAGS
-CFLAGS += -ffreestanding -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
+CFLAGS += -nostartfiles -DMICROPY_HW_MCU_NAME="\"$(CHIP_VARIANT)\""
 
 
 OPTIMIZATION_FLAGS ?= -O3

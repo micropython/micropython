@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/MidiTrack.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class MidiTrack:
 //|     """Simple square-wave MIDI synth"""

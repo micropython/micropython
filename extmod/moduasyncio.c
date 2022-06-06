@@ -33,6 +33,8 @@
 #include "shared-bindings/supervisor/__init__.h"
 #endif
 
+#include "supervisor/shared/translate/translate.h"
+
 #if MICROPY_PY_UASYNCIO
 
 // Used when task cannot be guaranteed to be non-NULL.

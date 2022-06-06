@@ -37,7 +37,7 @@
 #include "py/asmbase.h"
 #include "py/persistentcode.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_ENABLE_COMPILER
 

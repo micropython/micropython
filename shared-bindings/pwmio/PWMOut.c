@@ -33,7 +33,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {

@@ -67,6 +67,18 @@ else
 CFLAGS += -DCIRCUITPY_DEBUG=0
 endif
 
+CIRCUITPY_LTO ?= 0
+CIRCUITPY_LTO_PARTITION ?= balanced
+ifeq ($(CIRCUITPY_LTO),1)
+CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION)
+endif
+
+# Produce an object file for translate.c instead of including it in a header.
+# The header version can be optimized on non-LTO builds *if* inlining is allowed
+# otherwise, it blows up the binary sizes with tons of translate copies.
+CIRCUITPY_TRANSLATE_OBJECT ?= $(CIRCUITPY_LTO)
+CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
+
 ###
 # Handle frozen modules.
 
@@ -756,3 +768,6 @@ endif
 
 check-release-needs-clean-build:
 	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"
+
+# Ignore these errors
+$(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized

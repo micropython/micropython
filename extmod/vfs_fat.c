@@ -20,7 +20,7 @@
 #include "extmod/vfs_fat.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if FF_MAX_SS == FF_MIN_SS
 #define SECSIZE(fs) (FF_MIN_SS)

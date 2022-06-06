@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/nvm/ByteArray.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class ByteArray:
 //|     r"""Presents a stretch of non-volatile memory as a bytearray.

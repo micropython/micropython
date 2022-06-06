@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiomp3/MP3Decoder.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/background_callback.h"
 #include "lib/mp3/src/mp3common.h"
 

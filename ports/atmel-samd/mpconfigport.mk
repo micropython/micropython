@@ -9,6 +9,7 @@ USB_NUM_ENDPOINT_PAIRS = 8
 
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE ?= 1
+CIRCUITPY_LTO = 1
 
 ######################################################################
 # Put samd21-only choices here.
@@ -78,6 +79,8 @@ endif
 SUPEROPT_GC = 0
 SUPEROPT_VM = 0
 
+CIRCUITPY_LTO_PARTITION = one
+
 ifeq ($(CIRCUITPY_FULL_BUILD),0)
 # On the smallest boards, this saves about 180 bytes. On other boards, it may -increase- space used.
 CFLAGS_BOARD = -fweb -frename-registers
@@ -93,6 +96,10 @@ ifeq ($(CHIP_FAMILY),samd51)
 
 # No native touchio on SAMD51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+ifeq ($(CIRCUITPY_FULL_BUILD),0)
+CIRCUITPY_LTO_PARTITION ?= one
+endif
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
@@ -115,6 +122,10 @@ ifeq ($(CHIP_FAMILY),same51)
 
 # No native touchio on SAME51.
 CIRCUITPY_TOUCHIO_USE_NATIVE = 0
+
+ifeq ($(CIRCUITPY_FULL_BUILD),0)
+CIRCUITPY_LTO_PARTITION ?= one
+endif
 
 # The ?='s allow overriding in mpconfigboard.mk.
 
