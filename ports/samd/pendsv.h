@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_SAMD_PENDSV_H
+#define MICROPY_INCLUDED_SAMD_PENDSV_H
 
-#include "py/obj.h"
+enum {
+    PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
+    PENDSV_DISPATCH_MAX
+};
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_hw_i2c_type;
-extern const mp_obj_type_t machine_led_type;
-extern const mp_obj_type_t machine_pin_type;
-extern const mp_obj_type_t machine_pwm_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_uart_type;
+#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
 
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+typedef void (*pendsv_dispatch_t)(void);
+
+void pendsv_init(void);
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+
+#endif // MICROPY_INCLUDED_SAMD_PENDSV_H

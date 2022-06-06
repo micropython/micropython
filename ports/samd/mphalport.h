@@ -40,6 +40,10 @@ extern volatile uint32_t systick_ms_upper;
 
 void mp_hal_set_interrupt_char(int c);
 
+// Define an alias fo systick_ms, because the shared softtimer.c uses
+// the symbol uwTick for the systick ms counter.
+#define uwTick systick_ms
+
 #define mp_hal_delay_us_fast  mp_hal_delay_us
 
 static inline mp_uint_t mp_hal_ticks_ms(void) {
