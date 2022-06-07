@@ -111,6 +111,7 @@
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #define MICROPY_PY_OS_DUPTERM               (3)
+#define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_INIT         (0)
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)

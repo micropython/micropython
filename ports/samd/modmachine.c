@@ -26,10 +26,11 @@
 
 #include "py/runtime.h"
 #include "extmod/machine_mem.h"
-#include "samd_soc.h"
-#include "modmachine.h"
+#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
+#include "modmachine.h"
+#include "samd_soc.h"
 
 // ASF 4
 #include "hal_flash.h"
@@ -165,6 +166,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
