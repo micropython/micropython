@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2021-12-23 01:53+0000\n"
-"Last-Translator: dronecz <mzuzelka@gmail.com>\n"
+"PO-Revision-Date: 2022-06-07 16:16+0000\n"
+"Last-Translator: Matěj Soukup <matej@locuboard.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.10.1\n"
+"X-Generator: Weblate 4.13-dev\n"
 
 #: main.c
 msgid ""
@@ -79,7 +79,7 @@ msgstr "%d adresní pin, %d rgb pin a %d dlaždice indikuje výšku %d, ne %d"
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c
 msgid "%q"
-msgstr ""
+msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -87,7 +87,7 @@ msgstr "%q a %q obsahují duplicitní piny"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
-msgstr ""
+msgstr "%q a %q musí být rozdílné"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -111,31 +111,31 @@ msgstr "Indexy %q musí být celá čísla, nikoli %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
-msgstr ""
+msgstr "Inicializace %q selhala"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "Délka %q musí být %d"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr "%q délka  musí být %d-%d"
+msgstr "%q délka musí být %d-%d"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "Délka %q musí být <= %d"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "Délka %q musí být >= %d"
 
 #: shared-bindings/busio/I2C.c
 msgid "%q length must be >= 1"
-msgstr "%q délka  musí být >= 1"
+msgstr "%q délka musí být >= 1"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q musí být %d"
 
 #: py/argcheck.c
 msgid "%q must be %d-%d"
@@ -143,7 +143,7 @@ msgstr "%q musí být %d-%d"
 
 #: shared-bindings/displayio/Display.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q musí být 1, pokud %q je True"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 msgid "%q must be <= %d"
@@ -167,7 +167,7 @@ msgstr "%q musí být string"
 
 #: py/argcheck.c
 msgid "%q must be an int"
-msgstr ""
+msgstr "%q musí být int"
 
 #: py/argcheck.c
 msgid "%q must be of type %q"
@@ -175,7 +175,7 @@ msgstr "%q musí být typu %q"
 
 #: shared-bindings/digitalio/Pull.c
 msgid "%q must be of type %q or None"
-msgstr ""
+msgstr "%q musí být typu %q nebo None"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -310,47 +310,47 @@ msgstr ""
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' a 'O' nejsou podporované typy formátů"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
-msgstr ""
+msgstr "'align' vyžaduje 1 argument"
 
 #: py/compile.c
 msgid "'await' outside function"
-msgstr ""
+msgstr "'await' je volán mimo funkci"
 
 #: py/compile.c
 msgid "'await', 'async for' or 'async with' outside async function"
-msgstr ""
+msgstr "'await', 'async for' nebo 'async' je volán mimo async"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr ""
+msgstr "'break' je volán vně cyklu"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr ""
+msgstr "'continue' je volán vně cyklu"
 
 #: py/objgenerator.c
 msgid "'coroutine' object is not an iterator"
-msgstr ""
+msgstr "Objekt 'coroutine' není iterátor"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
-msgstr ""
+msgstr "'data' vyžaduje nejméně 2 argumenty"
 
 #: py/compile.c
 msgid "'data' requires integer arguments"
-msgstr ""
+msgstr "'data' vyžaduje celočíselné argumenty"
 
 #: py/compile.c
 msgid "'label' requires 1 argument"
-msgstr ""
+msgstr "'label' vyžaduje 1 argument"
 
 #: py/compile.c
 msgid "'return' outside function"
-msgstr ""
+msgstr "'return' je volán mimo funkci"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
@@ -366,7 +366,7 @@ msgstr ""
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ", v  %q\n"
+msgstr ", v% q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -374,11 +374,11 @@ msgstr ""
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
-msgstr ""
+msgstr "pow() nepodporuje 3 argumenty"
 
 #: shared-module/msgpack/__init__.c
 msgid "64 bit types"
-msgstr ""
+msgstr "64 bit typy"
 
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: ports/atmel-samd/common-hal/countio/Counter.c
@@ -388,22 +388,22 @@ msgstr ""
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
-msgstr ""
+msgstr "WiFi používá ADC2"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr ""
+msgstr "Adresa musí být %d bajtů dlouhá"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
-msgstr ""
+msgstr "Všechny CAN periferie jsou používány"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 #: ports/nrf/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
-msgstr ""
+msgstr "Všechny I2C periferie jsou používány"
 
 #: ports/espressif/common-hal/countio/Counter.c
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
@@ -419,19 +419,19 @@ msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
-msgstr ""
+msgstr "Všechny SPI periferie jsou používány"
 
 #: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
-msgstr ""
+msgstr "Všechny UART periferie jsou používány"
 
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "Všechny kanály jsou používány"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -448,7 +448,7 @@ msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
-msgstr ""
+msgstr "Všechny časovače pro tento pin jsou používány"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -465,7 +465,7 @@ msgstr ""
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr ""
+msgstr "Všechny časovače jsou použity"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -479,15 +479,15 @@ msgstr ""
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "Již běží"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Already scanning for wifi networks"
-msgstr ""
+msgstr "Již skenuje wifi sítě"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "Jiný PWMAudioOut je již aktivní"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -496,28 +496,28 @@ msgstr ""
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr ""
+msgstr "Pole musí obsahovat poloviční slova (typ „H“)"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "Hodnoty pole by měly být jednoduché bajty."
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "At most %d %q may be specified (not %d)"
-msgstr ""
+msgstr "Lze zadat maximálně %d %q (nikoli %d)"
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "Pokus o alokování %d bloků"
 
 #: supervisor/shared/safe_mode.c
 msgid "Attempted heap allocation when VM not running."
-msgstr ""
+msgstr "Pokus o alokaci haldy, když neběží VM."
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "Konverze audia není implementována"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
@@ -525,28 +525,28 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "Autentizace selhala"
 
 #: main.c
 msgid "Auto-reload is off.\n"
-msgstr "Automatické načtení je vypnuté.\n"
+msgstr "Automatické načtení je vypnuto.\n"
 
 #: main.c
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
 msgstr ""
-"Automatické načtení je zapnuté. Stačí uložit soubory na USB  nebo vstoupit "
-"do REPLu  pro  jeho zakázání.\n"
+"Automatické opětovné načtení je zapnuto. Jednoduše uložte soubory přes USB a "
+"spusťte je, nebo vypněte REPL.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
-msgstr ""
+msgstr "Baudrate není podporován periférií"
 
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
-msgstr ""
+msgstr "Pod minimální obnovovací frekvencí"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
@@ -558,40 +558,40 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Bit depth must be multiple of 8."
-msgstr ""
+msgstr "Bitová hloubka musí být násobkem 8."
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
-msgstr ""
+msgstr "Velikost bitmapy a počet bitů na hodnotu se musí shodovat"
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first device (interface #0)."
-msgstr ""
+msgstr "Bootovací zařízení musí být první (rozhraní #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "RX a TX jsou vyžadovány pro kontrolu toku"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
-msgstr ""
+msgstr "Oba piny musí podporovat hardwarové přerušení"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "Brightness must be 0-1.0"
-msgstr ""
+msgstr "Jas musí být 0-1,0"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
-msgstr ""
+msgstr "Jas není nastavitelný"
 
 #: shared-bindings/_bleio/UUID.c
 #, c-format
 msgid "Buffer + offset too small %d %d %d"
-msgstr ""
+msgstr "Vyrovnávací paměť + offset je příliš malý %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
@@ -604,17 +604,17 @@ msgstr ""
 #: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is too small"
-msgstr ""
+msgstr "Vyrovnávací paměť je příliš malá"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
+msgstr "Délka vyrovnávací paměti %d je příliš velká. Musí být menší než %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "Délka vyrovnávací paměti musí být násobkem 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
@@ -659,7 +659,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Camera init"
-msgstr ""
+msgstr "Inizializace kamery"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
