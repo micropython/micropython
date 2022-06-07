@@ -104,6 +104,7 @@ set(MICROPY_SOURCE_PORT
     modrp2.c
     modutime.c
     mphalport.c
+    mpnetworkport.c
     mpthreadport.c
     rp2_flash.c
     rp2_pio.c
@@ -115,8 +116,6 @@ set(MICROPY_SOURCE_PORT
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
-    ${MICROPY_SOURCE_EXTMOD}
-    ${MICROPY_SOURCE_USERMOD}
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c
@@ -180,12 +179,7 @@ if (MICROPY_PY_LWIP)
         MICROPY_PY_LWIP=1
     )
 
-    list(APPEND MICROPY_SOURCE_PORT
-        ${MICROPY_EXTMOD_DIR}/modlwip.c
-        mpnetworkport.c
-    )
-
-    list(APPEND MICROPY_SOURCE_QSTR
+    list(APPEND MICROPY_SOURCE_EXTMOD
         ${MICROPY_EXTMOD_DIR}/modlwip.c
     )
 
@@ -238,10 +232,6 @@ if (MICROPY_PY_NETWORK_NINAW10)
     list(APPEND MICROPY_SOURCE_EXTMOD
         ${MICROPY_DIR}/extmod/network_ninaw10.c
     )
-
-    list(APPEND MICROPY_SOURCE_QSTR
-        ${MICROPY_DIR}/extmod/network_ninaw10.c
-    )
 endif()
 
 if (MICROPY_PY_WIZNET5K)
@@ -277,19 +267,17 @@ if (MICROPY_PY_WIZNET5K)
     )
 
     list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_DIR}/extmod/modnetwork.c
-        ${MICROPY_DIR}/extmod/modusocket.c
-        ${MICROPY_DIR}/extmod/network_wiznet5k.c
-    )
-
-    list(APPEND MICROPY_SOURCE_QSTR
-        ${MICROPY_DIR}/extmod/modnetwork.c
-        ${MICROPY_DIR}/extmod/modusocket.c
         ${MICROPY_DIR}/extmod/network_wiznet5k.c
     )
 
     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/wiznet5k)
 endif()
+
+# Add qstr sources for extmod and usermod, in case they are modified by components above.
+list(APPEND MICROPY_SOURCE_QSTR
+    ${MICROPY_SOURCE_EXTMOD}
+    ${MICROPY_SOURCE_USERMOD}
+)
 
 # Define mpy-cross flags
 set(MICROPY_CROSS_FLAGS -march=armv7m)
