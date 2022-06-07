@@ -61,6 +61,9 @@
 #if CIRCUITPY_ALARM
 #include "common-hal/alarm/__init__.h"
 #endif
+#if CIRCUITPY_RTC
+#include "shared-bindings/rtc/__init__.h"
+#endif
 
 #include "peripherals/clocks.h"
 #include "peripherals/gpio.h"
@@ -241,6 +244,10 @@ void SysTick_Handler(void) {
 
 void reset_port(void) {
     reset_all_pins();
+    #if CIRCUITPY_RTC
+    rtc_reset();
+    #endif
+
     #if CIRCUITPY_AUDIOPWMIO
     audiopwmout_reset();
     #endif
