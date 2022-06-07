@@ -849,7 +849,7 @@ class RawCode(object):
         MP_CODE_NATIVE_ASM: "MP_CODE_NATIVE_ASM",
     }
 
-    def __init__(self, cm_escaped_name, qstr_table, fun_data, prelude_offset, code_kind):
+    def __init__(self, parent_name, qstr_table, fun_data, prelude_offset, code_kind):
         self.qstr_table = qstr_table
         self.fun_data = fun_data
         self.prelude_offset = prelude_offset
@@ -872,7 +872,7 @@ class RawCode(object):
         else:
             self.simple_name = self.qstr_table[0]
 
-        escaped_name = cm_escaped_name + "_" + self.simple_name.qstr_esc
+        escaped_name = parent_name + "_" + self.simple_name.qstr_esc
 
         # make sure the escaped name is unique
         i = 2
@@ -956,10 +956,10 @@ class RawCode(object):
 
 
 class RawCodeBytecode(RawCode):
-    def __init__(self, cm_escaped_name, qstr_table, obj_table, fun_data):
+    def __init__(self, parent_name, qstr_table, obj_table, fun_data):
         self.obj_table = obj_table
         super(RawCodeBytecode, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, 0, MP_CODE_BYTECODE
+            parent_name, qstr_table, fun_data, 0, MP_CODE_BYTECODE
         )
 
     def disassemble(self):
@@ -1035,7 +1035,7 @@ class RawCodeBytecode(RawCode):
 class RawCodeNative(RawCode):
     def __init__(
         self,
-        cm_escaped_name,
+        parent_name,
         qstr_table,
         kind,
         fun_data,
@@ -1045,7 +1045,7 @@ class RawCodeNative(RawCode):
         type_sig,
     ):
         super(RawCodeNative, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, prelude_offset, kind
+            parent_name, qstr_table, fun_data, prelude_offset, kind
         )
 
         if kind in (MP_CODE_NATIVE_VIPER, MP_CODE_NATIVE_ASM):
@@ -1241,7 +1241,7 @@ def read_obj(reader, segments):
         return obj
 
 
-def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
+def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
     # Read raw code header.
     kind_len = reader.read_uint()
     kind = (kind_len & 3) + MP_CODE_BYTECODE
@@ -1255,7 +1255,7 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
 
     if kind == MP_CODE_BYTECODE:
         # Create bytecode raw code.
-        rc = RawCodeBytecode(cm_escaped_name, qstr_table, obj_table, fun_data)
+        rc = RawCodeBytecode(parent_name, qstr_table, obj_table, fun_data)
     else:
         # Create native raw code.
         native_scope_flags = 0
@@ -1290,7 +1290,7 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
                 native_type_sig = reader.read_uint()
 
         rc = RawCodeNative(
-            cm_escaped_name,
+            parent_name,
             qstr_table,
             kind,
             fun_data,
@@ -1309,11 +1309,14 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
     # Read children, if there are any.
     rc.children = []
     if has_children:
+        # Make a pretty parent name (otherwise all identifiers will include _lt_module_gt_).
+        if not rc.escaped_name.endswith("_lt_module_gt_"):
+            parent_name = rc.escaped_name
+
+        # Read all the child raw codes.
         n_children = reader.read_uint()
         for _ in range(n_children):
-            rc.children.append(
-                read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments)
-            )
+            rc.children.append(read_raw_code(reader, parent_name, qstr_table, obj_table, segments))
 
     return rc
 
