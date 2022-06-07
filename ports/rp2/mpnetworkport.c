@@ -106,7 +106,7 @@ STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
     #if MICROPY_PY_WIZNET5K
     wiznet5k_try_poll();
     #endif
-    return lwip_try_poll();
+    return (int64_t)lwip_try_poll() * 1000;
 }
 
 void mod_network_lwip_init(void) {
@@ -116,7 +116,7 @@ void mod_network_lwip_init(void) {
     if (lwip_alarm_id != -1) {
         cancel_alarm(lwip_alarm_id);
     }
-    lwip_alarm_id = add_alarm_in_ms(LWIP_TICK_RATE_MS, alarm_callback, mp_const_true, true);
+    lwip_alarm_id = add_alarm_in_us(LWIP_TICK_RATE_MS * 1000, alarm_callback, mp_const_true, true);
 }
 
 #endif // MICROPY_PY_LWIP
