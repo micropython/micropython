@@ -501,14 +501,19 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
         if (self->nic != MP_OBJ_NULL) {
             self->nic_type->close(self);
             self->nic = MP_OBJ_NULL;
-            self->state = MOD_NETWORK_SS_CLOSED;
         }
+        self->state = MOD_NETWORK_SS_CLOSED;
         return 0;
     }
     if (self->nic == MP_OBJ_NULL) {
         if (request == MP_STREAM_POLL) {
-            // New sockets are writable and not connected.
-            return MP_STREAM_POLL_HUP | MP_STREAM_POLL_WR;
+            if (self->state == MOD_NETWORK_SS_NEW) {
+                // New sockets are writable and not connected.
+                return MP_STREAM_POLL_HUP | MP_STREAM_POLL_WR;
+            } else if (self->state == MOD_NETWORK_SS_CLOSED) {
+                // Closed socket, return invalid.
+                return MP_STREAM_POLL_NVAL;
+            }
         }
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
