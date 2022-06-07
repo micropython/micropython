@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-07 16:16+0000\n"
+"PO-Revision-Date: 2022-06-07 21:19+0000\n"
 "Last-Translator: Matěj Soukup <matej@locuboard.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -358,7 +358,7 @@ msgstr ""
 
 #: py/compile.c
 msgid "'yield' outside function"
-msgstr ""
+msgstr "'yield' je volán mimo funkci"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -384,7 +384,7 @@ msgstr "64 bit typy"
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "Kanál hardwarového přerušení je již používán"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
@@ -435,7 +435,7 @@ msgstr "Všechny kanály jsou používány"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
-msgstr ""
+msgstr "Všechny kanály událostí jsou již používány"
 
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
