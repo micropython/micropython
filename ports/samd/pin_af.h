@@ -81,6 +81,7 @@ typedef struct _pwm_config_t {
 
 #define ALT_FCT_EIC       0
 #define ALT_FCT_ADC       1
+#define ALT_FCT_DAC       1
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
 
