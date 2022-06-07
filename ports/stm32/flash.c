@@ -140,20 +140,12 @@ static uint32_t get_bank(uint32_t addr) {
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
         } else {
-            #if defined(FLASH_OPTR_DBANK)
             return FLASH_BANK_2;
-            #else
-            return 0;
-            #endif
         }
     } else {
         // bank swap
         if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
-            #if defined(FLASH_OPTR_DBANK)
             return FLASH_BANK_2;
-            #else
-            return 0;
-            #endif
         } else {
             return FLASH_BANK_1;
         }
