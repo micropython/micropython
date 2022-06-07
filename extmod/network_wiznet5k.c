@@ -40,7 +40,7 @@
 #include "modmachine.h"
 #include "drivers/bus/spi.h"
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 
 #include "lib/wiznet5k/Ethernet/wizchip_conf.h"
 
@@ -1039,4 +1039,4 @@ const mod_network_nic_type_t mod_network_nic_type_wiznet5k = {
 };
 #endif
 
-#endif // MICROPY_PY_WIZNET5K
+#endif // MICROPY_PY_NETWORK_WIZNET5K

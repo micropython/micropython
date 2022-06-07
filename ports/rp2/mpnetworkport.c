@@ -39,7 +39,7 @@ static alarm_id_t lwip_alarm_id = -1;
 static bool lwip_can_poll = true;
 static bool lwip_poll_pending = false;
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 static bool wiznet_poll_pending = false;
 
 void wiznet5k_poll(void);
@@ -64,7 +64,7 @@ void lwip_lock_acquire(void) {
 
 void lwip_lock_release(void) {
     lwip_can_poll = false;
-    #if MICROPY_PY_WIZNET5K
+    #if MICROPY_PY_NETWORK_WIZNET5K
     if (wiznet_poll_pending) {
         wiznet5k_poll();
         wiznet_poll_pending = false;
@@ -90,7 +90,7 @@ uint32_t lwip_try_poll(void) {
     return ret;
 }
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 void wiznet5k_try_poll(void) {
     if (lwip_can_poll) {
         lwip_can_poll = false;
@@ -103,14 +103,14 @@ void wiznet5k_try_poll(void) {
 #endif
 
 STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
-    #if MICROPY_PY_WIZNET5K
+    #if MICROPY_PY_NETWORK_WIZNET5K
     wiznet5k_try_poll();
     #endif
     return (int64_t)lwip_try_poll() * 1000;
 }
 
 void mod_network_lwip_init(void) {
-    #if MICROPY_PY_WIZNET5K
+    #if MICROPY_PY_NETWORK_WIZNET5K
     wiznet5k_deinit();
     #endif
     if (lwip_alarm_id != -1) {

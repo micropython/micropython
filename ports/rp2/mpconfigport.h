@@ -164,7 +164,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 #if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #else
