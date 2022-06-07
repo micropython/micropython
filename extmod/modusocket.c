@@ -73,8 +73,9 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
     s->timeout = -1;
     s->callback = MP_OBJ_NULL;
+    s->state = MOD_NETWORK_SS_NEW;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    s->state = NULL;
+    s->_private = NULL;
     #endif
 
     return MP_OBJ_FROM_PTR(s);
@@ -143,6 +144,9 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(_errno);
     }
 
+    // set socket state
+    self->state = MOD_NETWORK_SS_LISTENING;
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
@@ -171,8 +175,9 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket2->fileno = -1;
     socket2->timeout = -1;
     socket2->callback = MP_OBJ_NULL;
+    socket2->state = MOD_NETWORK_SS_NEW;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    socket2->state = NULL;
+    socket2->_private = NULL;
     #endif
 
     // accept incoming connection
@@ -212,6 +217,9 @@ STATIC mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     if (self->nic_type->connect(self, ip, port, &_errno) != 0) {
         mp_raise_OSError(_errno);
     }
+
+    // set socket state
+    self->state = MOD_NETWORK_SS_CONNECTED;
 
     return mp_const_none;
 }
@@ -493,6 +501,7 @@ mp_uint_t socket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *
         if (self->nic != MP_OBJ_NULL) {
             self->nic_type->close(self);
             self->nic = MP_OBJ_NULL;
+            self->state = MOD_NETWORK_SS_CLOSED;
         }
         return 0;
     }
