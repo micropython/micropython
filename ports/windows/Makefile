@@ -33,7 +33,7 @@ INC += -I$(VARIANT_DIR)
 
 # compiler settings
 CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
-LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) -lm -lbcrypt $(LDFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
