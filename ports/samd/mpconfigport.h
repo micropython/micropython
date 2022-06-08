@@ -29,7 +29,7 @@
 // Board specific definitions
 #include "mpconfigboard.h"
 // MCU-Specific definitions
-#include MPCONFIG_MCU_H
+#include "mpconfigmcu.h"
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t

@@ -9,14 +9,15 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+
 include ../../py/mkenv.mk
 include $(BOARD_DIR)/mpconfigboard.mk
+include mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.mk
 
 # Qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
-
-MCU_SERIES_LOWER = $(shell echo $(MCU_SERIES) | tr '[:upper:]' '[:lower:]')
+QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h mcu/$(MCU_SERIES_LOWER)/mpconfigmcu.h
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -30,6 +31,7 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
+INC += -Imcu/$(MCU_SERIES_LOWER)
 INC += -I$(TOP)/lib/cmsis/inc
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hal/utils/include
@@ -61,8 +63,6 @@ CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
 CFLAGS += -DPIN_AF_TABLE_C='<$(BUILD)/$(GEN_PIN_AF)>'
-
-QSTR_GLOBAL_DEPENDENCIES += boards/mpconfig_$(MCU_SERIES_LOWER).h
 
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += $(LDFLAGS_MOD)
@@ -140,12 +140,6 @@ SRC_C = \
 SRC_C += $(SRC_MOD)
 
 SRC_CXX += $(SRC_MOD_CXX)
-
-ifeq ($(MCU_SERIES),SAMD21)
-SRC_S = shared/runtime/gchelper_m0.s
-else
-SRC_S = shared/runtime/gchelper_m3.s
-endif
 
 # List of sources for qstr extraction
 SRC_QSTR += \
