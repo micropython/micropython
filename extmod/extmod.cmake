@@ -184,7 +184,7 @@ if(MICROPY_SSL_MBEDTLS)
     )
 
     target_compile_definitions(micropy_lib_mbedtls INTERFACE
-        MBEDTLS_CONFIG_FILE="ports/stm32/mbedtls/mbedtls_config.h"
+        MBEDTLS_CONFIG_FILE="${MICROPY_PORT_DIR}/mbedtls/mbedtls_config.h"
     )
 
     list(APPEND MICROPY_INC_CORE
