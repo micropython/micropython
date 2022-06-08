@@ -54,9 +54,9 @@ set(MICROPY_SOURCE_EXTMOD
 
 # Library for btree module and associated code
 
-set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
+if(MICROPY_PY_BTREE)
+    set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
 
-if(EXISTS "${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c")
     add_library(micropy_extmod_btree OBJECT
         ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
         ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
@@ -100,10 +100,10 @@ endif()
 
 # Library for mbedtls
 
-set(MICROPY_LIB_MBEDTLS_DIR "${MICROPY_DIR}/lib/mbedtls")
-
-if(EXISTS "${MICROPY_LIB_MBEDTLS_DIR}/library/aes.c")
+if(MICROPY_SSL_MBEDTLS)
     add_library(micropy_lib_mbedtls INTERFACE)
+
+    set(MICROPY_LIB_MBEDTLS_DIR "${MICROPY_DIR}/lib/mbedtls")
 
     target_include_directories(micropy_lib_mbedtls INTERFACE
         ${MICROPY_LIB_MBEDTLS_DIR}/include
@@ -194,10 +194,10 @@ endif()
 
 # Library for lwIP network stack
 
-set(MICROPY_LIB_LWIP_DIR "${MICROPY_DIR}/lib/lwip/src")
-
-if(EXISTS "${MICROPY_LIB_LWIP_DIR}/core/def.c")
+if(MICROPY_PY_LWIP)
     add_library(micropy_lib_lwip INTERFACE)
+
+    set(MICROPY_LIB_LWIP_DIR "${MICROPY_DIR}/lib/lwip/src")
 
     target_include_directories(micropy_lib_lwip INTERFACE
         ${MICROPY_LIB_LWIP_DIR}/include

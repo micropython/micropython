@@ -43,6 +43,10 @@ if(NOT PICO_BOARD)
     string(TOLOWER ${MICROPY_BOARD} PICO_BOARD)
 endif()
 
+# Enable extmod components that will be configured by extmod.cmake.
+# A board may also have enabled additional components.
+set(MICROPY_SSL_MBEDTLS ON)
+
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
 include(${MICROPY_DIR}/extmod/extmod.cmake)
