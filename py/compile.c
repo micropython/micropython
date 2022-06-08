@@ -1115,14 +1115,19 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             if (!is_as) {
                 *q_base = MP_PARSE_NODE_LEAF_ARG(pns->nodes[0]);
             }
-            int n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
-            int len = n - 1;
-            for (int i = 0; i < n; i++) {
+            size_t n = MP_PARSE_NODE_STRUCT_NUM_NODES(pns);
+            if (n == 0) {
+                // There must be at least one node in this PN_dotted_name.
+                // Let the compiler know this so it doesn't warn, and can generate better code.
+                MP_UNREACHABLE;
+            }
+            size_t len = n - 1;
+            for (size_t i = 0; i < n; i++) {
                 len += qstr_len(MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]));
             }
             char *q_ptr = mp_local_alloc(len);
             char *str_dest = q_ptr;
-            for (int i = 0; i < n; i++) {
+            for (size_t i = 0; i < n; i++) {
                 if (i > 0) {
                     *str_dest++ = '.';
                 }
@@ -1135,7 +1140,7 @@ STATIC void do_import_name(compiler_t *comp, mp_parse_node_t pn, qstr *q_base) {
             mp_local_free(q_ptr);
             EMIT_ARG(import, q_full, MP_EMIT_IMPORT_NAME);
             if (is_as) {
-                for (int i = 1; i < n; i++) {
+                for (size_t i = 1; i < n; i++) {
                     EMIT_ARG(attr, MP_PARSE_NODE_LEAF_ARG(pns->nodes[i]), MP_EMIT_ATTR_LOAD);
                 }
             }
