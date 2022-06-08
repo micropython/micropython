@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-
-# This pre-processor parses a single file containing a list of
-# MP_REGISTER_MODULE(module_name, obj_module)
-# These are used to generate a header with the required entries for
-# "mp_rom_map_elem_t mp_builtin_module_table[]" in py/objmodule.c
+"""
+This pre-processor parses a single file containing a list of
+MP_REGISTER_MODULE(module_name, obj_module)
+These are used to generate a header with the required entries for
+"mp_rom_map_elem_t mp_builtin_module_table[]" in py/objmodule.c
+"""
 
 from __future__ import print_function
 
