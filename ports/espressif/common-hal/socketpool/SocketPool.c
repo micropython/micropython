@@ -40,6 +40,26 @@ void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *sel
     }
 }
 
+void socketpool_socket(socketpool_socketpool_obj_t *self,
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type
+    socketpool_socket_obj_t *sock) {
+    sock->type = socket_type;
+    sock->family = addr_family;
+    sock->ipproto = ipproto;
+    sock->pool = self;
+    sock->timeout_ms = (uint)-1;
+
+    // Create LWIP socket
+    int socknum = -1;
+    socknum = lwip_socket(sock->family, sock->type, sock->ipproto);
+    if (socknum < 0 || !register_open_socket(sock)) {
+        mp_raise_RuntimeError(translate("Out of sockets"));
+    }
+    sock->num = socknum;
+    // Sockets should be nonblocking in most cases
+    lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
+}
+
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
 
@@ -68,21 +88,8 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
 
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
-    sock->type = socket_type;
-    sock->family = addr_family;
-    sock->ipproto = ipproto;
-    sock->pool = self;
-    sock->timeout_ms = (uint)-1;
 
-    // Create LWIP socket
-    int socknum = -1;
-    socknum = lwip_socket(sock->family, sock->type, sock->ipproto);
-    if (socknum < 0 || !register_open_socket(sock)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
-    }
-    sock->num = socknum;
-    // Sockets should be nonblocking in most cases
-    lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
+    socketpool_socket(self, family, type, sock);
     return sock;
 }
 

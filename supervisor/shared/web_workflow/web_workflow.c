@@ -40,6 +40,9 @@
 
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
 
+static socketpool_socketpool_obj_t pool;
+static socketpool_socket_obj_t listening;
+
 void supervisor_web_workflow_status(void) {
     serial_write_compressed(translate("Wi-Fi: "));
     if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
@@ -91,7 +94,44 @@ void supervisor_start_web_workflow(void) {
 
     if (wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
+        return;
     }
+
+    pool.base.type = &socketpool_socketpool_type;
+    common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
+
+    listening.base.type = &socketpool_socket_type;
+    socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+    // Bind to any ip.
+    // TODO: Make this port .env configurable.
+    common_hal_socketpool_socket_bind(&listening, "", 0, 80);
+    common_hal_socketpool_socket_listen(&listening, 1);
+
+    // Accept a connection and start parsing:
+    // * HTTP method
+    // * HTTP path
+    // * Headers we care about:
+    //   * Authentication
+    //     * Must match CIRCUITPY_WEB_AUTH
+    //   * Host
+    //     * IP - ok
+    //     * cpy-mac.local - ok
+    //     * circuitpython.local - redirect
+    //   * Content-Length
+    //
+    // PUT /fs/<filename>
+    // GET /fs/<filename>
+    //   - File contents
+    //   - JSON directory representation
+    // GET /cp/devices.json
+    //   - JSON list of MDNS results
+    // GET /cp/version.json
+    //   - JSON version info
+    // GET /
+    //   - Super basic editor
+    // GET /ws/circuitpython
+    // GET /ws/user
+    //   - WebSockets
     #endif
 }
 

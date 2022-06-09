@@ -155,7 +155,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socketpool_socket_connect_obj, socketpool_socke
 //|     def listen(self, backlog: int) -> None:
 //|         """Set socket to listen for incoming connections
 //|
-//|         :param ~int backlog: length of backlog queue for waiting connetions"""
+//|         :param ~int backlog: length of backlog queue for waiting connections"""
 //|         ...
 //|
 STATIC mp_obj_t socketpool_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
