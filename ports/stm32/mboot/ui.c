@@ -122,7 +122,7 @@ void led0_state(led0_state_t state) {
     }
 }
 
-void led0_update(void) {
+void mboot_ui_systick(void) {
     if (led0_cur_state != LED0_STATE_OFF && systick_ms - led0_ms_interval > 50) {
         uint8_t rate = (led0_cur_state >> 2) & 0x1f;
         led0_ms_interval += 50;

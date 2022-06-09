@@ -1518,9 +1518,9 @@ void SysTick_Handler(void) {
     // work properly.
     SysTick->CTRL;
 
-    // Update the LED0 state from here to ensure it's consistent regardless of
+    // Run any board-specific code that needs to be done regardless of
     // other processing going on in interrupts or main.
-    led0_update();
+    MBOOT_BOARD_SYSTICK();
 }
 
 #if defined(MBOOT_I2C_SCL)

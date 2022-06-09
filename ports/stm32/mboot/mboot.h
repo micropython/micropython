@@ -54,6 +54,10 @@
 #define MBOOT_BOARD_STATE_CHANGE(state, arg) mboot_state_change_default((state), (arg))
 #endif
 
+#ifndef MBOOT_BOARD_SYSTICK
+#define MBOOT_BOARD_SYSTICK() mboot_ui_systick()
+#endif
+
 #ifndef MBOOT_ADDRESS_SPACE_64BIT
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
@@ -148,7 +152,7 @@ extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
 void led_init(void);
-void led0_update(void);
+void mboot_ui_systick(void);
 void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
