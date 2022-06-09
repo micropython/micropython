@@ -5,6 +5,8 @@
 #define MICROPY_HW_FLASH_STORAGE_BYTES      (0xFFFF)
 #define VFS_BLOCK_SIZE_BYTES                (1536) // 24x 64B flash pages;
 
+#define MICROPY_HW_UART_TXBUF               (1)
+
 #define CPU_FREQ            (48000000)
 #define APB_FREQ            (48000000)
 
