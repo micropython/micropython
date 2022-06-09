@@ -75,6 +75,7 @@ R_ARM_THM_JUMP24 = 30
 R_X86_64_GOTPCREL = 9
 R_X86_64_REX_GOTPCRELX = 42
 R_386_GOT32X = 43
+R_XTENSA_PDIFF32 = 59
 
 ################################################################################
 # Architecture configuration
@@ -572,9 +573,9 @@ def do_relocation_text(env, text_addr, r):
         reloc = addr - r_offset
         reloc_type = "xtensa_l32r"
 
-    elif env.arch.name == "EM_XTENSA" and r_info_type == R_XTENSA_DIFF32:
+    elif env.arch.name == "EM_XTENSA" and r_info_type in (R_XTENSA_DIFF32, R_XTENSA_PDIFF32):
         if s.section.name.startswith(".text"):
-            # it looks like R_XTENSA_DIFF32 into .text is already correctly relocated
+            # it looks like R_XTENSA_[P]DIFF32 into .text is already correctly relocated
             return
         assert 0
 
