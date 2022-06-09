@@ -19,6 +19,8 @@ unsigned long trng_random_u32(void);
 #define MICROPY_HW_FLASH_STORAGE_BYTES      (0x1FFFF)
 #define VFS_BLOCK_SIZE_BYTES                (1536) //
 
+#define MICROPY_HW_UART_TXBUF               (1)
+
 #define CPU_FREQ            (120000000)
 #define APB_FREQ            (48000000)
 #define DPLLx_REF_FREQ      (32768)
