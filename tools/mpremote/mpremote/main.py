@@ -352,8 +352,10 @@ def do_repl_main_loop(pyb, console_in, console_out_write, *, code_to_inject, fil
                 pyb.enter_raw_repl(soft_reset=False)
                 with open(file_to_inject, "rb") as f:
                     pyfile = f.read()
+
+                is_bytecode = pyfile[0] == ord("M") and file_to_inject.endswith(".mpy")
                 try:
-                    pyb.exec_raw_no_follow(pyfile)
+                    pyb.exec_raw_no_follow(pyfile, is_bytecode)
                 except pyboard.PyboardError as er:
                     console_out_write(b"Error:\r\n")
                     console_out_write(er)
@@ -430,10 +432,10 @@ def do_repl(pyb, args):
             capture_file.close()
 
 
-def execbuffer(pyb, buf, follow):
+def execbuffer(pyb, buf, follow, is_bytecode=False):
     ret_val = 0
     try:
-        pyb.exec_raw_no_follow(buf)
+        pyb.exec_raw_no_follow(buf, is_bytecode)
         if follow:
             ret, ret_err = pyb.follow(timeout=None, data_consumer=pyboard.stdout_write_bytes)
             if ret_err:
@@ -546,6 +548,7 @@ def main():
             elif cmd == "umount":
                 pyb.umount_local()
             elif cmd in ("exec", "eval", "run"):
+                is_bytecode = False
                 follow = True
                 if args[0] == "--no-follow":
                     args.pop(0)
@@ -554,15 +557,16 @@ def main():
                     buf = args.pop(0)
                 elif cmd == "eval":
                     buf = "print(" + args.pop(0) + ")"
-                else:
+                else:  # run
                     filename = args.pop(0)
                     try:
                         with open(filename, "rb") as f:
                             buf = f.read()
+                            is_bytecode = buf[0] == ord("M") and filename.endswith(".mpy")
                     except OSError:
                         print(f"{_PROG}: could not read file '{filename}'")
                         return 1
-                ret = execbuffer(pyb, buf, follow)
+                ret = execbuffer(pyb, buf, follow, is_bytecode)
                 if ret:
                     return ret
             elif cmd == "fs":

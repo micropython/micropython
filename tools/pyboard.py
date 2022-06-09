@@ -70,6 +70,7 @@ Or:
 import sys
 import time
 import os
+import re
 import ast
 
 try:
@@ -399,9 +400,21 @@ class Pyboard:
                     raise PyboardError("unexpected read during raw paste: {}".format(data))
             # Send out as much data as possible that fits within the allowed window.
             b = command_bytes[i : min(i + window_remain, len(command_bytes))]
-            self.serial.write(b)
+
             window_remain -= len(b)
             i += len(b)
+
+            # escape any characters that need to be escaped. Note this doesn't
+            # count towards the window size, as unescaping happens before filling
+            # the window buffer in the device
+            NUM_ESCAPED = 8  # this values has to match value in pyexec.c
+            b = re.sub(
+                rb"[" + bytes(range(NUM_ESCAPED)) + rb"]",
+                lambda c: bytes((0x06, c.group()[0] + NUM_ESCAPED)),
+                b,
+            )
+
+            self.serial.write(b)
 
         # Indicate end of data.
         self.serial.write(b"\x04")
@@ -411,7 +424,7 @@ class Pyboard:
         if not data.endswith(b"\x04"):
             raise PyboardError("could not complete raw paste: {}".format(data))
 
-    def exec_raw_no_follow(self, command):
+    def exec_raw_no_follow(self, command, is_bytecode=False):
         if isinstance(command, bytes):
             command_bytes = command
         else:
@@ -424,7 +437,8 @@ class Pyboard:
 
         if self.use_raw_paste:
             # Try to enter raw-paste mode.
-            self.serial.write(b"\x05A\x01")
+            raw_paste_cmd = b"\x05A\x01" if not is_bytecode else b"\x05B\x01"
+            self.serial.write(raw_paste_cmd)
             data = self.serial.read(2)
             if data == b"R\x00":
                 # Device understood raw-paste command but doesn't support it.
@@ -432,12 +446,14 @@ class Pyboard:
             elif data == b"R\x01":
                 # Device supports raw-paste mode, write out the command using this mode.
                 return self.raw_paste_write(command_bytes)
-            else:
+            elif not is_bytecode:
                 # Device doesn't support raw-paste, fall back to normal raw REPL.
                 data = self.read_until(1, b"w REPL; CTRL-B to exit\r\n>")
                 if not data.endswith(b"w REPL; CTRL-B to exit\r\n>"):
                     print(data)
                     raise PyboardError("could not enter raw repl")
+            else:
+                raise NotImplementedError()   # sending bytecode currently requires raw paste
             # Don't try to use raw-paste mode again for this connection.
             self.use_raw_paste = False
 

@@ -35,6 +35,7 @@
 #include "py/gc.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
+#include "py/persistentcode.h"
 #if MICROPY_HW_ENABLE_USB
 #include "irq.h"
 #include "usb.h"
@@ -58,6 +59,8 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
 
+#define NUM_ESCAPED 8 // This value has to match the value in tools/pyboard.py
+
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
 // EXEC_FLAG_PRINT_EOF prints 2 EOF chars: 1 after normal output, 1 after exception output
@@ -80,16 +83,26 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
-        #if MICROPY_MODULE_FROZEN_MPY
+        #if MICROPY_MODULE_FROZEN_MPY || MICROPY_PERSISTENT_CODE_LOAD
         if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
-            // source is a raw_code object, create the function
-            const mp_frozen_module_t *frozen = source;
             mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
             ctx->module.globals = mp_globals_get();
-            ctx->constants = frozen->constants;
-            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+
+            #if MICROPY_PERSISTENT_CODE_LOAD
+            if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+                // source is a reader that will give us raw code (mpy file equivalent)
+                mp_compiled_module_t cm = mp_raw_code_load((mp_reader_t *)source, ctx);
+                module_fun = mp_make_function_from_raw_code(cm.rc, ctx, NULL);
+            } else
+            #endif // MICROPY_PERSISTENT_CODE_LOAD
+            {
+                // source is a raw_code object, create the module function from it
+                const mp_frozen_module_t *frozen = source;
+                ctx->constants = frozen->constants;
+                module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+            }
         } else
-        #endif
+        #endif // MICROPY_MODULE_FROZEN_PY || MICROPY_PERSISTENT_CODE_LOAD
         {
             #if MICROPY_ENABLE_COMPILER
             mp_lexer_t *lex;
@@ -109,7 +122,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
-            #endif
+            #endif // MICROPY_ENABLE_COMPILER
         }
 
         // execute code
@@ -220,6 +233,10 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
         } else {
             return MP_READER_EOF;
         }
+    } else if (c == CHAR_CTRL_F) {
+        // escape sequence, next character is escaped by adding NUM_ESCAPED to it
+        int e = mp_hal_stdin_rx_chr();
+        c = e - NUM_ESCAPED;
     }
 
     if (--reader->window_remain == 0) {
@@ -261,7 +278,12 @@ STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
 }
 
 STATIC int do_reader_stdin(int c) {
-    if (c != 'A') {
+    bool supported_command = c == 'A';
+    #if MICROPY_PERSISTENT_CODE_LOAD
+    supported_command = (c == 'B') || supported_command;
+    #endif
+
+    if (!supported_command) {
         // Unsupported command.
         mp_hal_stdout_tx_strn("R\x00", 2);
         return 0;
@@ -270,10 +292,15 @@ STATIC int do_reader_stdin(int c) {
     // Indicate reception of command.
     mp_hal_stdout_tx_strn("R\x01", 2);
 
+    // Entering raw paste mode
+    // c == 'A' input is source, c == 'B' input is bytecode
     mp_reader_t reader;
     mp_reader_stdin_t reader_stdin;
     mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
     int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+    if (c == 'B') {
+        exec_flags |= EXEC_FLAG_SOURCE_IS_RAW_CODE;
+    }
     return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
 }
 
