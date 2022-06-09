@@ -360,7 +360,7 @@ STATIC file_descriptor_obj *microbit_file_open(const char *name, size_t name_len
 }
 
 STATIC file_descriptor_obj *microbit_file_descriptor_new(uint8_t start_chunk, bool write, bool binary) {
-    file_descriptor_obj *res = m_new_obj(file_descriptor_obj, binary ? &uos_mbfs_fileio_type : &uos_mbfs_textio_type);
+    file_descriptor_obj *res = mp_obj_malloc(file_descriptor_obj, binary ? &uos_mbfs_fileio_type : &uos_mbfs_textio_type);
     res->start_chunk = start_chunk;
     res->seek_chunk = start_chunk;
     res->seek_offset = file_system_chunks[start_chunk].header.name_len+2;
