@@ -33,7 +33,8 @@ Backing up original Hub firmware
 
 Before install MicroPython it is advised to backup the original LEGO firmware that
 the Hub comes installed with.  To do this, enter the built-in bootloader by holding
-down the Bluetooth button for 5 seconds while powering up the Hub via USB.  Then
+down the Bluetooth button for 5 seconds while powering up the Hub via USB (you may
+need to take out the battery and disconnect USB to power off the Hub first).  Then
 run the following command from the root of this repository:
 
     $ cd ports/stm32
@@ -58,7 +59,8 @@ the root of this repository run:
     $ make BOARD=LEGO_HUB_NO6
 
 Now enter the built-in bootloader by holding down the Bluetooth button for 5
-seconds while powering up the Hub via USB.  Then run:
+seconds while powering up the Hub via USB (you may need to take out the battery
+and disconnect USB to power off the Hub first).  Then run:
 
     $ make BOARD=LEGO_HUB_NO6 deploy
 
