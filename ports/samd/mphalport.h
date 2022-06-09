@@ -50,6 +50,10 @@ static inline mp_uint_t mp_hal_ticks_ms(void) {
     return systick_ms;
 }
 
+static inline uint64_t mp_hal_ticks_ms_64(void) {
+    return ((uint64_t)systick_ms_upper << 32) + systick_ms;
+}
+
 static inline mp_uint_t mp_hal_ticks_us(void) {
     #if defined(MCU_SAMD21)
 
@@ -74,7 +78,7 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 }
 
 static inline uint64_t mp_hal_time_ns(void) {
-    return ((uint64_t)systick_ms + (uint64_t)systick_ms_upper * 0x100000000) * 1000000;
+    return mp_hal_ticks_ms_64() * 1000000;
 }
 
 // C-level pin HAL
