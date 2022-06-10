@@ -71,11 +71,21 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
     #endif
 }
 
-// ticks_cpu is limited to a 1 ms period, since the CPU SysTick counter
-// is used for the 1 ms SysTick_Handler interrupt.
-static inline mp_uint_t mp_hal_ticks_cpu(void) {
-    return (system_time_t)SysTick->VAL;
+#if defined (MCU_SAMD21)
+
+#define mp_hal_ticks_cpu mp_hal_ticks_us
+
+#elif defined (MCU_SAMD51)
+static inline void mp_hal_ticks_cpu_enable(void) {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
+
+static inline mp_uint_t mp_hal_ticks_cpu(void) {
+    return (system_time_t)DWT->CYCCNT;
+}
+#endif
 
 static inline uint64_t mp_hal_time_ns(void) {
     return mp_hal_ticks_ms_64() * 1000000;
