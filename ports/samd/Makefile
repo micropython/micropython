@@ -87,10 +87,11 @@ LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
-SRC_C = \
+SRC_C += \
 	clock_config.c \
 	help.c \
 	machine_adc.c \
+ 	machine_bitstream.c \
 	machine_dac.c \
 	machine_i2c.c \
 	machine_led.c \

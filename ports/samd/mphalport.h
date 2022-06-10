@@ -71,11 +71,11 @@ static inline mp_uint_t mp_hal_ticks_us(void) {
     #endif
 }
 
-#if defined (MCU_SAMD21)
+#if defined(MCU_SAMD21)
 
 #define mp_hal_ticks_cpu mp_hal_ticks_us
 
-#elif defined (MCU_SAMD51)
+#elif defined(MCU_SAMD51)
 static inline void mp_hal_ticks_cpu_enable(void) {
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
