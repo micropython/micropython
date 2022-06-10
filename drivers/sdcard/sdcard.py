@@ -103,7 +103,8 @@ class SDCard:
             c_size = (csd[6] & 0b11) << 10 | csd[7] << 2 | csd[8] >> 6
             c_size_mult = (csd[9] & 0b11) << 1 | csd[10] >> 7
             read_bl_len = csd[5] & 0b1111
-            self.sectors = (c_size + 1) * (2 ** (c_size_mult + 2)) * (2**read_bl_len)
+            capacity = (c_size + 1) * (2 ** (c_size_mult + 2)) * (2**read_bl_len)
+            self.sectors = capacity // 512
         else:
             raise OSError("SD card CSD format not supported")
         # print('sectors', self.sectors)
@@ -282,3 +283,5 @@ class SDCard:
     def ioctl(self, op, arg):
         if op == 4:  # get number of blocks
             return self.sectors
+        if op == 5:  # get block size in bytes
+            return 512
