@@ -177,9 +177,6 @@ mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name) {
     mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_dict).map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
 
     if (!elem) {
-        #if MICROPY_MODULE_WEAK_LINKS
-        return mp_module_get_builtin(module_name);
-        #else
         // Otherwise try builtin.
         elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
         if (!elem) {
@@ -190,29 +187,10 @@ mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name) {
         // If found, it's a newly loaded built-in, so init it.
         mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
         #endif
-        #endif
     }
 
     return elem->value;
 }
-
-#if MICROPY_MODULE_WEAK_LINKS
-// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
-mp_obj_t mp_module_get_builtin(qstr module_name) {
-    // Try builtin.
-    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-    if (!elem) {
-        return MP_OBJ_NULL;
-    }
-
-    #if MICROPY_MODULE_BUILTIN_INIT
-    // If found, it's a newly loaded built-in, so init it.
-    mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
-    #endif
-
-    return elem->value;
-}
-#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 STATIC void mp_module_register(mp_obj_t module_name, mp_obj_t module) {
