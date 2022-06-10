@@ -424,6 +424,7 @@ function ci_native_mpy_modules_build {
     fi
     make -C examples/natmod/features1 ARCH=$arch
     make -C examples/natmod/features2 ARCH=$arch
+    make -C examples/natmod/features3 ARCH=$arch
     make -C examples/natmod/btree ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch
     make -C examples/natmod/uheapq ARCH=$arch
