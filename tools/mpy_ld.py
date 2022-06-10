@@ -434,6 +434,8 @@ def populate_got(env):
             dest = got_entry.name
         elif got_entry.name.startswith("mp_fun_table+0x"):
             dest = int(got_entry.name.split("+")[1], 16) // env.arch.word_size
+        elif got_entry.sec_name == ".external.mp_fun_table":
+            dest = got_entry.sym.mp_fun_table_offset
         elif got_entry.sec_name.startswith(".text"):
             dest = ".text"
         elif got_entry.sec_name.startswith(".rodata"):
