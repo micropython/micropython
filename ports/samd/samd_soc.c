@@ -36,6 +36,7 @@
 #include "samd_soc.h"
 #include "sam.h"
 #include "tusb.h"
+#include "mphalport.h"
 
 static void usb_init(void) {
     // Init USB clock
@@ -110,4 +111,7 @@ void samd_init(void) {
     SysTick_Config(get_cpu_freq() / 1000);
     init_us_counter();
     usb_init();
+    #if defined (MCU_SAMD51)
+    mp_hal_ticks_cpu_enable();
+    #endif
 }
