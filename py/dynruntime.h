@@ -44,6 +44,7 @@
 #undef mp_const_none
 #undef mp_const_false
 #undef mp_const_true
+#undef mp_const_empty_bytes
 #undef mp_const_empty_tuple
 #undef nlr_raise
 
@@ -81,7 +82,11 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_##x
 
 #define mp_type_type                        (*mp_fun_table.type_type)
+#define mp_type_NoneType                    (*mp_obj_get_type(mp_const_none))
+#define mp_type_bool                        (*mp_obj_get_type(mp_const_false))
+#define mp_type_int                         (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_int)))
 #define mp_type_str                         (*mp_fun_table.type_str)
+#define mp_type_bytes                       (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_bytes)))
 #define mp_type_tuple                       (*((mp_obj_base_t *)mp_const_empty_tuple)->type)
 #define mp_type_list                        (*mp_fun_table.type_list)
 #define mp_type_EOFError                    (*(mp_obj_type_t *)(mp_load_global(MP_QSTR_EOFError)))
@@ -100,6 +105,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_const_none                       ((mp_obj_t)mp_fun_table.const_none)
 #define mp_const_false                      ((mp_obj_t)mp_fun_table.const_false)
 #define mp_const_true                       ((mp_obj_t)mp_fun_table.const_true)
+#define mp_const_empty_bytes                (mp_type_bytes.make_new(NULL, 0, 0, NULL))
 #define mp_const_empty_tuple                (mp_fun_table.new_tuple(0, NULL))
 
 #define mp_obj_new_bool(b)                  ((b) ? (mp_obj_t)mp_fun_table.const_true : (mp_obj_t)mp_fun_table.const_false)
