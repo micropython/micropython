@@ -76,6 +76,13 @@ STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
     return o;
 }
 
+STATIC void buf_to_dbt(mp_obj_t obj, DBT *dbt) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(obj, &bufinfo, MP_BUFFER_READ);
+    dbt->data = bufinfo.buf;
+    dbt->size = bufinfo.len;
+}
+
 STATIC void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
@@ -98,8 +105,8 @@ STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    key.data = (void *)mp_obj_str_get_data(args[1], &key.size);
-    val.data = (void *)mp_obj_str_get_data(args[2], &val.size);
+    buf_to_dbt(args[1], &key);
+    buf_to_dbt(args[2], &val);
     return MP_OBJ_NEW_SMALL_INT(__bt_put(self->db, &key, &val, 0));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
@@ -107,7 +114,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
 STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
     DBT key, val;
-    key.data = (void *)mp_obj_str_get_data(args[1], &key.size);
+    buf_to_dbt(args[1], &key);
     int res = __bt_get(self->db, &key, &val, 0);
     if (res == RET_SPECIAL) {
         if (n_args > 2) {
@@ -126,7 +133,7 @@ STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     int flags = MP_OBJ_SMALL_INT_VALUE(args[1]);
     DBT key, val;
     if (n_args > 2) {
-        key.data = (void *)mp_obj_str_get_data(args[2], &key.size);
+        buf_to_dbt(args[2], &key);
     }
 
     int res = __bt_seq(self->db, &key, &val, flags);
@@ -201,7 +208,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     if (self->start_key != MP_OBJ_NULL) {
         int flags = R_FIRST;
         if (self->start_key != mp_const_none) {
-            key.data = (void *)mp_obj_str_get_data(self->start_key, &key.size);
+            buf_to_dbt(self->start_key, &key);
             flags = R_CURSOR;
         } else if (desc) {
             flags = R_LAST;
@@ -219,7 +226,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 
     if (self->end_key != mp_const_none) {
         DBT end_key;
-        end_key.data = (void *)mp_obj_str_get_data(self->end_key, &end_key.size);
+        buf_to_dbt(self->end_key, &end_key);
         BTREE *t = self->db->internal;
         int cmp = t->bt_cmp(&key, &end_key);
         if (desc) {
@@ -254,7 +261,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
-        key.data = (void *)mp_obj_str_get_data(index, &key.size);
+        buf_to_dbt(index, &key);
         int res = __bt_delete(self->db, &key, 0);
         if (res == RET_SPECIAL) {
             mp_raise_type(&mp_type_KeyError);
@@ -264,7 +271,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else if (value == MP_OBJ_SENTINEL) {
         // load
         DBT key, val;
-        key.data = (void *)mp_obj_str_get_data(index, &key.size);
+        buf_to_dbt(index, &key);
         int res = __bt_get(self->db, &key, &val, 0);
         if (res == RET_SPECIAL) {
             mp_raise_type(&mp_type_KeyError);
@@ -274,8 +281,8 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     } else {
         // store
         DBT key, val;
-        key.data = (void *)mp_obj_str_get_data(index, &key.size);
-        val.data = (void *)mp_obj_str_get_data(value, &val.size);
+        buf_to_dbt(index, &key);
+        buf_to_dbt(value, &val);
         int res = __bt_put(self->db, &key, &val, 0);
         CHECK_ERROR(res);
         return mp_const_none;
@@ -287,7 +294,7 @@ STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     switch (op) {
         case MP_BINARY_OP_CONTAINS: {
             DBT key, val;
-            key.data = (void *)mp_obj_str_get_data(rhs_in, &key.size);
+            buf_to_dbt(rhs_in, &key);
             int res = __bt_get(self->db, &key, &val, 0);
             CHECK_ERROR(res);
             return mp_obj_new_bool(res != RET_SPECIAL);
