@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-08 15:15+0000\n"
+"PO-Revision-Date: 2022-06-11 10:17+0000\n"
 "Last-Translator: Matěj Soukup <matej@locuboard.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -29,6 +29,8 @@ msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"Kód byl zastaven kvůli automatickému načtení. K načtení dojde brzy.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -243,17 +245,17 @@ msgstr "'%s' očekává popisek"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a register"
-msgstr "'%s' očekává register"
+msgstr "'%s' očekává registr"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects a special register"
-msgstr "'%s' očekává speciální register"
+msgstr "'%s' očekává speciální registr"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an FPU register"
-msgstr "'%s' očekává register FPU"
+msgstr "'%s' očekává registr FPU"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -354,7 +356,7 @@ msgstr "'return' je volán mimo funkci"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' volán uvnitř funkce async"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -409,13 +411,13 @@ msgstr "Všechny I2C periferie jsou používány"
 #: ports/espressif/common-hal/frequencyio/FrequencyIn.c
 #: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All PCNT units in use"
-msgstr ""
+msgstr "Všechny PCNT jednotky jsou používány"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "All RX FIFOs in use"
-msgstr ""
+msgstr "Všechny RX FIFO jsou používány"
 
 #: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
@@ -521,7 +523,7 @@ msgstr "Konverze audia není implementována"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN nepoužívá heslo"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Authentication failure"
@@ -550,7 +552,7 @@ msgstr "Pod minimální obnovovací frekvencí"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr ""
+msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -595,7 +597,7 @@ msgstr "Vyrovnávací paměť + offset je příliš malý %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "Prvky bufferu musí být 4 bajty dlouhé nebo méně"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
@@ -618,7 +620,7 @@ msgstr "Délka vyrovnávací paměti musí být násobkem 512"
 
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
-msgstr ""
+msgstr "Buffer musí být násobkem 512 bajtů"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
@@ -627,7 +629,7 @@ msgstr "Buffer je příliš krátký o %d bajtů"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "Buffery musí mít stejnou velikost"
 
 #: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
@@ -647,7 +649,7 @@ msgstr "Bloky CBC musí být násobky 16 bajtů"
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr ""
+msgstr "Disk CIRCUITPY nelze nalézt nebo vytvořit."
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -681,11 +683,11 @@ msgstr "Nelze nastavit CCCD na místní charakteristiku"
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "Nelze změnit USB zařízení"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr ""
+msgstr "Není možné vytvořit nový adaptér; použití _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -718,13 +720,13 @@ msgstr "Nelze nahrávat do souboru"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr ""
+msgstr "Není možné znovu připojit '/', pokud je viditelné pomocí USB."
 
 #: ports/atmel-samd/common-hal/microcontroller/__init__.c
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
+msgstr "Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -769,7 +771,7 @@ msgstr "Jádro kódu CircuitPython tvrdě havarovalo. Jejda!\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
-msgstr ""
+msgstr "CircuitPython nedokázal alokovat haldu."
 
 #: shared-module/bitbangio/I2C.c
 msgid "Clock stretch too long"
@@ -788,7 +790,7 @@ msgstr ""
 
 #: py/persistentcode.c
 msgid "Corrupt .mpy file"
-msgstr ""
+msgstr "Poškozený soubor .mpy"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -796,7 +798,7 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr ""
+msgstr "Není možné nastavit adresu"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Could not start PWM"
@@ -891,7 +893,7 @@ msgstr "EXTINT kanál se již používá"
 #: shared-module/synthio/MidiTrack.c
 #, c-format
 msgid "Error in MIDI stream at position %d"
-msgstr ""
+msgstr "Chyba v MIDI přenosu na pozici %d"
 
 #: extmod/modure.c
 msgid "Error in regex"
@@ -923,7 +925,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
+msgstr "FFT je implementován pouze pro lineární pole"
 
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
@@ -940,11 +942,11 @@ msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
-msgstr ""
+msgstr "Chyba alokace %q bufferu"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
-msgstr ""
+msgstr "Chyba alokace paměti WiFi"
 
 #: ports/espressif/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
@@ -965,7 +967,7 @@ msgstr "Nepodařilo se připojit: časový limit"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to init wifi"
-msgstr ""
+msgstr "Chyba inicializace WiFi"
 
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
@@ -982,7 +984,7 @@ msgstr "Nepodařilo se zapsat do interní paměti."
 
 #: supervisor/shared/safe_mode.c
 msgid "Fatal error."
-msgstr ""
+msgstr "Fatální chyba."
 
 #: py/moduerrno.c
 msgid "File exists"
@@ -996,7 +998,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware image is invalid"
-msgstr ""
+msgstr "Obraz firmwaru je nevalidní"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
@@ -1008,12 +1010,14 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
-msgstr ""
+msgstr "Formát není podporován"
 
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
+"Frekvence musí být 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 nebo 1008 "
+"Mhz"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
@@ -1026,11 +1030,11 @@ msgstr "Funkce vyžaduje zámek"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "GNSS init"
-msgstr ""
+msgstr "Inicializace GNSS"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
-msgstr ""
+msgstr "Základní chyba"
 
 #: shared-bindings/displayio/Display.c
 #: shared-bindings/displayio/EPaperDisplay.c
@@ -1061,11 +1065,11 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C init error"
-msgstr ""
+msgstr "Chyba inicializace I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
-msgstr ""
+msgstr "Periférie I2C je používána"
 
 #: shared-bindings/audiobusio/I2SOut.c
 msgid "I2SOut not available"
@@ -1115,7 +1119,7 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 msgid "Input taking too long"
-msgstr ""
+msgstr "Vstup trval příliš dlouho"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
@@ -1163,7 +1167,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 msgid "Internal error"
-msgstr ""
+msgstr "Interní chyba"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1185,15 +1189,15 @@ msgstr "Neplatná hodnota jednotky ADC"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
-msgstr ""
+msgstr "Chybný BLE parametr"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid BSSID"
-msgstr ""
+msgstr "Chybné BSSID"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
-msgstr ""
+msgstr "Chybná MAC adresa"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #: py/moduerrno.c
@@ -1207,7 +1211,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "Invalid data_pins[%d]"
-msgstr ""
+msgstr "Chybný data_pin[%d]"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1219,7 +1223,7 @@ msgstr "Neplatný přístup k paměti."
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
-msgstr ""
+msgstr "Chybná multicastová MAC adresa"
 
 #: shared-bindings/busio/UART.c
 msgid "Invalid pins"
@@ -1227,15 +1231,15 @@ msgstr "Neplatné piny"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid size"
-msgstr ""
+msgstr "Chybná velikost"
 
 #: ports/espressif/common-hal/ssl/SSLContext.c
 msgid "Invalid socket for TLS"
-msgstr ""
+msgstr "Chybný soket pro TLS"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Invalid state"
-msgstr ""
+msgstr "Chybný stav"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1243,7 +1247,7 @@ msgstr "Klíč musí být dlouhý 16, 24 nebo 32 bajtů"
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
-msgstr ""
+msgstr "Mapování LED musí korespondovat s velikostí displeje"
 
 #: py/compile.c
 msgid "LHS of keyword arg must be an id"
@@ -1259,7 +1263,7 @@ msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
-msgstr ""
+msgstr "MAC adresa byla chybná"
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -1289,7 +1293,7 @@ msgstr "Chybí pin MISO nebo MOSI"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI pin"
-msgstr ""
+msgstr "Chybějící MISO nebo MOSI pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
@@ -1345,7 +1349,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
-msgstr ""
+msgstr "Chyba NVS"
 
 #: py/qstr.c
 msgid "Name too long"
@@ -1353,7 +1357,7 @@ msgstr "Jméno je příliš dlouhé"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
-msgstr ""
+msgstr "Nová bitmapa musí mít stejnou velikost jako původní bitmapa"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -1383,7 +1387,7 @@ msgstr ""
 #: shared-module/adafruit_bus_device/i2c_device/I2CDevice.c
 #, c-format
 msgid "No I2C device at address: 0x%x"
-msgstr ""
+msgstr "Žádné I2C zařízení na adrese: 0x%x"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1392,7 +1396,7 @@ msgstr "Žádný pin MISO"
 
 #: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MISO pin"
-msgstr ""
+msgstr "Žádný MISO pin"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1401,7 +1405,7 @@ msgstr "Žádný pin MOSI"
 
 #: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
 msgid "No MOSI pin"
-msgstr ""
+msgstr "Žádný MOSI pin"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c
@@ -1460,11 +1464,11 @@ msgstr ""
 #: shared-module/usb_hid/__init__.c
 #, c-format
 msgid "No more than %d HID devices allowed"
-msgstr ""
+msgstr "Ne více než %d HID zařízení je povoleno"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
-msgstr ""
+msgstr "Žádná síť s takovým SSID"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
@@ -1487,7 +1491,7 @@ msgstr "Na zařízení nezůstal žádný prostor"
 
 #: py/moduerrno.c
 msgid "No such device"
-msgstr ""
+msgstr "Žádné takové zařízení"
 
 #: py/moduerrno.c
 msgid "No such file/directory"
@@ -1507,7 +1511,7 @@ msgstr ""
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
-msgstr ""
+msgstr "Nevalidní IP string"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -1527,12 +1531,13 @@ msgstr ""
 #: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
-msgstr ""
+msgstr "Počet data_pins musí být 8 nebo 16, nikoli %d"
 
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
+"Objekt byl deinicializován a nelze jej dále používat. Vytvořte nový objekt."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1545,11 +1550,11 @@ msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Only IPv4 addresses supported"
-msgstr ""
+msgstr "Pouze IPv4 adresy podporovány"
 
 #: ports/espressif/common-hal/socketpool/SocketPool.c
 msgid "Only IPv4 sockets supported"
-msgstr ""
+msgstr "Pouze IPv4 sokety podporovány"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
