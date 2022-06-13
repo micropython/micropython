@@ -75,8 +75,7 @@ for c in set(all_characters):
 if missing > 0:
     print("Font missing", missing, "characters", file=sys.stderr)
 
-x, y, dx, dy = f.get_bounding_box()
-tile_x, tile_y = x - dx, y - dy
+tile_x, tile_y, dx, dy = f.get_bounding_box()
 total_bits = tile_x * len(all_characters)
 total_bits += 32 - total_bits % 32
 bytes_per_row = total_bits // 8
