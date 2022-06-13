@@ -238,6 +238,10 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     }
     wifi_config_t *config = &self->sta_config;
 
+    size_t timeout_ms = timeout * 1000;
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    uint32_t end_time = start_time + timeout_ms;
+
     EventBits_t bits;
     // can't block since both bits are false after wifi_init
     // both bits are true after an existing connection stops
@@ -309,6 +313,10 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             pdTRUE,
             pdTRUE,
             0);
+        // Don't retry anymore if we're over our time budget.
+        if (self->retries_left > 0 && common_hal_time_monotonic_ms() > end_time) {
+            self->retries_left = 0;
+        }
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {

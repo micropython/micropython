@@ -44,13 +44,17 @@ void supervisor_web_workflow_status(void) {
     serial_write_compressed(translate("Wi-Fi: "));
     if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         uint32_t ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
-        if (wifi_status != WIFI_RADIO_ERROR_NONE) {
+        if (wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
+            wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
+            serial_write_compressed(translate("Authentication failure"));
+        } else if (wifi_status != WIFI_RADIO_ERROR_NONE) {
             mp_printf(&mp_plat_print, "%d", wifi_status);
         } else if (ipv4_address == 0) {
             serial_write_compressed(translate("No IP"));
         } else {
             uint8_t *octets = (uint8_t *)&ipv4_address;
             mp_printf(&mp_plat_print, "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+            // TODO: Use these unicode to show signal strength: ▂▄▆█
         }
     } else {
         serial_write_compressed(translate("off"));
@@ -75,12 +79,15 @@ void supervisor_start_web_workflow(void) {
     common_hal_wifi_init(false);
     common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
 
+    // TODO: Do our own scan so that we can find the channel we want before calling connect.
+    // Otherwise, connect will do a full slow scan to pick the best AP.
+
     // NUL terminate the strings because dotenv doesn't.
     ssid[ssid_len] = '\0';
     password[password_len] = '\0';
     wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
-        0, 1, NULL, 0);
+        0, 0.1, NULL, 0);
 
     if (wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
