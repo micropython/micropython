@@ -249,7 +249,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     bool connected = ((bits & WIFI_CONNECTED_BIT) != 0) &&
         !((bits & WIFI_DISCONNECTED_BIT) != 0);
     if (connected) {
-        if (memcmp(ssid, config->sta.ssid, ssid_len) == 0) {
+        // SSIDs are up to 32 bytes. Assume it is null terminated if it is less.
+        if (memcmp(ssid, config->sta.ssid, ssid_len) == 0 &&
+            (ssid_len == 32 || strlen((const char *)config->sta.ssid) == ssid_len)) {
             // Already connected to the desired network.
             return WIFI_RADIO_ERROR_NONE;
         } else {
@@ -272,7 +274,9 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     set_mode_station(self, true);
 
     memcpy(&config->sta.ssid, ssid, ssid_len);
-    config->sta.ssid[ssid_len] = 0;
+    if (ssid_len < 32) {
+        config->sta.ssid[ssid_len] = 0;
+    }
     memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
