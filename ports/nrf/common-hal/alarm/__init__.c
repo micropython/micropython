@@ -48,6 +48,9 @@
 #include "nrf_power.h"
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
+#ifdef NRF_DEBUG_PRINT
+void print_wakeup_cause(nrf_sleep_source_t cause);
+#endif
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
