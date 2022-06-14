@@ -1410,6 +1410,10 @@ msgstr "wèi zhǎo dào DMA qǐ bó qì"
 msgid "No I2C device at address: 0x%x"
 msgstr "dì zhǐ: 0x%x shí méi yǒu I2C qì jiàn"
 
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -2315,6 +2319,10 @@ msgstr ""
 "fǎng wèn circuitpython.org le jiě gèng duō xìn xī.\n"
 "\n"
 "liè chū nèi zhì mó kuài jiàn rù `help(\"modules\")`.\n"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
+msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3649,6 +3657,10 @@ msgstr "xūyào huǎnchōng qū xiéyì de duìxiàng"
 #: extmod/modubinascii.c
 msgid "odd-length string"
 msgstr "jīshù zìfú chuàn"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"

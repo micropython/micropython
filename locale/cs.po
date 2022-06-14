@@ -726,7 +726,8 @@ msgstr "Není možné znovu připojit '/', pokud je viditelné pomocí USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
+msgstr ""
+"Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -1388,6 +1389,10 @@ msgstr ""
 #, c-format
 msgid "No I2C device at address: 0x%x"
 msgstr "Žádné I2C zařízení na adrese: 0x%x"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr ""
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -2269,6 +2274,10 @@ msgid ""
 "Visit circuitpython.org for more information.\n"
 "\n"
 "To list built-in modules type `help(\"modules\")`.\n"
+msgstr ""
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
 msgstr ""
 
 #: main.c
@@ -3594,6 +3603,10 @@ msgstr ""
 
 #: extmod/modubinascii.c
 msgid "odd-length string"
+msgstr ""
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
 msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c

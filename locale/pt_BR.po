@@ -1414,6 +1414,10 @@ msgstr "Nenhum temporizador DMA foi encontrado"
 msgid "No I2C device at address: 0x%x"
 msgstr "Não há nenhum dispositivo I2C no endereço: 0x%x"
 
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -2334,6 +2338,10 @@ msgstr ""
 "Visite o site circuitpython.org para obter mais informações.\n"
 "\n"
 "Para listar os módulos existente digite `help(\"modules\")`.\n"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
+msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3676,6 +3684,10 @@ msgstr "é necessário objeto com protocolo do buffer"
 #: extmod/modubinascii.c
 msgid "odd-length string"
 msgstr "sequência com comprimento ímpar"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"

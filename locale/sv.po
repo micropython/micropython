@@ -1396,6 +1396,10 @@ msgstr "Ingen DMA pacing timer hittades"
 msgid "No I2C device at address: 0x%x"
 msgstr "Ingen I2C-enhet på adress: 0x%x"
 
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -2304,6 +2308,10 @@ msgstr ""
 "Besök circuitpython.org för mer information.\n"
 "\n"
 "För att lista inbyggda moduler skriver du `help(\"modules\")`.\n"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
+msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3639,6 +3647,10 @@ msgstr "objekt med buffertprotokoll krävs"
 #: extmod/modubinascii.c
 msgid "odd-length string"
 msgstr "sträng har udda längd"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
