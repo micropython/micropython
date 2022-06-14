@@ -49,7 +49,7 @@
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
 #ifdef NRF_DEBUG_PRINT
-void print_wakeup_cause(nrf_sleep_source_t cause);
+static void print_wakeup_cause(nrf_sleep_source_t cause);
 #endif
 
 // Singleton instance of SleepMemory.
@@ -111,7 +111,7 @@ bool common_hal_alarm_woken_from_sleep(void) {
     nrf_sleep_source_t cause = _get_wakeup_cause();
     #ifdef NRF_DEBUG_PRINT
     if (cause != NRF_SLEEP_WAKEUP_UNDEFINED) {
-        // print_wakeup_cause(cause);
+        print_wakeup_cause(cause);
     }
     #endif
     return cause == NRF_SLEEP_WAKEUP_GPIO || cause == NRF_SLEEP_WAKEUP_TIMER
