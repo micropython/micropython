@@ -62,8 +62,8 @@ SRC_C = \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
 LIB_SRC_C = $(addprefix lib/,\
-        lv_bindings/driver/SDL/SDL_monitor.c \
-        lv_bindings/driver/SDL/SDL_mouse.c \
+        lv_bindings/driver/SDL/sdl_common.c \
+        lv_bindings/driver/SDL/sdl.c \
         lv_bindings/driver/SDL/modSDL.c \
         timeutils/timeutils.c \
         )
