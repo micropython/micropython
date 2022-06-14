@@ -101,6 +101,10 @@
 #include "shared-module/memorymonitor/__init__.h"
 #endif
 
+#if CIRCUITPY_SOCKETPOOL
+#include "shared-bindings/socketpool/__init__.h"
+#endif
+
 #if CIRCUITPY_USB_HID
 #include "shared-module/usb_hid/__init__.h"
 #endif
@@ -290,6 +294,16 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     keypad_reset();
     #endif
 
+    // Close user-initiated sockets.
+    #if CIRCUITPY_SOCKETPOOL
+    socketpool_user_reset();
+    #endif
+
+    // Turn off user initiated WiFi connections.
+    #if CIRCUITPY_WIFI
+    wifi_user_reset();
+    #endif
+
     // reset_board_buses() first because it may release pins from the never_reset state, so that
     // reset_port() can reset them.
     #if CIRCUITPY_BOARD
@@ -303,6 +317,9 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     stop_mp();
     free_memory(heap);
     supervisor_move_memory();
+
+    // Let the workflows know we've reset in case they want to restart.
+    supervisor_workflow_reset();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
@@ -889,21 +906,7 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start USB after giving boot.py a chance to tweak behavior.
-    #if CIRCUITPY_USB
-    // Setup USB connection after heap is available.
-    // It needs the heap to build descriptors.
-    usb_init();
-    #endif
-
-    // Set up any other serial connection.
-    serial_init();
-
-    #if CIRCUITPY_BLEIO
-    bleio_reset();
-    supervisor_bluetooth_enable_workflow();
-    supervisor_start_bluetooth();
-    #endif
+    supervisor_workflow_start();
 
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;

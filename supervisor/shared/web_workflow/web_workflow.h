@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,35 +26,10 @@
 
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
+#include <stdbool.h>
 
-#include "supervisor/shared/translate/compressed_string.h"
-
-#ifndef NO_QSTR
-#define QDEF(id, hash, len, str)
-#define TRANSLATION(english_id, number) extern compressed_string_t translation##number;
-#include "genhdr/qstrdefs.generated.h"
-#undef TRANSLATION
-#undef QDEF
-#endif
-
-#if CIRCUITPY_TRANSLATE_OBJECT == 0
-static
-#endif
-inline
-// gcc10 -flto has issues with this being always_inline for debug builds.
-#if !CIRCUITPY_LTO || CIRCUITPY_DEBUG < 1
-__attribute__((always_inline))
-#endif
-const compressed_string_t *translate(const char *original) {
-    #ifndef NO_QSTR
-    #define QDEF(id, hash, len, str)
-    #define TRANSLATION(english_id, number) if (strcmp(original, english_id) == 0) { return &translation##number; } else
-    #include "genhdr/qstrdefs.generated.h"
-#undef TRANSLATION
-#undef QDEF
-    #endif
-    return NULL;
-}
+void supervisor_wifi_background(void);
+void supervisor_wifi_init(void);
+void supervisor_web_workflow_status(void);
+void supervisor_start_web_workflow(void);
+void supervisor_stop_web_workflow(void);

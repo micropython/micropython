@@ -34,7 +34,7 @@
 extern const mp_obj_type_t terminalio_terminal_type;
 
 extern void common_hal_terminalio_terminal_construct(terminalio_terminal_obj_t *self,
-    displayio_tilegrid_t *tilegrid, const fontio_builtinfont_t *font);
+    displayio_tilegrid_t *scroll_area, const fontio_builtinfont_t *font, displayio_tilegrid_t *title_bar);
 
 // Write characters. len is in characters NOT bytes!
 extern size_t common_hal_terminalio_terminal_write(terminalio_terminal_obj_t *self,

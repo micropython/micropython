@@ -42,6 +42,8 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 #include "components/log/include/esp_log.h"
 
+#include "supervisor/workflow.h"
+
 static const char *TAG = "wifi";
 
 static void event_handler(void *arg, esp_event_base_t event_base,
@@ -106,12 +108,19 @@ static void event_handler(void *arg, esp_event_base_t event_base,
         radio->retries_left = radio->starting_retries;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
+    supervisor_workflow_request_background();
 }
 
-static bool wifi_inited, wifi_ever_inited;
+static bool wifi_inited;
+static bool wifi_ever_inited;
+static bool wifi_user_initiated;
 
-void common_hal_wifi_init(void) {
+void common_hal_wifi_init(bool user_initiated) {
+    if (wifi_inited) {
+        return;
+    }
     wifi_inited = true;
+    wifi_user_initiated = user_initiated;
     common_hal_wifi_radio_obj.base.type = &wifi_radio_type;
 
     if (!wifi_ever_inited) {
@@ -157,6 +166,12 @@ void common_hal_wifi_init(void) {
     common_hal_wifi_radio_set_enabled(self, true);
 }
 
+void wifi_user_reset(void) {
+    if (wifi_user_initiated) {
+        wifi_reset();
+    }
+}
+
 void wifi_reset(void) {
     if (!wifi_inited) {
         return;
@@ -176,6 +191,7 @@ void wifi_reset(void) {
     esp_netif_destroy(radio->ap_netif);
     radio->ap_netif = NULL;
     wifi_inited = false;
+    supervisor_workflow_request_background();
 }
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {

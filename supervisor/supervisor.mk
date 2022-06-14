@@ -146,6 +146,10 @@ ifeq ($(CIRCUITPY_USB),1)
   endif
 endif
 
+ifeq ($(CIRCUITPY_WEB_WORKFLOW),1)
+  SRC_SUPERVISOR += supervisor/shared/web_workflow/web_workflow.c
+endif
+
 SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_TINYUSB)): CFLAGS += -Wno-missing-prototypes
 

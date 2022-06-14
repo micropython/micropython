@@ -111,16 +111,28 @@ void background_callback_end_critical_section() {
     CALLBACK_CRITICAL_END;
 }
 
+
+// Filter out queued callbacks if they are allocated on the heap.
 void background_callback_reset() {
+    background_callback_t *new_head = NULL;
+    background_callback_t **previous_next = &new_head;
+    background_callback_t *new_tail = NULL;
     CALLBACK_CRITICAL_BEGIN;
     background_callback_t *cb = (background_callback_t *)callback_head;
     while (cb) {
         background_callback_t *next = cb->next;
-        memset(cb, 0, sizeof(*cb));
+        if (!HEAP_PTR((void *)cb)) {
+            *previous_next = cb;
+            previous_next = &cb->next;
+            cb->next = NULL;
+            new_tail = cb;
+        } else {
+            memset(cb, 0, sizeof(*cb));
+        }
         cb = next;
     }
-    callback_head = NULL;
-    callback_tail = NULL;
+    callback_head = new_head;
+    callback_tail = new_tail;
     in_background_callback = false;
     CALLBACK_CRITICAL_END;
 }

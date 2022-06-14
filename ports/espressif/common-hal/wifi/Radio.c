@@ -236,6 +236,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
+    wifi_config_t *config = &self->sta_config;
+
+    size_t timeout_ms = timeout * 1000;
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    uint32_t end_time = start_time + timeout_ms;
 
     EventBits_t bits;
     // can't block since both bits are false after wifi_init
@@ -245,18 +250,37 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
         pdTRUE,
         pdTRUE,
         0);
-    if (((bits & WIFI_CONNECTED_BIT) != 0) &&
-        !((bits & WIFI_DISCONNECTED_BIT) != 0)) {
-        return WIFI_RADIO_ERROR_NONE;
+    bool connected = ((bits & WIFI_CONNECTED_BIT) != 0) &&
+        !((bits & WIFI_DISCONNECTED_BIT) != 0);
+    if (connected) {
+        // SSIDs are up to 32 bytes. Assume it is null terminated if it is less.
+        if (memcmp(ssid, config->sta.ssid, ssid_len) == 0 &&
+            (ssid_len == 32 || strlen((const char *)config->sta.ssid) == ssid_len)) {
+            // Already connected to the desired network.
+            return WIFI_RADIO_ERROR_NONE;
+        } else {
+            xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
+            // Trying to switch networks so disconnect first.
+            esp_wifi_disconnect();
+            do {
+                RUN_BACKGROUND_TASKS;
+                bits = xEventGroupWaitBits(self->event_group_handle,
+                    WIFI_DISCONNECTED_BIT,
+                    pdTRUE,
+                    pdTRUE,
+                    0);
+            } while ((bits & WIFI_DISCONNECTED_BIT) == 0 && !mp_hal_is_interrupted());
+        }
     }
     // explicitly clear bits since xEventGroupWaitBits may have timed out
     xEventGroupClearBits(self->event_group_handle, WIFI_CONNECTED_BIT);
     xEventGroupClearBits(self->event_group_handle, WIFI_DISCONNECTED_BIT);
     set_mode_station(self, true);
 
-    wifi_config_t *config = &self->sta_config;
     memcpy(&config->sta.ssid, ssid, ssid_len);
-    config->sta.ssid[ssid_len] = 0;
+    if (ssid_len < 32) {
+        config->sta.ssid[ssid_len] = 0;
+    }
     memcpy(&config->sta.password, password, password_len);
     config->sta.password[password_len] = 0;
     config->sta.channel = channel;
@@ -289,6 +313,10 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             pdTRUE,
             pdTRUE,
             0);
+        // Don't retry anymore if we're over our time budget.
+        if (self->retries_left > 0 && common_hal_time_monotonic_ms() > end_time) {
+            self->retries_left = 0;
+        }
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
@@ -366,6 +394,14 @@ mp_obj_t common_hal_wifi_radio_get_ipv4_subnet_ap(wifi_radio_obj_t *self) {
     }
     esp_netif_get_ip_info(self->ap_netif, &self->ap_ip_info);
     return common_hal_ipaddress_new_ipv4address(self->ap_ip_info.netmask.addr);
+}
+
+uint32_t wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {
+    if (!esp_netif_is_netif_up(self->netif)) {
+        return 0;
+    }
+    esp_netif_get_ip_info(self->netif, &self->ip_info);
+    return self->ip_info.ip.addr;
 }
 
 mp_obj_t common_hal_wifi_radio_get_ipv4_address(wifi_radio_obj_t *self) {

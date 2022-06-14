@@ -69,5 +69,6 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
 
 // Private API for scrolling the TileGrid.
 void common_hal_displayio_tilegrid_set_top_left(displayio_tilegrid_t *self, uint16_t x, uint16_t y);
+void common_hal_displayio_tilegrid_set_all_tiles(displayio_tilegrid_t *self, uint8_t tile_index);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_TILEGRID_H

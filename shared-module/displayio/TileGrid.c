@@ -296,6 +296,27 @@ void common_hal_displayio_tilegrid_set_tile(displayio_tilegrid_t *self, uint16_t
     self->partial_change = true;
 }
 
+void common_hal_displayio_tilegrid_set_all_tiles(displayio_tilegrid_t *self, uint8_t tile_index) {
+    if (tile_index >= self->tiles_in_bitmap) {
+        mp_raise_ValueError(translate("Tile index out of bounds"));
+    }
+    uint8_t *tiles = self->tiles;
+    if (self->inline_tiles) {
+        tiles = (uint8_t *)&self->tiles;
+    }
+    if (tiles == NULL) {
+        return;
+    }
+
+    for (uint16_t x = 0; x < self->width_in_tiles; x++) {
+        for (uint16_t y = 0; y < self->height_in_tiles; y++) {
+            tiles[y * self->width_in_tiles + x] = tile_index;
+        }
+    }
+
+    self->full_change = true;
+}
+
 bool common_hal_displayio_tilegrid_get_flip_x(displayio_tilegrid_t *self) {
     return self->flip_x;
 }
