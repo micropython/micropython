@@ -201,7 +201,7 @@ STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_listen_obj, socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_listen_obj, 1, 2, socket_listen);
 
 STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     socket_obj_t *socket = self_in;
