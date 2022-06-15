@@ -47,4 +47,11 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port, const uint8_t *buf, uint32_t len);
 void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint32_t timeout_ms);
 
+// Non-allocating versions for internal use.
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port);
+void socketpool_socket_close(socketpool_socket_obj_t *self);
+int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len);
+int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
+    const uint8_t *buf, uint32_t len);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKET_H

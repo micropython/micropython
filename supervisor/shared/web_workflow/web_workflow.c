@@ -30,6 +30,10 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 
+#include "shared-bindings/socketpool/__init__.h"
+#include "shared-bindings/socketpool/Socket.h"
+#include "shared-bindings/socketpool/SocketPool.h"
+
 #if CIRCUITPY_WIFI
 #include "shared-bindings/wifi/__init__.h"
 #endif
@@ -38,10 +42,35 @@
 #include "shared-module/dotenv/__init__.h"
 #endif
 
+#include "esp_log.h"
+
+static const char *TAG = "CP webserver";
+
+enum request_state {
+    STATE_METHOD,
+    STATE_PATH,
+    STATE_VERSION,
+    STATE_HEADER_KEY,
+    STATE_HEADER_VALUE,
+    STATE_BODY
+};
+
+typedef struct {
+    enum request_state state;
+    char method[6];
+    char path[256];
+    uint32_t content_length;
+    size_t offset;
+} _request;
+
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
 
 static socketpool_socketpool_obj_t pool;
 static socketpool_socket_obj_t listening;
+static socketpool_socket_obj_t active;
+
+static _request active_request;
+
 
 void supervisor_web_workflow_status(void) {
     serial_write_compressed(translate("Wi-Fi: "));
@@ -66,6 +95,13 @@ void supervisor_web_workflow_status(void) {
 
 void supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI
+
+    if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) &&
+        wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj) != 0) {
+        // Already started.
+        return;
+    }
+
     char ssid[33];
     char password[64];
     mp_int_t ssid_len = 0;
@@ -102,10 +138,18 @@ void supervisor_start_web_workflow(void) {
 
     listening.base.type = &socketpool_socket_type;
     socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+    common_hal_socketpool_socket_settimeout(&listening, 0);
     // Bind to any ip.
     // TODO: Make this port .env configurable.
-    common_hal_socketpool_socket_bind(&listening, "", 0, 80);
+    const char *ip = "192.168.1.94";
+    common_hal_socketpool_socket_bind(&listening, ip, strlen(ip), 80);
     common_hal_socketpool_socket_listen(&listening, 1);
+
+    ESP_LOGW(TAG, "listening on socket %d", listening.num);
+
+    active.base.type = &socketpool_socket_type;
+    active.num = -1;
+    active.connected = false;
 
     // Accept a connection and start parsing:
     // * HTTP method
@@ -133,6 +177,106 @@ void supervisor_start_web_workflow(void) {
     // GET /ws/user
     //   - WebSockets
     #endif
+}
+
+static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
+    bool more = true;
+    bool error = false;
+    uint8_t c;
+    while (more && !error) {
+        int len = socketpool_socket_recv_into(socket, &c, 1);
+        if (len != 1) {
+            if (len != -EAGAIN && len != -EBADF) {
+                ESP_LOGW(TAG, "received %d", len);
+            }
+            more = false;
+            break;
+        }
+        ESP_LOGI(TAG, "%c", c);
+        switch (request->state) {
+            case STATE_METHOD: {
+                if (c == ' ') {
+                    request->method[request->offset] = '\0';
+                    request->offset = 0;
+                    request->state = STATE_PATH;
+                } else if (request->offset > sizeof(request->method) - 1) {
+                    // Skip methods that are too long.
+                } else {
+                    request->method[request->offset] = c;
+                    request->offset++;
+                }
+                break;
+            }
+            case STATE_PATH:  {
+                if (c == ' ') {
+                    request->path[request->offset] = '\0';
+                    request->offset = 0;
+                    ESP_LOGW(TAG, "Request %s %s", request->method, request->path);
+                    request->state = STATE_VERSION;
+                    error = true;
+                } else if (request->offset > sizeof(request->path) - 1) {
+                    // Skip methods that are too long.
+                } else {
+                    request->path[request->offset] = c;
+                    request->offset++;
+                }
+                break;
+            }
+            case STATE_VERSION:
+                break;
+            case STATE_HEADER_KEY:
+                break;
+            case STATE_HEADER_VALUE:
+                break;
+            case STATE_BODY:
+                break;
+        }
+    }
+    if (error) {
+        const char *error_response = "HTTP/1.1 501 Not Implemented";
+        int nodelay = 1;
+        int err = lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+        int sent = socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
+        ESP_LOGW(TAG, "sent %d %d", sent, err);
+        vTaskDelay(0);
+        socketpool_socket_close(socket);
+    }
+}
+
+
+void supervisor_web_workflow_background(void) {
+    // Otherwise, see if we have another socket to accept.
+    if (!common_hal_socketpool_socket_get_connected(&active) &&
+        !common_hal_socketpool_socket_get_closed(&listening) &&
+        listening.num > 0) {
+        uint32_t ip;
+        uint32_t port;
+        int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
+        if (newsoc != -11) {
+            ESP_LOGI(TAG, "newsoc %d", newsoc);
+        }
+        if (newsoc > 0) {
+            ESP_LOGE(TAG, "Accepted socket %d", newsoc);
+            // TODO: Don't do this because it uses the private struct layout.
+            // Create the socket
+            active.num = newsoc;
+            active.pool = &pool;
+            active.connected = true;
+
+
+            common_hal_socketpool_socket_settimeout(&active, 0);
+
+            active_request.state = STATE_METHOD;
+            active_request.offset = 0;
+
+            lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
+        }
+    }
+
+    // If we have a request in progress, continue working on it.
+    if (common_hal_socketpool_socket_get_connected(&active)) {
+        _process_request(&active, &active_request);
+    }
 }
 
 void supervisor_stop_web_workflow(void) {
