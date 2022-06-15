@@ -322,6 +322,9 @@ int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, ui
     }
 
     if (sent < 0) {
+        if (errno == ECONNRESET || errno == ENOTCONN) {
+            self->connected = false;
+        }
         return -errno;
     }
 

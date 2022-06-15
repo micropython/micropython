@@ -26,6 +26,11 @@
 
 #include <string.h>
 
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
+
+#include "py/mpstate.h"
+
 #include "shared-bindings/wifi/Radio.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -180,12 +185,52 @@ void supervisor_start_web_workflow(void) {
     //   - JSON list of MDNS results
     // GET /cp/version.json
     //   - JSON version info
+    // GET /cp/serial.txt
+    //   - Most recent 1k of serial output.
     // GET /
     //   - Super basic editor
     // GET /ws/circuitpython
     // GET /ws/user
     //   - WebSockets
     #endif
+}
+
+static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
+    char encoded_len[sizeof(size_t) * 2 + 1];
+    int len = snprintf(encoded_len, sizeof(encoded_len), "%X", strlen(chunk));
+    int sent = socketpool_socket_send(socket, (const uint8_t *)encoded_len, len);
+    if (sent < len) {
+        ESP_LOGE(TAG, "short send %d %d", sent, len);
+    }
+    sent = socketpool_socket_send(socket, (const uint8_t *)"\r\n", 2);
+    if (sent < 2) {
+        ESP_LOGE(TAG, "short send %d %d", sent, 2);
+    }
+    sent = socketpool_socket_send(socket, (const uint8_t *)chunk, strlen(chunk));
+    if (sent < (int)strlen(chunk)) {
+        ESP_LOGE(TAG, "short send %d %d", sent, strlen(chunk));
+    }
+    sent = socketpool_socket_send(socket, (const uint8_t *)"\r\n", 2);
+    if (sent < 2) {
+        ESP_LOGE(TAG, "short send %d %d", sent, 2);
+    }
+}
+
+static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
+    int sent = socketpool_socket_send(socket, (const uint8_t *)str, strlen(str));
+    if (sent < (int)strlen(str)) {
+        ESP_LOGE(TAG, "short send %d %d", sent, strlen(str));
+    }
+}
+
+static bool _endswith(const char *str, const char *suffix) {
+    if (str == NULL || suffix == NULL) {
+        return false;
+    }
+    if (strlen(suffix) > strlen(str)) {
+        return false;
+    }
+    return strcmp(str + (strlen(str) - strlen(suffix)), suffix) == 0;
 }
 
 static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
@@ -284,7 +329,9 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                 break;
             }
             case STATE_BODY:
+                ESP_LOGW(TAG, "BODY %c", c);
                 request->done = true;
+                request->state = STATE_METHOD;
                 more = false;
                 break;
         }
@@ -312,6 +359,117 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         const char *two_lines = "\r\n\r\n";
         sent += socketpool_socket_send(socket, (const uint8_t *)two_lines, strlen(two_lines));
         ESP_LOGW(TAG, "sent %d %d", sent, err);
+    } else if (memcmp(request->path, "/fs/", 4) == 0) {
+        ESP_LOGW(TAG, "filesystem %s %s", request->method, request->path + 3);
+        const char *path = request->path + 3;
+        size_t pathlen = strlen(path);
+        FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+        // Trailing / is a directory.
+        if (path[pathlen - 1] == '/') {
+            if (strcmp(request->method, "GET") == 0) {
+                FF_DIR dir;
+                FRESULT res = f_opendir(fs, &dir, path);
+                if (res != FR_OK) {
+                    // TODO: Send 404
+                }
+                const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
+                    "Content-Type: text/html\r\n\r\n";
+                socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+                _send_chunk(socket, "<!DOCTYPE html><html><head><title>");
+                _send_chunk(socket, path);
+                _send_chunk(socket, "</title><meta charset=\"UTF-8\"></head><body><h1>");
+                _send_chunk(socket, path);
+                _send_chunk(socket, "</h1><pre>");
+                if (strlen(path) > 1) {
+                    _send_chunk(socket, "🗀\t<a href=\"..\">..</a><br/>");
+                }
+
+                FILINFO file_info;
+                char *fn = file_info.fname;
+                res = f_readdir(&dir, &file_info);
+                while (res == FR_OK && fn[0] != 0) {
+                    // uint64_t truncated_time = timeutils_mktime(1980 + (file_info.fdate >> 9),
+                    //     (file_info.fdate >> 5) & 0xf,
+                    //     file_info.fdate & 0x1f,
+                    //     file_info.ftime >> 11,
+                    //     (file_info.ftime >> 5) & 0x1f,
+                    //     (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
+                    // entry->truncated_time = truncated_time;
+                    // if ((file_info.fattrib & AM_DIR) != 0) {
+                    //     entry->flags = 1; // Directory
+                    //     entry->file_size = 0;
+                    // } else {
+                    //     entry->flags = 0;
+                    //     entry->file_size = file_info.fsize;
+                    // }
+                    // _send_chunk(socket, "<li>");
+                    if ((file_info.fattrib & AM_DIR) != 0) {
+                        _send_chunk(socket, "🗀\t");
+                    } else if (_endswith(path, ".txt") || _endswith(path, ".py")) {
+                        _send_chunk(socket, "🖹\t");
+                    } else {
+                        _send_chunk(socket, "⭳\t");
+                    }
+                    _send_chunk(socket, "<a href=\"");
+                    _send_chunk(socket, request->path);
+                    _send_chunk(socket, file_info.fname);
+                    if ((file_info.fattrib & AM_DIR) != 0) {
+                        _send_chunk(socket, "/");
+                    }
+                    _send_chunk(socket, "\">");
+
+                    _send_chunk(socket, file_info.fname);
+                    _send_chunk(socket, "</a><a>✏️</a><a>🗑️</a><br/>");
+                    res = f_readdir(&dir, &file_info);
+                }
+                _send_chunk(socket, "</pre>Upload:<input type=\"file\" multiple></body></html>");
+                _send_chunk(socket, "");
+                f_closedir(&dir);
+            }
+
+        } else { // Dealing with a file.
+            if (strcmp(request->method, "GET") == 0) {
+                FIL active_file;
+                FRESULT result = f_open(fs, &active_file, path, FA_READ);
+
+                if (result != FR_OK) {
+                    // TODO: 404
+                }
+                uint32_t total_length = f_size(&active_file);
+                char encoded_len[10];
+                snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
+
+                _send_str(socket, "HTTP/1.1 200 OK\r\nContent-Length: ");
+                _send_str(socket, encoded_len);
+                _send_str(socket, "\r\n");
+                if (_endswith(path, ".txt") || _endswith(path, ".py")) {
+                    _send_str(socket, "Content-Type: text/plain\r\n");
+                } else {
+                    _send_str(socket, "Content-Type: application/octet-stream\r\n");
+                }
+                _send_str(socket, "\r\n");
+
+                uint32_t total_read = 0;
+                while (total_read < total_length) {
+                    uint8_t data_buffer[64];
+                    size_t quantity_read;
+                    f_read(&active_file, data_buffer, 64, &quantity_read);
+                    total_read += quantity_read;
+                    uint32_t send_offset = 0;
+                    while (send_offset < quantity_read) {
+                        int sent = socketpool_socket_send(socket, data_buffer + send_offset, quantity_read - send_offset);
+                        if (sent < 0) {
+                            ESP_LOGE(TAG, "file send error %d", sent);
+                            break;
+                        }
+                        send_offset += sent;
+                    }
+                }
+                ESP_LOGW(TAG, "file return done");
+
+                f_close(&active_file);
+            }
+        }
     } else {
         const char *ok_response = "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nContent-Type: text/plain\r\n\r\nHello World";
         int sent = socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
