@@ -7,6 +7,7 @@ These are used to generate a header with the required entries for
 
 from __future__ import print_function
 
+import sys
 import re
 import io
 import argparse
@@ -40,6 +41,14 @@ def generate_module_table_header(modules):
     for module_name, obj_module in modules:
         mod_def = "MODULE_DEF_{}".format(module_name.upper())
         mod_defs.add(mod_def)
+        if "," in obj_module:
+            print(
+                "ERROR: Call to MP_REGISTER_MODULE({}, {}) should be MP_REGISTER_MODULE({}, {})\n".format(
+                    module_name, obj_module, module_name, obj_module.split(",")[0]
+                ),
+                file=sys.stderr,
+            )
+            sys.exit(1)
         print(
             (
                 "extern const struct _mp_obj_module_t {obj_module};\n"
