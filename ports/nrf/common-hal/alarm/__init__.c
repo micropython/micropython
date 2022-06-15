@@ -48,9 +48,6 @@
 #include "nrf_power.h"
 #include "nrfx.h"
 #include "nrfx_gpiote.h"
-#ifdef NRF_DEBUG_PRINT
-static void print_wakeup_cause(nrf_sleep_source_t cause);
-#endif
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -99,7 +96,7 @@ static const char *cause_str[] = {
     "VBUS",
     "RESETPIN",
 };
-void print_wakeup_cause(nrf_sleep_source_t cause) {
+static void print_wakeup_cause(nrf_sleep_source_t cause) {
     if (cause >= 0 && cause < NRF_SLEEP_WAKEUP_ZZZ) {
         mp_printf(&mp_plat_print, "wakeup cause = NRF_SLEEP_WAKEUP_%s\r\n",
             cause_str[(int)cause]);
