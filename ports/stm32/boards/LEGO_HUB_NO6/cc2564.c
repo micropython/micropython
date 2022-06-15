@@ -38,6 +38,12 @@
 #define CC2564_PIN_BT_SLOWCLK (pyb_pin_BT_SLOWCLK)
 #define CC2564_PIN_BT_ENABLE (pyb_pin_BT_ENABLE)
 
+// slight difference between LEGO_HUB_NO6 and LEGO_HUB_NO7
+#ifndef CC2564_TIMER_BT_SLOWCLOCK_TIM
+#define CC2564_TIMER_BT_SLOWCLOCK_TIM 8
+#define CC2564_TIMER_BT_SLOWCLOCK_TIM_CH 4
+#endif
+
 STATIC void cc2564_wait_cts_low(mp_hal_pin_obj_t cts, uint32_t timeout_ms) {
     for (int i = 0; i < timeout_ms; ++i) {
         if (mp_hal_pin_read(cts) == 0) {
@@ -53,18 +59,18 @@ int mp_bluetooth_hci_controller_init(void) {
     mp_hal_pin_low(CC2564_PIN_BT_ENABLE);
 
     // Output a 32768Hz signal on BTSLOWCLK.
-    //  tim8 = pyb.Timer(8, freq=32768)
-    //  tim8_ch4 = tim8.channel(4, pyb.Timer.PWM, pin=btclk)
-    //  tim8_ch4.pulse_width_percent(50)
-    mp_obj_t args[6] = { MP_OBJ_NEW_SMALL_INT(8), MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(32768), MP_OBJ_NULL };
-    mp_obj_t tim8 = pyb_timer_type.make_new(&pyb_timer_type, 1, 1, args);
-    mp_load_method(tim8, MP_QSTR_channel, args);
-    args[2] = MP_OBJ_NEW_SMALL_INT(4);
+    //  tim = pyb.Timer(TIM, freq=32768)
+    //  tim_ch = tim.channel(TIM_CH, pyb.Timer.PWM, pin=btclk)
+    //  tim_ch.pulse_width_percent(50)
+    mp_obj_t args[6] = { MP_OBJ_NEW_SMALL_INT(CC2564_TIMER_BT_SLOWCLOCK_TIM), MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(32768), MP_OBJ_NULL };
+    mp_obj_t tim = pyb_timer_type.make_new(&pyb_timer_type, 1, 1, args);
+    mp_load_method(tim, MP_QSTR_channel, args);
+    args[2] = MP_OBJ_NEW_SMALL_INT(CC2564_TIMER_BT_SLOWCLOCK_TIM_CH);
     args[3] = MP_OBJ_NEW_SMALL_INT(0); // CHANNEL_MODE_PWM_NORMAL
     args[4] = MP_OBJ_NEW_QSTR(MP_QSTR_pin);
     args[5] = (mp_obj_t)CC2564_PIN_BT_SLOWCLK;
-    mp_obj_t tim8_ch4 = mp_call_method_n_kw(2, 1, args);
-    mp_load_method(tim8_ch4, MP_QSTR_pulse_width_percent, args);
+    mp_obj_t tim_ch = mp_call_method_n_kw(2, 1, args);
+    mp_load_method(tim_ch, MP_QSTR_pulse_width_percent, args);
     args[2] = MP_OBJ_NEW_SMALL_INT(50);
     mp_call_method_n_kw(1, 0, args);
 
