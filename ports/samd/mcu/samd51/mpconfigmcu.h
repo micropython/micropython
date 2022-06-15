@@ -1,10 +1,17 @@
 // Deinitions common to all SAMD51 boards
 #include "samd51.h"
 
+#define MICROPY_CONFIG_ROM_LEVEL        (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
+
+// MicroPython emitters
+#define MICROPY_EMIT_THUMB              (1)
+#define MICROPY_EMIT_INLINE_THUMB       (1)
+
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
 #define MICROPY_PY_MATH                 (0)
 #define MICROPY_PY_CMATH                (0)
+
 #define MICROPY_PY_UOS_URANDOM          (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
@@ -15,18 +22,18 @@ unsigned long trng_random_u32(void);
 // samd_flash.c flash parameters
 // Build a 128k Flash storage at top. 512k-128k=384k=0x60000
 // 512*1024= 0x80000 minus 128*1024= 0x20000 =  0x60000
-#define MICROPY_HW_FLASH_STORAGE_BASE       (0x60000)
-#define MICROPY_HW_FLASH_STORAGE_BYTES      (0x1FFFF)
-#define VFS_BLOCK_SIZE_BYTES                (1536) //
+#define MICROPY_HW_FLASH_STORAGE_BASE   (0x60000)
+#define MICROPY_HW_FLASH_STORAGE_BYTES  (0x1FFFF)
+#define VFS_BLOCK_SIZE_BYTES            (1536) //
 
-#define MICROPY_HW_UART_TXBUF               (1)
+#define MICROPY_HW_UART_TXBUF           (1)
 
-#define CPU_FREQ            (120000000)
-#define APB_FREQ            (48000000)
-#define DPLLx_REF_FREQ      (32768)
+#define CPU_FREQ                        (120000000)
+#define APB_FREQ                        (48000000)
+#define DPLLx_REF_FREQ                  (32768)
 
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
+#define NVIC_PRIORITYGROUP_4            ((uint32_t)0x00000003)
+#define IRQ_PRI_PENDSV                  NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
 
 static inline uint32_t raise_irq_pri(uint32_t pri) {
     uint32_t basepri = __get_BASEPRI();
