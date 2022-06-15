@@ -1420,6 +1420,10 @@ msgstr "Aucun minuteur de rythme DMA trouvé"
 msgid "No I2C device at address: 0x%x"
 msgstr "Aucun périphérique I2S à l'adresse : 0x%x"
 
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "No IP"
+msgstr ""
+
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "No MISO Pin"
@@ -2338,6 +2342,10 @@ msgstr ""
 "Plus d'informations sur circuitpython.org.\n"
 "\n"
 "Pour lister les modules internes, entrez `help(\"modules\")`.\n"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "Wi-Fi: "
+msgstr ""
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3684,6 +3692,10 @@ msgstr "un objet avec un protocole de tampon est nécessaire"
 #: extmod/modubinascii.c
 msgid "odd-length string"
 msgstr "chaîne de longueur impaire"
+
+#: supervisor/shared/web_workflow/web_workflow.c
+msgid "off"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
