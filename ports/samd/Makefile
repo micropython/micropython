@@ -88,7 +88,7 @@ LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 SRC_C += \
-	clock_config.c \
+	variants/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
 	machine_adc.c \
  	machine_bitstream.c \
