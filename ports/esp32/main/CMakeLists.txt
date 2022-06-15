@@ -69,9 +69,16 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_uart.c
     ${PROJECT_DIR}/modmachine.c
     ${PROJECT_DIR}/modnetwork.c
+    ${PROJECT_DIR}/modnetwork2.c
     ${PROJECT_DIR}/network_lan.c
+    ${PROJECT_DIR}/network_eth.c
     ${PROJECT_DIR}/network_ppp.c
     ${PROJECT_DIR}/network_wlan.c
+    ${PROJECT_DIR}/network_wifi.c
+    ${PROJECT_DIR}/modmodbus.c
+    ${PROJECT_DIR}/modbus_master.c
+    ${PROJECT_DIR}/modbus_slave.c
+    ${PROJECT_DIR}/modbus_data.c
     ${PROJECT_DIR}/mpnimbleport.c
     ${PROJECT_DIR}/modsocket.c
     ${PROJECT_DIR}/modesp.c
@@ -110,6 +117,7 @@ set(IDF_COMPONENTS
     esp_rom
     esp_wifi
     freertos
+    freemodbus
     heap
     log
     lwip
@@ -123,6 +131,7 @@ set(IDF_COMPONENTS
     tcpip_adapter
     ulp
     vfs
+    wpa_supplicant
     xtensa
 )
 
