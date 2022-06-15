@@ -34,13 +34,6 @@
 static uint32_t cpu_freq = CPU_FREQ;
 static uint32_t apb_freq = APB_FREQ;
 
-#if defined(MCU_SAMD21)
-int sercom_gclk_id[] = {
-    GCLK_CLKCTRL_ID_SERCOM0_CORE, GCLK_CLKCTRL_ID_SERCOM1_CORE,
-    GCLK_CLKCTRL_ID_SERCOM2_CORE, GCLK_CLKCTRL_ID_SERCOM3_CORE,
-    GCLK_CLKCTRL_ID_SERCOM4_CORE, GCLK_CLKCTRL_ID_SERCOM5_CORE
-};
-#elif defined(MCU_SAMD51)
 int sercom_gclk_id[] = {
     SERCOM0_GCLK_ID_CORE, SERCOM1_GCLK_ID_CORE,
     SERCOM2_GCLK_ID_CORE, SERCOM3_GCLK_ID_CORE,
@@ -49,7 +42,6 @@ int sercom_gclk_id[] = {
     SERCOM6_GCLK_ID_CORE, SERCOM7_GCLK_ID_CORE,
     #endif
 };
-#endif
 
 uint32_t get_cpu_freq(void) {
     return cpu_freq;
@@ -59,12 +51,6 @@ uint32_t get_apb_freq(void) {
     return apb_freq;
 }
 
-#if defined(MCU_SAMD21)
-void set_cpu_freq(uint32_t cpu_freq_arg) {
-    cpu_freq = cpu_freq_arg;
-}
-
-#elif defined(MCU_SAMD51)
 void set_cpu_freq(uint32_t cpu_freq_arg) {
     cpu_freq = cpu_freq_arg;
 
@@ -97,113 +83,8 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     while (GCLK->SYNCBUSY.bit.GENCTRL0) {
     }
 }
-#endif
 
 void init_clocks(uint32_t cpu_freq) {
-    #if defined(MCU_SAMD21)
-
-    // SAMD21 Clock settings
-    // GCLK0: 48MHz from DFLL open loop mode or closed loop mode from 32k Crystal
-    // GCLK1: 32768 Hz from 32K ULP or 32k Crystal
-    // GCLK2: 48MHz from DFLL for Peripherals
-    // GCLK3: 1Mhz for the us-counter (TC3/TC4)
-    // GCLK8: 1kHz clock for WDT
-
-    NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
-    NVMCTRL->CTRLB.bit.RWS = 1; // 1 read wait state for 48MHz
-
-    #if MICROPY_HW_XOSC32K
-    // Set up OSC32K according datasheet 17.6.3
-    SYSCTRL->XOSC32K.reg = SYSCTRL_XOSC32K_STARTUP(0x3) | SYSCTRL_XOSC32K_EN32K |
-        SYSCTRL_XOSC32K_XTALEN;
-    SYSCTRL->XOSC32K.bit.ENABLE = 1;
-    while (SYSCTRL->PCLKSR.bit.XOSC32KRDY == 0) {
-    }
-    // Set up the DFLL48 according to the data sheet 17.6.7.1.2
-    // Step 1: Set up the reference clock
-    // Connect the OSC32K via GCLK1 to the DFLL input and for further use.
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_XOSC32K | GCLK_GENCTRL_ID(1);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID_DFLL48 | GCLK_CLKCTRL_GEN_GCLK1 | GCLK_CLKCTRL_CLKEN;
-    // Enable access to the DFLLCTRL reg acc. to Errata 1.2.1
-    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
-    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
-    }
-    // Step 2: Set the coarse and fine values.
-    // The coarse setting will be taken from the calibration data. So the value used here
-    // does not matter. Get the coarse value from the calib data. In case it is not set,
-    // set a midrange value.
-    uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk)
-        >> FUSES_DFLL48M_COARSE_CAL_Pos;
-    if (coarse == 0x3f) {
-        coarse = 0x1f;
-    }
-    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) | SYSCTRL_DFLLVAL_FINE(512);
-    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
-    }
-    // Step 3: Set the multiplication values. The offset of 16384 to the freq is for rounding.
-    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_MUL((CPU_FREQ + 16384) / 32768) |
-        SYSCTRL_DFLLMUL_FSTEP(1) | SYSCTRL_DFLLMUL_CSTEP(1);
-    while (SYSCTRL->PCLKSR.bit.DFLLRDY == 0) {
-    }
-    // Step 4: Start the DFLL and wait for the PLL lock. We just wait for the fine lock, since
-    // coarse adjusting is bypassed.
-    SYSCTRL->DFLLCTRL.reg |= SYSCTRL_DFLLCTRL_MODE | SYSCTRL_DFLLCTRL_WAITLOCK |
-        SYSCTRL_DFLLCTRL_BPLCKC | SYSCTRL_DFLLCTRL_ENABLE;
-    while (SYSCTRL->PCLKSR.bit.DFLLLCKF == 0) {
-    }
-
-    #else // MICROPY_HW_XOSC32K
-
-    // Enable DFLL48M
-    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_ENABLE;
-    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
-    }
-    SYSCTRL->DFLLMUL.reg = SYSCTRL_DFLLMUL_CSTEP(1) | SYSCTRL_DFLLMUL_FSTEP(1)
-        | SYSCTRL_DFLLMUL_MUL(48000);
-    uint32_t coarse = (*((uint32_t *)FUSES_DFLL48M_COARSE_CAL_ADDR) & FUSES_DFLL48M_COARSE_CAL_Msk)
-        >> FUSES_DFLL48M_COARSE_CAL_Pos;
-    if (coarse == 0x3f) {
-        coarse = 0x1f;
-    }
-    SYSCTRL->DFLLVAL.reg = SYSCTRL_DFLLVAL_COARSE(coarse) | SYSCTRL_DFLLVAL_FINE(512);
-    SYSCTRL->DFLLCTRL.reg = SYSCTRL_DFLLCTRL_CCDIS | SYSCTRL_DFLLCTRL_USBCRM
-        | SYSCTRL_DFLLCTRL_MODE | SYSCTRL_DFLLCTRL_ENABLE;
-    while (!SYSCTRL->PCLKSR.bit.DFLLRDY) {
-    }
-    // Enable 32768 Hz on GCLK1 for consistency
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(1) | GCLK_GENDIV_DIV(48016384 / 32768);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(1);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-
-    #endif // MICROPY_HW_XOSC32K
-
-    // Enable GCLK output: 48M on both CCLK0 and GCLK2
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(0) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(0);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(2);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-
-    // Enable GCLK output: 1MHz on GCLK3 for TC3
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(3) | GCLK_GENDIV_DIV(48);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(3);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    // Set GCLK8 to 1 kHz.
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(8) | GCLK_GENDIV_DIV(32);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-
-    #elif defined(MCU_SAMD51)
-
     // SAMD51 clock settings
     // GCLK0: 48MHz from DFLL48M or 48 - 200 MHz from DPLL0 (SAMD51)
     // GCLK1: DPLLx_REF_FREQ 32768 Hz from 32KULP or 32k Crystal
@@ -299,21 +180,10 @@ void init_clocks(uint32_t cpu_freq) {
     GCLK->GENCTRL[3].reg = GCLK_GENCTRL_DIV(6) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
     while (GCLK->SYNCBUSY.bit.GENCTRL3) {
     }
-
-    #endif // defined(MCU_SAMD51)
 }
 
 void enable_sercom_clock(int id) {
     // Next: Set up the clocks
-    #if defined(MCU_SAMD21)
-    // Enable synchronous clock. The bits are nicely arranged
-    PM->APBCMASK.reg |= 0x04 << id;
-    // Select multiplexer generic clock source and enable.
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | sercom_gclk_id[id];
-    // Wait while it updates synchronously.
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    #elif defined(MCU_SAMD51)
     GCLK->PCHCTRL[sercom_gclk_id[id]].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
     // no easy way to set the clocks, except enabling all of them
     switch (id) {
@@ -344,5 +214,4 @@ void enable_sercom_clock(int id) {
             break;
         #endif
     }
-    #endif
 }
