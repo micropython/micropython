@@ -284,7 +284,10 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
 
             // In non-blocking mode, fail instead of looping
             if (received == -1 && self->timeout_ms == 0) {
-                if (errno != EAGAIN) {
+                if (errno == ENOTCONN) {
+                    self->connected = false;
+                    return -MP_ENOTCONN;
+                } else if (errno != EAGAIN) {
                     ESP_LOGE(TAG, "recv %d", errno);
                 }
                 return -MP_EAGAIN;

@@ -35,13 +35,9 @@
 
 STATIC bool inited = false;
 
-void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
-    if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
-        return;
-    }
+void mdns_server_construct(mdns_server_obj_t *self) {
     if (inited) {
-        mp_raise_RuntimeError(translate("mDNS already initialized"));
+        return;
     }
     mdns_init();
 
@@ -63,6 +59,17 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
     our_ip.addr.u_addr.ip6.addr[3] = 0;
     our_ip.addr.u_addr.ip6.zone = 0;
     mdns_delegate_hostname_add("circuitpython", &our_ip);
+}
+
+void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
+    if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
+        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
+        return;
+    }
+    if (inited) {
+        mp_raise_RuntimeError(translate("mDNS already initialized"));
+    }
+    mdns_server_construct(self);
 }
 
 void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {

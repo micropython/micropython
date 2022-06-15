@@ -30,6 +30,7 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 
+#include "shared-bindings/mdns/Server.h"
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/socketpool/SocketPool.h"
@@ -59,11 +60,17 @@ typedef struct {
     enum request_state state;
     char method[6];
     char path[256];
+    char header_key[64];
+    char header_value[64];
     uint32_t content_length;
     size_t offset;
+    bool redirect;
+    bool done;
 } _request;
 
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
+
+static mdns_server_obj_t mdns;
 
 static socketpool_socketpool_obj_t pool;
 static socketpool_socket_obj_t listening;
@@ -133,6 +140,8 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
+    mdns_server_construct(&mdns);
+
     pool.base.type = &socketpool_socketpool_type;
     common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
@@ -183,6 +192,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     bool more = true;
     bool error = false;
     uint8_t c;
+    // This code assumes header lines are terminated with \r\n
     while (more && !error) {
         int len = socketpool_socket_recv_into(socket, &c, 1);
         if (len != 1) {
@@ -192,7 +202,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
             more = false;
             break;
         }
-        ESP_LOGI(TAG, "%c", c);
+        // ESP_LOGI(TAG, "%c", c);
         switch (request->state) {
             case STATE_METHOD: {
                 if (c == ' ') {
@@ -213,7 +223,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     request->offset = 0;
                     ESP_LOGW(TAG, "Request %s %s", request->method, request->path);
                     request->state = STATE_VERSION;
-                    error = true;
                 } else if (request->offset > sizeof(request->path) - 1) {
                     // Skip methods that are too long.
                 } else {
@@ -222,25 +231,93 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                 }
                 break;
             }
-            case STATE_VERSION:
+            case STATE_VERSION: {
+                const char *supported_version = "HTTP/1.1\r";
+                error = supported_version[request->offset] != c;
+                request->offset++;
+                if (request->offset == strlen(supported_version)) {
+                    ESP_LOGW(TAG, "Version ok");
+                    request->state = STATE_HEADER_KEY;
+                    request->offset = 0;
+                }
                 break;
-            case STATE_HEADER_KEY:
+            }
+            case STATE_HEADER_KEY: {
+                if (c == '\r') {
+                    request->state = STATE_BODY;
+                    ESP_LOGW(TAG, "Body");
+                } else if (c == '\n') {
+                    // Consume the \n
+                } else if (c == ':') {
+                    request->header_key[request->offset] = '\0';
+                    request->offset = 0;
+                    request->state = STATE_HEADER_VALUE;
+                } else if (request->offset > sizeof(request->header_key) - 1) {
+                    // Skip methods that are too long.
+                } else {
+                    request->header_key[request->offset] = c;
+                    request->offset++;
+                }
                 break;
-            case STATE_HEADER_VALUE:
+            }
+            case STATE_HEADER_VALUE: {
+                if (request->offset == 0) {
+                    error = c != ' ';
+                    request->offset++;
+                } else if (c == '\r') {
+                    request->header_value[request->offset - 1] = '\0';
+                    request->offset = 0;
+                    request->state = STATE_HEADER_KEY;
+                    if (strcmp(request->header_key, "Authorization") == 0) {
+                        ESP_LOGW(TAG, "Authorization");
+                    } else if (strcmp(request->header_key, "Host") == 0) {
+                        ESP_LOGW(TAG, "Host header check '%s'", request->header_value);
+                        request->redirect = strcmp(request->header_value, "circuitpython.local") == 0;
+                    }
+                    ESP_LOGW(TAG, "Header %s %s", request->header_key, request->header_value);
+                } else if (request->offset > sizeof(request->header_value) - 1) {
+                    // Skip methods that are too long.
+                } else {
+                    request->header_value[request->offset - 1] = c;
+                    request->offset++;
+                }
                 break;
+            }
             case STATE_BODY:
+                request->done = true;
+                more = false;
                 break;
         }
     }
     if (error) {
-        const char *error_response = "HTTP/1.1 501 Not Implemented";
+        const char *error_response = "HTTP/1.1 501 Not Implemented\r\n\r\n";
         int nodelay = 1;
         int err = lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
         int sent = socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
         ESP_LOGW(TAG, "sent %d %d", sent, err);
-        vTaskDelay(0);
-        socketpool_socket_close(socket);
     }
+    if (!request->done) {
+        return;
+    }
+    if (request->redirect) {
+        const char *redirect_response = "HTTP/1.1 301 Moved Permanently\r\nConnection: close\r\nContent-Length: 0\r\nLocation: http://";
+        int nodelay = 1;
+        int err = lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+        int sent = socketpool_socket_send(socket, (const uint8_t *)redirect_response, strlen(redirect_response));
+        const char *instance_name = common_hal_mdns_server_get_instance_name(&mdns);
+        sent += socketpool_socket_send(socket, (const uint8_t *)instance_name, strlen(instance_name));
+        const char *local = ".local";
+        sent += socketpool_socket_send(socket, (const uint8_t *)local, strlen(local));
+        sent += socketpool_socket_send(socket, (const uint8_t *)request->path, strlen(request->path));
+        const char *two_lines = "\r\n\r\n";
+        sent += socketpool_socket_send(socket, (const uint8_t *)two_lines, strlen(two_lines));
+        ESP_LOGW(TAG, "sent %d %d", sent, err);
+    } else {
+        const char *ok_response = "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nContent-Type: text/plain\r\n\r\nHello World";
+        int sent = socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+        ESP_LOGW(TAG, "sent ok %d", sent);
+    }
+    request->done = false;
 }
 
 
@@ -249,6 +326,9 @@ void supervisor_web_workflow_background(void) {
     if (!common_hal_socketpool_socket_get_connected(&active) &&
         !common_hal_socketpool_socket_get_closed(&listening) &&
         listening.num > 0) {
+        if (!common_hal_socketpool_socket_get_closed(&active)) {
+            common_hal_socketpool_socket_close(&active);
+        }
         uint32_t ip;
         uint32_t port;
         int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
@@ -268,6 +348,8 @@ void supervisor_web_workflow_background(void) {
 
             active_request.state = STATE_METHOD;
             active_request.offset = 0;
+            active_request.done = false;
+            active_request.redirect = false;
 
             lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         }

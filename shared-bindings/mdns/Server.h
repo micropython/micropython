@@ -41,3 +41,6 @@ const char *common_hal_mdns_server_get_instance_name(mdns_server_obj_t *self);
 void common_hal_mdns_server_set_instance_name(mdns_server_obj_t *self, const char *instance_name);
 mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_float_t timeout);
 void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port);
+
+// For internal use.
+void mdns_server_construct(mdns_server_obj_t *self);
