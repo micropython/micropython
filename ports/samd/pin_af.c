@@ -38,7 +38,7 @@
 
 extern const uint8_t tcc_channel_count[];
 
-#include PIN_AF_TABLE_C
+#include "pin_af_table.c"
 
 // Just look for an table entry for a given pin and raise an error
 // in case of no match (which should not happen).
