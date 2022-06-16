@@ -28,7 +28,7 @@
 
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 18
+#define MICROPY_VERSION_MINOR 19
 #define MICROPY_VERSION_MICRO 0
 
 // Combined version as a 32-bit number for convenience
