@@ -659,9 +659,11 @@ class _FS:
     return self.File()
 uos.mount(_FS(), '/_')
 uos.chdir('/_')
-from _injected import *
-uos.umount('/_')
-del _injected_buf, _FS
+try:
+  from _injected import *
+finally:
+  uos.umount('/_')
+  del _injected_buf, _FS
 """
 
 
