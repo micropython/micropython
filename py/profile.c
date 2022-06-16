@@ -313,6 +313,26 @@ mp_obj_t mp_prof_settrace(mp_obj_t callback) {
     return mp_const_none;
 }
 
+mp_obj_t mp_prof_get_frame(int depth) {
+
+    mp_code_state_t *code_state = MP_STATE_THREAD(current_code_state);
+    
+    for(int i = 0; i < depth; i++) {
+        code_state = code_state->prev_state;
+        if (code_state == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("call stack is not deep enough"));
+        }
+    }
+    
+    mp_obj_frame_t *frame = MP_OBJ_TO_PTR(mp_obj_new_frame(code_state));
+    if (frame == NULL) {
+        // Couldn't allocate a frame object
+        return MP_OBJ_NULL;
+    }
+    
+    return MP_OBJ_FROM_PTR(frame);
+}
+
 mp_obj_t mp_prof_frame_enter(mp_code_state_t *code_state) {
     assert(!mp_prof_is_executing);
 

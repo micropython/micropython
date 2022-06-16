@@ -187,6 +187,16 @@ STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
     return mp_prof_settrace(obj);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
+
+// _getframe(): Return current frame object.
+STATIC mp_obj_t mp_sys_getframe(size_t n_args, const mp_obj_t *args) {
+    int depth = 0;
+    if (n_args == 1) {
+        depth = mp_obj_get_int(args[0]);
+    }
+    return mp_prof_get_frame(depth);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_getframe_obj, 0, 1, mp_sys_getframe);
 #endif // MICROPY_PY_SYS_SETTRACE
 
 #if MICROPY_PY_SYS_ATTR_DELEGATION
@@ -244,6 +254,7 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
 
     #if MICROPY_PY_SYS_SETTRACE
     { MP_ROM_QSTR(MP_QSTR_settrace), MP_ROM_PTR(&mp_sys_settrace_obj) },
+    { MP_ROM_QSTR(MP_QSTR__getframe), MP_ROM_PTR(&mp_sys_getframe_obj) },
     #endif
 
     #if MICROPY_PY_SYS_STDFILES
