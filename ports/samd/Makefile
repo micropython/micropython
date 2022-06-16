@@ -48,7 +48,7 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
 MAKE_PIN_AF = boards/make-pin-af.py
-PIN_AF_TABLE_CSV = boards/pin-af-table-$(MCU_SERIES).csv
+PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
 GEN_PIN_AF = pin_af_table.c
 
 MAKE_PINS = boards/make-pins.py
@@ -62,7 +62,6 @@ CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU_$(MCU_SERI
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -DMPCONFIG_MCU_H='<boards/mpconfig_$(MCU_SERIES_LOWER).h>'
-CFLAGS += -DPIN_AF_TABLE_C='<$(BUILD)/$(GEN_PIN_AF)>'
 
 LDFLAGS = -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
 LDFLAGS += $(LDFLAGS_MOD)
