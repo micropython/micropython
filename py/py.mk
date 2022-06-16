@@ -221,7 +221,11 @@ PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))
 PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 
 # this is a convenience variable for ports that want core, extmod and frozen code
-PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
+PY_O = $(PY_CORE_O)
+
+ifneq ($(MICROPY_EXCLUDE_EXTMOD),1)
+PY_O += $(PY_EXTMOD_O)
+endif
 
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
@@ -230,7 +234,11 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
-SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
+SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c))
+
+ifneq ($(MICROPY_EXCLUDE_EXTMOD),1)
+SRC_QSTR += $(PY_EXTMOD_O_BASENAME:.o=.c)
+endif
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -287,4 +295,6 @@ $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 #-fno-crossjumping
 
 # Include rules for extmod related code
+ifneq ($(MICROPY_EXCLUDE_EXTMOD),1)
 include $(TOP)/extmod/extmod.mk
+endif

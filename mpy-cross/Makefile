@@ -9,6 +9,8 @@ QSTR_DEFS = qstrdefsport.h
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
 
+MICROPY_EXCLUDE_EXTMOD = 1
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 
