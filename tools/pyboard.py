@@ -446,16 +446,24 @@ class Pyboard:
             elif data == b"R\x01":
                 # Device supports raw-paste mode, write out the command using this mode.
                 return self.raw_paste_write(command_bytes)
-            elif not is_bytecode:
+            else:
                 # Device doesn't support raw-paste, fall back to normal raw REPL.
                 data = self.read_until(1, b"w REPL; CTRL-B to exit\r\n>")
                 if not data.endswith(b"w REPL; CTRL-B to exit\r\n>"):
                     print(data)
                     raise PyboardError("could not enter raw repl")
-            else:
-                raise NotImplementedError()   # sending bytecode currently requires raw paste
-            # Don't try to use raw-paste mode again for this connection.
-            self.use_raw_paste = False
+
+        if is_bytecode:
+            # if we can't raw paste bytecode then use the injected import hook to load it instead
+            command_bytes = "_injected_buf={!r}\n{}\n".format(
+                command_bytes, _injected_import_hook_code
+            )
+            if self.use_raw_paste and data == b"R\x00":
+                # the device did understand raw-paste, so try again as a plaintext raw paste
+                return self.exec_raw_no_follow(command_bytes, is_bytecode=False)
+
+        # Don't try to use raw-paste mode again for this connection.
+        self.use_raw_paste = False
 
         # Write command using standard raw REPL, 256 bytes every 10ms.
         for i in range(0, len(command_bytes), 256):
