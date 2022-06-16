@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 #define MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 
+#include "py/mpconfig.h"
 #include "py/mphal.h"
 
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
@@ -38,6 +39,13 @@
 #define NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+// The default UI code in ui.c only works if there is at least one LED configured.
+#if defined(MBOOT_LED1) || defined(MICROPY_HW_LED1)
+#define MBOOT_ENABLE_DEFAULT_UI (1)
+#else
+#define MBOOT_ENABLE_DEFAULT_UI (0)
+#endif
+
 #ifndef MBOOT_BOARD_EARLY_INIT
 #define MBOOT_BOARD_EARLY_INIT(initial_r0)
 #endif
@@ -47,15 +55,27 @@
 #endif
 
 #ifndef MBOOT_BOARD_GET_RESET_MODE
+#if MBOOT_ENABLE_DEFAULT_UI
 #define MBOOT_BOARD_GET_RESET_MODE(initial_r0) mboot_get_reset_mode_default()
+#else
+#define MBOOT_BOARD_GET_RESET_MODE(initial_r0) BOARDCTRL_RESET_MODE_NORMAL
+#endif
 #endif
 
 #ifndef MBOOT_BOARD_STATE_CHANGE
+#if MBOOT_ENABLE_DEFAULT_UI
 #define MBOOT_BOARD_STATE_CHANGE(state, arg) mboot_state_change_default((state), (arg))
+#else
+#define MBOOT_BOARD_STATE_CHANGE(state, arg)
+#endif
 #endif
 
 #ifndef MBOOT_BOARD_SYSTICK
+#if MBOOT_ENABLE_DEFAULT_UI
 #define MBOOT_BOARD_SYSTICK() mboot_ui_systick()
+#else
+#define MBOOT_BOARD_SYSTICK()
+#endif
 #endif
 
 #ifndef MBOOT_ADDRESS_SPACE_64BIT
@@ -171,8 +191,10 @@ const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
 
 static inline void mboot_entry_init_default(void) {
+    #if MBOOT_ENABLE_DEFAULT_UI
     // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
     led_init();
+    #endif
 
     // set the system clock to be HSE
     SystemClock_Config();

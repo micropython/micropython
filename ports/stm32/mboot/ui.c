@@ -27,6 +27,8 @@
 #include "mboot.h"
 #include "ports/stm32/boardctrl.h"
 
+#if MBOOT_ENABLE_DEFAULT_UI
+
 /******************************************************************************/
 // LED
 
@@ -253,3 +255,5 @@ void mboot_state_change_default(mboot_state_t state, uint32_t arg) {
             break;
     }
 }
+
+#endif // MBOOT_ENABLE_DEFAULT_UI
