@@ -382,6 +382,7 @@ jobs:
     if: ${{ needs.test.outputs.boards-espressif != '[]' }}
     steps:
     - name: Set up Python 3
+      id: py3
       uses: actions/setup-python@v2
       with:
         python-version: "3.x"
@@ -400,7 +401,7 @@ jobs:
       id: idf-cache
       with:
         path: ${{ github.workspace }}/.idf_tools
-        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-20220404
+        key: ${{ runner.os }}-idf-tools-${{ hashFiles('.git/modules/ports/espressif/esp-idf/HEAD') }}-${{ steps.py3.outputs.python-path }}-20220404
     - name: Clone IDF submodules
       run: |
         (cd $IDF_PATH && git submodule update --init)
