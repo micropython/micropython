@@ -146,6 +146,7 @@ void supervisor_start_web_workflow(void) {
     }
 
     mdns_server_construct(&mdns);
+    common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", 80);
 
     pool.base.type = &socketpool_socketpool_type;
     common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
