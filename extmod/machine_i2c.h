@@ -61,6 +61,9 @@ typedef struct _mp_machine_i2c_buf_t {
 // - transfer must be non-NULL
 // - transfer_single only needs to be set if transfer=mp_machine_i2c_transfer_adaptor
 typedef struct _mp_machine_i2c_p_t {
+    #if MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+    bool transfer_supports_write1;
+    #endif
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);

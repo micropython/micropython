@@ -130,6 +130,10 @@
 #define mp_type_textio mp_type_vfs_lfs2_textio
 #endif
 
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
+
 #if MICROPY_PY_NETWORK
 #define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
 #else

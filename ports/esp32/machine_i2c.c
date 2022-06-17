@@ -188,6 +188,7 @@ mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {
+    .transfer_supports_write1 = true,
     .transfer = machine_hw_i2c_transfer,
 };
 
