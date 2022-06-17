@@ -658,7 +658,7 @@ unwind_jump:;
                         assert(exc_sp >= exc_stack);
 
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
-                            if (exc_sp->handler > ip) {
+                            if (exc_sp->handler >= ip) {
                                 // Found a finally handler that isn't active; run it.
                                 // Getting here the stack looks like:
                                 //     (..., X, dest_ip)
@@ -1079,7 +1079,7 @@ unwind_return:
                     // Search for and execute finally handlers that aren't already active
                     while (exc_sp >= exc_stack) {
                         if (MP_TAGPTR_TAG1(exc_sp->val_sp)) {
-                            if (exc_sp->handler > ip) {
+                            if (exc_sp->handler >= ip) {
                                 // Found a finally handler that isn't active; run it.
                                 // Getting here the stack looks like:
                                 //     (..., X, [iter0, iter1, ...,] ret_val)
