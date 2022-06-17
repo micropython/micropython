@@ -150,22 +150,10 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return ret;
 }
 
-STATIC int machine_i2c_start(mp_obj_base_t *self) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("start is not supported."));
-    return 0;
-}
-
-STATIC int machine_i2c_stop(mp_obj_base_t *self) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("start is not supported."));
-    return 0;
-}
-
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
     .init = machine_i2c_init,
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
-    .start = machine_i2c_start,
-    .stop = machine_i2c_stop,
 };
 
 const mp_obj_type_t machine_i2c_type = {
