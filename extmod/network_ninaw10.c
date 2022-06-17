@@ -196,9 +196,9 @@ STATIC mp_obj_t network_ninaw10_scan(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_scan_obj, network_ninaw10_scan);
 
 STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_essid, ARG_key, ARG_security, ARG_channel };
+    enum { ARG_ssid, ARG_key, ARG_security, ARG_channel };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_essid,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -210,7 +210,7 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // get ssid
-    const char *ssid = mp_obj_str_get_str(args[ARG_essid].u_obj);
+    const char *ssid = mp_obj_str_get_str(args[ARG_ssid].u_obj);
 
     if (strlen(ssid) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
@@ -304,7 +304,7 @@ STATIC mp_obj_t network_ninaw10_config(size_t n_args, const mp_obj_t *args, mp_m
         }
 
         switch (mp_obj_str_get_qstr(args[1])) {
-            case MP_QSTR_essid: {
+            case MP_QSTR_ssid: {
                 nina_netinfo_t netinfo;
                 nina_netinfo(&netinfo);
                 return mp_obj_new_str(netinfo.ssid, strlen(netinfo.ssid));

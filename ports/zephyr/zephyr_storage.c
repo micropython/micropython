@@ -32,11 +32,11 @@
 #endif
 
 #ifdef CONFIG_DISK_ACCESS
-#include <storage/disk_access.h>
+#include <zephyr/storage/disk_access.h>
 #endif
 
 #ifdef CONFIG_FLASH_MAP
-#include <storage/flash_map.h>
+#include <zephyr/storage/flash_map.h>
 #endif
 
 #ifdef CONFIG_DISK_ACCESS
