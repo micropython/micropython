@@ -20,6 +20,30 @@ SRC_SUPERVISOR = \
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 
+
+ifeq ($(CIRCUITPY_USB),1)
+CIRCUITPY_CREATOR_ID ?= $(USB_VID)
+CIRCUITPY_CREATION_ID ?= $(USB_PID)
+endif
+
+ifneq ($(CIRCUITPY_CREATOR_ID),)
+CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
+endif
+
+ifneq ($(CIRCUITPY_CREATION_ID),)
+CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
+endif
+
+ifeq ($(CIRCUITPY_BLEIO),1)
+	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
+  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/file_transfer.c
+  endif
+  ifeq ($(CIRCUITPY_SERIAL_BLE),1)
+    SRC_SUPERVISOR += supervisor/shared/bluetooth/serial.c
+  endif
+endif
+
 INTERNAL_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DINTERNAL_FLASH_FILESYSTEM=$(INTERNAL_FLASH_FILESYSTEM)
 
@@ -36,20 +60,6 @@ ifeq ($(DISABLE_FILESYSTEM),1)
 SRC_SUPERVISOR += supervisor/stub/filesystem.c
 else
 SRC_SUPERVISOR += supervisor/shared/filesystem.c
-endif
-
-ifeq ($(CIRCUITPY_BLEIO),1)
-	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
-  CIRCUITPY_CREATOR_ID ?= $(USB_VID)
-  CIRCUITPY_CREATION_ID ?= $(USB_PID)
-  CFLAGS += -DCIRCUITPY_CREATOR_ID=$(CIRCUITPY_CREATOR_ID)
-  CFLAGS += -DCIRCUITPY_CREATION_ID=$(CIRCUITPY_CREATION_ID)
-  ifeq ($(CIRCUITPY_BLE_FILE_SERVICE),1)
-    SRC_SUPERVISOR += supervisor/shared/bluetooth/file_transfer.c
-  endif
-  ifeq ($(CIRCUITPY_SERIAL_BLE),1)
-    SRC_SUPERVISOR += supervisor/shared/bluetooth/serial.c
-  endif
 endif
 
 # Choose which flash filesystem impl to use.
