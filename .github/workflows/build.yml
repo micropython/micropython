@@ -383,7 +383,7 @@ jobs:
     steps:
     - name: Set up Python 3
       id: py3
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: "3.x"
     - uses: actions/checkout@v2.2.0
