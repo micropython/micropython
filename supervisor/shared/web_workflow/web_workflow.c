@@ -95,7 +95,6 @@ static bool _base64_in_place(char *buf, size_t in_len, size_t out_len) {
     if (encoded_len + 1 > out_len) {
         return false;
     }
-    ESP_LOGI(TAG, "triples %d", triples);
 
     // First pass, we convert input buffer to numeric base 64 values
     char *in = buf + (triples - 1) * 3;
@@ -103,29 +102,25 @@ static bool _base64_in_place(char *buf, size_t in_len, size_t out_len) {
     int r = in_len % 3;
     int partial = 0;
     if (r != 0) {
-        out[0] = (in[0] & 0xFC) >> 2;
-        out[1] = (in[0] & 0x03) << 4;
+        out[3] = 64;
         if (r == 2) {
-            out[1] |= (in[1] & 0xF0) >> 4;
             out[2] = (in[1] & 0x0F) << 2;
+            out[1] = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
         } else {
             out[2] = 64;
+            out[1] = (in[0] & 0x03) << 4;
         }
-        out[3] = 64;
+        out[0] = (in[0] & 0xFC) >> 2;
         in -= 3;
         out -= 4;
         partial = 1;
-    } else {
-        ESP_LOGI(TAG, "no partial");
     }
     buf[encoded_len] = '\0';
     for (size_t i = 0; i < triples - partial; i++) {
-        ESP_LOGI(TAG, "in %d %d %d", in[0], in[1], in[2]);
-        out[0] = (in[0] & 0xFC) >> 2;
-        out[1] = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
-        out[2] = (in[1] & 0x0F) << 2 | (in[2] & 0xC0) >> 6;
         out[3] = in[2] & 0x3F;
-        ESP_LOGI(TAG, "out %d %d %d %d", out[0], out[1], out[2], out[3]);
+        out[2] = (in[1] & 0x0F) << 2 | (in[2] & 0xC0) >> 6;
+        out[1] = (in[0] & 0x03) << 4 | (in[1] & 0xF0) >> 4;
+        out[0] = (in[0] & 0xFC) >> 2;
         in -= 3;
         out -= 4;
     }
@@ -425,7 +420,10 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     request->offset = 0;
                     request->state = STATE_HEADER_KEY;
                     if (strcmp(request->header_key, "Authorization") == 0) {
-                        ESP_LOGW(TAG, "Authorization");
+                        const char *prefix = "Basic ";
+                        request->authenticated = memcmp(request->header_value, prefix, strlen(prefix)) == 0 &&
+                            strcmp(_api_password, request->header_value + strlen(prefix)) == 0;
+                        ESP_LOGW(TAG, "Authorization %d", request->authenticated);
                     } else if (strcmp(request->header_key, "Host") == 0) {
                         ESP_LOGW(TAG, "Host header check '%s'", request->header_value);
                         request->redirect = strcmp(request->header_value, "circuitpython.local") == 0;
@@ -567,13 +565,20 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         while (send_offset < quantity_read) {
                             int sent = socketpool_socket_send(socket, data_buffer + send_offset, quantity_read - send_offset);
                             if (sent < 0) {
-                                ESP_LOGE(TAG, "file send error %d", sent);
-                                break;
+                                if (sent == -EAGAIN) {
+                                    sent = 0;
+                                } else {
+                                    ESP_LOGE(TAG, "file send error %d", sent);
+                                    break;
+                                }
                             }
                             send_offset += sent;
                         }
                     }
                     ESP_LOGW(TAG, "file return done");
+                    if (total_read < total_length) {
+                        socketpool_socket_close(socket);
+                    }
 
                     f_close(&active_file);
                 }
