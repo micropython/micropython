@@ -33,6 +33,7 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
 

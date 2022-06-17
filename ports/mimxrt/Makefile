@@ -42,6 +42,7 @@ MICROPY_VFS_FAT ?= 1
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 

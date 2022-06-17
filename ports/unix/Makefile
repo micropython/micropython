@@ -28,6 +28,7 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
