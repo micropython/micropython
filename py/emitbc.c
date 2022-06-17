@@ -47,7 +47,6 @@ struct _emit_t {
     byte dummy_data[DUMMY_DATA_SIZE];
 
     pass_kind_t pass : 8;
-    mp_uint_t last_emit_was_return_value : 8;
 
     int stack_size;
 
@@ -272,7 +271,6 @@ STATIC void emit_write_bytecode_byte_label(emit_t *emit, int stack_adj, byte b1,
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
     emit->scope = scope;
     emit->last_source_line_offset = 0;
     emit->last_source_line = 1;
@@ -397,10 +395,6 @@ bool mp_emit_bc_end_pass(emit_t *emit) {
     return true;
 }
 
-bool mp_emit_bc_last_emit_was_return_value(emit_t *emit) {
-    return emit->last_emit_was_return_value;
-}
-
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     if (emit->pass == MP_PASS_SCOPE) {
         return;
@@ -410,7 +404,6 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-    emit->last_emit_was_return_value = false;
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
@@ -773,7 +766,6 @@ void mp_emit_bc_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_ke
 
 void mp_emit_bc_return_value(emit_t *emit) {
     emit_write_bytecode_byte(emit, -1, MP_BC_RETURN_VALUE);
-    emit->last_emit_was_return_value = true;
 }
 
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
@@ -806,7 +798,6 @@ const emit_method_table_t emit_bc_method_table = {
 
     mp_emit_bc_start_pass,
     mp_emit_bc_end_pass,
-    mp_emit_bc_last_emit_was_return_value,
     mp_emit_bc_adjust_stack_size,
     mp_emit_bc_set_source_line,
 

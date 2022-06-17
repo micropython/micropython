@@ -1330,12 +1330,8 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
             goto done;
         }
 
-        if (
-            // optimisation: don't jump over non-existent elif/else blocks
-            !(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))
-            // optimisation: don't jump if last instruction was return
-            && !EMIT(last_emit_was_return_value)
-            ) {
+        // optimisation: don't jump over non-existent elif/else blocks
+        if (!(MP_PARSE_NODE_IS_NULL(pns->nodes[2]) && MP_PARSE_NODE_IS_NULL(pns->nodes[3]))) {
             // jump over elif/else blocks
             EMIT_ARG(jump, l_end);
         }
@@ -1362,10 +1358,7 @@ STATIC void compile_if_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
                 goto done;
             }
 
-            // optimisation: don't jump if last instruction was return
-            if (!EMIT(last_emit_was_return_value)) {
-                EMIT_ARG(jump, l_end);
-            }
+            EMIT_ARG(jump, l_end);
             EMIT_ARG(label_assign, l_fail);
         }
     }
@@ -1580,9 +1573,7 @@ STATIC void compile_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     EMIT_ARG(for_iter, pop_label);
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
     compile_node(comp, pns->nodes[2]); // body
-    if (!EMIT(last_emit_was_return_value)) {
-        EMIT_ARG(jump, continue_label);
-    }
+    EMIT_ARG(jump, continue_label);
     EMIT_ARG(label_assign, pop_label);
     EMIT(for_iter_end);
 
@@ -3048,11 +3039,8 @@ STATIC bool compile_scope(compiler_t *comp, scope_t *scope, pass_kind_t pass) {
         }
 
         compile_node(comp, pns->nodes[3]); // 3 is function body
-        // emit return if it wasn't the last opcode
-        if (!EMIT(last_emit_was_return_value)) {
-            EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-            EMIT(return_value);
-        }
+        EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
+        EMIT(return_value);
     } else if (scope->kind == SCOPE_LAMBDA) {
         assert(MP_PARSE_NODE_IS_STRUCT(scope->pn));
         mp_parse_node_struct_t *pns = (mp_parse_node_struct_t *)scope->pn;

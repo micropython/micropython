@@ -48,12 +48,12 @@ arg names:
 43 LOAD_CONST_NONE
 44 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 45\[46\] bytes)
-Raw bytecode (code_info_size=8\[46\], bytecode_size=370):
+Raw bytecode (code_info_size=8\[46\], bytecode_size=372):
  a8 12 9\[bf\] 03 05 60 60 26 22 24 64 22 24 25 25 24
  26 23 63 22 22 25 23 23 2f 6c 25 65 25 25 69 68
  26 65 27 6a 62 20 23 62 2a 29 69 24 25 28 67 26
 ########
-\.\+81 63
+\.\+51 63
 arg names:
 (N_STATE 22)
 (N_EXC_STACK 2)
@@ -403,6 +403,8 @@ arg names:
 367 RETURN_VALUE
 368 LOAD_CONST_SMALL_INT 1
 369 RETURN_VALUE
+370 LOAD_CONST_NONE
+371 RETURN_VALUE
 File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 59 bytes)
 Raw bytecode (code_info_size=8, bytecode_size=51):
  a8 10 0a 05 80 82 34 38 81 57 c0 57 c1 57 c2 57
@@ -621,9 +623,9 @@ arg names: *
 08 DELETE_DEREF 0
 10 LOAD_CONST_NONE
 11 RETURN_VALUE
-File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 13 bytes)
-Raw bytecode (code_info_size=8, bytecode_size=5):
- 9a 01 0a 05 03 08 80 8b b1 25 00 f2 63
+File cmdline/cmd_showbc.py, code block 'f' (descriptor: \.\+, bytecode @\.\+ 15 bytes)
+Raw bytecode (code_info_size=8, bytecode_size=7):
+ 9a 01 0a 05 03 08 80 8b b1 25 00 f2 63 51 63
 arg names: * b
 (N_STATE 4)
 (N_EXC_STACK 0)
@@ -633,6 +635,8 @@ arg names: * b
 01 LOAD_DEREF 0
 03 BINARY_OP 27 __add__
 04 RETURN_VALUE
+05 LOAD_CONST_NONE
+06 RETURN_VALUE
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+
 GC: total: \\d\+, used: \\d\+, free: \\d\+
