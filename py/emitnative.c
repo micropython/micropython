@@ -1966,6 +1966,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
     need_stack_settled(emit);
     ASM_JUMP(emit->as, label);
     emit_post(emit);
+    mp_asm_base_suppress_code(&emit->as->base);
 }
 
 STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bool pop) {
@@ -2810,6 +2811,7 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     }
     // TODO probably make this 1 call to the runtime (which could even call convert, native_raise(obj, type))
     emit_call(emit, MP_F_NATIVE_RAISE);
+    mp_asm_base_suppress_code(&emit->as->base);
 }
 
 STATIC void emit_native_yield(emit_t *emit, int kind) {

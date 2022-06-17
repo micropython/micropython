@@ -119,12 +119,12 @@ def f():
     #from sys import * # tested at module scope
 
     # raise
-    raise
-    raise 1
+    if a: raise
+    if a: raise 1
 
     # return
-    return
-    return 1
+    if a: return
+    if a: return 1
 
 # function with lots of locals
 def f():
