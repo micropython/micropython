@@ -233,4 +233,6 @@ const mp_obj_module_t mp_module_io = {
     .globals = (mp_obj_dict_t *)&mp_module_io_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_uio, mp_module_io);
+
 #endif

@@ -30,7 +30,8 @@
 
 #include <time.h>
 #include <sys/time.h>
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 
 #include "py/nlr.h"
 #include "py/obj.h"

@@ -30,7 +30,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include "soc/rtc_cntl_reg.h"
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #include "driver/adc.h"
 #include "esp_heap_caps.h"
 #include "multi_heap.h"
@@ -224,3 +225,5 @@ const mp_obj_module_t esp32_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&esp32_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_esp32, esp32_module);

@@ -126,4 +126,23 @@ static inline void mp_hal_pin_high(mp_hal_pin_obj_t pin) {
     gpio_set_mask(1 << pin);
 }
 
+enum mp_hal_pin_interrupt_trigger {
+    MP_HAL_PIN_TRIGGER_NONE,
+    MP_HAL_PIN_TRIGGER_LOW = GPIO_IRQ_LEVEL_LOW,
+    MP_HAL_PIN_TRIGGER_HIGH = GPIO_IRQ_LEVEL_HIGH,
+    MP_HAL_PIN_TRIGGER_FALL = GPIO_IRQ_EDGE_FALL,
+    MP_HAL_PIN_TRIGGER_RISE = GPIO_IRQ_EDGE_RISE,
+};
+
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard);
+
+enum {
+    MP_HAL_MAC_WLAN0 = 0,
+    MP_HAL_MAC_BDADDR,
+    MP_HAL_MAC_ETH0,
+};
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
+
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

@@ -1,15 +1,17 @@
-# test importing of .mpy files with native code (x64 only)
+# test importing of .mpy files with native code
 
 try:
     import usys, uio, uos
 
+    usys.implementation._mpy
     uio.IOBase
     uos.mount
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
-if not (usys.platform == "linux" and usys.maxsize > 2**32):
+mpy_arch = usys.implementation._mpy >> 8
+if mpy_arch == 0:
     print("SKIP")
     raise SystemExit
 
@@ -49,15 +51,14 @@ class UserFS:
 
 
 # these are the test .mpy files
+valid_header = bytes([77, 6, mpy_arch, 31])
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x06\xfe\x00\x10',
+    '/mod0.mpy': b'M\x06\xfc\x1f',
 
     # test loading of viper and asm
-    '/mod1.mpy': (
-        b'M\x06\x0a\x1f' # header
-
+    '/mod1.mpy': valid_header + (
         b'\x02' # n_qstr
         b'\x00' # n_obj
 
@@ -73,9 +74,7 @@ user_files = {
         b'\x02' # 2 children
 
             b'\x42' # 8 bytes, no children, viper code
-                b'\x00\x00\x00\x00\x00\x00' # dummy machine code
-                b'\x00\x00' # slot for qstr0
-                b'\x01\x0c\x0aprint\x00' # n_qstr=1, qstr0
+                b'\x00\x00\x00\x00\x00\x00\x00\x00' # dummy machine code
                 b'\x00' # scope_flags
 
             b'\x43' # 8 bytes, no children, asm code
@@ -84,9 +83,7 @@ user_files = {
     ),
 
     # test loading viper with additional scope flags and relocation
-    '/mod2.mpy': (
-        b'M\x06\x0a\x1f' # header
-
+    '/mod2.mpy': valid_header + (
         b'\x02' # n_qstr
         b'\x00' # n_obj
 
@@ -103,7 +100,6 @@ user_files = {
 
             b'\x22' # 4 bytes, no children, viper code
                 b'\x00\x00\x00\x00' # dummy machine code
-                b'\x00' # n_qstr=0
                 b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
                 b'\x06\x04' # rodata=6 bytes, bss=4 bytes
                 b'rodata' # rodata content

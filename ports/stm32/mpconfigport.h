@@ -163,39 +163,20 @@
 #define mp_type_textio mp_type_vfs_lfs2_textio
 #endif
 
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t stm_module;
-extern const struct _mp_obj_module_t mp_module_ubinascii;
-extern const struct _mp_obj_module_t mp_module_ure;
-extern const struct _mp_obj_module_t mp_module_uzlib;
-extern const struct _mp_obj_module_t mp_module_ujson;
-extern const struct _mp_obj_module_t mp_module_uheapq;
-extern const struct _mp_obj_module_t mp_module_uhashlib;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_onewire;
-
 #if MICROPY_PY_PYB
-#define PYB_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
+extern const struct _mp_obj_module_t pyb_module;
+#define PYB_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
 #else
-#define PYB_BUILTIN_MODULE
+#define PYB_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_STM
-#define STM_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+extern const struct _mp_obj_module_t stm_module;
+#define STM_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
 #else
-#define STM_BUILTIN_MODULE
+#define STM_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_MACHINE
@@ -204,35 +185,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
-#endif
-
-#if MICROPY_PY_UTIME
-#define UTIME_BUILTIN_MODULE                { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) },
-#else
-#define UTIME_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
-// usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
-#elif MICROPY_PY_USOCKET
-// usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-// no usocket module
-#define SOCKET_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
-#else
-#define NETWORK_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_ONEWIRE
-#define ONEWIRE_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) },
-#else
-#define ONEWIRE_BUILTIN_MODULE
 #endif
 
 #if defined(MICROPY_HW_ETH_MDC)
@@ -249,7 +201,7 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43
 #endif
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 #if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #else
@@ -267,19 +219,11 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #define MICROPY_HW_NIC_CC3K
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
-    UTIME_BUILTIN_MODULE \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
-    ONEWIRE_BUILTIN_MODULE \
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
+    PYB_BUILTIN_MODULE_CONSTANTS \
+    STM_BUILTIN_MODULE_CONSTANTS \
 
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
@@ -438,6 +382,12 @@ static inline mp_uint_t disable_irq(void) {
 // scheduler execution.
 #define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
+#endif
+
+#if defined(STM32WB)
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+#else
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
 #endif
 
 // We need an implementation of the log2 function which is not a macro

@@ -35,6 +35,8 @@
 #include "systick.h"
 #include "rtc.h"
 
+#if MICROPY_PY_UTIME
+
 /// \module time - time related functions
 ///
 /// The `time` module provides functions for getting the current time and date,
@@ -156,3 +158,7 @@ const mp_obj_module_t mp_module_utime = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_utime);
+
+#endif // MICROPY_PY_UTIME

@@ -319,9 +319,7 @@ void asm_x64_mov_mem64_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest
 
 STATIC void asm_x64_lea_disp_to_r64(asm_x64_t *as, int src_r64, int src_disp, int dest_r64) {
     // use REX prefix for 64 bit operation
-    assert(src_r64 < 8);
-    assert(dest_r64 < 8);
-    asm_x64_write_byte_2(as, REX_PREFIX | REX_W, OPCODE_LEA_MEM_TO_R64);
+    asm_x64_write_byte_2(as, REX_PREFIX | REX_W | REX_R_FROM_R64(dest_r64) | REX_B_FROM_R64(src_r64), OPCODE_LEA_MEM_TO_R64);
     asm_x64_write_r64_disp(as, dest_r64, src_r64, src_disp);
 }
 

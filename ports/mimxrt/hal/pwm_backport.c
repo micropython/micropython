@@ -103,29 +103,6 @@ void PWM_SetupPwmx_u16(PWM_Type *base, pwm_submodule_t subModule,
     base->OUTEN |= (1U << subModule);
 }
 
-void PWM_SetupFaultDisableMap(PWM_Type *base, pwm_submodule_t subModule,
-    pwm_channels_t pwmChannel, pwm_fault_channels_t pwm_fault_channels, uint16_t value) {
-    uint16_t reg = base->SM[subModule].DISMAP[pwm_fault_channels];
-    switch (pwmChannel) {
-        case kPWM_PwmA:
-            reg &= ~((uint16_t)PWM_DISMAP_DIS0A_MASK);
-            reg |= (((uint16_t)(value) << (uint16_t)PWM_DISMAP_DIS0A_SHIFT) & (uint16_t)PWM_DISMAP_DIS0A_MASK);
-            break;
-        case kPWM_PwmB:
-            reg &= ~((uint16_t)PWM_DISMAP_DIS0B_MASK);
-            reg |= (((uint16_t)(value) << (uint16_t)PWM_DISMAP_DIS0B_SHIFT) & (uint16_t)PWM_DISMAP_DIS0B_MASK);
-            break;
-        case kPWM_PwmX:
-            reg &= ~((uint16_t)PWM_DISMAP_DIS0X_MASK);
-            reg |= (((uint16_t)(value) << (uint16_t)PWM_DISMAP_DIS0X_SHIFT) & (uint16_t)PWM_DISMAP_DIS0X_MASK);
-            break;
-        default:
-            assert(false);
-            break;
-    }
-    base->SM[subModule].DISMAP[pwm_fault_channels] = reg;
-}
-
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
 status_t QTMR_SetupPwm_u16(TMR_Type *base, qtmr_channel_selection_t channel, uint32_t pwmFreqHz,
     uint16_t dutyCycleU16, bool outputPolarity, uint32_t srcClock_Hz, bool is_init) {

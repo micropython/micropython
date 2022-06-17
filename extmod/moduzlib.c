@@ -221,6 +221,9 @@ const mp_obj_module_t mp_module_uzlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uzlib_globals,
 };
+
+
+MP_REGISTER_MODULE(MP_QSTR_uzlib, mp_module_uzlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

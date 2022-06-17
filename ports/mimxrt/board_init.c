@@ -37,7 +37,7 @@
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 #include "modmachine.h"
 
 

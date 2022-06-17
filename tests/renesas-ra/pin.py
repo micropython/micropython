@@ -17,14 +17,6 @@ else:
     print("exp: " + try_s)
     print("out: " + str(p))
 
-p = Pin("SW1", Pin.IN, Pin.PULL_UP)
-if p.mode() != 1:
-    print("mode: NG")
-p = Pin("SW1", Pin.IN, pull=Pin.PULL_UP)
-if p.pull() != 14:
-    print("pull: NG")
-p = Pin("SW1", mode=Pin.IN, pull=Pin.PULL_UP)
-
 p.init(p.IN, p.PULL_UP)
 p.init(p.IN, pull=p.PULL_UP)
 p.init(mode=p.IN, pull=p.PULL_UP)

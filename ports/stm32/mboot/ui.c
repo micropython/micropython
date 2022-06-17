@@ -67,7 +67,7 @@ static led0_state_t led0_cur_state = LED0_STATE_OFF;
 static uint32_t led0_ms_interval = 0;
 static int led0_toggle_count = 0;
 
-MP_WEAK void led_init(void) {
+void led_init(void) {
     #if defined(MBOOT_BOARD_LED_INIT)
     // Custom LED init function provided by the board.
     MBOOT_BOARD_LED_INIT();
@@ -88,7 +88,7 @@ MP_WEAK void led_init(void) {
     led0_cur_state = LED0_STATE_OFF;
 }
 
-MP_WEAK void led_state(uint32_t led, int val) {
+static void led_state(uint32_t led, int val) {
     #if defined(MBOOT_BOARD_LED_STATE)
     // Custom LED state function provided by the board.
     return MBOOT_BOARD_LED_STATE(led, val);
@@ -115,14 +115,14 @@ void led_state_all(unsigned int mask) {
     #endif
 }
 
-void led0_state(led0_state_t state) {
+static void led0_state(led0_state_t state) {
     led0_cur_state = state;
     if (state == LED0_STATE_OFF || state == LED0_STATE_ON) {
         led_state(LED0, state);
     }
 }
 
-void led0_update(void) {
+void mboot_ui_systick(void) {
     if (led0_cur_state != LED0_STATE_OFF && systick_ms - led0_ms_interval > 50) {
         uint8_t rate = (led0_cur_state >> 2) & 0x1f;
         led0_ms_interval += 50;
@@ -136,7 +136,7 @@ void led0_update(void) {
 /******************************************************************************/
 // User button
 
-#if !defined(MBOOT_BOARD_GET_RESET_MODE)
+#ifdef MICROPY_HW_USRSW_PIN
 
 #define RESET_MODE_NUM_STATES (4)
 #define RESET_MODE_TIMEOUT_CYCLES (8)
@@ -158,7 +158,7 @@ static int usrbtn_state(void) {
     return mp_hal_pin_read(MICROPY_HW_USRSW_PIN) == MICROPY_HW_USRSW_PRESSED;
 }
 
-int mboot_get_reset_mode(void) {
+int mboot_get_reset_mode_default(void) {
     usrbtn_init();
     int reset_mode = BOARDCTRL_RESET_MODE_NORMAL;
     if (usrbtn_state()) {
@@ -198,9 +198,7 @@ int mboot_get_reset_mode(void) {
 /******************************************************************************/
 // State change
 
-#if !defined(MBOOT_BOARD_STATE_CHANGE)
-
-void mboot_state_change(mboot_state_t state, uint32_t arg) {
+void mboot_state_change_default(mboot_state_t state, uint32_t arg) {
     switch (state) {
         case MBOOT_STATE_DFU_START:
             led_state_all(0);
@@ -228,6 +226,10 @@ void mboot_state_change(mboot_state_t state, uint32_t arg) {
             }
             break;
 
+        case MBOOT_STATE_FSLOAD_PASS_START:
+            led_state_all(arg == 0 ? 2 : 4);
+            break;
+
         case MBOOT_STATE_FSLOAD_PROGRESS:
             break;
 
@@ -251,5 +253,3 @@ void mboot_state_change(mboot_state_t state, uint32_t arg) {
             break;
     }
 }
-
-#endif

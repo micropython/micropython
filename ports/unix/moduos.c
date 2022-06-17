@@ -25,19 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-
-#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
-#if __GLIBC_PREREQ(2, 25)
-#include <sys/random.h>
-#define _HAVE_GETRANDOM
-#endif
-#endif
 
 STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
     const char *s = getenv(mp_obj_str_get_str(var_in));
@@ -100,14 +92,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     mp_int_t n = mp_obj_get_int(num);
     vstr_t vstr;
     vstr_init_len(&vstr, n);
-    #ifdef _HAVE_GETRANDOM
-    RAISE_ERRNO(getrandom(vstr.buf, n, 0), errno);
-    #else
-    int fd = open("/dev/urandom", O_RDONLY);
-    RAISE_ERRNO(fd, errno);
-    RAISE_ERRNO(read(fd, vstr.buf, n), errno);
-    close(fd);
-    #endif
+    mp_hal_get_random(n, vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);

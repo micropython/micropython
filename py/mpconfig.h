@@ -361,11 +361,6 @@
 #define MICROPY_EMIT_INLINE_THUMB (0)
 #endif
 
-// Whether to enable ARMv7-M instruction support in the Thumb2 inline assembler
-#ifndef MICROPY_EMIT_INLINE_THUMB_ARMV7M
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
-#endif
-
 // Whether to enable float support in the Thumb2 inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB_FLOAT
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT (1)
@@ -394,8 +389,10 @@
 // Convenience definition for whether any native emitter is enabled
 #define MICROPY_EMIT_NATIVE (MICROPY_EMIT_X64 || MICROPY_EMIT_X86 || MICROPY_EMIT_THUMB || MICROPY_EMIT_ARM || MICROPY_EMIT_XTENSA || MICROPY_EMIT_XTENSAWIN)
 
-// Select prelude-as-bytes-object for certain emitters
-#define MICROPY_EMIT_NATIVE_PRELUDE_AS_BYTES_OBJ (MICROPY_EMIT_XTENSAWIN)
+// Some architectures cannot read byte-wise from executable memory.  In this case
+// the prelude for a native function (which usually sits after the machine code)
+// must be separated and placed somewhere where it can be read byte-wise.
+#define MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE (MICROPY_EMIT_XTENSAWIN)
 
 // Convenience definition for whether any inline assembler emitter is enabled
 #define MICROPY_EMIT_INLINE_ASM (MICROPY_EMIT_INLINE_THUMB || MICROPY_EMIT_INLINE_XTENSA)
@@ -427,13 +424,6 @@
 // This will disable the ability to execute native/viper code
 #ifndef MICROPY_DYNAMIC_COMPILER
 #define MICROPY_DYNAMIC_COMPILER (0)
-#endif
-
-// Configure dynamic compiler macros
-#if MICROPY_DYNAMIC_COMPILER
-#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC (mp_dynamic_compiler.py_builtins_str_unicode)
-#else
-#define MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC MICROPY_PY_BUILTINS_STR_UNICODE
 #endif
 
 // Whether to enable constant folding; eg 1+2 rewritten as 3
@@ -1595,6 +1585,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_I2C (0)
 #endif
 
+// Whether the low-level I2C transfer function supports a separate write as the first transfer
+#ifndef MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (0)
+#endif
+
 // Whether to provide the "machine.SoftI2C" class
 #ifndef MICROPY_PY_MACHINE_SOFTI2C
 #define MICROPY_PY_MACHINE_SOFTI2C (0)
@@ -1652,11 +1647,6 @@ typedef double mp_float_t;
 // See modbuiltins.c:mp_module_builtins_globals_table for format.
 #ifndef MICROPY_PORT_EXTRA_BUILTINS
 #define MICROPY_PORT_EXTRA_BUILTINS
-#endif
-
-// Additional builtin module definitions - see objmodule.c:mp_builtin_module_table for format.
-#ifndef MICROPY_PORT_BUILTIN_MODULES
-#define MICROPY_PORT_BUILTIN_MODULES
 #endif
 
 // Additional constant definitions for the compiler - see compile.c:mp_constants_table.

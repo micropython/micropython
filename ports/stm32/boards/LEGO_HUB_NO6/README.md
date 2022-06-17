@@ -33,7 +33,8 @@ Backing up original Hub firmware
 
 Before install MicroPython it is advised to backup the original LEGO firmware that
 the Hub comes installed with.  To do this, enter the built-in bootloader by holding
-down the Bluetooth button for 5 seconds while powering up the Hub via USB.  Then
+down the Bluetooth button for 5 seconds while powering up the Hub via USB (you may
+need to take out the battery and disconnect USB to power off the Hub first).  Then
 run the following command from the root of this repository:
 
     $ cd ports/stm32
@@ -58,7 +59,8 @@ the root of this repository run:
     $ make BOARD=LEGO_HUB_NO6
 
 Now enter the built-in bootloader by holding down the Bluetooth button for 5
-seconds while powering up the Hub via USB.  Then run:
+seconds while powering up the Hub via USB (you may need to take out the battery
+and disconnect USB to power off the Hub first).  Then run:
 
     $ make BOARD=LEGO_HUB_NO6 deploy
 
@@ -97,3 +99,32 @@ To scan for BLE devices:
     >>> ble.gap_scan(2000, 625, 625)
 
 Use help("modules") to see available built-in modules.
+
+Updating MicroPython from the Hub's filesystem
+----------------------------------------------
+
+You can update the MicroPython application firmware using the instructions above
+for installing the firmware for the first time.  The Hub also supports updating
+the application firmware from within MicroPython itself, using the on-board
+filesystem.
+
+To use this feature, build the firmware (see above for details) then gzip it and
+copy the resulting file to the Hub (eg using mpremote):
+
+    $ make BOARD=LEGO_HUB_NO6
+    $ gzip boards/LEGO_HUB_NO6/firmware.dfu
+    $ mpremote cp boards/LEGO_HUB_NO6/firmware.dfu.gz :
+
+Then get a REPL on the Hub and execute:
+
+    >>> import appupdate
+    >>> appupdate.update_app("firmware.dfu.gz")
+
+You can alternatively run this REPL command using mpremote:
+
+    $ mpremote exec --no-follow "import appupdate; appupdate.update_app('firmware.dfu.gz')"
+
+At that point the Hub should restart and the LED on the central button will flash
+different colours.  Once the update is complete the LED will stop flashing and the
+Hub will appear again as a USB device.  The application firmware is now updated
+and you can remove the firmware.dfu.gz file if desired.

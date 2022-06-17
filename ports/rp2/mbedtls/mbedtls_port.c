@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Glenn Ruben Bakke
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include <py/mpconfig.h>
 
-// Board overridable build configuration.
+#ifdef MICROPY_SSL_MBEDTLS
 
-#ifndef MICROPY_MBFS
-#define MICROPY_MBFS                       (0)
-#endif
+#include "mbedtls_config.h"
 
-#ifndef MICROPY_VFS
-#define MICROPY_VFS                        (1)
-#endif
+extern uint8_t rosc_random_u8(size_t cycles);
 
-// Board overridable emitter configuration.
+int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
+    *olen = len;
+    for (size_t i = 0; i < len; i++) {
+        output[i] = rosc_random_u8(8);
+    }
+    return 0;
+}
 
-#ifndef MICROPY_EMIT_THUMB
-#define MICROPY_EMIT_THUMB          (1)
-#endif
-
-#ifndef MICROPY_EMIT_INLINE_THUMB
-#define MICROPY_EMIT_INLINE_THUMB   (1)
-#endif
-
-// Board overridable feature configuration.
-
-#ifndef MICROPY_ENABLE_SOURCE_LINE
-#define MICROPY_ENABLE_SOURCE_LINE         (1)
-#endif
-
-#ifndef MICROPY_PY_ARRAY_SLICE_ASSIGN
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN      (1)
-#endif
-
-#ifndef MICROPY_PY_SYS_STDFILES
-#define MICROPY_PY_SYS_STDFILES            (1)
-#endif
-
-#ifndef MICROPY_PY_UBINASCII
-#define MICROPY_PY_UBINASCII               (1)
-#endif
-
-// Board overridable port specific feature configuration.
-
-#ifndef MICROPY_PY_NRF
-#define MICROPY_PY_NRF                     (1)
-#endif
-
-// Board overridable hardware configuration.
-
-#ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
 #endif

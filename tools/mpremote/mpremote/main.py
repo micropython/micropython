@@ -1,6 +1,6 @@
 """
 MicroPython Remote - Interaction and automation tool for MicroPython
-MIT license; Copyright (c) 2019-2021 Damien P. George
+MIT license; Copyright (c) 2019-2022 Damien P. George
 
 This program provides a set of utilities to interact with and automate a
 MicroPython device over a serial connection.  Commands supported are:
@@ -68,6 +68,7 @@ _COMMANDS = {
     "run": (True, True, 1, "run the given local script"),
     "fs": (True, True, 1, "execute filesystem commands on the device"),
     "help": (False, False, 0, "print help and exit"),
+    "version": (False, False, 0, "print version and exit"),
 }
 
 _BUILTIN_COMMAND_EXPANSIONS = {
@@ -109,6 +110,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
     ],
     "--help": "help",
+    "--version": "version",
 }
 
 for port_num in range(4):
@@ -465,6 +467,12 @@ def print_help():
     print_commands_help(_command_expansions, 2)
 
 
+def print_version():
+    from . import __version__
+
+    print(f"{_PROG} {__version__}")
+
+
 def main():
     config = load_user_config()
     prepare_command_expansions(config)
@@ -497,6 +505,9 @@ def main():
                 continue
             elif cmd == "help":
                 print_help()
+                sys.exit(0)
+            elif cmd == "version":
+                print_version()
                 sys.exit(0)
             elif cmd == "resume":
                 auto_soft_reset = False

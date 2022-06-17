@@ -94,14 +94,12 @@ typedef struct _emit_t emit_t;
 
 typedef struct _mp_emit_common_t {
     pass_kind_t pass;
-    uint16_t ct_cur_obj_base;
-    uint16_t ct_cur_obj;
     uint16_t ct_cur_child;
-    mp_uint_t *const_table;
     mp_raw_code_t **children;
     #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
     mp_map_t qstr_map;
     #endif
+    mp_obj_list_t const_obj_list;
 } mp_emit_common_t;
 
 typedef struct _mp_emit_method_table_id_ops_t {
@@ -181,12 +179,7 @@ static inline qstr_short_t mp_emit_common_use_qstr(mp_emit_common_t *emit, qstr 
 }
 #endif
 
-static inline size_t mp_emit_common_alloc_const_obj(mp_emit_common_t *emit, mp_obj_t obj) {
-    if (emit->pass == MP_PASS_EMIT) {
-        emit->const_table[emit->ct_cur_obj] = (mp_uint_t)obj;
-    }
-    return emit->ct_cur_obj++;
-}
+size_t mp_emit_common_use_const_obj(mp_emit_common_t *emit, mp_obj_t const_obj);
 
 static inline size_t mp_emit_common_alloc_const_child(mp_emit_common_t *emit, mp_raw_code_t *rc) {
     if (emit->pass == MP_PASS_EMIT) {

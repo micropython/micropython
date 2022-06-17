@@ -14,6 +14,7 @@
     <PyQstrDefs>$(PySrcDir)qstrdefs.h</PyQstrDefs>
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>
+    <ModuleDefsCollected>$(DestDir)/moduledefs.collected</ModuleDefsCollected>
     <PyPython Condition="'$(PyPython)' == ''">$(MICROPY_CPYTHON3)</PyPython>
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
     <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
@@ -99,17 +100,17 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat qstr _ $(DestDir)qstr $(QstrDefsCollected)"/>
   </Target>
 
-  <Target Name="MakeModuleDefs" DependsOnTargets="MakeDestDir">
+  <Target Name="CollectModuleDefs" DependsOnTargets="MakeQstrDefs" Inputs="$(DestDir)qstr.i.last" Outputs="$(ModuleDefsCollected)">
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split module $(DestDir)qstr.i.last $(DestDir)module _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat module _ $(DestDir)module $(ModuleDefsCollected)"/>
+  </Target>
+
+  <Target Name="MakeModuleDefs" DependsOnTargets="CollectModuleDefs" Inputs="$(ModuleDefsCollected)" Outputs="$(DestDir)moduledefs.h">
     <PropertyGroup>
       <DestFile>$(DestDir)moduledefs.h</DestFile>
       <TmpFile>$(DestFile).tmp</TmpFile>
     </PropertyGroup>
-    <ItemGroup>
-      <PyUserModuleFiles Include="@(ClCompile)">
-        <Path>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', ''))</Path>
-      </PyUserModuleFiles>
-    </ItemGroup>
-    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py --vpath=&quot;., $(PyBaseDir), $(PyUserCModules)&quot; @(PyUserModuleFiles->'%(Path)', ' ') > $(TmpFile)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py $(ModuleDefsCollected) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 

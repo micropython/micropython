@@ -55,6 +55,8 @@
 #include "rtcounter.h"
 #endif
 
+#if MICROPY_PY_MACHINE
+
 #define PYB_RESET_HARD      (0)
 #define PYB_RESET_WDT       (1)
 #define PYB_RESET_SOFT      (2)
@@ -249,3 +251,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

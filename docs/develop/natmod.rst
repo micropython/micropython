@@ -34,6 +34,7 @@ options for the ``ARCH`` variable, see below):
 
 * ``x86`` (32 bit)
 * ``x64`` (64 bit x86)
+* ``armv6m`` (ARM Thumb, eg Cortex-M0)
 * ``armv7m`` (ARM Thumb 2, eg Cortex-M3)
 * ``armv7emsp`` (ARM Thumb 2, single precision float, eg Cortex-M4F, Cortex-M7)
 * ``armv7emdp`` (ARM Thumb 2, double precision float, eg Cortex-M7)
@@ -171,7 +172,7 @@ The file ``Makefile`` contains:
     # Source files (.c or .py)
     SRC = factorial.c
 
-    # Architecture to build for (x86, x64, armv7m, xtensa, xtensawin)
+    # Architecture to build for (x86, x64, armv6m, armv7m, xtensa, xtensawin)
     ARCH = x64
 
     # Include to get the rules for compiling and linking the module

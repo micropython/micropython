@@ -30,7 +30,8 @@
 
 #if CONFIG_IDF_TARGET_ESP32
 
-#include "driver/gpio.h"
+//#include "driver/gpio.h"
+#include "rom/gpio.h"
 #if CONFIG_IDF_TARGET_ESP32
 #include "driver/touch_pad.h"
 #elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
