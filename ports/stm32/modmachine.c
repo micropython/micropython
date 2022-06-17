@@ -30,7 +30,6 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/machine_bitstream.h"
@@ -282,22 +281,6 @@ NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     __disable_irq();
 
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
-
-    #if MICROPY_HW_USES_BOOTLOADER
-    if (n_args == 0 || !mp_obj_is_true(args[0])) {
-        // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
-    }
-
-    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
-        // With a string/bytes given, pass its data to the custom bootloader
-        size_t len;
-        const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
-        memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
-    }
-    #endif
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);

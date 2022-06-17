@@ -38,7 +38,11 @@
 #endif
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#if MICROPY_HW_USES_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) boardctrl_maybe_enter_mboot(nargs, args)
+#else
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#endif
 #endif
 
 #ifndef MICROPY_BOARD_EARLY_INIT
@@ -106,6 +110,7 @@ typedef struct _boardctrl_state_t {
     bool log_soft_reset;
 } boardctrl_state_t;
 
+void boardctrl_maybe_enter_mboot(size_t n_args, const void *args);
 void boardctrl_before_soft_reset_loop(boardctrl_state_t *state);
 void boardctrl_top_soft_reset_loop(boardctrl_state_t *state);
 int boardctrl_run_boot_py(boardctrl_state_t *state);
