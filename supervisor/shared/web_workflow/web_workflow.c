@@ -220,10 +220,8 @@ void supervisor_start_web_workflow(void) {
     common_hal_socketpool_socket_settimeout(&listening, 0);
     // Bind to any ip.
     // TODO: Make this port .env configurable.
-    const char *ip = "192.168.1.94";
-    common_hal_socketpool_socket_bind(&listening, ip, strlen(ip), 80);
+    common_hal_socketpool_socket_bind(&listening, "", 0, 80);
     common_hal_socketpool_socket_listen(&listening, 1);
-
 
     mp_int_t api_password_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, sizeof(_api_password) - 2);
     if (api_password_len > 0) {

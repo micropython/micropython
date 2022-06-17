@@ -131,7 +131,17 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
-    bind_addr.sin_addr.s_addr = inet_addr(host);
+    const char *broadcast = "<broadcast>";
+    uint32_t ip;
+    if (hostlen == 0) {
+        ip = IPADDR_ANY;
+    } else if (hostlen == strlen(broadcast) &&
+               memcmp(host, broadcast, strlen(broadcast)) == 0) {
+        ip = IPADDR_BROADCAST;
+    } else {
+        ip = inet_addr(host);
+    }
+    bind_addr.sin_addr.s_addr = ip;
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port);
 
@@ -141,7 +151,6 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
         mp_raise_RuntimeError(translate("Cannot set socket options"));
     }
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
-    ESP_LOGE(TAG, "bind result %d", result);
     return result == 0;
 }
 
