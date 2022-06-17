@@ -1,4 +1,55 @@
-# This makefile fragment provides rules to build 3rd-party components for extmod modules
+# This makefile fragment adds the source code files for the core extmod modules
+# and provides rules to build 3rd-party components for extmod modules.
+
+PY_EXTMOD_O_BASENAME = \
+	extmod/moduasyncio.o \
+	extmod/moductypes.o \
+	extmod/modujson.o \
+	extmod/moduos.o \
+	extmod/modure.o \
+	extmod/moduzlib.o \
+	extmod/moduheapq.o \
+	extmod/modutimeq.o \
+	extmod/moduhashlib.o \
+	extmod/moducryptolib.o \
+	extmod/modubinascii.o \
+	extmod/virtpin.o \
+	extmod/machine_bitstream.o \
+	extmod/machine_mem.o \
+	extmod/machine_pinbase.o \
+	extmod/machine_signal.o \
+	extmod/machine_pulse.o \
+	extmod/machine_pwm.o \
+	extmod/machine_i2c.o \
+	extmod/machine_spi.o \
+	extmod/modbluetooth.o \
+	extmod/modlwip.o \
+	extmod/modussl_axtls.o \
+	extmod/modussl_mbedtls.o \
+	extmod/moduplatform.o\
+	extmod/modurandom.o \
+	extmod/moduselect.o \
+	extmod/moduwebsocket.o \
+	extmod/modwebrepl.o \
+	extmod/modframebuf.o \
+	extmod/vfs.o \
+	extmod/vfs_blockdev.o \
+	extmod/vfs_reader.o \
+	extmod/vfs_posix.o \
+	extmod/vfs_posix_file.o \
+	extmod/vfs_fat.o \
+	extmod/vfs_fat_diskio.o \
+	extmod/vfs_fat_file.o \
+	extmod/vfs_lfs.o \
+	extmod/utime_mphal.o \
+	extmod/uos_dupterm.o \
+	shared/libc/abort_.o \
+	shared/libc/printf.o \
+
+PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
+
+PY_O += $(PY_EXTMOD_O)
+SRC_QSTR += $(PY_EXTMOD_O_BASENAME:.o=.c)
 
 ################################################################################
 # VFS FAT FS
