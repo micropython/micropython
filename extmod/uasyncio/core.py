@@ -1,7 +1,10 @@
 # MicroPython uasyncio module
 # MIT license; Copyright (c) 2019 Damien P. George
 
-from time import ticks_ms as ticks, ticks_diff, ticks_add
+try:
+    from uasyncio_time import ticks, ticks_diff, ticks_add
+except:
+    from time import ticks_ms as ticks, ticks_diff, ticks_add
 import sys, select
 
 # Import TaskQueue and Task, preferring built-in C code over Python code
