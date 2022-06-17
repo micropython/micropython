@@ -30,6 +30,8 @@
 
 #include "common-hal/mdns/Server.h"
 
+#include "shared-bindings/mdns/RemoteService.h"
+
 extern const mp_obj_type_t mdns_server_type;
 
 void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface);
@@ -43,4 +45,6 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
 void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port);
 
 // For internal use.
-void mdns_server_construct(mdns_server_obj_t *self);
+void mdns_server_construct(mdns_server_obj_t *self, bool workflow);
+size_t mdns_server_find(mdns_server_obj_t *self, const char *service_type, const char *protocol,
+    mp_float_t timeout, mdns_remoteservice_obj_t *out, size_t out_len);
