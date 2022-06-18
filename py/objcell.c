@@ -26,21 +26,6 @@
 
 #include "py/obj.h"
 
-typedef struct _mp_obj_cell_t {
-    mp_obj_base_t base;
-    mp_obj_t obj;
-} mp_obj_cell_t;
-
-mp_obj_t mp_obj_cell_get(mp_obj_t self_in) {
-    mp_obj_cell_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->obj;
-}
-
-void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
-    mp_obj_cell_t *self = MP_OBJ_TO_PTR(self_in);
-    self->obj = obj;
-}
-
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
 STATIC void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
