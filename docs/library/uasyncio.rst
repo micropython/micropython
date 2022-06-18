@@ -265,11 +265,14 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.write(buf)
+.. method:: Stream.write(buf, copy=True)
 
     Accumulated *buf* to the output buffer.  The data is only flushed when
     `Stream.drain` is called.  It is recommended to call `Stream.drain` immediately
-    after calling this function.
+    after calling this function. With ``copy=True`` the buffer is copied to the
+    output buffer which implies allocation. Setting ``copy=False`` causes
+    `Stream.drain` to use the buffer directly, but the buffer contents should not
+    be altered until `Stream.drain` has terminated.
 
 .. method:: Stream.drain()
 
