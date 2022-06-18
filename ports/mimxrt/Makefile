@@ -150,7 +150,6 @@ SRC_ETH_C += \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
 SRC_QSTR += \
-	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/moduwebsocket.c \
 	extmod/modusocket.c \

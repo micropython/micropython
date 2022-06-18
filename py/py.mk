@@ -194,6 +194,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/machine_i2c.o \
 	extmod/machine_spi.o \
 	extmod/modbluetooth.o \
+	extmod/modlwip.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
 	extmod/moduplatform.o\

@@ -35,6 +35,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_LWIP
+
 #include "shared/netutils/netutils.h"
 
 #include "lwip/init.h"
@@ -1740,8 +1742,6 @@ STATIC mp_obj_t lwip_print_pcbs() {
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
-
-#if MICROPY_PY_LWIP
 
 STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_lwip) },

@@ -109,7 +109,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
-	modlwip.c \
 	modonewire.c \
         )
 
