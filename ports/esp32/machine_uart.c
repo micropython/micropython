@@ -273,7 +273,9 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         uint32_t char_time_ms = 12000 / baudrate + 1;
         uint32_t rx_timeout = self->timeout_char / char_time_ms;
         if (rx_timeout < 1) {
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
             uart_set_rx_full_threshold(self->uart_num, 1);
+            #endif
             uart_set_rx_timeout(self->uart_num, 1);
         } else {
             uart_set_rx_timeout(self->uart_num, rx_timeout);
