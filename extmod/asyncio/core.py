@@ -15,6 +15,14 @@ except:
 # Exceptions
 
 
+class BaseExceptionGroup(BaseException):
+    pass
+
+
+class ExceptionGroup(Exception):  # TODO cannot also inherit from BaseExceptionGroup
+    pass
+
+
 class CancelledError(BaseException):
     pass
 

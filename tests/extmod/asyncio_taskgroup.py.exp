@@ -1,0 +1,49 @@
+Task A: Compute factorial(2)...
+Task B: Compute factorial(2)...
+Task C: Compute factorial(2)...
+Task A: factorial(2) = 2
+Task B: Compute factorial(3)...
+Task C: Compute factorial(3)...
+Task B: factorial(3) = 6
+Task C: Compute factorial(4)...
+Task C: factorial(4) = 24
+start 2
+end 2
+====
+start 1
+task_raise start 2
+end 1
+task_raise raise 2
+OK ValueError(2,)
+====
+task_loop_nc start 3
+task_raise start 2
+task_loop_nc loop 3
+task_raise raise 2
+task_loop_nc persists 3
+task_loop_nc loop 3
+OK ValueError(2,)
+====
+task_raise start 1
+task_raise start 2
+task_raise raise 1
+task_raise raise 2
+OK ExceptionGroup('unhandled errors in a TaskGroup', [ValueError(1,), ValueError(2,)])
+====
+start 1
+start 2
+====
+start 1
+start 2
+====
+start 1
+start 2
+end 1
+end 2
+====
+start 1
+start 2
+end 1
+end 2
+====
+====

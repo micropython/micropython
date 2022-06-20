@@ -14,8 +14,10 @@ _attrs = {
     "Lock": "lock",
     "open_connection": "stream",
     "start_server": "stream",
+    "run_server": "stream",
     "StreamReader": "stream",
     "StreamWriter": "stream",
+    "TaskGroup": "taskgroup",
 }
 
 
