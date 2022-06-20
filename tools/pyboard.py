@@ -407,10 +407,10 @@ class Pyboard:
             # escape any characters that need to be escaped. Note this doesn't
             # count towards the window size, as unescaping happens before filling
             # the window buffer in the device
-            NUM_ESCAPED = 8  # this values has to match value in pyexec.c
+            RAWCODE_PASTE_NUM_ESCAPED = 8  # value has to match the same constant in pyexec.c
             b = re.sub(
-                rb"[" + bytes(range(NUM_ESCAPED)) + rb"]",
-                lambda c: bytes((0x06, c.group()[0] + NUM_ESCAPED)),
+                rb"[" + bytes(range(RAWCODE_PASTE_NUM_ESCAPED)) + rb"]",
+                lambda c: bytes((0x06, c.group()[0] + RAWCODE_PASTE_NUM_ESCAPED)),
                 b,
             )
 

@@ -59,7 +59,23 @@ STATIC bool repl_display_debugging_info = 0;
 #define EXEC_FLAG_SOURCE_IS_FILENAME    (1 << 5)
 #define EXEC_FLAG_SOURCE_IS_READER      (1 << 6)
 
-#define NUM_ESCAPED 8 // This value has to match the value in tools/pyboard.py
+#define RAWCODE_PASTE_NUM_ESCAPED 8 // This value has to match the same constant in tools/pyboard.py
+
+// Raw REPL serial protocol control sequences
+#define RAW_REPL_CTRL_INIT CHAR_CTRL_A
+#define RAW_REPL_CTRL_EXIT_TO_FRIENDLY CHAR_CTRL_B
+#define RAW_REPL_CTRL_CLEAR_LINE CHAR_CTRL_C
+#define RAW_REPL_CTRL_EOF CHAR_CTRL_D
+#define RAW_REPL_CTRL_INIT_CMD CHAR_CTRL_E
+// CHAR_CTRL_F is recognised in raw paste mode (as an escape sequence), but not in raw REPL mode
+
+// Sequence ^A ^E (RAW_REPL_CTRL_INIT, RAW_REPL_CTRL_INIT_CMD) can initiate one or more "init commands" based on the next
+// character in the sequence:
+#define RAW_REPL_INIT_CMD_PASTE_SOURCE 'A'
+#define RAW_REPL_INIT_CMD_PASTE_RAWCODE 'B'
+
+#define RAW_REPL_INIT_CMD_RESP_UNSUPPORTED "R\x00"
+#define RAW_REPL_INIT_CMD_RESP_OK          "R\x01"
 
 // parses, compiles and executes the code in the lexer
 // frees the lexer before returning
@@ -234,9 +250,9 @@ STATIC mp_uint_t mp_reader_stdin_readbyte(void *data) {
             return MP_READER_EOF;
         }
     } else if (c == CHAR_CTRL_F) {
-        // escape sequence, next character is escaped by adding NUM_ESCAPED to it
+        // escape sequence, next character is escaped by adding RAWCODE_PASTE_NUM_ESCAPED to it
         int e = mp_hal_stdin_rx_chr();
-        c = e - NUM_ESCAPED;
+        c = e - RAWCODE_PASTE_NUM_ESCAPED;
     }
 
     if (--reader->window_remain == 0) {
@@ -277,30 +293,33 @@ STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
     reader->close = mp_reader_stdin_close;
 }
 
-STATIC int do_reader_stdin(int c) {
-    bool supported_command = c == 'A';
+STATIC int handle_raw_repl_init_cmd(int c) {
+    int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
+    bool supported_command = false;
+
+    if (c == RAW_REPL_INIT_CMD_PASTE_SOURCE) {
+        supported_command = true;
+    }
     #if MICROPY_PERSISTENT_CODE_LOAD
-    supported_command = (c == 'B') || supported_command;
+    if (c == RAW_REPL_INIT_CMD_PASTE_RAWCODE) {
+        exec_flags |= EXEC_FLAG_SOURCE_IS_RAW_CODE;
+        supported_command = true;
+    }
     #endif
 
     if (!supported_command) {
         // Unsupported command.
-        mp_hal_stdout_tx_strn("R\x00", 2);
+        mp_hal_stdout_tx_strn(RAW_REPL_INIT_CMD_RESP_UNSUPPORTED, 2);
         return 0;
     }
 
     // Indicate reception of command.
-    mp_hal_stdout_tx_strn("R\x01", 2);
+    mp_hal_stdout_tx_strn(RAW_REPL_INIT_CMD_RESP_OK, 2);
 
     // Entering raw paste mode
-    // c == 'A' input is source, c == 'B' input is bytecode
     mp_reader_t reader;
     mp_reader_stdin_t reader_stdin;
     mp_reader_new_stdin(&reader, &reader_stdin, MICROPY_REPL_STDIN_BUFFER_MAX);
-    int exec_flags = EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_READER;
-    if (c == 'B') {
-        exec_flags |= EXEC_FLAG_SOURCE_IS_RAW_CODE;
-    }
     return parse_compile_execute(&reader, MP_PARSE_FILE_INPUT, exec_flags);
 }
 
@@ -335,10 +354,10 @@ void pyexec_event_repl_init(void) {
 }
 
 STATIC int pyexec_raw_repl_process_char(int c) {
-    if (c == CHAR_CTRL_A) {
+    if (c == RAW_REPL_CTRL_INIT) {
         // reset raw REPL
-        if (vstr_len(MP_STATE_VM(repl_line)) == 2 && vstr_str(MP_STATE_VM(repl_line))[0] == CHAR_CTRL_E) {
-            int ret = do_reader_stdin(vstr_str(MP_STATE_VM(repl_line))[1]);
+        if (vstr_len(MP_STATE_VM(repl_line)) == 2 && vstr_str(MP_STATE_VM(repl_line))[0] == RAW_REPL_CTRL_INIT_CMD) {
+            int ret = handle_raw_repl_init_cmd(vstr_str(MP_STATE_VM(repl_line))[1]);
             if (ret & PYEXEC_FORCED_EXIT) {
                 return ret;
             }
@@ -346,7 +365,7 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         }
         mp_hal_stdout_tx_str("raw REPL; CTRL-B to exit\r\n");
         goto reset;
-    } else if (c == CHAR_CTRL_B) {
+    } else if (c == RAW_REPL_CTRL_EXIT_TO_FRIENDLY) {
         // change to friendly REPL
         pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
         vstr_reset(MP_STATE_VM(repl_line));
@@ -354,11 +373,11 @@ STATIC int pyexec_raw_repl_process_char(int c) {
         repl.paste_mode = false;
         pyexec_friendly_repl_process_char(CHAR_CTRL_B);
         return 0;
-    } else if (c == CHAR_CTRL_C) {
+    } else if (c == RAW_REPL_CTRL_CLEAR_LINE) {
         // clear line
         vstr_reset(MP_STATE_VM(repl_line));
         return 0;
-    } else if (c == CHAR_CTRL_D) {
+    } else if (c == RAW_REPL_CTRL_EOF) {
         // input finished
     } else {
         // let through any other raw 8-bit value
@@ -419,7 +438,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
 
     if (!repl.cont_line) {
 
-        if (ret == CHAR_CTRL_A) {
+        if (ret == RAW_REPL_CTRL_INIT) {
             // change to raw REPL
             pyexec_mode_kind = PYEXEC_MODE_RAW_REPL;
             mp_hal_stdout_tx_str("\r\n");
@@ -529,10 +548,10 @@ raw_repl_reset:
         mp_hal_stdout_tx_str(">");
         for (;;) {
             int c = mp_hal_stdin_rx_chr();
-            if (c == CHAR_CTRL_A) {
+            if (c == RAW_REPL_CTRL_INIT) {
                 // reset raw REPL
-                if (vstr_len(&line) == 2 && vstr_str(&line)[0] == CHAR_CTRL_E) {
-                    int ret = do_reader_stdin(vstr_str(&line)[1]);
+                if (vstr_len(&line) == 2 && vstr_str(&line)[0] == RAW_REPL_CTRL_INIT_CMD) {
+                    int ret = handle_raw_repl_init_cmd(vstr_str(&line)[1]);
                     if (ret & PYEXEC_FORCED_EXIT) {
                         return ret;
                     }
@@ -541,16 +560,16 @@ raw_repl_reset:
                     continue;
                 }
                 goto raw_repl_reset;
-            } else if (c == CHAR_CTRL_B) {
+            } else if (c == RAW_REPL_CTRL_EXIT_TO_FRIENDLY) {
                 // change to friendly REPL
                 mp_hal_stdout_tx_str("\r\n");
                 vstr_clear(&line);
                 pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
                 return 0;
-            } else if (c == CHAR_CTRL_C) {
+            } else if (c == RAW_REPL_CTRL_CLEAR_LINE) {
                 // clear line
                 vstr_reset(&line);
-            } else if (c == CHAR_CTRL_D) {
+            } else if (c == RAW_REPL_CTRL_EOF) {
                 // input finished
                 break;
             } else {
@@ -632,7 +651,7 @@ friendly_repl_reset:
         int ret = readline(&line, mp_repl_get_ps1());
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
-        if (ret == CHAR_CTRL_A) {
+        if (ret == RAW_REPL_CTRL_INIT) {
             // change to raw REPL
             mp_hal_stdout_tx_str("\r\n");
             vstr_clear(&line);
