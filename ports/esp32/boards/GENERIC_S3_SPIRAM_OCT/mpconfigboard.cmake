@@ -7,5 +7,5 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_sx
     boards/sdkconfig.spiram_oct
-    boards/GENERIC_S3_SPIRAM/sdkconfig.board
+    boards/GENERIC_S3_SPIRAM_OCT/sdkconfig.board
 )
