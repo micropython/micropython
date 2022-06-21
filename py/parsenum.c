@@ -291,9 +291,6 @@ parse_start:
                 if (str == top) {
                     goto value_error;
                 }
-            } else if (allow_imag && (dig | 0x20) == 'j') {
-                real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
-                break;
             } else if (dig == '_') {
                 continue;
             } else {
@@ -325,6 +322,15 @@ parse_start:
         } else {
             dec_val *= MICROPY_FLOAT_C_FUN(pow)(10, exp_val);
         }
+    }
+
+    if (allow_imag && str < top && (*str | 0x20) == 'j') {
+        if (str == str_val_start) {
+            // Convert "j" to "1j".
+            dec_val = 1;
+        }
+        ++str;
+        real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
     }
 
     // negate value if needed
