@@ -41,7 +41,7 @@ Supported MCUs
 | SAMD51      | Cortex-M4 @120 MHz | 256 kB SRAM, 512 kB Flash |
 +-------------+--------------------+---------------------------+
 
-Note: The Flash size mentioned is the innternal flash of the copntrolle.
+Note: The Flash size mentioned is the innternal flash of the controller.
 Some board have additional external flash, which can e.g. be used 
 for data storage.
 
@@ -51,6 +51,8 @@ following design and implementation decision were made:
 * GPIO pin numbering is based on the board numbering.
   Please have the manual/pin diagram of your board at hand
   to find correspondence between your board pins and actual SAMD21/SAMD51 pins.
+  For the boards listed above, the relation between the board pin number and
+  the GPIO number can be found at :ref:`samd_pinout`.
 * The pins that can be used by MicroPython are limited to those listed
   in the board definition files.
 
@@ -93,5 +95,4 @@ SAMD51:
 * Programming: using BootROM bootloader from USB.
 
 
-For more information see the SAMD21/SAMD51 data sheets or reference manuals.
-NXP provides software support through it's SDK packages.
+For more information see the excellent SAMD21/SAMD51 data sheets or reference manuals.

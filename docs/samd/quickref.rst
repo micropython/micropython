@@ -337,7 +337,6 @@ has the same methods as software SPI above::
     i2c = I2C(2, scl=Pin("SCL"), sda=Pin("SDA"), freq=400_000)
     i2c.writeto(0x76, b"Hello World")
 
-
 |
 
 OneWire driver
@@ -395,10 +394,54 @@ DHT modules may already have one.
 
 |
 
+Driving an APA102 LED
+---------------------
+
+The APA102 on some Adafruit boards can be controlled using SoftSPI::
+
+    from machine import SoftSPI, Pin
+    # create the SPI object. miso can be any unused pin.
+    spi=SoftSPI(sck=Pin(25), mosi=Pin(26), miso=Pin(14))
+
+    # define a little function that writes the data with
+    # preamble and postfix
+    def write(red, green, blue):
+        spi.write(b"\x00\x00\x00\x00\xff")
+        spi.write(bytearray((blue, green, red)))
+        spi.write(b"\xff\xff\xff")
+
+    # set the LED to red
+    write(128, 0, 0)
+
+Since SoftSPI does not allow miso to be undefined, miso has to be
+assigned to an otherwise unused pin.
+
+|
+
+Driving a Neopixel LED
+----------------------
+
+The built-in machine.bitstream() method supports driving neopixel LEDs in combination
+with the neopixel driver from the MicroPython driver library::
+
+    import neopixel
+    import machine
+
+    # 1 LED connected to Pin D8 on Adafruit Faeather boards
+    p = machine.Pin(8, machine.Pin.OUT)
+    n = neopixel.NeoPixel(p, 1)
+
+    # set the led to red.
+    n[0] = (128, 0, 0)
+
+    # Update the LED.
+    n.write()
+
+|
+
 Transferring files
 ------------------
 
 Files can be transferred to the SAMD21/SAMD51 devices for instance with the ``mpremote``
-tool or using an SD card.  If Ethernet is available, you can also use ftp.
-See the MicroPython forum for the FTP server or other community-supported
+tool. See the MicroPython forum for community-supported
 alternatives to transfer files to an SAMD21/SAMD51 board, like rshell or Thonny.
