@@ -7,7 +7,10 @@
 #define MICROPY_EMIT_THUMB              (0)
 #define MICROPY_EMIT_INLINE_THUMB       (0)
 
-#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_NONE)
+#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_PY_BUILTINS_COMPLEX     (0)
+#define MICROPY_PY_MATH                 (0)
+#define MICROPY_PY_CMATH                (0)
 
 #define MICROPY_HW_FLASH_STORAGE_BASE   (0x30000)
 #define MICROPY_HW_FLASH_STORAGE_BYTES  (0xFFFF)
