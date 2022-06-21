@@ -30,21 +30,6 @@ The following boards are at the moment supported by the port:
 - SEEED WIO TERMINAL
 - SEEED XIAO
 
-Supported MCUs
---------------
-
-+-------------+--------------------+---------------------------+
-| Product     | CPU                | Memory                    |
-+=============+====================+===========================+
-| SAMD21      | Cortex-M0+ @48 MHz | 32 kB SRAM, 256 kB Flash  |
-+-------------+--------------------+---------------------------+
-| SAMD51      | Cortex-M4 @120 MHz | 256 kB SRAM, 512 kB Flash |
-+-------------+--------------------+---------------------------+
-
-Note: The Flash size mentioned is the innternal flash of the controller.
-Some board have additional external flash, which can e.g. be used 
-for data storage.
-
 To make a generic SAMD port and support as many boards as possible the
 following design and implementation decision were made:
 
@@ -73,11 +58,11 @@ SAMD21:
 * Total RAM available: up to 32 kB (see table)
 * Internal FlashROM: up to 256 kB
   Some boards provide additional external SPI flash.
-* GPIO: up to 99 (GPIOs are multiplexed with other functions, including
+* GPIO: up to 52 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, etc.)
-* UART: up to 8 Serial devices, which can used for UART, SPI or I2C.
+* UART: up to 6 Serial devices, which can used for UART, SPI or I2C.
 * I2S: 1 I2S interfaces
-* ADC: Dual 12-bit SAR ADC converter with 16 channels.
+* ADC: One 12-bit SAR ADC converter with 16 channels.
 * Programming: using BootROM bootloader from USB.
 
 SAMD51:
@@ -87,11 +72,11 @@ SAMD51:
 * Total RAM available: up to 256 kB (see table)
 * Internal FlashROM: up to 1 MB
   Some boards provide additional external SPI flash.
-* GPIO: up to 52 (GPIOs are multiplexed with other functions, including
+* GPIO: up to 99 (GPIOs are multiplexed with other functions, including
   external FlashROM, UART, etc.)
-* UART: up to 6 Serial devices, which can used for UART, SPI or I2C.
+* UART: up to 8 Serial devices, which can used for UART, SPI or I2C.
 * I2S: 1 I2S interfaces
-* ADC: One 12-bit SAR ADC converter with 16 channels.
+* ADC: Dual 12-bit SAR ADC converter with 16 channels.
 * Programming: using BootROM bootloader from USB.
 
 
