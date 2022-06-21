@@ -9,7 +9,8 @@
 
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
-#define MICROPY_PY_MATH                 (0)
+#define MICROPY_PY_MATH                 (1)
+#define MP_NEED_LOG2                    (1)
 #define MICROPY_PY_CMATH                (0)
 
 #define MICROPY_PY_UOS_URANDOM          (1)
