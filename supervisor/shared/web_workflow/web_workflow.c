@@ -34,6 +34,7 @@
 
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-module/storage/__init__.h"
+#include "shared/timeutils/timeutils.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/usb.h"
@@ -77,6 +78,7 @@ typedef struct {
     bool done;
     bool authenticated;
     bool expect;
+    bool json;
 } _request;
 
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
@@ -379,6 +381,59 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, const char *path) {
     _send_str(socket, ".local");
     _send_str(socket, path);
     _send_str(socket, "\r\n\r\n");
+}
+
+static void _reply_directory_json(socketpool_socket_obj_t *socket, FF_DIR *dir, const char *request_path, const char *path) {
+    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
+        "Content-Type: application/json\r\n\r\n";
+    socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    _send_chunk(socket, "[");
+    bool first = true;
+
+    FILINFO file_info;
+    char *fn = file_info.fname;
+    FRESULT res = f_readdir(dir, &file_info);
+    while (res == FR_OK && fn[0] != 0) {
+        if (!first) {
+            _send_chunk(socket, ",");
+        }
+        _send_chunk(socket, "{\"name\": \"");
+        _send_chunk(socket, file_info.fname);
+        _send_chunk(socket, "\", \"directory\": ");
+        if ((file_info.fattrib & AM_DIR) != 0) {
+            _send_chunk(socket, "true");
+        } else {
+            _send_chunk(socket, "false");
+        }
+        // We use nanoseconds past Jan 1, 1970 for consistency with BLE API and
+        // LittleFS.
+        _send_chunk(socket, ", \"modified_ns\": ");
+
+        uint64_t truncated_time = timeutils_mktime(1980 + (file_info.fdate >> 9),
+            (file_info.fdate >> 5) & 0xf,
+            file_info.fdate & 0x1f,
+            file_info.ftime >> 11,
+            (file_info.ftime >> 5) & 0x1f,
+            (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
+
+        char encoded_number[32];
+        snprintf(encoded_number, sizeof(encoded_number), "%lld", truncated_time);
+        _send_chunk(socket, encoded_number);
+
+        _send_chunk(socket, ", \"file_size\": ");
+        size_t file_size = 0;
+        if ((file_info.fattrib & AM_DIR) == 0) {
+            file_size = file_info.fsize;
+        }
+        snprintf(encoded_number, sizeof(encoded_number), "%d", file_size);
+        _send_chunk(socket, encoded_number);
+
+        _send_chunk(socket, "}");
+        first = false;
+        res = f_readdir(dir, &file_info);
+    }
+    _send_chunk(socket, "]");
+    _send_chunk(socket, "");
 }
 
 static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, const char *request_path, const char *path) {
@@ -737,7 +792,12 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
                         _reply_missing(socket);
                         return;
                     }
-                    _reply_directory_html(socket, &dir, request->path, path);
+                    if (request->json) {
+                        _reply_directory_json(socket, &dir, request->path, path);
+                    } else {
+                        _reply_directory_html(socket, &dir, request->path, path);
+                    }
+
                     f_closedir(&dir);
                 } else if (strcmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
@@ -884,6 +944,8 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         request->content_length = strtoul(request->header_value, NULL, 10);
                     } else if (strcmp(request->header_key, "Expect") == 0) {
                         request->expect = strcmp(request->header_value, "100-continue") == 0;
+                    } else if (strcmp(request->header_key, "Accept") == 0) {
+                        request->json = strcmp(request->header_value, "application/json") == 0;
                     }
                     ESP_LOGW(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
