@@ -49,13 +49,15 @@ class Stream:
         return b"".join(r)
 
     async def readline(self):
-        l = b""
+        l = []
         while True:
             yield core._io_queue.queue_read(self.s)
             l2 = self.s.readline()  # may do multiple reads but won't block
-            l += l2
-            if not l2 or l[-1] == 10:  # \n (check l in case l2 is str)
-                return l
+            l.append(l2)
+            if not l2 or l2[-1] == 10:  # \n (check l in case l2 is str)
+                if len(l) == 1:
+                    return l[0]
+                return b"".join(l)
 
     def write(self, buf):
         self.out_buf += buf
