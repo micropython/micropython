@@ -1,5 +1,6 @@
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
+#include "board.h"
 
 // extended pins
 STATIC const mp_rom_map_elem_t board_module_carrier_table[] = {
@@ -86,10 +87,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_ext), MP_ROM_PTR(&carrier_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_ENABLE_3V3), MP_ROM_PTR(&pin_PE04) },
-    { MP_ROM_QSTR(MP_QSTR_DISCHARGE_3V3), MP_ROM_PTR(&pin_PE06) },
-    { MP_ROM_QSTR(MP_QSTR_DISABLE_DISCHARGING), MP_ROM_TRUE },
-    { MP_ROM_QSTR(MP_QSTR_ENABLE_DISCHARGING), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_ENABLE_3V3), &power_pin },
+    { MP_ROM_QSTR(MP_QSTR_DISCHARGE_3V3), &discharge_pin },
 
     { MP_ROM_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_PA03) },     // PWM, ADC
     { MP_ROM_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_PA01) },     // PWM, ADC
