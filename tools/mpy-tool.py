@@ -62,6 +62,11 @@ import struct
 sys.path.append(sys.path[0] + "/../py")
 import makeqstrdata as qstrutil
 
+# Threshold of str length below which it will be turned into a qstr when freezing.
+# This helps to reduce frozen code size because qstrs are more efficient to encode
+# as objects than full mp_obj_str_t instances.
+PERSISTENT_STR_INTERN_THRESHOLD = 25
+
 
 class MPYReadError(Exception):
     def __init__(self, filename, msg):
@@ -91,19 +96,6 @@ class Config:
 config = Config()
 
 
-class QStrType:
-    def __init__(self, str):
-        self.str = str
-        self.qstr_esc = qstrutil.qstr_escape(self.str)
-        self.qstr_id = "MP_QSTR_" + self.qstr_esc
-
-
-# Initialise global list of qstrs with static qstrs
-global_qstrs = [None]  # MP_QSTRnull should never be referenced
-for n in qstrutil.static_qstr_list:
-    global_qstrs.append(QStrType(n))
-
-
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_PY = 3
 MP_CODE_NATIVE_VIPER = 4
@@ -120,6 +112,18 @@ MP_NATIVE_ARCH_ARMV7EMSP = 7
 MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
+
+MP_PERSISTENT_OBJ_FUN_TABLE = 0
+MP_PERSISTENT_OBJ_NONE = 1
+MP_PERSISTENT_OBJ_FALSE = 2
+MP_PERSISTENT_OBJ_TRUE = 3
+MP_PERSISTENT_OBJ_ELLIPSIS = 4
+MP_PERSISTENT_OBJ_STR = 5
+MP_PERSISTENT_OBJ_BYTES = 6
+MP_PERSISTENT_OBJ_INT = 7
+MP_PERSISTENT_OBJ_FLOAT = 8
+MP_PERSISTENT_OBJ_COMPLEX = 9
+MP_PERSISTENT_OBJ_TUPLE = 10
 
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
@@ -178,7 +182,7 @@ mp_binary_op_method_name = (
 )
 
 
-class Opcodes:
+class Opcode:
     # fmt: off
     # Load, Store, Delete, Import, Make, Build, Unpack, Call, Jump, Exception, For, sTack, Return, Yield, Op
     MP_BC_BASE_RESERVED               = (0x00) # ----------------
@@ -314,40 +318,46 @@ class Opcodes:
     for i in range(MP_BC_BINARY_OP_MULTI_NUM):
         mapping[MP_BC_BINARY_OP_MULTI + i] = "BINARY_OP %d %s" % (i, mp_binary_op_method_name[i])
 
+    def __init__(self, offset, fmt, opcode_byte, arg, extra_arg):
+        self.offset = offset
+        self.fmt = fmt
+        self.opcode_byte = opcode_byte
+        self.arg = arg
+        self.extra_arg = extra_arg
 
-# this function mirrors that in py/bc.c
-def mp_opcode_format(bytecode, ip, count_var_uint):
-    opcode = bytecode[ip]
-    ip_start = ip
-    f = (0x000003A4 >> (2 * ((opcode) >> 4))) & 3
-    if f == MP_BC_FORMAT_QSTR:
-        ip += 3
-    else:
-        extra_byte = (opcode & MP_BC_MASK_EXTRA_BYTE) == 0
-        ip += 1
-        if f == MP_BC_FORMAT_VAR_UINT:
-            if count_var_uint:
-                while bytecode[ip] & 0x80 != 0:
-                    ip += 1
-                ip += 1
-        elif f == MP_BC_FORMAT_OFFSET:
-            if bytecode[ip] & 0x80 == 0:
-                ip += 1
-            else:
-                ip += 2
-        ip += extra_byte
-    return f, ip - ip_start
+
+# This definition of a small int covers all possible targets, in the sense that every
+# target can encode as a small int, an integer that passes this test.  The minimum is set
+# by MICROPY_OBJ_REPR_B on a 16-bit machine, where there are 14 bits for the small int.
+def mp_small_int_fits(i):
+    return -0x2000 <= i <= 0x1FFF
+
+
+def mp_encode_uint(val, signed=False):
+    encoded = bytearray([val & 0x7F])
+    val >>= 7
+    while val != 0 and val != -1:
+        encoded.insert(0, 0x80 | (val & 0x7F))
+        val >>= 7
+    if signed:
+        if val == -1 and encoded[0] & 0x40 == 0:
+            encoded.insert(0, 0xFF)
+        elif val == 0 and encoded[0] & 0x40 != 0:
+            encoded.insert(0, 0x80)
+    return encoded
 
 
 def mp_opcode_decode(bytecode, ip):
     opcode = bytecode[ip]
     ip_start = ip
     f = (0x000003A4 >> (2 * ((opcode) >> 4))) & 3
-    extra_byte = (opcode & MP_BC_MASK_EXTRA_BYTE) == 0
     ip += 1
-    arg = 0
+    arg = None
+    extra_arg = None
     if f in (MP_BC_FORMAT_QSTR, MP_BC_FORMAT_VAR_UINT):
         arg = bytecode[ip] & 0x7F
+        if opcode == Opcode.MP_BC_LOAD_CONST_SMALL_INT and arg & 0x40 != 0:
+            arg |= -1 << 7
         while bytecode[ip] & 0x80 != 0:
             ip += 1
             arg = arg << 7 | bytecode[ip] & 0x7F
@@ -356,15 +366,50 @@ def mp_opcode_decode(bytecode, ip):
         if bytecode[ip] & 0x80 == 0:
             arg = bytecode[ip]
             ip += 1
-            if opcode in Opcodes.ALL_OFFSET_SIGNED:
+            if opcode in Opcode.ALL_OFFSET_SIGNED:
                 arg -= 0x40
         else:
             arg = bytecode[ip] & 0x7F | bytecode[ip + 1] << 7
             ip += 2
-            if opcode in Opcodes.ALL_OFFSET_SIGNED:
+            if opcode in Opcode.ALL_OFFSET_SIGNED:
                 arg -= 0x4000
-    ip += extra_byte
-    return f, ip - ip_start, arg
+    if opcode & MP_BC_MASK_EXTRA_BYTE == 0:
+        extra_arg = bytecode[ip]
+        ip += 1
+    return f, ip - ip_start, arg, extra_arg
+
+
+def mp_opcode_encode(opcode):
+    overflow = False
+    encoded = bytearray([opcode.opcode_byte])
+    if opcode.fmt in (MP_BC_FORMAT_QSTR, MP_BC_FORMAT_VAR_UINT):
+        signed = opcode.opcode_byte == Opcode.MP_BC_LOAD_CONST_SMALL_INT
+        encoded.extend(mp_encode_uint(opcode.arg, signed))
+    elif opcode.fmt == MP_BC_FORMAT_OFFSET:
+        is_signed = opcode.opcode_byte in Opcode.ALL_OFFSET_SIGNED
+
+        # The -2 accounts for this jump opcode taking 2 bytes (at least).
+        bytecode_offset = opcode.target.offset - opcode.offset - 2
+
+        # Check if the bytecode_offset is small enough to use a 1-byte encoding.
+        if (is_signed and -64 <= bytecode_offset <= 63) or (
+            not is_signed and bytecode_offset <= 127
+        ):
+            # Use a 1-byte jump offset.
+            if is_signed:
+                bytecode_offset += 0x40
+            overflow = not (0 <= bytecode_offset <= 0x7F)
+            encoded.append(bytecode_offset & 0x7F)
+        else:
+            bytecode_offset -= 1
+            if is_signed:
+                bytecode_offset += 0x4000
+            overflow = not (0 <= bytecode_offset <= 0x7FFF)
+            encoded.append(0x80 | (bytecode_offset & 0x7F))
+            encoded.append((bytecode_offset >> 7) & 0xFF)
+    if opcode.extra_arg is not None:
+        encoded.append(opcode.extra_arg)
+    return overflow, encoded
 
 
 def read_prelude_sig(read_byte):
@@ -406,6 +451,21 @@ def read_prelude_size(read_byte):
     return I, C
 
 
+# See py/bc.h:MP_BC_PRELUDE_SIZE_ENCODE macro.
+def encode_prelude_size(I, C):
+    # Encode bit-wise as: xIIIIIIC
+    encoded = bytearray()
+    while True:
+        z = (I & 0x3F) << 1 | (C & 1)
+        C >>= 1
+        I >>= 6
+        if C | I:
+            z |= 0x80
+        encoded.append(z)
+        if not C | I:
+            return encoded
+
+
 def extract_prelude(bytecode, ip):
     def local_read_byte():
         b = bytecode[ip_ref[0]]
@@ -413,6 +473,8 @@ def extract_prelude(bytecode, ip):
         return b
 
     ip_ref = [ip]  # to close over ip in Python 2 and 3
+
+    # Read prelude signature.
     (
         n_state,
         n_exc_stack,
@@ -422,13 +484,12 @@ def extract_prelude(bytecode, ip):
         n_def_pos_args,
     ) = read_prelude_sig(local_read_byte)
 
-    n_info, n_cell = read_prelude_size(local_read_byte)
-    ip = ip_ref[0]
+    offset_prelude_size = ip_ref[0]
 
-    ip2 = ip
-    ip = ip2 + n_info + n_cell
-    # ip now points to first opcode
-    # ip2 points to simple_name qstr
+    # Read prelude size.
+    n_info, n_cell = read_prelude_size(local_read_byte)
+
+    offset_source_info = ip_ref[0]
 
     # Extract simple_name and argument qstrs (var uints).
     args = []
@@ -441,13 +502,49 @@ def extract_prelude(bytecode, ip):
                 break
         args.append(value)
 
+    offset_line_info = ip_ref[0]
+    offset_closure_info = offset_source_info + n_info
+    offset_opcodes = offset_source_info + n_info + n_cell
+
     return (
-        ip2,
-        ip,
-        ip_ref[0],
+        offset_prelude_size,
+        offset_source_info,
+        offset_line_info,
+        offset_closure_info,
+        offset_opcodes,
         (n_state, n_exc_stack, scope_flags, n_pos_args, n_kwonly_args, n_def_pos_args),
+        (n_info, n_cell),
         args,
     )
+
+
+class QStrType:
+    def __init__(self, str):
+        self.str = str
+        self.qstr_esc = qstrutil.qstr_escape(self.str)
+        self.qstr_id = "MP_QSTR_" + self.qstr_esc
+
+
+class GlobalQStrList:
+    def __init__(self):
+        # Initialise global list of qstrs with static qstrs
+        self.qstrs = [None]  # MP_QSTRnull should never be referenced
+        for n in qstrutil.static_qstr_list:
+            self.qstrs.append(QStrType(n))
+
+    def add(self, s):
+        q = QStrType(s)
+        self.qstrs.append(q)
+        return q
+
+    def get_by_index(self, i):
+        return self.qstrs[i]
+
+    def find_by_str(self, s):
+        for q in self.qstrs:
+            if q is not None and q.str == s:
+                return q
+        return None
 
 
 class MPFunTable:
@@ -464,6 +561,8 @@ class CompiledModule:
         qstr_table,
         obj_table,
         raw_code,
+        qstr_table_file_offset,
+        obj_table_file_offset,
         raw_code_file_offset,
         escaped_name,
     ):
@@ -473,13 +572,11 @@ class CompiledModule:
         self.header = header
         self.qstr_table = qstr_table
         self.obj_table = obj_table
-        self.raw_code_file_offset = raw_code_file_offset
         self.raw_code = raw_code
+        self.qstr_table_file_offset = qstr_table_file_offset
+        self.obj_table_file_offset = obj_table_file_offset
+        self.raw_code_file_offset = raw_code_file_offset
         self.escaped_name = escaped_name
-
-    def _unpack_qstr(self, ip):
-        qst = self.bytecode[ip] | self.bytecode[ip + 1] << 8
-        return global_qstrs[qst]
 
     def hexdump(self):
         with open(self.mpy_source_file, "rb") as f:
@@ -588,9 +685,123 @@ class CompiledModule:
         print("    .rc = &raw_code_%s," % self.raw_code.escaped_name)
         print("};")
 
-    def freeze_constants(self):
+    def freeze_constant_obj(self, obj_name, obj):
         global const_str_content, const_int_content, const_obj_content
 
+        if isinstance(obj, MPFunTable):
+            return "&mp_fun_table"
+        elif obj is None:
+            return "MP_ROM_NONE"
+        elif obj is False:
+            return "MP_ROM_FALSE"
+        elif obj is True:
+            return "MP_ROM_TRUE"
+        elif obj is Ellipsis:
+            return "MP_ROM_PTR(&mp_const_ellipsis_obj)"
+        elif is_str_type(obj) or is_bytes_type(obj):
+            if len(obj) == 0:
+                if is_str_type(obj):
+                    return "MP_ROM_QSTR(MP_QSTR_)"
+                else:
+                    return "MP_ROM_PTR(&mp_const_empty_bytes_obj)"
+            if is_str_type(obj):
+                q = global_qstrs.find_by_str(obj)
+                if q:
+                    return "MP_ROM_QSTR(%s)" % q.qstr_id
+                obj = bytes_cons(obj, "utf8")
+                obj_type = "mp_type_str"
+            else:
+                obj_type = "mp_type_bytes"
+            print(
+                'static const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
+                % (
+                    obj_name,
+                    obj_type,
+                    qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
+                    len(obj),
+                    "".join(("\\x%02x" % b) for b in obj),
+                )
+            )
+            const_str_content += len(obj)
+            const_obj_content += 4 * 4
+            return "MP_ROM_PTR(&%s)" % obj_name
+        elif is_int_type(obj):
+            if mp_small_int_fits(obj):
+                # Encode directly as a small integer object.
+                return "MP_ROM_INT(%d)" % obj
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
+                raise FreezeError(self, "target does not support long int")
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
+                # TODO
+                raise FreezeError(self, "freezing int to long-long is not implemented")
+            elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
+                neg = 0
+                if obj < 0:
+                    obj = -obj
+                    neg = 1
+                bits_per_dig = config.MPZ_DIG_SIZE
+                digs = []
+                z = obj
+                while z:
+                    digs.append(z & ((1 << bits_per_dig) - 1))
+                    z >>= bits_per_dig
+                ndigs = len(digs)
+                digs = ",".join(("%#x" % d) for d in digs)
+                print(
+                    "static const mp_obj_int_t %s = {{&mp_type_int}, "
+                    "{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};"
+                    % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs)
+                )
+                const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
+                const_obj_content += 4 * 4
+                return "MP_ROM_PTR(&%s)" % obj_name
+        elif type(obj) is float:
+            macro_name = "%s_macro" % obj_name
+            print(
+                "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
+            )
+            print(
+                "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
+                % (obj_name, obj)
+            )
+            print("#define %s MP_ROM_PTR(&%s)" % (macro_name, obj_name))
+            print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
+            n = struct.unpack("<I", struct.pack("<f", obj))[0]
+            n = ((n & ~0x3) | 2) + 0x80800000
+            print("#define %s ((mp_rom_obj_t)(0x%08x))" % (macro_name, n))
+            print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
+            n = struct.unpack("<Q", struct.pack("<d", obj))[0]
+            n += 0x8004000000000000
+            print("#define %s ((mp_rom_obj_t)(0x%016x))" % (macro_name, n))
+            print("#endif")
+            const_obj_content += 3 * 4
+            return macro_name
+        elif type(obj) is complex:
+            print(
+                "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
+                % (obj_name, obj.real, obj.imag)
+            )
+            return "MP_ROM_PTR(&%s)" % obj_name
+        elif type(obj) is tuple:
+            if len(obj) == 0:
+                return "MP_ROM_PTR(&mp_const_empty_tuple_obj)"
+            else:
+                obj_refs = []
+                for i, sub_obj in enumerate(obj):
+                    sub_obj_name = "%s_%u" % (obj_name, i)
+                    obj_refs.append(self.freeze_constant_obj(sub_obj_name, sub_obj))
+                print(
+                    "static const mp_rom_obj_tuple_t %s = {{&mp_type_tuple}, %d, {"
+                    % (obj_name, len(obj))
+                )
+                for ref in obj_refs:
+                    print("    %s," % ref)
+                print("}};")
+                return "MP_ROM_PTR(&%s)" % obj_name
+        else:
+            raise FreezeError(self, "freezing of object %r is not implemented" % (obj,))
+
+    def freeze_constants(self):
         if len(self.qstr_table):
             print(
                 "static const qstr_short_t const_qstr_table_data_%s[%u] = {"
@@ -606,74 +817,10 @@ class CompiledModule:
         # generate constant objects
         print()
         print("// constants")
+        obj_refs = []
         for i, obj in enumerate(self.obj_table):
             obj_name = "const_obj_%s_%u" % (self.escaped_name, i)
-            if isinstance(obj, MPFunTable):
-                pass
-            elif obj is Ellipsis:
-                print("#define %s mp_const_ellipsis_obj" % obj_name)
-            elif is_str_type(obj) or is_bytes_type(obj):
-                if is_str_type(obj):
-                    obj = bytes_cons(obj, "utf8")
-                    obj_type = "mp_type_str"
-                else:
-                    obj_type = "mp_type_bytes"
-                print(
-                    'static const mp_obj_str_t %s = {{&%s}, %u, %u, (const byte*)"%s"};'
-                    % (
-                        obj_name,
-                        obj_type,
-                        qstrutil.compute_hash(obj, config.MICROPY_QSTR_BYTES_IN_HASH),
-                        len(obj),
-                        "".join(("\\x%02x" % b) for b in obj),
-                    )
-                )
-                const_str_content += len(obj)
-                const_obj_content += 4 * 4
-            elif is_int_type(obj):
-                if config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_NONE:
-                    # TODO check if we can actually fit this long-int into a small-int
-                    raise FreezeError(self, "target does not support long int")
-                elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_LONGLONG:
-                    # TODO
-                    raise FreezeError(self, "freezing int to long-long is not implemented")
-                elif config.MICROPY_LONGINT_IMPL == config.MICROPY_LONGINT_IMPL_MPZ:
-                    neg = 0
-                    if obj < 0:
-                        obj = -obj
-                        neg = 1
-                    bits_per_dig = config.MPZ_DIG_SIZE
-                    digs = []
-                    z = obj
-                    while z:
-                        digs.append(z & ((1 << bits_per_dig) - 1))
-                        z >>= bits_per_dig
-                    ndigs = len(digs)
-                    digs = ",".join(("%#x" % d) for d in digs)
-                    print(
-                        "static const mp_obj_int_t %s = {{&mp_type_int}, "
-                        "{.neg=%u, .fixed_dig=1, .alloc=%u, .len=%u, .dig=(uint%u_t*)(const uint%u_t[]){%s}}};"
-                        % (obj_name, neg, ndigs, ndigs, bits_per_dig, bits_per_dig, digs)
-                    )
-                    const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
-                    const_obj_content += 4 * 4
-            elif type(obj) is float:
-                print(
-                    "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
-                )
-                print(
-                    "static const mp_obj_float_t %s = {{&mp_type_float}, (mp_float_t)%.16g};"
-                    % (obj_name, obj)
-                )
-                print("#endif")
-                const_obj_content += 3 * 4
-            elif type(obj) is complex:
-                print(
-                    "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
-                    % (obj_name, obj.real, obj.imag)
-                )
-            else:
-                raise FreezeError(self, "freezing of object %r is not implemented" % (obj,))
+            obj_refs.append(self.freeze_constant_obj(obj_name, obj))
 
         # generate constant table
         print()
@@ -682,25 +829,8 @@ class CompiledModule:
             "static const mp_rom_obj_t const_obj_table_data_%s[%u] = {"
             % (self.escaped_name, len(self.obj_table))
         )
-        for i in range(len(self.obj_table)):
-            if isinstance(self.obj_table[i], MPFunTable):
-                print("    &mp_fun_table,")
-            elif type(self.obj_table[i]) is float:
-                print(
-                    "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
-                )
-                print("    MP_ROM_PTR(&const_obj_%s_%u)," % (self.escaped_name, i))
-                print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_C")
-                n = struct.unpack("<I", struct.pack("<f", self.obj_table[i]))[0]
-                n = ((n & ~0x3) | 2) + 0x80800000
-                print("    (mp_rom_obj_t)(0x%08x)," % (n,))
-                print("#elif MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D")
-                n = struct.unpack("<Q", struct.pack("<d", self.obj_table[i]))[0]
-                n += 0x8004000000000000
-                print("    (mp_rom_obj_t)(0x%016x)," % (n,))
-                print("#endif")
-            else:
-                print("    MP_ROM_PTR(&const_obj_%s_%u)," % (self.escaped_name, i))
+        for ref in obj_refs:
+            print("    %s," % ref)
         print("};")
 
         global const_table_ptr_content
@@ -719,7 +849,7 @@ class RawCode(object):
         MP_CODE_NATIVE_ASM: "MP_CODE_NATIVE_ASM",
     }
 
-    def __init__(self, cm_escaped_name, qstr_table, fun_data, prelude_offset, code_kind):
+    def __init__(self, parent_name, qstr_table, fun_data, prelude_offset, code_kind):
         self.qstr_table = qstr_table
         self.fun_data = fun_data
         self.prelude_offset = prelude_offset
@@ -727,19 +857,22 @@ class RawCode(object):
 
         if code_kind in (MP_CODE_BYTECODE, MP_CODE_NATIVE_PY):
             (
-                self.offset_names,
-                self.offset_opcodes,
+                self.offset_prelude_size,
+                self.offset_source_info,
                 self.offset_line_info,
-                self.prelude,
+                self.offset_closure_info,
+                self.offset_opcodes,
+                self.prelude_signature,
+                self.prelude_size,
                 self.names,
             ) = extract_prelude(self.fun_data, prelude_offset)
-            self.scope_flags = self.prelude[2]
-            self.n_pos_args = self.prelude[3]
+            self.scope_flags = self.prelude_signature[2]
+            self.n_pos_args = self.prelude_signature[3]
             self.simple_name = self.qstr_table[self.names[0]]
         else:
             self.simple_name = self.qstr_table[0]
 
-        escaped_name = cm_escaped_name + "_" + self.simple_name.qstr_esc
+        escaped_name = parent_name + "_" + self.simple_name.qstr_esc
 
         # make sure the escaped name is unique
         i = 2
@@ -755,7 +888,7 @@ class RawCode(object):
         for rc in self.children:
             rc.disassemble()
 
-    def freeze_children(self):
+    def freeze_children(self, prelude_ptr=None):
         # Freeze children and generate table of children.
         if len(self.children):
             for rc in self.children:
@@ -765,10 +898,12 @@ class RawCode(object):
             print("static const mp_raw_code_t *const children_%s[] = {" % self.escaped_name)
             for rc in self.children:
                 print("    &raw_code_%s," % rc.escaped_name)
+            if prelude_ptr:
+                print("    (void *)%s," % prelude_ptr)
             print("};")
             print()
 
-    def freeze_raw_code(self, qstr_links=(), type_sig=0):
+    def freeze_raw_code(self, prelude_ptr=None, type_sig=0):
         # Generate mp_raw_code_t.
         print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
@@ -780,6 +915,8 @@ class RawCode(object):
         print("    #endif")
         if len(self.children):
             print("    .children = (void *)&children_%s," % self.escaped_name)
+        elif prelude_ptr:
+            print("    .children = (void *)%s," % prelude_ptr)
         else:
             print("    .children = NULL,")
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
@@ -787,12 +924,12 @@ class RawCode(object):
         if self.code_kind == MP_CODE_BYTECODE:
             print("    #if MICROPY_PY_SYS_SETTRACE")
             print("    .prelude = {")
-            print("        .n_state = %u," % self.prelude[0])
-            print("        .n_exc_stack = %u," % self.prelude[1])
-            print("        .scope_flags = %u," % self.prelude[2])
-            print("        .n_pos_args = %u," % self.prelude[3])
-            print("        .n_kwonly_args = %u," % self.prelude[4])
-            print("        .n_def_pos_args = %u," % self.prelude[5])
+            print("        .n_state = %u," % self.prelude_signature[0])
+            print("        .n_exc_stack = %u," % self.prelude_signature[1])
+            print("        .scope_flags = %u," % self.prelude_signature[2])
+            print("        .n_pos_args = %u," % self.prelude_signature[3])
+            print("        .n_kwonly_args = %u," % self.prelude_signature[4])
+            print("        .n_def_pos_args = %u," % self.prelude_signature[5])
             print("        .qstr_block_name_idx = %u," % self.names[0])
             print(
                 "        .line_info = fun_data_%s + %u,"
@@ -806,8 +943,6 @@ class RawCode(object):
             print("    #endif")
         print("    #if MICROPY_EMIT_MACHINE_CODE")
         print("    .prelude_offset = %u," % self.prelude_offset)
-        print("    .n_qstr = %u," % len(qstr_links))
-        print("    .qstr_link = NULL,")  # TODO
         print("    #endif")
         print("    #endif")
         print("    #if MICROPY_EMIT_MACHINE_CODE")
@@ -821,24 +956,24 @@ class RawCode(object):
 
 
 class RawCodeBytecode(RawCode):
-    def __init__(self, cm_escaped_name, qstr_table, obj_table, fun_data):
+    def __init__(self, parent_name, qstr_table, obj_table, fun_data):
         self.obj_table = obj_table
         super(RawCodeBytecode, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, 0, MP_CODE_BYTECODE
+            parent_name, qstr_table, fun_data, 0, MP_CODE_BYTECODE
         )
 
     def disassemble(self):
         bc = self.fun_data
         print("simple_name:", self.simple_name.str)
         print("  raw bytecode:", len(bc), hexlify_to_str(bc))
-        print("  prelude:", self.prelude)
+        print("  prelude:", self.prelude_signature)
         print("  args:", [self.qstr_table[i].str for i in self.names[1:]])
         print("  line info:", hexlify_to_str(bc[self.offset_line_info : self.offset_opcodes]))
         ip = self.offset_opcodes
         while ip < len(bc):
-            fmt, sz, arg = mp_opcode_decode(bc, ip)
-            if bc[ip] == Opcodes.MP_BC_LOAD_CONST_OBJ:
-                arg = "%r" % self.obj_table[arg]
+            fmt, sz, arg, _ = mp_opcode_decode(bc, ip)
+            if bc[ip] == Opcode.MP_BC_LOAD_CONST_OBJ:
+                arg = repr(self.obj_table[arg])
             if fmt == MP_BC_FORMAT_QSTR:
                 arg = self.qstr_table[arg].str
             elif fmt in (MP_BC_FORMAT_VAR_UINT, MP_BC_FORMAT_OFFSET):
@@ -846,7 +981,7 @@ class RawCodeBytecode(RawCode):
             else:
                 arg = ""
             print(
-                "  %-11s %s %s" % (hexlify_to_str(bc[ip : ip + sz]), Opcodes.mapping[bc[ip]], arg)
+                "  %-11s %s %s" % (hexlify_to_str(bc[ip : ip + sz]), Opcode.mapping[bc[ip]], arg)
             )
             ip += sz
         self.disassemble_children()
@@ -861,12 +996,12 @@ class RawCodeBytecode(RawCode):
         print("static const byte fun_data_%s[%u] = {" % (self.escaped_name, len(bc)))
 
         print("    ", end="")
-        for b in bc[: self.offset_names]:
+        for b in bc[: self.offset_source_info]:
             print("0x%02x," % b, end="")
         print(" // prelude")
 
         print("    ", end="")
-        for b in bc[self.offset_names : self.offset_line_info]:
+        for b in bc[self.offset_source_info : self.offset_line_info]:
             print("0x%02x," % b, end="")
         print(" // names: %s" % ", ".join(self.qstr_table[i].str for i in self.names))
 
@@ -877,8 +1012,8 @@ class RawCodeBytecode(RawCode):
 
         ip = self.offset_opcodes
         while ip < len(bc):
-            fmt, sz, arg = mp_opcode_decode(bc, ip)
-            opcode_name = Opcodes.mapping[bc[ip]]
+            fmt, sz, arg, _ = mp_opcode_decode(bc, ip)
+            opcode_name = Opcode.mapping[bc[ip]]
             if fmt == MP_BC_FORMAT_QSTR:
                 opcode_name += " " + repr(self.qstr_table[arg].str)
             elif fmt in (MP_BC_FORMAT_VAR_UINT, MP_BC_FORMAT_OFFSET):
@@ -900,25 +1035,23 @@ class RawCodeBytecode(RawCode):
 class RawCodeNative(RawCode):
     def __init__(
         self,
-        cm_escaped_name,
+        parent_name,
         qstr_table,
         kind,
         fun_data,
         prelude_offset,
-        qstr_links,
         scope_flags,
         n_pos_args,
         type_sig,
     ):
         super(RawCodeNative, self).__init__(
-            cm_escaped_name, qstr_table, fun_data, prelude_offset, kind
+            parent_name, qstr_table, fun_data, prelude_offset, kind
         )
 
         if kind in (MP_CODE_NATIVE_VIPER, MP_CODE_NATIVE_ASM):
             self.scope_flags = scope_flags
             self.n_pos_args = n_pos_args
 
-        self.qstr_links = qstr_links
         self.type_sig = type_sig
         if config.native_arch in (
             MP_NATIVE_ARCH_X86,
@@ -955,7 +1088,7 @@ class RawCodeNative(RawCode):
         )
         if self.code_kind != MP_CODE_NATIVE_PY:
             return
-        print("  prelude:", self.prelude)
+        print("  prelude:", self.prelude_signature)
         print("  args:", [self.qstr_table[i].str for i in self.names[1:]])
         print("  line info:", fun_data[self.offset_line_info : self.offset_opcodes])
         ip = 0
@@ -964,47 +1097,6 @@ class RawCodeNative(RawCode):
             print(" ", hexlify_to_str(fun_data[ip : min(ip + sz, self.prelude_offset)]))
             ip += sz
         self.disassemble_children()
-
-    def _asm_thumb_rewrite_mov(self, pc, val):
-        print("    (%u & 0xf0) | (%s >> 12)," % (self.fun_data[pc], val), end="")
-        print(" (%u & 0xfb) | (%s >> 9 & 0x04)," % (self.fun_data[pc + 1], val), end="")
-        print(" (%s & 0xff)," % (val,), end="")
-        print(" (%u & 0x07) | (%s >> 4 & 0x70)," % (self.fun_data[pc + 3], val))
-
-    def _link_qstr(self, pc, kind, qst):
-        if kind == 0:
-            # Generic 16-bit link
-            print("    %s & 0xff, %s >> 8," % (qst, qst))
-            return 2
-        else:
-            # Architecture-specific link
-            is_obj = kind == 2
-            if is_obj:
-                qst = "((uintptr_t)MP_OBJ_NEW_QSTR(%s))" % qst
-            if config.native_arch in (
-                MP_NATIVE_ARCH_X86,
-                MP_NATIVE_ARCH_X64,
-                MP_NATIVE_ARCH_ARMV6,
-                MP_NATIVE_ARCH_XTENSA,
-                MP_NATIVE_ARCH_XTENSAWIN,
-            ):
-                print(
-                    "    %s & 0xff, (%s >> 8) & 0xff, (%s >> 16) & 0xff, %s >> 24,"
-                    % (qst, qst, qst, qst)
-                )
-                return 4
-            elif MP_NATIVE_ARCH_ARMV6M <= config.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP:
-                if is_obj:
-                    # qstr object, movw and movt
-                    self._asm_thumb_rewrite_mov(pc, qst)
-                    self._asm_thumb_rewrite_mov(pc + 4, "(%s >> 16)" % qst)
-                    return 8
-                else:
-                    # qstr number, movw instruction
-                    self._asm_thumb_rewrite_mov(pc, qst)
-                    return 4
-            else:
-                assert 0
 
     def freeze(self):
         if self.scope_flags & ~0x0F:
@@ -1025,27 +1117,35 @@ class RawCodeNative(RawCode):
         i = 0
         qi = 0
         while i < i_top:
-            if qi < len(self.qstr_links) and i == self.qstr_links[qi][0]:
-                # link qstr
-                qi_off, qi_kind, qi_val = self.qstr_links[qi]
-                qst = global_qstrs[qi_val].qstr_id
-                i += self._link_qstr(i, qi_kind, qst)
-                qi += 1
-            else:
-                # copy machine code (max 16 bytes)
-                i16 = min(i + 16, i_top)
-                if qi < len(self.qstr_links):
-                    i16 = min(i16, self.qstr_links[qi][0])
-                print("   ", end="")
-                for ii in range(i, i16):
-                    print(" 0x%02x," % self.fun_data[ii], end="")
-                print()
-                i = i16
+            # copy machine code (max 16 bytes)
+            i16 = min(i + 16, i_top)
+            print("   ", end="")
+            for ii in range(i, i16):
+                print(" 0x%02x," % self.fun_data[ii], end="")
+            print()
+            i = i16
 
         print("};")
 
-        self.freeze_children()
-        self.freeze_raw_code(self.qstr_links, self.type_sig)
+        prelude_ptr = None
+        if self.code_kind == MP_CODE_NATIVE_PY:
+            prelude_ptr = "fun_data_%s_prelude_macro" % self.escaped_name
+            print("#if MICROPY_EMIT_NATIVE_PRELUDE_SEPARATE_FROM_MACHINE_CODE")
+            n = len(self.fun_data) - self.prelude_offset
+            print("static const byte fun_data_%s_prelude[%u] = {" % (self.escaped_name, n), end="")
+            for i in range(n):
+                print(" 0x%02x," % self.fun_data[self.prelude_offset + i], end="")
+            print("};")
+            print("#define %s &fun_data_%s_prelude[0]" % (prelude_ptr, self.escaped_name))
+            print("#else")
+            print(
+                "#define %s &fun_data_%s[%u]"
+                % (prelude_ptr, self.escaped_name, self.prelude_offset)
+            )
+            print("#endif")
+
+        self.freeze_children(prelude_ptr)
+        self.freeze_raw_code(prelude_ptr, self.type_sig)
 
 
 class MPYSegment:
@@ -1090,40 +1190,50 @@ def read_qstr(reader, segments):
     ln = reader.read_uint()
     if ln & 1:
         # static qstr
-        segments.append(
-            MPYSegment(MPYSegment.META, global_qstrs[ln >> 1].str, start_pos, start_pos)
-        )
-        return ln >> 1
+        q = global_qstrs.get_by_index(ln >> 1)
+        segments.append(MPYSegment(MPYSegment.META, q.str, start_pos, start_pos))
+        return q
     ln >>= 1
     start_pos = reader.tell()
     data = str_cons(reader.read_bytes(ln), "utf8")
     reader.read_byte()  # read and discard null terminator
     segments.append(MPYSegment(MPYSegment.QSTR, data, start_pos, reader.tell()))
-    global_qstrs.append(QStrType(data))
-    return len(global_qstrs) - 1
+    return global_qstrs.add(data)
 
 
 def read_obj(reader, segments):
-    obj_type = reader.read_bytes(1)
-    if obj_type == b"t":
+    obj_type = reader.read_byte()
+    if obj_type == MP_PERSISTENT_OBJ_FUN_TABLE:
         return MPFunTable()
-    elif obj_type == b"e":
+    elif obj_type == MP_PERSISTENT_OBJ_NONE:
+        return None
+    elif obj_type == MP_PERSISTENT_OBJ_FALSE:
+        return False
+    elif obj_type == MP_PERSISTENT_OBJ_TRUE:
+        return True
+    elif obj_type == MP_PERSISTENT_OBJ_ELLIPSIS:
         return Ellipsis
+    elif obj_type == MP_PERSISTENT_OBJ_TUPLE:
+        ln = reader.read_uint()
+        return tuple(read_obj(reader, segments) for _ in range(ln))
     else:
         ln = reader.read_uint()
         start_pos = reader.tell()
         buf = reader.read_bytes(ln)
-        if obj_type in (b"s", b"b"):
+        if obj_type in (MP_PERSISTENT_OBJ_STR, MP_PERSISTENT_OBJ_BYTES):
             reader.read_byte()  # read and discard null terminator
-        if obj_type == b"s":
+        if obj_type == MP_PERSISTENT_OBJ_STR:
             obj = str_cons(buf, "utf8")
-        elif obj_type == b"b":
+            if len(obj) < PERSISTENT_STR_INTERN_THRESHOLD:
+                if not global_qstrs.find_by_str(obj):
+                    global_qstrs.add(obj)
+        elif obj_type == MP_PERSISTENT_OBJ_BYTES:
             obj = buf
-        elif obj_type == b"i":
+        elif obj_type == MP_PERSISTENT_OBJ_INT:
             obj = int(str_cons(buf, "ascii"), 10)
-        elif obj_type == b"f":
+        elif obj_type == MP_PERSISTENT_OBJ_FLOAT:
             obj = float(str_cons(buf, "ascii"))
-        elif obj_type == b"c":
+        elif obj_type == MP_PERSISTENT_OBJ_COMPLEX:
             obj = complex(str_cons(buf, "ascii"))
         else:
             raise MPYReadError(reader.filename, "corrupt .mpy file")
@@ -1131,7 +1241,7 @@ def read_obj(reader, segments):
         return obj
 
 
-def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
+def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
     # Read raw code header.
     kind_len = reader.read_uint()
     kind = (kind_len & 3) + MP_CODE_BYTECODE
@@ -1145,18 +1255,9 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
 
     if kind == MP_CODE_BYTECODE:
         # Create bytecode raw code.
-        rc = RawCodeBytecode(cm_escaped_name, qstr_table, obj_table, fun_data)
+        rc = RawCodeBytecode(parent_name, qstr_table, obj_table, fun_data)
     else:
         # Create native raw code.
-        qstr_links = []
-        if kind in (MP_CODE_NATIVE_PY, MP_CODE_NATIVE_VIPER):
-            # Read qstr link table.
-            n_qstr_link = reader.read_uint()
-            for _ in range(n_qstr_link):
-                off = reader.read_uint()
-                qst = read_qstr(reader, segments)
-                qstr_links.append((off >> 2, off & 3, qst))
-
         native_scope_flags = 0
         native_n_pos_args = 0
         native_type_sig = 0
@@ -1189,12 +1290,11 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
                 native_type_sig = reader.read_uint()
 
         rc = RawCodeNative(
-            cm_escaped_name,
+            parent_name,
             qstr_table,
             kind,
             fun_data,
             prelude_offset,
-            qstr_links,
             native_scope_flags,
             native_n_pos_args,
             native_type_sig,
@@ -1209,11 +1309,14 @@ def read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments):
     # Read children, if there are any.
     rc.children = []
     if has_children:
+        # Make a pretty parent name (otherwise all identifiers will include _lt_module_gt_).
+        if not rc.escaped_name.endswith("_lt_module_gt_"):
+            parent_name = rc.escaped_name
+
+        # Read all the child raw codes.
         n_children = reader.read_uint()
         for _ in range(n_children):
-            rc.children.append(
-                read_raw_code(reader, cm_escaped_name, qstr_table, obj_table, segments)
-            )
+            rc.children.append(read_raw_code(reader, parent_name, qstr_table, obj_table, segments))
 
     return rc
 
@@ -1230,7 +1333,6 @@ def read_mpy(filename):
         if header[1] != config.MPY_VERSION:
             raise MPYReadError(filename, "incompatible .mpy version")
         feature_byte = header[2]
-        config.MICROPY_PY_BUILTINS_STR_UNICODE = (feature_byte & 2) != 0
         mpy_native_arch = feature_byte >> 2
         if mpy_native_arch != MP_NATIVE_ARCH_NONE:
             if config.native_arch == MP_NATIVE_ARCH_NONE:
@@ -1244,12 +1346,13 @@ def read_mpy(filename):
         n_obj = reader.read_uint()
 
         # Read qstrs and construct qstr table.
+        qstr_table_file_offset = reader.tell()
         qstr_table = []
         for i in range(n_qstr):
-            q = read_qstr(reader, segments)
-            qstr_table.append(global_qstrs[q])
+            qstr_table.append(read_qstr(reader, segments))
 
         # Read objects and construct object table.
+        obj_table_file_offset = reader.tell()
         obj_table = []
         for i in range(n_obj):
             obj_table.append(read_obj(reader, segments))
@@ -1269,6 +1372,8 @@ def read_mpy(filename):
         qstr_table,
         obj_table,
         raw_code,
+        qstr_table_file_offset,
+        obj_table_file_offset,
         raw_code_file_offset,
         cm_escaped_name,
     )
@@ -1287,7 +1392,7 @@ def disassemble_mpy(compiled_modules):
 def freeze_mpy(base_qstrs, compiled_modules):
     # add to qstrs
     new = {}
-    for q in global_qstrs:
+    for q in global_qstrs.qstrs:
         # don't add duplicates
         if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
             continue
@@ -1467,59 +1572,152 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("*/")
 
 
-def merge_mpy(raw_codes, output_file):
-    assert len(raw_codes) <= 2  # so var-uints all fit in 1 byte
+def adjust_bytecode_qstr_obj_indices(bytecode_in, qstr_table_base, obj_table_base):
+    # Expand bytcode to a list of opcodes.
+    opcodes = []
+    labels = {}
+    ip = 0
+    while ip < len(bytecode_in):
+        fmt, sz, arg, extra_arg = mp_opcode_decode(bytecode_in, ip)
+        opcode = Opcode(ip, fmt, bytecode_in[ip], arg, extra_arg)
+        labels[ip] = opcode
+        opcodes.append(opcode)
+        ip += sz
+        if fmt == MP_BC_FORMAT_OFFSET:
+            opcode.arg += ip
+
+    # Link jump opcodes to their destination.
+    for opcode in opcodes:
+        if opcode.fmt == MP_BC_FORMAT_OFFSET:
+            opcode.target = labels[opcode.arg]
+
+    # Adjust bytcode as required.
+    for opcode in opcodes:
+        if opcode.fmt == MP_BC_FORMAT_QSTR:
+            opcode.arg += qstr_table_base
+        elif opcode.opcode_byte == Opcode.MP_BC_LOAD_CONST_OBJ:
+            opcode.arg += obj_table_base
+
+    # Write out new bytecode.
+    offset_changed = True
+    while offset_changed:
+        offset_changed = False
+        overflow = False
+        bytecode_out = b""
+        for opcode in opcodes:
+            ip = len(bytecode_out)
+            if opcode.offset != ip:
+                offset_changed = True
+                opcode.offset = ip
+            opcode_overflow, encoded_opcode = mp_opcode_encode(opcode)
+            if opcode_overflow:
+                overflow = True
+            bytecode_out += encoded_opcode
+
+    if overflow:
+        raise Exception("bytecode overflow")
+
+    return bytecode_out
+
+
+def rewrite_raw_code(rc, qstr_table_base, obj_table_base):
+    if rc.code_kind != MP_CODE_BYTECODE:
+        raise Exception("can only rewrite bytecode")
+
+    source_info = bytearray()
+    for arg in rc.names:
+        source_info.extend(mp_encode_uint(qstr_table_base + arg))
+
+    closure_info = rc.fun_data[rc.offset_closure_info : rc.offset_opcodes]
+
+    bytecode_in = memoryview(rc.fun_data)[rc.offset_opcodes :]
+    bytecode_out = adjust_bytecode_qstr_obj_indices(bytecode_in, qstr_table_base, obj_table_base)
+
+    prelude_signature = rc.fun_data[: rc.offset_prelude_size]
+    prelude_size = encode_prelude_size(len(source_info), len(closure_info))
+
+    fun_data = prelude_signature + prelude_size + source_info + closure_info + bytecode_out
+
+    output = mp_encode_uint(len(fun_data) << 3 | bool(len(rc.children)) << 2)
+    output += fun_data
+
+    if rc.children:
+        output += mp_encode_uint(len(rc.children))
+        for child in rc.children:
+            output += rewrite_raw_code(child, qstr_table_base, obj_table_base)
+
+    return output
+
+
+def merge_mpy(compiled_modules, output_file):
     merged_mpy = bytearray()
 
-    if len(raw_codes) == 1:
-        with open(raw_codes[0].mpy_source_file, "rb") as f:
+    if len(compiled_modules) == 1:
+        with open(compiled_modules[0].mpy_source_file, "rb") as f:
             merged_mpy.extend(f.read())
     else:
-        main_rc = None
-        for rc in raw_codes:
-            if len(rc.qstr_table) > 1 or len(rc.obj_table) > 0:
+        main_cm_idx = None
+        for idx, cm in enumerate(compiled_modules):
+            if cm.header[2]:
                 # Must use qstr_table and obj_table from this raw_code
-                if main_rc is not None:
-                    raise Exception(
-                        "can't merge files when more than one has a populated qstr or obj table"
-                    )
-                main_rc = rc
-        if main_rc is None:
-            main_rc = raw_codes[0]
+                if main_cm_idx is not None:
+                    raise Exception("can't merge files when more than one contains native code")
+                main_cm_idx = idx
+        if main_cm_idx is not None:
+            # Shift main_cm to front of list.
+            compiled_modules.insert(0, compiled_modules.pop(main_cm_idx))
 
         header = bytearray(4)
         header[0] = ord("M")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2 | config.MICROPY_PY_BUILTINS_STR_UNICODE << 1
+        header[2] = config.native_arch << 2
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
 
-        # Copy n_qstr, n_obj, qstr_table, obj_table from main_rc.
-        with open(main_rc.mpy_source_file, "rb") as f:
-            data = f.read(main_rc.raw_code_file_offset)
-            merged_mpy.extend(data[4:])
+        n_qstr = 0
+        n_obj = 0
+        for cm in compiled_modules:
+            n_qstr += len(cm.qstr_table)
+            n_obj += len(cm.obj_table)
+        merged_mpy.extend(mp_encode_uint(n_qstr))
+        merged_mpy.extend(mp_encode_uint(n_obj))
+
+        # Copy verbatim the qstr and object tables from all compiled modules.
+        def copy_section(file, offset, offset2):
+            with open(file, "rb") as f:
+                f.seek(offset)
+                merged_mpy.extend(f.read(offset2 - offset))
+
+        for cm in compiled_modules:
+            copy_section(cm.mpy_source_file, cm.qstr_table_file_offset, cm.obj_table_file_offset)
+        for cm in compiled_modules:
+            copy_section(cm.mpy_source_file, cm.obj_table_file_offset, cm.raw_code_file_offset)
 
         bytecode = bytearray()
-        bytecode_len = 3 + len(raw_codes) * 5 + 2
-        bytecode.append(bytecode_len << 3 | 1 << 2)  # kind, has_children and length
-        bytecode.append(0b00000000)  # signature prelude
-        bytecode.append(0b00000010)  # size prelude; n_info=1
+        bytecode.append(0b00000000)  # prelude signature
+        bytecode.append(0b00000010)  # prelude size (n_info=1, n_cell=0)
         bytecode.extend(b"\x00")  # simple_name: qstr index 0 (will use source filename)
-        for idx in range(len(raw_codes)):
+        for idx in range(len(compiled_modules)):
             bytecode.append(0x32)  # MP_BC_MAKE_FUNCTION
             bytecode.append(idx)  # index raw code
             bytecode.extend(b"\x34\x00\x59")  # MP_BC_CALL_FUNCTION, 0 args, MP_BC_POP_TOP
         bytecode.extend(b"\x51\x63")  # MP_BC_LOAD_NONE, MP_BC_RETURN_VALUE
 
+        merged_mpy.extend(mp_encode_uint(len(bytecode) << 3 | 1 << 2))  # length, has_children
         merged_mpy.extend(bytecode)
+        merged_mpy.extend(mp_encode_uint(len(compiled_modules)))  # n_children
 
-        merged_mpy.append(len(raw_codes))  # n_children
-
-        for rc in raw_codes:
-            with open(rc.mpy_source_file, "rb") as f:
-                f.seek(rc.raw_code_file_offset)
-                data = f.read()  # read rest of mpy file
-                merged_mpy.extend(data)
+        qstr_table_base = 0
+        obj_table_base = 0
+        for cm in compiled_modules:
+            if qstr_table_base == 0 and obj_table_base == 0:
+                with open(cm.mpy_source_file, "rb") as f:
+                    f.seek(cm.raw_code_file_offset)
+                    merged_mpy.extend(f.read())
+            else:
+                merged_mpy.extend(rewrite_raw_code(cm.raw_code, qstr_table_base, obj_table_base))
+            qstr_table_base += len(cm.qstr_table)
+            obj_table_base += len(cm.obj_table)
 
     if output_file is None:
         sys.stdout.buffer.write(merged_mpy)
@@ -1529,6 +1727,8 @@ def merge_mpy(raw_codes, output_file):
 
 
 def main():
+    global global_qstrs
+
     import argparse
 
     cmd_parser = argparse.ArgumentParser(description="A tool to work with MicroPython .mpy files.")
@@ -1578,6 +1778,9 @@ def main():
         config.MICROPY_QSTR_BYTES_IN_LEN = 1
         config.MICROPY_QSTR_BYTES_IN_HASH = 1
         base_qstrs = list(qstrutil.static_qstr_list)
+
+    # Create initial list of global qstrs.
+    global_qstrs = GlobalQStrList()
 
     # Load all .mpy files.
     try:

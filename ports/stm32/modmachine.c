@@ -30,7 +30,6 @@
 #include "modmachine.h"
 #include "py/gc.h"
 #include "py/runtime.h"
-#include "py/objstr.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/machine_bitstream.h"
@@ -46,6 +45,7 @@
 #include "gccollect.h"
 #include "irq.h"
 #include "powerctrl.h"
+#include "boardctrl.h"
 #include "pybthread.h"
 #include "rng.h"
 #include "storage.h"
@@ -66,6 +66,12 @@
 #if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
+#endif
+
+#if defined(STM32G0)
+// G0 has BOR and POR combined
+#define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
+#define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
 #if defined(STM32H7)
@@ -167,7 +173,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         printf("S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
@@ -264,7 +270,7 @@ STATIC mp_obj_t machine_soft_reset(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
 // Activate the bootloader without BOOT* pins.
-STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_HW_ENABLE_USB
     pyb_usb_dev_deinit();
     #endif
@@ -274,21 +280,7 @@ STATIC NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args)
 
     __disable_irq();
 
-    #if MICROPY_HW_USES_BOOTLOADER
-    if (n_args == 0 || !mp_obj_is_true(args[0])) {
-        // By default, with no args given, we enter the custom bootloader (mboot)
-        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
-    }
-
-    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
-        // With a string/bytes given, pass its data to the custom bootloader
-        size_t len;
-        const char *data = mp_obj_str_get_data(args[0], &len);
-        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
-        memmove(mboot_region, data, len);
-        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
-    }
-    #endif
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
 
     #if defined(STM32F7) || defined(STM32H7)
     powerctrl_enter_bootloader(0, 0x1ff00000);
@@ -310,14 +302,14 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
             mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
             mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-            #if !defined(STM32F0)
+            #if !defined(STM32F0) && !defined(STM32G0)
             mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
             #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -389,6 +381,8 @@ STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(reset_cause);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+#if MICROPY_PY_MACHINE
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
@@ -474,3 +468,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

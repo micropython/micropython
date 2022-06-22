@@ -214,56 +214,8 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
 #define mp_type_fileio mp_type_vfs_posix_fileio
 #define mp_type_textio mp_type_vfs_posix_textio
-
-extern const struct _mp_obj_module_t mp_module_uselect;
-extern const struct _mp_obj_module_t mp_module_time;
-extern const struct _mp_obj_module_t mp_module_termios;
-extern const struct _mp_obj_module_t mp_module_socket;
-extern const struct _mp_obj_module_t mp_module_ffi;
-extern const struct _mp_obj_module_t mp_module_jni;
-
-#if MICROPY_PY_FFI
-#define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
-#else
-#define MICROPY_PY_FFI_DEF
-#endif
-#if MICROPY_PY_JNI
-#define MICROPY_PY_JNI_DEF { MP_ROM_QSTR(MP_QSTR_jni), MP_ROM_PTR(&mp_module_jni) },
-#else
-#define MICROPY_PY_JNI_DEF
-#endif
-#if MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
-#else
-#define MICROPY_PY_UTIME_DEF
-#endif
-#if MICROPY_PY_TERMIOS
-#define MICROPY_PY_TERMIOS_DEF { MP_ROM_QSTR(MP_QSTR_termios), MP_ROM_PTR(&mp_module_termios) },
-#else
-#define MICROPY_PY_TERMIOS_DEF
-#endif
-#if MICROPY_PY_SOCKET
-#define MICROPY_PY_SOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_socket) },
-#else
-#define MICROPY_PY_SOCKET_DEF
-#endif
-#if MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-#else
-#define MICROPY_PY_USELECT_DEF
-#endif
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    MICROPY_PY_FFI_DEF \
-    MICROPY_PY_JNI_DEF \
-    MICROPY_PY_UTIME_DEF \
-    MICROPY_PY_SOCKET_DEF \
-    MICROPY_PY_USELECT_DEF \
-    MICROPY_PY_TERMIOS_DEF \
 
 // type definitions for the specific machine
 
@@ -301,6 +253,17 @@ void mp_unix_mark_exec(void);
 #define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
 #endif
 
+#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+// Support for seeding the random module on import.
+#include <stddef.h>
+void mp_hal_get_random(size_t n, void *buf);
+static inline unsigned long mp_urandom_seed_init(void) {
+    unsigned long r;
+    mp_hal_get_random(sizeof(r), &r);
+    return r;
+}
+#endif
+
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
@@ -318,9 +281,6 @@ void mp_unix_mark_exec(void);
 #define nan(x) NAN
 #endif
 #endif
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
 

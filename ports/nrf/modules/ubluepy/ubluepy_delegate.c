@@ -38,8 +38,7 @@ STATIC void ubluepy_delegate_print(const mp_print_t *print, mp_obj_t o, mp_print
 }
 
 STATIC mp_obj_t ubluepy_delegate_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    ubluepy_delegate_obj_t *s = m_new_obj(ubluepy_delegate_obj_t);
-    s->base.type = type;
+    ubluepy_delegate_obj_t *s = mp_obj_malloc(ubluepy_delegate_obj_t, type);
 
     return MP_OBJ_FROM_PTR(s);
 }

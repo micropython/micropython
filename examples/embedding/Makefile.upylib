@@ -9,6 +9,7 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(MPTOP)/py/py.mk
+include $(MPTOP)/extmod/extmod.mk
 
 INC +=  -I.
 INC +=  -I..

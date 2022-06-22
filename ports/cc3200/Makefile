@@ -39,6 +39,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 # include MicroPython make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 include application.mk
 else
 ifeq ($(BTARGET), bootloader)

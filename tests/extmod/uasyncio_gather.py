@@ -20,9 +20,9 @@ async def factorial(name, number):
     return f
 
 
-async def task(id):
+async def task(id, t=0.1):
     print("start", id)
-    await asyncio.sleep(0.02)
+    await asyncio.sleep(t)
     print("end", id)
     return id
 
@@ -30,13 +30,14 @@ async def task(id):
 async def task_loop(id):
     print("task_loop start", id)
     while True:
-        await asyncio.sleep(0.02)
+        await asyncio.sleep(0.1)
         print("task_loop loop", id)
 
 
-async def task_raise(id):
+async def task_raise(id, t=0.1):
     print("task_raise start", id)
-    await asyncio.sleep(0.02)
+    await asyncio.sleep(t)
+    print("task_raise raise", id)
     raise ValueError(id)
 
 
@@ -74,12 +75,13 @@ async def main():
     print(tasks[0].done(), tasks[1].done())
     for t in tasks:
         t.cancel()
-    await asyncio.sleep(0.04)
+    await asyncio.sleep(0.2)
 
     print("====")
 
     # Test case where both tasks raise an exception.
-    tasks = [asyncio.create_task(task_raise(1)), asyncio.create_task(task_raise(2))]
+    # Use t=0 so they raise one after the other, between the gather starting and finishing.
+    tasks = [asyncio.create_task(task_raise(1, t=0)), asyncio.create_task(task_raise(2, t=0))]
     try:
         await asyncio.gather(*tasks)
     except ValueError as er:
@@ -90,9 +92,18 @@ async def main():
 
     # Cancel a multi gather.
     t = asyncio.create_task(gather_task(task(1), task(2)))
-    await asyncio.sleep(0.01)
+    await asyncio.sleep(0.05)
     t.cancel()
-    await asyncio.sleep(0.04)
+    await asyncio.sleep(0.2)
+
+    # Test edge cases where the gather is cancelled just as tasks are created and ending.
+    for i in range(1, 4):
+        print("====")
+        t = asyncio.create_task(gather_task(task(1, t=0), task(2, t=0)))
+        for _ in range(i):
+            await asyncio.sleep(0)
+        t.cancel()
+        await asyncio.sleep(0.2)
 
 
 asyncio.run(main())

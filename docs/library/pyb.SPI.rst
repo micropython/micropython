@@ -28,7 +28,7 @@ Additional methods for SPI::
 Constructors
 ------------
 
-.. class:: pyb.SPI(bus, ...)
+.. class:: SPI(bus, ...)
 
    Construct an SPI object on the given bus.  ``bus`` can be 1 or 2, or
    'X' or 'Y'. With no additional parameters, the SPI object is created but

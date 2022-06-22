@@ -175,8 +175,7 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // create new object
-    mp_machine_soft_spi_obj_t *self = m_new_obj(mp_machine_soft_spi_obj_t);
-    self->base.type = &mp_machine_soft_spi_type;
+    mp_machine_soft_spi_obj_t *self = mp_obj_malloc(mp_machine_soft_spi_obj_t, &mp_machine_soft_spi_type);
 
     // set parameters
     self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);

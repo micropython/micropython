@@ -556,8 +556,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type,
     gpio_num_t pin_id = machine_pin_get_id(args[0]);
 
     // create PWM object from the given pin
-    machine_pwm_obj_t *self = m_new_obj(machine_pwm_obj_t);
-    self->base.type = &machine_pwm_type;
+    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
     self->pin = pin_id;
     self->active = false;
     self->mode = -1;

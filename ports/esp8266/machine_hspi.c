@@ -159,8 +159,7 @@ mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         mp_raise_ValueError(NULL);
     }
 
-    machine_hspi_obj_t *self = m_new_obj(machine_hspi_obj_t);
-    self->base.type = &machine_hspi_type;
+    machine_hspi_obj_t *self = mp_obj_malloc(machine_hspi_obj_t, &machine_hspi_type);
     // set defaults
     self->baudrate = 80000000L;
     self->polarity = 0;

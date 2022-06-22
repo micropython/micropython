@@ -34,6 +34,7 @@
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
+#define MICROPY_PY_SYS_PLATFORM     "qemu-arm"
 #define MICROPY_PY_UERRNO           (1)
 #define MICROPY_PY_UBINASCII        (1)
 #define MICROPY_PY_URANDOM          (1)
@@ -59,10 +60,6 @@
 typedef int32_t mp_int_t; // must be pointer size
 typedef uint32_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

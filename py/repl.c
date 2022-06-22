@@ -313,10 +313,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 return sizeof(import_str) - 1 - s_len;
             }
         }
-        if (q_first == 0) {
-            *compl_str = "    ";
-            return s_len ? 0 : 4;
-        }
+        return 0;
     }
 
     // 1 match found, or multiple matches with a common prefix

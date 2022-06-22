@@ -172,56 +172,11 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	frozenmod.o \
 	)
 
-PY_EXTMOD_O_BASENAME = \
-	extmod/moduasyncio.o \
-	extmod/moductypes.o \
-	extmod/modujson.o \
-	extmod/moduos.o \
-	extmod/modure.o \
-	extmod/moduzlib.o \
-	extmod/moduheapq.o \
-	extmod/modutimeq.o \
-	extmod/moduhashlib.o \
-	extmod/moducryptolib.o \
-	extmod/modubinascii.o \
-	extmod/virtpin.o \
-	extmod/machine_bitstream.o \
-	extmod/machine_mem.o \
-	extmod/machine_pinbase.o \
-	extmod/machine_signal.o \
-	extmod/machine_pulse.o \
-	extmod/machine_pwm.o \
-	extmod/machine_i2c.o \
-	extmod/machine_spi.o \
-	extmod/modbluetooth.o \
-	extmod/modussl_axtls.o \
-	extmod/modussl_mbedtls.o \
-	extmod/moduplatform.o\
-	extmod/modurandom.o \
-	extmod/moduselect.o \
-	extmod/moduwebsocket.o \
-	extmod/modwebrepl.o \
-	extmod/modframebuf.o \
-	extmod/vfs.o \
-	extmod/vfs_blockdev.o \
-	extmod/vfs_reader.o \
-	extmod/vfs_posix.o \
-	extmod/vfs_posix_file.o \
-	extmod/vfs_fat.o \
-	extmod/vfs_fat_diskio.o \
-	extmod/vfs_fat_file.o \
-	extmod/vfs_lfs.o \
-	extmod/utime_mphal.o \
-	extmod/uos_dupterm.o \
-	shared/libc/abort_.o \
-	shared/libc/printf.o \
-
 # prepend the build destination prefix to the py object files
 PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))
-PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 
 # this is a convenience variable for ports that want core, extmod and frozen code
-PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
+PY_O += $(PY_CORE_O)
 
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
@@ -230,7 +185,7 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
-SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
+SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -259,9 +214,9 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
 
 # build a list of registered modules for py/objmodule.c.
-$(HEADER_BUILD)/moduledefs.h: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(HEADER_BUILD)/mpversion.h
+$(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
 	@$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py --vpath="., $(TOP), $(USER_C_MODULES)" $(SRC_QSTR) > $@
+	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py $< > $@
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
@@ -285,6 +240,3 @@ $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping
-
-# Include rules for extmod related code
-include $(TOP)/extmod/extmod.mk

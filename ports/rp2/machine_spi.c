@@ -269,6 +269,15 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
     }
 }
 
+machine_spi_obj_t *spi_from_mp_obj(mp_obj_t o) {
+    if (mp_obj_is_type(o, &machine_spi_type)) {
+        machine_spi_obj_t *self = MP_OBJ_TO_PTR(o);
+        return self;
+    } else {
+        mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
+    }
+}
+
 STATIC const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,
     .transfer = machine_spi_transfer,

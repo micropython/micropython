@@ -45,7 +45,7 @@ STATIC const mp_soft_qspi_obj_t soft_qspi_bus = {
 
 const mp_spiflash_config_t spiflash_config = {
     .bus_kind = MP_SPIFLASH_BUS_QSPI,
-    .bus.u_qspi.data = (void*)&soft_qspi_bus,
+    .bus.u_qspi.data = (void *)&soft_qspi_bus,
     .bus.u_qspi.proto = &mp_soft_qspi_proto,
     #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
     .cache = &spi_bdev_cache,

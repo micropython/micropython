@@ -105,7 +105,7 @@ typedef struct _tl_list_node_t {
 } tl_list_node_t;
 
 typedef struct _parse_hci_info_t {
-    int (*cb_fun)(void *, const uint8_t *, size_t);
+    rfcore_ble_msg_callback_t cb_fun;
     void *cb_env;
     bool was_hci_reset_evt;
 } parse_hci_info_t;
@@ -408,11 +408,12 @@ STATIC size_t tl_parse_hci_msg(const uint8_t *buf, parse_hci_info_t *parse) {
     return len;
 }
 
-STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
+STATIC size_t tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
     volatile tl_list_node_t *cur = head->next;
     bool added_to_free_queue = false;
+    size_t len = 0;
     while (cur != head) {
-        tl_parse_hci_msg((uint8_t *)cur->body, parse);
+        len += tl_parse_hci_msg((uint8_t *)cur->body, parse);
 
         volatile tl_list_node_t *next = tl_list_unlink(cur);
 
@@ -436,13 +437,15 @@ STATIC void tl_process_msg(volatile tl_list_node_t *head, unsigned int ch, parse
         // Notify change in free pool.
         LL_C1_IPCC_SetFlag_CHx(IPCC, IPCC_CH_MM);
     }
+    return len;
 }
 
 // Only call this when IRQs are disabled on this channel.
-STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
+STATIC size_t tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_hci_info_t *parse) {
+    size_t len = 0;
     if (LL_C2_IPCC_IsActiveFlag_CHx(IPCC, ch)) {
         // Process new data.
-        tl_process_msg(head, ch, parse);
+        len = tl_process_msg(head, ch, parse);
 
         // Clear receive channel (allows RF core to send more data to us).
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
@@ -452,6 +455,7 @@ STATIC void tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse_h
             LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
         }
     }
+    return len;
 }
 
 STATIC void tl_hci_cmd(uint8_t *cmd, unsigned int ch, uint8_t hdr, uint16_t opcode, const uint8_t *buf, size_t len) {
@@ -611,24 +615,6 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     tl_list_node_t *n;
     uint32_t ch;
     if (src[0] == HCI_KIND_BT_CMD) {
-        // The STM32WB has a problem when address resolution is enabled: under certain
-        // conditions the MCU can get into a state where it draws an additional 10mA
-        // or so and eventually ends up with a broken BLE RX path in the silicon.  A
-        // simple way to reproduce this is to enable address resolution (which is the
-        // default for NimBLE) and start the device advertising.  If there is enough
-        // BLE activity in the vicinity then the device will at some point enter the
-        // bad state and, if left long enough, will have permanent BLE RX damage.
-        //
-        // STMicroelectronics are aware of this issue.  The only known workaround at
-        // this stage is to not enable address resolution.  We do that here by
-        // intercepting any command that enables address resolution and convert it
-        // into a command that disables address resolution.
-        //
-        // OGF=0x08 OCF=0x002d HCI_LE_Set_Address_Resolution_Enable
-        if (len == 5 && memcmp(src + 1, "\x2d\x20\x01\x01", 4) == 0) {
-            src = (const uint8_t *)"\x01\x2d\x20\x01\x00";
-        }
-
         n = (tl_list_node_t *)&ipcc_membuf_ble_cmd_buf[0];
         ch = IPCC_CH_BLE;
     } else if (src[0] == HCI_KIND_BT_ACL) {
@@ -661,9 +647,9 @@ void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {
     LL_C1_IPCC_SetFlag_CHx(IPCC, ch);
 }
 
-void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env) {
+size_t rfcore_ble_check_msg(rfcore_ble_msg_callback_t cb, void *env) {
     parse_hci_info_t parse = { cb, env, false };
-    tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
+    size_t len = tl_check_msg(&ipcc_mem_ble_evt_queue, IPCC_CH_BLE, &parse);
 
     // Intercept HCI_Reset events and reconfigure the controller following the reset
     if (parse.was_hci_reset_evt) {
@@ -678,6 +664,7 @@ void rfcore_ble_check_msg(int (*cb)(void *, const uint8_t *, size_t), void *env)
         SWAP_UINT8(buf[4], buf[5]);
         tl_ble_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_WRITE_CONFIG), buf, 8); // set BDADDR
     }
+    return len;
 }
 
 // "level" is 0x00-0x1f, ranging from -40 dBm to +6 dBm (not linear).

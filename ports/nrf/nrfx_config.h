@@ -28,7 +28,7 @@
 #ifndef NRFX_CONFIG_H
 #define NRFX_CONFIG_H
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "nrf.h"
 
 // Port specific defines

@@ -37,6 +37,13 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
+// Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
+void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
+}
+
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
 

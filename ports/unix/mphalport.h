@@ -91,6 +91,8 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
     { if (err_flag == -1) \
       { mp_raise_OSError(error_val); } }
 
+void mp_hal_get_random(size_t n, void *buf);
+
 #if MICROPY_PY_BLUETOOTH
 enum {
     MP_HAL_MAC_BDADDR,

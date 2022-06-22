@@ -43,6 +43,8 @@
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
 
+#if MICROPY_PY_MACHINE
+
 #define RP2_RESET_PWRON (1)
 #define RP2_RESET_WDT (3)
 
@@ -79,11 +81,13 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC mp_obj_t machine_bootloader(void) {
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     reset_usb_boot(0, 0);
-    return mp_const_none;
+    for (;;) {
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -187,3 +191,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

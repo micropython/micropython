@@ -41,7 +41,7 @@
 #include "modesp32.h"
 
 #if CONFIG_IDF_TARGET_ESP32C3
-#include "hal/gpio_ll.h"
+#include "soc/usb_serial_jtag_reg.h"
 #endif
 
 // Used to implement a range of pull capabilities
@@ -92,7 +92,7 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     #endif
     {{&machine_pin_type}, GPIO_NUM_18},
     {{&machine_pin_type}, GPIO_NUM_19},
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 2)
     {{&machine_pin_type}, GPIO_NUM_20},
     #else
     {{NULL}, -1},
@@ -191,11 +191,19 @@ STATIC const machine_pin_obj_t machine_pin_obj[] = {
     {{NULL}, -1}, // 30 FLASH/PSRAM
     {{NULL}, -1}, // 31 FLASH/PSRAM
     {{NULL}, -1}, // 32 FLASH/PSRAM
+    #if CONFIG_SPIRAM_MODE_OCT
+    {{NULL}, -1}, // 33 FLASH/PSRAM
+    {{NULL}, -1}, // 34 FLASH/PSRAM
+    {{NULL}, -1}, // 35 FLASH/PSRAM
+    {{NULL}, -1}, // 36 FLASH/PSRAM
+    {{NULL}, -1}, // 37 FLASH/PSRAM
+    #else
     {{&machine_pin_type}, GPIO_NUM_33},
     {{&machine_pin_type}, GPIO_NUM_34},
     {{&machine_pin_type}, GPIO_NUM_35},
     {{&machine_pin_type}, GPIO_NUM_36},
     {{&machine_pin_type}, GPIO_NUM_37},
+    #endif
     {{&machine_pin_type}, GPIO_NUM_38},
     {{&machine_pin_type}, GPIO_NUM_39}, // MTCLK
     {{&machine_pin_type}, GPIO_NUM_40}, // MTDO
@@ -282,7 +290,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 
     #if CONFIG_IDF_TARGET_ESP32C3
     if (self->id == 18 || self->id == 19) {
-        CLEAR_PERI_REG_MASK(USB_DEVICE_CONF0_REG, USB_DEVICE_USB_PAD_ENABLE);
+        CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
 
@@ -564,7 +572,7 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     #endif
     {{&machine_pin_irq_type}, GPIO_NUM_18},
     {{&machine_pin_irq_type}, GPIO_NUM_19},
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 2)
     {{&machine_pin_irq_type}, GPIO_NUM_20},
     #else
     {{NULL}, -1},
@@ -658,11 +666,19 @@ STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {
     {{NULL}, -1}, // 30 FLASH/PSRAM
     {{NULL}, -1}, // 31 FLASH/PSRAM
     {{NULL}, -1}, // 32 FLASH/PSRAM
+    #if CONFIG_SPIRAM_MODE_OCT
+    {{NULL}, -1}, // 33 FLASH/PSRAM
+    {{NULL}, -1}, // 34 FLASH/PSRAM
+    {{NULL}, -1}, // 35 FLASH/PSRAM
+    {{NULL}, -1}, // 36 FLASH/PSRAM
+    {{NULL}, -1}, // 37 FLASH/PSRAM
+    #else
     {{&machine_pin_irq_type}, GPIO_NUM_33},
     {{&machine_pin_irq_type}, GPIO_NUM_34},
     {{&machine_pin_irq_type}, GPIO_NUM_35},
     {{&machine_pin_irq_type}, GPIO_NUM_36},
     {{&machine_pin_irq_type}, GPIO_NUM_37},
+    #endif
     {{&machine_pin_irq_type}, GPIO_NUM_38},
     {{&machine_pin_irq_type}, GPIO_NUM_39},
     {{&machine_pin_irq_type}, GPIO_NUM_40},

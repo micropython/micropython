@@ -254,6 +254,17 @@ typedef struct _mp_code_state_t {
     // mp_exc_stack_t exc_state[0];
 } mp_code_state_t;
 
+// State for an executing native function (based on mp_code_state_t).
+typedef struct _mp_code_state_native_t {
+    struct _mp_obj_fun_bc_t *fun_bc;
+    const byte *ip;
+    mp_obj_t *sp;
+    uint16_t n_state;
+    uint16_t exc_sp_idx;
+    mp_obj_dict_t *old_globals;
+    mp_obj_t state[0];
+} mp_code_state_native_t;
+
 // Allocator may return NULL, in which case data is not stored (can be used to compute size).
 typedef uint8_t *(*mp_encode_uint_allocator_t)(void *env, size_t nbytes);
 
@@ -269,6 +280,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state,
     mp_obj_t inject_exc);
 mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t func, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
+void mp_setup_code_state_native(mp_code_state_native_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
 void mp_bytecode_print(const mp_print_t *print, const struct _mp_raw_code_t *rc, const mp_module_constants_t *cm);
 void mp_bytecode_print2(const mp_print_t *print, const byte *ip, size_t len, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
 const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start, const byte *ip, struct _mp_raw_code_t *const *child_table, const mp_module_constants_t *cm);
@@ -279,12 +291,6 @@ const byte *mp_bytecode_print_str(const mp_print_t *print, const byte *ip_start,
 #define MP_TAGPTR_TAG0(x) ((uintptr_t)(x) & 1)
 #define MP_TAGPTR_TAG1(x) ((uintptr_t)(x) & 2)
 #define MP_TAGPTR_MAKE(ptr, tag) ((void *)((uintptr_t)(ptr) | (tag)))
-
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
-
-uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint);
-
-#endif
 
 static inline void mp_module_context_alloc_tables(mp_module_context_t *context, size_t n_qstr, size_t n_obj) {
     #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE

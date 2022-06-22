@@ -284,7 +284,7 @@ int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_ru
     } else if (firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FULL_SIG) {
         return mboot_pack_handle_full_sig();
     } else if (firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_RAW
-        || firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_GZIP) {
+               || firmware_chunk_buf.header.format == MBOOT_PACK_CHUNK_FW_GZIP) {
         return mboot_pack_handle_firmware();
     } else {
         // Unsupported contents.

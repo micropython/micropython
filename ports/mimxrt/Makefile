@@ -42,6 +42,7 @@ MICROPY_VFS_FAT ?= 1
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 
@@ -88,8 +89,11 @@ CFLAGS += -DXIP_EXTERNAL_FLASH=1 \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-D__START=main \
 	-DCPU_HEADER_H='<$(MCU_SERIES).h>' \
+	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
+
+CFLAGS += -DI2C_RETRY_TIMES=1000000 -DSPI_RETRY_TIMES=1000000 -DUART_RETRY_TIMES=1000000
 
 ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
@@ -147,7 +151,6 @@ SRC_ETH_C += \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
 SRC_QSTR += \
-	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/moduwebsocket.c \
 	extmod/modusocket.c \
@@ -194,7 +197,6 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_snvs_lp.c \
 	$(MCU_DIR)/drivers/fsl_trng.c \
 	$(MCU_DIR)/drivers/fsl_wdog.c \
-	$(MCU_DIR)/project_template/clock_config.c \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
@@ -213,6 +215,7 @@ endif
 
 SRC_C += \
 	board_init.c \
+	boards/$(MCU_SERIES)_clock_config.c \
 	dma_manager.c \
 	drivers/bus/softspi.c \
 	drivers/dht/dht.c \

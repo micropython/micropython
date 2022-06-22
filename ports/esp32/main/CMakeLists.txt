@@ -7,6 +7,10 @@ endif()
 include(${MICROPY_DIR}/py/py.cmake)
 
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
+    # Enable extmod components that will be configured by extmod.cmake.
+    # A board may also have enabled additional components.
+    set(MICROPY_PY_BTREE ON)
+
     include(${MICROPY_DIR}/py/usermod.cmake)
     include(${MICROPY_DIR}/extmod/extmod.cmake)
 endif()

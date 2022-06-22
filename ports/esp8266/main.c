@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"

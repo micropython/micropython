@@ -80,7 +80,7 @@ typedef union {
 struct _dma_descr_t {
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     DMA_Stream_TypeDef *instance;
-    #elif defined(STM32F0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     DMA_Channel_TypeDef *instance;
     #else
     #error "Unsupported Processor"
@@ -95,7 +95,7 @@ struct _dma_descr_t {
 static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -119,7 +119,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 static const DMA_InitTypeDef dma_init_struct_i2s = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
+    #elif defined(STM32G0) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4)
     .Request = 0,
     #endif
     .Direction = DMA_MEMORY_TO_PERIPH,
@@ -143,7 +143,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -153,7 +153,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
     .MemDataAlignment = DMA_MDATAALIGN_WORD,
     #if defined(STM32F4) || defined(STM32F7)
     .Mode = DMA_PFCTRL,
-    #elif defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Mode = DMA_NORMAL,
     #endif
     .Priority = DMA_PRIORITY_VERY_HIGH,
@@ -171,7 +171,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -507,6 +507,46 @@ static const uint8_t dma_irqn[NSTREAM] = {
     DMA2_Channel7_IRQn,
 };
 
+#elif defined(STM32G0)
+
+#define NCONTROLLERS            (2)
+#define NSTREAMS_PER_CONTROLLER (7)
+#define NSTREAM                 (NCONTROLLERS * NSTREAMS_PER_CONTROLLER)
+
+#define DMA_SUB_INSTANCE_AS_UINT8(dma_request) (dma_request)
+
+#define DMA1_ENABLE_MASK (0x007f) // Bits in dma_enable_mask corresponding to DMA1 (7 channels)
+#define DMA2_ENABLE_MASK (0x0f80) // Bits in dma_enable_mask corresponding to DMA2 (only 5 channels)
+
+// DMA1 streams
+#if MICROPY_HW_ENABLE_DAC
+const dma_descr_t dma_DAC_1_TX = { DMA1_Channel3, DMA_REQUEST_DAC1_CH1, dma_id_2, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { DMA1_Channel4, DMA_REQUEST_DAC1_CH2, dma_id_3, &dma_init_struct_dac };
+#endif
+const dma_descr_t dma_SPI_3_TX = { DMA1_Channel7, DMA_REQUEST_SPI3_TX, dma_id_6, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_3_RX = { DMA2_Channel1, DMA_REQUEST_SPI3_RX, dma_id_7, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_2_TX = { DMA1_Channel5, DMA_REQUEST_SPI2_TX, dma_id_4, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_2_RX = { DMA1_Channel6, DMA_REQUEST_SPI2_RX, dma_id_5, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_RX = { DMA2_Channel3, DMA_REQUEST_SPI1_RX, dma_id_9, &dma_init_struct_spi_i2c};
+const dma_descr_t dma_SPI_1_TX = { DMA2_Channel4, DMA_REQUEST_SPI1_TX, dma_id_10, &dma_init_struct_spi_i2c};
+
+static const uint8_t dma_irqn[NSTREAM] = {
+    DMA1_Channel1_IRQn,
+    DMA1_Channel2_3_IRQn,
+    DMA1_Channel2_3_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn,
+    0,
+    0,
+};
+
 #elif defined(STM32G4)
 
 #define NCONTROLLERS            (2)
@@ -665,7 +705,7 @@ volatile dma_idle_count_t dma_idle;
 
 #define DMA_INVALID_CHANNEL 0xff    // Value stored in dma_last_channel which means invalid
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32L0)
 #define DMA1_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA1EN) != 0)
 #if defined(DMA2)
 #define DMA2_IS_CLK_ENABLED()   ((RCC->AHBENR & RCC_AHBENR_DMA2EN) != 0)
@@ -828,6 +868,59 @@ void DMA2_Stream7_IRQHandler(void) {
         HAL_DMA_IRQHandler(dma_handle[dma_id_15]);
     }
     IRQ_EXIT(DMA2_Stream7_IRQn);
+}
+
+#elif defined(STM32G0)
+
+void DMA1_Channel1_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel1_IRQn);
+    if (dma_handle[dma_id_0] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_0]);
+    }
+    IRQ_EXIT(DMA1_Channel1_IRQn);
+}
+
+void DMA1_Channel2_3_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Channel2_3_IRQn);
+    if (dma_handle[dma_id_1] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_1]);
+    }
+    if (dma_handle[dma_id_2] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_2]);
+    }
+    IRQ_EXIT(DMA1_Channel2_3_IRQn);
+}
+
+void DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQHandler(void) {
+    IRQ_ENTER(DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn);
+    if (dma_handle[dma_id_3] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_3]);
+    }
+    if (dma_handle[dma_id_4] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_4]);
+    }
+    if (dma_handle[dma_id_5] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_5]);
+    }
+    if (dma_handle[dma_id_6] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_6]);
+    }
+    if (dma_handle[dma_id_7] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_7]);
+    }
+    if (dma_handle[dma_id_8] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_8]);
+    }
+    if (dma_handle[dma_id_9] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_9]);
+    }
+    if (dma_handle[dma_id_10] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_10]);
+    }
+    if (dma_handle[dma_id_11] != NULL) {
+        HAL_DMA_IRQHandler(dma_handle[dma_id_11]);
+    }
+    IRQ_EXIT(DMA1_Ch4_7_DMA2_Ch1_5_DMAMUX1_OVR_IRQn);
 }
 
 #elif defined(STM32G4)
@@ -1164,7 +1257,7 @@ void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint3
     dma->Instance = dma_descr->instance;
     dma->Init = *dma_descr->init;
     dma->Init.Direction = dir;
-    #if defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     dma->Init.Request = dma_descr->sub_instance;
     #else
     #if !defined(STM32F0)
@@ -1191,8 +1284,8 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
 
         dma_enable_clock(dma_id);
 
-        #if defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
-        // Always reset and configure the H7 and L0/L4 DMA peripheral
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
+        // Always reset and configure the H7 and G0/G4/H7/L0/L4/WB/WL DMA peripheral
         // (dma->State is set to HAL_DMA_STATE_RESET by memset above)
         // TODO: understand how L0/L4 DMA works so this is not needed
         HAL_DMA_DeInit(dma);
@@ -1367,7 +1460,7 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
     dma->CCR |= DMA_CCR_EN;
 }
 
-#elif defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32G0) || defined(STM32WB) || defined(STM32WL)
 
 // These functions are currently not implemented or needed for this MCU.
 

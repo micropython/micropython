@@ -729,6 +729,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_next), MP_ROM_PTR(&mp_builtin_next_obj) },
     { MP_ROM_QSTR(MP_QSTR_oct), MP_ROM_PTR(&mp_builtin_oct_obj) },
+    #if MICROPY_PY_IO
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ord), MP_ROM_PTR(&mp_builtin_ord_obj) },
     { MP_ROM_QSTR(MP_QSTR_pow), MP_ROM_PTR(&mp_builtin_pow_obj) },
     { MP_ROM_QSTR(MP_QSTR_print), MP_ROM_PTR(&mp_builtin_print_obj) },
@@ -784,3 +787,5 @@ const mp_obj_module_t mp_module_builtins = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_builtins_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_builtins, mp_module_builtins);

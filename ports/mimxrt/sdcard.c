@@ -29,6 +29,11 @@
 #include "sdcard.h"
 #include "ticks.h"
 #include "fsl_iomuxc.h"
+#include "pin.h"
+
+#if FSL_USDHC_DRIVER_VERSION == 0x020208
+#define USHDC_USE_TRANSFER_NONBLOCKING_10XX  (1)
+#endif
 
 #define SDCARD_VOLTAGE_WINDOW_SD                (0x80100000U)
 #define SDCARD_HIGH_CAPACITY                    (0x40000000U)
@@ -281,27 +286,54 @@ void sdcard_card_removed_callback(USDHC_Type *base, void *userData) {
     USDHC_ClearInterruptStatusFlags(base, kUSDHC_CardRemovalFlag);
 }
 
+#if USHDC_USE_TRANSFER_NONBLOCKING_10XX
+
 void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData) {
     sdcard_transfer_status = status;
     sdcard_transfer_done = true;
     USDHC_ClearInterruptStatusFlags(base, kUSDHC_CommandCompleteFlag | kUSDHC_DataCompleteFlag);
 }
 
+#endif
+
 void sdcard_dummy_callback(USDHC_Type *base, void *userData) {
     return;
 }
 
+static void sdcard_error_recovery(USDHC_Type *base) {
+    uint32_t status = 0U;
+    /* get host present status */
+    status = USDHC_GetPresentStatusFlags(base);
+    /* check command inhibit status flag */
+    if ((status & (uint32_t)kUSDHC_CommandInhibitFlag) != 0U) {
+        /* reset command line */
+        (void)USDHC_Reset(base, kUSDHC_ResetCommand, 100U);
+    }
+    /* check data inhibit status flag */
+    if (((status & (uint32_t)kUSDHC_DataInhibitFlag) != 0U) || (USDHC_GetAdmaErrorStatusFlags(base) != 0U)) {
+        /* reset data line */
+        (void)USDHC_Reset(base, kUSDHC_ResetData, 100U);
+    }
+}
+
 static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handle, usdhc_transfer_t *transfer, uint32_t timeout_ms) {
-    uint32_t retry_ctr = 0UL;
     status_t status;
 
     usdhc_adma_config_t dma_config;
 
     (void)memset(&dma_config, 0, sizeof(usdhc_adma_config_t));
     dma_config.dmaMode = kUSDHC_DmaModeAdma2;
+
+    #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
     dma_config.burstLen = kUSDHC_EnBurstLenForINCR;
+    #endif
+
     dma_config.admaTable = sdcard_adma_descriptor_table;
     dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
+
+    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
+
+    uint32_t retry_ctr = 0UL;
 
     do {
         status = USDHC_TransferNonBlocking(base, handle, &dma_config, transfer);
@@ -318,8 +350,29 @@ static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handl
         }
         return kStatus_Timeout;
     } else {
+        sdcard_error_recovery(base);
         return status;
     }
+
+    #else // USHDC_USE_TRANSFER_NONBLOCKING_10XX
+
+    // Wait while the card is busy before a transfer
+    status = kStatus_Timeout;
+    for (int i = 0; i < timeout_ms * 100; i++) {
+        // Wait until Data0 is low any more. Low indicates "Busy".
+        if ((transfer->data->txData == NULL) || (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
+            // Not busy anymore or no TX-Data
+            status = USDHC_TransferBlocking(base, &dma_config, transfer);
+            if (status != kStatus_Success) {
+                sdcard_error_recovery(base);
+            }
+            break;
+        }
+        ticks_delay_us64(10);
+    }
+    return status;
+
+    #endif // USHDC_USE_TRANSFER_NONBLOCKING_11XX
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -670,6 +723,22 @@ static bool sdcard_reset(mimxrt_sdcard_obj_t *card) {
 }
 
 void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
+    #ifdef MIMXRT117x_SERIES
+    clock_root_config_t rootCfg = {0};
+    /* SYS PLL2 528MHz. */
+    const clock_sys_pll2_config_t sysPll2Config = {
+        .ssEnable = false,
+    };
+
+    CLOCK_InitSysPll2(&sysPll2Config);
+    CLOCK_InitPfd(kCLOCK_PllSys2, kCLOCK_Pfd2, 24);
+
+    rootCfg.mux = 4;
+    rootCfg.div = 2;
+    CLOCK_SetRootClock(kCLOCK_Root_Usdhc1, &rootCfg);
+
+    #else
+
     // Configure PFD0 of PLL2 (system PLL) fractional divider to 24 resulting in:
     //  with PFD0_clk = PLL2_clk * 18 / N
     //       PFD0_clk = 528MHz   * 18 / 24 = 396MHz
@@ -687,6 +756,8 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
     CLOCK_SetMux(kCLOCK_Usdhc2Mux, 1U);  // Select PFD0 as clock input for USDHC
     #endif
 
+    #endif // MIMXRT117x_SERIES
+
     // Initialize USDHC
     const usdhc_config_t config = {
         .endianMode = kUSDHC_EndianModeLittle,
@@ -699,6 +770,7 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
     (void)sdcard_reset(card);
     card->base_clk = base_clk;
 
+    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
     usdhc_transfer_callback_t callbacks = {
         .CardInserted = sdcard_card_inserted_callback,
         .CardRemoved = sdcard_card_removed_callback,
@@ -709,6 +781,7 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
     };
 
     USDHC_TransferCreateHandle(card->usdhc_inst, &card->handle, &callbacks, NULL);
+    #endif // USHDC_USE_TRANSFER_NONBLOCKING_10XX
 }
 
 void sdcard_deinit(mimxrt_sdcard_obj_t *card) {
@@ -979,6 +1052,8 @@ bool sdcard_power_off(mimxrt_sdcard_obj_t *card) {
 bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
     bool detect = false;
 
+    #if USHDC_USE_TRANSFER_NONBLOCKING_10XX
+
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
     if ((card->usdhc_inst == USDHC1) && (sdcard_usdhc1_state.inserted == true)) {
         return true;
@@ -990,12 +1065,17 @@ bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
     }
     #endif
 
+    #endif // USHDC_USE_TRANSFER_NONBLOCKING_10XX
+
     if (card->pins->cd_b.pin) {
         detect = USDHC_DetectCardInsert(card->usdhc_inst);
     } else {
         USDHC_CardDetectByData3(card->usdhc_inst, true);
         detect = (USDHC_GetPresentStatusFlags(card->usdhc_inst) & USDHC_PRES_STATE_DLSL(8)) != 0;
     }
+    /* enable card detect interrupt */
+    USDHC_EnableInterruptStatus(card->usdhc_inst, kUSDHC_CardInsertionFlag);
+    USDHC_EnableInterruptStatus(card->usdhc_inst, kUSDHC_CardRemovalFlag);
 
     // Update card state when detected via pin state
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL

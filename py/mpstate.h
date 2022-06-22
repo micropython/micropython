@@ -55,7 +55,6 @@ enum {
 #if MICROPY_DYNAMIC_COMPILER
 typedef struct mp_dynamic_compiler_t {
     uint8_t small_int_bits; // must be <= host small_int_bits
-    bool py_builtins_str_unicode;
     uint8_t native_arch;
     uint8_t nlr_buf_num_regs;
 } mp_dynamic_compiler_t;
@@ -124,6 +123,10 @@ typedef struct _mp_state_vm_t {
     //
 
     qstr_pool_t *last_pool;
+
+    #if MICROPY_TRACKED_ALLOC
+    struct _m_tracked_node_t *m_tracked_head;
+    #endif
 
     // non-heap memory for creating an exception if we can't allocate RAM
     mp_obj_exception_t mp_emergency_exception_obj;
@@ -241,6 +244,16 @@ typedef struct _mp_state_vm_t {
 
     #if MICROPY_ENABLE_SCHEDULER
     volatile int16_t sched_state;
+
+    #if MICROPY_SCHEDULER_STATIC_NODES
+    // These will usually point to statically allocated memory.  They are not
+    // traced by the GC.  They are assumed to be zero'd out before mp_init() is
+    // called (usually because this struct lives in the BSS).
+    struct _mp_sched_node_t *sched_head;
+    struct _mp_sched_node_t *sched_tail;
+    #endif
+
+    // These index sched_queue.
     uint8_t sched_len;
     uint8_t sched_idx;
     #endif

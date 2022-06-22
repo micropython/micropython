@@ -32,7 +32,7 @@
 #include "extmod/modnetwork.h"
 #include "spi.h"
 
-#if MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP
+#if MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_LWIP
 
 #include "shared/netutils/netutils.h"
 #include "drivers/wiznet5k/ethernet/socket.h"
@@ -295,7 +295,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
         if (i % 16 == 0) {
             printf("\n  %04x:", i);
         }
-        #if MICROPY_PY_WIZNET5K == 5200
+        #if MICROPY_PY_NETWORK_WIZNET5K == 5200
         uint32_t reg = i;
         #else
         uint32_t reg = _W5500_IO_BASE_ | i << 8;
@@ -308,7 +308,7 @@ STATIC mp_obj_t wiznet5k_regs(mp_obj_t self_in) {
             if (i % 16 == 0) {
                 printf("\n  %04x:", i);
             }
-            #if MICROPY_PY_WIZNET5K == 5200
+            #if MICROPY_PY_NETWORK_WIZNET5K == 5200
             uint32_t reg = WIZCHIP_SREG_ADDR(sn, i);
             #else
             uint32_t reg = _W5500_IO_BASE_ | i << 8 | WIZCHIP_SREG_BLOCK(sn) << 3;
@@ -462,4 +462,4 @@ const mp_obj_type_t mod_network_nic_type_wiznet5k = {
     .locals_dict = (mp_obj_dict_t *)&wiznet5k_locals_dict,
 };
 
-#endif // MICROPY_PY_WIZNET5K && MICROPY_PY_LWIP
+#endif // MICROPY_PY_NETWORK_WIZNET5K && MICROPY_PY_LWIP

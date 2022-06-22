@@ -302,7 +302,7 @@ const mp_fun_table_t mp_fun_table = {
     mp_delete_global,
     mp_obj_new_closure,
     mp_arg_check_num_sig,
-    mp_setup_code_state,
+    mp_setup_code_state_native,
     mp_small_int_floor_divide,
     mp_small_int_modulo,
     mp_native_yield_from,
