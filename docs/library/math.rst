@@ -104,6 +104,10 @@ Functions
 
    Return the gamma function of ``x``.
 
+.. function:: gcd(x, y, ...)
+
+   Return the greatest common divisor of any amount of numbers with minimum of 2 arguments.
+
 .. function:: isfinite(x)
 
    Return ``True`` if ``x`` is finite.

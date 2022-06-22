@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_arm_setup
     - name: Build and run test suite
