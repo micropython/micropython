@@ -32,6 +32,7 @@
 #include "shared-bindings/usb_midi/__init__.h"
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "py/runtime.h"
 

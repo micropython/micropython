@@ -233,7 +233,7 @@ SRC_C += \
 	supervisor/stub/filesystem.c \
 	supervisor/stub/safe_mode.c \
 	supervisor/stub/stack.c \
-	supervisor/shared/translate.c \
+	supervisor/shared/translate/translate.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
@@ -363,4 +363,4 @@ install: $(PROG)
 uninstall:
 	-rm $(BINDIR)/$(PROG)
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h

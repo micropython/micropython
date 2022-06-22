@@ -61,37 +61,26 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
     uint8_t scale = 2;
 
     #if CIRCUITPY_TERMINALIO
-    displayio_tilegrid_t *grid = &supervisor_terminal_text_grid;
-    bool tall = height_px > width_px;
+    displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
+    displayio_tilegrid_t *title_bar = &supervisor_terminal_title_bar_text_grid;
     bool reset_tiles = false;
-    #if CIRCUITPY_REPL_LOGO
-    uint16_t terminal_width_px = tall ? width_px : width_px - blinka_bitmap.width;
-    uint16_t terminal_height_px = tall ? height_px - blinka_bitmap.height : height_px;
-    #else
-    uint16_t terminal_width_px = width_px;
-    uint16_t terminal_height_px = height_px;
-    #endif
-    uint16_t width_in_tiles = terminal_width_px / grid->tile_width;
+    uint16_t width_in_tiles = width_px / scroll_area->tile_width;
     // determine scale based on h
     if (width_in_tiles < 80) {
         scale = 1;
     }
 
-    width_in_tiles = terminal_width_px / (grid->tile_width * scale);
+    width_in_tiles = width_px / (scroll_area->tile_width * scale);
     if (width_in_tiles < 1) {
         width_in_tiles = 1;
     }
-    uint16_t height_in_tiles = terminal_height_px / (grid->tile_height * scale);
-    uint16_t remaining_pixels = tall ? 0 : terminal_height_px % (grid->tile_height * scale);
-    if (height_in_tiles < 1 || remaining_pixels > 0) {
-        height_in_tiles += 1;
-    }
+    uint16_t height_in_tiles = height_px / (scroll_area->tile_height * scale);
 
     uint16_t total_tiles = width_in_tiles * height_in_tiles;
 
     // check if the terminal tile dimensions are the same
-    if ((grid->width_in_tiles != width_in_tiles) ||
-        (grid->height_in_tiles != height_in_tiles)) {
+    if ((scroll_area->width_in_tiles != width_in_tiles) ||
+        (scroll_area->height_in_tiles != height_in_tiles - 1)) {
         reset_tiles = true;
     }
     // Reuse the previous allocation if possible
@@ -114,27 +103,39 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         uint8_t *tiles = (uint8_t *)tilegrid_tiles->ptr;
 
         #if CIRCUITPY_REPL_LOGO
-        grid->y = tall ? blinka_bitmap.height : 0;
-        grid->x = tall ? 0 : blinka_bitmap.width;
+        title_bar->x = blinka_bitmap.width;
+        // Align the title bar to the bottom of the logo.
+        title_bar->y = blinka_bitmap.height - title_bar->tile_height;
         #else
-        grid->y = 0;
-        grid->x = 0;
+        title_bar->x = 0;
+        title_bar->y = 0;
         #endif
-        grid->top_left_y = 0;
-        if (remaining_pixels > 0) {
-            grid->y -= (grid->tile_height - remaining_pixels);
-        }
-        grid->width_in_tiles = width_in_tiles;
-        grid->height_in_tiles = height_in_tiles;
+        title_bar->top_left_y = 0;
+        title_bar->width_in_tiles = width_in_tiles;
+        title_bar->height_in_tiles = 1;
         assert(width_in_tiles > 0);
-        assert(height_in_tiles > 0);
-        grid->pixel_width = width_in_tiles * grid->tile_width;
-        grid->pixel_height = height_in_tiles * grid->tile_height;
-        grid->tiles = tiles;
+        title_bar->pixel_width = width_in_tiles * title_bar->tile_width;
+        title_bar->pixel_height = title_bar->tile_height;
+        title_bar->tiles = tiles;
+        title_bar->full_change = true;
 
-        grid->full_change = true;
+        scroll_area->x = 0;
+        #if CIRCUITPY_REPL_LOGO
+        scroll_area->y = blinka_bitmap.height;
+        #else
+        scroll_area->y = scroll_area->tile_height;
+        #endif
+        scroll_area->top_left_y = 0;
+        scroll_area->width_in_tiles = width_in_tiles;
+        scroll_area->height_in_tiles = height_in_tiles - 1;
+        assert(width_in_tiles > 0);
+        assert(height_in_tiles > 1);
+        scroll_area->pixel_width = width_in_tiles * scroll_area->tile_width;
+        scroll_area->pixel_height = (height_in_tiles - 1) * scroll_area->tile_height;
+        scroll_area->tiles = tiles + width_in_tiles;
+        scroll_area->full_change = true;
 
-        common_hal_terminalio_terminal_construct(&supervisor_terminal, grid, &supervisor_terminal_font);
+        common_hal_terminalio_terminal_construct(&supervisor_terminal, scroll_area, &supervisor_terminal_font, title_bar);
     }
     #endif
 
@@ -146,18 +147,24 @@ void supervisor_stop_terminal(void) {
     if (tilegrid_tiles != NULL) {
         free_memory(tilegrid_tiles);
         tilegrid_tiles = NULL;
-        supervisor_terminal_text_grid.tiles = NULL;
-        supervisor_terminal.tilegrid = NULL;
+        supervisor_terminal_scroll_area_text_grid.tiles = NULL;
+        supervisor_terminal_title_bar_text_grid.tiles = NULL;
+        supervisor_terminal.scroll_area = NULL;
+        supervisor_terminal.title_bar = NULL;
     }
     #endif
 }
 
 void supervisor_display_move_memory(void) {
     #if CIRCUITPY_TERMINALIO
+    displayio_tilegrid_t *scroll_area = &supervisor_terminal_scroll_area_text_grid;
+    displayio_tilegrid_t *title_bar = &supervisor_terminal_title_bar_text_grid;
     if (tilegrid_tiles != NULL) {
-        supervisor_terminal_text_grid.tiles = (uint8_t *)tilegrid_tiles->ptr;
+        title_bar->tiles = (uint8_t *)tilegrid_tiles->ptr;
+        scroll_area->tiles = (uint8_t *)tilegrid_tiles->ptr + scroll_area->width_in_tiles;
     } else {
-        supervisor_terminal_text_grid.tiles = NULL;
+        scroll_area->tiles = NULL;
+        title_bar->tiles = NULL;
     }
     #endif
 
@@ -298,19 +305,19 @@ displayio_tilegrid_t blinka_sprite = {
 
 #if CIRCUITPY_TERMINALIO
 #if CIRCUITPY_REPL_LOGO
-mp_obj_t members[] = { &blinka_sprite, &supervisor_terminal_text_grid, };
+mp_obj_t members[] = { &blinka_sprite, &supervisor_terminal_title_bar_text_grid, &supervisor_terminal_scroll_area_text_grid, };
+mp_obj_list_t splash_children = {
+    .base = {.type = &mp_type_list },
+    .alloc = 3,
+    .len = 3,
+    .items = members,
+};
+#else
+mp_obj_t members[] = { &supervisor_terminal_title_bar_text_grid, &supervisor_terminal_scroll_area_text_grid, };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 2,
     .len = 2,
-    .items = members,
-};
-#else
-mp_obj_t members[] = { &supervisor_terminal_text_grid, };
-mp_obj_list_t splash_children = {
-    .base = {.type = &mp_type_list },
-    .alloc = 1,
-    .len = 1,
     .items = members,
 };
 #endif

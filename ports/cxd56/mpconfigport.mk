@@ -3,6 +3,8 @@ USB_HIGHSPEED = 1
 # Number of USB endpoint pairs.
 USB_NUM_ENDPOINT_PAIRS = 6
 
+CIRCUITPY_TRANSLATE_OBJECT = 1
+
 # Longints can be implemented as mpz, as longlong, or not
 LONGINT_IMPL = MPZ
 

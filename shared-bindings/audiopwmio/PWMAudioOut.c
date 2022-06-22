@@ -34,7 +34,7 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PWMAudioOut:
 //|     """Output an analog audio signal by varying the PWM duty cycle."""

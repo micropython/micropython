@@ -43,7 +43,13 @@
 #include "extmod/vfs_posix.h"
 #endif
 
-//| """Collection of bitmap manipulation tools"""
+//| """Collection of bitmap manipulation tools
+//|
+//| .. note:: If you're looking for information about displaying bitmaps on
+//|     screens in CircuitPython, see `this Learn guide
+//|     <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_
+//|     for information about using the :py:mod:`displayio` module.
+//| """
 //|
 
 STATIC int16_t validate_point(mp_obj_t point, int16_t default_value) {
@@ -133,23 +139,29 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 //|      :param bitmap dest_bitmap: Destination bitmap that will be copied into
 //|      :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
 //|      :param int ox: Horizontal pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed
+//|             point (px,py) is placed. Defaults to None which causes it to use the horizontal
+//|             midway point of the destination bitmap.
 //|      :param int oy: Vertical pixel location in destination bitmap where source bitmap
-//|             point (px,py) is placed
+//|             point (px,py) is placed. Defaults to None which causes it to use the vertical
+//|             midway point of the destination bitmap.
 //|      :param Tuple[int,int] dest_clip0: First corner of rectangular destination clipping
 //|             region that constrains region of writing into destination bitmap
 //|      :param Tuple[int,int] dest_clip1: Second corner of rectangular destination clipping
 //|             region that constrains region of writing into destination bitmap
 //|      :param int px: Horizontal pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy)
+//|             destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|             horizontal midway point in the source bitmap.
 //|      :param int py: Vertical pixel location in source bitmap that is placed into the
-//|             destination bitmap at (ox,oy)
+//|             destination bitmap at (ox,oy). Defaults to None which causes it to use the
+//|             vertical midway point in the source bitmap.
 //|      :param Tuple[int,int] source_clip0: First corner of rectangular source clipping
 //|             region that constrains region of reading from the source bitmap
 //|      :param Tuple[int,int] source_clip1: Second corner of rectangular source clipping
 //|             region that constrains region of reading from the source bitmap
-//|      :param float angle: Angle of rotation, in radians (positive is clockwise direction)
-//|      :param float scale: Scaling factor
+//|      :param float angle: Angle of rotation, in radians (positive is clockwise direction).
+//|             Defaults to None which gets treated as 0.0 radians or no rotation.
+//|      :param float scale: Scaling factor. Defaults to None which gets treated as 1.0 or same
+//|             as original source size.
 //|      :param int skip_index: Bitmap palette index in the source that will not be copied,
 //|             set to None to copy all pixels"""
 //|      ...

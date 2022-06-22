@@ -26,8 +26,9 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2_common/hardware_adc/include/hardware/adc.h"
 
@@ -36,7 +37,7 @@
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
     if (pin->number < ADC_FIRST_PIN_NUMBER || pin->number > ADC_FIRST_PIN_NUMBER + ADC_PIN_COUNT) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
 
     adc_init();
@@ -64,8 +65,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
     uint16_t value = adc_read();
 
-    // Map value to from 12 to 16 bits
-    return value << 4;
+    // Stretch 12-bit ADC reading to 16-bit range
+    return (value << 4) | (value >> 8);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

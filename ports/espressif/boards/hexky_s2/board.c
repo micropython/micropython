@@ -119,7 +119,8 @@ void board_init(void) {
         true,           // auto_refresh
         60,             // native_frames_per_second
         true,           // backlight_on_high
-        false           // SH1107_addressing
+        false,          // SH1107_addressing
+        50000           // backlight pwm frequency
         );
 
     common_hal_never_reset_pin(&pin_GPIO45); // backlight pin

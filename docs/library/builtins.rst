@@ -4,10 +4,17 @@
 All builtin functions and exceptions are described here. They are also
 available via ``builtins`` module.
 
+For more information about built-ins, see the following CPython documentation:
+
+* `Builtin CPython Functions <https://docs.python.org/3/library/functions.html>`_
+* `Builtin CPython Exceptions <https://docs.python.org/3/library/exceptions.html>`_
+* `Builtin CPython Constants <https://docs.python.org/3/library/constants.html>`_
+
+.. note:: Not all of these functions, types, exceptions, and constants are turned
+    on in all CircuitPython ports, for space reasons.
+
 Functions and types
 -------------------
-
-Not all of these functions and types are turned on in all CircuitPython ports, for space reasons.
 
 .. function:: abs()
 
@@ -160,13 +167,25 @@ Not all of these functions and types are turned on in all CircuitPython ports, f
 Exceptions
 ----------
 
+.. exception:: ArithmeticError
+
 .. exception:: AssertionError
 
 .. exception:: AttributeError
 
+.. exception:: BaseException
+
+.. exception:: BrokenPipeError
+
+.. exception:: ConnectionError
+
+.. exception:: EOFError
+
 .. exception:: Exception
 
 .. exception:: ImportError
+
+.. exception:: IndentationError
 
 .. exception:: IndexError
 
@@ -174,7 +193,13 @@ Exceptions
 
 .. exception:: KeyError
 
+.. exception:: LookupError
+
 .. exception:: MemoryError
+
+.. exception:: MpyError
+
+    Not a part of the CPython standard library
 
 .. exception:: NameError
 
@@ -182,11 +207,17 @@ Exceptions
 
 .. exception:: OSError
 
+.. exception:: OverflowError
+
 .. exception:: RuntimeError
 
 .. exception:: ReloadException
 
    `ReloadException` is used internally to deal with soft restarts.
+
+   Not a part of the CPython standard library
+
+.. exception:: StopAsyncIteration
 
 .. exception:: StopIteration
 
@@ -194,12 +225,19 @@ Exceptions
 
 .. exception:: SystemExit
 
-    |see_cpython| :py:class:`cpython:SystemExit`.
+.. exception:: TimeoutError
 
 .. exception:: TypeError
 
-    |see_cpython| :py:class:`cpython:TypeError`.
+.. exception:: UnicodeError
 
 .. exception:: ValueError
 
 .. exception:: ZeroDivisionError
+
+Constants
+---------
+
+.. data:: Ellipsis
+
+.. data:: NotImplemented

@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // RGB LED timing information:
 
@@ -91,7 +91,19 @@ STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
 //|   pin = digitalio.DigitalInOut(board.NEOPIXEL)
 //|   pin.direction = digitalio.Direction.OUTPUT
 //|   pixel_off = bytearray([0, 0, 0])
-//|   neopixel_write.neopixel_write(pin, pixel_off)"""
+//|   neopixel_write.neopixel_write(pin, pixel_off)
+//|
+//| .. note::
+//|
+//|     This module is typically not used by user level code.
+//|
+//|     For more information on actually using NeoPixels, refer to the `CircuitPython
+//|     Essentials Learn guide <https://learn.adafruit.com/circuitpython-essentials/circuitpython-neopixel>`_
+//|
+//|     For a much more thorough guide about using NeoPixels, refer to the `Adafruit NeoPixel Überguide
+//|     <https://learn.adafruit.com/adafruit-neopixel-uberguide>`_.
+//|
+//| """
 //|
 //| def neopixel_write(digitalinout: digitalio.DigitalInOut, buf: ReadableBuffer) -> None:
 //|     """Write buf out on the given DigitalInOut.

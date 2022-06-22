@@ -35,7 +35,7 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t channel;
-    uint8_t clk_pin;
+    uint8_t clock_pin;
     uint8_t data_pin;
 
     uint8_t state;

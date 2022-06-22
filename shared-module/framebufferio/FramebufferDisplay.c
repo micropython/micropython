@@ -83,9 +83,8 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
     size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
-    if (self->bufinfo.len < framebuffer_size) {
-        mp_raise_IndexError_varg(translate("Framebuffer requires %d bytes"), framebuffer_size);
-    }
+
+    mp_arg_validate_length_min(self->bufinfo.len, framebuffer_size, MP_QSTR_framebuffer);
 
     self->first_manual_refresh = !auto_refresh;
 

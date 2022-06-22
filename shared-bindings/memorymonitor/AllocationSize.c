@@ -31,7 +31,7 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationSize.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationSize:
 //|

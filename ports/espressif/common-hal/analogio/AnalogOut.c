@@ -33,7 +33,7 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #include "components/driver/include/driver/dac_common.h"
@@ -49,7 +49,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     } else if (pin == &pin_GPIO18) {
         self->channel = DAC_CHANNEL_2;
     } else {
-        mp_raise_ValueError(translate("Invalid DAC pin supplied"));
+        raise_ValueError_invalid_pin();
     }
     dac_output_enable(self->channel);
     #else

@@ -40,7 +40,7 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -151,16 +151,16 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     }
     #endif
     if (bc_clock_unit == 0xff) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_bit_clock);
+        raise_ValueError_invalid_pin_name(MP_QSTR_clock);
     }
     if (ws_clock_unit == 0xff) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_word_select);
+        raise_ValueError_invalid_pin_name(MP_QSTR_word_select);
     }
     if (bc_clock_unit != ws_clock_unit) {
         mp_raise_ValueError(translate("Bit clock and word select must share a clock unit"));
     }
     if (serializer == 0xff) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_data);
+        raise_ValueError_invalid_pin_name(MP_QSTR_data);
     }
     self->clock_unit = ws_clock_unit;
     self->serializer = serializer;
@@ -255,7 +255,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     }
     uint8_t channel_count = audiosample_channel_count(sample);
     if (channel_count > 2) {
-        mp_raise_ValueError(translate("Too many channels in sample."));
+        mp_raise_ValueError(translate("Too many channels in sample"));
     }
     #ifdef SAMD21
     uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_TX) | I2S_SERCTRL_TXSAME_SAME | I2S_SERCTRL_EXTEND_MSBIT | I2S_SERCTRL_TXDEFAULT_ONE | I2S_SERCTRL_SLOTADJ_LEFT;

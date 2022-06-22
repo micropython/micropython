@@ -40,6 +40,7 @@ typedef struct ble_event_handler_entry {
 } ble_event_handler_entry_t;
 
 void ble_event_reset(void);
+void ble_event_remove_heap_handlers(void);
 void ble_event_add_handler(ble_gap_event_fn *func, void *param);
 void ble_event_remove_handler(ble_gap_event_fn *func, void *param);
 

@@ -9,6 +9,3 @@ CHIP_FAMILY = samd21
 INTERNAL_FLASH_FILESYSTEM = 1
 LONGINT_IMPL = NONE
 CIRCUITPY_FULL_BUILD = 0
-
-# This board has many pins, and we have to remove something else to make room.
-CIRCUITPY_RAINBOWIO = 0

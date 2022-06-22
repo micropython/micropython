@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "peripherals/touch.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
     uint32_t touch_value;
@@ -41,7 +42,7 @@ static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,
     const mcu_pin_obj_t *pin) {
     if (pin->touch_channel == TOUCH_PAD_MAX) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        raise_ValueError_invalid_pin();
     }
     claim_pin(pin);
 

@@ -26,6 +26,7 @@
 
 #include "shared-bindings/alarm/touch/TouchAlarm.h"
 #include "shared-bindings/microcontroller/__init__.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "esp_sleep.h"
 #include "peripherals/touch.h"
@@ -36,7 +37,7 @@ static volatile bool woke_up = false;
 
 void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin) {
     if (pin->touch_channel == TOUCH_PAD_MAX) {
-        mp_raise_ValueError(translate("Invalid pin"));
+        raise_ValueError_invalid_pin();
     }
     claim_pin(pin);
     self->pin = pin;

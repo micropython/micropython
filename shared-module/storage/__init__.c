@@ -38,6 +38,7 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/usb.h"
 
 #if CIRCUITPY_USB_MSC

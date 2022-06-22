@@ -37,7 +37,7 @@
 #include "supervisor/serial.h"
 #include "supervisor/shared/rgb_led_colors.h"
 #include "supervisor/shared/status_leds.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 #define SAFE_MODE_DATA_GUARD 0xad0000af

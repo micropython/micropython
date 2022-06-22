@@ -27,6 +27,7 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""
@@ -107,17 +108,15 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     const uint16_t usage_page = usage_page_arg;
 
     const mp_int_t usage_arg = args[ARG_usage].u_int;
-    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage_page);
+    mp_arg_validate_int_range(usage_arg, 1, 0xFFFF, MP_QSTR_usage);
     const uint16_t usage = usage_arg;
 
     mp_obj_t report_ids = args[ARG_report_ids].u_obj;
     mp_obj_t in_report_lengths = args[ARG_in_report_lengths].u_obj;
     mp_obj_t out_report_lengths = args[ARG_out_report_lengths].u_obj;
 
-    size_t report_ids_count = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(report_ids));
-    if (report_ids_count < 1) {
-        mp_raise_ValueError_varg(translate("%q length must be >= 1"), MP_QSTR_report_ids);
-    }
+    size_t report_ids_count =
+        mp_arg_validate_length_min((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(report_ids)), 1, MP_QSTR_report_ids);
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
         (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
@@ -158,7 +157,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 
-//|     def send_report(self, buf: ReadableBuffer, report_id: Optional[int] = None) -> None:
+//|     def send_report(self, report: ReadableBuffer, report_id: Optional[int] = None) -> None:
 //|         """Send an HID report. If the device descriptor specifies zero or one report id's,
 //|         you can supply `None` (the default) as the value of ``report_id``.
 //|         Otherwise you must specify which report id to use when sending the report.
@@ -168,9 +167,9 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     usb_hid_device_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
-    enum { ARG_buf, ARG_report_id };
+    enum { ARG_report, ARG_report_id };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buf, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_report, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_report_id, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
@@ -178,7 +177,7 @@ STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_ar
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_report].u_obj, &bufinfo, MP_BUFFER_READ);
 
     // -1 asks common_hal to determine the report id if possible.
     mp_int_t report_id_arg = -1;

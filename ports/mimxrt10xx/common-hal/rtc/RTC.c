@@ -33,7 +33,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "common-hal/rtc/RTC.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "fsl_snvs_hp.h"
 
@@ -75,5 +75,5 @@ int common_hal_rtc_get_calibration(void) {
 
 void common_hal_rtc_set_calibration(int calibration) {
     // SNVS has HPCALB_VAL bits for calibration.
-    mp_raise_NotImplementedError(translate("RTC calibration is not supported on this board"));
+    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_calibration);
 }

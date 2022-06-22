@@ -35,7 +35,7 @@
 #include "py/objfun.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
 const mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};

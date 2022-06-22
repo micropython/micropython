@@ -39,8 +39,13 @@ typedef struct  {
     const fontio_builtinfont_t *font;
     uint16_t cursor_x;
     uint16_t cursor_y;
-    displayio_tilegrid_t *tilegrid;
+    displayio_tilegrid_t *scroll_area;
+    displayio_tilegrid_t *title_bar;
+    uint16_t title_x;
+    uint16_t title_y;
     uint16_t first_row;
+    uint16_t osc_command;
+    bool in_osc_command;
 } terminalio_terminal_obj_t;
 
 #endif /* SHARED_MODULE_TERMINALIO_TERMINAL_H */

@@ -38,7 +38,7 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 //| class SPI:
@@ -106,7 +106,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     common_hal_busio_spi_construct(self, clock, mosi, miso, args[ARG_half_duplex].u_bool);
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_ValueError(translate("Invalid pins"));
+    raise_ValueError_invalid_pins();
     #endif // CIRCUITPY_BUSIO_SPI
 }
 
@@ -191,18 +191,9 @@ STATIC mp_obj_t busio_spi_configure(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
-    uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
-    uint8_t bits = args[ARG_bits].u_int;
-    if (bits != 8 && bits != 9) {
-        mp_raise_ValueError(translate("Invalid number of bits"));
-    }
+    uint8_t polarity = (uint8_t)mp_arg_validate_int_range(args[ARG_polarity].u_int, 0, 1, MP_QSTR_polarity);
+    uint8_t phase = (uint8_t)mp_arg_validate_int_range(args[ARG_phase].u_int, 0, 1, MP_QSTR_phase);
+    uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 8, 9, MP_QSTR_bits);
 
     if (!common_hal_busio_spi_configure(self, args[ARG_baudrate].u_int,
         polarity, phase, bits)) {

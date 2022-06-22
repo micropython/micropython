@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "audio_dma.h"
 
@@ -157,9 +157,9 @@ uint32_t common_hal_audiobusio_pdmin_record_to_buffer(audiobusio_pdmin_obj_t *se
     size_t output_count = 0;
     common_hal_rp2pio_statemachine_clear_rxfifo(&self->state_machine);
     // Do one read to get the mic going and throw it away.
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t));
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t), false);
     while (output_count < output_buffer_length && !common_hal_rp2pio_statemachine_get_rxstall(&self->state_machine)) {
-        common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t));
+        common_hal_rp2pio_statemachine_readinto(&self->state_machine, (uint8_t *)samples, 2 * sizeof(uint32_t), sizeof(uint32_t), false);
         // Call filter_sample just one place so it can be inlined.
         uint16_t value = filter_sample(samples);
         if (self->bit_depth == 8) {

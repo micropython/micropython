@@ -35,6 +35,7 @@
 #include "nrf_sdm.h"
 #include "nrf_soc.h"
 #include "nrfx_power.h"
+#include "py/gc.h"
 #include "py/misc.h"
 #include "py/mpstate.h"
 
@@ -54,6 +55,17 @@ void ble_drv_reset() {
     // Linked list items will be gc'd.
     MP_STATE_VM(ble_drv_evt_handler_entries) = NULL;
     sd_flash_operation_status = SD_FLASH_OPERATION_DONE;
+}
+
+void ble_drv_remove_heap_handlers(void) {
+    ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
+    while (it != NULL) {
+        // If the param is on the heap, then delete the handler.
+        if (HEAP_PTR(it->param)) {
+            ble_drv_remove_event_handler(it->func, it->param);
+        }
+        it = it->next;
+    }
 }
 
 void ble_drv_add_event_handler_entry(ble_drv_evt_handler_entry_t *entry, ble_drv_evt_handler_t func, void *param) {

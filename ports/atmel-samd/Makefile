@@ -123,8 +123,6 @@ $(echo PERIPHERALS_CHIP_FAMILY=$(PERIPHERALS_CHIP_FAMILY))
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
   CFLAGS += -ggdb3 -Og -Os
-  # You may want to disable -flto if it interferes with debugging.
-  CFLAGS += -flto -flto-partition=none
   # You may want to enable these flags to make setting breakpoints easier.
   # CFLAGS += -fno-inline -fno-ipa-sra
   ifeq ($(CHIP_FAMILY), samd21)
@@ -146,8 +144,6 @@ else
   ifdef CFLAGS_INLINE_LIMIT
     CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
   endif
-
-  CFLAGS += -flto -flto-partition=none
 
   ifeq ($(CIRCUITPY_FULL_BUILD),0)
     CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
@@ -204,7 +200,6 @@ endif
 CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
-LDFLAGS += -flto=$(shell $(NPROC))
 LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
@@ -274,6 +269,9 @@ SRC_ASF += \
 	hpl/osc32kctrl/hpl_osc32kctrl.c \
 	hpl/oscctrl/hpl_oscctrl.c \
 	hpl/trng/hpl_trng.c \
+
+# Ignore these errors
+$(BUILD)/asf4/same54/hpl/sercom/hpl_sercom.o: CFLAGS += -Wno-maybe-uninitialized
 
 else ifeq ($(CHIP_FAMILY), same51)
 SRC_ASF += \

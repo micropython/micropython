@@ -113,12 +113,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool sigint_enabled) {
 
     self->baudrate = baudrate;
-    self->character_bits = bits;
+    self->character_bits = (uint8_t)mp_arg_validate_int_range(self->character_bits, 7, 8, MP_QSTR_bits);
     self->timeout_ms = timeout * 1000;
 
-    if (self->character_bits != 7 && self->character_bits != 8) {
-        mp_raise_ValueError(translate("Invalid word/bit length"));
-    }
 
     DBGPrintf(&mp_plat_print, "uart_construct: tx:%p rx:%p rts:%p cts:%p rs485:%p\n", tx, rx, rts, cts, rs485_dir);
 
@@ -186,10 +183,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (rx && !rx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_rx);
     }
     if (tx && !tx_config) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_TX);
+        raise_ValueError_invalid_pin_name(MP_QSTR_tx);
     }
 
     if (uart_taken) {
@@ -236,7 +233,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if ((rts != NULL) && (rts_config == NULL)) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_RTS);
+            raise_ValueError_invalid_pin_name(MP_QSTR_rts);
         }
     }
 
@@ -250,7 +247,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             }
         }
         if (cts_config == NULL) {
-            mp_raise_ValueError_varg(translate("Invalid %q pin"), MP_QSTR_CTS);
+            raise_ValueError_invalid_pin_name(MP_QSTR_cts);
         }
     }
 
@@ -350,7 +347,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
         if (!self->ringbuf) {
             LPUART_Deinit(self->uart);
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate RX buffer"));
+            m_malloc_fail(receiver_buffer_size);
         }
 
         LPUART_TransferCreateHandle(self->uart, &self->handle, LPUART_UserCallback, self);

@@ -69,7 +69,7 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
 
 static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     // Prepare configuration for the PCNT unit
-    const pcnt_config_t pcnt_config = {
+    pcnt_config_t pcnt_config = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = self->pin,
         .ctrl_gpio_num = PCNT_PIN_NOT_USED,
@@ -83,7 +83,7 @@ static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     };
 
     // initialize PCNT
-    const int8_t unit = peripherals_pcnt_init(pcnt_config);
+    const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
     }
@@ -130,9 +130,7 @@ static void init_timer(frequencyio_frequencyin_obj_t *self) {
 
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t *self,
     const mcu_pin_obj_t *pin, const uint16_t capture_period) {
-    if ((capture_period == 0) || (capture_period > 500)) {
-        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
-    }
+    mp_arg_validate_int_range(capture_period, 1, 500, MP_QSTR_capture_period);
 
     self->pin = pin->number;
     self->handle = NULL;
@@ -188,9 +186,8 @@ uint16_t common_hal_frequencyio_frequencyin_get_capture_period(frequencyio_frequ
 }
 
 void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period) {
-    if ((capture_period == 0) || (capture_period > 500)) {
-        mp_raise_ValueError(translate("Invalid capture period. Valid range: 1 - 500"));
-    }
+    mp_arg_validate_int_range(capture_period, 1, 500, MP_QSTR_capture_period);
+
     self->capture_period = capture_period;
     common_hal_frequencyio_frequencyin_clear(self);
     timer_set_alarm_value(self->timer.group, self->timer.idx, capture_period * 1000000);

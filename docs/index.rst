@@ -22,6 +22,7 @@ Full Table of Contents
    supported_ports.rst
    troubleshooting.rst
    drivers.rst
+   environment.rst
 
 .. toctree::
    :maxdepth: 1

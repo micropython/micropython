@@ -325,7 +325,6 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     if (chunk_size == 0) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        autoreload_trigger();
         return ANY_COMMAND;
     }
 
@@ -382,7 +381,6 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         #endif
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        autoreload_trigger();
         return ANY_COMMAND;
     }
     return WRITE_DATA;
@@ -463,7 +461,6 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        autoreload_trigger();
     }
     return ANY_COMMAND;
 }
@@ -517,7 +514,6 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        autoreload_trigger();
     }
     return ANY_COMMAND;
 }
@@ -664,7 +660,6 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
     if (result == FR_OK) {
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
-        autoreload_trigger();
     }
     return ANY_COMMAND;
 }
@@ -740,6 +735,14 @@ void supervisor_bluetooth_file_transfer_background(void) {
         }
         if (next_command == ANY_COMMAND) {
             autoreload_resume(AUTORELOAD_SUSPEND_BLE);
+            // Trigger a reload if the command may have mutated the file system.
+            if (current_state == WRITE ||
+                current_state == WRITE_DATA ||
+                current_state == DELETE ||
+                current_state == MKDIR ||
+                current_state == MOVE) {
+                autoreload_trigger();
+            }
         }
     }
     running = false;
