@@ -42,3 +42,11 @@
 [submodule "lib/pico-sdk"]
 	path = lib/pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "lib/fsp"]
+	path = lib/fsp
+	url = https://github.com/renesas/fsp.git
+[submodule "lib/wiznet"]
+	path = lib/wiznet5k
+	url = https://github.com/andrewleech/wiznet_ioLibrary_Driver.git
+	# Requires https://github.com/Wiznet/ioLibrary_Driver/pull/120
+	# url = https://github.com/Wiznet/ioLibrary_Driver.git

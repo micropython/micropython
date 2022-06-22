@@ -95,6 +95,7 @@ We also need a Makefile at this point for the port:
 
    # Include py core make definitions.
    include $(TOP)/py/py.mk
+   include $(TOP)/extmod/extmod.mk
 
    # Set CFLAGS and libraries.
    CFLAGS = -I. -I$(BUILD) -I$(TOP)
@@ -280,12 +281,7 @@ To add a custom module like ``myport``, first add the module definition in a fil
        .globals = (mp_obj_dict_t *)&myport_module_globals,
    };
 
-   MP_REGISTER_MODULE(MP_QSTR_myport, myport_module, 1);
-
-Note: the "1" as the third argument in ``MP_REGISTER_MODULE`` enables this new module
-unconditionally. To allow it to be conditionally enabled, replace the "1" by
-``MICROPY_PY_MYPORT`` and then add ``#define MICROPY_PY_MYPORT (1)`` in ``mpconfigport.h``
-accordingly.
+   MP_REGISTER_MODULE(MP_QSTR_myport, myport_module);
 
 You will also need to edit the Makefile to add ``modmyport.c`` to the ``SRC_C`` list, and
 a new line adding the same file to ``SRC_QSTR`` (so qstrs are searched for in this new file),

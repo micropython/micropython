@@ -25,9 +25,11 @@
  */
 
 #include "py/runtime.h"
+#include "py/objstr.h"
 #include "py/mphal.h"
 #include "shared/runtime/pyexec.h"
 #include "boardctrl.h"
+#include "powerctrl.h"
 #include "led.h"
 #include "usrsw.h"
 
@@ -42,6 +44,26 @@ STATIC void flash_error(int n) {
     }
     led_state(PYB_LED_GREEN, 0);
 }
+
+#if MICROPY_HW_USES_BOOTLOADER
+void boardctrl_maybe_enter_mboot(size_t n_args, const void *args_in) {
+    const mp_obj_t *args = args_in;
+
+    if (n_args == 0 || !mp_obj_is_true(args[0])) {
+        // By default, with no args given, we enter the custom bootloader (mboot)
+        powerctrl_enter_bootloader(0x70ad0000, MBOOT_VTOR);
+    }
+
+    if (n_args == 1 && mp_obj_is_str_or_bytes(args[0])) {
+        // With a string/bytes given, pass its data to the custom bootloader
+        size_t len;
+        const char *data = mp_obj_str_get_data(args[0], &len);
+        void *mboot_region = (void *)*((volatile uint32_t *)MBOOT_VTOR);
+        memmove(mboot_region, data, len);
+        powerctrl_enter_bootloader(0x70ad0080, MBOOT_VTOR);
+    }
+}
+#endif
 
 #if !MICROPY_HW_USES_BOOTLOADER
 STATIC uint update_reset_mode(uint reset_mode) {

@@ -66,6 +66,8 @@ port_data = {
     "c": PortData("cc3200", "cc3200", "build/WIPY/release/application.axf", "BTARGET=application"),
     "8": PortData("esp8266", "esp8266", "build-GENERIC/firmware.elf"),
     "3": PortData("esp32", "esp32", "build-GENERIC/micropython.elf"),
+    "x": PortData("mimxrt", "mimxrt", "build-TEENSY40/firmware.elf"),
+    "e": PortData("renesas-ra", "renesas-ra", "build-RA6M2_EK/firmware.elf"),
     "r": PortData("nrf", "nrf", "build-pca10040/firmware.elf"),
     "p": PortData("rp2", "rp2", "build-PICO/firmware.elf"),
     "d": PortData("samd", "samd", "build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/firmware.elf"),

@@ -56,6 +56,7 @@ FROZEN_MANIFEST ?= modules/manifest.py
 
 # include py core make definitions
 include ../../py/py.mk
+include ../../extmod/extmod.mk
 
 GIT_SUBMODULES = lib/nrfx lib/tinyusb
 
@@ -274,6 +275,7 @@ SRC_C += \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+	$(wildcard $(BOARD_DIR)/*.c) \
 
 ifeq ($(MCU_SUB_VARIANT), nrf52840)
 

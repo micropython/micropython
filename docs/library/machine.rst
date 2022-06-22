@@ -48,6 +48,23 @@ Reset related functions
 Interrupt related functions
 ---------------------------
 
+The following functions allow control over interrupts.  Some systems require
+interrupts to operate correctly so disabling them for long periods may
+compromise core functionality, for example watchdog timers may trigger
+unexpectedly.  Interrupts should only be disabled for a minimum amount of time
+and then re-enabled to their previous state.  For example::
+
+    import machine
+
+    # Disable interrupts
+    state = machine.disable_irq()
+
+    # Do a small amount of time-critical work here
+
+    # Enable interrupts
+    machine.enable_irq(state)
+
+
 .. function:: disable_irq()
 
    Disable interrupt requests.

@@ -130,3 +130,7 @@ $(HEADER_BUILD)/qstrdefs.generated.h: | $(HEADER_BUILD)
 # Create an empty "mpversion.h" needed by py/mkrules.mk
 $(HEADER_BUILD)/mpversion.h: | $(HEADER_BUILD)
 	touch $@
+
+# Create an empty "moduledefs.h" needed by py/mkrules.mk
+$(HEADER_BUILD)/moduledefs.h: | $(HEADER_BUILD)
+	touch $@

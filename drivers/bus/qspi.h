@@ -28,7 +28,9 @@
 
 #include "py/mphal.h"
 
-#define MP_SPI_ADDR_IS_32B(addr) (addr & 0xff000000)
+#ifndef MICROPY_HW_SPI_ADDR_IS_32BIT
+#define MICROPY_HW_SPI_ADDR_IS_32BIT(addr) (addr & 0xff000000)
+#endif
 
 enum {
     MP_QSPI_IOCTL_INIT,
@@ -57,7 +59,7 @@ typedef struct _mp_soft_qspi_obj_t {
 extern const mp_qspi_proto_t mp_soft_qspi_proto;
 
 static inline uint8_t mp_spi_set_addr_buff(uint8_t *buf, uint32_t addr) {
-    if (MP_SPI_ADDR_IS_32B(addr)) {
+    if (MICROPY_HW_SPI_ADDR_IS_32BIT(addr)) {
         buf[0] = addr >> 24;
         buf[1] = addr >> 16;
         buf[2] = addr >> 8;

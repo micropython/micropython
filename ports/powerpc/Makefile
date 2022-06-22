@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 # potato or lpc_serial
 UART ?= potato

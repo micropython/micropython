@@ -10,10 +10,13 @@ except ImportError:
 f = uio.BytesIO()
 db = btree.open(f, pagesize=512)
 
+mv = memoryview(b"bar1foo1")
+
 db[b"foo3"] = b"bar3"
 db[b"foo1"] = b"bar1"
-db[b"foo2"] = b"bar2"
-db[b"bar1"] = b"foo1"
+# any type that implements buffer protocol works for key and value
+db["foo2"] = "bar2"
+db[mv[:4]] = mv[4:]
 
 dbstr = str(db)
 print(dbstr[:7], dbstr[-1:])

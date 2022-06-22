@@ -113,8 +113,7 @@ mp_int_t imageHeight(microbit_image_obj_t * p_image) {
 }
 
 STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
-    greyscale_t *result = m_new_obj_var(greyscale_t, uint8_t, (w*h+1)>>1);
-    result->base.type = &microbit_image_type;
+    greyscale_t *result = mp_obj_malloc_var(greyscale_t, uint8_t, (w*h+1)>>1, &microbit_image_type);
     result->five = 0;
     result->width = w;
     result->height = h;
@@ -722,8 +721,7 @@ extern const mp_obj_type_t microbit_scrolling_string_type;
 extern const mp_obj_type_t microbit_scrolling_string_iterator_type;
 
 mp_obj_t scrolling_string_image_iterable(const char* str, mp_uint_t len, mp_obj_t ref, bool monospace, bool repeat) {
-    scrolling_string_t *result = m_new_obj(scrolling_string_t);
-    result->base.type = &microbit_scrolling_string_type;
+    scrolling_string_t *result = mp_obj_malloc(scrolling_string_t, &microbit_scrolling_string_type);
     result->str = str;
     result->len = len;
     result->ref = ref;
@@ -771,8 +769,7 @@ static void restart(scrolling_string_iterator_t *iter) {
 STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     scrolling_string_t *str = (scrolling_string_t *)o_in;
-    scrolling_string_iterator_t *result = m_new_obj(scrolling_string_iterator_t);
-    result->base.type = &microbit_scrolling_string_iterator_type;
+    scrolling_string_iterator_t *result = mp_obj_malloc(scrolling_string_iterator_t, &microbit_scrolling_string_iterator_type);
     result->img = greyscale_new(5,5);
     result->start = str->str;
     result->ref = str->ref;
@@ -923,8 +920,7 @@ typedef struct _facade_iterator_t {
 } facade_iterator_t;
 
 mp_obj_t microbit_string_facade(mp_obj_t string) {
-    string_image_facade_t *result = m_new_obj(string_image_facade_t);
-    result->base.type = &string_image_facade_type;
+    string_image_facade_t *result = mp_obj_malloc(string_image_facade_t, &string_image_facade_type);
     result->string = string;
     result->image = greyscale_new(5,5);
     return result;

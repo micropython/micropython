@@ -131,7 +131,7 @@ typedef struct _mp_fun_table_t {
     void (*delete_global)(qstr qst);
     mp_obj_t (*new_closure)(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed);
     void (*arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig);
-    void (*setup_code_state)(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
+    void (*setup_code_state_native)(mp_code_state_native_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_int_t (*small_int_floor_divide)(mp_int_t num, mp_int_t denom);
     mp_int_t (*small_int_modulo)(mp_int_t dividend, mp_int_t divisor);
     bool (*yield_from)(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value);

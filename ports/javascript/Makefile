@@ -5,6 +5,7 @@ CROSS = 0
 QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 CC = emcc
 LD = emcc

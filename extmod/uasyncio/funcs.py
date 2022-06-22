@@ -1,7 +1,24 @@
 # MicroPython uasyncio module
-# MIT license; Copyright (c) 2019-2020 Damien P. George
+# MIT license; Copyright (c) 2019-2022 Damien P. George
 
 from . import core
+
+
+def _run(waiter, aw):
+    try:
+        result = await aw
+        status = True
+    except BaseException as er:
+        result = None
+        status = er
+    if waiter.data is None:
+        # The waiter is still waiting, cancel it.
+        if waiter.cancel():
+            # Waiter was cancelled by us, change its CancelledError to an instance of
+            # CancelledError that contains the status and result of waiting on aw.
+            # If the wait_for task subsequently gets cancelled externally then this
+            # instance will be reset to a CancelledError instance without arguments.
+            waiter.data = core.CancelledError(status, result)
 
 
 async def wait_for(aw, timeout, sleep=core.sleep):
@@ -9,41 +26,26 @@ async def wait_for(aw, timeout, sleep=core.sleep):
     if timeout is None:
         return await aw
 
-    def runner(waiter, aw):
-        nonlocal status, result
-        try:
-            result = await aw
-            s = True
-        except BaseException as er:
-            s = er
-        if status is None:
-            # The waiter is still waiting, set status for it and cancel it.
-            status = s
-            waiter.cancel()
-
     # Run aw in a separate runner task that manages its exceptions.
-    status = None
-    result = None
-    runner_task = core.create_task(runner(core.cur_task, aw))
+    runner_task = core.create_task(_run(core.cur_task, aw))
 
     try:
         # Wait for the timeout to elapse.
         await sleep(timeout)
     except core.CancelledError as er:
-        if status is True:
-            # aw completed successfully and cancelled the sleep, so return aw's result.
-            return result
-        elif status is None:
+        status = er.value
+        if status is None:
             # This wait_for was cancelled externally, so cancel aw and re-raise.
-            status = True
             runner_task.cancel()
             raise er
+        elif status is True:
+            # aw completed successfully and cancelled the sleep, so return aw's result.
+            return er.args[1]
         else:
             # aw raised an exception, propagate it out to the caller.
             raise status
 
     # The sleep finished before aw, so cancel aw and raise TimeoutError.
-    status = True
     runner_task.cancel()
     await runner_task
     raise core.TimeoutError
@@ -61,9 +63,13 @@ class _Remove:
 
 async def gather(*aws, return_exceptions=False):
     def done(t, er):
+        # Sub-task "t" has finished, with exception "er".
         nonlocal state
-        if type(state) is not int:
-            # A sub-task already raised an exception, so do nothing.
+        if gather_task.data is not _Remove:
+            # The main gather task has already been scheduled, so do nothing.
+            # This happens if another sub-task already raised an exception and
+            # woke the main gather task (via this done function), or if the main
+            # gather task was cancelled externally.
             return
         elif not return_exceptions and not isinstance(er, StopIteration):
             # A sub-task raised an exception, indicate that to the gather task.
@@ -74,7 +80,7 @@ async def gather(*aws, return_exceptions=False):
                 # Still some sub-tasks running.
                 return
         # Gather waiting is done, schedule the main gather task.
-        core._task_queue.push_head(gather_task)
+        core._task_queue.push(gather_task)
 
     ts = [core._promote_to_task(aw) for aw in aws]
     for i in range(len(ts)):

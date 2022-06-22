@@ -56,7 +56,7 @@ Master also has other methods::
 Constructors
 ------------
 
-.. class:: pyb.I2C(bus, ...)
+.. class:: I2C(bus, ...)
 
    Construct an I2C object on the given bus.  ``bus`` can be 1 or 2, 'X' or
    'Y'. With no additional parameters, the I2C object is created but not

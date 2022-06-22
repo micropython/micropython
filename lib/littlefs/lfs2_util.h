@@ -1,6 +1,7 @@
 /*
  * lfs2 utility functions
  *
+ * Copyright (c) 2022, The littlefs authors.
  * Copyright (c) 2017, Arm Limited. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -49,6 +50,7 @@ extern "C"
 // code footprint
 
 // Logging functions
+#ifndef LFS2_TRACE
 #ifdef LFS2_YES_TRACE
 #define LFS2_TRACE_(fmt, ...) \
     printf("%s:%d:trace: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
@@ -56,7 +58,9 @@ extern "C"
 #else
 #define LFS2_TRACE(...)
 #endif
+#endif
 
+#ifndef LFS2_DEBUG
 #ifndef LFS2_NO_DEBUG
 #define LFS2_DEBUG_(fmt, ...) \
     printf("%s:%d:debug: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
@@ -64,7 +68,9 @@ extern "C"
 #else
 #define LFS2_DEBUG(...)
 #endif
+#endif
 
+#ifndef LFS2_WARN
 #ifndef LFS2_NO_WARN
 #define LFS2_WARN_(fmt, ...) \
     printf("%s:%d:warn: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
@@ -72,7 +78,9 @@ extern "C"
 #else
 #define LFS2_WARN(...)
 #endif
+#endif
 
+#ifndef LFS2_ERROR
 #ifndef LFS2_NO_ERROR
 #define LFS2_ERROR_(fmt, ...) \
     printf("%s:%d:error: " fmt "%s\n", __FILE__, __LINE__, __VA_ARGS__)
@@ -80,12 +88,15 @@ extern "C"
 #else
 #define LFS2_ERROR(...)
 #endif
+#endif
 
 // Runtime assertions
+#ifndef LFS2_ASSERT
 #ifndef LFS2_NO_ASSERT
 #define LFS2_ASSERT(test) assert(test)
 #else
 #define LFS2_ASSERT(test)
+#endif
 #endif
 
 

@@ -42,7 +42,7 @@ extern struct _spi_bdev_t spi_bdev;
     (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
     (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
     spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-)
+    )
 #define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
 #define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
@@ -63,25 +63,25 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_RTC_USE_US (0)
 #define MICROPY_HW_RTC_USE_CALOUT (1)
 
-// UART1 config (MicroMod UART1)
-#define MICROPY_HW_UART1_NAME "UART1"
-#define MICROPY_HW_UART1_TX (pin_A2)
-#define MICROPY_HW_UART1_RX (pin_A3)
+// UART2 config (MicroMod UART1)
+#define MICROPY_HW_UART2_NAME "UART1"
+#define MICROPY_HW_UART2_TX (pin_A2)
+#define MICROPY_HW_UART2_RX (pin_A3)
 
 // CAN1 config (MicroMod CAN)
 #define MICROPY_HW_CAN1_NAME "CAN"
 #define MICROPY_HW_CAN1_TX (pin_B9)
 #define MICROPY_HW_CAN1_RX (pin_B8)
 
-// I2C1 config (MicroMod I2C)
-#define MICROPY_HW_I2C1_NAME "I2C"
-#define MICROPY_HW_I2C1_SCL (pin_B10)
-#define MICROPY_HW_I2C1_SDA (pin_B11)
+// I2C1 config (MicroMod I2C1)
+#define MICROPY_HW_I2C1_NAME "I2C1"
+#define MICROPY_HW_I2C1_SCL (pin_B6)
+#define MICROPY_HW_I2C1_SDA (pin_B7)
 
-// I2C2 config (MicroMod I2C1)
-#define MICROPY_HW_I2C2_NAME "I2C1"
-#define MICROPY_HW_I2C2_SCL (pin_B6)
-#define MICROPY_HW_I2C2_SDA (pin_B7)
+// I2C2 config (MicroMod I2C)
+#define MICROPY_HW_I2C2_NAME "I2C"
+#define MICROPY_HW_I2C2_SCL (pin_B10)
+#define MICROPY_HW_I2C2_SDA (pin_B11)
 
 // SPI1 config (MicroMod SPI)
 #define MICROPY_HW_SPI1_NAME "SPI"

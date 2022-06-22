@@ -26,6 +26,7 @@
 #ifndef MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 #define MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
 
+#include "py/mpconfig.h"
 #include "py/mphal.h"
 
 // Use this to tag global static data in RAM that doesn't need to be zeroed on startup
@@ -38,13 +39,52 @@
 #define NORETURN __attribute__((noreturn))
 #define MP_ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+// The default UI code in ui.c only works if there is at least one LED configured.
+#if defined(MBOOT_LED1) || defined(MICROPY_HW_LED1)
+#define MBOOT_ENABLE_DEFAULT_UI (1)
+#else
+#define MBOOT_ENABLE_DEFAULT_UI (0)
+#endif
+
+#ifndef MBOOT_BOARD_EARLY_INIT
+#define MBOOT_BOARD_EARLY_INIT(initial_r0)
+#endif
+
 #ifndef MBOOT_BOARD_ENTRY_INIT
-#define MBOOT_BOARD_ENTRY_INIT mboot_entry_init
+#define MBOOT_BOARD_ENTRY_INIT(initial_r0) mboot_entry_init_default()
+#endif
+
+#ifndef MBOOT_BOARD_GET_RESET_MODE
+#if MBOOT_ENABLE_DEFAULT_UI
+#define MBOOT_BOARD_GET_RESET_MODE(initial_r0) mboot_get_reset_mode_default()
+#else
+#define MBOOT_BOARD_GET_RESET_MODE(initial_r0) BOARDCTRL_RESET_MODE_NORMAL
+#endif
+#endif
+
+#ifndef MBOOT_BOARD_STATE_CHANGE
+#if MBOOT_ENABLE_DEFAULT_UI
+#define MBOOT_BOARD_STATE_CHANGE(state, arg) mboot_state_change_default((state), (arg))
+#else
+#define MBOOT_BOARD_STATE_CHANGE(state, arg)
+#endif
+#endif
+
+#ifndef MBOOT_BOARD_SYSTICK
+#if MBOOT_ENABLE_DEFAULT_UI
+#define MBOOT_BOARD_SYSTICK() mboot_ui_systick()
+#else
+#define MBOOT_BOARD_SYSTICK()
+#endif
 #endif
 
 #ifndef MBOOT_ADDRESS_SPACE_64BIT
 #define MBOOT_ADDRESS_SPACE_64BIT (0)
 #endif
+
+// These values are used in initial_r0 to enter mboot programatically.
+#define MBOOT_INITIAL_R0_KEY (0x70ad0000)
+#define MBOOT_INITIAL_R0_KEY_FSLOAD (MBOOT_INITIAL_R0_KEY | 0x80)
 
 // These are for led_state_all() and can be or'd together.
 #define MBOOT_LED_STATE_LED0 (0x01)
@@ -64,6 +104,7 @@ typedef enum {
     MBOOT_STATE_DFU_END,            // arg: unused
     MBOOT_STATE_FSLOAD_START,       // arg: unused
     MBOOT_STATE_FSLOAD_END,         // arg: result of fsload operation
+    MBOOT_STATE_FSLOAD_PASS_START,  // arg: pass number, 0 or 1 (verify and write respectively)
     MBOOT_STATE_FSLOAD_PROGRESS,    // arg: total bytes processed so far, high bit set when doing write pass
     MBOOT_STATE_ERASE_START,        // arg: address of erase
     MBOOT_STATE_ERASE_END,          // arg: result of erase
@@ -131,7 +172,7 @@ extern uint8_t _estack[ELEM_DATA_SIZE];
 
 void systick_init(void);
 void led_init(void);
-void led0_update(void);
+void mboot_ui_systick(void);
 void SystemClock_Config(void);
 
 uint32_t get_le32(const uint8_t *b);
@@ -149,9 +190,11 @@ int do_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 const uint8_t *elem_search(const uint8_t *elem, uint8_t elem_id);
 int fsload_process(void);
 
-static inline void mboot_entry_init(uint32_t *initial_r0) {
+static inline void mboot_entry_init_default(void) {
+    #if MBOOT_ENABLE_DEFAULT_UI
     // Init subsystems (mboot_get_reset_mode() may call these, calling them again is ok)
     led_init();
+    #endif
 
     // set the system clock to be HSE
     SystemClock_Config();
@@ -162,20 +205,15 @@ static inline void mboot_entry_init(uint32_t *initial_r0) {
     #endif
 }
 
-#if defined(MBOOT_BOARD_GET_RESET_MODE)
-static inline int mboot_get_reset_mode(void) {
-    return MBOOT_BOARD_GET_RESET_MODE();
-}
-#else
-int mboot_get_reset_mode(void);
-#endif
+int mboot_get_reset_mode_default(void);
+void mboot_state_change_default(mboot_state_t state, uint32_t arg);
 
-#if defined(MBOOT_BOARD_STATE_CHANGE)
 static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
+    #if defined(MBOOT_BOARD_STATE_CHANGE)
     return MBOOT_BOARD_STATE_CHANGE(state, arg);
+    #else
+    return mboot_state_change_default(state, arg);
+    #endif
 }
-#else
-void mboot_state_change(mboot_state_t state, uint32_t arg);
-#endif
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H

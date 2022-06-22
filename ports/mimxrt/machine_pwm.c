@@ -494,8 +494,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     // Create and populate the PWM object.
-    machine_pwm_obj_t *self = m_new_obj(machine_pwm_obj_t);
-    self->base.type = &machine_pwm_type;
+    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
     self->is_flexpwm = is_flexpwm;
     self->instance = af_obj1->instance;
     self->module = module;

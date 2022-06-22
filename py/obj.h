@@ -419,9 +419,10 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-// prarm enabled_define: used as `#if (enabled_define) around entry`
 
-#define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
+#ifndef NO_QSTR
+#define MP_REGISTER_MODULE(module_name, obj_module)
+#endif
 
 // Underlying map/hash table implementation (not dict object or map function)
 
@@ -732,6 +733,12 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 
 // General API for objects
 
+// Helper versions of m_new_obj when you need to immediately set base.type.
+// Implementing this as a call rather than inline saves 8 bytes per usage.
+#define mp_obj_malloc(struct_type, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type), obj_type))
+#define mp_obj_malloc_var(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
+
 // These macros are derived from more primitive ones and are used to
 // check for more specific object types.
 // Note: these are kept as macros because inline functions sometimes use much
@@ -831,8 +838,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 
 // cell
-mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
-void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
+
+typedef struct _mp_obj_cell_t {
+    mp_obj_base_t base;
+    mp_obj_t obj;
+} mp_obj_cell_t;
+
+static inline mp_obj_t mp_obj_cell_get(mp_obj_t self_in) {
+    mp_obj_cell_t *self = (mp_obj_cell_t *)MP_OBJ_TO_PTR(self_in);
+    return self->obj;
+}
+
+static inline void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
+    mp_obj_cell_t *self = (mp_obj_cell_t *)MP_OBJ_TO_PTR(self_in);
+    self->obj = obj;
+}
 
 // int
 // For long int, returns value truncated to mp_int_t

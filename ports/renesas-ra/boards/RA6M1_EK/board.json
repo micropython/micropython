@@ -1,0 +1,21 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+	"UART",
+	"SPI",
+	"I2C",
+	"ADC"
+    ],
+    "id": "EK-RA6M1",
+    "images": [
+        "ek_ra6m1_board.jpg"
+    ],
+    "mcu": "RA6M1",
+    "product": "EK-RA6M1",
+    "thumbnail": "",
+    "url": "https://www.renesas.com/products/microcontrollers-microprocessors/ra-cortex-m-mcus/ek-ra6m1-evaluation-kit-ra6m1-mcu-group",
+    "vendor": "Renesas Electronics"
+}

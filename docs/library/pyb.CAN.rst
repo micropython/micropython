@@ -31,7 +31,7 @@ for both classic and FD CAN controllers, unless otherwise stated.
 Constructors
 ------------
 
-.. class:: pyb.CAN(bus, ...)
+.. class:: CAN(bus, ...)
 
    Construct a CAN object on the given bus.  *bus* can be 1-2, or ``'YA'`` or ``'YB'``.
    With no additional parameters, the CAN object is created but not

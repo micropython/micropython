@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 XCVERSION ?= 1.35
 XC16 ?= /opt/microchip/xc16/v$(XCVERSION)

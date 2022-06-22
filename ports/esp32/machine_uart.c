@@ -315,8 +315,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     };
 
     // create instance
-    machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
-    self->base.type = &machine_uart_type;
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->uart_num = uart_num;
     self->bits = 8;
     self->parity = 0;

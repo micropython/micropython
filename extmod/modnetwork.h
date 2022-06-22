@@ -47,8 +47,14 @@
 #define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
 #define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
 
+#define MOD_NETWORK_SS_NEW          (0)
+#define MOD_NETWORK_SS_LISTENING    (1)
+#define MOD_NETWORK_SS_CONNECTED    (2)
+#define MOD_NETWORK_SS_CLOSED       (3)
+
 #if MICROPY_PY_LWIP
 struct netif;
+void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 #else
@@ -86,10 +92,12 @@ typedef struct _mod_network_socket_obj_t {
     uint32_t proto  : 5;
     uint32_t bound  : 1;
     int32_t fileno  : 16;
+    int32_t timeout;
+    mp_obj_t callback;
+    int32_t state   : 8;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
-    int32_t timeout;
-    void *state;
+    void *_private;
     #endif
 } mod_network_socket_obj_t;
 

@@ -55,31 +55,29 @@
 #define MICROPY_EMIT_THUMB_ARMV7M               (0)
 #define MICROPY_EMIT_INLINE_THUMB               (1)
 #define MICROPY_EMIT_INLINE_THUMB_FLOAT         (0)
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M        (0)
 
 // Optimisations
 #define MICROPY_OPT_COMPUTED_GOTO               (1)
 
-// Features currently overriden for rp2, planned to be brought in line with
-// other ports
-#define MICROPY_PY_BUILTINS_EXECFILE            (0)
-#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (0)
-#define MICROPY_REPL_EMACS_KEYS                 (0)
-
 // Python internal features
+#define MICROPY_TRACKED_ALLOC                   (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                      (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                    (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
-#define MICROPY_USE_INTERNAL_ERRNO              (1)
 #define MICROPY_SCHEDULER_DEPTH                 (8)
+#define MICROPY_SCHEDULER_STATIC_NODES          (1)
+#ifndef MICROPY_USE_INTERNAL_ERRNO
+#define MICROPY_USE_INTERNAL_ERRNO              (1)
+#endif
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
 #define MICROPY_PY_SYS_PLATFORM                 "rp2"
 #define MICROPY_PY_THREAD                       (1)
 #define MICROPY_PY_THREAD_GIL                   (0)
+#define MICROPY_THREAD_YIELD()                  mp_handle_pending(true)
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
@@ -109,6 +107,7 @@
 #define MICROPY_VFS_LFS2                        (1)
 #define MICROPY_VFS_FAT                         (1)
 #define MICROPY_SSL_MBEDTLS                     (1)
+#define MICROPY_PY_LWIP_SOCK_RAW                (MICROPY_PY_LWIP)
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN                (1)
@@ -131,31 +130,13 @@
 #define mp_type_textio mp_type_vfs_lfs2_textio
 #endif
 
-// Use VFS's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// Hooks to add builtins
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_onewire;
-extern const struct _mp_obj_module_t mp_module_rp2;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_utime;
-
-#if MICROPY_PY_USOCKET
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-#define SOCKET_BUILTIN_MODULE
+#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
+
 #if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
 #define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
 #else
-#define NETWORK_BUILTIN_MODULE
 #define NETWORK_ROOT_POINTERS
 #endif
 
@@ -179,7 +160,7 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
 // It also requires an additional root pointer for the SPI object.
-#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi;
+#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi; struct _machine_timer_obj_t *mp_wifi_timer; struct _mp_obj_list_t *mp_wifi_sockpoll_list;
 extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
@@ -187,12 +168,16 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__rp2), (mp_obj_t)&mp_module_rp2 }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
+#if MICROPY_PY_NETWORK_WIZNET5K
+#if MICROPY_PY_LWIP
+extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
+#else
+extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
+#endif
+#define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+#else
+#define MICROPY_HW_NIC_WIZNET5K
+#endif
 
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
@@ -200,6 +185,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_NINAW10  \
+    MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS
@@ -227,6 +213,11 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 // TODO need to look and see if these could/should be spinlock/mutex
 #define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
 #define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+
+// Prevent the "lwIP task" from running when unsafe to do so.
+#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
+#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
+#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
@@ -265,3 +256,5 @@ typedef intptr_t mp_off_t;
 #define MICROPY_FROZEN_LIST_ITEM(name, file) bi_decl(bi_string(BINARY_INFO_TAG_MICROPYTHON, BINARY_INFO_ID_MP_FROZEN, name))
 
 extern uint32_t rosc_random_u32(void);
+extern void lwip_lock_acquire(void);
+extern void lwip_lock_release(void);
