@@ -442,7 +442,9 @@ static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, 
     socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
     _send_chunk(socket, "<!DOCTYPE html><html><head><title>");
     _send_chunk(socket, path);
-    _send_chunk(socket, "</title><meta charset=\"UTF-8\"></head><body><h1>");
+    _send_chunk(socket, "</title><meta charset=\"UTF-8\"></head>");
+    _send_chunk(socket, "<script src=\"http://127.0.0.1:8000/circuitpython.js\" defer=true></script>");
+    _send_chunk(socket, "<body><h1>");
     _send_chunk(socket, path);
     _send_chunk(socket, "</h1><pre>");
     if (strlen(path) > 1) {
@@ -468,7 +470,6 @@ static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, 
         //     entry->file_size = file_info.fsize;
         // }
         // _send_chunk(socket, "<li>");
-        bool editable = false;
         if ((file_info.fattrib & AM_DIR) != 0) {
             _send_chunk(socket, "🗀\t");
         } else if (_endswith(file_info.fname, ".txt") ||
@@ -476,10 +477,8 @@ static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, 
                    _endswith(file_info.fname, ".js") ||
                    _endswith(file_info.fname, ".json")) {
             _send_chunk(socket, "🖹\t");
-            editable = true;
         } else if (_endswith(file_info.fname, ".html")) {
             _send_chunk(socket, "🌐\t");
-            editable = true;
         } else {
             _send_chunk(socket, "⬇\t");
         }
@@ -494,13 +493,15 @@ static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, 
 
         _send_chunk(socket, file_info.fname);
         _send_chunk(socket, "</a>");
-        if (editable) {
-            _send_chunk(socket, "<a>✏️</a>");
-        }
-        _send_chunk(socket, "<a>🗑️</a><br/>");
+        _send_chunk(socket, "<button value=\"");
+        _send_chunk(socket, file_info.fname);
+        _send_chunk(socket, "\" class=\"delete\">🗑️</button><br/>");
         res = f_readdir(dir, &file_info);
     }
-    _send_chunk(socket, "</pre>Upload:<input type=\"file\" multiple></body></html>");
+    _send_chunk(socket, "</pre><hr><input type=\"file\" id=\"files\" multiple><button type=\"submit\" id=\"upload\">Upload</button>");
+
+    _send_chunk(socket, "<hr>+🗀<input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
+    _send_chunk(socket, "</body></html>");
     _send_chunk(socket, "");
 }
 
