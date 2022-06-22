@@ -27,6 +27,7 @@ set(MICROPY_SOURCE_SHARED
     ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${MICROPY_DIR}/shared/runtime/pyexec.c
+    ${MICROPY_DIR}/shared/runtime/ring_buffer.c
 )
 
 set(MICROPY_SOURCE_LIB
@@ -85,6 +86,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/mpthreadport.c
     ${PROJECT_DIR}/machine_rtc.c
     ${PROJECT_DIR}/machine_sdcard.c
+    ${PROJECT_DIR}/esp_espnow.c
 )
 
 set(MICROPY_SOURCE_QSTR

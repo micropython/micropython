@@ -1,0 +1,21 @@
+--- instance0 ---
+Server Start
+Server Done
+--- instance1 ---
+TEST: send/recv(msglen=1,sync=True): OK
+TEST: send/recv(msglen=2,sync=True): OK
+TEST: send/recv(msglen=8,sync=True): OK
+TEST: send/recv(msglen=100,sync=True): OK
+TEST: send/recv(msglen=249,sync=True): OK
+TEST: send/recv(msglen=250,sync=True): OK
+TEST: send/recv(msglen=251,sync=True): ERROR: OSError:
+TEST: send/recv(msglen=0,sync=True): ERROR: OSError:
+TEST: send/recv(msglen=1,sync=False): OK
+TEST: send/recv(msglen=2,sync=False): OK
+TEST: send/recv(msglen=8,sync=False): OK
+TEST: send/recv(msglen=100,sync=False): OK
+TEST: send/recv(msglen=249,sync=False): OK
+TEST: send/recv(msglen=250,sync=False): OK
+TEST: send/recv(msglen=251,sync=False): ERROR: OSError:
+TEST: send/recv(msglen=0,sync=False): ERROR: OSError:
+TEST: send/recv(msglen=5,sync=True): OK

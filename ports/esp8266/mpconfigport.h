@@ -152,10 +152,17 @@ extern const struct _mp_print_t mp_debug_print;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if MICROPY_ESPNOW
+#define MICROPY_PORT_ROOT_POINTER_ESPNOW struct _esp_espnow_obj_t *espnow_singleton;
+#else
+#define MICROPY_PORT_ROOT_POINTER_ESPNOW
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t pin_irq_handler[16]; \
     byte *uart0_rxbuf; \
+    MICROPY_PORT_ROOT_POINTER_ESPNOW \
 
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)

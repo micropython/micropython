@@ -162,16 +162,20 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
-    static int initialized = 0;
-    if (!initialized) {
+void esp_initialise_wifi() {
+    static int wifi_initialized = 0;
+    if (!wifi_initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
         esp_exceptions(esp_wifi_init(&cfg));
         esp_exceptions(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
-        initialized = 1;
+        wifi_initialized = 1;
     }
+}
+
+STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+    esp_initialise_wifi();
 
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : WIFI_IF_STA;
     if (idx == WIFI_IF_STA) {
@@ -410,6 +414,14 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         esp_exceptions(esp_wifi_set_mac(self->if_id, bufinfo.buf));
                         break;
                     }
+                    case MP_QSTR_protocol: {
+                        esp_exceptions(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
+                    case MP_QSTR_ps_mode: {
+                        esp_exceptions(esp_wifi_set_ps(mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
                     case MP_QSTR_ssid:
                     case MP_QSTR_essid: {
                         req_if = WIFI_IF_AP;
@@ -442,8 +454,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_channel: {
-                        req_if = WIFI_IF_AP;
-                        cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        if (self->if_id == WIFI_IF_AP) {
+                            cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
+                        } else {
+                            // Set the STA_IF channel (needed by ESPNow, enforces 20MHz bandwidth)
+                            uint8_t channel = mp_obj_get_int(kwargs->table[i].value);
+                            esp_exceptions(esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE));
+                        }
                         break;
                     }
                     case MP_QSTR_dhcp_hostname: {
@@ -506,6 +523,18 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     goto unknown;
             }
         }
+        case MP_QSTR_protocol: {
+            uint8_t protocol_bitmap;
+            esp_exceptions(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
+            break;
+        }
+        case MP_QSTR_ps_mode: {
+            wifi_ps_type_t ps_type;
+            esp_exceptions(esp_wifi_get_ps(&ps_type));
+            val = MP_OBJ_NEW_SMALL_INT(ps_type);
+            break;
+        }
         case MP_QSTR_ssid:
         case MP_QSTR_essid:
             switch (self->if_id) {
@@ -528,10 +557,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
             break;
-        case MP_QSTR_channel:
-            req_if = WIFI_IF_AP;
-            val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
+        case MP_QSTR_channel: {
+            uint8_t channel;
+            wifi_second_chan_t second;
+            esp_exceptions(esp_wifi_get_channel(&channel, &second));
+            val = MP_OBJ_NEW_SMALL_INT(channel);
             break;
+        }
         case MP_QSTR_dhcp_hostname: {
             const char *s;
             esp_exceptions(tcpip_adapter_get_hostname(self->if_id, &s));

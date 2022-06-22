@@ -45,6 +45,10 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
+#if MICROPY_ESPNOW
+#include "esp_espnow.h"
+#endif
+
 STATIC char heap[38 * 1024];
 
 STATIC void mp_reset(void) {
@@ -72,6 +76,11 @@ STATIC void mp_reset(void) {
         args[1] = MP_OBJ_NEW_SMALL_INT(1);
         mp_uos_dupterm_obj.fun.var(2, args);
     }
+
+    #if MICROPY_ESPNOW
+    espnow_deinit(mp_const_none);
+    MP_STATE_PORT(espnow_singleton) = NULL;
+    #endif
 
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py");

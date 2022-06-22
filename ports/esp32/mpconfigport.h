@@ -68,6 +68,9 @@
 #define MICROPY_PY_THREAD_GIL_VM_DIVISOR    (32)
 
 // extended modules
+#ifndef MICROPY_ESPNOW
+#define MICROPY_ESPNOW                      (1)
+#endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
@@ -151,6 +154,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
     struct _machine_timer_obj_t *machine_timer_obj_head; \
     struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
     mp_obj_t native_code_pointers; \
+    struct _esp_espnow_obj_t *espnow_singleton; \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
