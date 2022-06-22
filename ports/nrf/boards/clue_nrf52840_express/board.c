@@ -102,4 +102,5 @@ void reset_board(void) {
 }
 
 void board_deinit(void) {
+    common_hal_displayio_release_displays();
 }
