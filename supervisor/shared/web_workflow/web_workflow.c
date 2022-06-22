@@ -500,7 +500,7 @@ static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, 
     }
     _send_chunk(socket, "</pre><hr><input type=\"file\" id=\"files\" multiple><button type=\"submit\" id=\"upload\">Upload</button>");
 
-    _send_chunk(socket, "<hr>+🗀<input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
+    _send_chunk(socket, "<hr>+🗀 <input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
     _send_chunk(socket, "</body></html>");
     _send_chunk(socket, "");
 }
