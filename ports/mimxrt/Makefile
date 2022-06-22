@@ -222,89 +222,27 @@ endif
 
 # Math library source files
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-	__cos.c \
-	__expo2.c \
-	__fpclassify.c \
-	__rem_pio2.c \
-	__rem_pio2_large.c \
-	__signbit.c \
-	__sin.c \
-	__tan.c \
-	acos.c \
-	acosh.c \
-	asin.c \
-	asinh.c \
-	atan.c \
-	atan2.c \
-	atanh.c \
-	ceil.c \
-	copysign.c \
-	cos.c \
-	cosh.c \
-	erf.c \
-	exp.c \
-	expm1.c \
-	floor.c \
-	fmod.c \
-	frexp.c \
-	ldexp.c \
-	lgamma.c \
-	log.c \
-	log10.c \
-	log1p.c \
-	modf.c \
-	nearbyint.c \
-	pow.c \
-	rint.c \
-	round.c \
-	scalbn.c \
-	sin.c \
-	sinh.c \
-	tan.c \
-	tanh.c \
-	tgamma.c \
-	trunc.c \
-	)
-ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+    LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
+        __cos.c __expo2.c __fpclassify.c __rem_pio2.c __rem_pio2_large.c __signbit.c __sin.c __tan.c acos.c acosh.c \
+        asin.c asinh.c atan.c atan2.c atanh.c ceil.c copysign.c cos.c cosh.c erf.c exp.c expm1.c floor.c fmod.c \
+        frexp.c ldexp.c lgamma.c log.c log10.c log1p.c modf.c nearbyint.c pow.c rint.c round.c scalbn.c sin.c \
+        sinh.c tan.c tanh.c tgamma.c trunc.c)
+    #
+    ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
+        LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+    else
+        LIBM_SRC_C += lib/libm_dbl/sqrt.c
+    endif
 else
-LIBM_SRC_C += lib/libm_dbl/sqrt.c
-endif
-else
-LIBM_SRC_C += $(addprefix lib/libm/,\
-	acoshf.c \
-	asinfacosf.c \
-	asinhf.c \
-	atan2f.c \
-	atanf.c \
-	atanhf.c \
-	ef_rem_pio2.c \
-	erf_lgamma.c \
-	fmodf.c \
-	kf_cos.c \
-	kf_rem_pio2.c \
-	kf_sin.c \
-	kf_tan.c \
-	log1pf.c \
-	math.c \
-	nearbyintf.c \
-	roundf.c \
-	sf_cos.c \
-	sf_erf.c \
-	sf_frexp.c \
-	sf_ldexp.c \
-	sf_modf.c \
-	sf_sin.c \
-	sf_tan.c \
-	wf_lgamma.c \
-	wf_tgamma.c \
-	)
-ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
-else
-LIBM_SRC_C += lib/libm/ef_sqrt.c
-endif
+    LIBM_SRC_C += $(addprefix lib/libm/,\
+        acoshf.c asinfacosf.c asinhf.c atan2f.c atanf.c atanhf.c ef_rem_pio2.c erf_lgamma.c fmodf.c kf_cos.c \
+        kf_rem_pio2.c kf_sin.c kf_tan.c log1pf.c math.c nearbyintf.c roundf.c sf_cos.c sf_erf.c sf_frexp.c sf_ldexp.c \
+        sf_modf.c sf_sin.c sf_tan.c wf_lgamma.c wf_tgamma.c)
+    ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
+        LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+    else
+        LIBM_SRC_C += lib/libm/ef_sqrt.c
+    endif
 endif
 
 # Reset variables
@@ -423,22 +361,24 @@ else
 endif
 
 # Configure floating point support
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-CFLAGS += \
-	-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE \
-	-mfloat-abi=hard \
-	-mfpu=fpv5-d16
+ifeq ($(MICROPY_FLOAT_IMPL),single)
+    CFLAGS += \
+        -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT \
+        -fsingle-precision-constant \
+        -mfloat-abi=softfp \
+        -mfpu=fpv5-sp-d16
+else ifeq ($(MICROPY_FLOAT_IMPL),double)
+    CFLAGS += \
+        -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE \
+        -mfloat-abi=hard \
+        -mfpu=fpv5-d16
+else ifeq ($(MICROPY_FLOAT_IMPL),none)
+    CFLAGS += \
+        -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
 else
-ifeq ($(MICROPY_FLOAT_IMPL),none)
-CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
-else
-CFLAGS += \
-	-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT \
-	-fsingle-precision-constant \
-	-mfloat-abi=softfp \
-	-mfpu=fpv5-sp-d16
+    $(error Error: Unknown floating point implementation $(MICROPY_FLOAT_IMPL))
 endif
-endif
+
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP), 1)
