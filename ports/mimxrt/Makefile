@@ -376,6 +376,7 @@ endif
 # Set default values for optional variables
 MICROPY_HW_SDRAM_AVAIL ?= 0
 MICROPY_HW_SDRAM_SIZE ?= 0
+MICROPY_PY_MACHINE_SDCARD ?= 0
 
 # Configure default compiler flags
 CFLAGS += \
@@ -395,6 +396,7 @@ CFLAGS += \
 	-DMICROPY_HW_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
 	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
 	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE) \
+	-DMICROPY_PY_MACHINE_SDCARD=$(MICROPY_PY_MACHINE_SDCARD) \
 	-DSPI_RETRY_TIMES=1000000 \
 	-DUART_RETRY_TIMES=1000000 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
@@ -450,11 +452,6 @@ CFLAGS += \
 	-mfloat-abi=softfp \
 	-mfpu=fpv5-sp-d16
 endif
-endif
-
-# Configure feature specific compiler flags
-ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
-CFLAGS += -DMICROPY_PY_MACHINE_SDCARD=1
 endif
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
