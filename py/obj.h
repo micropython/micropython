@@ -838,8 +838,21 @@ mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
 mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 
 // cell
-mp_obj_t mp_obj_cell_get(mp_obj_t self_in);
-void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj);
+
+typedef struct _mp_obj_cell_t {
+    mp_obj_base_t base;
+    mp_obj_t obj;
+} mp_obj_cell_t;
+
+static inline mp_obj_t mp_obj_cell_get(mp_obj_t self_in) {
+    mp_obj_cell_t *self = (mp_obj_cell_t *)MP_OBJ_TO_PTR(self_in);
+    return self->obj;
+}
+
+static inline void mp_obj_cell_set(mp_obj_t self_in, mp_obj_t obj) {
+    mp_obj_cell_t *self = (mp_obj_cell_t *)MP_OBJ_TO_PTR(self_in);
+    self->obj = obj;
+}
 
 // int
 // For long int, returns value truncated to mp_int_t

@@ -56,6 +56,7 @@ FROZEN_MANIFEST ?= modules/manifest.py
 
 # include py core make definitions
 include ../../py/py.mk
+include ../../extmod/extmod.mk
 
 GIT_SUBMODULES = lib/nrfx lib/tinyusb
 

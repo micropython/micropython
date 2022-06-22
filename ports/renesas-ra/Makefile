@@ -67,6 +67,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/fsp
 

@@ -95,6 +95,7 @@ We also need a Makefile at this point for the port:
 
    # Include py core make definitions.
    include $(TOP)/py/py.mk
+   include $(TOP)/extmod/extmod.mk
 
    # Set CFLAGS and libraries.
    CFLAGS = -I. -I$(BUILD) -I$(TOP)

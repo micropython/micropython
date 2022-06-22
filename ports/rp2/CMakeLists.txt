@@ -182,12 +182,6 @@ if (MICROPY_PY_LWIP)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_LWIP=1
     )
-
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_EXTMOD_DIR}/modlwip.c
-    )
-
-    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
 endif()
 
 if(MICROPY_PY_BLUETOOTH)

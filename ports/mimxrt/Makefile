@@ -42,6 +42,7 @@ MICROPY_VFS_FAT ?= 1
 
 # Include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 
@@ -150,7 +151,6 @@ SRC_ETH_C += \
 	$(MCU_DIR)/drivers/fsl_enet.c \
 
 SRC_QSTR += \
-	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/moduwebsocket.c \
 	extmod/modusocket.c \

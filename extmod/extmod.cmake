@@ -14,8 +14,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c
-    ${MICROPY_EXTMOD_DIR}/modbtree.c
     ${MICROPY_EXTMOD_DIR}/modframebuf.c
+    ${MICROPY_EXTMOD_DIR}/modlwip.c
     ${MICROPY_EXTMOD_DIR}/modnetwork.c
     ${MICROPY_EXTMOD_DIR}/modonewire.c
     ${MICROPY_EXTMOD_DIR}/moduasyncio.c
@@ -95,6 +95,10 @@ if(MICROPY_PY_BTREE)
     list(APPEND MICROPY_DEF_CORE
         __DBINTERFACE_PRIVATE=1
         "virt_fd_t=void*"
+    )
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_EXTMOD_DIR}/modbtree.c
     )
 endif()
 
@@ -246,4 +250,6 @@ if(MICROPY_PY_LWIP)
     list(APPEND MICROPY_INC_CORE
         ${MICROPY_LIB_LWIP_DIR}/include
     )
+
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/lwip)
 endif()

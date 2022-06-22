@@ -41,7 +41,7 @@ For example, to make a bouncing dot, try::
 Constructors
 ------------
 
-.. class:: pyb.LCD(skin_position)
+.. class:: LCD(skin_position)
 
    Construct an LCD object in the given skin position.  ``skin_position`` can be 'X' or 'Y', and
    should match the position where the LCD pyskin is plugged in.

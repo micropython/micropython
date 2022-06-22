@@ -115,7 +115,6 @@ typedef struct _emit_method_table_t {
 
     void (*start_pass)(emit_t *emit, pass_kind_t pass, scope_t *scope);
     bool (*end_pass)(emit_t *emit);
-    bool (*last_emit_was_return_value)(emit_t *emit);
     void (*adjust_stack_size)(emit_t *emit, mp_int_t delta);
     void (*set_source_line)(emit_t *emit, mp_uint_t line);
 
@@ -227,7 +226,6 @@ void emit_native_xtensawin_free(emit_t *emit);
 
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope);
 bool mp_emit_bc_end_pass(emit_t *emit);
-bool mp_emit_bc_last_emit_was_return_value(emit_t *emit);
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta);
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t line);
 
