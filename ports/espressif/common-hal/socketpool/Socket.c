@@ -44,6 +44,7 @@ static const char *TAG = "socket";
 STATIC socketpool_socket_obj_t *open_socket_handles[CONFIG_LWIP_MAX_SOCKETS];
 
 void socket_user_reset(void) {
+    ESP_LOGW(TAG, "Reset sockets");
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i]) {
             if (open_socket_handles[i]->num > 0) {
@@ -74,16 +75,14 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Allow timeouts and interrupts
-    while (newsoc == -1 &&
-           !timed_out &&
-           !mp_hal_is_interrupted()) {
+    while (newsoc == -1 && !timed_out) {
         if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
         newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
         // In non-blocking mode, fail instead of timing out
-        if (newsoc == -1 && self->timeout_ms == 0) {
+        if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
             if (errno != EAGAIN) {
                 ESP_LOGE(TAG, "accept failed %d", errno);
             }
@@ -283,8 +282,7 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
         uint64_t start_ticks = supervisor_ticks_ms64();
         received = -1;
         while (received == -1 &&
-               !timed_out &&
-               !mp_hal_is_interrupted()) {
+               !timed_out) {
             if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
                 timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
             }
@@ -300,6 +298,14 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
                     ESP_LOGE(TAG, "recv %d", errno);
                 }
                 return -MP_EAGAIN;
+            }
+            // Check this after going through the loop once so it can make
+            // progress while interrupted.
+            if (mp_hal_is_interrupted()) {
+                if (received == -1) {
+                    return -MP_EAGAIN;
+                }
+                break;
             }
         }
     } else {

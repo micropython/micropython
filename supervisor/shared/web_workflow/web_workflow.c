@@ -35,6 +35,7 @@
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
+#include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #include "supervisor/usb.h"
@@ -72,10 +73,14 @@ typedef struct {
     char path[256];
     char header_key[64];
     char header_value[64];
+    // We store the origin so we can reply back with it.
+    char origin[64];
     size_t content_length;
     size_t offset;
+    uint64_t timestamp_ms;
     bool redirect;
     bool done;
+    bool in_progress;
     bool authenticated;
     bool expect;
     bool json;
@@ -221,6 +226,7 @@ void supervisor_start_web_workflow(void) {
     pool.base.type = &socketpool_socketpool_type;
     common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
+    ESP_LOGW(TAG, "Starting web workflow");
     listening.base.type = &socketpool_socket_type;
     socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
     common_hal_socketpool_socket_settimeout(&listening, 0);
@@ -274,32 +280,27 @@ void supervisor_start_web_workflow(void) {
     #endif
 }
 
-static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
-    char encoded_len[sizeof(size_t) * 2 + 1];
-    int len = snprintf(encoded_len, sizeof(encoded_len), "%X", strlen(chunk));
-    int sent = socketpool_socket_send(socket, (const uint8_t *)encoded_len, len);
+static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+    int sent = -EAGAIN;
+    while (sent == -EAGAIN) {
+        sent = socketpool_socket_send(socket, buf, len);
+    }
     if (sent < len) {
         ESP_LOGE(TAG, "short send %d %d", sent, len);
-    }
-    sent = socketpool_socket_send(socket, (const uint8_t *)"\r\n", 2);
-    if (sent < 2) {
-        ESP_LOGE(TAG, "short send %d %d", sent, 2);
-    }
-    sent = socketpool_socket_send(socket, (const uint8_t *)chunk, strlen(chunk));
-    if (sent < (int)strlen(chunk)) {
-        ESP_LOGE(TAG, "short send %d %d", sent, strlen(chunk));
-    }
-    sent = socketpool_socket_send(socket, (const uint8_t *)"\r\n", 2);
-    if (sent < 2) {
-        ESP_LOGE(TAG, "short send %d %d", sent, 2);
     }
 }
 
 static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
-    int sent = socketpool_socket_send(socket, (const uint8_t *)str, strlen(str));
-    if (sent < (int)strlen(str)) {
-        ESP_LOGE(TAG, "short send %d %d", sent, strlen(str));
-    }
+    _send_raw(socket, (const uint8_t *)str, strlen(str));
+}
+
+static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
+    char encoded_len[sizeof(size_t) * 2 + 1];
+    int len = snprintf(encoded_len, sizeof(encoded_len), "%X", strlen(chunk));
+    _send_raw(socket, (const uint8_t *)encoded_len, len);
+    _send_raw(socket, (const uint8_t *)"\r\n", 2);
+    _send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
+    _send_raw(socket, (const uint8_t *)"\r\n", 2);
 }
 
 static bool _endswith(const char *str, const char *suffix) {
@@ -312,67 +313,112 @@ static bool _endswith(const char *str, const char *suffix) {
     return strcmp(str + (strlen(str) - strlen(suffix)), suffix) == 0;
 }
 
-static void _reply_continue(socketpool_socket_obj_t *socket) {
-    const char *response = "HTTP/1.1 100 Continue\r\n\r\n";
-    _send_str(socket, response);
+static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
+    bool origin_ok = false;
+    #if CIRCUITPY_DEBUG
+    origin_ok = true;
+    #endif
+    _send_str(socket, "Access-Control-Allow-Credentials: true\r\nVary: Origin\r\n");
+    if (origin_ok) {
+        _send_str(socket, "Access-Control-Allow-Origin: ");
+        _send_str(socket, request->origin);
+        _send_str(socket, "\r\n");
+    }
 }
 
-static void _reply_created(socketpool_socket_obj_t *socket) {
+static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
+    const char *response = "HTTP/1.1 100 Continue\r\n";
+    _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+}
+
+static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 201 Created\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_no_content(socketpool_socket_obj_t *socket) {
+static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 204 No Content\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_missing(socketpool_socket_obj_t *socket) {
+static void _reply_access_control(socketpool_socket_obj_t *socket, _request *request) {
+    const char *response = "HTTP/1.1 204 No Content\r\n"
+        "Content-Length: 0\r\n"
+        "Access-Control-Allow-Methods: PUT, GET, DELETE, OPTIONS\r\n"
+        "Access-Control-Allow-Headers: X-Timestamp, Content-Type\r\n";
+    _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+}
+
+static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 404 Not Found\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_forbidden(socketpool_socket_obj_t *socket) {
+static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 403 Forbidden\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_conflict(socketpool_socket_obj_t *socket) {
+static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 409 Conflict\r\n"
-        "Content-Length: 19\r\n\r\nUSB storage active.";
+        "Content-Length: 19\r\n";
+
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\nUSB storage active.");
 }
 
-static void _reply_payload_too_large(socketpool_socket_obj_t *socket) {
+static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 413 Payload Too Large\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_expectation_failed(socketpool_socket_obj_t *socket) {
+static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 417 Expectation Failed\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_unauthorized(socketpool_socket_obj_t *socket) {
+static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 401 Unauthorized\r\n"
         "Content-Length: 0\r\n"
-        "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n\r\n";
+        "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n";
+
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_server_error(socketpool_socket_obj_t *socket) {
+static void _reply_server_error(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 500 Internal Server Error\r\n"
-        "Content-Length: 0\r\n\r\n";
+        "Content-Length: 0\r\n";
     _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_redirect(socketpool_socket_obj_t *socket, const char *path) {
+static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, const char *path) {
     const char *redirect_response = "HTTP/1.1 301 Moved Permanently\r\nConnection: close\r\nContent-Length: 0\r\nLocation: http://";
     int nodelay = 1;
     lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
@@ -380,13 +426,17 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, const char *path) {
     _send_str(socket, common_hal_mdns_server_get_hostname(&mdns));
     _send_str(socket, ".local");
     _send_str(socket, path);
-    _send_str(socket, "\r\n\r\n");
+    _send_str(socket, "\r\n");
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
 }
 
-static void _reply_directory_json(socketpool_socket_obj_t *socket, FF_DIR *dir, const char *request_path, const char *path) {
+static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
     const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
-        "Content-Type: application/json\r\n\r\n";
+        "Content-Type: application/json\r\n";
     socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
     _send_chunk(socket, "[");
     bool first = true;
 
@@ -436,76 +486,23 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, FF_DIR *dir, 
     _send_chunk(socket, "");
 }
 
-static void _reply_directory_html(socketpool_socket_obj_t *socket, FF_DIR *dir, const char *request_path, const char *path) {
+static void _reply_directory_html(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
     const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
-        "Content-Type: text/html\r\n\r\n";
+        "Content-Type: text/html\r\n";
     socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
-    _send_chunk(socket, "<!DOCTYPE html><html><head><title>");
-    _send_chunk(socket, path);
-    _send_chunk(socket, "</title><meta charset=\"UTF-8\"></head>");
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+    _send_chunk(socket, "<!DOCTYPE html><html><head><title></title><meta charset=\"UTF-8\"></head>");
     _send_chunk(socket, "<script src=\"http://127.0.0.1:8000/circuitpython.js\" defer=true></script>");
-    _send_chunk(socket, "<body><h1>");
-    _send_chunk(socket, path);
-    _send_chunk(socket, "</h1><pre>");
-    if (strlen(path) > 1) {
-        _send_chunk(socket, "🗀\t<a href=\"..\">..</a><br/>");
-    }
+    _send_chunk(socket, "<body><h1></h1><template id=\"row\"><tr><td></td><td></td><td><a></a></td><td></td><td><button class=\"delete\">🗑️</button></td></tr></template><table><thead><tr><th>Type</th><th>Size</th><th>Path</th><th>Modified</th><th></th></tr></thead><tbody>");
+    _send_chunk(socket, "</tbody></table><hr><input type=\"file\" id=\"files\" multiple><button type=\"submit\" id=\"upload\">Upload</button>");
 
-    FILINFO file_info;
-    char *fn = file_info.fname;
-    FRESULT res = f_readdir(dir, &file_info);
-    while (res == FR_OK && fn[0] != 0) {
-        // uint64_t truncated_time = timeutils_mktime(1980 + (file_info.fdate >> 9),
-        //     (file_info.fdate >> 5) & 0xf,
-        //     file_info.fdate & 0x1f,
-        //     file_info.ftime >> 11,
-        //     (file_info.ftime >> 5) & 0x1f,
-        //     (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
-        // entry->truncated_time = truncated_time;
-        // if ((file_info.fattrib & AM_DIR) != 0) {
-        //     entry->flags = 1; // Directory
-        //     entry->file_size = 0;
-        // } else {
-        //     entry->flags = 0;
-        //     entry->file_size = file_info.fsize;
-        // }
-        // _send_chunk(socket, "<li>");
-        if ((file_info.fattrib & AM_DIR) != 0) {
-            _send_chunk(socket, "🗀\t");
-        } else if (_endswith(file_info.fname, ".txt") ||
-                   _endswith(file_info.fname, ".py") ||
-                   _endswith(file_info.fname, ".js") ||
-                   _endswith(file_info.fname, ".json")) {
-            _send_chunk(socket, "🖹\t");
-        } else if (_endswith(file_info.fname, ".html")) {
-            _send_chunk(socket, "🌐\t");
-        } else {
-            _send_chunk(socket, "⬇\t");
-        }
-
-        _send_chunk(socket, "<a href=\"");
-        _send_chunk(socket, request_path);
-        _send_chunk(socket, file_info.fname);
-        if ((file_info.fattrib & AM_DIR) != 0) {
-            _send_chunk(socket, "/");
-        }
-        _send_chunk(socket, "\">");
-
-        _send_chunk(socket, file_info.fname);
-        _send_chunk(socket, "</a>");
-        _send_chunk(socket, "<button value=\"");
-        _send_chunk(socket, file_info.fname);
-        _send_chunk(socket, "\" class=\"delete\">🗑️</button><br/>");
-        res = f_readdir(dir, &file_info);
-    }
-    _send_chunk(socket, "</pre><hr><input type=\"file\" id=\"files\" multiple><button type=\"submit\" id=\"upload\">Upload</button>");
-
-    _send_chunk(socket, "<hr>+🗀 <input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
+    _send_chunk(socket, "<hr>+🗀&nbsp;<input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
     _send_chunk(socket, "</body></html>");
     _send_chunk(socket, "");
 }
 
-static void _reply_with_file(socketpool_socket_obj_t *socket, const char *filename, FIL *active_file) {
+static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request, const char *filename, FIL *active_file) {
     uint32_t total_length = f_size(active_file);
     char encoded_len[10];
     snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
@@ -524,6 +521,7 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, const char *filena
     } else {
         _send_str(socket, "Content-Type: application/octet-stream\r\n");
     }
+    _cors_header(socket, request);
     _send_str(socket, "\r\n");
 
     uint32_t total_read = 0;
@@ -552,12 +550,14 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, const char *filena
     }
 }
 
-static void _reply_with_devices_json(socketpool_socket_obj_t *socket) {
+static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *request) {
     mdns_remoteservice_obj_t found_devices[32];
     size_t total_results = mdns_server_find(&mdns, "_circuitpython", "_tcp", 1, found_devices, MP_ARRAY_SIZE(found_devices));
     size_t count = MIN(total_results, MP_ARRAY_SIZE(found_devices));
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n\r\n";
+    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
     socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
     _send_chunk(socket, "{\"total\": ");
     char total_encoded[4];
     snprintf(total_encoded, sizeof(total_encoded), "%d", total_results);
@@ -585,9 +585,11 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket) {
     _send_chunk(socket, "");
 }
 
-static void _reply_with_version_json(socketpool_socket_obj_t *socket) {
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n\r\n";
+static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *request) {
+    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
     socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
     _send_chunk(socket, "{\"web_api_version\": 1, \"version\": \"");
     _send_chunk(socket, MICROPY_GIT_TAG);
     _send_chunk(socket, "\", \"build_date\": \"");
@@ -658,7 +660,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     FIL active_file;
 
     if (_usb_active()) {
-        _reply_conflict(socket);
+        _reply_conflict(socket, request);
         return;
     }
     FRESULT result = f_open(fs, &active_file, path, FA_WRITE);
@@ -670,9 +672,9 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
 
     if (result != FR_OK) {
         ESP_LOGW(TAG, "file write error %d %s", result, path);
-        _reply_server_error(socket);
+        _reply_server_error(socket, request);
     } else if (request->expect) {
-        _reply_continue(socket);
+        _reply_continue(socket, request);
     }
 
     // Change the file size to start.
@@ -684,9 +686,9 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         #endif
         // Too large.
         if (request->expect) {
-            _reply_expectation_failed(socket);
+            _reply_expectation_failed(socket, request);
         } else {
-            _reply_payload_too_large(socket);
+            _reply_payload_too_large(socket, request);
         }
 
         return;
@@ -722,22 +724,22 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     usb_msc_unlock();
     #endif
     if (new_file) {
-        _reply_created(socket);
+        _reply_created(socket, request);
     } else {
-        _reply_no_content(socket);
+        _reply_no_content(socket, request);
     }
 }
 
-static void _reply(socketpool_socket_obj_t *socket, _request *request) {
+static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
-        _reply_redirect(socket, request->path);
+        _reply_redirect(socket, request, request->path);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
             ESP_LOGW(TAG, "not authed");
             if (_api_password[0] != '\0') {
-                _reply_unauthorized(socket);
+                _reply_unauthorized(socket, request);
             } else {
-                _reply_forbidden(socket);
+                _reply_forbidden(socket, request);
             }
         } else {
             ESP_LOGW(TAG, "filesystem %s %s", request->method, request->path + 3);
@@ -755,10 +757,12 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
             }
             // Delete is almost identical for files and directories so share the
             // implementation.
-            if (strcmp(request->method, "DELETE") == 0) {
+            if (strcmp(request->method, "OPTIONS") == 0) {
+                _reply_access_control(socket, request);
+            } else if (strcmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
-                    _reply_conflict(socket);
-                    return;
+                    _reply_conflict(socket, request);
+                    return false;
                 }
 
                 FILINFO file;
@@ -773,12 +777,13 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
                 }
 
                 if (result == FR_NO_PATH || result == FR_NO_FILE) {
-                    _reply_missing(socket);
+                    _reply_missing(socket, request);
                 } else if (result != FR_OK) {
                     ESP_LOGW(TAG, "rm error %d %s", result, path);
-                    _reply_server_error(socket);
+                    _reply_server_error(socket, request);
                 } else {
-                    _reply_no_content(socket);
+                    _reply_no_content(socket, request);
+                    return true;
                 }
             } else if (directory) {
                 if (strcmp(request->method, "GET") == 0) {
@@ -790,20 +795,20 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
                     if (res != FR_OK) {
                         ESP_LOGW(TAG, "unable to open %d %s", res, path);
-                        _reply_missing(socket);
-                        return;
+                        _reply_missing(socket, request);
+                        return false;
                     }
                     if (request->json) {
-                        _reply_directory_json(socket, &dir, request->path, path);
+                        _reply_directory_json(socket, request, &dir, request->path, path);
                     } else {
-                        _reply_directory_html(socket, &dir, request->path, path);
+                        _reply_directory_html(socket, request, &dir, request->path, path);
                     }
 
                     f_closedir(&dir);
                 } else if (strcmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
-                        _reply_conflict(socket);
-                        return;
+                        _reply_conflict(socket, request);
+                        return false;
                     }
 
                     FRESULT result = f_mkdir(fs, path);
@@ -811,14 +816,15 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
                     usb_msc_unlock();
                     #endif
                     if (result == FR_EXIST) {
-                        _reply_no_content(socket);
+                        _reply_no_content(socket, request);
                     } else if (result == FR_NO_PATH) {
-                        _reply_missing(socket);
+                        _reply_missing(socket, request);
                     } else if (result != FR_OK) {
                         ESP_LOGE(TAG, "mkdir error %d %s", result, path);
-                        _reply_server_error(socket);
+                        _reply_server_error(socket, request);
                     } else {
-                        _reply_created(socket);
+                        _reply_created(socket, request);
+                        return true;
                     }
                 }
             } else { // Dealing with a file.
@@ -828,14 +834,15 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
 
                     if (result != FR_OK) {
                         // TODO: 404
-                        _reply_missing(socket);
+                        _reply_missing(socket, request);
                     } else {
-                        _reply_with_file(socket, path, &active_file);
+                        _reply_with_file(socket, request, path, &active_file);
                     }
 
                     f_close(&active_file);
                 } else if (strcmp(request->method, "PUT") == 0) {
                     _write_file_and_reply(socket, request, fs, path);
+                    return true;
                 }
             }
         }
@@ -846,15 +853,16 @@ static void _reply(socketpool_socket_obj_t *socket, _request *request) {
             // Return error if not a GET
         }
         if (strcmp(path, "/devices.json") == 0) {
-            _reply_with_devices_json(socket);
+            _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
-            _reply_with_version_json(socket);
+            _reply_with_version_json(socket, request);
         }
     } else {
         const char *ok_response = "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nContent-Type: text/plain\r\n\r\nHello World";
         int sent = socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
         ESP_LOGW(TAG, "sent ok %d", sent);
     }
+    return false;
 }
 
 static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
@@ -865,11 +873,15 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     while (more && !error) {
         int len = socketpool_socket_recv_into(socket, &c, 1);
         if (len != 1) {
-            if (len != -EAGAIN && len != -EBADF) {
+            if (len != -EAGAIN && len != -EBADF && len != -EPERM) {
                 ESP_LOGW(TAG, "received %d", len);
             }
             more = false;
             break;
+        }
+        if (!request->in_progress) {
+            autoreload_suspend(AUTORELOAD_SUSPEND_WEB);
+            request->in_progress = true;
         }
         // ESP_LOGI(TAG, "%c", c);
         switch (request->state) {
@@ -947,6 +959,11 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         request->expect = strcmp(request->header_value, "100-continue") == 0;
                     } else if (strcmp(request->header_key, "Accept") == 0) {
                         request->json = strcmp(request->header_value, "application/json") == 0;
+                    } else if (strcmp(request->header_key, "Origin") == 0) {
+                        strcpy(request->origin, request->header_value);
+                    } else if (strcmp(request->header_key, "X-Timestamp") == 0) {
+                        request->timestamp_ms = strtoul(request->header_value, NULL, 10);
+                        ;
                     }
                     ESP_LOGW(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
@@ -974,23 +991,27 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     if (!request->done) {
         return;
     }
-    _reply(socket, request);
+    bool reload = _reply(socket, request);
+    ESP_LOGI(TAG, "request done");
     request->done = false;
+    request->in_progress = false;
+    autoreload_resume(AUTORELOAD_SUSPEND_WEB);
+    if (reload) {
+        autoreload_trigger();
+    }
 }
 
 
 void supervisor_web_workflow_background(void) {
     // Otherwise, see if we have another socket to accept.
-    if (!common_hal_socketpool_socket_get_connected(&active) &&
+    if ((!common_hal_socketpool_socket_get_connected(&active) || !active_request.in_progress) &&
         !common_hal_socketpool_socket_get_closed(&listening) &&
         listening.num > 0) {
-        if (!common_hal_socketpool_socket_get_closed(&active)) {
-            common_hal_socketpool_socket_close(&active);
-        }
         uint32_t ip;
         uint32_t port;
         int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
         if (newsoc == -EBADF) {
+            ESP_LOGW(TAG, "Closing listening socket");
             common_hal_socketpool_socket_close(&listening);
             return;
         }
@@ -998,6 +1019,11 @@ void supervisor_web_workflow_background(void) {
             ESP_LOGI(TAG, "newsoc %d", newsoc);
         }
         if (newsoc > 0) {
+            // Close the active socket because we have another we accepted.
+            if (!common_hal_socketpool_socket_get_closed(&active)) {
+                ESP_LOGW(TAG, "Closing active socket");
+                common_hal_socketpool_socket_close(&active);
+            }
             ESP_LOGE(TAG, "Accepted socket %d", newsoc);
             // TODO: Don't do this because it uses the private struct layout.
             // Create the socket
@@ -1005,13 +1031,15 @@ void supervisor_web_workflow_background(void) {
             active.pool = &pool;
             active.connected = true;
 
-
             common_hal_socketpool_socket_settimeout(&active, 0);
 
             active_request.state = STATE_METHOD;
             active_request.offset = 0;
             active_request.done = false;
+            active_request.in_progress = false;
             active_request.redirect = false;
+            active_request.origin[0] = '\0';
+            active_request.timestamp_ms = 0;
 
             lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         }
