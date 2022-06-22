@@ -46,7 +46,7 @@ MEMORY
   m_dtcm         (RW) : ORIGIN = dtcm_start,            LENGTH = dtcm_size
   m_ocrm         (RW) : ORIGIN = ocrm_start,            LENGTH = ocrm_size
 
-  #ifdef MICROPY_HW_SDRAM_AVAIL
+  #if MICROPY_HW_SDRAM_AVAIL
   m_sdram        (RX) : ORIGIN = sdram_start,           LENGTH = sdram_size
   #endif
 }
@@ -55,7 +55,7 @@ MEMORY
 SECTIONS
 {
   __flash_start = flash_start;
-  #ifdef MICROPY_HW_SDRAM_AVAIL
+  #if MICROPY_HW_SDRAM_AVAIL
   __sdram_start = sdram_start;
   #endif
   __vfs_start = ORIGIN(m_vfs);
