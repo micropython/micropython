@@ -178,7 +178,12 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
+#if MICROPY_PY_BUILTINS_COMPLEX
+mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)
+#else
+mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lexer_t *lex)
+#endif
+{
     #if MICROPY_PY_BUILTINS_FLOAT
 
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
@@ -202,9 +207,9 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     const char *top = str + len;
     mp_float_t dec_val = 0;
     bool dec_neg = false;
-    unsigned int real_imag_state = REAL_IMAG_STATE_START;
 
     #if MICROPY_PY_BUILTINS_COMPLEX
+    unsigned int real_imag_state = REAL_IMAG_STATE_START;
     mp_float_t dec_real = 0;
 parse_start:
     #endif
@@ -325,12 +330,16 @@ parse_start:
     }
 
     if (allow_imag && str < top && (*str | 0x20) == 'j') {
+        #if MICROPY_PY_BUILTINS_COMPLEX
         if (str == str_val_start) {
             // Convert "j" to "1j".
             dec_val = 1;
         }
         ++str;
         real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
+        #else
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
+        #endif
     }
 
     // negate value if needed
@@ -369,20 +378,16 @@ parse_start:
     #endif
 
     // return the object
+
     #if MICROPY_PY_BUILTINS_COMPLEX
     if (real_imag_state != REAL_IMAG_STATE_START) {
         return mp_obj_new_complex(dec_real, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
     }
-    #else
-    if (real_imag_state != REAL_IMAG_STATE_START || force_complex) {
-        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
-    }
     #endif
-    else {
-        return mp_obj_new_float(dec_val);
-    }
+
+    return mp_obj_new_float(dec_val);
 
 value_error:
     raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("invalid syntax for number")), lex);

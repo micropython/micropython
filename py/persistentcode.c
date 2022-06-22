@@ -207,7 +207,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
         } else {
             assert(obj_type == MP_PERSISTENT_OBJ_FLOAT || obj_type == MP_PERSISTENT_OBJ_COMPLEX);
-            return mp_parse_num_decimal(vstr.buf, vstr.len, obj_type == MP_PERSISTENT_OBJ_COMPLEX, false, NULL);
+            return mp_parse_num_float(vstr.buf, vstr.len, obj_type == MP_PERSISTENT_OBJ_COMPLEX, NULL);
         }
     }
 }
