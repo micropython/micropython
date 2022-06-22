@@ -34,7 +34,7 @@ typedef struct _mp_obj_fun_bc_t {
     const mp_module_context_t *context;         // context within which this function was defined
     struct _mp_raw_code_t *const *child_table;  // table of children
     const byte *bytecode;                       // bytecode for the function
-    #if MICROPY_PY_SYS_SETTRACE
+    #if MICROPY_PY_SYS_SETTRACE || MICROPY_PY_FUNCTION_ATTRS
     const struct _mp_raw_code_t *rc;
     #endif
     // the following extra_args array is allocated space to take (in order):

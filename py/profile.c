@@ -29,6 +29,14 @@
 #include "py/gc.h"
 #include "py/objfun.h"
 
+#if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_PY_FUNCTION_ATTRS
+
+#if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+#define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
+#else
+#define QSTR_MAP(context, idx) ((idx)? idx: context->constants.source_file)
+#endif
+
 #if MICROPY_PY_SYS_SETTRACE
 
 #if !MICROPY_PERSISTENT_CODE_SAVE
@@ -38,7 +46,8 @@
 #endif
 
 #define prof_trace_cb MP_STATE_THREAD(prof_trace_callback)
-#define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
+
+#endif  // MICROPY_PY_SYS_SETTRACE
 
 STATIC uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
@@ -101,7 +110,10 @@ STATIC mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_
     return consts;
 }
 
+#if MICROPY_PY_SYS_SETTRACE
 STATIC mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
+    // Returns a string encoding the mapping from bytecode offsets to line numbers.
+
     // const mp_bytecode_prelude_t *prelude = &rc->prelude;
     uint start = 0;
     uint stop = rc->fun_data_len - start;
@@ -138,6 +150,7 @@ STATIC mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     m_del(byte, buffer, buffer_size);
     return o;
 }
+#endif // MICROPY_PY_SYS_SETTRACE
 
 STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
@@ -148,12 +161,14 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     const mp_raw_code_t *rc = o->rc;
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     switch (attr) {
+        #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
         case MP_QSTR_co_code:
             dest[0] = mp_obj_new_bytes(
                 (void *)prelude->opcodes,
                 rc->fun_data_len - (prelude->opcodes - (const byte *)rc->fun_data)
                 );
             break;
+        #endif
         case MP_QSTR_co_consts:
             dest[0] = MP_OBJ_FROM_PTR(code_consts(o->context, rc));
             break;
@@ -199,12 +214,14 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             }
             break;
         }
+        #if MICROPY_PY_SYS_SETTRACE
         case MP_QSTR_co_lnotab:
             if (!o->lnotab) {
                 o->lnotab = raw_code_lnotab(rc);
             }
             dest[0] = o->lnotab;
             break;
+        #endif
     }
 }
 
@@ -228,6 +245,8 @@ mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t
     o->lnotab = MP_OBJ_NULL;
     return MP_OBJ_FROM_PTR(o);
 }
+
+#if MICROPY_PY_SYS_SETTRACE
 
 /******************************************************************************/
 // frame object
@@ -1005,3 +1024,5 @@ void mp_prof_print_instr(const byte *ip, mp_code_state_t *code_state) {
 #endif // MICROPY_PROF_INSTR_DEBUG_PRINT_ENABLE
 
 #endif // MICROPY_PY_SYS_SETTRACE
+
+#endif // MICROPY_PERSISTENT_CODE_SAVE || MICROPY_PY_FUNCTION_ATTRS

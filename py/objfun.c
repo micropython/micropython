@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "py/bc.h"
 #include "py/stackctrl.h"
+#include "py/profile.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -343,6 +344,13 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (attr == MP_QSTR___globals__) {
         mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
         dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
+    }
+    if (attr == MP_QSTR___code__) {
+        mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+        mp_obj_code_t *code = MP_OBJ_TO_PTR(mp_obj_new_code(self->context, self->rc));
+        if (code != NULL) {
+            dest[0] = MP_OBJ_FROM_PTR(code);
+        }
     }
 }
 #endif

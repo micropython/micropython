@@ -61,16 +61,14 @@ typedef struct _mp_raw_code_t {
     size_t fun_data_len; // so mp_raw_code_save and mp_bytecode_print work
     #endif
     struct _mp_raw_code_t **children;
-    #if MICROPY_PERSISTENT_CODE_SAVE
+    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_PY_FUNCTION_ATTRS
     size_t n_children;
-    #if MICROPY_PY_SYS_SETTRACE
     mp_bytecode_prelude_t prelude;
     // line_of_definition is a Python source line where the raw_code was
     // created e.g. MP_BC_MAKE_FUNCTION. This is different from lineno info
     // stored in prelude, which provides line number for first statement of
     // a function. Required to properly implement "call" trace event.
     mp_uint_t line_of_definition;
-    #endif
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
     #endif

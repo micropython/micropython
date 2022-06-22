@@ -217,7 +217,7 @@ STATIC void emit_write_bytecode_byte_obj(emit_t *emit, int stack_adj, byte b, mp
 STATIC void emit_write_bytecode_byte_child(emit_t *emit, int stack_adj, byte b, mp_raw_code_t *rc) {
     emit_write_bytecode_byte_const(emit, stack_adj, b,
         mp_emit_common_alloc_const_child(emit->emit_common, rc));
-    #if MICROPY_PY_SYS_SETTRACE
+    #if MICROPY_PY_SYS_SETTRACE || MICROPY_PY_FUNCTION_ATTRS
     rc->line_of_definition = emit->last_source_line;
     #endif
 }
