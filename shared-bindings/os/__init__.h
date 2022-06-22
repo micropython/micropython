@@ -37,6 +37,7 @@ extern const mp_rom_obj_tuple_t common_hal_os_uname_info_obj;
 mp_obj_t common_hal_os_uname(void);
 void common_hal_os_chdir(const char *path);
 mp_obj_t common_hal_os_getcwd(void);
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
 mp_obj_t common_hal_os_listdir(const char *path);
 void common_hal_os_mkdir(const char *path);
 void common_hal_os_remove(const char *path);

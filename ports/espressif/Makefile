@@ -165,8 +165,6 @@ else
 		# RISC-V is larger than xtensa so do -Os for it
 	  OPTIMIZATION_FLAGS ?= -Os
 	endif
-  # TODO: Test with -flto
-  ### CFLAGS += -flto
 endif
 
 # option to override compiler optimization level, set in boards/$(BOARD)/mpconfigboard.mk

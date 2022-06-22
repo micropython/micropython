@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/analogio/AnalogIn.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 typedef struct {
     const char *devpath;
@@ -52,7 +53,7 @@ STATIC analogin_dev_t analogin_dev[] = {
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const mcu_pin_obj_t *pin) {
     if (!pin->analog) {
-        mp_raise_ValueError(translate("AnalogIn not supported on given pin"));
+        raise_ValueError_invalid_pin();
     }
 
     self->number = -1;
@@ -65,13 +66,13 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self, const
     }
 
     if (self->number < 0) {
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
 
     if (analogin_dev[self->number].fd < 0) {
         analogin_dev[self->number].fd = open(analogin_dev[self->number].devpath, O_RDONLY);
         if (analogin_dev[self->number].fd < 0) {
-            mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+            raise_ValueError_invalid_pin();
         }
     }
 

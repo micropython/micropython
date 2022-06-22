@@ -34,7 +34,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/ps2io/Ps2.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Ps2:
 //|     """Communicate with a PS/2 keyboard or mouse
@@ -68,21 +68,21 @@
 //|         ...
 //|
 STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_datapin, ARG_clkpin };
+    enum { ARG_data_pin, ARG_clock_pin };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_datapin, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_clkpin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_data_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_clock_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const mcu_pin_obj_t *clkpin = validate_obj_is_free_pin(args[ARG_clkpin].u_obj);
-    const mcu_pin_obj_t *datapin = validate_obj_is_free_pin(args[ARG_datapin].u_obj);
+    const mcu_pin_obj_t *clock_pin = validate_obj_is_free_pin(args[ARG_clock_pin].u_obj);
+    const mcu_pin_obj_t *data_pin = validate_obj_is_free_pin(args[ARG_data_pin].u_obj);
 
     ps2io_ps2_obj_t *self = m_new_obj(ps2io_ps2_obj_t);
     self->base.type = &ps2io_ps2_type;
 
-    common_hal_ps2io_ps2_construct(self, datapin, clkpin);
+    common_hal_ps2io_ps2_construct(self, data_pin, clock_pin);
 
     return MP_OBJ_FROM_PTR(self);
 }

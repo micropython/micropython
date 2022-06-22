@@ -15,7 +15,7 @@ SRC_SUPERVISOR = \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/traceback.c \
-	supervisor/shared/translate.c \
+	supervisor/shared/translate/translate.c \
   supervisor/shared/workflow.c
 
 ifeq ($(DISABLE_FILESYSTEM),1)
@@ -146,6 +146,10 @@ ifeq ($(CIRCUITPY_USB),1)
   endif
 endif
 
+ifeq ($(CIRCUITPY_WEB_WORKFLOW),1)
+  SRC_SUPERVISOR += supervisor/shared/web_workflow/web_workflow.c
+endif
+
 SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_TINYUSB)): CFLAGS += -Wno-missing-prototypes
 
@@ -156,7 +160,7 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
     supervisor/shared/display.c
 
   ifeq ($(CIRCUITPY_TERMINALIO), 1)
-    SUPERVISOR_O += $(BUILD)/autogen_display_resources.o
+    SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
   endif
 endif
 
@@ -190,14 +194,14 @@ endif
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
-$(BUILD)/supervisor/shared/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 
-$(BUILD)/autogen_display_resources.c: ../../tools/gen_display_resources.py $(HEADER_BUILD)/qstrdefs.generated.h Makefile | $(HEADER_BUILD)
+$(BUILD)/autogen_display_resources-$(TRANSLATION).c: ../../tools/gen_display_resources.py $(TOP)/locale/$(TRANSLATION).po Makefile | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
 	$(Q)$(PYTHON) ../../tools/gen_display_resources.py \
 		--font $(CIRCUITPY_DISPLAY_FONT) \
-		--sample_file $(HEADER_BUILD)/qstrdefs.generated.h \
-		--output_c_file $(BUILD)/autogen_display_resources.c
+		--sample_file $(TOP)/locale/$(TRANSLATION).po \
+		--output_c_file $(BUILD)/autogen_display_resources-$(TRANSLATION).c

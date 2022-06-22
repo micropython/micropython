@@ -33,7 +33,7 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {

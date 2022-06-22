@@ -36,7 +36,7 @@
 #include "py/parsenum.h"
 #include "shared-bindings/struct/__init__.h"
 #include "shared-module/struct/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """Manipulation of c-style data
 //|

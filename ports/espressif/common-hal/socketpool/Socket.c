@@ -39,7 +39,7 @@
 
 STATIC socketpool_socket_obj_t *open_socket_handles[CONFIG_LWIP_MAX_SOCKETS];
 
-void socket_reset(void) {
+void socket_user_reset(void) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i]) {
             if (open_socket_handles[i]->num > 0) {

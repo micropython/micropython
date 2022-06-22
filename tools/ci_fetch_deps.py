@@ -68,14 +68,15 @@ submodules = []
 if target == "test":
     submodules = ["extmod/", "lib/", "tools/", "extmod/ulab", "lib/berkeley-db-1.xx"]
 elif target == "docs":
-    submodules = ["extmod/ulab/"]
+    # used in .readthedocs.yml to generate RTD
+    submodules = ["extmod/ulab/", "frozen/"]
 elif target == "mpy-cross-mac":
     submodules = ["tools/"]  # for huffman
 elif target == "windows":
     # This builds one board from a number of ports so fill out a bunch of submodules
     submodules = ["extmod/", "lib/", "tools/", "ports/", "data/nvm.toml/"]
 elif target == "website":
-    submodules = ["tools/adabot/"]
+    submodules = ["tools/adabot/", "frozen/"]
 else:
     p = list(pathlib.Path(".").glob(f"ports/*/boards/{target}/mpconfigboard.mk"))
     if not p:

@@ -574,6 +574,9 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
 }
 
 void common_hal_bleio_adapter_stop_advertising(bleio_adapter_obj_t *self) {
+    if (!common_hal_bleio_adapter_get_advertising(self)) {
+        return;
+    }
     int err_code = ble_gap_ext_adv_stop(0);
     self->user_advertising = false;
 

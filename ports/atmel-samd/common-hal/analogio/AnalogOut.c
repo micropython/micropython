@@ -33,7 +33,7 @@
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
@@ -70,7 +70,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         #endif
 
         default:
-            mp_raise_ValueError(translate("AnalogOut not supported on given pin"));
+            raise_ValueError_invalid_pin();
             return;
     }
 

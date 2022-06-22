@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/nvm/ByteArray.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class ByteArray:
 //|     r"""Presents a stretch of non-volatile memory as a bytearray.
@@ -153,9 +153,8 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
             } else {
                 // store
                 mp_int_t byte_value = mp_obj_get_int(value);
-                if (byte_value > 0xff || byte_value < 0) {
-                    mp_raise_ValueError(translate("Bytes must be between 0 and 255."));
-                }
+                mp_arg_validate_int_range(byte_value, 0, 255, MP_QSTR_bytes);
+
                 uint8_t short_value = byte_value;
                 if (!common_hal_nvm_bytearray_set_bytes(self, index, &short_value, 1)) {
                     mp_raise_RuntimeError(translate("Unable to write to nvm."));

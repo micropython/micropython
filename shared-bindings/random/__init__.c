@@ -31,7 +31,7 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/random/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """pseudo-random numbers and choices
 //|

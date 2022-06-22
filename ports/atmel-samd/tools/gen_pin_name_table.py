@@ -164,11 +164,10 @@ capabilities = {
         "AnalogOut": ["PA02"],
     },
     "audioio": {"AudioOut": ["PA02"]},
-    "bitbangio": {"I2C": ALL_BUT_USB, "OneWire": ALL_BUT_USB, "SPI": ALL_BUT_USB},
+    "bitbangio": {"I2C": ALL_BUT_USB, "SPI": ALL_BUT_USB},
     "busio": {
         "I2C - SDA": ["PA00", "PB08", "PA08", "PA12", "PA16", "PA22", "PB02"],  # SERCOM pad 0
         "I2C - SCL": ["PA01", "PB09", "PA09", "PA13", "PA17", "PA23", "PB03"],  # SERCOM pad 1
-        "OneWire": ALL_BUT_USB,
         "SPI - MISO": [
             "PA00",
             "PA01",
@@ -299,6 +298,7 @@ capabilities = {
         ],  # pad 0 or 2
     },
     "digitalio": {"DigitalInOut": ALL_BUT_USB},
+    "onewireio": {"OneWire": ALL_BUT_USB},
     "pulseio": {
         "PulseIn": ALL_BUT_USB,
         "PWMOut": [

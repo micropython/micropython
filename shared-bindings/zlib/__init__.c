@@ -39,7 +39,7 @@
 
 #include "shared-bindings/zlib/__init__.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| """zlib decompression functionality
 //|

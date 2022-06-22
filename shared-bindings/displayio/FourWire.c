@@ -37,7 +37,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class FourWire:
 //|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
@@ -89,14 +89,8 @@ STATIC mp_obj_t displayio_fourwire_make_new(const mp_obj_type_t *type, size_t n_
     displayio_fourwire_obj_t *self = &allocate_display_bus_or_raise()->fourwire_bus;
     self->base.type = &displayio_fourwire_type;
 
-    uint8_t polarity = args[ARG_polarity].u_int;
-    if (polarity != 0 && polarity != 1) {
-        mp_raise_ValueError(translate("Invalid polarity"));
-    }
-    uint8_t phase = args[ARG_phase].u_int;
-    if (phase != 0 && phase != 1) {
-        mp_raise_ValueError(translate("Invalid phase"));
-    }
+    uint8_t polarity = (uint8_t)mp_arg_validate_int_range(args[ARG_polarity].u_int, 0, 1, MP_QSTR_polarity);
+    uint8_t phase = (uint8_t)mp_arg_validate_int_range(args[ARG_phase].u_int, 0, 1, MP_QSTR_phase);
 
     common_hal_displayio_fourwire_construct(self,
         MP_OBJ_TO_PTR(spi), command, chip_select, reset, args[ARG_baudrate].u_int, polarity, phase);
@@ -133,10 +127,8 @@ STATIC mp_obj_t displayio_fourwire_obj_send(size_t n_args, const mp_obj_t *pos_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t command_int = args[ARG_command].u_int;
-    if (command_int > 255 || command_int < 0) {
-        mp_raise_ValueError(translate("Command must be an int between 0 and 255"));
-    }
+    mp_int_t command_int = mp_arg_validate_int_range(args[ARG_command].u_int, 0, 255, MP_QSTR_command);
+
     displayio_fourwire_obj_t *self = pos_args[0];
     uint8_t command = command_int;
     mp_buffer_info_t bufinfo;

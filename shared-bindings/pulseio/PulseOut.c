@@ -34,7 +34,7 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class PulseOut:
 //|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The

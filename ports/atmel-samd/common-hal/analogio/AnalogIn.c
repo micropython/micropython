@@ -36,7 +36,8 @@
 
 #include "samd/adc.h"
 #include "shared-bindings/analogio/AnalogIn.h"
-#include "supervisor/shared/translate.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_adc_sync.h"
@@ -60,7 +61,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     }
     if (adc_channel == 0xff) {
         // No ADC function on that pin
-        mp_raise_ValueError(translate("Pin does not have ADC capabilities"));
+        raise_ValueError_invalid_pin();
     }
     claim_pin(pin);
 
@@ -122,8 +123,8 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     adc_sync_read_channel(&adc, self->channel, ((uint8_t *)&value), 2);
 
     adc_sync_deinit(&adc);
-    // Shift the value to be 16 bit.
-    return value << 4;
+    // Stretch 12-bit ADC reading to 16-bit range
+    return (value << 4) | (value >> 8);
 }
 
 float common_hal_analogio_analogin_get_reference_voltage(analogio_analogin_obj_t *self) {

@@ -36,7 +36,7 @@
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
 

@@ -64,7 +64,7 @@ typedef struct {
     volatile int pending_buffers;
     sm_buf_info current, once, loop;
     int background_stride_in_bytes;
-    bool dma_completed;
+    bool dma_completed, byteswap;
 } rp2pio_statemachine_obj_t;
 
 void reset_rp2pio_statemachine(void);

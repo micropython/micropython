@@ -246,10 +246,6 @@ void reset_port(void) {
 
     timers_reset();
 
-    #if CIRCUITPY_BLEIO
-    bleio_reset();
-    #endif
-
     #if CIRCUITPY_WATCHDOG
     watchdog_reset();
     #endif

@@ -31,7 +31,7 @@
 #include "py/objstr.h"
 #include "py/stream.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // This file defines generic Python stream read/write methods which
 // dispatch to the underlying stream interface of an object.

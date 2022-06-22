@@ -153,7 +153,7 @@ void common_hal_imagecapture_parallelimagecapture_singleshot_capture(imagecaptur
     pio_sm_exec(pio, sm, pio_encode_jmp(offset));
     pio_sm_set_enabled(pio, sm, true);
 
-    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4);
+    common_hal_rp2pio_statemachine_readinto(&self->state_machine, bufinfo.buf, bufinfo.len, 4, false);
 
     pio_sm_set_enabled(pio, sm, false);
 }

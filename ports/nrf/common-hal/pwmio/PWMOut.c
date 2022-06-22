@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 
@@ -297,7 +297,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
     uint16_t countertop;
     nrf_pwm_clk_t base_clock;
     if (frequency == 0 || !convert_frequency(frequency, &countertop, &base_clock)) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
     self->frequency = frequency;
 

@@ -20,7 +20,7 @@
 #include "extmod/vfs_fat.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if FF_MAX_SS == FF_MIN_SS
 #define SECSIZE(fs) (FF_MIN_SS)
@@ -29,6 +29,11 @@
 #endif
 
 #define mp_obj_fat_vfs_t fs_user_mount_t
+
+// Factoring this common call saves about 90 bytes.
+STATIC NORETURN void mp_raise_OSError_fresult(FRESULT res) {
+    mp_raise_OSError(fresult_to_errno_table[res]);
+}
 
 STATIC mp_import_stat_t fat_vfs_import_stat(void *vfs_in, const char *path) {
     fs_user_mount_t *vfs = vfs_in;
@@ -64,7 +69,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
         // don't error out if no filesystem, to let mkfs()/mount() create one if wanted
         vfs->blockdev.flags |= MP_BLOCKDEV_FLAG_NO_FILESYSTEM;
     } else if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     return MP_OBJ_FROM_PTR(vfs);
@@ -97,7 +102,7 @@ STATIC mp_obj_t fat_vfs_mkfs(mp_obj_t bdev_in) {
         res = f_mkfs(&vfs->fatfs, FM_FAT32, 0, working_buf, sizeof(working_buf));
     }
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     return mp_const_none;
@@ -172,7 +177,7 @@ STATIC mp_obj_t fat_vfs_ilistdir_func(size_t n_args, const mp_obj_t *args) {
     iter->is_str = is_str_type;
     FRESULT res = f_opendir(&self->fatfs, &iter->dir, path);
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     return MP_OBJ_FROM_PTR(iter);
@@ -188,7 +193,7 @@ STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_in
     FRESULT res = f_stat(&self->fatfs, path, &fno);
 
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     // check if path is a file or directory
@@ -196,7 +201,7 @@ STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_in
         res = f_unlink(&self->fatfs, path);
 
         if (res != FR_OK) {
-            mp_raise_OSError(fresult_to_errno_table[res]);
+            mp_raise_OSError_fresult(res);
         }
         return mp_const_none;
     } else {
@@ -226,7 +231,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     FILINFO fno;
     FRESULT res = f_stat(&self->fatfs, old_path, &fno);
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
     if ((fno.fattrib & AM_DIR) != 0 &&
         strlen(new_path) > strlen(old_path) &&
@@ -245,7 +250,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
 }
@@ -259,7 +264,7 @@ STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     if (res == FR_OK) {
         return mp_const_none;
     } else {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(fat_vfs_mkdir_obj, fat_vfs_mkdir);
@@ -273,7 +278,7 @@ STATIC mp_obj_t fat_vfs_chdir(mp_obj_t vfs_in, mp_obj_t path_in) {
     FRESULT res = f_chdir(&self->fatfs, path);
 
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     return mp_const_none;
@@ -286,7 +291,7 @@ STATIC mp_obj_t fat_vfs_getcwd(mp_obj_t vfs_in) {
     char buf[MICROPY_ALLOC_PATH_MAX + 1];
     FRESULT res = f_getcwd(&self->fatfs, buf, sizeof(buf));
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
     return mp_obj_new_str(buf, strlen(buf));
 }
@@ -307,7 +312,7 @@ STATIC mp_obj_t fat_vfs_stat(mp_obj_t vfs_in, mp_obj_t path_in) {
     } else {
         FRESULT res = f_stat(&self->fatfs, path, &fno);
         if (res != FR_OK) {
-            mp_raise_OSError(fresult_to_errno_table[res]);
+            mp_raise_OSError_fresult(res);
         }
     }
 
@@ -357,7 +362,7 @@ STATIC mp_obj_t fat_vfs_statvfs(mp_obj_t vfs_in, mp_obj_t path_in) {
     FATFS *fatfs = &self->fatfs;
     FRESULT res = f_getfree(fatfs, &nclst);
     if (FR_OK != res) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(10, NULL));
@@ -395,7 +400,7 @@ STATIC mp_obj_t vfs_fat_mount(mp_obj_t self_in, mp_obj_t readonly, mp_obj_t mkfs
         res = f_mkfs(&self->fatfs, FM_FAT | FM_SFD, 0, working_buf, sizeof(working_buf));
     }
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
     self->blockdev.flags &= ~MP_BLOCKDEV_FLAG_NO_FILESYSTEM;
 
@@ -416,7 +421,7 @@ STATIC mp_obj_t vfs_fat_getlabel(mp_obj_t self_in) {
     char working_buf[12];
     FRESULT res = f_getlabel(&self->fatfs, working_buf, NULL);
     if (res != FR_OK) {
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
     return mp_obj_new_str(working_buf, strlen(working_buf));
 }
@@ -431,7 +436,7 @@ STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
         if (res == FR_WRITE_PROTECTED) {
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Read-only filesystem"));
         }
-        mp_raise_OSError(fresult_to_errno_table[res]);
+        mp_raise_OSError_fresult(res);
     }
     return mp_const_none;
 }

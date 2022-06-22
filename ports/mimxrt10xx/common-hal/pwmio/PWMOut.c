@@ -35,7 +35,7 @@
 
 #include "fsl_pwm.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "periph.h"
 
 // Debug print support set to zero to enable debug printing
@@ -301,7 +301,7 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self,
 
     int pulse_count = calculate_pulse_count(frequency, &self->prescaler);
     if (pulse_count == 0) {
-        mp_raise_ValueError(translate("Invalid PWM frequency"));
+        mp_arg_error_invalid(MP_QSTR_frequency);
     }
 
     self->pulse_count = pulse_count;

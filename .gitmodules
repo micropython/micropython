@@ -286,3 +286,9 @@
 [submodule "frozen/Adafruit_CircuitPython_FakeRequests"]
 	path = frozen/Adafruit_CircuitPython_FakeRequests
 	url = https://github.com/adafruit/Adafruit_CircuitPython_FakeRequests.git
+[submodule "frozen/pew-pewpew-lcd"]
+	path = frozen/pew-pewpew-lcd
+	url = https://github.com/pypewpew/pew-pewpew-lcd.git
+[submodule "frozen/mixgo_cp_lib"]
+	path = frozen/mixgo_cp_lib
+	url = https://github.com/dahanzimin/circuitpython_lib.git

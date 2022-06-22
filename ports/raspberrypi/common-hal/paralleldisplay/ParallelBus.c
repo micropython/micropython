@@ -161,7 +161,7 @@ void common_hal_paralleldisplay_parallelbus_send(mp_obj_t obj, display_byte_type
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
 
     common_hal_digitalio_digitalinout_set_value(&self->command, byte_type == DISPLAY_DATA);
-    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1);
+    common_hal_rp2pio_statemachine_write(&self->state_machine, data, data_length, 1, false);
 }
 
 void common_hal_paralleldisplay_parallelbus_end_transaction(mp_obj_t obj) {
