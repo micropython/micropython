@@ -18,12 +18,6 @@ SRC_SUPERVISOR = \
 	supervisor/shared/translate/translate.c \
   supervisor/shared/workflow.c
 
-ifeq ($(DISABLE_FILESYSTEM),1)
-SRC_SUPERVISOR += supervisor/stub/filesystem.c
-else
-SRC_SUPERVISOR += supervisor/shared/filesystem.c
-endif
-
 NO_USB ?= $(wildcard supervisor/usb.c)
 
 INTERNAL_FLASH_FILESYSTEM ?= 0
@@ -34,6 +28,15 @@ CFLAGS += -DQSPI_FLASH_FILESYSTEM=$(QSPI_FLASH_FILESYSTEM)
 
 SPI_FLASH_FILESYSTEM ?= 0
 CFLAGS += -DSPI_FLASH_FILESYSTEM=$(SPI_FLASH_FILESYSTEM)
+
+DISABLE_FILESYSTEM ?= 0
+CFLAGS += -DDISABLE_FILESYSTEM=$(DISABLE_FILESYSTEM)
+
+ifeq ($(DISABLE_FILESYSTEM),1)
+SRC_SUPERVISOR += supervisor/stub/filesystem.c
+else
+SRC_SUPERVISOR += supervisor/shared/filesystem.c
+endif
 
 ifeq ($(CIRCUITPY_BLEIO),1)
 	SRC_SUPERVISOR += supervisor/shared/bluetooth/bluetooth.c
