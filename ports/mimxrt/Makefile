@@ -27,7 +27,7 @@ include ../../py/mkenv.mk
 
 # Include micropython configuration board makefile
 ifeq ($(wildcard $(BOARD_DIR)/.),)
-$(error Invalid BOARD specified: $(BOARD_DIR))
+    $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 include $(BOARD_DIR)/mpconfigboard.mk
 
@@ -70,7 +70,7 @@ INC += -I.
 INC += -Ihal
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP), 1)
+ifeq ($(MICROPY_PY_LWIP),1)
 INC += -Ilwip_inc
 INC += -Ihal/phy
 endif
@@ -95,7 +95,7 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/tusb.c
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP), 1)
+ifeq ($(MICROPY_PY_LWIP),1)
 SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
 SRC_ETH_C += \
 	$(MCU_DIR)/drivers/fsl_enet.c \
@@ -132,7 +132,7 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/system_$(MCU_SERIES).c \
 	$(MCU_DIR)/xip/fsl_flexspi_nor_boot.c \
 
-ifeq ($(MICROPY_HW_SDRAM_AVAIL), 1)
+ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
 endif
 
@@ -211,7 +211,7 @@ ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash 
     SRC_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
     #
     # Add custom (board specific) or default configuration  
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
         SRC_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
     else
         SRC_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
@@ -261,7 +261,7 @@ SRC_S += shared/runtime/gchelper_m3.s \
 # =============================================================================
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP), 1)
+ifeq ($(MICROPY_PY_LWIP),1)
 SRC_QSTR += \
 	extmod/modlwip.c \
 	extmod/modnetwork.c \
@@ -351,7 +351,7 @@ ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash 
     CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).h\"
     #
     # Add custom (board specific) or default configuration  
-    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
         CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
     else
         CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
@@ -381,7 +381,7 @@ endif
 
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
-ifeq ($(MICROPY_PY_LWIP), 1)
+ifeq ($(MICROPY_PY_LWIP),1)
 CFLAGS += \
 	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1 \
 	-DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
