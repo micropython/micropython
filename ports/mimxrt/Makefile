@@ -203,28 +203,21 @@ SRC_C += \
 	tusb_port.c \
 	$(SRC_TINYUSB_C) \
 	$(SRC_HAL_IMX_C) \
-	$(SRC_ETH_C) \
+	$(SRC_ETH_C)
 
-ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
-SRC_C += hal/flexspi_nor_flash.c
-
-ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
-SRC_C += $(BOARD_DIR)/qspi_nor_flash_config.c
+# Add sources for respective board flash type
+ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
+    # Add hal/flexspi_nor_flash.c or hal/flashspi_hyper_flash.c respectively
+    SRC_C += hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).c
+    #
+    # Add custom (board specific) or default configuration  
+    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+        SRC_C += $(BOARD_DIR)/$(MICROPY_HW_FLASH_TYPE)_config.c
+    else
+        SRC_C += hal/$(MICROPY_HW_FLASH_TYPE)_config.c
+    endif    
 else
-SRC_C += hal/qspi_nor_flash_config.c
-endif  # qspi_nor
-#
-else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
-SRC_C += hal/flexspi_hyper_flash.c
-
-ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
-SRC_C += $(BOARD_DIR)/qspi_hyper_flash_config.c
-else
-SRC_C += hal/qspi_hyper_flash_config.c
-endif  # hyperflash
-#
-else
-$(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+    $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
 # Math library source files
@@ -414,26 +407,19 @@ CFLAGS += \
 	-Wfloat-conversion \
 	-Wno-error=unused-parameter
 
-ifeq ($(MICROPY_HW_FLASH_TYPE), qspi_nor)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_nor_flash.h\"
-
-ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
-CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+# Configure respective board flash type
+ifeq ($(MICROPY_HW_FLASH_TYPE),$(filter $(MICROPY_HW_FLASH_TYPE),qspi_nor_flash qspi_hyper_flash))
+    # Add hal/flexspi_nor_flash.h or hal/flexspi_hyper_flash.h respectively
+    CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_$(subst qspi_,,$(MICROPY_HW_FLASH_TYPE)).h\"
+    #
+    # Add custom (board specific) or default configuration  
+    ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
+        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
+    else
+        CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
+    endif    
 else
-CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
-endif  # qspi_nor
-#
-else ifeq ($(MICROPY_HW_FLASH_TYPE), hyperflash)
-CFLAGS += -DBOARD_FLASH_OPS_HEADER_H=\"hal/flexspi_hyper_flash.h\"
-
-ifeq ($(MICROPY_HW_BOARD_FLASH_FILES), 1)
-CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"$(BOARD)_flexspi_flash_config.h\"
-else
-CFLAGS += -DBOARD_FLASH_CONFIG_HEADER_H=\"hal/flexspi_flash_config.h\"
-endif  # hyperflash
-#
-else
-$(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
+    $(error Error: Unknown board flash type $(MICROPY_HW_FLASH_TYPE))
 endif
 
 # Configure floating point support
