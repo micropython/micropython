@@ -138,8 +138,8 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("The Pin object(%d) doesn't have EXTINT feature"), pin_idx);
         }
     }
-    if (pull != GPIO_NOPULL &&
-        pull != GPIO_PULLUP) {
+    if ((pull != MP_HAL_PIN_PULL_NONE) &&
+        (pull != MP_HAL_PIN_PULL_UP)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid ExtInt Pull: %d"), pull);
     }
     mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[v_line];
@@ -153,7 +153,6 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
     extint_disable(v_line);
 
     *cb = callback_obj;
-    // ToDo: mode should be handled
     pyb_extint_mode[v_line] = mode;
     pyb_extint_callback_arg[v_line] = MP_OBJ_NEW_SMALL_INT(v_line);
     if (*cb != mp_const_none) {
@@ -200,7 +199,6 @@ void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_
     extint_disable(line);
 
     *cb = callback_obj;
-    // ToDo: mode should be handled
     pyb_extint_mode[line] = mode;
 
     if (*cb != mp_const_none) {
@@ -255,16 +253,16 @@ void extint_trigger_mode(uint line, uint32_t mode) {
     // cond: 0: falling, 1: rising, 2: both edge, 3 low level
     // Enable or disable the rising detector
     uint32_t cond = 0;
-    if ((mode == GPIO_MODE_IT_RISING) || (mode == GPIO_MODE_EVT_RISING)) {
-        cond = 1;
-    } else if ((mode == GPIO_MODE_IT_FALLING) || (mode == GPIO_MODE_EVT_FALLING)) {
-        cond = 0;
-    } else if ((mode == GPIO_MODE_IT_RISING_FALLING) || (mode == GPIO_MODE_EVT_RISING_FALLING)) {
-        cond = 2;
-    } else if (mode == GPIO_IRQ_LOWLEVEL) {
+    if (mode & MP_HAL_PIN_TRIGGER_LOWLEVEL) {
         cond = 3;
+    } else if (mode & MP_HAL_PIN_TRIGGER_FALLING) {
+        if (mode & MP_HAL_PIN_TRIGGER_RISING) {
+            cond = 2;
+        } else {
+            cond = 0;
+        }
     } else {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("The device doesn't have (%d) feature"), (uint32_t)mode);
+        cond = 1;
     }
     ra_icu_trigger_irq_no((uint8_t)line, cond);
     enable_irq(irq_state);
@@ -372,14 +370,6 @@ STATIC const mp_rom_map_elem_t extint_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&extint_obj_disable_obj) },
     { MP_ROM_QSTR(MP_QSTR_swint),   MP_ROM_PTR(&extint_obj_swint_obj) },
     { MP_ROM_QSTR(MP_QSTR_regs),    MP_ROM_PTR(&extint_regs_obj) },
-
-    // class constants
-    /// \constant IRQ_RISING - interrupt on a rising edge
-    /// \constant IRQ_FALLING - interrupt on a falling edge
-    /// \constant IRQ_RISING_FALLING - interrupt on a rising or falling edge
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),         MP_ROM_INT(GPIO_MODE_IT_RISING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),        MP_ROM_INT(GPIO_MODE_IT_FALLING) },
-    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING_FALLING), MP_ROM_INT(GPIO_MODE_IT_RISING_FALLING) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(extint_locals_dict, extint_locals_dict_table);
