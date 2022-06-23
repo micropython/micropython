@@ -1,12 +1,17 @@
 # Encoder.py
 
-from machine import PCNT, Pin
+# Usage:
+# from machine import Pin, Encoder
+#
+# enc = Encoder(0, Pin(18), Pin(19))
+# print("Encoder:", enc.value())
+
+from machine import PCNT
 
 class Encoder(PCNT):
-    IRQ_MATCH1 = PCNT.EVT_L_LIM
-    IRQ_MATCH2 = PCNT.EVT_H_LIM
+    LIMIT =  100
 
-    def __init__(self, unit_id, phase_a, phase_b, match1, match2):
+    def __init__(self, unit_id, phase_a, phase_b):
         super().__init__(unit_id)
         self.unit_id = unit_id
 
@@ -14,20 +19,20 @@ class Encoder(PCNT):
         self.config(pin = phase_a, ctrl = phase_b, channel = 0, 
             pos_mode = PCNT.COUNT_DEC, neg_mode = PCNT.COUNT_INC, 
             lctrl_mode = PCNT.MODE_REVERSE, hctrl_mode = PCNT.MODE_KEEP,
-            counter_l_lim = match1, counter_h_lim = match2)
+            counter_l_lim = -self.LIMIT, counter_h_lim = self.LIMIT)
 
         # react on pin_b edges
         self.config(pin = phase_b, ctrl = phase_a, channel = 1, 
             pos_mode = PCNT.COUNT_INC, neg_mode = PCNT.COUNT_DEC, 
             lctrl_mode = PCNT.MODE_REVERSE, hctrl_mode = PCNT.MODE_KEEP,
-            counter_l_lim = match1, counter_h_lim = match2)
+            counter_l_lim = -self.LIMIT, counter_h_lim = self.LIMIT)
 
-        self.counter = 0
-        self.match_handler = { }
+        self.event_enable(PCNT.EVT_H_LIM);
+        self.event_enable(PCNT.EVT_L_LIM);
         super().irq(self.handler)
 
-    def id(self):
-        return self.unit_id
+        self.counter = 0
+        self.counter_clear()
 
     def pause(self):
         self.counter_pause()
@@ -44,8 +49,13 @@ class Encoder(PCNT):
 
     def value(self, *argv):
         # set/get the counter value
+
+        # read value. Make sure no events are pending
+        count = None
+        while count == None:
+            count = self.counter_value(True)
+
         counter = self.counter
-        count = self.counter_value()
 
         if len(argv) > 0:
             if argv[0]:
@@ -57,14 +67,13 @@ class Encoder(PCNT):
         return counter + count
 
     def handler(self, obj):
-        status = obj.event_status()
-        for e in [ PCNT.EVT_L_LIM, PCNT.EVT_H_LIM ]:
-            if status & e and e in self.match_handler:
-                self.match_handler[e](self)
+        if obj.event_status() & PCNT.EVT_L_LIM:
+            self.counter -= self.LIMIT
 
-    def irq(self, handler, event):
-        self.event_enable(event)
-        self.match_handler[event] = handler
+        if obj.event_status() & PCNT.EVT_H_LIM:
+            self.counter += self.LIMIT
+
+        obj.event_status(True)   # ack event
 
     def deinit(self):
         pass    

@@ -1,6 +1,6 @@
 # Counter.py
 
-from machine import PCNT, Pin
+from machine import PCNT
 
 class Counter(PCNT):
     IRQ_MATCH1 = PCNT.EVT_L_LIM
@@ -46,15 +46,15 @@ class Counter(PCNT):
             return 25*self.filter_value()//2
 
     def value(self, *argv):
-        # check for pending interrupts. Don't do this when
-        # called from within the handler
-        #if not self.in_handler and self.event_status():
-        #    self.handler(self)
-
         # set/get the counter value
-        counter = self.counter
-        count = self.counter_value()
 
+        # read value. Make sure no events are pending
+        count = None
+        while count == None:
+            count = self.counter_value(True)
+
+        counter = self.counter
+        
         if len(argv) > 0:
             if argv[0]:
                 self.counter = argv[0] - count
@@ -79,6 +79,8 @@ class Counter(PCNT):
                 self.match_handler[e](self)
                 self.in_handler = False
 
+        obj.event_status(True)   # ack event
+        
     def irq(self, handler, event):
         if event:
             self.event_enable(event)

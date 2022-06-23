@@ -36,6 +36,7 @@ typedef struct _mpcnt_obj_t {
   mp_obj_base_t base;
   mp_uint_t unit_id;
   mp_obj_t irq_handler;
+  mp_int_t event_pending;
 } mpcnt_obj_t;
 
 STATIC mp_obj_t mpcnt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
@@ -51,6 +52,7 @@ STATIC mp_obj_t mpcnt_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     self->base.type = &machine_pcnt_type;
     self->unit_id = unit_id;
     self->irq_handler = MP_OBJ_NULL;
+    self->event_pending = false;
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -77,12 +79,18 @@ STATIC mp_obj_t mpcnt_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_deinit_obj, mpcnt_deinit);
 
-STATIC mp_obj_t mpcnt_counter_value(mp_obj_t self_in) {
-    int16_t count; 
-    check_esp_err(pcnt_get_counter_value(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id, &count));
+STATIC mp_obj_t mpcnt_counter_value(size_t n_args, const mp_obj_t *args) {
+    mpcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    int16_t count;
+    
+    // if True was given as arg and event is pending then return None
+    if ( (n_args == 2) && mp_obj_get_int(args[1]) && self->event_pending )
+      return mp_const_none;
+    
+    check_esp_err(pcnt_get_counter_value(self->unit_id, &count));
     return mp_obj_new_int(count);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_counter_value_obj, mpcnt_counter_value);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_counter_value_obj, 1, 2, mpcnt_counter_value);
 
 STATIC mp_obj_t mpcnt_counter_clear(mp_obj_t self_in) {
     check_esp_err(pcnt_counter_clear(((mpcnt_obj_t *)MP_OBJ_TO_PTR(self_in))->unit_id));
@@ -129,6 +137,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_filter_value_obj, 1, 2, mpcnt_f
 
 STATIC void mpcnt_isr_handler(void *arg) {
     mpcnt_obj_t *self = arg;
+    self->event_pending = true;
     mp_sched_schedule(self->irq_handler, MP_OBJ_FROM_PTR(self));
     mp_hal_wake_main_task_from_isr();
 }
@@ -161,10 +170,14 @@ STATIC mp_obj_t mpcnt_event_disable(mp_obj_t self_in, mp_obj_t value_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mpcnt_event_disable_obj, mpcnt_event_disable);
 
-STATIC mp_obj_t mpcnt_event_status(mp_obj_t self_in) {
-    mpcnt_obj_t *self = MP_OBJ_TO_PTR(self_in);    
+STATIC mp_obj_t mpcnt_event_status(size_t n_args, const mp_obj_t *args) {
+    mpcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t status;
 
+    // if True was given as arg, then internally ack a pending event
+    if ( (n_args == 2) && mp_obj_get_int(args[1]) )
+      self->event_pending = false;
+    
     // pcnt_get_event_status has been introduced in 4.3
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 3, 0)
     status = PCNT.status_unit[self->unit_id].val;
@@ -174,7 +187,7 @@ STATIC mp_obj_t mpcnt_event_status(mp_obj_t self_in) {
 #endif
     return mp_obj_new_int(status);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpcnt_event_status_obj, mpcnt_event_status);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mpcnt_event_status_obj, 1, 2, mpcnt_event_status);
 
 STATIC mp_obj_t mpcnt_event_value(size_t n_args, const mp_obj_t *args) {
     mpcnt_obj_t *self = MP_OBJ_TO_PTR(args[0]);
