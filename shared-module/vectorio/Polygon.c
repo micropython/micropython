@@ -14,7 +14,8 @@
 
 
 // Converts a list of points tuples to a flat list of ints for speedier internal use.
-// Also validates the points.
+// Also validates the points. If this fails due to invalid types or values, the
+// content of the points is undefined.
 static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple_list) {
     size_t len = 0;
     mp_obj_t *items;
@@ -26,12 +27,8 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
     }
 
     if (self->len < 2 * len) {
-        if (self->points_list != NULL) {
-            VECTORIO_POLYGON_DEBUG("free(%d), ", sizeof(self->points_list));
-            gc_free(self->points_list);
-        }
-        self->points_list = gc_alloc(2 * len * sizeof(uint16_t), false, false);
-        VECTORIO_POLYGON_DEBUG("alloc(%p, %d)", self->points_list, 2 * len * sizeof(uint16_t));
+        self->points_list = gc_realloc(self->points_list, 2 * len * sizeof(uint16_t), true);
+        VECTORIO_POLYGON_DEBUG("realloc(%d) -> %p", self->points_list, 2 * len * sizeof(uint16_t));
     }
     self->len = 2 * len;
 
@@ -42,17 +39,10 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
 
         mp_arg_validate_length(tuple_len, 2, MP_QSTR_point);
 
-        mp_int_t x;
-        mp_int_t y;
-        if (!mp_obj_get_int_maybe(tuple_items[ 0 ], &x)
-            || !mp_obj_get_int_maybe(tuple_items[ 1 ], &y)
-            || x < SHRT_MIN || x > SHRT_MAX || y < SHRT_MIN || y > SHRT_MAX
-            ) {
-            gc_free(self->points_list);
-            self->points_list = NULL;
-            mp_raise_ValueError_varg(translate("unsupported %q type"), MP_QSTR_point);
-            self->len = 0;
-        }
+        mp_int_t x = mp_arg_validate_type_int(tuple_items[0], MP_QSTR_x);
+        mp_arg_validate_int_range(x, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
+        mp_int_t y = mp_arg_validate_type_int(tuple_items[1], MP_QSTR_y);
+        mp_arg_validate_int_range(y, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
         self->points_list[2 * i    ] = (int16_t)x;
         self->points_list[2 * i + 1] = (int16_t)y;
     }

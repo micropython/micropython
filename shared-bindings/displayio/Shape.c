@@ -80,9 +80,9 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
 STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     displayio_shape_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t y = mp_arg_validate_type_int(args[1], MP_ARG_y);
-    mp_int_t start_x = mp_arg_validate_type_int(args[1], MP_ARG_start_x);
-    mp_int_t end_x = mp_arg_validate_type_int(args[1], MP_ARG_end_x);
+    mp_int_t y = mp_arg_validate_type_int(args[1], MP_QSTR_y);
+    mp_int_t start_x = mp_arg_validate_type_int(args[1], MP_QSTR_start_x);
+    mp_int_t end_x = mp_arg_validate_type_int(args[1], MP_QSTR_end_x);
     common_hal_displayio_shape_set_boundary(self, y, start_x, end_x);
 
     return mp_const_none;
