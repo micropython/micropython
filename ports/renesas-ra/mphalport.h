@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2018 Damien P. George
- * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2021-2022 Renesas Electronics Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,13 +69,21 @@ static inline mp_uint_t mp_hal_ticks_cpu(void) {
 #define MP_HAL_PIN_PULL_NONE            (GPIO_NOPULL)
 #define MP_HAL_PIN_PULL_UP              (GPIO_PULLUP)
 #define MP_HAL_PIN_PULL_DOWN            (GPIO_PULLDOWN)
+#define MP_HAL_PIN_TRIGGER_FALLING      (GPIO_IRQ_FALLING)
+#define MP_HAL_PIN_TRIGGER_RISING       (GPIO_IRQ_RISING)
+#define MP_HAL_PIN_TRIGGER_LOWLEVEL     (GPIO_IRQ_LOWLEVEL)
+#define MP_HAL_PIN_TRIGGER_HIGHLEVEL    (GPIO_IRQ_HIGHLEVEL)
+#define MP_HAL_PIN_DRIVE_0              (GPIO_LOW_POWER)
+#define MP_HAL_PIN_DRIVE_1              (GPIO_MID_POWER)
+#define MP_HAL_PIN_DRIVE_2              (GPIO_MID_FAST_POWER)
+#define MP_HAL_PIN_DRIVE_3              (GPIO_HIGH_POWER)
 
 #define mp_hal_pin_obj_t        const machine_pin_obj_t *
 #define mp_hal_get_pin_obj(o)   machine_pin_find(o)
 #define mp_hal_pin_name(p)      ((p)->name)
 #define mp_hal_pin_input(p)     ra_gpio_mode_input((p)->pin)
 #define mp_hal_pin_output(p)    ra_gpio_mode_output((p)->pin)
-#define mp_hal_pin_open_drain(p)    ra_gpio_config((p)->pin, GPIO_MODE_OUTPUT_OD, 0, 0, 0)
+#define mp_hal_pin_open_drain(p)    ra_gpio_config((p)->pin, MP_HAL_PIN_MODE_OPEN_DRAIN, MP_HAL_PIN_PULL_NONE, MP_HAL_PIN_DRIVE_0, 0)
 #define mp_hal_pin_high(p)      ra_gpio_write((p)->pin, 1)
 #define mp_hal_pin_low(p)       ra_gpio_write((p)->pin, 0)
 #define mp_hal_pin_toggle(p)    ra_gpio_toggle((p)->pin)
