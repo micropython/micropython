@@ -3688,10 +3688,6 @@ msgid "palette must be 32 bytes long"
 msgstr ""
 
 #: shared-bindings/displayio/Palette.c
-msgid "palette_index out of bounds"
-msgstr ""
-
-#: shared-bindings/displayio/Palette.c
 msgid "palette_index should be an int"
 msgstr ""
 

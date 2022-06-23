@@ -160,9 +160,7 @@ STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
-    if (palette_index < 0 || (unsigned)palette_index >= common_hal_displayio_palette_get_len(self)) {
-        mp_raise_IndexError(translate("palette_index out of bounds"));
-    }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     common_hal_displayio_palette_make_transparent(self, palette_index);
     return mp_const_none;
@@ -179,9 +177,7 @@ STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t pal
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
-    if (palette_index < 0 || (unsigned)palette_index >= common_hal_displayio_palette_get_len(self)) {
-        mp_raise_IndexError(translate("palette_index out of bounds"));
-    }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     common_hal_displayio_palette_make_opaque(self, palette_index);
     return mp_const_none;
@@ -199,9 +195,7 @@ STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t 
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
-    if (palette_index < 0 || (unsigned)palette_index >= common_hal_displayio_palette_get_len(self)) {
-        mp_raise_IndexError(translate("palette_index out of bounds"));
-    }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
 
     return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));
 }
