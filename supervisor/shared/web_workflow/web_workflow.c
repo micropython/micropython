@@ -250,29 +250,10 @@ void supervisor_start_web_workflow(void) {
     active.num = -1;
     active.connected = false;
 
-    // Accept a connection and start parsing:
-    // * HTTP method
-    // * HTTP path
-    // * Headers we care about:
-    //   * Authentication
-    //     * Must match CIRCUITPY_WEB_AUTH
-    //   * Host
-    //     * IP - ok
-    //     * cpy-mac.local - ok
-    //     * circuitpython.local - redirect
-    //   * Content-Length
-    //
-    // PUT /fs/<filename>
-    // GET /fs/<filename>
-    //   - File contents
-    //   - JSON directory representation
-    // GET /cp/devices.json
-    //   - JSON list of MDNS results
-    // GET /cp/version.json
-    //   - JSON version info
+    // TODO:
     // GET /cp/serial.txt
     //   - Most recent 1k of serial output.
-    // GET /
+    // GET /edit/
     //   - Super basic editor
     // GET /ws/circuitpython
     // GET /ws/user
@@ -313,17 +294,32 @@ static bool _endswith(const char *str, const char *suffix) {
     return strcmp(str + (strlen(str) - strlen(suffix)), suffix) == 0;
 }
 
-static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
-    bool origin_ok = false;
+const char *ok_hosts[] = {"code.circuitpython.org"};
+
+static bool _origin_ok(const char *origin) {
     #if CIRCUITPY_DEBUG
-    origin_ok = true;
+    return true;
     #endif
-    _send_str(socket, "Access-Control-Allow-Credentials: true\r\nVary: Origin\r\n");
-    if (origin_ok) {
-        _send_str(socket, "Access-Control-Allow-Origin: ");
-        _send_str(socket, request->origin);
-        _send_str(socket, "\r\n");
+    const char *localhost = "127.0.0.1:";
+    const char *http = "http://";
+    // This is a prefix check.
+    if (memcmp(origin + strlen(http), localhost, strlen(localhost)) == 0) {
+        return true;
     }
+    for (size_t i = 0; i < MP_ARRAY_SIZE(ok_hosts); i++) {
+        // This checks exactly.
+        if (strcmp(origin + strlen(http), ok_hosts[i]) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
+    _send_str(socket, "Access-Control-Allow-Credentials: true\r\nVary: Origin\r\n");
+    _send_str(socket, "Access-Control-Allow-Origin: ");
+    _send_str(socket, request->origin);
+    _send_str(socket, "\r\n");
 }
 
 static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
@@ -361,6 +357,14 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
 
 static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 404 Not Found\r\n"
+        "Content-Length: 0\r\n";
+    _send_str(socket, response);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+}
+
+static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request *request) {
+    const char *response = "HTTP/1.1 405 Method Not Allowed\r\n"
         "Content-Length: 0\r\n";
     _send_str(socket, response);
     _cors_header(socket, request);
@@ -486,22 +490,6 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
     _send_chunk(socket, "");
 }
 
-static void _reply_directory_html(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
-        "Content-Type: text/html\r\n";
-    socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
-    _cors_header(socket, request);
-    _send_str(socket, "\r\n");
-    _send_chunk(socket, "<!DOCTYPE html><html><head><title></title><meta charset=\"UTF-8\"></head>");
-    _send_chunk(socket, "<script src=\"http://127.0.0.1:8000/circuitpython.js\" defer=true></script>");
-    _send_chunk(socket, "<body><h1></h1><template id=\"row\"><tr><td></td><td></td><td><a></a></td><td></td><td><button class=\"delete\">🗑️</button></td></tr></template><table><thead><tr><th>Type</th><th>Size</th><th>Path</th><th>Modified</th><th></th></tr></thead><tbody>");
-    _send_chunk(socket, "</tbody></table><hr><input type=\"file\" id=\"files\" multiple><button type=\"submit\" id=\"upload\">Upload</button>");
-
-    _send_chunk(socket, "<hr>+🗀&nbsp;<input type=\"text\" id=\"name\"><button type=\"submit\" id=\"mkdir\">Create Directory</button>");
-    _send_chunk(socket, "</body></html>");
-    _send_chunk(socket, "");
-}
-
 static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request, const char *filename, FIL *active_file) {
     uint32_t total_length = f_size(active_file);
     char encoded_len[10];
@@ -577,7 +565,14 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
         int port = common_hal_mdns_remoteservice_get_port(&found_devices[i]);
         snprintf(port_encoded, sizeof(port_encoded), "%d", port);
         _send_chunk(socket, port_encoded);
-        _send_chunk(socket, "}");
+        _send_chunk(socket, ", \"ip\": \"");
+
+        char ip_encoded[4 * 4];
+        uint32_t ipv4_address = mdns_remoteservice_get_ipv4(&found_devices[i]);
+        uint8_t *octets = (uint8_t *)&ipv4_address;
+        snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+        _send_chunk(socket, ip_encoded);
+        _send_chunk(socket, "\"}");
         common_hal_mdns_remoteservice_deinit(&found_devices[i]);
     }
     _send_chunk(socket, "]}");
@@ -607,7 +602,17 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_chunk(socket, ", \"creation_id\": ");
     snprintf(encoded_id, sizeof(encoded_id), "%d", CIRCUITPY_CREATION_ID);
     _send_chunk(socket, encoded_id);
-    _send_chunk(socket, "}");
+    _send_chunk(socket, ", \"hostname\": \"");
+    _send_chunk(socket, common_hal_mdns_server_get_hostname(&mdns));
+    _send_chunk(socket, "\", \"port\": 80");
+    _send_chunk(socket, ", \"ip\": \"");
+
+    char ip_encoded[4 * 4];
+    uint32_t ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
+    uint8_t *octets = (uint8_t *)&ipv4_address;
+    snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+    _send_chunk(socket, ip_encoded);
+    _send_chunk(socket, "\"}");
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
@@ -730,9 +735,36 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     }
 }
 
+#define STATIC_FILE(filename) extern uint32_t filename##_length; extern uint8_t filename[]; extern const char *filename##_content_type;
+
+STATIC_FILE(directory_html);
+STATIC_FILE(directory_js);
+STATIC_FILE(welcome_html);
+STATIC_FILE(welcome_js);
+STATIC_FILE(blinka_16x16_ico);
+
+static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
+    uint32_t total_length = response_len;
+    char encoded_len[10];
+    snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
+
+    _send_str(socket, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: ");
+    _send_str(socket, encoded_len);
+    _send_str(socket, "\r\n");
+    _send_str(socket, "Content-Type: ");
+    _send_str(socket, content_type);
+    _send_str(socket, "\r\n");
+    _send_str(socket, "\r\n");
+    _send_raw(socket, response, response_len);
+}
+
+#define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
+
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
+    } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
+        _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
             ESP_LOGW(TAG, "not authed");
@@ -800,8 +832,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
                     if (request->json) {
                         _reply_directory_json(socket, request, &dir, request->path, path);
+                    } else if (pathlen == 1) {
+                        _REPLY_STATIC(socket, request, directory_html);
                     } else {
-                        _reply_directory_html(socket, request, &dir, request->path, path);
+                        _reply_missing(socket, request);
                     }
 
                     f_closedir(&dir);
@@ -857,10 +891,24 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
         }
+    } else if (strcmp(request->method, "GET") != 0) {
+        _reply_method_not_allowed(socket, request);
     } else {
-        const char *ok_response = "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nContent-Type: text/plain\r\n\r\nHello World";
-        int sent = socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
-        ESP_LOGW(TAG, "sent ok %d", sent);
+        if (strcmp(request->path, "/") == 0) {
+            // TODO: Autogenerate this based on the blinka bitmap and change the
+            // palette based on MAC address.
+            _REPLY_STATIC(socket, request, welcome_html);
+        } else if (strcmp(request->path, "/directory.js") == 0) {
+            _REPLY_STATIC(socket, request, directory_js);
+        } else if (strcmp(request->path, "/welcome.js") == 0) {
+            _REPLY_STATIC(socket, request, welcome_js);
+        } else if (strcmp(request->path, "/favicon.ico") == 0) {
+            // TODO: Autogenerate this based on the blinka bitmap and change the
+            // palette based on MAC address.
+            _REPLY_STATIC(socket, request, blinka_16x16_ico);
+        } else {
+            _reply_missing(socket, request);
+        }
     }
     return false;
 }

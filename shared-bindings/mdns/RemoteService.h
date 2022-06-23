@@ -38,4 +38,8 @@ const char *common_hal_mdns_remoteservice_get_protocol(mdns_remoteservice_obj_t 
 const char *common_hal_mdns_remoteservice_get_instance_name(mdns_remoteservice_obj_t *self);
 const char *common_hal_mdns_remoteservice_get_hostname(mdns_remoteservice_obj_t *self);
 mp_int_t common_hal_mdns_remoteservice_get_port(mdns_remoteservice_obj_t *self);
+mp_obj_t common_hal_mdns_remoteservice_get_ipv4(mdns_remoteservice_obj_t *self);
 void common_hal_mdns_remoteservice_deinit(mdns_remoteservice_obj_t *self);
+
+// For internal use.
+uint32_t mdns_remoteservice_get_ipv4(mdns_remoteservice_obj_t *self);

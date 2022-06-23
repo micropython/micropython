@@ -159,8 +159,18 @@ ifeq ($(CIRCUITPY_USB),1)
   endif
 endif
 
+STATIC_RESOURCES = $(wildcard $(TOP)/supervisor/shared/web_workflow/static/*)
+
+$(BUILD)/autogen_web_workflow_static.c: ../../tools/gen_web_workflow_static.py $(STATIC_RESOURCES)
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $< \
+		--output_c_file $@ \
+		$(STATIC_RESOURCES)
+
 ifeq ($(CIRCUITPY_WEB_WORKFLOW),1)
   SRC_SUPERVISOR += supervisor/shared/web_workflow/web_workflow.c
+
+  SRC_SUPERVISOR += $(BUILD)/autogen_web_workflow_static.c
 endif
 
 SRC_TINYUSB = $(filter lib/tinyusb/%.c, $(SRC_SUPERVISOR))
@@ -217,4 +227,4 @@ $(BUILD)/autogen_display_resources-$(TRANSLATION).c: ../../tools/gen_display_res
 	$(Q)$(PYTHON) ../../tools/gen_display_resources.py \
 		--font $(CIRCUITPY_DISPLAY_FONT) \
 		--sample_file $(TOP)/locale/$(TRANSLATION).po \
-		--output_c_file $(BUILD)/autogen_display_resources-$(TRANSLATION).c
+		--output_c_file $@

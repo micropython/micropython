@@ -18,7 +18,6 @@ async function refresh_list() {
         }
     );
     const data = await response.json();
-    console.log(data);
     var new_children = [];
     var template = document.querySelector('#row');
 
@@ -76,12 +75,17 @@ async function refresh_list() {
 }
 
 async function find_devices() {
-    const response = await fetch("http://circuitpython.local/cp/devices.json");
-    let url = new URL("/", response.url);
-    console.log(response, url);
-    url_base = url.href;
-    const data = await response.json();
-    console.log(data);
+    const version_response = await fetch("/cp/version.json");
+    if (version_response.ok) {
+        url_base = new URL("/", window.location).href;
+    } else {
+        // TODO: Remove this when we've settled things. It is only used when this file isn't hosted
+        // by a CP device.
+        const response = await fetch("http://circuitpython.local/cp/devices.json");
+        let url = new URL("/", response.url);
+        url_base = url.href;
+        const data = await response.json();
+    }
     refresh_list();
 }
 
@@ -103,9 +107,7 @@ async function mkdir(e) {
 }
 
 async function upload(e) {
-    console.log("upload");
     for (const file of files.files) {
-        console.log(file);
         let file_path = new URL("/fs" + current_path + file.name, url_base);
         const response = await fetch(file_path,
             {
@@ -119,7 +121,6 @@ async function upload(e) {
         )
         if (response.ok) {
             refresh_list();
-            console.log(files);
             files.value = "";
             upload_button.disabled = true;
         }
@@ -127,8 +128,6 @@ async function upload(e) {
 }
 
 async function del(e) {
-    console.log("delete");
-    console.log(e);
     let fn = new URL(e.target.value);
     var prompt = "Delete " + fn.pathname.substr(3);
     if (e.target.value.endsWith("/")) {
