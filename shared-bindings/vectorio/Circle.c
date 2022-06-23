@@ -34,9 +34,7 @@ static mp_obj_t vectorio_circle_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     mp_int_t radius = args[ARG_radius].u_int;
-    if (radius < 1) {
-        mp_raise_ValueError_varg(translate("%q must be >= 1"), MP_QSTR_radius);
-    }
+    mp_arg_validate_int_min(radius, 1, MP_QSTR_radius);
 
     vectorio_circle_t *self = m_new_obj(vectorio_circle_t);
     self->base.type = &vectorio_circle_type;
