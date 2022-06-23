@@ -15,7 +15,7 @@
 
 // Converts a list of points tuples to a flat list of ints for speedier internal use.
 // Also validates the points. If this fails due to invalid types or values, the
-// content of the points is undefined.
+// number of points is 0 and the points_list is NULL.
 static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple_list) {
     size_t len = 0;
     mp_obj_t *items;
@@ -26,11 +26,12 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         mp_raise_TypeError(translate("Polygon needs at least 3 points"));
     }
 
-    if (self->len < 2 * len) {
-        self->points_list = gc_realloc(self->points_list, 2 * len * sizeof(uint16_t), true);
-        VECTORIO_POLYGON_DEBUG("realloc(%d) -> %p", self->points_list, 2 * len * sizeof(uint16_t));
-    }
-    self->len = 2 * len;
+    int16_t *points_list = gc_realloc(self->points_list, 2 * len * sizeof(uint16_t), true);
+    VECTORIO_POLYGON_DEBUG("realloc(%p, %d) -> %p", self->points_list, 2 * len * sizeof(uint16_t), points_list);
+
+    // In case the validation calls below fail, set these values temporarily
+    self->points_list = NULL;
+    self->len = 0;
 
     for (uint16_t i = 0; i < len; ++i) {
         size_t tuple_len = 0;
@@ -43,9 +44,12 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
         mp_arg_validate_int_range(x, SHRT_MIN, SHRT_MAX, MP_QSTR_x);
         mp_int_t y = mp_arg_validate_type_int(tuple_items[1], MP_QSTR_y);
         mp_arg_validate_int_range(y, SHRT_MIN, SHRT_MAX, MP_QSTR_y);
-        self->points_list[2 * i    ] = (int16_t)x;
-        self->points_list[2 * i + 1] = (int16_t)y;
+        points_list[2 * i    ] = (int16_t)x;
+        points_list[2 * i + 1] = (int16_t)y;
     }
+
+    self->points_list = points_list;
+    self->len = 2 * len;
 }
 
 
