@@ -3,12 +3,14 @@ let files = document.getElementById("files");
 
 var url_base = window.location;
 var current_path;
+var editable = undefined;
 
 async function refresh_list() {
     current_path = window.location.hash.substr(1);
     if (current_path == "") {
         current_path = "/";
     }
+    // Do the fetch first because the browser will prompt for credentials.
     const response = await fetch(new URL("/fs" + current_path, url_base),
         {
             headers: {
@@ -19,7 +21,23 @@ async function refresh_list() {
     );
     const data = await response.json();
     var new_children = [];
+    var title = document.querySelector("title");
+    title.textContent = current_path;
+    var path = document.querySelector("#path");
+    path.textContent = current_path;
     var template = document.querySelector('#row');
+
+    if (editable === undefined) {
+        const status = await fetch(new URL("/fs/", url_base),
+            {
+                method: "OPTIONS",
+                credentials: "include"
+            }
+        );
+        editable = status.headers.get("Access-Control-Allow-Methods").includes("DELETE");
+        new_directory_name.disabled = !editable;
+        files.disabled = !editable;
+    }
 
     if (window.location.path != "/fs/") {
         var clone = template.content.cloneNode(true);
@@ -66,7 +84,9 @@ async function refresh_list() {
         td[3].textContent = (new Date(f.modified_ns / 1000000)).toLocaleString();
         var delete_button = clone.querySelector("button.delete");
         delete_button.value = api_url;
+        delete_button.disabled = !editable;
         delete_button.onclick = del;
+
 
         new_children.push(clone);
     }

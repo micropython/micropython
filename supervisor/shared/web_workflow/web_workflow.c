@@ -35,6 +35,7 @@
 #include "shared-bindings/wifi/Radio.h"
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
+#include "supervisor/fatfs_port.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -54,6 +55,7 @@
 #include "shared-module/dotenv/__init__.h"
 #endif
 
+// TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
 #include "esp_log.h"
 
 static const char *TAG = "CP webserver";
@@ -97,6 +99,9 @@ static socketpool_socket_obj_t active;
 static _request active_request;
 
 static char _api_password[64];
+
+static uint32_t _encoded_ip = 0;
+static char _our_ip_encoded[4 * 4];
 
 // in_len is the number of bytes to encode. out_len is the number of bytes we
 // have to do it.
@@ -170,8 +175,13 @@ void supervisor_web_workflow_status(void) {
         } else if (ipv4_address == 0) {
             serial_write_compressed(translate("No IP"));
         } else {
-            uint8_t *octets = (uint8_t *)&ipv4_address;
-            mp_printf(&mp_plat_print, "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+            if (_encoded_ip != ipv4_address) {
+                uint8_t *octets = (uint8_t *)&ipv4_address;
+                snprintf(_our_ip_encoded, sizeof(_our_ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+                _encoded_ip = ipv4_address;
+            }
+
+            mp_printf(&mp_plat_print, "%s", _our_ip_encoded);
             // TODO: Use these unicode to show signal strength: ▂▄▆█
         }
     } else {
@@ -226,7 +236,7 @@ void supervisor_start_web_workflow(void) {
     pool.base.type = &socketpool_socketpool_type;
     common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
-    ESP_LOGW(TAG, "Starting web workflow");
+    ESP_LOGI(TAG, "Starting web workflow");
     listening.base.type = &socketpool_socket_type;
     socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
     common_hal_socketpool_socket_settimeout(&listening, 0);
@@ -239,12 +249,8 @@ void supervisor_start_web_workflow(void) {
     if (api_password_len > 0) {
         _api_password[0] = ':';
         _api_password[api_password_len + 1] = '\0';
-        ESP_LOGW(TAG, "password before: %s", _api_password);
         _base64_in_place(_api_password, api_password_len + 1, sizeof(_api_password));
-        ESP_LOGW(TAG, "password encoded: %s", _api_password);
     }
-
-    ESP_LOGW(TAG, "listening on socket %d", listening.num);
 
     active.base.type = &socketpool_socket_type;
     active.num = -1;
@@ -297,21 +303,48 @@ static bool _endswith(const char *str, const char *suffix) {
 const char *ok_hosts[] = {"code.circuitpython.org"};
 
 static bool _origin_ok(const char *origin) {
-    #if CIRCUITPY_DEBUG
-    return true;
-    #endif
-    const char *localhost = "127.0.0.1:";
     const char *http = "http://";
-    // This is a prefix check.
+    const char *local = ".local";
+
+    if (memcmp(origin, http, strlen(http)) != 0) {
+        return false;
+    }
+    // These are prefix checks up to : so that any port works.
+    const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    const char *end = origin + strlen(http) + strlen(hostname) + strlen(local);
+    if (memcmp(origin + strlen(http), hostname, strlen(hostname)) == 0 &&
+        memcmp(origin + strlen(http) + strlen(hostname), local, strlen(local)) == 0 &&
+        (end[0] == '\0' || end[0] == ':')) {
+        return true;
+    }
+
+    end = origin + strlen(http) + strlen(_our_ip_encoded);
+    if (memcmp(origin + strlen(http), _our_ip_encoded, strlen(_our_ip_encoded)) == 0 &&
+        (end[0] == '\0' || end[0] == ':')) {
+        return true;
+    }
+
+    const char *localhost = "127.0.0.1:";
     if (memcmp(origin + strlen(http), localhost, strlen(localhost)) == 0) {
         return true;
     }
+
     for (size_t i = 0; i < MP_ARRAY_SIZE(ok_hosts); i++) {
         // This checks exactly.
         if (strcmp(origin + strlen(http), ok_hosts[i]) == 0) {
             return true;
         }
     }
+    return false;
+}
+
+STATIC bool _usb_active(void) {
+    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
+    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
+    if (storage_usb_enabled() && !usb_msc_lock()) {
+        return true;
+    }
+    #endif
     return false;
 }
 
@@ -348,9 +381,18 @@ static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request
 static void _reply_access_control(socketpool_socket_obj_t *socket, _request *request) {
     const char *response = "HTTP/1.1 204 No Content\r\n"
         "Content-Length: 0\r\n"
-        "Access-Control-Allow-Methods: PUT, GET, DELETE, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: X-Timestamp, Content-Type\r\n";
+        "Access-Control-Expose-Headers: Access-Control-Allow-Methods\r\n"
+        "Access-Control-Allow-Headers: X-Timestamp, Content-Type\r\n"
+        "Access-Control-Allow-Methods:GET, OPTIONS";
+
     _send_str(socket, response);
+    if (!_usb_active()) {
+        _send_str(socket, ", PUT, DELETE");
+    }
+    #if CIRCUITPY_USB_MSC
+    usb_msc_unlock();
+    #endif
+    _send_str(socket, "\r\n");
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
@@ -532,7 +574,6 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
             send_offset += sent;
         }
     }
-    ESP_LOGW(TAG, "file return done");
     if (total_read < total_length) {
         socketpool_socket_close(socket);
     }
@@ -551,7 +592,6 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
     snprintf(total_encoded, sizeof(total_encoded), "%d", total_results);
     _send_chunk(socket, total_encoded);
     _send_chunk(socket, ", \"devices\": [");
-    ESP_LOGW(TAG, "%d total devices", total_results);
     for (size_t i = 0; i < count; i++) {
         if (i > 0) {
             _send_chunk(socket, ",");
@@ -606,25 +646,10 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_chunk(socket, common_hal_mdns_server_get_hostname(&mdns));
     _send_chunk(socket, "\", \"port\": 80");
     _send_chunk(socket, ", \"ip\": \"");
-
-    char ip_encoded[4 * 4];
-    uint32_t ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
-    uint8_t *octets = (uint8_t *)&ipv4_address;
-    snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
-    _send_chunk(socket, ip_encoded);
+    _send_chunk(socket, _our_ip_encoded);
     _send_chunk(socket, "\"}");
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
-}
-
-STATIC bool _usb_active(void) {
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        return true;
-    }
-    #endif
-    return false;
 }
 
 // Copied from ble file_transfer.c. We should share it.
@@ -661,13 +686,36 @@ STATIC FRESULT _delete_directory_contents(FATFS *fs, const TCHAR *path) {
     return res;
 }
 
+// FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
+// This function truncates the time the time to a resolution storable by FATFS and fills in the
+// FATFS encoded version into fattime.
+STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
+    timeutils_struct_time_t tm;
+    uint64_t seconds_since_epoch = timeutils_seconds_since_epoch_from_nanoseconds_since_1970(input_time);
+    timeutils_seconds_since_epoch_to_struct_time(seconds_since_epoch, &tm);
+    uint64_t truncated_time = timeutils_nanoseconds_since_epoch_to_nanoseconds_since_1970((seconds_since_epoch / 2) * 2 * 1000000000);
+
+    *fattime = ((tm.tm_year - 1980) << 25) | (tm.tm_mon << 21) | (tm.tm_mday << 16) |
+        (tm.tm_hour << 11) | (tm.tm_min << 5) | (tm.tm_sec >> 1);
+    return truncated_time;
+}
+
 static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *request, FATFS *fs, const TCHAR *path) {
     FIL active_file;
 
     if (_usb_active()) {
         _reply_conflict(socket, request);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
         return;
     }
+    if (request->timestamp_ms > 0) {
+        DWORD fattime;
+        truncate_time(request->timestamp_ms * 1000000, &fattime);
+        override_fattime(fattime);
+    }
+
     FRESULT result = f_open(fs, &active_file, path, FA_WRITE);
     bool new_file = false;
     if (result == FR_NO_FILE) {
@@ -676,7 +724,8 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     }
 
     if (result != FR_OK) {
-        ESP_LOGW(TAG, "file write error %d %s", result, path);
+        ESP_LOGE(TAG, "file write error %d %s", result, path);
+        override_fattime(0);
         _reply_server_error(socket, request);
     } else if (request->expect) {
         _reply_continue(socket, request);
@@ -686,6 +735,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     f_lseek(&active_file, request->content_length);
     if (f_tell(&active_file) < request->content_length) {
         f_close(&active_file);
+        override_fattime(0);
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
@@ -711,7 +761,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
             if (len == -EAGAIN) {
                 continue;
             } else {
-                ESP_LOGW(TAG, "other error %d", len);
+                ESP_LOGE(TAG, "other error %d", len);
             }
             error = true;
             break;
@@ -728,6 +778,8 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     #if CIRCUITPY_USB_MSC
     usb_msc_unlock();
     #endif
+
+    override_fattime(0);
     if (new_file) {
         _reply_created(socket, request);
     } else {
@@ -767,14 +819,12 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
-            ESP_LOGW(TAG, "not authed");
             if (_api_password[0] != '\0') {
                 _reply_unauthorized(socket, request);
             } else {
                 _reply_forbidden(socket, request);
             }
         } else {
-            ESP_LOGW(TAG, "filesystem %s %s", request->method, request->path + 3);
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
             FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
@@ -794,6 +844,9 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             } else if (strcmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
                     _reply_conflict(socket, request);
+                    #if CIRCUITPY_USB_MSC
+                    usb_msc_unlock();
+                    #endif
                     return false;
                 }
 
@@ -811,7 +864,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
-                    ESP_LOGW(TAG, "rm error %d %s", result, path);
+                    ESP_LOGE(TAG, "rm error %d %s", result, path);
                     _reply_server_error(socket, request);
                 } else {
                     _reply_no_content(socket, request);
@@ -826,7 +879,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                         path[pathlen - 1] = '/';
                     }
                     if (res != FR_OK) {
-                        ESP_LOGW(TAG, "unable to open %d %s", res, path);
                         _reply_missing(socket, request);
                         return false;
                     }
@@ -842,10 +894,19 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 } else if (strcmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
                         _reply_conflict(socket, request);
+                        #if CIRCUITPY_USB_MSC
+                        usb_msc_unlock();
+                        #endif
                         return false;
                     }
 
+                    if (request->timestamp_ms > 0) {
+                        DWORD fattime;
+                        truncate_time(request->timestamp_ms * 1000000, &fattime);
+                        override_fattime(fattime);
+                    }
                     FRESULT result = f_mkdir(fs, path);
+                    override_fattime(0);
                     #if CIRCUITPY_USB_MSC
                     usb_msc_unlock();
                     #endif
@@ -881,12 +942,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             }
         }
     } else if (memcmp(request->path, "/cp/", 4) == 0) {
-        ESP_LOGW(TAG, "circuitpython %s %s", request->method, request->path + 3);
         const char *path = request->path + 3;
         if (strcmp(request->method, "GET") != 0) {
-            // Return error if not a GET
-        }
-        if (strcmp(path, "/devices.json") == 0) {
+            _reply_method_not_allowed(socket, request);
+        } else if (strcmp(path, "/devices.json") == 0) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
@@ -913,6 +972,20 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     return false;
 }
 
+static void _reset_request(_request *request) {
+    request->state = STATE_METHOD;
+    request->origin[0] = '\0';
+    request->content_length = 0;
+    request->offset = 0;
+    request->timestamp_ms = 0;
+    request->redirect = false;
+    request->done = false;
+    request->in_progress = false;
+    request->authenticated = false;
+    request->expect = false;
+    request->json = false;
+}
+
 static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
     bool more = true;
     bool error = false;
@@ -921,9 +994,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     while (more && !error) {
         int len = socketpool_socket_recv_into(socket, &c, 1);
         if (len != 1) {
-            if (len != -EAGAIN && len != -EBADF && len != -EPERM) {
-                ESP_LOGW(TAG, "received %d", len);
-            }
             more = false;
             break;
         }
@@ -931,7 +1001,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
             autoreload_suspend(AUTORELOAD_SUSPEND_WEB);
             request->in_progress = true;
         }
-        // ESP_LOGI(TAG, "%c", c);
         switch (request->state) {
             case STATE_METHOD: {
                 if (c == ' ') {
@@ -950,7 +1019,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                 if (c == ' ') {
                     request->path[request->offset] = '\0';
                     request->offset = 0;
-                    ESP_LOGW(TAG, "Request %s %s", request->method, request->path);
+                    ESP_LOGI(TAG, "Request %s %s", request->method, request->path);
                     request->state = STATE_VERSION;
                 } else if (request->offset > sizeof(request->path) - 1) {
                     // Skip methods that are too long.
@@ -1010,10 +1079,9 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     } else if (strcmp(request->header_key, "Origin") == 0) {
                         strcpy(request->origin, request->header_value);
                     } else if (strcmp(request->header_key, "X-Timestamp") == 0) {
-                        request->timestamp_ms = strtoul(request->header_value, NULL, 10);
-                        ;
+                        request->timestamp_ms = strtoull(request->header_value, NULL, 10);
                     }
-                    ESP_LOGW(TAG, "Header %s %s", request->header_key, request->header_value);
+                    ESP_LOGI(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
                     // Skip methods that are too long.
                 } else {
@@ -1024,7 +1092,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
             }
             case STATE_BODY:
                 request->done = true;
-                request->state = STATE_METHOD;
                 more = false;
                 break;
         }
@@ -1032,17 +1099,14 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     if (error) {
         const char *error_response = "HTTP/1.1 501 Not Implemented\r\n\r\n";
         int nodelay = 1;
-        int err = lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
-        int sent = socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
-        ESP_LOGW(TAG, "sent %d %d", sent, err);
+        lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+        socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
     }
     if (!request->done) {
         return;
     }
     bool reload = _reply(socket, request);
-    ESP_LOGI(TAG, "request done");
-    request->done = false;
-    request->in_progress = false;
+    _reset_request(request);
     autoreload_resume(AUTORELOAD_SUSPEND_WEB);
     if (reload) {
         autoreload_trigger();
@@ -1059,20 +1123,14 @@ void supervisor_web_workflow_background(void) {
         uint32_t port;
         int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
         if (newsoc == -EBADF) {
-            ESP_LOGW(TAG, "Closing listening socket");
             common_hal_socketpool_socket_close(&listening);
             return;
-        }
-        if (newsoc != -EAGAIN) {
-            ESP_LOGI(TAG, "newsoc %d", newsoc);
         }
         if (newsoc > 0) {
             // Close the active socket because we have another we accepted.
             if (!common_hal_socketpool_socket_get_closed(&active)) {
-                ESP_LOGW(TAG, "Closing active socket");
                 common_hal_socketpool_socket_close(&active);
             }
-            ESP_LOGE(TAG, "Accepted socket %d", newsoc);
             // TODO: Don't do this because it uses the private struct layout.
             // Create the socket
             active.num = newsoc;
@@ -1081,13 +1139,7 @@ void supervisor_web_workflow_background(void) {
 
             common_hal_socketpool_socket_settimeout(&active, 0);
 
-            active_request.state = STATE_METHOD;
-            active_request.offset = 0;
-            active_request.done = false;
-            active_request.in_progress = false;
-            active_request.redirect = false;
-            active_request.origin[0] = '\0';
-            active_request.timestamp_ms = 0;
+            _reset_request(&active_request);
 
             lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         }
