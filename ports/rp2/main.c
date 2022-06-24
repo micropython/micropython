@@ -82,7 +82,6 @@ int main(int argc, char **argv) {
 
     #if MICROPY_HW_ENABLE_USBDEV
     bi_decl(bi_program_feature("USB REPL"))
-    tusb_init();
     #endif
 
     #if MICROPY_PY_THREAD
@@ -145,6 +144,12 @@ int main(int argc, char **argv) {
         pyexec_frozen_module("_boot_fat.py");
         #else
         pyexec_frozen_module("_boot.py");
+        #endif
+
+        #if MICROPY_HW_ENABLE_USBDEV
+        if (!tusb_inited()) {
+            tusb_init();
+        }
         #endif
 
         // Execute user scripts.

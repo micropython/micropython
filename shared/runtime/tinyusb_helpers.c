@@ -52,3 +52,29 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
 }
 
 #endif
+
+#if MICROPY_HW_USB_MSC_EXCLUSIVE_ACCESS
+#include "tusb.h"
+#include "extmod/vfs.h"
+static mp_sched_node_t mp_remount_sched_node;
+
+STATIC void tud_msc_remount_task(mp_sched_node_t *node) {
+    mp_vfs_mount_t *vfs = NULL;
+    for (vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+        if (vfs->len == 1) {
+            nlr_buf_t nlr;
+            if (nlr_push(&nlr) == 0) {
+                mp_vfs_umount(vfs->obj);
+                nlr_pop();
+            }
+            mp_obj_t path = mp_obj_new_str(vfs->str, strlen(vfs->str));
+            mp_vfs_mount_and_chdir_protected(vfs->obj, path);
+            break;
+        }
+    }
+}
+
+void tud_msc_remount(void) {
+    mp_sched_schedule_node(&mp_remount_sched_node, tud_msc_remount_task);
+}
+#endif

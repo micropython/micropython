@@ -42,6 +42,8 @@
 #define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
 #endif
 
+extern bool tud_msc_ejected;
+
 static_assert(MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
 static_assert(MICROPY_HW_FLASH_STORAGE_BASE + MICROPY_HW_FLASH_STORAGE_BYTES <= PICO_FLASH_SIZE_BYTES, "MICROPY_HW_FLASH_STORAGE_BYTES too big");
 
@@ -137,6 +139,12 @@ STATIC mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
+        case MP_BLOCKDEV_IOCTL_STATUS:
+            #if MICROPY_HW_USB_MSC
+            return MP_OBJ_NEW_SMALL_INT(!tud_msc_ejected);
+            #else
+            return MP_OBJ_NEW_SMALL_INT(false);
+            #endif
         default:
             return mp_const_none;
     }

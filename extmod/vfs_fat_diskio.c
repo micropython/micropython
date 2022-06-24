@@ -114,6 +114,7 @@ DRESULT disk_ioctl(
         [GET_SECTOR_COUNT] = MP_BLOCKDEV_IOCTL_BLOCK_COUNT,
         [GET_SECTOR_SIZE] = MP_BLOCKDEV_IOCTL_BLOCK_SIZE,
         [IOCTL_INIT] = MP_BLOCKDEV_IOCTL_INIT,
+        [IOCTL_STATUS] = MP_BLOCKDEV_IOCTL_STATUS,
     };
     uint8_t bp_op = op_map[cmd & 7];
     mp_obj_t ret = mp_const_none;
@@ -147,16 +148,29 @@ DRESULT disk_ioctl(
             *((DWORD *)buff) = 1; // erase block size in units of sector size
             return RES_OK;
 
-        case IOCTL_INIT:
-        case IOCTL_STATUS: {
-            DSTATUS stat;
+        case IOCTL_INIT: {
+            DSTATUS stat = 0;
             if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
                 // error initialising
                 stat = STA_NOINIT;
-            } else if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL) {
-                stat = STA_PROTECT;
             } else {
-                stat = 0;
+                // IOCTL_INIT only returns non 0 for all errors/flags. To return
+                // a more accurate disk state, IOCTL_STATUS is called again here.
+                ret = mp_vfs_blockdev_ioctl(&vfs->blockdev, MP_BLOCKDEV_IOCTL_STATUS, 0);
+                if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL ||
+                        (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0)) {
+                    stat = STA_PROTECT;
+                }
+            }
+            *((DSTATUS *)buff) = stat;
+            return RES_OK;
+        }
+
+        case IOCTL_STATUS: {
+            DSTATUS stat = 0;
+            if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL ||
+                    (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0)) {
+                stat = STA_PROTECT;
             }
             *((DSTATUS *)buff) = stat;
             return RES_OK;

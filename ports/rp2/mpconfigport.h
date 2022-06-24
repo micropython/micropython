@@ -116,6 +116,7 @@
 #if MICROPY_HW_USB_MSC
 #define MICROPY_FATFS_USE_LABEL                 (1)
 #define MICROPY_FATFS_MULTI_PARTITION           (1)
+#define MICROPY_HW_USB_MSC_EXCLUSIVE_ACCESS     (1)
 // Set FatFS block size to flash sector size to avoid caching
 // the flash sector in memory to support smaller block sizes.
 #define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
