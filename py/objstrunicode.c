@@ -240,7 +240,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     subscr, str_subscr,
     getiter, mp_obj_new_str_iterator,
     buffer, mp_obj_str_get_buffer,
-    locals_dict, (mp_obj_dict_t *)&mp_obj_str_locals_dict
+    locals_dict, &mp_obj_str_locals_dict
     );
 
 /******************************************************************************/

@@ -299,7 +299,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_ADC,
     MP_TYPE_FLAG_NONE,
     machine_adc_make_new,
-    locals_dict, (mp_obj_dict_t*)&machine_adc_locals_dict,
+    locals_dict, &machine_adc_locals_dict,
     print, machine_adc_print
     );
 

@@ -489,5 +489,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_uart_make_new,
     print, pyb_uart_print,
-    locals_dict, (mp_obj_t)&pyb_uart_locals_dict
+    locals_dict, &pyb_uart_locals_dict
     );

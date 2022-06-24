@@ -182,7 +182,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_sha1,
     MP_TYPE_FLAG_NONE,
     hash_make_new,
-    locals_dict, (mp_obj_t)&hash_locals_dict
+    locals_dict, &hash_locals_dict
     );
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
@@ -190,7 +190,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_sha256,
     MP_TYPE_FLAG_NONE,
     hash_make_new,
-    locals_dict, (mp_obj_t)&hash_locals_dict
+    locals_dict, &hash_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {

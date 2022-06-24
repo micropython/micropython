@@ -190,5 +190,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Flash,
     MP_TYPE_FLAG_NONE,
     rp2_flash_make_new,
-    locals_dict, (mp_obj_dict_t *)&rp2_flash_locals_dict
+    locals_dict, &rp2_flash_locals_dict
     );

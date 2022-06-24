@@ -437,7 +437,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     fat_vfs_make_new,
     protocol, &fat_vfs_proto,
-    locals_dict, (mp_obj_dict_t *)&fat_vfs_locals_dict
+    locals_dict, &fat_vfs_locals_dict
     );
 
 #endif // MICROPY_VFS_FAT

@@ -387,7 +387,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     led_obj_make_new,
     print, led_obj_print,
-    locals_dict, (mp_obj_dict_t *)&led_locals_dict
+    locals_dict, &led_locals_dict
     );
 
 #else

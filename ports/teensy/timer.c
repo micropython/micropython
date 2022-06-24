@@ -752,7 +752,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_timer_make_new,
     print, pyb_timer_print,
-    locals_dict, (mp_obj_t)&pyb_timer_locals_dict
+    locals_dict, &pyb_timer_locals_dict
     );
 
 /// \moduleref pyb
@@ -896,7 +896,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pyb_timer_channel_print,
-    locals_dict, (mp_obj_t)&pyb_timer_channel_locals_dict
+    locals_dict, &pyb_timer_channel_locals_dict
     );
 
 STATIC bool ftm_handle_irq_callback(pyb_timer_obj_t *self, mp_uint_t channel, mp_obj_t callback) {

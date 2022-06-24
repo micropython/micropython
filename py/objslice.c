@@ -95,7 +95,7 @@ STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #if MICROPY_PY_BUILTINS_SLICE_ATTRS
 #define SLICE_TYPE_ATTR_OR_LOCALS_DICT attr, slice_attr,
 #elif MICROPY_PY_BUILTINS_SLICE_INDICES
-#define SLICE_TYPE_ATTR_OR_LOCALS_DICT locals_dict, (mp_obj_dict_t *)&slice_locals_dict,
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT locals_dict, &slice_locals_dict,
 #else
 #define SLICE_TYPE_ATTR_OR_LOCALS_DICT
 #endif

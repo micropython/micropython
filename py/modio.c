@@ -198,7 +198,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     bufwriter_make_new,
     protocol, &bufwriter_stream_p,
-    locals_dict, (mp_obj_dict_t *)&bufwriter_locals_dict
+    locals_dict, &bufwriter_locals_dict
     );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 

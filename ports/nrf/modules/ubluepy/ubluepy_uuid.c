@@ -166,7 +166,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     ubluepy_uuid_make_new,
     print, ubluepy_uuid_print,
-    locals_dict, (mp_obj_dict_t*)&ubluepy_uuid_locals_dict
+    locals_dict, &ubluepy_uuid_locals_dict
     );
 
 #endif // MICROPY_PY_UBLUEPY

@@ -226,7 +226,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     network_lan_make_new,
     print, network_lan_print,
-    locals_dict, (mp_obj_dict_t *)&network_lan_locals_dict
+    locals_dict, &network_lan_locals_dict
     );
 
 

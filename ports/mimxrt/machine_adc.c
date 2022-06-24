@@ -123,7 +123,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     adc_obj_make_new,
     print, adc_obj_print,
-    locals_dict, (mp_obj_dict_t *)&adc_locals_dict
+    locals_dict, &adc_locals_dict
     );
 
 void machine_adc_init(void) {

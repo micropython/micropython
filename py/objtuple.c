@@ -234,7 +234,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, mp_obj_tuple_binary_op,
     subscr, mp_obj_tuple_subscr,
     getiter, mp_obj_tuple_getiter,
-    locals_dict, (mp_obj_dict_t *)&tuple_locals_dict
+    locals_dict, &tuple_locals_dict
     );
 
 // the zero-length tuple

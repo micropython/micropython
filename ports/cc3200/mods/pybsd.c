@@ -217,5 +217,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_SD,
     MP_TYPE_FLAG_NONE,
     pyb_sd_make_new,
-    locals_dict, (mp_obj_t)&pyb_sd_locals_dict
+    locals_dict, &pyb_sd_locals_dict
     );

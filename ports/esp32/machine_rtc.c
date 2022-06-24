@@ -178,5 +178,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_RTC,
     MP_TYPE_FLAG_NONE,
     machine_rtc_make_new,
-    locals_dict, (mp_obj_t)&machine_rtc_locals_dict
+    locals_dict, &machine_rtc_locals_dict
     );

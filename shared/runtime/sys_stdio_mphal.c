@@ -132,7 +132,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &stdio_obj_stream_p,
-    locals_dict, (mp_obj_dict_t *)&stdio_locals_dict
+    locals_dict, &stdio_locals_dict
     );
 
 const sys_stdio_obj_t mp_sys_stdin_obj = {{&stdio_obj_type}, .fd = STDIO_FD_IN};
@@ -168,7 +168,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &stdio_buffer_obj_stream_p,
-    locals_dict, (mp_obj_dict_t *)&stdio_locals_dict
+    locals_dict, &stdio_locals_dict
     );
 
 STATIC const sys_stdio_obj_t stdio_buffer_obj = {{&stdio_buffer_obj_type}, .fd = 0}; // fd unused

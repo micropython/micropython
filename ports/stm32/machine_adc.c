@@ -498,7 +498,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     machine_adc_make_new,
     print, machine_adc_print,
-    locals_dict, (mp_obj_dict_t *)&machine_adc_locals_dict
+    locals_dict, &machine_adc_locals_dict
     );
 
 #endif

@@ -877,7 +877,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_SDCard,
     MP_TYPE_FLAG_NONE,
     pyb_sdcard_make_new,
-    locals_dict, (mp_obj_dict_t *)&pyb_sdcard_locals_dict
+    locals_dict, &pyb_sdcard_locals_dict
     );
 #endif
 
@@ -887,7 +887,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_MMCard,
     MP_TYPE_FLAG_NONE,
     pyb_mmcard_make_new,
-    locals_dict, (mp_obj_dict_t *)&pyb_sdcard_locals_dict
+    locals_dict, &pyb_sdcard_locals_dict
     );
 #endif
 

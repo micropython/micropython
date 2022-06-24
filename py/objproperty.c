@@ -95,7 +95,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_property,
     MP_TYPE_FLAG_NONE,
     property_make_new,
-    locals_dict, (mp_obj_dict_t *)&property_locals_dict
+    locals_dict, &property_locals_dict
     );
 
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in) {

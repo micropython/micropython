@@ -945,7 +945,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &pyb_usb_vcp_stream_p,
-    locals_dict, (mp_obj_dict_t *)&pyb_usb_vcp_locals_dict
+    locals_dict, &pyb_usb_vcp_locals_dict
     );
 
 /******************************************************************************/
@@ -1084,7 +1084,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_usb_hid_make_new,
     protocol, &pyb_usb_hid_stream_p,
-    locals_dict, (mp_obj_dict_t *)&pyb_usb_hid_locals_dict
+    locals_dict, &pyb_usb_hid_locals_dict
     );
 
 #endif // MICROPY_HW_USB_HID

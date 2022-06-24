@@ -169,5 +169,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_led_make_new,
     print, machine_led_print,
     call, machine_led_call,
-    locals_dict, (mp_obj_t)&machine_led_locals_dict
+    locals_dict, &machine_led_locals_dict
     );

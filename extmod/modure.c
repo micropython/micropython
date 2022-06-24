@@ -185,7 +185,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, match_print,
-    locals_dict, (void *)&match_locals_dict
+    locals_dict, &match_locals_dict
     );
 #endif
 
@@ -419,7 +419,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, re_print,
-    locals_dict, (void *)&re_locals_dict
+    locals_dict, &re_locals_dict
     );
 #endif
 

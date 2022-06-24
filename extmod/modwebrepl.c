@@ -348,7 +348,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     webrepl_make_new,
     protocol, &webrepl_stream_p,
-    locals_dict, (mp_obj_dict_t *)&webrepl_locals_dict
+    locals_dict, &webrepl_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t webrepl_module_globals_table[] = {

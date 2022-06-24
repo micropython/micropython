@@ -42,7 +42,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pin_named_pins_obj_print,
-    locals_dict, (mp_obj_t)&pin_cpu_pins_locals_dict
+    locals_dict, &pin_cpu_pins_locals_dict
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -51,7 +51,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pin_named_pins_obj_print,
-    locals_dict, (mp_obj_t)&pin_board_pins_locals_dict
+    locals_dict, &pin_board_pins_locals_dict
     );
 
 const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {

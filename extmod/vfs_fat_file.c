@@ -185,7 +185,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &vfs_fat_fileio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict
+    locals_dict, &vfs_fat_rawfile_locals_dict
     );
 
 STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
@@ -204,7 +204,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &vfs_fat_textio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict
+    locals_dict, &vfs_fat_rawfile_locals_dict
     );
 
 // Factory function for I/O stream classes

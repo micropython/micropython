@@ -548,7 +548,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     unary_op, set_unary_op,
     binary_op, set_binary_op,
     getiter, set_getiter,
-    locals_dict, (mp_obj_dict_t *)&set_locals_dict
+    locals_dict, &set_locals_dict
     );
 
 #if MICROPY_PY_BUILTINS_FROZENSET
@@ -574,7 +574,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     unary_op, set_unary_op,
     binary_op, set_binary_op,
     getiter, set_getiter,
-    locals_dict, (mp_obj_dict_t *)&frozenset_locals_dict
+    locals_dict, &frozenset_locals_dict
     );
 #endif
 

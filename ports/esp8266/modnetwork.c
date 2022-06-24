@@ -515,7 +515,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_dict_t *)&wlan_if_locals_dict
+    locals_dict, &wlan_if_locals_dict
     );
 
 STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {

@@ -131,7 +131,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     call, mp_irq_call,
-    locals_dict, (mp_obj_dict_t *)&mp_irq_locals_dict
+    locals_dict, &mp_irq_locals_dict
     );
 
 #endif // MICROPY_ENABLE_SCHEDULER

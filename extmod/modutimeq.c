@@ -215,7 +215,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     utimeq_make_new,
     unary_op, utimeq_unary_op,
-    locals_dict, (void *)&utimeq_locals_dict
+    locals_dict, &utimeq_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t mp_module_utimeq_globals_table[] = {

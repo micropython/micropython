@@ -307,7 +307,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_LAN,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_dict_t *)&lan_if_locals_dict
+    locals_dict, &lan_if_locals_dict
     );
 
 #endif

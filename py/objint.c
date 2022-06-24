@@ -465,5 +465,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, mp_obj_int_print,
     unary_op, mp_obj_int_unary_op,
     binary_op, mp_obj_int_binary_op,
-    locals_dict, (mp_obj_dict_t *)&int_locals_dict
+    locals_dict, &int_locals_dict
     );

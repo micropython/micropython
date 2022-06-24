@@ -478,5 +478,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &uart_stream_p,
-    locals_dict, (mp_obj_dict_t *)&machine_uart_locals_dict
+    locals_dict, &machine_uart_locals_dict
     );

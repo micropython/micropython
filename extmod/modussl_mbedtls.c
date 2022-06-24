@@ -402,7 +402,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     getiter, NULL,
     iternext, NULL,
     protocol, &ussl_socket_stream_p,
-    locals_dict, (void *)&ussl_socket_locals_dict
+    locals_dict, &ussl_socket_locals_dict
     );
 
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

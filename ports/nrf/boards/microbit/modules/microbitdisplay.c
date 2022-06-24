@@ -547,7 +547,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_MicroBitDisplay,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_dict_t*)&microbit_display_locals_dict
+    locals_dict, &microbit_display_locals_dict
     );
 
 microbit_display_obj_t microbit_display_obj = {

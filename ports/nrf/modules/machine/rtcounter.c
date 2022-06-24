@@ -268,7 +268,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     machine_rtc_make_new,
     print, rtc_print,
-    locals_dict, (mp_obj_dict_t*)&machine_rtc_locals_dict
+    locals_dict, &machine_rtc_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE_RTCOUNTER

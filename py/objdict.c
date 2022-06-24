@@ -599,7 +599,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, dict_binary_op,
     subscr, dict_subscr,
     getiter, dict_getiter,
-    locals_dict, (mp_obj_dict_t *)&dict_locals_dict
+    locals_dict, &dict_locals_dict
     );
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
@@ -614,7 +614,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     subscr, dict_subscr,
     getiter, dict_getiter,
     parent, &mp_type_dict,
-    locals_dict, (mp_obj_dict_t *)&dict_locals_dict
+    locals_dict, &dict_locals_dict
     );
 #endif
 

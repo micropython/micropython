@@ -112,7 +112,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     protocol, &fileio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&rawfile_locals_dict
+    locals_dict, &rawfile_locals_dict
     );
 
 // stream read returns non-blocking error
@@ -142,7 +142,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     protocol, &textio_stream_p2,
-    locals_dict, (mp_obj_dict_t *)&rawfile_locals_dict2
+    locals_dict, &rawfile_locals_dict2
     );
 
 // str/bytes objects without a valid hash

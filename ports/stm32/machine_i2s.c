@@ -1123,7 +1123,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &i2s_stream_p,
-    locals_dict, (mp_obj_dict_t *)&machine_i2s_locals_dict
+    locals_dict, &machine_i2s_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_MAX_I2S]);

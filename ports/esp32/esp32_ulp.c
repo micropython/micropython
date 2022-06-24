@@ -96,7 +96,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_ULP,
     MP_TYPE_FLAG_NONE,
     esp32_ulp_make_new,
-    locals_dict, (mp_obj_t)&esp32_ulp_locals_dict
+    locals_dict, &esp32_ulp_locals_dict
     );
 
 #endif // CONFIG_IDF_TARGET_ESP32

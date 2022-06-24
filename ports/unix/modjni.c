@@ -182,7 +182,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     print, jclass_print,
     attr, jclass_attr,
     call, jclass_call,
-    locals_dict, (mp_obj_dict_t *)&jclass_locals_dict
+    locals_dict, &jclass_locals_dict
     );
 
 STATIC mp_obj_t new_jclass(jclass jc) {
@@ -332,7 +332,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     attr, jobject_attr,
     subscr, jobject_subscr,
     getiter, subscr_getiter,
-    //    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
+    //    .locals_dict = &jobject_locals_dict,
     );
 
 STATIC mp_obj_t new_jobject(jobject jo) {
@@ -579,7 +579,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     print, jmethod_print,
     call, jmethod_call,
     //    .attr = jobject_attr,
-    //    .locals_dict = (mp_obj_dict_t*)&jobject_locals_dict,
+    //    .locals_dict = &jobject_locals_dict,
     );
 
 #ifdef __ANDROID__

@@ -217,7 +217,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     machine_timer_make_new,
     print, machine_timer_print,
-    locals_dict, (mp_obj_dict_t *)&machine_timer_locals_dict
+    locals_dict, &machine_timer_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]);

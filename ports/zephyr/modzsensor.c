@@ -110,7 +110,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Sensor,
     MP_TYPE_FLAG_NONE,
     sensor_make_new,
-    locals_dict, (void *)&sensor_locals_dict
+    locals_dict, &sensor_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t mp_module_zsensor_globals_table[] = {

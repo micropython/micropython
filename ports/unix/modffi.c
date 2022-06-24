@@ -427,7 +427,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     ffimod_make_new,
     print, ffimod_print,
-    locals_dict, (mp_obj_dict_t *)&ffimod_locals_dict
+    locals_dict, &ffimod_locals_dict
     );
 
 // FFI function
@@ -565,7 +565,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, fficallback_print,
-    locals_dict, (mp_obj_dict_t *)&fficallback_locals_dict
+    locals_dict, &fficallback_locals_dict
     );
 
 // FFI variable
@@ -603,7 +603,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, ffivar_print,
-    locals_dict, (mp_obj_dict_t *)&ffivar_locals_dict
+    locals_dict, &ffivar_locals_dict
     );
 
 // Generic opaque storage object (unused)

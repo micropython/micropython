@@ -189,7 +189,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     nrf_flashbdev_make_new,
     print, nrf_flashbdev_print,
-    locals_dict, (mp_obj_dict_t *)&nrf_flashbdev_locals_dict
+    locals_dict, &nrf_flashbdev_locals_dict
     );
 
 void flashbdev_init(void) {

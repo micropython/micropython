@@ -146,7 +146,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     decompio_make_new,
     protocol, &decompio_stream_p,
-    locals_dict, (void *)&decompio_locals_dict
+    locals_dict, &decompio_locals_dict
     );
 #endif
 

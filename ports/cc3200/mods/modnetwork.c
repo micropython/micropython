@@ -176,6 +176,6 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Server,
     MP_TYPE_FLAG_NONE,
     network_server_make_new,
-    locals_dict, (mp_obj_t)&network_server_locals_dict
+    locals_dict, &network_server_locals_dict
     );
 #endif

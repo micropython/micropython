@@ -258,7 +258,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &vfs_posix_fileio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict
+    locals_dict, &vfs_posix_rawfile_locals_dict
     );
 
 STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
@@ -277,7 +277,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &vfs_posix_textio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict
+    locals_dict, &vfs_posix_rawfile_locals_dict
     );
 
 const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_vfs_posix_textio}, STDIN_FILENO};

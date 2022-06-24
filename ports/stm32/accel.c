@@ -286,7 +286,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Accel,
     MP_TYPE_FLAG_NONE,
     pyb_accel_make_new,
-    locals_dict, (mp_obj_dict_t *)&pyb_accel_locals_dict
+    locals_dict, &pyb_accel_locals_dict
     );
 
 #endif // MICROPY_HW_HAS_MMA7660 || MICROPY_HW_HAS_KXTJ3

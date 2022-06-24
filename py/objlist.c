@@ -462,7 +462,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, list_binary_op,
     subscr, list_subscr,
     getiter, list_getiter,
-    locals_dict, (mp_obj_dict_t *)&list_locals_dict
+    locals_dict, &list_locals_dict
     );
 
 

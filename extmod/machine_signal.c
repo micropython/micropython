@@ -179,7 +179,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     signal_make_new,
     call, signal_call,
     protocol, &signal_pin_p,
-    locals_dict, (void *)&signal_locals_dict
+    locals_dict, &signal_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE

@@ -107,5 +107,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_WDT,
     MP_TYPE_FLAG_NONE,
     pyb_wdt_make_new,
-    locals_dict, (mp_obj_dict_t *)&pyb_wdt_locals_dict
+    locals_dict, &pyb_wdt_locals_dict
     );
