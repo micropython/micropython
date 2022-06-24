@@ -194,12 +194,13 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 
 pin_af.c: $(BUILD)/$(GEN_PIN_AF)
 
-$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV)
+$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
 
+machine_led.c machine_pin.c modsamd.c: $(GEN_PINS_HDR)
 
-$(GEN_PINS_SRC): $(BOARD_PINS)
+$(GEN_PINS_SRC) $(GEN_PINS_HDR): $(BOARD_PINS) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --pins $(GEN_PINS_SRC) --inc $(GEN_PINS_HDR)
 
