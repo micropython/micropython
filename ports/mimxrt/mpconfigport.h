@@ -26,6 +26,8 @@
 
 // Options controlling how MicroPython is built, overriding defaults in py/mpconfig.h
 
+#ifndef MICROPY_INCLUDED_MPCONFIGPORT_H
+#define MICROPY_INCLUDED_MPCONFIGPORT_H
 // Board specific definitions
 #include "mpconfigboard.h"
 #include "fsl_common.h"
@@ -99,6 +101,7 @@ uint32_t trng_random_u32(void);
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
+// to be redefined depending on the flash type.
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 
@@ -132,6 +135,16 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
+
+// Enable USB Mass Storage with FatFS filesystem.
+#define MICROPY_HW_USB_MSC                  (1)
+
+#if MICROPY_HW_USB_MSC
+#define MICROPY_FATFS_USE_LABEL             (1)
+#define MICROPY_FATFS_MULTI_PARTITION       (1)
+// Set FatFS block size to flash sector size to avoid caching
+// the flash sector in memory to support smaller block sizes.
+#endif
 
 // Hooks to add builtins
 
@@ -223,3 +236,5 @@ typedef long mp_off_t;
 
 // Need to provide a declaration/definition of alloca()
 #include <alloca.h>
+
+#endif //  MICROPY_INCLUDED_MPCONFIGPORT_H

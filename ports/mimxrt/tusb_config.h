@@ -25,6 +25,8 @@
 #ifndef MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
 #define MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
 
+#include "mpconfigport.h"
+
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE | OPT_MODE_HIGH_SPEED)
 
 #define CFG_TUSB_OS             (OPT_OS_NONE)
@@ -32,5 +34,12 @@
 #define CFG_TUD_CDC             (1)
 #define CFG_TUD_CDC_RX_BUFSIZE  (512)
 #define CFG_TUD_CDC_TX_BUFSIZE  (512)
+
+#if MICROPY_HW_USB_MSC
+// Board and hardware specific configuration
+#define CFG_TUD_MSC             (1)
+// Set MSC EP buffer size to FatFS block size to avoid partial read/writes (offset arg).
+#define CFG_TUD_MSC_BUFSIZE     (MICROPY_FATFS_MAX_SS)
+#endif
 
 #endif // MICROPY_INCLUDED_MIMXRT_TUSB_CONFIG_H
