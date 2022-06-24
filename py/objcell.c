@@ -40,12 +40,16 @@ STATIC void cell_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
 }
 #endif
 
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+#define CELL_TYPE_PRINT , print, cell_print
+#else
+#define CELL_TYPE_PRINT
+#endif
+
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     // cell representation is just value in < >
     mp_type_cell, MP_QSTR_, MP_TYPE_FLAG_NONE, MP_TYPE_NULL_MAKE_NEW
-    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    , print, cell_print
-    #endif
+    CELL_TYPE_PRINT
     );
 
 mp_obj_t mp_obj_new_cell(mp_obj_t obj) {

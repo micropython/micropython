@@ -84,6 +84,15 @@ STATIC void mp_obj_closure_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_closure_t *o = MP_OBJ_TO_PTR(self_in);
     mp_load_method_maybe(o->fun, attr, dest);
 }
+#define CLOSURE_TYPE_ATTR attr, mp_obj_closure_attr,
+#else
+#define CLOSURE_TYPE_ATTR
+#endif
+
+#if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
+#define CLOSURE_TYPE_PRINT print, closure_print,
+#else
+#define CLOSURE_TYPE_PRINT
 #endif
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -91,12 +100,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_closure,
     MP_TYPE_FLAG_BINDS_SELF,
     MP_TYPE_NULL_MAKE_NEW,
-    #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_DETAILED
-    print, closure_print,
-    #endif
-    #if MICROPY_PY_FUNCTION_ATTRS
-    attr, mp_obj_closure_attr,
-    #endif
+    CLOSURE_TYPE_ATTR
+    CLOSURE_TYPE_PRINT
     call, closure_call
     );
 

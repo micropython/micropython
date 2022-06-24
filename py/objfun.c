@@ -352,19 +352,27 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
+#if MICROPY_CPYTHON_COMPAT
+#define FUN_BC_TYPE_PRINT print, fun_bc_print,
+#else
+#define FUN_BC_TYPE_PRINT
+#endif
+
+#if MICROPY_PY_FUNCTION_ATTRS
+#define FUN_BC_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define FUN_BC_TYPE_ATTR
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_bc,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
     MP_TYPE_NULL_MAKE_NEW,
-    #if MICROPY_CPYTHON_COMPAT
-    print, fun_bc_print,
-    #endif
+    FUN_BC_TYPE_PRINT
+    FUN_BC_TYPE_ATTR
     call, fun_bc_call,
     unary_op, mp_generic_unary_op
-    #if MICROPY_PY_FUNCTION_ATTRS
-    , attr, mp_obj_fun_bc_attr
-    #endif
     );
 
 mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *context, struct _mp_raw_code_t *const *child_table) {
@@ -408,17 +416,24 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
     return fun(self_in, n_args, n_kw, args);
 }
 
+#if MICROPY_CPYTHON_COMPAT
+#define FUN_BC_TYPE_PRINT print, fun_bc_print,
+#else
+#define FUN_BC_TYPE_PRINT
+#endif
+#if MICROPY_PY_FUNCTION_ATTRS
+#define FUN_BC_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define FUN_BC_TYPE_ATTR
+#endif
+
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_native,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
     MP_TYPE_NULL_MAKE_NEW,
-    #if MICROPY_CPYTHON_COMPAT
-    print, fun_bc_print,
-    #endif
-    #if MICROPY_PY_FUNCTION_ATTRS
-    attr, mp_obj_fun_bc_attr,
-    #endif
+    FUN_BC_TYPE_PRINT
+    FUN_BC_TYPE_ATTR
     call, fun_native_call,
     unary_op, mp_generic_unary_op
     );

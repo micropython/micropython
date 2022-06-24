@@ -603,6 +603,18 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
+#if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+#define MEMORYVIEW_TYPE_ATTR attr, memoryview_attr,
+#else
+#define MEMORYVIEW_TYPE_ATTR
+#endif
+
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+#define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
+#else
+#define MEMORYVIEW_TYPE_LOCALS_DICT
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_memoryview,
     MP_QSTR_memoryview,
@@ -611,16 +623,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, array_iterator_new,
     unary_op, array_unary_op,
     binary_op, array_binary_op,
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    attr, memoryview_attr,
-    #endif
-    #if MICROPY_PY_BUILTINS_BYTES_HEX
-    locals_dict, (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
-    #endif
-    .subscr = array_subscr,
-    .buffer = array_get_buffer,
+    MEMORYVIEW_TYPE_LOCALS_DICT
+    MEMORYVIEW_TYPE_ATTR
+    subscr, array_subscr,
+    buffer, array_get_buffer
     );
-#endif
+#endif // MICROPY_PY_BUILTINS_MEMORYVIEW
 
 /* unused
 size_t mp_obj_array_len(mp_obj_t self_in) {
