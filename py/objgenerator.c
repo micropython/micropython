@@ -70,16 +70,20 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     return MP_OBJ_FROM_PTR(o);
 }
 
+#if MICROPY_PY_FUNCTION_ATTRS
+#define GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define GEN_WRAP_TYPE_ATTR
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
     MP_TYPE_NULL_MAKE_NEW,
+    GEN_WRAP_TYPE_ATTR
     call, gen_wrap_call,
     unary_op, mp_generic_unary_op
-    #if MICROPY_PY_FUNCTION_ATTRS
-    , attr, mp_obj_fun_bc_attr
-    #endif
     );
 
 /******************************************************************************/
@@ -132,16 +136,20 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     return MP_OBJ_FROM_PTR(o);
 }
 
+#if MICROPY_PY_FUNCTION_ATTRS
+#define NATIVE_GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define NATIVE_GEN_WRAP_TYPE_ATTR
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_native_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
     MP_TYPE_NULL_MAKE_NEW,
     call, native_gen_wrap_call,
+    NATIVE_GEN_WRAP_TYPE_ATTR
     unary_op, mp_generic_unary_op
-    #if MICROPY_PY_FUNCTION_ATTRS
-    , attr, mp_obj_fun_bc_attr
-    #endif
     );
 
 #endif // MICROPY_EMIT_NATIVE

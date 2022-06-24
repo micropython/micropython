@@ -92,17 +92,21 @@ STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #endif
 
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT attr, slice_attr,
+#elif MICROPY_PY_BUILTINS_SLICE_INDICES
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT locals_dict, (mp_obj_dict_t *)&slice_locals_dict,
+#else
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_slice,
     MP_QSTR_slice,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
+    SLICE_TYPE_ATTR_OR_LOCALS_DICT
     print, slice_print
-    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
-    , attr, slice_attr
-    #elif MICROPY_PY_BUILTINS_SLICE_INDICES
-    , locals_dict, (mp_obj_dict_t *)&slice_locals_dict
-    #endif
     );
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
