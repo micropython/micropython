@@ -15,7 +15,7 @@ def bm_run(N, M):
             cur_nm = nm
             param = p
     if param is None:
-        print(-1, -1, "no matching params")
+        print(-1, -1, "SKIP: no matching params")
         return
 
     # Run and time benchmark
