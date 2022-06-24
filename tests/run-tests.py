@@ -603,6 +603,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_deref.py")  # requires checking for unbound local
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
+        skip_tests.add("basics/fun_name.py")  # requires proper names for native functions
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs

@@ -421,8 +421,14 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
+    #if MICROPY_CPYTHON_COMPAT
+    .print = fun_bc_print,
+    #endif
     .call = fun_native_call,
     .unary_op = mp_generic_unary_op,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
