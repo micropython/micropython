@@ -239,7 +239,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     adc_make_new,
     print, adc_print,
-    locals_dict, (mp_obj_t)&adc_locals_dict
+    locals_dict, &adc_locals_dict
     );
 
 STATIC void adc_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -308,5 +308,5 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_NULL_MAKE_NEW,
     print, adc_channel_print,
     call, adc_channel_call,
-    locals_dict, (mp_obj_t)&adc_channel_locals_dict
+    locals_dict, &adc_channel_locals_dict
     );

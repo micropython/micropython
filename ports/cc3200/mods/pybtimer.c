@@ -465,7 +465,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_timer_make_new,
     print, pyb_timer_print,
-    locals_dict, (mp_obj_t)&pyb_timer_locals_dict
+    locals_dict, &pyb_timer_locals_dict
     );
 
 STATIC const mp_irq_methods_t pyb_timer_channel_irq_methods = {
@@ -728,7 +728,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pyb_timer_channel_print,
-    locals_dict, (mp_obj_t)&pyb_timer_channel_locals_dict
+    locals_dict, &pyb_timer_channel_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_list_t pyb_timer_channel_obj_list);

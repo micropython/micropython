@@ -63,7 +63,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_cpu,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_t)&machine_pin_cpu_pins_locals_dict
+    locals_dict, &machine_pin_cpu_pins_locals_dict
     );
 
 MP_DEFINE_CONST_OBJ_TYPE(
@@ -71,7 +71,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_board,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_t)&machine_pin_board_pins_locals_dict
+    locals_dict, &machine_pin_board_pins_locals_dict
     );
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
@@ -428,7 +428,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, machine_pin_obj_print,
     call, machine_pin_obj_call,
     protocol, &machine_pin_obj_protocol,
-    locals_dict, (mp_obj_dict_t *)&machine_pin_locals_dict
+    locals_dict, &machine_pin_locals_dict
     );
 
 // FIXME: Create actual pin_af type!!!
@@ -438,7 +438,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     mp_pin_make_new,
     print, machine_pin_obj_print,
-    locals_dict, (mp_obj_dict_t *)&machine_pin_locals_dict
+    locals_dict, &machine_pin_locals_dict
     );
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {

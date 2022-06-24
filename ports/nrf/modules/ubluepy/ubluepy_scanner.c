@@ -120,7 +120,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     ubluepy_scanner_make_new,
     print, ubluepy_scanner_print,
-    locals_dict, (mp_obj_dict_t*)&ubluepy_scanner_locals_dict
+    locals_dict, &ubluepy_scanner_locals_dict
     );
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL

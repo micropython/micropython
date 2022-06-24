@@ -78,5 +78,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_switch_make_new,
     print, pyb_switch_print,
     call, pyb_switch_call,
-    locals_dict, (mp_obj_t)&pyb_switch_locals_dict
+    locals_dict, &pyb_switch_locals_dict
     );

@@ -530,7 +530,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_LCD,
     MP_TYPE_FLAG_NONE,
     pyb_lcd_make_new,
-    locals_dict, (mp_obj_dict_t *)&pyb_lcd_locals_dict
+    locals_dict, &pyb_lcd_locals_dict
     );
 
 #endif // MICROPY_HW_HAS_LCD

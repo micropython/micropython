@@ -134,7 +134,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     zephyr_disk_access_make_new,
     print, zephyr_disk_access_print,
-    locals_dict, (mp_obj_dict_t *)&zephyr_disk_access_locals_dict
+    locals_dict, &zephyr_disk_access_locals_dict
     );
 #endif // CONFIG_DISK_ACCESS
 
@@ -256,6 +256,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     zephyr_flash_area_make_new,
     print, zephyr_flash_area_print,
-    locals_dict, (mp_obj_dict_t *)&zephyr_flash_area_locals_dict
+    locals_dict, &zephyr_flash_area_locals_dict
     );
 #endif // CONFIG_FLASH_MAP

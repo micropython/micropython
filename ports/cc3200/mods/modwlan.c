@@ -1290,7 +1290,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
     wlan_make_new,
-    locals_dict, (mp_obj_t)&wlan_locals_dict
+    locals_dict, &wlan_locals_dict
     );
 
 const mod_network_nic_type_t mod_network_nic_type_wlan = {

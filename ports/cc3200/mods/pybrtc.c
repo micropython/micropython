@@ -474,7 +474,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_RTC,
     MP_TYPE_FLAG_NONE,
     pyb_rtc_make_new,
-    locals_dict, (mp_obj_t)&pyb_rtc_locals_dict
+    locals_dict, &pyb_rtc_locals_dict
     );
 
 STATIC const mp_irq_methods_t pyb_rtc_irq_methods = {

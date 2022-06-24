@@ -110,7 +110,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     mdac_make_new,
     print, mdac_print,
-    locals_dict, (mp_obj_t)&mdac_locals_dict
+    locals_dict, &mdac_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE_DAC

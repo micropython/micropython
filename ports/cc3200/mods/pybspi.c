@@ -383,5 +383,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_spi_make_new,
     print, pyb_spi_print,
-    locals_dict, (mp_obj_t)&pyb_spi_locals_dict
+    locals_dict, &pyb_spi_locals_dict
     );

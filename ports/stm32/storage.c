@@ -459,7 +459,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_flash_make_new,
     print, pyb_flash_print,
-    locals_dict, (mp_obj_dict_t *)&pyb_flash_locals_dict
+    locals_dict, &pyb_flash_locals_dict
     );
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {

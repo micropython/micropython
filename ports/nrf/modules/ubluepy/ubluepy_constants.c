@@ -74,7 +74,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_ad_types,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_dict_t*)&ubluepy_constants_ad_types_locals_dict
+    locals_dict, &ubluepy_constants_ad_types_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t ubluepy_constants_locals_dict_table[] = {
@@ -97,7 +97,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_constants,
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
-    locals_dict, (mp_obj_dict_t*)&ubluepy_constants_locals_dict
+    locals_dict, &ubluepy_constants_locals_dict
     );
 
 #endif // MICROPY_PY_UBLUEPY

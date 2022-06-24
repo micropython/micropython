@@ -229,7 +229,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &MP_VFS_LFSx(fileio_stream_p),
-    locals_dict, (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict)
+    locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );
 
 STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
@@ -248,5 +248,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &MP_VFS_LFSx(textio_stream_p),
-    locals_dict, (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict)
+    locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );

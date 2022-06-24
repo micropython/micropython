@@ -582,7 +582,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, array_binary_op,
     subscr, array_subscr,
     buffer, array_get_buffer,
-    locals_dict, (mp_obj_dict_t *)&mp_obj_array_locals_dict
+    locals_dict, &mp_obj_array_locals_dict
     );
 #endif
 
@@ -598,7 +598,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     binary_op, array_binary_op,
     subscr, array_subscr,
     buffer, array_get_buffer,
-    locals_dict, (mp_obj_dict_t *)&mp_obj_bytearray_locals_dict
+    locals_dict, &mp_obj_bytearray_locals_dict
     );
 #endif
 
@@ -610,7 +610,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTES_HEX
-#define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, (mp_obj_dict_t *)&mp_obj_memoryview_locals_dict,
+#define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, &mp_obj_memoryview_locals_dict,
 #else
 #define MEMORYVIEW_TYPE_LOCALS_DICT
 #endif

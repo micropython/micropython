@@ -296,7 +296,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     websocket_make_new,
     protocol, &websocket_stream_p,
-    locals_dict, (void *)&websocket_locals_dict
+    locals_dict, &websocket_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t uwebsocket_module_globals_table[] = {

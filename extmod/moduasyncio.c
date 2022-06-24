@@ -149,7 +149,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_TaskQueue,
     MP_TYPE_FLAG_NONE,
     task_queue_make_new,
-    locals_dict, (mp_obj_dict_t *)&task_queue_locals_dict
+    locals_dict, &task_queue_locals_dict
     );
 
 /******************************************************************************/

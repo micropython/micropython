@@ -343,7 +343,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     esp_timer_make_new,
     print, esp_timer_print,
-    locals_dict, (mp_obj_dict_t *)&esp_timer_locals_dict
+    locals_dict, &esp_timer_locals_dict
     );
 
 // this bit is unused in the Xtensa PS register

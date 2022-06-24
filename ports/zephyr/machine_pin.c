@@ -293,7 +293,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, machine_pin_print,
     call, machine_pin_call,
     protocol, &machine_pin_pin_p,
-    locals_dict, (mp_obj_t)&machine_pin_locals_dict
+    locals_dict, &machine_pin_locals_dict
     );
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {

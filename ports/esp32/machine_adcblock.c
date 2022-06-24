@@ -200,5 +200,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     madcblock_make_new,
     print, madcblock_print,
-    locals_dict, (mp_obj_dict_t *)&madcblock_locals_dict
+    locals_dict, &madcblock_locals_dict
     );

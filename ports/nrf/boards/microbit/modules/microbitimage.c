@@ -685,7 +685,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     microbit_image_make_new,
     print, microbit_image_print,
     binary_op, image_binary_op,
-    locals_dict, (mp_obj_dict_t*)&microbit_image_locals_dict
+    locals_dict, &microbit_image_locals_dict
     );
 
 typedef struct _scrolling_string_t {

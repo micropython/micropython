@@ -204,7 +204,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_hard_spi_make_new,
     print, machine_hard_spi_print,
     protocol, &machine_hard_spi_p,
-    locals_dict, (mp_obj_dict_t *)&mp_machine_spi_locals_dict
+    locals_dict, &mp_machine_spi_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE_SPI

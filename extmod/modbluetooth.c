@@ -981,7 +981,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_BLE,
     MP_TYPE_FLAG_NONE,
     bluetooth_ble_make_new,
-    locals_dict, (void *)&bluetooth_ble_locals_dict
+    locals_dict, &bluetooth_ble_locals_dict
     );
 
 STATIC const mp_rom_map_elem_t mp_module_bluetooth_globals_table[] = {

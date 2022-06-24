@@ -2153,7 +2153,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     subscr, bytes_subscr,
     getiter, mp_obj_new_str_iterator,
     buffer, mp_obj_str_get_buffer,
-    locals_dict, (mp_obj_dict_t *)&mp_obj_str_locals_dict
+    locals_dict, &mp_obj_str_locals_dict
     );
 #endif // !MICROPY_PY_BUILTINS_STR_UNICODE
 
@@ -2168,7 +2168,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     subscr, bytes_subscr,
     getiter, mp_obj_new_bytes_iterator,
     buffer, mp_obj_str_get_buffer,
-    locals_dict, (mp_obj_dict_t *)&mp_obj_bytes_locals_dict
+    locals_dict, &mp_obj_bytes_locals_dict
     );
 
 // The zero-length bytes object, with data that includes a null-terminating byte

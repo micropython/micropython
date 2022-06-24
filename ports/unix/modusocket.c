@@ -525,7 +525,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, NULL,
     iternext, NULL,
     protocol, &usocket_stream_p,
-    locals_dict, (mp_obj_dict_t *)&usocket_locals_dict
+    locals_dict, &usocket_locals_dict
     );
 
 #define BINADDR_MAX_LEN sizeof(struct in6_addr)

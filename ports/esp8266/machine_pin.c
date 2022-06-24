@@ -458,7 +458,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, pyb_pin_print,
     call, pyb_pin_call,
     protocol, &pin_pin_p,
-    locals_dict, (mp_obj_dict_t *)&pyb_pin_locals_dict
+    locals_dict, &pyb_pin_locals_dict
     );
 
 /******************************************************************************/
@@ -516,7 +516,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     call, pin_irq_call,
-    locals_dict, (mp_obj_dict_t *)&pin_irq_locals_dict
+    locals_dict, &pin_irq_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pin_irq_handler[16]);

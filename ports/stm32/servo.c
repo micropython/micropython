@@ -342,7 +342,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_servo_make_new,
     print, pyb_servo_print,
-    locals_dict, (mp_obj_dict_t *)&pyb_servo_locals_dict
+    locals_dict, &pyb_servo_locals_dict
     );
 
 #endif // MICROPY_HW_ENABLE_SERVO

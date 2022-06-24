@@ -147,5 +147,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     esp32_nvs_make_new,
     print, esp32_nvs_print,
-    locals_dict, (mp_obj_dict_t *)&esp32_nvs_locals_dict
+    locals_dict, &esp32_nvs_locals_dict
     );

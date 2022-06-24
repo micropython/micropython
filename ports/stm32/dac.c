@@ -508,7 +508,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_dac_make_new,
     print, pyb_dac_print,
-    locals_dict, (mp_obj_dict_t *)&pyb_dac_locals_dict
+    locals_dict, &pyb_dac_locals_dict
     );
 
 #endif // MICROPY_HW_ENABLE_DAC

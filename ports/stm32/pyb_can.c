@@ -1079,7 +1079,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pyb_can_make_new,
     print, pyb_can_print,
     protocol, &can_stream_p,
-    locals_dict, (mp_obj_dict_t *)&pyb_can_locals_dict
+    locals_dict, &pyb_can_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]);

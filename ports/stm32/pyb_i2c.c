@@ -1110,7 +1110,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     pyb_i2c_make_new,
     print, pyb_i2c_print,
-    locals_dict, (mp_obj_dict_t *)&pyb_i2c_locals_dict
+    locals_dict, &pyb_i2c_locals_dict
     );
 
 #endif // MICROPY_PY_PYB_LEGACY && MICROPY_HW_ENABLE_HW_I2C

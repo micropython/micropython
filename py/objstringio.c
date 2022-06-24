@@ -253,7 +253,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &stringio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&stringio_locals_dict
+    locals_dict, &stringio_locals_dict
     );
 
 #if MICROPY_PY_IO_BYTESIO
@@ -272,7 +272,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     getiter, mp_identity_getiter,
     iternext, mp_stream_unbuffered_iter,
     protocol, &bytesio_stream_p,
-    locals_dict, (mp_obj_dict_t *)&stringio_locals_dict
+    locals_dict, &stringio_locals_dict
     );
 #endif
 

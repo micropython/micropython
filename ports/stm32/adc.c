@@ -709,7 +709,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     adc_make_new,
     print, adc_print,
-    locals_dict, (mp_obj_dict_t *)&adc_locals_dict
+    locals_dict, &adc_locals_dict
     );
 
 /******************************************************************************/
@@ -917,7 +917,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_ADCAll,
     MP_TYPE_FLAG_NONE,
     adc_all_make_new,
-    locals_dict, (mp_obj_dict_t *)&adc_all_locals_dict
+    locals_dict, &adc_all_locals_dict
     );
 
 #endif // MICROPY_HW_ENABLE_ADC

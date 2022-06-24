@@ -262,5 +262,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     madc_make_new,
     print, madc_print,
-    locals_dict, (mp_obj_t)&madc_locals_dict
+    locals_dict, &madc_locals_dict
     );

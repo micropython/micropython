@@ -215,7 +215,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     ubluepy_characteristic_make_new,
     print, ubluepy_characteristic_print,
-    locals_dict, (mp_obj_dict_t*)&ubluepy_characteristic_locals_dict
+    locals_dict, &ubluepy_characteristic_locals_dict
     );
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL

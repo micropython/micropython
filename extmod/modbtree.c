@@ -330,7 +330,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     iternext, btree_iternext,
     binary_op, btree_binary_op,
     subscr, btree_subscr,
-    locals_dict, (void *)&btree_locals_dict
+    locals_dict, &btree_locals_dict
     );
 #endif
 

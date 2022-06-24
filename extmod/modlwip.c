@@ -182,7 +182,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_slip,
     MP_TYPE_FLAG_NONE,
     lwip_slip_make_new,
-    locals_dict, (mp_obj_dict_t *)&lwip_slip_locals_dict
+    locals_dict, &lwip_slip_locals_dict
     );
 
 #endif // MICROPY_PY_LWIP_SLIP
@@ -1602,7 +1602,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     lwip_socket_make_new,
     print, lwip_socket_print,
     protocol, &lwip_socket_stream_p,
-    locals_dict, (mp_obj_dict_t *)&lwip_socket_locals_dict
+    locals_dict, &lwip_socket_locals_dict
     );
 
 /******************************************************************************/

@@ -600,7 +600,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, pin_print,
     call, pin_call,
     protocol, &pin_pin_p,
-    locals_dict, (mp_obj_dict_t *)&pin_locals_dict
+    locals_dict, &pin_locals_dict
     );
 
 /// \moduleref pyb
@@ -676,7 +676,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pin_af_obj_print,
-    locals_dict, (mp_obj_dict_t *)&pin_af_locals_dict
+    locals_dict, &pin_af_locals_dict
     );
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_mapper);

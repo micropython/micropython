@@ -938,7 +938,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pin_make_new,
     print, pin_print,
     call, pin_call,
-    locals_dict, (mp_obj_t)&pin_locals_dict
+    locals_dict, &pin_locals_dict
     );
 
 STATIC const mp_irq_methods_t pin_irq_methods = {
@@ -959,6 +959,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     MP_TYPE_NULL_MAKE_NEW,
     print, pin_named_pins_obj_print,
-    locals_dict, (mp_obj_t)&pin_board_pins_locals_dict
+    locals_dict, &pin_board_pins_locals_dict
     );
 

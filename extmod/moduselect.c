@@ -343,7 +343,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_NULL_MAKE_NEW,
     getiter, mp_identity_getiter,
     iternext, poll_iternext,
-    locals_dict, (void *)&poll_locals_dict
+    locals_dict, &poll_locals_dict
     );
 
 // poll()

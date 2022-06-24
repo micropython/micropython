@@ -112,7 +112,7 @@ STATIC MP_DEFINE_CONST_DICT(object_locals_dict, object_locals_dict_table);
 #endif
 
 #if MICROPY_CPYTHON_COMPAT
-#define OBJECT_TYPE_LOCALS_DICT , locals_dict, (mp_obj_dict_t *)&object_locals_dict
+#define OBJECT_TYPE_LOCALS_DICT , locals_dict, &object_locals_dict
 #else
 #define OBJECT_TYPE_LOCALS_DICT
 #endif

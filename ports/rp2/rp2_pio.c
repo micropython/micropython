@@ -382,7 +382,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     rp2_pio_make_new,
     print, rp2_pio_print,
-    locals_dict, (mp_obj_dict_t *)&rp2_pio_locals_dict
+    locals_dict, &rp2_pio_locals_dict
     );
 
 STATIC mp_uint_t rp2_pio_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
@@ -813,7 +813,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     rp2_state_machine_make_new,
     print, rp2_state_machine_print,
-    locals_dict, (mp_obj_dict_t *)&rp2_state_machine_locals_dict
+    locals_dict, &rp2_state_machine_locals_dict
     );
 
 STATIC mp_uint_t rp2_state_machine_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {

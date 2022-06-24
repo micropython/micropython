@@ -534,7 +534,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     socket_make_new,
     protocol, &socket_stream_p,
-    locals_dict, (mp_obj_dict_t *)&socket_locals_dict,
+    locals_dict, &socket_locals_dict,
     print, socket_print
     );
 

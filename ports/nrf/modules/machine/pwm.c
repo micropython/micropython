@@ -345,7 +345,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     machine_pwm_make_new,
     print, machine_pwm_print,
-    locals_dict, (mp_obj_dict_t*)&machine_pwm_locals_dict
+    locals_dict, &machine_pwm_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE_HW_PWM
