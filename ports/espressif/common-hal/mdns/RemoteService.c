@@ -63,7 +63,7 @@ mp_int_t common_hal_mdns_remoteservice_get_port(mdns_remoteservice_obj_t *self) 
     return self->result->port;
 }
 
-uint32_t mdns_remoteservice_get_ipv4(mdns_remoteservice_obj_t *self) {
+uint32_t mdns_remoteservice_get_ipv4_address(mdns_remoteservice_obj_t *self) {
     if (self->result == NULL ||
         self->result->ip_protocol != MDNS_IP_PROTOCOL_V4 ||
         self->result->addr == NULL) {
@@ -81,8 +81,8 @@ uint32_t mdns_remoteservice_get_ipv4(mdns_remoteservice_obj_t *self) {
     return 0;
 }
 
-mp_obj_t common_hal_mdns_remoteservice_get_ipv4(mdns_remoteservice_obj_t *self) {
-    uint32_t addr = mdns_remoteservice_get_ipv4(self);
+mp_obj_t common_hal_mdns_remoteservice_get_ipv4_address(mdns_remoteservice_obj_t *self) {
+    uint32_t addr = mdns_remoteservice_get_ipv4_address(self);
     if (addr == 0) {
         return mp_const_none;
     }

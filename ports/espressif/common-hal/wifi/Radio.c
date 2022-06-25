@@ -48,10 +48,6 @@
 
 #define MAC_ADDRESS_LENGTH 6
 
-#include "esp_log.h"
-
-static const char *TAG = "radio";
-
 static void set_mode_station(wifi_radio_obj_t *self, bool state) {
     wifi_mode_t next_mode;
     if (state) {
@@ -240,12 +236,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
-    ESP_LOGI(TAG, "connect");
     wifi_config_t *config = &self->sta_config;
 
-    // size_t timeout_ms = timeout * 1000;
-    // uint32_t start_time = common_hal_time_monotonic_ms();
-    // uint32_t end_time = start_time + timeout_ms;
+    size_t timeout_ms = timeout * 1000;
+    uint32_t start_time = common_hal_time_monotonic_ms();
+    uint32_t end_time = start_time + timeout_ms;
 
     EventBits_t bits;
     // can't block since both bits are false after wifi_init
@@ -309,9 +304,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
     esp_wifi_set_config(ESP_IF_WIFI_STA, config);
     self->starting_retries = 5;
     self->retries_left = 5;
-    ESP_LOGI(TAG, "wifi connect");
     esp_wifi_connect();
-    ESP_LOGI(TAG, "wifi connect done");
 
     do {
         RUN_BACKGROUND_TASKS;
@@ -321,11 +314,11 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             pdTRUE,
             0);
         // Don't retry anymore if we're over our time budget.
-        // if (self->retries_left > 0 && common_hal_time_monotonic_ms() > end_time) {
-        //     self->retries_left = 0;
-        // }
+        if (self->retries_left > 0 && common_hal_time_monotonic_ms() > end_time) {
+            self->retries_left = 0;
+        }
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
-    ESP_LOGI(TAG, "connect done");
+
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;

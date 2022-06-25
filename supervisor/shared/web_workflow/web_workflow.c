@@ -608,7 +608,7 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
         _send_chunk(socket, ", \"ip\": \"");
 
         char ip_encoded[4 * 4];
-        uint32_t ipv4_address = mdns_remoteservice_get_ipv4(&found_devices[i]);
+        uint32_t ipv4_address = mdns_remoteservice_get_ipv4_address(&found_devices[i]);
         uint8_t *octets = (uint8_t *)&ipv4_address;
         snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
         _send_chunk(socket, ip_encoded);

@@ -168,7 +168,6 @@ void common_hal_wifi_init(bool user_initiated) {
 
 void wifi_user_reset(void) {
     if (wifi_user_initiated) {
-        ESP_LOGW(TAG, "Reset wifi");
         wifi_reset();
     }
 }

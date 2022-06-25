@@ -49,7 +49,6 @@ void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     if (workflow) {
         // Set a delegated entry to ourselves. This allows us to respond to "circuitpython.local"
         // queries as well.
-        // TODO: Allow for disabling this with `supervisor.disable_web_workflow()`.
         mdns_ip_addr_t our_ip;
         esp_netif_get_ip_info(common_hal_wifi_radio_obj.netif, &common_hal_wifi_radio_obj.ip_info);
         our_ip.next = NULL;

@@ -37,14 +37,9 @@
 #include "components/lwip/lwip/src/include/lwip/sys.h"
 #include "components/lwip/lwip/src/include/lwip/netdb.h"
 
-#include "esp_log.h"
-
-static const char *TAG = "socket";
-
 STATIC socketpool_socket_obj_t *open_socket_handles[CONFIG_LWIP_MAX_SOCKETS];
 
 void socket_user_reset(void) {
-    ESP_LOGW(TAG, "Reset sockets");
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i]) {
             if (open_socket_handles[i]->num > 0) {
@@ -83,9 +78,6 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
         // In non-blocking mode, fail instead of timing out
         if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
-            if (errno != EAGAIN) {
-                ESP_LOGE(TAG, "accept failed %d", errno);
-            }
             return -MP_EAGAIN;
         }
     }
@@ -227,9 +219,7 @@ bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t *self) {
 }
 
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int backlog) {
-    int result = lwip_listen(self->num, backlog);
-    ESP_LOGE(TAG, "listen result %d", result);
-    return result == 0;
+    return lwip_listen(self->num, backlog);
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
@@ -294,8 +284,6 @@ int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
                 if (errno == ENOTCONN) {
                     self->connected = false;
                     return -MP_ENOTCONN;
-                } else if (errno != EAGAIN) {
-                    ESP_LOGE(TAG, "recv %d", errno);
                 }
                 return -MP_EAGAIN;
             }
