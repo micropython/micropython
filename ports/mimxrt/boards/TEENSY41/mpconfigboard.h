@@ -2,6 +2,7 @@
 #define MICROPY_HW_MCU_NAME   "MIMXRT1062DVJ6A"
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-teensy41"
+#define MICROPY_HW_USB_MSC    (1)
 
 // Teensy 4.1 has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_B0_03)

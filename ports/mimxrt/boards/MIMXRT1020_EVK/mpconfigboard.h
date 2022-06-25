@@ -3,6 +3,8 @@
 
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1020evk"
 
+#define MICROPY_HW_USB_MSC    (1)
+
 // i.MX RT1020 EVK has 1 board LED
 // Todo: think about replacing the define with searching in the generated pins?
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_B0_05)

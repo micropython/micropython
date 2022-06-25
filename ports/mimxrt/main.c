@@ -50,6 +50,7 @@
 extern uint8_t _sstack, _estack, _gc_heap_start, _gc_heap_end;
 
 void board_init(void);
+void update_msc_state(void);
 
 int main(void) {
     board_init();
@@ -124,6 +125,9 @@ int main(void) {
         #endif
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
+        #endif
+        #if CFG_TUD_MSC
+        update_msc_state();
         #endif
         machine_pwm_deinit_all();
         soft_timer_deinit();

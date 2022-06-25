@@ -45,6 +45,12 @@ extern uint8_t __flash_start;
 
 extern flexspi_nor_config_t qspiflash_config;
 
+enum {
+    MOUNTED = 0,
+    EJECTED,
+    TRANSIT
+};
+
 // --------------------------------------------------------------------+
 // Global Function Declarations
 // --------------------------------------------------------------------+

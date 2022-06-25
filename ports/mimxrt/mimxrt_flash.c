@@ -45,7 +45,7 @@ STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
     .base = { &mimxrt_flash_type }
 };
 
-extern bool tud_msc_ejected;
+extern uint8_t tud_msc_state;
 
 STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args.
@@ -145,7 +145,7 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
         }
         case MP_BLOCKDEV_IOCTL_STATUS:
             #if MICROPY_HW_USB_MSC
-            return MP_OBJ_NEW_SMALL_INT(!tud_msc_ejected);
+            return MP_OBJ_NEW_SMALL_INT(tud_msc_state != EJECTED);
             #else
             return MP_OBJ_NEW_SMALL_INT(false);
             #endif

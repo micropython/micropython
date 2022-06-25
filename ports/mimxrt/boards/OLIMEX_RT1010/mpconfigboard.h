@@ -5,6 +5,8 @@
 #define MICROPY_HW_USB_PID 0x0046
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (0)
 
+#define MICROPY_HW_USB_MSC    (1)
+
 // Olimex RT1010-Py has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_11)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
