@@ -34,7 +34,8 @@
 #define BLOCK_COUNT         (MICROPY_HW_FLASH_STORAGE_BYTES / BLOCK_SIZE)
 #define FLASH_BASE_ADDR     (MICROPY_HW_FLASH_STORAGE_BASE)
 
-bool ejected = false;
+bool tud_msc_ejected = true;
+extern void tud_msc_remount(void);
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
@@ -46,12 +47,13 @@ void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16
     strncpy((char *)vendor_id,   vid, 8);
     strncpy((char *)product_id,  pid, 16);
     strncpy((char *)product_rev, rev, 4);
+    tud_msc_ejected = false;
 }
 
 // Invoked when received Test Unit Ready command.
 // return true allowing host to read/write this LUN e.g SD card inserted
 bool tud_msc_test_unit_ready_cb(uint8_t lun) {
-    if (ejected) {
+    if (tud_msc_ejected) {
         tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
         return false;
     }
@@ -63,6 +65,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
 void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count, uint16_t *block_size) {
     *block_size = BLOCK_SIZE;
     *block_count = BLOCK_COUNT;
+    tud_msc_ejected = false;
 }
 
 // Invoked when received Start Stop Unit command
@@ -72,10 +75,13 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
     if (load_eject) {
         if (start) {
             // load disk storage
-            ejected = false;
+            tud_msc_ejected = false;
         } else {
             // unload disk storage
-            ejected = true;
+            tud_msc_ejected = true;
+            #if MICROPY_HW_USB_MSC_EXCLUSIVE_ACCESS
+            tud_msc_remount();
+            #endif
         }
     }
     return true;

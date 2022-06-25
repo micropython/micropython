@@ -51,6 +51,7 @@
 #define MP_BLOCKDEV_IOCTL_BLOCK_COUNT   (4)
 #define MP_BLOCKDEV_IOCTL_BLOCK_SIZE    (5)
 #define MP_BLOCKDEV_IOCTL_BLOCK_ERASE   (6)
+#define MP_BLOCKDEV_IOCTL_STATUS        (7)
 
 // At the moment the VFS protocol just has import_stat, but could be extended to other methods
 typedef struct _mp_vfs_proto_t {

@@ -61,6 +61,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
 #define MICROPY_MODULE_FROZEN_MPY           (1)
 #define MICROPY_QSTR_EXTRA_POOL             mp_qstr_frozen_const_pool
@@ -136,14 +137,16 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
-// by default do not enable MSC support
+// by default enable MSC support, unless disabled at some boards
+// Boards with hyperflash must disbale MSC support.
 #ifndef MICROPY_HW_USB_MSC
-#define MICROPY_HW_USB_MSC                  (0)
+#define MICROPY_HW_USB_MSC                  (1)
 #endif
 
 #if MICROPY_HW_USB_MSC
 #define MICROPY_FATFS_USE_LABEL             (1)
 #define MICROPY_FATFS_MULTI_PARTITION       (1)
+#define MICROPY_HW_USB_MSC_EXCLUSIVE_ACCESS (1)
 #endif
 
 // Hooks to add builtins
