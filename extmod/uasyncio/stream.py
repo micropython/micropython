@@ -78,13 +78,13 @@ class Stream:
             # Drain must always yield, so a tight loop of write+drain can't block the scheduler.
             return await core.sleep_ms(0)
         mv = memoryview(self.out_buf)
+        self.out_buf = b""
         off = 0
         while off < len(mv):
             yield core._io_queue.queue_write(self.s)
             ret = self.s.write(mv[off:])
             if ret is not None:
                 off += ret
-        self.out_buf = b""
 
 
 # Stream can be used for both reading and writing to save code size
