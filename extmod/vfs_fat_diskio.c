@@ -152,7 +152,15 @@ DRESULT disk_ioctl(
             DSTATUS stat = 0;
             if (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0) {
                 // error initialising
-               stat = STA_NOINIT;
+                stat = STA_NOINIT;
+            } else {
+                // IOCTL_INIT only returns non 0 for all errors/flags. To return
+                // a more accurate disk state, IOCTL_STATUS is called again here.
+                ret = mp_vfs_blockdev_ioctl(&vfs->blockdev, MP_BLOCKDEV_IOCTL_STATUS, 0);
+                if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL ||
+                    (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0)) {
+                    stat = STA_PROTECT;
+                }
             }
             *((DSTATUS *)buff) = stat;
             return RES_OK;
@@ -161,7 +169,7 @@ DRESULT disk_ioctl(
         case IOCTL_STATUS: {
             DSTATUS stat = 0;
             if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL ||
-                    (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0)) {
+                (ret != mp_const_none && MP_OBJ_SMALL_INT_VALUE(ret) != 0)) {
                 stat = STA_PROTECT;
             }
             *((DSTATUS *)buff) = stat;

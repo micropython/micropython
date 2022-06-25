@@ -54,7 +54,6 @@ void board_init(void);
 int main(void) {
     board_init();
     ticks_init();
-    tusb_init();
     led_init();
     pendsv_init();
 
@@ -86,6 +85,11 @@ int main(void) {
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
+
+        // deferred tusb_init allowing a fs to be created before MSC access
+        if (!tusb_inited()) {
+            tusb_init();
+        }
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
