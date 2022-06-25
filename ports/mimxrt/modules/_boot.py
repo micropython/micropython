@@ -11,15 +11,17 @@ FS_UNDEF = const(0)
 FS_LITTLEFS = const(1)
 FS_FAT = const(2)
 
+
 def fs_type(bdev):
     b = bytearray(512)
     bdev.readblocks(0, b)
     if b[40:48] == b"littlefs" or b[8:16] == b"littlefs":
         return FS_LITTLEFS
-    elif b[510:512] == b'\x55\xaa':
+    elif b[510:512] == b"\x55\xaa":
         return FS_FAT
     else:
         return FS_UNDEF
+
 
 bdev = mimxrt.Flash()
 

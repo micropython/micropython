@@ -94,7 +94,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
     uint32_t count = bufsize / BLOCK_SIZE;
     // Erase count sectors starting at lba
     for (int n = 0; n < count; n++) {
-        flash_erase_sector(FLASH_BASE_ADDR + (lba + n) * BLOCK_SIZE); 
+        flash_erase_sector(FLASH_BASE_ADDR + (lba + n) * BLOCK_SIZE);
     }
     flash_write_block(FLASH_BASE_ADDR + lba * BLOCK_SIZE, buffer, count * BLOCK_SIZE);
     return count * BLOCK_SIZE;

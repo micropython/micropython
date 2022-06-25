@@ -136,14 +136,14 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
-// Enable USB Mass Storage with FatFS filesystem.
-#define MICROPY_HW_USB_MSC                  (1)
+// by default do not enable MSC support
+#ifndef MICROPY_HW_USB_MSC
+#define MICROPY_HW_USB_MSC                  (0)
+#endif
 
 #if MICROPY_HW_USB_MSC
 #define MICROPY_FATFS_USE_LABEL             (1)
 #define MICROPY_FATFS_MULTI_PARTITION       (1)
-// Set FatFS block size to flash sector size to avoid caching
-// the flash sector in memory to support smaller block sizes.
 #endif
 
 // Hooks to add builtins
