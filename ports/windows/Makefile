@@ -33,7 +33,7 @@ INC += -I$(VARIANT_DIR)
 
 # compiler settings
 CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
-LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) -lm -lbcrypt $(LDFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -49,14 +49,12 @@ SRC_C = \
 	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
-	ports/unix/modos.c \
 	ports/unix/modmachine.c \
 	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
-	sleep.c \
 	fmode.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
@@ -68,7 +66,17 @@ LIB_SRC_C = $(addprefix lib/,\
         timeutils/timeutils.c \
         )
 
+SHARED_SRC_C += $(addprefix shared/,\
+	$(SHARED_SRC_C_EXTRA) \
+	)
+
+SRC_CXX += \
+	$(SRC_MOD_CXX)
+
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 ifeq ($(MICROPY_USE_READLINE),1)
@@ -79,7 +87,7 @@ endif
 LIB += -lws2_32 -lSDL2
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(LIB_SRC_C)
+SRC_QSTR += $(SRC_C) $(LIB_SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -87,6 +95,8 @@ SRC_QSTR_AUTO_DEPS +=
 ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
 endif
+
+CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 include $(TOP)/py/mkrules.mk
 

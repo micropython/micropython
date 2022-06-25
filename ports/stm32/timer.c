@@ -236,7 +236,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         source = HAL_RCC_GetPCLK1Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
         #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -252,7 +252,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
         #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         clk_div = RCC->CDCFGR1 & RCC_CDCFGR2_CDPPRE1;
@@ -482,7 +482,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     deadTimeConfig.BreakFilter = 0;
     deadTimeConfig.Break2State = TIM_BREAK_DISABLE;
     deadTimeConfig.Break2Polarity = TIM_BREAKPOLARITY_LOW;
@@ -804,22 +804,30 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM1)
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32G0)
     TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
     #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
     #elif defined(STM32H7)
     TIM_ENTRY(1, TIM1_UP_IRQn),
-    #elif defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     TIM_ENTRY(1, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
     #if defined(TIM3)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(3, TIM3_TIM4_IRQn),
+    #else
     TIM_ENTRY(3, TIM3_IRQn),
     #endif
+    #endif
     #if defined(TIM4)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(3, TIM3_TIM4_IRQn),
+    #else
     TIM_ENTRY(4, TIM4_IRQn),
+    #endif
     #endif
     #if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
@@ -827,17 +835,25 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM6)
     #if defined(STM32F412Zx)
     TIM_ENTRY(6, TIM6_IRQn),
+    #elif defined(STM32G0)
+    TIM_ENTRY(6, TIM6_DAC_LPTIM1_IRQn),
     #else
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
     #endif
     #if defined(TIM7)
+    #if defined(STM32G0)
+    TIM_ENTRY(7, TIM7_LPTIM2_IRQn),
+    #elif defined(STM32G4)
+    TIM_ENTRY(7, TIM7_DAC_IRQn),
+    #else
     TIM_ENTRY(7, TIM7_IRQn),
+    #endif
     #endif
     #if defined(TIM8)
     #if defined(STM32F4) || defined(STM32F7) || defined(STM32H7)
     TIM_ENTRY(8, TIM8_UP_TIM13_IRQn),
-    #elif defined(STM32L4)
+    #elif defined(STM32G4) || defined(STM32L4)
     TIM_ENTRY(8, TIM8_UP_IRQn),
     #endif
     #endif
@@ -856,31 +872,38 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32G0)
     TIM_ENTRY(14, TIM14_IRQn),
     #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
     #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H7)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
     #endif
     #if defined(TIM16)
-    #if defined(STM32F0) || defined(STM32H7)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(16, TIM16_FDCAN_IT0_IRQn),
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
     #if defined(TIM17)
-    #if defined(STM32F0) || defined(STM32H7)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(17, TIM17_FDCAN_IT1_IRQn),
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
     #endif
+    #endif
+    #if defined(TIM20)
+    TIM_ENTRY(20, TIM20_UP_IRQn),
     #endif
 };
 #undef TIM_ENTRY
@@ -1110,14 +1133,14 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         const pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an af for Timer(%d)"), pin->name, self->tim_id);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an alt for Timer(%d)"), pin->name, self->tim_id);
         }
-        // pin.init(mode=AF_PP, af=idx)
+        // pin.init(mode=AF_PP, alt=idx)
         const mp_obj_t args2[6] = {
             MP_OBJ_FROM_PTR(&pin_init_obj),
             pin_obj,
             MP_OBJ_NEW_QSTR(MP_QSTR_mode),  MP_OBJ_NEW_SMALL_INT(GPIO_MODE_AF_PP),
-            MP_OBJ_NEW_QSTR(MP_QSTR_af),    MP_OBJ_NEW_SMALL_INT(af->idx)
+            MP_OBJ_NEW_QSTR(MP_QSTR_alt),   MP_OBJ_NEW_SMALL_INT(af->idx)
         };
         mp_call_method_n_kw(0, 2, args2);
     }
@@ -1401,6 +1424,7 @@ STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
         // start timer, so that it interrupts on overflow, but clear any
         // pending interrupts which may have been set by initializing it.
         __HAL_TIM_CLEAR_FLAG(&self->tim, TIM_IT_UPDATE);
+        HAL_TIM_Base_Stop(&self->tim); // internal timer state must be released before starting again
         HAL_TIM_Base_Start_IT(&self->tim); // This will re-enable the IRQ
         HAL_NVIC_EnableIRQ(self->irqn);
     } else {

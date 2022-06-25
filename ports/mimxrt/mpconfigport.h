@@ -48,6 +48,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_OPT_MAP_LOOKUP_CACHE        (1)
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC               (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_ENABLE_GC                   (1)
 #define MICROPY_ENABLE_FINALISER            (1)
@@ -121,7 +122,12 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_UBINASCII                (1)
 #define MICROPY_PY_UBINASCII_CRC32          (1)
 #define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_PY_UOS                      (1)
+#define MICROPY_PY_UOS_INCLUDEFILE          "ports/mimxrt/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (3)
+#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
+#define MICROPY_PY_UOS_UNAME                (1)
+#define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_URANDOM                  (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS      (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (trng_random_u32())
@@ -135,6 +141,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#ifndef MICROPY_PY_MACHINE_I2S
+#define MICROPY_PY_MACHINE_I2S              (0)
+#endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
@@ -169,18 +178,15 @@ uint32_t trng_random_u32(void);
 // For regular code that wants to prevent "background tasks" from running.
 // These background tasks (LWIP, Bluetooth) run in PENDSV context.
 // TODO: Check for the settings of the STM32 port in irq.h
-#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = disable_irq();
-#define MICROPY_PY_PENDSV_REENTER atomic_state = disable_irq();
-#define MICROPY_PY_PENDSV_EXIT    enable_irq(atomic_state);
+#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
+#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
 // Use VfsLfs2's types for fileio/textio
 #define mp_type_fileio mp_type_vfs_lfs2_fileio
 #define mp_type_textio mp_type_vfs_lfs2_textio
-
-// Use VFS's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
 
 // Hooks to add builtins
 
@@ -214,40 +220,6 @@ static inline void restore_irq_pri(uint32_t basepri) {
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t mp_module_mimxrt;
-extern const struct _mp_obj_module_t mp_module_onewire;
-extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
-#else
-#define NETWORK_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
-// usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
-#elif MICROPY_PY_USOCKET
-// usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-// no usocket module
-#define SOCKET_BUILTIN_MODULE
-#endif
-
-#if MICROPY_SSL_MBEDTLS
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
-#else
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
-#endif
-
 #if defined(MICROPY_HW_ETH_MDC)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
@@ -255,19 +227,19 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
-    { MP_ROM_QSTR(MP_QSTR_mimxrt), (mp_obj_t)&mp_module_mimxrt }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-    { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
+    MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
+
+#ifndef MICROPY_BOARD_ROOT_POINTERS
+#define MICROPY_BOARD_ROOT_POINTERS
+#endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
@@ -275,8 +247,8 @@ extern const struct _mp_obj_type_t network_lan_type;
     void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]; \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
-    /* root pointers for sub-systems */ \
-    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
+    /* root pointers defined by a board */ \
+    MICROPY_BOARD_ROOT_POINTERS \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -289,6 +261,10 @@ extern const struct _mp_obj_type_t network_lan_type;
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
+
+#define MP_HAL_CLEANINVALIDATE_DCACHE(addr, size) \
+    (SCB_CleanInvalidateDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
+    ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 
 #define MP_HAL_CLEAN_DCACHE(addr, size) \
     (SCB_CleanDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \

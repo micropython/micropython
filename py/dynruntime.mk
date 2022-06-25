@@ -55,6 +55,13 @@ CROSS =
 CFLAGS += -fno-stack-protector
 MICROPY_FLOAT_IMPL ?= double
 
+else ifeq ($(ARCH),armv6m)
+
+# thumb
+CROSS = arm-none-eabi-
+CFLAGS += -mthumb -mcpu=cortex-m0
+MICROPY_FLOAT_IMPL ?= none
+
 else ifeq ($(ARCH),armv7m)
 
 # thumb

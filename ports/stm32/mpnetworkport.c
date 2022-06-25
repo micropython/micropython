@@ -48,7 +48,7 @@
 // Poll lwIP every 128ms
 #define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 void wiznet5k_poll(void);
 #endif
 
@@ -57,7 +57,7 @@ u32_t sys_now(void) {
 }
 
 STATIC void pyb_lwip_poll(void) {
-    #if MICROPY_PY_WIZNET5K
+    #if MICROPY_PY_NETWORK_WIZNET5K
     // Poll the NIC for incoming data
     wiznet5k_poll();
     #endif

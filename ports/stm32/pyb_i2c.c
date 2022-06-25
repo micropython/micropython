@@ -130,14 +130,14 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
     #endif
 };
 
-#if defined(STM32F7) || defined(STM32L4) || defined(STM32H7)
+#if defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4)
 
 // The STM32F0, F3, F7, H7 and L4 use a TIMINGR register rather than ClockSpeed and
 // DutyCycle.
 
 #define PYB_I2C_TIMINGR (1)
 
-#if defined(STM32F746xx)
+#if defined(STM32F745xx) || defined(STM32F746xx)
 
 // The value 0x40912732 was obtained from the DISCOVERY_I2Cx_TIMING constant
 // defined in the STM32F7Cube file Drivers/BSP/STM32F746G-Discovery/stm32f7456g_discovery.h
@@ -162,6 +162,38 @@ const pyb_i2c_obj_t pyb_i2c_obj[] = {
 }
 #define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
 #define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
+
+#elif defined(STM32G0)
+// generated using CubeMX
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x10707DBC}, \
+        {PYB_I2C_SPEED_FULL, 0x00602173}, \
+        {PYB_I2C_SPEED_FAST, 0x00300B29}, \
+}
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_FULL)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_FAST)
+
+#elif defined(STM32G4)
+// timing input depends on PLL
+// for now: 170MHz sysclock, PCLK 10.625 MHz
+// using PCLOCK
+// generated using CubeMX
+#if defined(STM32G431xx) || defined(STM32G441xx)
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+}
+#else
+#define MICROPY_HW_I2C_BAUDRATE_TIMING { \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+        {PYB_I2C_SPEED_STANDARD, 0x30A0A7FB}, \
+}
+#endif
+#define MICROPY_HW_I2C_BAUDRATE_DEFAULT (PYB_I2C_SPEED_STANDARD)
+#define MICROPY_HW_I2C_BAUDRATE_MAX (PYB_I2C_SPEED_STANDARD)
 
 #elif defined(STM32H7)
 
@@ -509,7 +541,7 @@ void i2c_er_irq_handler(mp_uint_t i2c_id) {
     // I2C Acknowledge failure
     if (sr1 & I2C_FLAG_AF) {
         hi2c->ErrorCode |= HAL_I2C_ERROR_AF;
-        SET_BIT(hi2c->Instance->CR1,I2C_CR1_STOP);
+        SET_BIT(hi2c->Instance->CR1, I2C_CR1_STOP);
         __HAL_I2C_CLEAR_FLAG(hi2c, I2C_FLAG_AF);
     }
 

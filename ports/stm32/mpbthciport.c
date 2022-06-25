@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/mpbthci.h"
@@ -42,20 +43,12 @@ uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 // Soft timer for scheduling a HCI poll.
 STATIC soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 
-#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-// Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled;
-#endif
-
 // This is called by soft_timer and executes at IRQ_PRI_PENDSV.
 STATIC void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
     mp_bluetooth_hci_poll_now();
 }
 
 void mp_bluetooth_hci_init(void) {
-    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-    events_task_is_scheduled = false;
-    #endif
     soft_timer_static_init(
         &mp_bluetooth_hci_soft_timer,
         SOFT_TIMER_MODE_ONE_SHOT,
@@ -65,9 +58,6 @@ void mp_bluetooth_hci_init(void) {
 }
 
 STATIC void mp_bluetooth_hci_start_polling(void) {
-    #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-    events_task_is_scheduled = false;
-    #endif
     mp_bluetooth_hci_poll_now();
 }
 
@@ -77,29 +67,21 @@ void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms) {
 
 #if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
 
+STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
+
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a soft timer, or
 // immediately on HCI UART RXIDLE.
-
-STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
-    (void)none_in;
-    events_task_is_scheduled = false;
+STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
     // This will process all buffered HCI UART data, and run any callouts or events.
+    (void)node;
     mp_bluetooth_hci_poll();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
 // request that processing happens ASAP in the scheduler.
 void mp_bluetooth_hci_poll_now_default(void) {
-    if (!events_task_is_scheduled) {
-        events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
-        if (!events_task_is_scheduled) {
-            // The schedule queue is full, set callback to try again soon.
-            mp_bluetooth_hci_poll_in_ms(5);
-        }
-    }
+    mp_sched_schedule_node(&mp_bluetooth_hci_sched_node, run_events_scheduled_task);
 }
 
 #else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
@@ -118,10 +100,6 @@ void mp_bluetooth_hci_poll_now_default(void) {
 #include <string.h>
 #include "rfcore.h"
 
-STATIC uint16_t hci_uart_rx_buf_cur;
-STATIC uint16_t hci_uart_rx_buf_len;
-STATIC uint8_t hci_uart_rx_buf_data[256];
-
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     (void)port;
     (void)baudrate;
@@ -129,8 +107,6 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32 rfcore)\n");
 
     rfcore_ble_init();
-    hci_uart_rx_buf_cur = 0;
-    hci_uart_rx_buf_len = 0;
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
@@ -156,29 +132,17 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
     return 0;
 }
 
-// Callback to copy data into local hci_uart_rx_buf_data buffer for subsequent use.
-STATIC int mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
-    (void)env;
-    if (hci_uart_rx_buf_len + len > MP_ARRAY_SIZE(hci_uart_rx_buf_data)) {
-        len = MP_ARRAY_SIZE(hci_uart_rx_buf_data) - hci_uart_rx_buf_len;
+// Callback to forward data from rfcore to the bluetooth hci handler.
+STATIC void mp_bluetooth_hci_uart_msg_cb(void *env, const uint8_t *buf, size_t len) {
+    mp_bluetooth_hci_uart_readchar_t handler = (mp_bluetooth_hci_uart_readchar_t)env;
+    for (size_t i = 0; i < len; ++i) {
+        handler(buf[i]);
     }
-    memcpy(hci_uart_rx_buf_data + hci_uart_rx_buf_len, buf, len);
-    hci_uart_rx_buf_len += len;
-    return 0;
 }
 
-int mp_bluetooth_hci_uart_readchar(void) {
-    if (hci_uart_rx_buf_cur >= hci_uart_rx_buf_len) {
-        hci_uart_rx_buf_cur = 0;
-        hci_uart_rx_buf_len = 0;
-        rfcore_ble_check_msg(mp_bluetooth_hci_uart_msg_cb, NULL);
-    }
-
-    if (hci_uart_rx_buf_cur < hci_uart_rx_buf_len) {
-        return hci_uart_rx_buf_data[hci_uart_rx_buf_cur++];
-    } else {
-        return -1;
-    }
+int mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_readchar_t handler) {
+    size_t len = rfcore_ble_check_msg(mp_bluetooth_hci_uart_msg_cb, (void *)handler);
+    return (len > 0) ? len : -1;
 }
 
 #else

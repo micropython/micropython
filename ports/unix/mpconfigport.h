@@ -34,6 +34,74 @@
 // If we're building the minimal variant, ignore the rest of this file.
 #ifndef MICROPY_UNIX_MINIMAL
 
+// If the variant did not set a feature level then configure a set of features.
+#ifndef MICROPY_CONFIG_ROM_LEVEL
+#define MICROPY_COMP_MODULE_CONST               (1)
+#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN        (1)
+#define MICROPY_COMP_RETURN_IF_EXPR             (1)
+#ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
+#define MICROPY_OPT_LOAD_ATTR_FAST_PATH         (1)
+#endif
+#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
+#define MICROPY_OPT_MAP_LOOKUP_CACHE            (1)
+#endif
+#define MICROPY_ENABLE_FINALISER                (1)
+#define MICROPY_STACK_CHECK                     (1)
+#define MICROPY_KBD_EXCEPTION                   (1)
+#define MICROPY_HELPER_REPL                     (1)
+#define MICROPY_REPL_EMACS_KEYS                 (1)
+#define MICROPY_REPL_AUTO_INDENT                (1)
+#define MICROPY_ENABLE_SOURCE_LINE              (1)
+#ifndef MICROPY_STREAMS_NON_BLOCK
+#define MICROPY_STREAMS_NON_BLOCK               (1)
+#endif
+#define MICROPY_MODULE_WEAK_LINKS               (1)
+#define MICROPY_CAN_OVERRIDE_BUILTINS           (1)
+#define MICROPY_PY_FUNCTION_ATTRS               (1)
+#define MICROPY_PY_DESCRIPTORS                  (1)
+#define MICROPY_PY_DELATTR_SETATTR              (1)
+#define MICROPY_PY_FSTRINGS                     (1)
+#define MICROPY_PY_BUILTINS_STR_UNICODE         (1)
+#define MICROPY_PY_BUILTINS_STR_CENTER          (1)
+#define MICROPY_PY_BUILTINS_STR_PARTITION       (1)
+#define MICROPY_PY_BUILTINS_STR_SPLITLINES      (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW          (1)
+#define MICROPY_PY_BUILTINS_SLICE_ATTRS         (1)
+#define MICROPY_PY_BUILTINS_SLICE_INDICES       (1)
+#define MICROPY_PY_BUILTINS_FROZENSET           (1)
+#define MICROPY_PY_BUILTINS_ROUND_INT           (1)
+#define MICROPY_PY_ALL_SPECIAL_METHODS          (1)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS      (1)
+#define MICROPY_PY_BUILTINS_COMPILE             (1)
+#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED      (1)
+#define MICROPY_PY_BUILTINS_INPUT               (1)
+#define MICROPY_PY_BUILTINS_POW3                (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO         (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN           (1)
+#define MICROPY_PY_COLLECTIONS_DEQUE            (1)
+#define MICROPY_PY_COLLECTIONS_ORDEREDDICT      (1)
+#ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
+#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS       (1)
+#endif
+#define MICROPY_PY_MATH_ISCLOSE                 (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
+#define MICROPY_PY_CMATH                        (1)
+#define MICROPY_PY_IO_IOBASE                    (1)
+#define MICROPY_PY_IO_FILEIO                    (1)
+#define MICROPY_PY_SYS_MAXSIZE                  (1)
+#define MICROPY_PY_SYS_STDFILES                 (1)
+#define MICROPY_PY_UERRNO                       (1)
+#define MICROPY_PY_UCTYPES                      (1)
+#define MICROPY_PY_UZLIB                        (1)
+#define MICROPY_PY_UJSON                        (1)
+#define MICROPY_PY_UOS                          (1)
+#define MICROPY_PY_URE                          (1)
+#define MICROPY_PY_UHEAPQ                       (1)
+#define MICROPY_PY_UHASHLIB                     (1)
+#define MICROPY_PY_UBINASCII                    (1)
+#define MICROPY_PY_UBINASCII_CRC32              (1)
+#define MICROPY_PY_URANDOM                      (1)
+#endif
+
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
@@ -51,12 +119,7 @@
 #if !defined(MICROPY_EMIT_ARM) && defined(__arm__) && !defined(__thumb2__)
     #define MICROPY_EMIT_ARM        (1)
 #endif
-#define MICROPY_COMP_MODULE_CONST   (1)
-#define MICROPY_COMP_TRIPLE_TUPLE_ASSIGN (1)
-#define MICROPY_COMP_RETURN_IF_EXPR (1)
 #define MICROPY_ENABLE_GC           (1)
-#define MICROPY_ENABLE_FINALISER    (1)
-#define MICROPY_STACK_CHECK         (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE (0)
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (1)
@@ -66,52 +129,18 @@
 // check stdout a chance to pass, etc.
 #define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_READER_POSIX        (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
-#define MICROPY_HELPER_REPL         (1)
-#define MICROPY_REPL_EMACS_KEYS     (1)
-#define MICROPY_REPL_AUTO_INDENT    (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (1)
 #ifndef MICROPY_FLOAT_IMPL
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #endif
 #define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_MPZ)
-#ifndef MICROPY_STREAMS_NON_BLOCK
-#define MICROPY_STREAMS_NON_BLOCK   (1)
-#endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (1)
-#ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (1)
-#endif
-#ifndef MICROPY_OPT_MAP_LOOKUP_CACHE
-#define MICROPY_OPT_MAP_LOOKUP_CACHE (1)
-#endif
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (1)
-#define MICROPY_VFS_POSIX_FILE      (1)
-#define MICROPY_PY_FUNCTION_ATTRS   (1)
-#define MICROPY_PY_DESCRIPTORS      (1)
-#define MICROPY_PY_DELATTR_SETATTR  (1)
-#define MICROPY_PY_FSTRINGS         (1)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (1)
-#define MICROPY_PY_BUILTINS_STR_CENTER (1)
-#define MICROPY_PY_BUILTINS_STR_PARTITION (1)
-#define MICROPY_PY_BUILTINS_STR_SPLITLINES (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (1)
-#define MICROPY_PY_BUILTINS_FROZENSET (1)
-#define MICROPY_PY_BUILTINS_COMPILE (1)
-#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED (1)
-#define MICROPY_PY_BUILTINS_INPUT   (1)
-#define MICROPY_PY_BUILTINS_POW3    (1)
-#define MICROPY_PY_BUILTINS_ROUND_INT    (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
-#define MICROPY_PY_ALL_SPECIAL_METHODS (1)
-#define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
-#define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
-#define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_POSIX           (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 #define MICROPY_PY_SYS_EXIT         (1)
 #define MICROPY_PY_SYS_ATEXIT       (1)
@@ -131,18 +160,7 @@
 #ifndef MICROPY_PY_SYS_PATH_DEFAULT
 #define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
 #endif
-#define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
-#define MICROPY_PY_COLLECTIONS_DEQUE (1)
-#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
-#ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
-#define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
-#endif
-#define MICROPY_PY_MATH_ISCLOSE     (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
-#define MICROPY_PY_CMATH            (1)
-#define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 
 #ifndef MICROPY_STACKLESS
@@ -150,34 +168,21 @@
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
-#define MICROPY_PY_LVGL             (1)
-#define MICROPY_PY_LVGL_SDL         (1)
-#define MICROPY_PY_LVGL_LODEPNG     (1)
-#if LINUX_FRAME_BUFFER
-    #define MICROPY_PY_LVGL_FB      (1)
-#else
-    #define MICROPY_PY_LVGL_FB      (0)
-#endif
-
-#define MICROPY_PY_OS_STATVFS       (1)
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/unix/moduos.c"
+#define MICROPY_PY_UOS_ERRNO        (1)
+#define MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV (1)
+#define MICROPY_PY_UOS_SEP          (1)
+#define MICROPY_PY_UOS_SYSTEM       (1)
+#define MICROPY_PY_UOS_URANDOM      (1)
 #define MICROPY_PY_UTIME            (1)
 #define MICROPY_PY_UTIME_MP_HAL     (1)
-#define MICROPY_PY_UERRNO           (1)
-#define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_UZLIB            (1)
-#define MICROPY_PY_UJSON            (1)
-#define MICROPY_PY_URE              (1)
-#define MICROPY_PY_UHEAPQ           (1)
 #define MICROPY_PY_UTIMEQ           (1)
-#define MICROPY_PY_UHASHLIB         (1)
+#define MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 #if MICROPY_PY_USSL
 #define MICROPY_PY_UHASHLIB_MD5     (1)
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_UBINASCII_CRC32  (1)
-#define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT_POSIX
 #define MICROPY_PY_USELECT_POSIX    (1)
 #endif
@@ -211,64 +216,11 @@ extern const struct _mp_print_t mp_stderr_print;
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
-#define MICROPY_KBD_EXCEPTION       (1)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
 #define mp_type_fileio mp_type_vfs_posix_fileio
 #define mp_type_textio mp_type_vfs_posix_textio
 
-extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t mp_module_os;
-extern const struct _mp_obj_module_t mp_module_uos_vfs;
-extern const struct _mp_obj_module_t mp_module_uselect;
-extern const struct _mp_obj_module_t mp_module_time;
-extern const struct _mp_obj_module_t mp_module_termios;
-extern const struct _mp_obj_module_t mp_module_socket;
-extern const struct _mp_obj_module_t mp_module_ffi;
-extern const struct _mp_obj_module_t mp_module_jni;
-extern const struct _mp_obj_module_t mp_module_lvgl;
-extern const struct _mp_obj_module_t mp_module_lvindev;
-extern const struct _mp_obj_module_t mp_module_SDL;
-extern const struct _mp_obj_module_t mp_module_fb;
-extern const struct _mp_obj_module_t mp_module_lodepng;
-
-#if MICROPY_PY_UOS_VFS
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos_vfs) },
-#else
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) },
-#endif
-#if MICROPY_PY_FFI
-#define MICROPY_PY_FFI_DEF { MP_ROM_QSTR(MP_QSTR_ffi), MP_ROM_PTR(&mp_module_ffi) },
-#else
-#define MICROPY_PY_FFI_DEF
-#endif
-#if MICROPY_PY_JNI
-#define MICROPY_PY_JNI_DEF { MP_ROM_QSTR(MP_QSTR_jni), MP_ROM_PTR(&mp_module_jni) },
-#else
-#define MICROPY_PY_JNI_DEF
-#endif
-#if MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
-#else
-#define MICROPY_PY_UTIME_DEF
-#endif
-#if MICROPY_PY_TERMIOS
-#define MICROPY_PY_TERMIOS_DEF { MP_ROM_QSTR(MP_QSTR_termios), MP_ROM_PTR(&mp_module_termios) },
-#else
-#define MICROPY_PY_TERMIOS_DEF
-#endif
-#if MICROPY_PY_SOCKET
-#define MICROPY_PY_SOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_socket) },
-#else
-#define MICROPY_PY_SOCKET_DEF
-#endif
-#if MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_DEF { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-#else
-#define MICROPY_PY_USELECT_DEF
-#endif
-
-#if MICROPY_PY_LVGL
 #ifndef MICROPY_INCLUDED_PY_MPSTATE_H
 #define MICROPY_INCLUDED_PY_MPSTATE_H
 #include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
@@ -276,40 +228,6 @@ extern const struct _mp_obj_module_t mp_module_lodepng;
 #else
 #include "lib/lv_bindings/lvgl/src/misc/lv_gc.h"
 #endif
-#define MICROPY_PY_LVGL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
-    #if MICROPY_PY_LVGL_SDL
-    #define MICROPY_PY_LVGL_SDL_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_SDL), (mp_obj_t)&mp_module_SDL },
-    #else
-    #define MICROPY_PY_LVGL_SDL_DEF
-    #endif
-    #if MICROPY_PY_LVGL_FB
-    #define MICROPY_PY_LVGL_FB_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_fb), (mp_obj_t)&mp_module_fb },
-    #else
-    #define MICROPY_PY_LVGL_FB_DEF
-    #endif
-    #if MICROPY_PY_LVGL_LODEPNG
-    #define MICROPY_PY_LVGL_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
-    #else
-    #define MICROPY_PY_LVGL_LODEPNG_DEF
-    #endif
-#else
-    #define LV_ROOTS
-    #define MICROPY_PY_LVGL_DEF
-#endif
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    MICROPY_PY_FFI_DEF \
-    MICROPY_PY_JNI_DEF \
-    MICROPY_PY_UTIME_DEF \
-    MICROPY_PY_SOCKET_DEF \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
-    MICROPY_PY_UOS_DEF \
-    MICROPY_PY_USELECT_DEF \
-    MICROPY_PY_TERMIOS_DEF \
-    MICROPY_PY_LVGL_DEF \
-    MICROPY_PY_LVGL_SDL_DEF \
-    MICROPY_PY_LVGL_FB_DEF \
-    MICROPY_PY_LVGL_LODEPNG_DEF
 
 // type definitions for the specific machine
 
@@ -347,6 +265,17 @@ void mp_unix_mark_exec(void);
 #define MICROPY_FORCE_PLAT_ALLOC_EXEC (1)
 #endif
 
+#ifdef MICROPY_PY_URANDOM_SEED_INIT_FUNC
+// Support for seeding the random module on import.
+#include <stddef.h>
+void mp_hal_get_random(size_t n, void *buf);
+static inline unsigned long mp_urandom_seed_init(void) {
+    unsigned long r;
+    mp_hal_get_random(sizeof(r), &r);
+    return r;
+}
+#endif
+
 #ifdef __linux__
 // Can access physical memory using /dev/mem
 #define MICROPY_PLAT_DEV_MEM  (1)
@@ -364,9 +293,6 @@ void mp_unix_mark_exec(void);
 #define nan(x) NAN
 #endif
 #endif
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
 

@@ -30,8 +30,7 @@ static struct k_sem uart_sem;
 static uint8_t uart_ringbuf[UART_BUFSIZE];
 static uint8_t i_get, i_put;
 
-static int console_irq_input_hook(uint8_t ch)
-{
+static int console_irq_input_hook(uint8_t ch) {
     int i_next = (i_put + 1) & (UART_BUFSIZE - 1);
     if (i_next == i_get) {
         printk("UART buffer overflow - char dropped\n");
@@ -45,7 +44,7 @@ static int console_irq_input_hook(uint8_t ch)
         uart_ringbuf[i_put] = ch;
         i_put = i_next;
     }
-    //printk("%x\n", ch);
+    // printk("%x\n", ch);
     k_sem_give(&uart_sem);
     k_yield();
     return 1;

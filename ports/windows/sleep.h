@@ -26,9 +26,12 @@
 #ifndef MICROPY_INCLUDED_WINDOWS_SLEEP_H
 #define MICROPY_INCLUDED_WINDOWS_SLEEP_H
 
-void init_sleep(void);
-void deinit_sleep(void);
+// The main sleep implementation for the Windows port.
 void msec_sleep(double msec);
+
+// Define usleep() because some of the unix port's code uses that.
+// Mingw and the likes provide a definition of usleep(), note however
+// that it's also just Sleep(usec/1000).
 #ifdef _MSC_VER
 int usleep(__int64 usec);
 #endif

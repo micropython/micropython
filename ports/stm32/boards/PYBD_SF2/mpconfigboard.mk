@@ -20,4 +20,4 @@ MICROPY_SSL_MBEDTLS = 1
 MICROPY_VFS_LFS2 = 1
 
 # PYBD-specific frozen modules
-FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py

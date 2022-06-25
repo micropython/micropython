@@ -83,7 +83,11 @@ uint32_t storage_get_block_count(void) {
 static void storage_systick_callback(uint32_t ticks_ms) {
     if (STORAGE_IDLE_TICK(ticks_ms)) {
         // Trigger a FLASH IRQ to execute at a lower priority
+        #if __CORTEX_M == 0
+        NVIC_SetPendingIRQ(FLASH_IRQn);
+        #else
         NVIC->STIR = FLASH_IRQn;
+        #endif
     }
 }
 
@@ -298,8 +302,7 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
 
-    pyb_flash_obj_t *self = m_new_obj(pyb_flash_obj_t);
-    self->base.type = &pyb_flash_type;
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
     self->use_native_block_size = false;
 
     uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;

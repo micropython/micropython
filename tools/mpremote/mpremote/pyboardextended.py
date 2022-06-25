@@ -351,12 +351,13 @@ fs_hook_code = re.sub("buf4", "b4", fs_hook_code)
 
 
 class PyboardCommand:
-    def __init__(self, fin, fout, path):
+    def __init__(self, fin, fout, path, unsafe_links=False):
         self.fin = fin
         self.fout = fout
         self.root = path + "/"
         self.data_ilistdir = ["", []]
         self.data_files = []
+        self.unsafe_links = unsafe_links
 
     def rd_s8(self):
         return struct.unpack("<b", self.fin.read(1))[0]
@@ -397,8 +398,12 @@ class PyboardCommand:
         print(f"[{msg}]", end="\r\n")
 
     def path_check(self, path):
-        parent = os.path.realpath(self.root)
-        child = os.path.realpath(path)
+        if not self.unsafe_links:
+            parent = os.path.realpath(self.root)
+            child = os.path.realpath(path)
+        else:
+            parent = os.path.abspath(self.root)
+            child = os.path.abspath(path)
         if parent != os.path.commonpath([parent, child]):
             raise OSError(EPERM, "")  # File is outside mounted dir
 
@@ -612,45 +617,102 @@ class PyboardExtended(Pyboard):
         self.device_name = dev
         self.mounted = False
 
-    def mount_local(self, path):
+    def mount_local(self, path, unsafe_links=False):
         fout = self.serial
-        self.mounted = True
         if self.eval('"RemoteFS" in globals()') == b"False":
             self.exec_(fs_hook_code)
         self.exec_("__mount()")
-        self.cmd = PyboardCommand(self.serial, fout, path)
+        self.mounted = True
+        self.cmd = PyboardCommand(self.serial, fout, path, unsafe_links=unsafe_links)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
-    def soft_reset_with_mount(self, out_callback):
+    def write_ctrl_d(self, out_callback):
         self.serial.write(b"\x04")
         if not self.mounted:
             return
 
-        # Wait for a response to the soft-reset command.
-        for i in range(10):
-            if self.serial.inWaiting():
-                break
-            time.sleep(0.05)
-        else:
-            # Device didn't respond so it wasn't in a state to do a soft reset.
+        # Read response from the device until it is quiet (with a timeout).
+        INITIAL_TIMEOUT = 0.5
+        BANNER_TIMEOUT = 2
+        QUIET_TIMEOUT = 0.1
+        FULL_TIMEOUT = 5
+        t_start = t_last_activity = time.monotonic()
+        data_all = b""
+        soft_reboot_started = False
+        soft_reboot_banner = False
+        while True:
+            t = time.monotonic()
+            n = self.serial.inWaiting()
+            if n > 0:
+                data = self.serial.read(n)
+                out_callback(data)
+                data_all += data
+                t_last_activity = t
+            else:
+                if len(data_all) == 0:
+                    if t - t_start > INITIAL_TIMEOUT:
+                        return
+                else:
+                    if t - t_start > FULL_TIMEOUT:
+                        if soft_reboot_started:
+                            break
+                        return
+
+                    next_data_timeout = QUIET_TIMEOUT
+
+                    if not soft_reboot_started and data_all.find(b"MPY: soft reboot") != -1:
+                        soft_reboot_started = True
+
+                    if soft_reboot_started and not soft_reboot_banner:
+                        # Once soft reboot has been initiated, give some more time for the startup
+                        # banner to be shown
+                        if data_all.find(b"\nMicroPython ") != -1:
+                            soft_reboot_banner = True
+                        elif data_all.find(b"\nraw REPL; CTRL-B to exit\r\n") != -1:
+                            soft_reboot_banner = True
+                        else:
+                            next_data_timeout = BANNER_TIMEOUT
+
+                    if t - t_last_activity > next_data_timeout:
+                        break
+
+        if not soft_reboot_started:
             return
 
-        out_callback(self.serial.read(1))
+        if not soft_reboot_banner:
+            out_callback(b"Warning: Could not remount local filesystem\r\n")
+            return
+
+        # Determine type of prompt
+        if data_all.endswith(b">"):
+            in_friendly_repl = False
+            prompt = b">"
+        else:
+            in_friendly_repl = True
+            prompt = data_all.rsplit(b"\r\n", 1)[-1]
+
+        # Clear state while board remounts, it will be re-set once mounted.
+        self.mounted = False
         self.serial = self.serial.orig_serial
-        n = self.serial.inWaiting()
-        while n > 0:
-            buf = self.serial.read(n)
-            out_callback(buf)
-            time.sleep(0.1)
-            n = self.serial.inWaiting()
+
+        # Provide a message about the remount.
+        out_callback(bytes(f"\r\nRemount local directory {self.cmd.root} at /remote\r\n", "utf8"))
+
+        # Enter raw REPL and re-mount the remote filesystem.
         self.serial.write(b"\x01")
         self.exec_(fs_hook_code)
         self.exec_("__mount()")
-        self.exit_raw_repl()
-        self.read_until(4, b">>> ")
+        self.mounted = True
+
+        # Exit raw REPL if needed, and wait for the friendly REPL prompt.
+        if in_friendly_repl:
+            self.exit_raw_repl()
+        self.read_until(len(prompt), prompt)
+        out_callback(prompt)
         self.serial = SerialIntercept(self.serial, self.cmd)
 
     def umount_local(self):
         if self.mounted:
             self.exec_('uos.umount("/remote")')
             self.mounted = False
+            self.serial = self.serial.orig_serial

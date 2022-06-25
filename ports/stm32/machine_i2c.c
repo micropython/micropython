@@ -186,7 +186,7 @@ STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, u
 /******************************************************************************/
 /* MicroPython bindings for machine API                                       */
 
-#if defined(STM32F0) || defined(STM32F7)
+#if defined(STM32F0) || defined(STM32F7) || defined(STM32H7)
 #define MACHINE_I2C_TIMINGR (1)
 #else
 #define MACHINE_I2C_TIMINGR (0)

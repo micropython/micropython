@@ -8,7 +8,7 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    +----------------------------------------------------------------------------------------------------------+---------------+
    | **Extensions to the syntax:**                                                                            | **Status**    |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            |               |
+   | `PEP 448 <https://www.python.org/dev/peps/pep-0448/>`_ | additional unpacking generalizations            | Partial       |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 465 <https://www.python.org/dev/peps/pep-0465/>`_ | a new matrix multiplication operator            | Completed     |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
@@ -33,7 +33,7 @@ Below is a list of finalised/accepted PEPs for Python 3.5 grouped into their imp
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 441 <https://www.python.org/dev/peps/pep-0441/>`_ | improved Python zip application support         |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
-   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Laucher aware of virtual        |               |
+   | `PEP 486 <https://www.python.org/dev/peps/pep-0486/>`_ | make the Python Launcher aware of virtual       | Not relevant  |
    |                                                        | environments                                    |               |
    +--------------------------------------------------------+-------------------------------------------------+---------------+
    | `PEP 484 <https://www.python.org/dev/peps/pep-0484/>`_ | type hints (advisory only)                      | In Progress   |
@@ -97,7 +97,7 @@ Changes to built-in modules:
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | `math <https://docs.python.org/3/whatsnew/3.5.html#math>`_                                                                |
    +-----------------------------------------------------------------------------------------------------------+---------------+
-   | Two new constants have been added to the math module: *inf* and *nan*.                                    |               |
+   | Two new constants have been added to the math module: *inf* and *nan*.                                    | Completed     |
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | A new function *isclose()* provides a way to test for approximate equality.                               |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
@@ -140,7 +140,7 @@ Changes to built-in modules:
    | The *socket.sendall()* method no longer resets the socket timeout every time bytes are received or sent.  |               |
    | The socket timeout is now the maximum total duration to send all data.                                    |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
-   | The backlog argument of the *socket.listen()* method is now optional. By default it is set to SOMAXCONN or|               |
+   | The backlog argument of the *socket.listen()* method is now optional. By default it is set to SOMAXCONN or| Completed     |
    | to 128, whichever is less.                                                                                |               |
    +-----------------------------------------------------------------------------------------------------------+---------------+
    | `ssl <https://docs.python.org/3/whatsnew/3.5.html#ssl>`_                                                                  |

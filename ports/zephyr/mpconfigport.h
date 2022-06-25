@@ -144,58 +144,6 @@ typedef long mp_off_t;
     void *machine_pin_irq_list; /* Linked list of pin irq objects */ \
     struct _mp_bluetooth_zephyr_root_pointers_t *bluetooth_zephyr_root_pointers;
 
-extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t mp_module_time;
-extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_zephyr;
-extern const struct _mp_obj_module_t mp_module_zsensor;
-extern const struct _mp_obj_module_t mp_module_lvgl;
-
-#if MICROPY_PY_UOS
-#define MICROPY_PY_UOS_DEF { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
-#else
-#define MICROPY_PY_UOS_DEF
-#endif
-
-#if MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET_DEF { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-#define MICROPY_PY_USOCKET_DEF
-#endif
-
-#if MICROPY_PY_UTIME
-#define MICROPY_PY_UTIME_DEF { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) },
-#else
-#define MICROPY_PY_UTIME_DEF
-#endif
-
-#if MICROPY_PY_ZEPHYR
-#define MICROPY_PY_ZEPHYR_DEF { MP_ROM_QSTR(MP_QSTR_zephyr), MP_ROM_PTR(&mp_module_zephyr) },
-#else
-#define MICROPY_PY_ZEPHYR_DEF
-#endif
-
-#if MICROPY_PY_ZSENSOR
-#define MICROPY_PY_ZSENSOR_DEF { MP_ROM_QSTR(MP_QSTR_zsensor), MP_ROM_PTR(&mp_module_zsensor) },
-#else
-#define MICROPY_PY_ZSENSOR_DEF
-#endif
-
-
-#include "lib/lv_bindings/lvgl/src/lv_misc/lv_gc.h"
-#define MICROPY_PY_LVGL_DEF \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },\
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
-    MICROPY_PY_UOS_DEF \
-    MICROPY_PY_USOCKET_DEF \
-    MICROPY_PY_UTIME_DEF \
-    MICROPY_PY_ZEPHYR_DEF \
-    MICROPY_PY_ZSENSOR_DEF \
-	MICROPY_PY_LVGL_DEF	\
-
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },

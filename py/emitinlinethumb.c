@@ -59,6 +59,21 @@ struct _emit_inline_asm_t {
     qstr *label_lookup;
 };
 
+#if MICROPY_DYNAMIC_COMPILER
+
+static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
+    return MP_NATIVE_ARCH_ARMV7EMSP <= mp_dynamic_compiler.native_arch
+           && mp_dynamic_compiler.native_arch <= MP_NATIVE_ARCH_ARMV7EMDP;
+}
+
+#else
+
+static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
+    return MICROPY_EMIT_INLINE_THUMB_FLOAT;
+}
+
+#endif
+
 STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }
@@ -216,7 +231,6 @@ STATIC mp_uint_t get_arg_special_reg(emit_inline_asm_t *emit, const char *op, mp
     return 0;
 }
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
 STATIC mp_uint_t get_arg_vfpreg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     if (reg_str[0] == 's' && reg_str[1] != '\0') {
@@ -243,7 +257,6 @@ malformed:
             MP_ERROR_TEXT("'%s' expects an FPU register"), op));
     return 0;
 }
-#endif
 
 STATIC mp_uint_t get_arg_reglist(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     // a register list looks like {r0, r1, r2} and is parsed as a Python set
@@ -409,10 +422,10 @@ STATIC const format_9_10_op_t format_9_10_op_table[] = {
 };
 #undef X
 
-#if MICROPY_EMIT_INLINE_THUMB_FLOAT
 // actual opcodes are: 0xee00 | op.hi_nibble, 0x0a00 | op.lo_nibble
-typedef struct _format_vfp_op_t { byte op;
-                                  char name[3];
+typedef struct _format_vfp_op_t {
+    byte op;
+    char name[3];
 } format_vfp_op_t;
 STATIC const format_vfp_op_t format_vfp_op_table[] = {
     { 0x30, "add" },
@@ -420,10 +433,9 @@ STATIC const format_vfp_op_t format_vfp_op_table[] = {
     { 0x20, "mul" },
     { 0x80, "div" },
 };
-#endif
 
 // shorthand alias for whether we allow ARMv7-M instructions
-#define ARMV7M MICROPY_EMIT_INLINE_THUMB_ARMV7M
+#define ARMV7M asm_thumb_allow_armv7m(&emit->as)
 
 STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     // TODO perhaps make two tables:
@@ -439,8 +451,7 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
     size_t op_len;
     const char *op_str = (const char *)qstr_data(op, &op_len);
 
-    #if MICROPY_EMIT_INLINE_THUMB_FLOAT
-    if (op_str[0] == 'v') {
+    if (emit_inline_thumb_allow_float(emit) && op_str[0] == 'v') {
         // floating point operations
         if (n_args == 2) {
             mp_uint_t op_code = 0x0ac0, op_code_hi;
@@ -535,7 +546,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
         }
         return;
     }
-    #endif
 
     if (n_args == 0) {
         if (op == MP_QSTR_nop) {
@@ -621,8 +631,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             asm_thumb_op16(&emit->as, ASM_THUMB_OP_CPSIE_I);
         } else if (op == MP_QSTR_push) {
             mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
-            if ((reglist & 0xff00) == 0) {
-                asm_thumb_op16(&emit->as, 0xb400 | reglist);
+            if ((reglist & 0xbf00) == 0) {
+                if ((reglist & (1 << 14)) == 0) {
+                    asm_thumb_op16(&emit->as, 0xb400 | reglist);
+                } else {
+                    // 16-bit encoding for pushing low registers and LR
+                    asm_thumb_op16(&emit->as, 0xb500 | (reglist & 0xff));
+                }
             } else {
                 if (!ARMV7M) {
                     goto unknown_op;
@@ -631,8 +646,13 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             }
         } else if (op == MP_QSTR_pop) {
             mp_uint_t reglist = get_arg_reglist(emit, op_str, pn_args[0]);
-            if ((reglist & 0xff00) == 0) {
-                asm_thumb_op16(&emit->as, 0xbc00 | reglist);
+            if ((reglist & 0x7f00) == 0) {
+                if ((reglist & (1 << 15)) == 0) {
+                    asm_thumb_op16(&emit->as, 0xbc00 | reglist);
+                } else {
+                    // 16-bit encoding for popping low registers and PC, i.e., returning
+                    asm_thumb_op16(&emit->as, 0xbd00 | (reglist & 0xff));
+                }
             } else {
                 if (!ARMV7M) {
                     goto unknown_op;
@@ -705,24 +725,23 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
             } else if (op == MP_QSTR_sub) {
                 op_code = ASM_THUMB_FORMAT_3_SUB;
                 goto op_format_3;
-            #if ARMV7M
-            } else if (op == MP_QSTR_movw) {
+            } else if (ARMV7M && op == MP_QSTR_movw) {
                 op_code = ASM_THUMB_OP_MOVW;
                 mp_uint_t reg_dest;
             op_movw_movt:
                 reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 int i_src = get_arg_i(emit, op_str, pn_args[1], 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, op_code, reg_dest, i_src);
-            } else if (op == MP_QSTR_movt) {
+            } else if (ARMV7M && op == MP_QSTR_movt) {
                 op_code = ASM_THUMB_OP_MOVT;
                 goto op_movw_movt;
-            } else if (op == MP_QSTR_movwt) {
+            } else if (ARMV7M && op == MP_QSTR_movwt) {
                 // this is a convenience instruction
                 mp_uint_t reg_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 uint32_t i_src = get_arg_i(emit, op_str, pn_args[1], 0xffffffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVW, reg_dest, i_src & 0xffff);
                 asm_thumb_mov_reg_i16(&emit->as, ASM_THUMB_OP_MOVT, reg_dest, (i_src >> 16) & 0xffff);
-            } else if (op == MP_QSTR_ldrex) {
+            } else if (ARMV7M && op == MP_QSTR_ldrex) {
                 mp_uint_t r_dest = get_arg_reg(emit, op_str, pn_args[0], 15);
                 mp_parse_node_t pn_base, pn_offset;
                 if (get_arg_addr(emit, op_str, pn_args[1], &pn_base, &pn_offset)) {
@@ -730,7 +749,6 @@ STATIC void emit_inline_thumb_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_a
                     mp_uint_t i8 = get_arg_i(emit, op_str, pn_offset, 0xff) >> 2;
                     asm_thumb_op32(&emit->as, 0xe850 | r_base, 0x0f00 | (r_dest << 12) | i8);
                 }
-            #endif
             } else {
                 // search table for ldr/str instructions
                 for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(format_9_10_op_table); i++) {

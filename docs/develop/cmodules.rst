@@ -221,23 +221,25 @@ as described above.
 If a module is not enabled by default then the corresponding C preprocessor macro
 must be enabled.  This macro name can be found by searching for the ``MP_REGISTER_MODULE``
 line in the module's source code (it usually appears at the end of the main source file).
-The third argument to ``MP_REGISTER_MODULE`` is the macro name, and this must be set
-to 1 using ``CFLAGS_EXTRA`` to make the module available.  If the third argument is just
-the number 1 then the module is enabled by default.
+This macro should be surrounded by a ``#if X`` / ``#endif`` pair, and the configuration
+option ``X`` must be set to 1 using ``CFLAGS_EXTRA`` to make the module available.  If
+there is no ``#if X`` / ``#endif`` pair then the module is enabled by default.
 
 For example, the ``examples/usercmodule/cexample`` module is enabled by default so
 has the following line in its source code:
 
   .. code-block:: c
 
-      MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule, 1);
+      MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule);
 
 Alternatively, to make this module disabled by default but selectable through
 a preprocessor configuration option, it would be:
 
   .. code-block:: c
 
-      MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule, MODULE_CEXAMPLE_ENABLED);
+      #if MODULE_CEXAMPLE_ENABLED
+      MP_REGISTER_MODULE(MP_QSTR_cexample, example_user_cmodule);
+      #endif
 
 In this case the module is enabled by adding ``CFLAGS_EXTRA=-DMODULE_CEXAMPLE_ENABLED=1``
 to the ``make`` command, or editing ``mpconfigport.h`` or ``mpconfigboard.h`` to add

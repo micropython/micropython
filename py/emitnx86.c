@@ -11,8 +11,6 @@
 
 // Word indices of REG_LOCAL_x in nlr_buf_t
 #define NLR_BUF_IDX_LOCAL_1 (5) // ebx
-#define NLR_BUF_IDX_LOCAL_2 (7) // esi
-#define NLR_BUF_IDX_LOCAL_3 (6) // edi
 
 // x86 needs a table to know how many args a given function has
 STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
@@ -56,7 +54,7 @@ STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_UNPACK_EX] = 3,
     [MP_F_DELETE_NAME] = 1,
     [MP_F_DELETE_GLOBAL] = 1,
-    [MP_F_MAKE_CLOSURE_FROM_RAW_CODE] = 3,
+    [MP_F_NEW_CLOSURE] = 3,
     [MP_F_ARG_CHECK_NUM_SIG] = 3,
     [MP_F_SETUP_CODE_STATE] = 4,
     [MP_F_SMALL_INT_FLOOR_DIVIDE] = 2,

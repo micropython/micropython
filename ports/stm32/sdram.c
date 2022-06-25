@@ -259,7 +259,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
 
 void sdram_enter_low_power(void) {
     // Enter self-refresh mode.
-    // In self-refresh mode the SDRAM retains data with external clocking.
+    // In self-refresh mode the SDRAM retains data without external clocking.
     FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_SELFREFRESH_MODE |     // Command Mode
         FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
         (0 << 5U) |                                                  // Auto Refresh Number -1
@@ -273,6 +273,14 @@ void sdram_leave_low_power(void) {
     FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_NORMAL_MODE |          // Command Mode
         FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
         (0 << 5U) |                                                  // Auto Refresh Number - 1
+        (0 << 9U));                                                  // Mode Register Definition
+}
+
+void sdram_enter_power_down(void) {
+    // Enter power-down mode.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_POWERDOWN_MODE |       // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number -1
         (0 << 9U));                                                  // Mode Register Definition
 }
 

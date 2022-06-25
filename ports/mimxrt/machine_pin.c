@@ -190,7 +190,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_POWER_3}},
+        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_3}},
         // TODO: Implement additional arguments
         /*
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
@@ -213,6 +213,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
         uint8_t pull = PIN_PULL_DISABLED;
+        uint32_t drive = (uint32_t)args[PIN_INIT_ARG_DRIVE].u_int;
 
         // Generate pin configuration
         if ((args[PIN_INIT_ARG_VALUE].u_obj != MP_OBJ_NULL) && (mp_obj_is_true(args[PIN_INIT_ARG_VALUE].u_obj))) {
@@ -233,38 +234,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             pull = (uint8_t)mp_obj_get_int(args[PIN_INIT_ARG_PULL].u_obj);
         }
 
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);  // Slow Slew Rate
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);  // medium(100MHz)
-
-        if (mode == PIN_MODE_OPEN_DRAIN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
-        }
-
-        if (pull == PIN_PULL_DISABLED) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
-        } else if (pull == PIN_PULL_HOLD) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) |  // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(1) |            // Pull selected
-                IOMUXC_SW_PAD_CTL_PAD_PUS(pull);
-        }
-
-        if (mode == PIN_MODE_IN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
-                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
-        } else {
-            uint drive = args[PIN_INIT_ARG_DRIVE].u_int;
-            if (!IS_GPIO_DRIVE(drive)) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
-            }
-
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive) |
-                IOMUXC_SW_PAD_CTL_PAD_HYS(0U);  // Hysteresis disabled
-        }
+        pad_config = pin_generate_config(pull, mode, drive, self->configRegister);
 
         // Configure PAD as GPIO
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
@@ -411,14 +381,14 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(PIN_PULL_DOWN_100K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(PIN_PULL_HOLD) },
 
-    { MP_ROM_QSTR(MP_QSTR_DRIVER_OFF), MP_ROM_INT(PIN_DRIVE_OFF) },
-    { MP_ROM_QSTR(MP_QSTR_POWER_0),    MP_ROM_INT(PIN_DRIVE_POWER_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
-    { MP_ROM_QSTR(MP_QSTR_POWER_1),    MP_ROM_INT(PIN_DRIVE_POWER_1) }, // R0/2
-    { MP_ROM_QSTR(MP_QSTR_POWER_2),    MP_ROM_INT(PIN_DRIVE_POWER_2) }, // R0/3
-    { MP_ROM_QSTR(MP_QSTR_POWER_3),    MP_ROM_INT(PIN_DRIVE_POWER_3) }, // R0/4
-    { MP_ROM_QSTR(MP_QSTR_POWER_4),    MP_ROM_INT(PIN_DRIVE_POWER_4) }, // R0/5
-    { MP_ROM_QSTR(MP_QSTR_POWER_5),    MP_ROM_INT(PIN_DRIVE_POWER_5) }, // R0/6
-    { MP_ROM_QSTR(MP_QSTR_POWER_6),    MP_ROM_INT(PIN_DRIVE_POWER_6) }, // R0/7
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_OFF),  MP_ROM_INT(PIN_DRIVE_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0),    MP_ROM_INT(PIN_DRIVE_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1),    MP_ROM_INT(PIN_DRIVE_1) }, // R0/2
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2),    MP_ROM_INT(PIN_DRIVE_2) }, // R0/3
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3),    MP_ROM_INT(PIN_DRIVE_3) }, // R0/4
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_4),    MP_ROM_INT(PIN_DRIVE_4) }, // R0/5
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_5),    MP_ROM_INT(PIN_DRIVE_5) }, // R0/6
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_6),    MP_ROM_INT(PIN_DRIVE_6) }, // R0/7
 
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(2) },

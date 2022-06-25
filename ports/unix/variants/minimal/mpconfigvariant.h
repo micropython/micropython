@@ -44,6 +44,7 @@
 #define MICROPY_MEM_STATS           (0)
 #define MICROPY_DEBUG_PRINTERS      (0)
 #define MICROPY_READER_POSIX        (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #define MICROPY_ENABLE_SOURCE_LINE  (0)
@@ -59,6 +60,8 @@
 #define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (0)
 #define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_POSIX           (1)
 #define MICROPY_CPYTHON_COMPAT      (0)
 #define MICROPY_PY_BUILTINS_BYTEARRAY (0)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
@@ -98,17 +101,16 @@
 #define MICROPY_PY_UTIME            (0)
 #define MICROPY_PY_UZLIB            (0)
 #define MICROPY_PY_UJSON            (0)
+#define MICROPY_PY_UOS              (1)
 #define MICROPY_PY_URE              (0)
 #define MICROPY_PY_UHEAPQ           (0)
 #define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UBINASCII        (0)
 
-extern const struct _mp_obj_module_t mp_module_os;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
-
 #define MICROPY_PORT_ROOT_POINTERS \
+
+#define mp_type_fileio mp_type_vfs_posix_fileio
+#define mp_type_textio mp_type_vfs_posix_textio
 
 //////////////////////////////////////////
 // Do not change anything beyond this line

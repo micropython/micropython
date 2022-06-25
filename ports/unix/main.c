@@ -47,6 +47,7 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/misc.h"
+#include "extmod/moduplatform.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
@@ -177,8 +178,9 @@ STATIC char *strjoin(const char *s1, int sep_char, const char *s2) {
 #endif
 
 STATIC int do_repl(void) {
-    mp_hal_stdout_tx_str("MicroPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; "
-        MICROPY_PY_SYS_PLATFORM " version\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
+    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\nUse Ctrl-D to exit, Ctrl-E for paste mode\n");
 
     #if MICROPY_USE_READLINE == 1
 
@@ -191,7 +193,7 @@ STATIC int do_repl(void) {
 
     input_restart:
         vstr_reset(&line);
-        int ret = readline(&line, ">>> ");
+        int ret = readline(&line, mp_repl_get_ps1());
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_C) {
@@ -238,7 +240,7 @@ STATIC int do_repl(void) {
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
                 vstr_add_byte(&line, '\n');
-                ret = readline(&line, "... ");
+                ret = readline(&line, mp_repl_get_ps2());
                 if (ret == CHAR_CTRL_C) {
                     // cancel everything
                     printf("\n");
@@ -263,13 +265,13 @@ STATIC int do_repl(void) {
     // use simple readline
 
     for (;;) {
-        char *line = prompt(">>> ");
+        char *line = prompt((char *)mp_repl_get_ps1());
         if (line == NULL) {
             // EOF
             return 0;
         }
         while (mp_repl_continue_with_input(line)) {
-            char *line2 = prompt("... ");
+            char *line2 = prompt((char *)mp_repl_get_ps2());
             if (line2 == NULL) {
                 break;
             }
@@ -324,6 +326,10 @@ STATIC void print_help(char **argv) {
     printf(
         "  heapsize=<n>[w][K|M] -- set the heap size for the GC (default %ld)\n"
         , heap_size);
+    impl_opts_cnt++;
+    #endif
+    #if defined(__APPLE__)
+    printf("  realtime -- set thread priority to realtime\n");
     impl_opts_cnt++;
     #endif
 
@@ -396,6 +402,15 @@ STATIC void pre_process_options(int argc, char **argv) {
                     if (heap_size < 700) {
                         goto invalid_arg;
                     }
+                #endif
+                #if defined(__APPLE__)
+                } else if (strcmp(argv[a + 1], "realtime") == 0) {
+                    #if MICROPY_PY_THREAD
+                    mp_thread_is_realtime_enabled = true;
+                    #endif
+                    // main thread was already intialized before the option
+                    // was parsed, so we have to enable realtime here.
+                    mp_thread_set_realtime();
                 #endif
                 } else {
                 invalid_arg:
@@ -720,38 +735,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
-
-#if !MICROPY_VFS
-uint mp_import_stat(const char *path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        if (S_ISDIR(st.st_mode)) {
-            return MP_IMPORT_STAT_DIR;
-        } else if (S_ISREG(st.st_mode)) {
-            return MP_IMPORT_STAT_FILE;
-        }
-    }
-    return MP_IMPORT_STAT_NO_EXIST;
-}
-
-#if MICROPY_PY_IO
-// Factory function for I/O stream classes, only needed if generic VFS subsystem isn't used.
-// Note: buffering and encoding are currently ignored.
-mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kwargs) {
-    enum { ARG_file, ARG_mode };
-    STATIC const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
-        { MP_QSTR_buffering, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_encoding, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kwargs, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    return mp_vfs_posix_file_open(&mp_type_textio, args[ARG_file].u_obj, args[ARG_mode].u_obj);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
-#endif
-#endif
 
 void nlr_jump_fail(void *val) {
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);

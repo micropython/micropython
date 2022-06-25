@@ -243,8 +243,7 @@ mp_obj_t mp_obj_new_int_from_uint(mp_uint_t value) {
 }
 
 mp_obj_t mp_obj_new_int_from_ll(long long val) {
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     o->val = val;
     return o;
 }
@@ -254,8 +253,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
     if (val >> (sizeof(unsigned long long) * 8 - 1) != 0) {
         mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("ulonglong too large"));
     }
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     o->val = val;
     return o;
 }
@@ -263,8 +261,7 @@ mp_obj_t mp_obj_new_int_from_ull(unsigned long long val) {
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
     // TODO this does not honor the given length of the string, but it all cases it should anyway be null terminated
     // TODO check overflow
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     char *endptr;
     o->val = strtoll(*str, &endptr, base);
     *str = endptr;

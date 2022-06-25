@@ -51,7 +51,7 @@ Methods
 
    Turn off the SPI bus.
 
-.. method:: SPI.init(mode, baudrate=328125, *, prescaler, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
+.. method:: SPI.init(mode, baudrate=328125, *, prescaler=-1, polarity=1, phase=0, bits=8, firstbit=SPI.MSB, ti=False, crc=None)
 
    Initialise the SPI bus with the given parameters:
 

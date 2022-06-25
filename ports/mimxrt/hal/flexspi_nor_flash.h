@@ -28,7 +28,7 @@
 
 #include "fsl_flexspi.h"
 #include "mpconfigboard.h"
-#include "flexspi_flash_config.h"
+#include BOARD_FLASH_CONFIG_HEADER_H
 
 // Defined in boards flash_config.c
 extern flexspi_nor_config_t qspiflash_config;

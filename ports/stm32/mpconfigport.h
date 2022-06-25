@@ -65,6 +65,7 @@
 #endif
 
 // Python internal features
+#define MICROPY_TRACKED_ALLOC       (MICROPY_SSL_MBEDTLS)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_ENABLE_GC           (1)
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF (1)
@@ -75,6 +76,7 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_FLOAT)
 #endif
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
+#define MICROPY_SCHEDULER_STATIC_NODES (1)
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
 
@@ -82,7 +84,6 @@
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
 #define MICROPY_PY_BUILTINS_HELP_TEXT stm32_help_text
 #endif
-#define MICROPY_PY_IO_FILEIO        (MICROPY_VFS_FAT || MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 #ifndef MICROPY_PY_SYS_PLATFORM     // let boards override it if they want
 #define MICROPY_PY_SYS_PLATFORM     "pyboard"
 #endif
@@ -95,11 +96,14 @@
 #define MICROPY_PY_UHASHLIB_MD5     (MICROPY_PY_USSL)
 #define MICROPY_PY_UHASHLIB_SHA1    (MICROPY_PY_USSL)
 #define MICROPY_PY_UCRYPTOLIB       (MICROPY_PY_USSL)
-#ifndef MICROPY_PY_UOS
-#define MICROPY_PY_UOS              (1)
-#endif
+#define MICROPY_PY_UOS_INCLUDEFILE  "ports/stm32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM       (3)
 #define MICROPY_PY_UOS_DUPTERM_BUILTIN_STREAM (1)
+#define MICROPY_PY_UOS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_UOS_SEP          (1)
+#define MICROPY_PY_UOS_SYNC         (1)
+#define MICROPY_PY_UOS_UNAME        (1)
+#define MICROPY_PY_UOS_URANDOM      (MICROPY_HW_ENABLE_RNG)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC (rng_get())
 #ifndef MICROPY_PY_UTIME
 #define MICROPY_PY_UTIME            (1)
@@ -169,100 +173,28 @@
 #define mp_type_textio mp_type_vfs_lfs2_textio
 #endif
 
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
-extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t stm_module;
-extern const struct _mp_obj_module_t mp_module_ubinascii;
-extern const struct _mp_obj_module_t mp_module_ure;
-extern const struct _mp_obj_module_t mp_module_uzlib;
-extern const struct _mp_obj_module_t mp_module_ujson;
-extern const struct _mp_obj_module_t mp_module_uheapq;
-extern const struct _mp_obj_module_t mp_module_uhashlib;
-extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_onewire;
-extern const struct _mp_obj_module_t mp_module_lvgl;
-extern const struct _mp_obj_module_t mp_module_lodepng;
-
-#if MICROPY_PY_LVGL
-#define MICROPY_PORT_LVGL_DEF \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl), (mp_obj_t)&mp_module_lvgl },
-
-#else
-#define MICROPY_PORT_LVGL_DEF
-#endif
-
-#if MICROPY_PY_LODEPNG
-#define MICROPY_PORT_LODEPNG_DEF { MP_OBJ_NEW_QSTR(MP_QSTR_lodepng), (mp_obj_t)&mp_module_lodepng },
-#else
-#define MICROPY_PORT_LODEPNG_DEF
-#endif
-
 #if MICROPY_PY_PYB
-#define PYB_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
+extern const struct _mp_obj_module_t pyb_module;
+#define PYB_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) },
 #else
-#define PYB_BUILTIN_MODULE
+#define PYB_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_STM
-#define STM_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
+extern const struct _mp_obj_module_t stm_module;
+#define STM_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_stm), MP_ROM_PTR(&stm_module) },
 #else
-#define STM_BUILTIN_MODULE
+#define STM_BUILTIN_MODULE_CONSTANTS
 #endif
 
 #if MICROPY_PY_MACHINE
-#define MACHINE_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&machine_module) },
-#define MACHINE_BUILTIN_MODULE_CONSTANTS    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&machine_module) },
+#define MACHINE_BUILTIN_MODULE_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
+    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) },
 #else
-#define MACHINE_BUILTIN_MODULE
 #define MACHINE_BUILTIN_MODULE_CONSTANTS
-#endif
-
-#if MICROPY_PY_UOS
-#define UOS_BUILTIN_MODULE                  { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_uos) },
-#else
-#define UOS_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_UTIME
-#define UTIME_BUILTIN_MODULE                { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) },
-#else
-#define UTIME_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_USOCKET && MICROPY_PY_LWIP
-// usocket implementation provided by lwIP
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_lwip) },
-#elif MICROPY_PY_USOCKET
-// usocket implementation provided by skeleton wrapper
-#define SOCKET_BUILTIN_MODULE               { MP_ROM_QSTR(MP_QSTR_usocket), MP_ROM_PTR(&mp_module_usocket) },
-#else
-// no usocket module
-#define SOCKET_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_NETWORK
-#define NETWORK_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_network), MP_ROM_PTR(&mp_module_network) },
-#else
-#define NETWORK_BUILTIN_MODULE
-#endif
-
-#if MICROPY_PY_ONEWIRE
-#define ONEWIRE_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) },
-#else
-#define ONEWIRE_BUILTIN_MODULE
 #endif
 
 #if defined(MICROPY_HW_ETH_MDC)
@@ -279,7 +211,7 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43
 #endif
 
-#if MICROPY_PY_WIZNET5K
+#if MICROPY_PY_NETWORK_WIZNET5K
 #if MICROPY_PY_LWIP
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #else
@@ -297,30 +229,22 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #define MICROPY_HW_NIC_CC3K
 #endif
 
-#define MICROPY_PORT_BUILTIN_MODULES \
-    MACHINE_BUILTIN_MODULE \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
-    UOS_BUILTIN_MODULE \
-    UTIME_BUILTIN_MODULE \
-    SOCKET_BUILTIN_MODULE \
-    NETWORK_BUILTIN_MODULE \
-    MICROPY_PORT_LVGL_DEF \
-    MICROPY_PORT_LODEPNG_DEF \
-    ONEWIRE_BUILTIN_MODULE \
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    MACHINE_BUILTIN_MODULE \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
-    PYB_BUILTIN_MODULE \
-    STM_BUILTIN_MODULE \
+    PYB_BUILTIN_MODULE_CONSTANTS \
+    STM_BUILTIN_MODULE_CONSTANTS \
+
+#ifndef MICROPY_BOARD_NETWORK_INTERFACES
+#define MICROPY_BOARD_NETWORK_INTERFACES
+#endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
     MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_WIZNET5K \
     MICROPY_HW_NIC_CC3K \
+    MICROPY_BOARD_NETWORK_INTERFACES \
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -340,12 +264,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #define RK043FN48H_ROOTS void* rk043fn48h_fb[2];
 #else
 #define RK043FN48H_ROOTS
-#endif
-
-#if MICROPY_SSL_MBEDTLS
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS void **mbedtls_memory;
-#else
-#define MICROPY_PORT_ROOT_POINTER_MBEDTLS
 #endif
 
 #if MICROPY_BLUETOOTH_NIMBLE
@@ -406,7 +324,6 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     mp_obj_list_t mod_network_nic_list; \
     \
     /* root pointers for sub-systems */ \
-    MICROPY_PORT_ROOT_POINTER_MBEDTLS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK \
     \
@@ -496,6 +413,12 @@ static inline mp_uint_t disable_irq(void) {
 // scheduler execution.
 #define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
+#endif
+
+#if defined(STM32WB)
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+#else
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
 #endif
 
 // We need an implementation of the log2 function which is not a macro

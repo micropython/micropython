@@ -43,6 +43,8 @@
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
 
+#if MICROPY_PY_MACHINE
+
 #define RP2_RESET_PWRON (1)
 #define RP2_RESET_WDT (3)
 
@@ -187,3 +189,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

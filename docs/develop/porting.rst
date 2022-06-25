@@ -146,6 +146,9 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_TERSE)
    #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 
+   // Enable u-modules to be imported with their standard name, like sys.
+   #define MICROPY_MODULE_WEAK_LINKS               (1)
+
    // Fine control over Python builtins, classes, modules, etc.
    #define MICROPY_PY_ASYNC_AWAIT                  (0)
    #define MICROPY_PY_BUILTINS_SET                 (0)
@@ -277,12 +280,7 @@ To add a custom module like ``myport``, first add the module definition in a fil
        .globals = (mp_obj_dict_t *)&myport_module_globals,
    };
 
-   MP_REGISTER_MODULE(MP_QSTR_myport, myport_module, 1);
-
-Note: the "1" as the third argument in ``MP_REGISTER_MODULE`` enables this new module
-unconditionally. To allow it to be conditionally enabled, replace the "1" by
-``MICROPY_PY_MYPORT`` and then add ``#define MICROPY_PY_MYPORT (1)`` in ``mpconfigport.h``
-accordingly.
+   MP_REGISTER_MODULE(MP_QSTR_myport, myport_module);
 
 You will also need to edit the Makefile to add ``modmyport.c`` to the ``SRC_C`` list, and
 a new line adding the same file to ``SRC_QSTR`` (so qstrs are searched for in this new file),
@@ -296,7 +294,7 @@ like this:
        mphalport.c \
        ...
 
-   SRC_QSTR += modport.c
+   SRC_QSTR += modmyport.c
 
 If all went correctly then, after rebuilding, you should be able to import the new module:
 

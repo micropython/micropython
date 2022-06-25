@@ -34,11 +34,20 @@
 #define MICROPY_HW_USB_PID (0x0005) // RP2 MicroPython
 #endif
 
+#if CFG_TUD_MSC
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_MSC_DESC_LEN)
+#else
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
+#endif
 #define USBD_MAX_POWER_MA (250)
 
 #define USBD_ITF_CDC (0) // needs 2 interfaces
+#define USBD_ITF_MSC (2)
+#if CFG_TUD_MSC
+#define USBD_ITF_MAX (3)
+#else
 #define USBD_ITF_MAX (2)
+#endif
 
 #define USBD_CDC_EP_CMD (0x81)
 #define USBD_CDC_EP_OUT (0x02)
@@ -46,11 +55,15 @@
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE (64)
 
+#define EPNUM_MSC_OUT    (0x03)
+#define EPNUM_MSC_IN     (0x83)
+
 #define USBD_STR_0 (0x00)
 #define USBD_STR_MANUF (0x01)
 #define USBD_STR_PRODUCT (0x02)
 #define USBD_STR_SERIAL (0x03)
 #define USBD_STR_CDC (0x04)
+#define USBD_STR_MSC (0x05)
 
 // Note: descriptors returned from callbacks must exist long enough for transfer to complete
 
@@ -77,6 +90,9 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 
     TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+    #if CFG_TUD_MSC
+    TUD_MSC_DESCRIPTOR(USBD_ITF_MSC, 5, EPNUM_MSC_OUT, EPNUM_MSC_IN, 64),
+    #endif
 };
 
 static const char *const usbd_desc_str[] = {
@@ -84,6 +100,9 @@ static const char *const usbd_desc_str[] = {
     [USBD_STR_PRODUCT] = "Board in FS mode",
     [USBD_STR_SERIAL] = NULL, // generated dynamically
     [USBD_STR_CDC] = "Board CDC",
+    #if CFG_TUD_MSC
+    [USBD_STR_MSC] = "Board MSC",
+    #endif
 };
 
 const uint8_t *tud_descriptor_device_cb(void) {

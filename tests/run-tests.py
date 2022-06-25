@@ -13,6 +13,9 @@ from multiprocessing.pool import ThreadPool
 import threading
 import tempfile
 
+# Maximum time to run a PC-based test, in seconds.
+TEST_TIMEOUT = 30
+
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
@@ -45,6 +48,37 @@ DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
+# Code to allow a target MicroPython to import an .mpy from RAM
+injected_import_hook_code = """\
+import usys, uos, uio
+class __File(uio.IOBase):
+  def __init__(self):
+    self.off = 0
+  def ioctl(self, request, arg):
+    return 0
+  def readinto(self, buf):
+    buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
+    self.off += len(buf)
+    return len(buf)
+class __FS:
+  def mount(self, readonly, mkfs):
+    pass
+  def umount(self):
+    pass
+  def chdir(self, path):
+    pass
+  def stat(self, path):
+    if path == '__injected_test.mpy':
+      return tuple(0 for _ in range(10))
+    else:
+      raise OSError(-2) # ENOENT
+  def open(self, path, mode):
+    return __File()
+uos.mount(__FS(), '/__vfstest')
+uos.chdir('/__vfstest')
+__import__('__injected_test')
+"""
+
 
 def rm_f(fname):
     if os.path.exists(fname):
@@ -69,6 +103,68 @@ def convert_regex_escapes(line):
     if cs[-1] == "\n":
         cs[-1] = "\r*\n"
     return bytes("".join(cs), "utf8")
+
+
+def prepare_script_for_target(args, *, script_filename=None, script_text=None, force_plain=False):
+    if force_plain or (not args.via_mpy and args.emit == "bytecode"):
+        if script_filename is not None:
+            with open(script_filename, "rb") as f:
+                script_text = f.read()
+    elif args.via_mpy:
+        tempname = tempfile.mktemp(dir="")
+        mpy_filename = tempname + ".mpy"
+
+        if script_filename is None:
+            script_filename = tempname + ".py"
+            cleanup_script_filename = True
+            with open(script_filename, "wb") as f:
+                f.write(script_text)
+        else:
+            cleanup_script_filename = False
+
+        try:
+            subprocess.check_output(
+                [MPYCROSS]
+                + args.mpy_cross_flags.split()
+                + ["-o", mpy_filename, "-X", "emit=" + args.emit, script_filename],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as er:
+            return True, b"mpy-cross crash\n" + er.output
+
+        with open(mpy_filename, "rb") as f:
+            script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
+
+        rm_f(mpy_filename)
+        if cleanup_script_filename:
+            rm_f(script_filename)
+
+        script_text += bytes(injected_import_hook_code, "ascii")
+    else:
+        print("error: using emit={} must go via .mpy".format(args.emit))
+        sys.exit(1)
+
+    return False, script_text
+
+
+def run_script_on_remote_target(pyb, args, test_file, is_special):
+    had_crash, script = prepare_script_for_target(
+        args, script_filename=test_file, force_plain=is_special
+    )
+    if had_crash:
+        return True, script
+
+    try:
+        had_crash = False
+        pyb.enter_raw_repl()
+        output_mupy = pyb.exec_(script)
+    except pyboard.PyboardError as e:
+        had_crash = True
+        if not is_special and e.args[0] == "exception":
+            output_mupy = e.args[1] + e.args[2] + b"CRASH"
+        else:
+            output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+    return had_crash, output_mupy
 
 
 def run_micropython(pyb, args, test_file, is_special=False):
@@ -108,6 +204,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         # in case pty module is not available, like on Windows
                         return b"SKIP\n"
                     import select
+
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
 
                     def get(required=False):
                         rv = b""
@@ -158,6 +258,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
             cmdlist = [MICROPYTHON, "-X", "emit=" + args.emit]
             if args.heapsize is not None:
                 cmdlist.extend(["-X", "heapsize=" + args.heapsize])
+            if sys.platform == "darwin":
+                cmdlist.extend(["-X", "realtime"])
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
@@ -174,26 +276,23 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                output_mupy = subprocess.check_output(cmdlist, stderr=subprocess.STDOUT)
+                output_mupy = subprocess.check_output(
+                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT
+                )
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
                 rm_f(mpy_filename)
 
     else:
-        # run on pyboard
-        pyb.enter_raw_repl()
-        try:
-            output_mupy = pyb.execfile(test_file)
-        except pyboard.PyboardError as e:
-            had_crash = True
-            if not is_special and e.args[0] == "exception":
-                output_mupy = e.args[1] + e.args[2] + b"CRASH"
-            else:
-                output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+        # run via pyboard interface
+        had_crash, output_mupy = run_script_on_remote_target(pyb, args, test_file, is_special)
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
@@ -429,6 +528,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
+        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":
@@ -472,6 +572,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             for t in tests:
                 if t.startswith("basics/io_"):
                     skip_tests.add(t)
+        elif args.target == "renesas-ra":
+            skip_tests.add(
+                "extmod/utime_time_ns.py"
+            )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
 
@@ -500,6 +604,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
+        skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
         skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
@@ -511,6 +616,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "misc/print_exception.py"
         )  # because native doesn't have proper traceback info
         skip_tests.add("misc/sys_exc_info.py")  # sys.exc_info() is not supported for native
+        skip_tests.add("misc/sys_settrace_features.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_generator.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_loop.py")  # sys.settrace() not supported
         skip_tests.add(
             "micropython/emg_exc.py"
         )  # because native doesn't have proper traceback info
@@ -521,6 +629,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "micropython/opt_level_lineno.py"
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
+        skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
@@ -544,7 +653,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
-        is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
@@ -788,13 +897,34 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf")
+    EXTERNAL_TARGETS = (
+        "pyboard",
+        "wipy",
+        "esp8266",
+        "esp32",
+        "minimal",
+        "nrf",
+        "renesas-ra",
+        "rp2",
+    )
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
         import pyboard
+
+        if not args.mpy_cross_flags:
+            if args.target == "esp8266":
+                args.mpy_cross_flags = "-march=xtensa"
+            elif args.target == "esp32":
+                args.mpy_cross_flags = "-march=xtensawin"
+            elif args.target == "rp2":
+                args.mpy_cross_flags = "-march=armv6m"
+            elif args.target == "pyboard":
+                args.mpy_cross_flags = "-march=armv7emsp"
+            else:
+                args.mpy_cross_flags = "-march=armv7m"
 
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -811,7 +941,11 @@ the last matching regex is used:
             )
             if args.target == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+                test_dirs += ("float", "stress", "pyb", "inlineasm")
+            elif args.target in ("renesas-ra"):
+                test_dirs += ("float", "inlineasm", "renesas-ra")
+            elif args.target == "rp2":
+                test_dirs += ("float", "stress", "inlineasm")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":

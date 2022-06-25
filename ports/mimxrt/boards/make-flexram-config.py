@@ -172,6 +172,7 @@ def mimxrt_106x_gen_code(extract_dict):
 def main(defines_file, features_file, ld_script, controller):
     dispatcher = {
         "MIMXRT1011": (mimxrt_default_parser, mimxrt_default_gen_code),
+        "MIMXRT1015": (mimxrt_default_parser, mimxrt_default_gen_code),
         "MIMXRT1021": (mimxrt_default_parser, mimxrt_default_gen_code),
         "MIMXRT1052": (mimxrt_default_parser, mimxrt_default_gen_code),
         "MIMXRT1062": (mimxrt_default_parser, mimxrt_106x_gen_code),

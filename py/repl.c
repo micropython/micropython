@@ -33,6 +33,16 @@
 
 #if MICROPY_HELPER_REPL
 
+#if MICROPY_PY_SYS_PS1_PS2
+const char *mp_repl_get_psx(unsigned int entry) {
+    if (mp_obj_is_str(MP_STATE_VM(sys_mutable)[entry])) {
+        return mp_obj_str_get_str(MP_STATE_VM(sys_mutable)[entry]);
+    } else {
+        return "";
+    }
+}
+#endif
+
 STATIC bool str_startswith_word(const char *str, const char *head) {
     size_t i;
     for (i = 0; str[i] && head[i]; i++) {
@@ -303,10 +313,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 return sizeof(import_str) - 1 - s_len;
             }
         }
-        if (q_first == 0) {
-            *compl_str = "    ";
-            return s_len ? 0 : 4;
-        }
+        return 0;
     }
 
     // 1 match found, or multiple matches with a common prefix

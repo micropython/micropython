@@ -78,7 +78,7 @@ Changes to built-in modules:
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | `binascii <https://docs.python.org/3.6/whatsnew/3.6.html#binascii>`_                                         |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | The b2a_base64() function now accepts an optional newline keyword argument to control whether the newline    |                |
+  | The b2a_base64() function now accepts an optional newline keyword argument to control whether the newline    | Completed      |
   | character is appended to the return value                                                                    |                |
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | `cmath <https://docs.python.org/3.6/whatsnew/3.6.html#cmath>`_                                               |                |
@@ -121,7 +121,7 @@ Changes to built-in modules:
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | `math <https://docs.python.org/3.6/whatsnew/3.6.html#math>`_                                                                  |
   +--------------------------------------------------------------------------------------------------------------+----------------+
-  | The new math.tau (τ) constant has been added                                                                 |                |
+  | The new math.tau (τ) constant has been added                                                                 | Completed      |
   +--------------------------------------------------------------------------------------------------------------+----------------+
   | `os <https://docs.python.org/3.6/whatsnew/3.6.html#os>`_                                                                      |
   +--------------------------------------------------------------------------------------------------------------+----------------+

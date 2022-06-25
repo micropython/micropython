@@ -108,8 +108,7 @@ STATIC mp_obj_t signal_make_new(const mp_obj_type_t *type, size_t n_args, size_t
         }
     }
 
-    machine_signal_t *o = m_new_obj(machine_signal_t);
-    o->base.type = type;
+    machine_signal_t *o = mp_obj_malloc(machine_signal_t, type);
     o->pin = pin;
     o->invert = invert;
     return MP_OBJ_FROM_PTR(o);

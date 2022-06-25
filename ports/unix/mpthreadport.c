@@ -53,12 +53,12 @@
 #define THREAD_STACK_OVERFLOW_MARGIN (8192)
 
 // this structure forms a linked list, one node per active thread
-typedef struct _thread_t {
+typedef struct _mp_thread_t {
     pthread_t id;           // system id of thread
     int ready;              // whether the thread is ready and running
     void *arg;              // thread Python args, a GC root pointer
-    struct _thread_t *next;
-} thread_t;
+    struct _mp_thread_t *next;
+} mp_thread_t;
 
 STATIC pthread_key_t tls_key;
 
@@ -66,7 +66,7 @@ STATIC pthread_key_t tls_key;
 // Specifically for thread management, access to the linked list is one example.
 // But also, e.g. scheduler state.
 STATIC pthread_mutex_t thread_mutex;
-STATIC thread_t *thread;
+STATIC mp_thread_t *thread;
 
 // this is used to synchronise the signal handler of the thread
 // it's needed because we can't use any pthread calls in a signal handler
@@ -119,7 +119,7 @@ void mp_thread_init(void) {
     pthread_mutex_init(&thread_mutex, &thread_mutex_attr);
 
     // create first entry in linked list of all threads
-    thread = malloc(sizeof(thread_t));
+    thread = malloc(sizeof(mp_thread_t));
     thread->id = pthread_self();
     thread->ready = 1;
     thread->arg = NULL;
@@ -143,7 +143,7 @@ void mp_thread_init(void) {
 void mp_thread_deinit(void) {
     mp_thread_unix_begin_atomic_section();
     while (thread->next != NULL) {
-        thread_t *th = thread;
+        mp_thread_t *th = thread;
         thread = thread->next;
         pthread_cancel(th->id);
         free(th);
@@ -165,7 +165,7 @@ void mp_thread_deinit(void) {
 // garbage collection and tracing these pointers.
 void mp_thread_gc_others(void) {
     mp_thread_unix_begin_atomic_section();
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         gc_collect_root(&th->arg, 1);
         if (th->id == pthread_self()) {
             continue;
@@ -192,9 +192,16 @@ void mp_thread_set_state(mp_state_thread_t *state) {
 }
 
 void mp_thread_start(void) {
+    // enable realtime priority if `-X realtime` command line parameter was set
+    #if defined(__APPLE__)
+    if (mp_thread_is_realtime_enabled) {
+        mp_thread_set_realtime();
+    }
+    #endif
+
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
     mp_thread_unix_begin_atomic_section();
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
             th->ready = 1;
             break;
@@ -249,7 +256,7 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     *stack_size -= THREAD_STACK_OVERFLOW_MARGIN;
 
     // add thread to linked list of all threads
-    thread_t *th = malloc(sizeof(thread_t));
+    mp_thread_t *th = malloc(sizeof(mp_thread_t));
     th->id = id;
     th->ready = 0;
     th->arg = arg;
@@ -266,8 +273,8 @@ er:
 
 void mp_thread_finish(void) {
     mp_thread_unix_begin_atomic_section();
-    thread_t *prev = NULL;
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    mp_thread_t *prev = NULL;
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == pthread_self()) {
             if (prev == NULL) {
                 thread = th->next;
@@ -310,3 +317,39 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
 }
 
 #endif // MICROPY_PY_THREAD
+
+// this is used even when MICROPY_PY_THREAD is disabled
+
+#if defined(__APPLE__)
+#include <mach/mach_error.h>
+#include <mach/mach_time.h>
+#include <mach/thread_act.h>
+#include <mach/thread_policy.h>
+
+bool mp_thread_is_realtime_enabled;
+
+// based on https://developer.apple.com/library/archive/technotes/tn2169/_index.html
+void mp_thread_set_realtime(void) {
+    mach_timebase_info_data_t timebase_info;
+
+    mach_timebase_info(&timebase_info);
+
+    const uint64_t NANOS_PER_MSEC = 1000000ULL;
+    double clock2abs = ((double)timebase_info.denom / (double)timebase_info.numer) * NANOS_PER_MSEC;
+
+    thread_time_constraint_policy_data_t policy;
+    policy.period = 0;
+    policy.computation = (uint32_t)(5 * clock2abs); // 5 ms of work
+    policy.constraint = (uint32_t)(10 * clock2abs);
+    policy.preemptible = FALSE;
+
+    int kr = thread_policy_set(pthread_mach_thread_np(pthread_self()),
+        THREAD_TIME_CONSTRAINT_POLICY,
+        (thread_policy_t)&policy,
+        THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+
+    if (kr != KERN_SUCCESS) {
+        mach_error("thread_policy_set:", kr);
+    }
+}
+#endif

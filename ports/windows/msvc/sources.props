@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
   <ItemGroup>
     <PyCoreSource Include="$(PyBaseDir)py\*.c" />
@@ -7,18 +7,24 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pinbase.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_pulse.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\machine_signal.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduasyncio.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modubinascii.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moductypes.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduhashlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduheapq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modujson.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduos.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modurandom.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modure.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moduselect.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modutimeq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moduzlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\utime_mphal.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\vfs.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix_file.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\vfs_reader.c" />
   </ItemGroup>
   <ItemGroup>
     <PyCoreInclude Include="$(PyBaseDir)py\*.h" />

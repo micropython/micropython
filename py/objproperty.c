@@ -47,8 +47,7 @@ STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
 
-    mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
-    o->base.type = type;
+    mp_obj_property_t *o = mp_obj_malloc(mp_obj_property_t, type);
     o->proxy[0] = vals[ARG_fget].u_obj;
     o->proxy[1] = vals[ARG_fset].u_obj;
     o->proxy[2] = vals[ARG_fdel].u_obj;
