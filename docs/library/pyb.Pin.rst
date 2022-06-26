@@ -62,12 +62,6 @@ When a pin has the ``Pin.PULL_UP`` or ``Pin.PULL_DOWN`` pull-mode enabled,
 that pin has an effective 40k Ohm resistor pulling it to 3V3 or GND
 respectively (except pin Y5 which has 11k Ohm resistors).
 
-Now every time a falling edge is seen on the gpio pin, the callback will be
-executed. Caution: mechanical push buttons have "bounce" and pushing or
-releasing a switch will often generate multiple edges.
-See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
-explanation, along with various techniques for debouncing.
-
 All pin objects go through the pin mapper to come up with one of the
 gpio pins.
 
@@ -107,7 +101,7 @@ Methods
         - ``Pin.IN`` - configure the pin for input;
         - ``Pin.OUT_PP`` - configure the pin for output, with push-pull control;
         - ``Pin.OUT_OD`` - configure the pin for output, with open-drain control;
-        - ``Pin.AF_PP`` - configure the pin for alternate function, pull-pull;
+        - ``Pin.AF_PP`` - configure the pin for alternate function, push-pull;
         - ``Pin.AF_OD`` - configure the pin for alternate function, open-drain;
         - ``Pin.ANALOG`` - configure the pin for analog.
 
