@@ -97,6 +97,7 @@ Methods
         - ``Pin.IN`` - configure the pin for input;
         - ``Pin.OUT_PP`` - configure the pin for output, with push-pull control;
         - ``Pin.OUT_OD`` - configure the pin for output, with open-drain control;
+        - ``Pin.ALT`` - configure the pin for alternate function, input or output;
         - ``Pin.AF_PP`` - configure the pin for alternate function, push-pull;
         - ``Pin.AF_OD`` - configure the pin for alternate function, open-drain;
         - ``Pin.ANALOG`` - configure the pin for analog.
@@ -113,8 +114,8 @@ Methods
 
      - *value* if not None will set the port output value before enabling the pin.
 
-     - *alt* can be used when mode is ``Pin.AF_PP`` or ``Pin.AF_OD`` to set the
-       index or name of one of the alternate functions associated with a pin.
+     - *alt* can be used when mode is ``Pin.ALT`` , ``Pin.AF_PP`` or ``Pin.AF_OD`` to
+       set the index or name of one of the alternate functions associated with a pin.
        This arg was previously called *af* which can still be used if needed.
 
    Returns: ``None``.
@@ -177,6 +178,10 @@ Methods
 Constants
 ---------
 
+.. data:: Pin.ALT
+
+   initialise the pin to alternate-function mode for input or output
+
 .. data:: Pin.AF_OD
 
    initialise the pin to alternate-function mode with an open-drain drive
@@ -237,11 +242,11 @@ control is desired.
 
 To configure X3 to expose TIM2_CH3, you could use::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=pyb.Pin.AF1_TIM2)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.ALT, alt=pyb.Pin.AF1_TIM2)
 
 or::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=1)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.ALT, alt=1)
 
 Methods
 -------
