@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 "Eric Poulsen" <eric@zyxod.com>
- * Copyright (c) 2017 "Tom Manning" <tom@manningetal.com>
+ * Copyright (c) 2022 Ibrahim Abdelkader <iabdalkader@openmv.io>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +24,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESP32_MACHINE_RTC_H
-#define MICROPY_INCLUDED_ESP32_MACHINE_RTC_H
-
+#include "py/runtime.h"
+#include "py/mphal.h"
 #include "modmachine.h"
 
-typedef struct {
-    uint64_t ext1_pins; // set bit == pin#
-    int8_t ext0_pin;   // just the pin#, -1 == None
-    bool wake_on_touch : 1;
-    bool wake_on_ulp : 1;
-    bool ext0_level : 1;
-    wake_type_t ext0_wake_types;
-    bool ext1_level : 1;
-} machine_rtc_config_t;
+#if MICROPY_HW_USB_CDC_1200BPS_TOUCH
 
-extern machine_rtc_config_t machine_rtc_config;
+#include "tusb.h"
+
+static mp_sched_node_t mp_bootloader_sched_node;
+
+STATIC void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
+    mp_hal_delay_ms(250);
+    machine_bootloader(0, NULL);
+}
+
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts) {
+    if (dtr == false && rts == false) {
+        // Device is disconnected.
+        cdc_line_coding_t line_coding;
+        tud_cdc_n_get_line_coding(itf, &line_coding);
+        if (line_coding.bit_rate == 1200) {
+            // Delay bootloader jump to allow the USB stack to service endpoints.
+            mp_sched_schedule_node(&mp_bootloader_sched_node, usbd_cdc_run_bootloader_task);
+        }
+    }
+}
 
 #endif

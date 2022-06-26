@@ -591,7 +591,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
         pn = make_node_const_object_optimised(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
-        mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
+        mp_obj_t o = mp_parse_num_float(lex->vstr.buf, lex->vstr.len, true, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_STRING) {
         // Don't automatically intern all strings.  Doc strings (which are usually large)

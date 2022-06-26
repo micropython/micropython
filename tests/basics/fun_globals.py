@@ -19,3 +19,18 @@ try:
     foo.__globals__ = None
 except AttributeError:
     print("AttributeError")
+
+# test closures have the __globals__ attribute
+
+
+def outer():
+    x = 1
+
+    def inner():
+        return x
+
+    return inner
+
+
+print(outer.__globals__ is globals())
+print(outer().__globals__ is globals())

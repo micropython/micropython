@@ -137,7 +137,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
                 // a textual representation, parse it
-                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
+                return mp_parse_num_float(bufinfo.buf, bufinfo.len, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];

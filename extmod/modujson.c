@@ -270,7 +270,7 @@ STATIC mp_obj_t mod_ujson_load(mp_obj_t stream_obj) {
                     S_NEXT(s);
                 }
                 if (flt) {
-                    next = mp_parse_num_decimal(vstr.buf, vstr.len, false, false, NULL);
+                    next = mp_parse_num_float(vstr.buf, vstr.len, false, NULL);
                 } else {
                     next = mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
                 }
