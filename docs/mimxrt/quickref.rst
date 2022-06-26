@@ -540,6 +540,71 @@ port and LAN(1) for the 1G port.
 
 For details of the network interface refer to the class :ref:`network.LAN <network.LAN>`.
 
+
+External drive mode
+-------------------
+
+On some boards a mode is enabled, that mounts the board's internal file system as
+external USB drive, called MSC support. Data of that drive can be accessed and changed by the PC.
+In that state, access to the internal drive by the MicroPython is limited to
+read-only mode, avoiding file corruption. Changes made by the PC to the file system may not be visible
+at the board until the drive is ejected by the PC or a soft reset of the board
+is made.
+
+To enable write access to by the board, eject the drive at the PC **and** perform
+a soft-reset on the board, either by pushing Ctrl-D at REPL or calling machine.soft_reset().
+
+The external drive mode (MSC mode) is enabled of disabled according to the following rules:
+
+  a) For a FAT file system, MSC will be enabled by default.
+  b) For a LFS file system, MSC will be disabled by default.
+  c) The setting can be overridden by a file with the name
+     set_usb_mode.py, which can define the usb_mode with the lines:
+
+     usb_mode = "vcp+msc"  # enable MSC
+
+     or
+
+     usb_mode = "vcp" # do not enable MSC
+
+     If the file set_usb_mode.py does not exist or is faulty, the default is used.
+
+The read-only state of the local file system access can be told by an IOCTL call of the file
+system's block device.::
+
+    import mimxrt
+
+    bdev = mimxrt.Flash()
+    readonly = bdev.ioctl(7, 0)
+
+If the drive is in read-only state, bdev.ioctl(7, 0) returns `True`.
+
+The file system of the board has to be of FAT type for mounting and using with standard PC
+tools. But FAT is not enforced at the board. If the board's file system is littlefs, MSC
+mode is disable by default. If enabled in boot.py, the file system will be attached to the
+PC and will be accessible as a drive (e.g. /dev/sdc using Linux), but by default
+there is no file access. In that case, the files are locally still writeable.
+Changing the board's file system to FAT can be done then by formatting it from the PC.
+Alternatively, you can erase the root sector. Then, the FAT file system will be
+created at the next power-up. For erasing the root sector, write::
+
+    from mimxrt import Flash
+    Flash().ioctl(6, 0)
+
+Using littlefs-fuse for Linux you can mount the board's littlefs file system to the PC.
+See: https://github.com/littlefs-project/littlefs-fuse
+The block_size if 4096, the block_count depends on the size of the filesystem. e.g.::
+
+    # mounting the lfs2 file system of a Teensy 4.1 board at the PC
+    mkdir mount
+    sudo ./lfs --block_size=4096 --block_count=1791 -o allow_other -o nonempty /dev/sdc mount
+    cd mount
+    ls -l
+
+In that case, the exclusive write access is NOT enforced. So be careful to only write
+to the file system by the PC.
+
+
 Transferring files
 ------------------
 
