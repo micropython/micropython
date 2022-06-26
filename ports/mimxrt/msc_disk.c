@@ -36,29 +36,37 @@
 
 uint8_t tud_msc_state = EJECTED;
 
+static bool msc_enabled = false;
+
 void update_msc_state(void) {
     if (tud_msc_state == TRANSIT) {
         tud_msc_state = EJECTED;
     }
 }
 
+void set_msc_enabled(bool state) {
+    msc_enabled = state;
+}
+
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
 void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]) {
-    const char vid[] = "Micropy";
-    const char pid[] = "Mass Storage";
-    const char rev[] = "1.0";
+    if (msc_enabled) {
+        const char vid[] = "Micropy";
+        const char pid[] = "Mass Storage";
+        const char rev[] = "1.0";
 
-    strncpy((char *)vendor_id,   vid, 8);
-    strncpy((char *)product_id,  pid, 16);
-    strncpy((char *)product_rev, rev, 4);
-    tud_msc_state = MOUNTED;
+        strncpy((char *)vendor_id,   vid, 8);
+        strncpy((char *)product_id,  pid, 16);
+        strncpy((char *)product_rev, rev, 4);
+        tud_msc_state = MOUNTED;
+    }
 }
 
 // Invoked when received Test Unit Ready command.
 // return true allowing host to read/write this LUN e.g SD card inserted
 bool tud_msc_test_unit_ready_cb(uint8_t lun) {
-    if (tud_msc_state != MOUNTED) {
+    if (tud_msc_state != MOUNTED || !msc_enabled) {
         tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
         return false;
     }
@@ -68,15 +76,17 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
 // Invoked when received SCSI_CMD_READ_CAPACITY_10 and SCSI_CMD_READ_FORMAT_CAPACITY to determine the disk size
 // Application update block count and block size
 void tud_msc_capacity_cb(uint8_t lun, uint32_t *block_count, uint16_t *block_size) {
-    *block_size = BLOCK_SIZE;
-    *block_count = BLOCK_COUNT;
+    if (msc_enabled) {
+        *block_size = BLOCK_SIZE;
+        *block_count = BLOCK_COUNT;
+    }
 }
 
 // Invoked when received Start Stop Unit command
 // - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
 bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject) {
-    if (load_eject) {
+    if (load_eject && msc_enabled) {
         if (start) {
             // load disk storage
             tud_msc_state = MOUNTED;
