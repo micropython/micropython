@@ -28,7 +28,9 @@
 #include "py/mphal.h"
 #include "supervisor/cpu.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32C3
+#if defined(CONFIG_IDF_TARGET_ESP32)
+#include "components/esp_rom/include/esp32/rom/ets_sys.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C3)
 #include "components/esp_rom/include/esp32c3/rom/ets_sys.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "components/esp_rom/include/esp32s2/rom/ets_sys.h"

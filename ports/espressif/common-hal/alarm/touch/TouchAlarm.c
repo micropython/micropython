@@ -58,10 +58,17 @@ mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
     alarm->base.type = &alarm_touch_touchalarm_type;
     alarm->pin = NULL;
 
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    touch_pad_t wake_channel;
+    if (touch_pad_get_wakeup_status(&wake_channel) != ESP_OK) {
+        return alarm;
+    }
+    #else
     touch_pad_t wake_channel = touch_pad_get_current_meas_channel();
     if (wake_channel == TOUCH_PAD_MAX) {
         return alarm;
     }
+    #endif
 
     // Map the pin number back to a pin object.
     for (size_t i = 0; i < mcu_pin_globals.map.used; i++) {
@@ -122,16 +129,27 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             mp_hal_delay_ms(10);
 
             // configure trigger threshold
+            #if defined(CONFIG_IDF_TARGET_ESP32)
+            uint16_t touch_value;
+            touch_pad_read(touch_channel, &touch_value);
+            touch_pad_set_thresh(touch_channel, touch_value * 0.1); // 10%
+            #else
             uint32_t touch_value;
             touch_pad_read_benchmark(touch_channel, &touch_value);
-            touch_pad_set_thresh(touch_channel, touch_value * 0.1); // 10%
+            touch_pad_set_threshold(touch_channel, touch_value * 0.1); // 10%
+            #endif
         }
     }
 
     // configure touch interrupt
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    touch_pad_isr_register(touch_interrupt, NULL);
+    touch_pad_intr_enable();
+    #else
     touch_pad_timeout_set(true, SOC_TOUCH_PAD_THRESHOLD_MAX);
     touch_pad_isr_register(touch_interrupt, NULL, TOUCH_PAD_INTR_MASK_ALL);
     touch_pad_intr_enable(TOUCH_PAD_INTR_MASK_ACTIVE | TOUCH_PAD_INTR_MASK_INACTIVE);
+    #endif
 }
 
 void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
@@ -154,17 +172,25 @@ void alarm_touch_touchalarm_prepare_for_deep_sleep(void) {
     // intialize touchpad
     peripherals_touch_init(touch_channel);
 
+    #if !defined(CONFIG_IDF_TARGET_ESP32)
     // configure touchpad for sleep
     touch_pad_sleep_channel_enable(touch_channel, true);
     touch_pad_sleep_channel_enable_proximity(touch_channel, false);
+    #endif
 
     // wait for touch data to reset
     mp_hal_delay_ms(10);
 
     // configure trigger threshold
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    uint16_t touch_value;
+    touch_pad_read_filtered(touch_channel, &touch_value);
+    touch_pad_set_thresh(touch_channel, touch_value);
+    #else
     uint32_t touch_value;
     touch_pad_sleep_channel_read_smooth(touch_channel, &touch_value);
-    touch_pad_sleep_set_threshold(touch_channel, touch_value * 0.1); // 10%
+    touch_pad_sleep_set_threshold(touch_channel, touch_value / 10); // 10%
+    #endif
 
     // enable touchpad wakeup
     esp_sleep_enable_touchpad_wakeup();

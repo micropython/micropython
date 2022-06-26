@@ -31,12 +31,16 @@
 #include "shared-bindings/microcontroller/Pin.h"
 
 static uint16_t get_raw_reading(touchio_touchin_obj_t *self) {
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    uint16_t touch_value;
+    #else
     uint32_t touch_value;
+    #endif;
     touch_pad_read_raw_data(self->pin->touch_channel, &touch_value);
     if (touch_value > UINT16_MAX) {
         return UINT16_MAX;
     }
-    return touch_value;
+    return (uint16_t)touch_value;
 }
 
 void common_hal_touchio_touchin_construct(touchio_touchin_obj_t *self,

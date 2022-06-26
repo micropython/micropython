@@ -55,7 +55,12 @@ MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
 }
 
 STATIC void _reset_pin(gpio_num_t pin_number) {
-    #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+   // Never ever reset pins used for flash and RAM.
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    if (pin_number == 6 || pin_number == 11 || pin_number == 9 || pin_number == 10) {
+        return;
+    }
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used for flash and RAM.
     if (26 <= pin_number && pin_number <= 32) {
         return;

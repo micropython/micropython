@@ -15,6 +15,15 @@ from elftools.elf.elffile import ELFFile
 print()
 
 internal_memory = {
+    "esp32": [
+        # Name, Start, Length
+        ("RTC Fast Memory", (0x3FF8_0000, 0x400C_0000), 8 * 1024),
+        ("RTC Slow Memory", (0x5000_0000,), 8 * 1024),
+        # First 64kB of Internal SRAM 0 can be configured as cached, and starts at 0x4007_0000
+        ("Internal SRAM 0", (0x4008_0000,), 128 * 1024),
+        ("Internal SRAM 1", (0x3FFE_0000, 0x400A_0000), 128 * 1024),
+        ("Internal SRAM 2", (0x3FFA_E000,), 200 * 1024),
+    ],
     "esp32s2": [
         # Name, Start, Length
         ("RTC Fast Memory", (0x3FF9_E000, 0x4007_0000), 8 * 1024),

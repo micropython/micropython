@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 // Use shared-bindings/microcontroller/Pin.h instead.
 // This ensures that all necessary includes are already included.
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S3_PINS_H
-#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S3_PINS_H
+#ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32_PINS_H
+#define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32_PINS_H
 
 #define GPIO0_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO0;
@@ -71,22 +71,26 @@ extern const mcu_pin_obj_t pin_GPIO17;
 extern const mcu_pin_obj_t pin_GPIO18;
 #define GPIO19_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO19;
+// GPIO20 not exposed on some packages, but available in some modules
 #define GPIO20_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO20;
 #define GPIO21_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO21;
+#define GPIO22_EXISTS 1
+extern const mcu_pin_obj_t pin_GPIO22;
+#define GPIO23_EXISTS 1
+extern const mcu_pin_obj_t pin_GPIO23;
+// no GPIO24
+#define GPIO25_EXISTS 1
+extern const mcu_pin_obj_t pin_GPIO25;
 #define GPIO26_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO26;
 #define GPIO27_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO27;
-#define GPIO28_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO28;
-#define GPIO29_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO29;
-#define GPIO30_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO30;
-#define GPIO31_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO31;
+// no GPIO28
+// no GPIO29
+// no GPIO30
+// no GPIO31
 #define GPIO32_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO32;
 #define GPIO33_EXISTS 1
@@ -103,23 +107,5 @@ extern const mcu_pin_obj_t pin_GPIO37;
 extern const mcu_pin_obj_t pin_GPIO38;
 #define GPIO39_EXISTS 1
 extern const mcu_pin_obj_t pin_GPIO39;
-#define GPIO40_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO40;
-#define GPIO41_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO41;
-#define GPIO42_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO42;
-#define GPIO43_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO43;
-#define GPIO44_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO44;
-#define GPIO45_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO45;
-#define GPIO46_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO46;
-#define GPIO47_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO47;
-#define GPIO48_EXISTS 1
-extern const mcu_pin_obj_t pin_GPIO48;
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32S3_PINS_H
+#endif // MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_ESP32_PINS_H

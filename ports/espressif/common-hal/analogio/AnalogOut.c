@@ -35,20 +35,29 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/translate/translate.h"
 
-#ifdef CONFIG_IDF_TARGET_ESP32S2
+#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "components/driver/include/driver/dac_common.h"
+#define HAS_DAC 1
+#if defined(CONFIG_IDF_TARGET_ESP32)
+#define pin_CHANNEL_1 pin_GPIO25
+#define pin_CHANNEL_2 pin_GPIO26
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+#define pin_CHANNEL_1 pin_GPIO17
+#define pin_CHANNEL_2 pin_GPIO18
 #endif
-
-#include "common-hal/microcontroller/Pin.h"
+#else
+#define HAS_DAC 0
+#endif
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
-    if (pin == &pin_GPIO17) {
+    #if HAS_DAC
+    if (pin == &pin_CHANNEL_1) {
         self->channel = DAC_CHANNEL_1;
-    } else if (pin == &pin_GPIO18) {
+    } else if (pin == &pin_CHANNEL_2) {
         self->channel = DAC_CHANNEL_2;
-    } else {
+    }
+    else {
         raise_ValueError_invalid_pin();
     }
     dac_output_enable(self->channel);
@@ -58,7 +67,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #if HAS_DAC
     return self->channel == DAC_CHANNEL_MAX;
     #else
     return false;
@@ -66,7 +75,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #if HAS_DAC
     dac_output_disable(self->channel);
     self->channel = DAC_CHANNEL_MAX;
     #endif
@@ -74,7 +83,7 @@ void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     uint16_t value) {
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #if HAS_DAC
     uint8_t dac_value = (value * 255) / 65535;
     dac_output_enable(self->channel);
     dac_output_voltage(self->channel, dac_value);
@@ -82,7 +91,7 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 }
 
 void analogout_reset(void) {
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #if HAS_DAC
     dac_output_disable(DAC_CHANNEL_1);
     dac_output_disable(DAC_CHANNEL_2);
     #endif

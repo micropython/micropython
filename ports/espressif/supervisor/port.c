@@ -78,7 +78,10 @@
 #include "cam.h"
 #endif
 
+#ifndef CONFIG_IDF_TARGET_ESP32
 #include "soc/cache_memory.h"
+#endif
+
 #include "soc/rtc_cntl_reg.h"
 
 #include "esp_debug_helpers.h"
@@ -91,6 +94,10 @@
 
 // Heap sizes for when there is no external RAM for CircuitPython to use
 // exclusively.
+#ifdef CONFIG_IDF_TARGET_ESP32
+// TODO: Determine better: 520kB of internal RAM; similar to 512kB for ESP32-S3.
+#define HEAP_SIZE (176 * 1024)
+#endif
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #define HEAP_SIZE (48 * 1024)
 #endif

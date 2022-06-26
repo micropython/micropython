@@ -76,30 +76,42 @@ STATIC twai_timing_config_t get_t_config(int baudrate) {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_25KBITS();
             return t_config;
         }
+        #if defined(TWAI_TIMING_CONFIG_20KBITS)
         case 20000: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_20KBITS();
             return t_config;
         }
+        #endif
+        #if defined(TWAI_TIMING_CONFIG_16KBITS)
         case 16000: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_16KBITS();
             return t_config;
         }
+        #endif
+        #if defined(TWAI_TIMING_CONFIG_12_5KBITS)
         case 12500: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_12_5KBITS();
             return t_config;
         }
+        #endif
+        #if defined(TWAI_TIMING_CONFIG_10KBITS)
         case 10000: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_10KBITS();
             return t_config;
         }
+        #endif
+        #if defined(TWAI_TIMING_CONFIG_5KBITS)
         case 5000: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_5KBITS();
             return t_config;
         }
+        #endif
+        #if defined(TWAI_TIMING_CONFIG_1KBITS)
         case 1000: {
             twai_timing_config_t t_config = TWAI_TIMING_CONFIG_1KBITS();
             return t_config;
         }
+        #endif
         default:
             mp_raise_ValueError(translate("Baudrate not supported by peripheral"));
     }

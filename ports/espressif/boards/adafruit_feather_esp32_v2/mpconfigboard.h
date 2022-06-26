@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 microDev
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,25 @@
  * THE SOFTWARE.
  */
 
-#include "peripherals/touch.h"
+// Micropython setup
 
-static bool touch_inited = false;
-static bool touch_never_reset = false;
+#define MICROPY_HW_BOARD_NAME       "Adafruit Feather ESP32 V2"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-void peripherals_touch_reset(void) {
-    if (touch_inited && !touch_never_reset) {
-        touch_pad_deinit();
-        touch_inited = false;
-    }
-}
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO0)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
 
-void peripherals_touch_never_reset(const bool enable) {
-    touch_never_reset = enable;
-}
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO20, .sda = &pin_GPIO22}}
 
-void peripherals_touch_init(const touch_pad_t touchpad) {
-    if (!touch_inited) {
-        touch_pad_init();
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-    }
-    // touch_pad_config() must be done before touch_pad_fsm_start() the first time.
-    // Otherwise the calibration is wrong and we get maximum raw values if there is
-    // a trace of any significant length on the pin.
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    touch_pad_config(touchpad, 0);
-    #else
-    touch_pad_config(touchpad);
-    #endif
-    if (!touch_inited) {
-        #if defined(CONFIG_IDF_TARGET_ESP32)
-        touch_pad_sw_start();
-        #else
-        touch_pad_fsm_start();
-        #endif
-        touch_inited = true;
-    }
-}
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO5, .mosi = &pin_GPIO19, .miso = &pin_GPIO21}}
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO8, .rx = &pin_GPIO7}}
+
+// For entering safe mode, use SW38 button
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO38)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing SW38 button at start up.\n")

@@ -194,7 +194,12 @@ LDFLAGS += \
 	-Wl,--build-id=none \
 	-fno-rtti
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32)
+LDFLAGS += \
+	-T$(IDF_TARGET).rom.newlib-data.ld \
+	-T$(IDF_TARGET).rom.newlib-funcs.ld \
+	-T$(IDF_TARGET).rom.spiflash.ld
+else ifeq ($(IDF_TARGET),esp32c3)
 LDFLAGS += \
 	-Tesp32c3.rom.newlib.ld \
 	-Tesp32c3.rom.version.ld \
@@ -362,6 +367,9 @@ $(HEADER_BUILD)/qstr.split: | $(BUILD)/esp-idf/config/sdkconfig.h
 
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+ifeq ($(IDF_TARGET),esp32)
+BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
+endif
 
 ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ifneq ($(CIRCUITPY_BLEIO),0)
@@ -380,12 +388,16 @@ BINARY_BLOBS += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal.a
 endif
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifeq ($(IDF_TARGET),esp32)
+BOOTLOADER_OFFSET = 0x0
+else ifeq ($(IDF_TARGET),esp32c3)
 BOOTLOADER_OFFSET = 0x0
 else ifeq ($(IDF_TARGET),esp32s3)
 BOOTLOADER_OFFSET = 0x0
-else
+else ifeq ($(IDF_TARGET),esp32s2)
 BOOTLOADER_OFFSET = 0x1000
+else
+$(error unknown IDF_TARGET $(IDF_TARGET))
 endif
 
 IDF_CMAKE_TARGETS = \

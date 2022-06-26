@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 microDev
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,41 +24,26 @@
  * THE SOFTWARE.
  */
 
-#include "peripherals/touch.h"
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-static bool touch_inited = false;
-static bool touch_never_reset = false;
-
-void peripherals_touch_reset(void) {
-    if (touch_inited && !touch_never_reset) {
-        touch_pad_deinit();
-        touch_inited = false;
-    }
+void board_init(void) {
+    reset_board();
 }
 
-void peripherals_touch_never_reset(const bool enable) {
-    touch_never_reset = enable;
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void peripherals_touch_init(const touch_pad_t touchpad) {
-    if (!touch_inited) {
-        touch_pad_init();
-        touch_pad_set_fsm_mode(TOUCH_FSM_MODE_TIMER);
-    }
-    // touch_pad_config() must be done before touch_pad_fsm_start() the first time.
-    // Otherwise the calibration is wrong and we get maximum raw values if there is
-    // a trace of any significant length on the pin.
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    touch_pad_config(touchpad, 0);
-    #else
-    touch_pad_config(touchpad);
-    #endif
-    if (!touch_inited) {
-        #if defined(CONFIG_IDF_TARGET_ESP32)
-        touch_pad_sw_start();
-        #else
-        touch_pad_fsm_start();
-        #endif
-        touch_inited = true;
-    }
+void reset_board(void) {
+    // Turn on NeoPixel and I2C power by default.
+    gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(2, true);
+}
+
+void board_deinit(void) {
 }
