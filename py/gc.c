@@ -146,6 +146,8 @@ void gc_init(void *start, void *end) {
     MP_STATE_MEM(gc_pool_end) = end;
 
     #if MICROPY_ENABLE_FINALISER
+    size_t gc_finaliser_table_byte_len = (MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB + BLOCKS_PER_FTB - 1) / BLOCKS_PER_FTB;
+    (void)gc_finaliser_table_byte_len; // avoid unused variable diagnostic if asserts are disabled
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
