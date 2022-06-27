@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "modnetwork.h": "c",
-        "modmachine.h": "c"
+        "modmachine.h": "c",
+        "stream.h": "c"
     }
 }

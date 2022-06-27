@@ -1,0 +1,8 @@
+version: '3'
+services:
+  docker8266:
+    image: larsks/esp-open-sdk
+    container_name: mpy8266
+    command: bash -c "cd /mpy/ports/esp8266 && make"
+    volumes:
+      - ..:/mpy
