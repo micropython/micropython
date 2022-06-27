@@ -723,10 +723,16 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         result = f_open(fs, &active_file, path, FA_WRITE | FA_OPEN_ALWAYS);
     }
 
+    if (result == FR_NO_PATH) {
+        override_fattime(0);
+        _reply_missing(socket, request);
+        return;
+    }
     if (result != FR_OK) {
         ESP_LOGE(TAG, "file write error %d %s", result, path);
         override_fattime(0);
         _reply_server_error(socket, request);
+        return;
     } else if (request->expect) {
         _reply_continue(socket, request);
     }
@@ -928,7 +934,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     FRESULT result = f_open(fs, &active_file, path, FA_READ);
 
                     if (result != FR_OK) {
-                        // TODO: 404
                         _reply_missing(socket, request);
                     } else {
                         _reply_with_file(socket, request, path, &active_file);

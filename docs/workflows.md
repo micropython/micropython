@@ -74,8 +74,23 @@ MDNS is used to resolve [`circuitpython.local`](http://circuitpython.local) to a
 hostname of the form `cpy-XXXXXX.local`. The `XXXXXX` is based on network MAC address. The device
 also provides the MDNS service with service type `_circuitpython` and protocol `_tcp`.
 
+### HTTP
 The web server is HTTP 1.1 and may use chunked responses so that it doesn't need to precompute
 content length.
+
+The API generally consists of an HTTP method such as GET or PUT and a path. Requests and responses
+also have headers. Responses will contain a status code and status text such as `404 Not Found`.
+This API tries to use standard status codes to encode the status of the various operations. The
+[Mozilla Developer Network HTTP docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP)
+are a great reference.
+
+#### Examples
+The examples use `curl`, a common command line program for issuing HTTP requests. The examples below
+use `circuitpython.local` as the easiest way to work. If you have multiple active devices, you'll
+want to use the specific `cpy-XXXXXX.local` version.
+
+The examples also use `passw0rd` as the password placeholder. Replace it with your password before
+running the example.
 
 ### `/`
 The root welcome page links to the file system page and also displays other CircuitPython devices
@@ -101,8 +116,17 @@ The `/fs/` page will respond with a directory browsing HTML once authenticated. 
 gzipped. If the `Accept: application/json` header is provided, then the JSON representation of the
 root will be returned.
 
-#### OPTIONS
-When requested with the `OPTIONS` method, the server will respond with .
+##### OPTIONS
+When requested with the `OPTIONS` method, the server will respond with CORS related headers. Most
+aren't needed for API use. They are there for the web browser.
+
+* `Access-Control-Allow-Methods` - Varies with USB state. `GET, OPTIONS` when USB is active. `GET, OPTIONS, PUT, DELETE` otherwise.
+
+Example:
+
+```sh
+curl -v -u :passw0rd -X OPTIONS -L --location-trusted http://circuitpython.local/fs/
+```
 
 #### `/fs/<directory path>/`
 Directory paths must end with a /. Otherwise, the path is assumed to be a file.
@@ -111,38 +135,100 @@ Directory paths must end with a /. Otherwise, the path is assumed to be a file.
 Returns a JSON representation of the directory.
 
 * `200 OK` - Directory exists and JSON returned
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - Missing directory
 
+Returns information about each file in the directory:
+
+* `name` - File name. No trailing `/` on directory names
+* `directory` - `true` when a directory. `false` otherwise
+* `modified_ns` - File modification time in nanoseconds since January 1st, 1970. May not use full resolution
+* `file_size` - File size in bytes. `0` for directories
+
+Example:
+
+```sh
+curl -v -u :passw0rd -H "Accept: application/json" -L --location-trusted http://circuitpython.local/fs/lib/hello/
+```
+
+```json
+[
+	{
+		"name": "world.txt",
+		"directory": false,
+		"modified_ns": 946934328000000000,
+		"file_size": 12
+	}
+]
+```
+
 ##### PUT
-Tries to make a directory at the given path. Request body is ignored. Returns:
+Tries to make a directory at the given path. Request body is ignored. The custom `X-Timestamp`
+header can provide a timestamp in milliseconds since January 1st, 1970 (to match JavaScript's file
+time resolution) used for the directories modification time. The RTC time will used otherwise.
+
+Returns:
 
 * `204 No Content` - Directory exists
 * `201 Created` - Directory created
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `409 Conflict` - USB is active and preventing file system modification
 * `404 Not Found` - Missing parent directory
 * `500 Server Error` - Other, unhandled error
 
 Example:
 
-``sh
+```sh
 curl -v -u :passw0rd -X PUT -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
-``
+```
 
 ##### DELETE
 Deletes the directory and all of its contents.
 
-
+* `204 No Content` - Directory and its contents deleted
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - No directory
 * `409 Conflict` - USB is active and preventing file system modification
 
 Example:
 
-``sh
+```sh
 curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world/
-``
+```
 
 
 #### `/fs/<file path>`
+
+##### PUT
+Stores the provided content to the file path.
+
+The custom `X-Timestamp` header can provide a timestamp in milliseconds since January 1st, 1970
+(to match JavaScript's file time resolution) used for the directories modification time. The RTC
+time will used otherwise.
+
+Returns:
+
+* `201 Created` - File created and saved
+* `204 No Content` - File existed and overwritten
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
+* `404 Not Found` - Missing parent directory
+* `409 Conflict` - USB is active and preventing file system modification
+* `413 Payload Too Large` - `Expect` header not sent and file is too large
+* `417 Expectation Failed` - `Expect` header sent and file is too large
+* `500 Server Error` - Other, unhandled error
+
+If the client sends the `Expect` header, the server will reply with `100 Continue` when ok.
+
+Example:
+
+```sh
+echo "Hello world" >> test.txt
+curl -v -u :passw0rd -T test.txt -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+```
 
 ##### GET
 Returns the raw file contents. `Content-Type` will be set based on extension:
@@ -155,39 +241,39 @@ Returns the raw file contents. `Content-Type` will be set based on extension:
 
 Will return:
 * `200 OK` - File exists and file returned
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - Missing file
 
-##### PUT
-Stores the provided content to the file path. Returns:
+Example:
 
-* `201 Created` - File created and saved
-* `204 No Content` - File existed and overwritten
-* `404 Not Found` - Missing parent directory
-* `409 Conflict` - USB is active and preventing file system modification
-* `413 Payload Too Large` - `Expect` header not sent and file is too large
-* `417 Expectation Failed` - `Expect` header sent and file is too large
-* `500 Server Error` - Other, unhandled error
+```sh
+curl -v -u :passw0rd -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
+```
 
-If the client sends the `Expect` header, the server will reply with `100 Continue` when ok.
 
 ##### DELETE
 Deletes the file.
 
+
+* `204 No Content` - File existed and deleted
+* `401 Unauthorized` - Incorrect password
+* `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - File not found
 * `409 Conflict` - USB is active and preventing file system modification
 
 Example:
 
-``sh
+```sh
 curl -v -u :passw0rd -X DELETE -L --location-trusted http://circuitpython.local/fs/lib/hello/world.txt
-``
+```
 
 ### `/cp/`
 
 `/cp/` serves basic info about the CircuitPython device and others discovered through MDNS. It is
 not protected by basic auth in case the device is someone elses.
 
-Only `GET` requests are supported and will return `XXX Method Not Allowed` otherwise.
+Only `GET` requests are supported and will return `405 Method Not Allowed` otherwise.
 
 #### `/cp/version.json`
 
