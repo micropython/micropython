@@ -267,6 +267,7 @@
 #define MICROPY_PY_GENERATOR_PEND_THROW       (1)
 #define MICROPY_PY_MATH                       (1)
 #define MICROPY_PY_STRUCT                     (1)
+#define MICROPY_PY_SERIAL                     (1)
 #define MICROPY_PY_SYS                        (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS     (1)
 #define MICROPY_PY___FILE__                   (1)

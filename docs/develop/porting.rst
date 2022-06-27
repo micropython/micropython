@@ -158,6 +158,7 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_PY_MATH                         (0)
    #define MICROPY_PY_IO                           (0)
    #define MICROPY_PY_STRUCT                       (0)
+   #define MICROPY_PY_SERIAL                       (0)
 
    // Type definitions for the specific machine.
 

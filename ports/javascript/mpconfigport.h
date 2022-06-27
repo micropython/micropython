@@ -77,6 +77,7 @@
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO               (1)
 #define MICROPY_PY_STRUCT           (1)
+#define MICROPY_PY_SERIAL           (1)
 #define MICROPY_PY_SYS              (1)
 #define MICROPY_PY_SYS_MAXSIZE      (1)
 #define MICROPY_CPYTHON_COMPAT      (1)

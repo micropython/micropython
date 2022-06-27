@@ -69,6 +69,7 @@ set(MICROPY_SOURCE_PORT
     ${PROJECT_DIR}/machine_uart.c
     ${PROJECT_DIR}/modmachine.c
     ${PROJECT_DIR}/modnetwork.c
+    # ${PROJECT_DIR}/modserial.c
     ${PROJECT_DIR}/network_lan.c
     ${PROJECT_DIR}/network_ppp.c
     ${PROJECT_DIR}/network_wlan.c

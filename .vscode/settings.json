@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "modnetwork.h": "c",
+        "modmachine.h": "c"
+    }
+}
