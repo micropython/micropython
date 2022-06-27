@@ -2,6 +2,8 @@
     "files.associations": {
         "modnetwork.h": "c",
         "modmachine.h": "c",
-        "stream.h": "c"
+        "stream.h": "c",
+        "mphal.h": "c",
+        "runtime.h": "c"
     }
 }

@@ -10,6 +10,8 @@ http://www.opensource.org/licenses/mit-license.php
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/portmacro.h>
+// #include "py/runtime.h"
+// #include "py/mphal.h"
 
 #include <esp_clk.h>
 #include <driver/gpio.h>
@@ -52,6 +54,8 @@ SwSerial *sw_new(gpio_num_t Tx, gpio_num_t Rx, bool Inverse, int buffSize)
             // Too short leads to sticky bags
             // One byte of time 9600 104us * 10 115200 18us
             vTaskDelay(2 / portTICK_RATE_MS);
+            // freertos -> hal
+            // mp_hal_delay_ms(2 / portTICK_RATE_MS);
 
             return tmp;
         }
