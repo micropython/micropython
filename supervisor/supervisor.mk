@@ -161,7 +161,7 @@ endif
 
 STATIC_RESOURCES = $(wildcard $(TOP)/supervisor/shared/web_workflow/static/*)
 
-$(BUILD)/autogen_web_workflow_static.c: ../../tools/gen_web_workflow_static.py $(STATIC_RESOURCES)
+$(BUILD)/autogen_web_workflow_static.c: ../../tools/gen_web_workflow_static.py $(STATIC_RESOURCES) | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $< \
 		--output_c_file $@ \

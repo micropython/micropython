@@ -636,11 +636,11 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_chunk(socket, "\", \"board_id\": \"");
     _send_chunk(socket, CIRCUITPY_BOARD_ID);
     _send_chunk(socket, "\", \"creator_id\": ");
-    char encoded_id[8];
-    snprintf(encoded_id, sizeof(encoded_id), "%d", CIRCUITPY_CREATOR_ID);
+    char encoded_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
+    snprintf(encoded_id, sizeof(encoded_id), "%u", CIRCUITPY_CREATOR_ID);
     _send_chunk(socket, encoded_id);
     _send_chunk(socket, ", \"creation_id\": ");
-    snprintf(encoded_id, sizeof(encoded_id), "%d", CIRCUITPY_CREATION_ID);
+    snprintf(encoded_id, sizeof(encoded_id), "%u", CIRCUITPY_CREATION_ID);
     _send_chunk(socket, encoded_id);
     _send_chunk(socket, ", \"hostname\": \"");
     _send_chunk(socket, common_hal_mdns_server_get_hostname(&mdns));
