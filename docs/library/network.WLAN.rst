@@ -130,7 +130,7 @@ Methods
    hidden         Whether SSID is hidden (boolean)
    security       Security protocol supported (enumeration, see module constants)
    key            Access key (string)
-   dhcp_hostname  The DHCP hostname to use
+   hostname       The station(access point) hostname to use
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    txpower        Maximum transmit power in dBm (integer or float)
    =============  ===========
