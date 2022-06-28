@@ -10,3 +10,6 @@ MICROPY_VFS_LFS1 ?= 1
 
 # Don't include default frozen modules because MCU is tight on flash space
 FROZEN_MANIFEST ?=
+
+# LTO reduces final binary size, may be slower to build depending on gcc version and hardware
+LTO ?= 1

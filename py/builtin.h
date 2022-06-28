@@ -120,45 +120,16 @@ MP_DECLARE_CONST_FUN_OBJ_2(mp_op_getitem_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(mp_op_setitem_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_op_delitem_obj);
 
+// Modules needed by the runtime.
+extern const mp_obj_dict_t mp_module_builtins_globals;
 extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_builtins;
-extern const mp_obj_module_t mp_module_uarray;
-extern const mp_obj_module_t mp_module_collections;
-extern const mp_obj_module_t mp_module_io;
-extern const mp_obj_module_t mp_module_math;
-extern const mp_obj_module_t mp_module_cmath;
-extern const mp_obj_module_t mp_module_micropython;
-extern const mp_obj_module_t mp_module_ustruct;
 extern const mp_obj_module_t mp_module_sys;
-extern const mp_obj_module_t mp_module_gc;
-extern const mp_obj_module_t mp_module_thread;
 
-extern const mp_obj_dict_t mp_module_builtins_globals;
-
-// extmod modules
-extern const mp_obj_module_t mp_module_uasyncio;
+// Modules needed by the parser when MICROPY_COMP_MODULE_CONST is enabled.
 extern const mp_obj_module_t mp_module_uerrno;
 extern const mp_obj_module_t mp_module_uctypes;
-extern const mp_obj_module_t mp_module_uzlib;
-extern const mp_obj_module_t mp_module_ujson;
-extern const mp_obj_module_t mp_module_uos;
-extern const mp_obj_module_t mp_module_ure;
-extern const mp_obj_module_t mp_module_uheapq;
-extern const mp_obj_module_t mp_module_uhashlib;
-extern const mp_obj_module_t mp_module_ucryptolib;
-extern const mp_obj_module_t mp_module_ubinascii;
-extern const mp_obj_module_t mp_module_urandom;
-extern const mp_obj_module_t mp_module_uselect;
-extern const mp_obj_module_t mp_module_ussl;
-extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
-extern const mp_obj_module_t mp_module_lwip;
-extern const mp_obj_module_t mp_module_uwebsocket;
-extern const mp_obj_module_t mp_module_webrepl;
-extern const mp_obj_module_t mp_module_framebuf;
-extern const mp_obj_module_t mp_module_btree;
-extern const mp_obj_module_t mp_module_ubluetooth;
-extern const mp_obj_module_t mp_module_uplatform;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

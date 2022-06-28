@@ -96,13 +96,22 @@ CFLAGS += -fsingle-precision-constant
 endif
 endif
 
-LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
-LDFLAGS += --defsym=_estack_reserve=8
+LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += --gc-sections
+LDFLAGS += -Wl,--gc-sections
+
+ifeq ($(LTO),1)
+CFLAGS += -flto=auto
+# LTO requires passing compiler flags to the linker as it will run the assembler.
+# To avoid risk of missing something relevant, pass all flags except for preprocessor args
+LDFLAGS += $(filter-out -I%,$(filter-out -D%,$(CFLAGS)))
+
+$(BUILD)/stm32_it.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
+endif
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
@@ -592,7 +601,7 @@ endef
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $(1)
 	$(if $(filter-out $(TEXT0_ADDR),0x08000000), \
 		$(ECHO) "INFO: this build requires mboot to be installed first")

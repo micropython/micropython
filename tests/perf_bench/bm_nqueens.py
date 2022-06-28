@@ -46,7 +46,7 @@ def n_queens(queen_count):
 # Benchmark interface
 
 bm_params = {
-    (50, 25): (1, 5),
+    (32, 10): (1, 5),
     (100, 25): (1, 6),
     (1000, 100): (1, 7),
     (5000, 100): (1, 8),

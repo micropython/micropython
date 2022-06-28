@@ -345,6 +345,12 @@ STATIC mp_obj_t network_wlan_scan(mp_obj_t self_in) {
     if (status == 0) {
         uint16_t count = 0;
         esp_exceptions(esp_wifi_scan_get_ap_num(&count));
+        if (count == 0) {
+            // esp_wifi_scan_get_ap_records must be called to free internal buffers from the scan.
+            // But it returns an error if wifi_ap_records==NULL.  So allocate at least 1 AP entry.
+            // esp_wifi_scan_get_ap_records will then return the actual number of APs in count.
+            count = 1;
+        }
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
         esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {

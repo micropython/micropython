@@ -78,7 +78,7 @@
 // Location in RAM of bootloader state (just after the top of the stack).
 // STM32H7 has ECC and writes to RAM must be 64-bit so they are fully committed
 // to actual SRAM before a system reset occurs.
-#define BL_STATE_PTR                ((uint64_t *)&_estack)
+#define BL_STATE_PTR                ((uint64_t *)&_bl_state)
 #define BL_STATE_KEY                (0x5a5)
 #define BL_STATE_KEY_MASK           (0xfff)
 #define BL_STATE_KEY_SHIFT          (32)
@@ -87,7 +87,7 @@
 #define BL_STATE_GET_REG(s)         ((s) & 0xffffffff)
 #define BL_STATE_GET_KEY(s)         (((s) >> BL_STATE_KEY_SHIFT) & BL_STATE_KEY_MASK)
 #define BL_STATE_GET_ADDR(s)        (((s) >> BL_STATE_KEY_SHIFT) & ~BL_STATE_KEY_MASK)
-extern uint64_t _estack[];
+extern uint64_t _bl_state[];
 #endif
 
 static inline void powerctrl_disable_hsi_if_unused(void) {

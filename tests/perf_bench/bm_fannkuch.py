@@ -51,6 +51,7 @@ def fannkuch(n):
 # Benchmark interface
 
 bm_params = {
+    (32, 10): (3,),
     (50, 10): (5,),
     (100, 10): (6,),
     (500, 10): (7,),
