@@ -54,9 +54,6 @@ endforeach()
 configure_file(${CMAKE_BINARY_DIR}/sdkconfig.combined.in ${CMAKE_BINARY_DIR}/sdkconfig.combined COPYONLY)
 set(SDKCONFIG_DEFAULTS ${CMAKE_BINARY_DIR}/sdkconfig.combined)
 
-# Include main IDF cmake file and define the project.
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-
 # Include LVGL component, ignore KCONFIG
 
 idf_build_set_property(LV_MICROPYTHON 1)
