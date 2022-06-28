@@ -149,8 +149,14 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     }
     if (map != NULL) {
         for (uint i = 0; i < map->alloc; i++) {
-            if (map->table[i].key != MP_OBJ_NULL) {
-                mp_help_print_info_about_object(map->table[i].key, map->table[i].value);
+            mp_obj_t key = map->table[i].key;
+            if (key != MP_OBJ_NULL
+                #if MICROPY_MODULE_ATTR_DELEGATION
+                // MP_MODULE_ATTR_DELEGATION_ENTRY entries have MP_QSTRnull as qstr key.
+                && key != MP_OBJ_NEW_QSTR(MP_QSTRnull)
+                #endif
+                ) {
+                mp_help_print_info_about_object(key, map->table[i].value);
             }
         }
     }
