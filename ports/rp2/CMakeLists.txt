@@ -150,6 +150,7 @@ set(PICO_SDK_COMPONENTS
     hardware_i2c
     hardware_irq
     hardware_pio
+    hardware_pll
     hardware_pwm
     hardware_regs
     hardware_rtc
@@ -159,6 +160,7 @@ set(PICO_SDK_COMPONENTS
     hardware_timer
     hardware_uart
     hardware_watchdog
+    hardware_xosc
     pico_base_headers
     pico_binary_info
     pico_bootrom

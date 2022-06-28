@@ -38,7 +38,12 @@
 #include "modmachine.h"
 #include "uart.h"
 #include "hardware/clocks.h"
+#include "hardware/pll.h"
+#include "hardware/structs/rosc.h"
+#include "hardware/structs/scb.h"
+#include "hardware/structs/syscfg.h"
 #include "hardware/watchdog.h"
+#include "hardware/xosc.h"
 #include "pico/bootrom.h"
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"
@@ -83,6 +88,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+    rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
     reset_usb_boot(0, 0);
     for (;;) {
     }
@@ -113,13 +119,77 @@ STATIC mp_obj_t machine_idle(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        for (;;) {
-            MICROPY_EVENT_POLL_HOOK
+    mp_int_t delay_ms = 0;
+    bool use_timer_alarm = false;
+
+    if (n_args == 1) {
+        delay_ms = mp_obj_get_int(args[0]);
+        if (delay_ms <= 1) {
+            // Sleep is too small, just use standard delay.
+            mp_hal_delay_ms(delay_ms);
+            return mp_const_none;
         }
-    } else {
-        mp_hal_delay_ms(mp_obj_get_int(args[0]));
+        use_timer_alarm = delay_ms < (1ULL << 32) / 1000;
+        if (use_timer_alarm) {
+            // Use timer alarm to wake.
+        } else {
+            // TODO: Use RTC alarm to wake.
+            mp_raise_ValueError(MP_ERROR_TEXT("sleep too long"));
+        }
     }
+
+    const uint32_t xosc_hz = XOSC_MHZ * 1000000;
+
+    // Disable USB and ADC clocks.
+    clock_stop(clk_usb);
+    clock_stop(clk_adc);
+
+    // CLK_REF = XOSC
+    clock_configure(clk_ref, CLOCKS_CLK_REF_CTRL_SRC_VALUE_XOSC_CLKSRC, 0, xosc_hz, xosc_hz);
+
+    // CLK_SYS = CLK_REF
+    clock_configure(clk_sys, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLK_REF, 0, xosc_hz, xosc_hz);
+
+    // CLK_RTC = XOSC / 256
+    clock_configure(clk_rtc, 0, CLOCKS_CLK_RTC_CTRL_AUXSRC_VALUE_XOSC_CLKSRC, xosc_hz, xosc_hz / 256);
+
+    // CLK_PERI = CLK_SYS
+    clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, xosc_hz, xosc_hz);
+
+    // Disable PLLs.
+    pll_deinit(pll_sys);
+    pll_deinit(pll_usb);
+
+    // Disable ROSC.
+    rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_DISABLE << ROSC_CTRL_ENABLE_LSB;
+
+    if (n_args == 0) {
+        xosc_dormant();
+    } else {
+        uint32_t sleep_en0 = clocks_hw->sleep_en0;
+        uint32_t sleep_en1 = clocks_hw->sleep_en1;
+        clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
+        if (use_timer_alarm) {
+            // Use timer alarm to wake.
+            clocks_hw->sleep_en1 = CLOCKS_SLEEP_EN1_CLK_SYS_TIMER_BITS;
+            timer_hw->alarm[3] = timer_hw->timerawl + delay_ms * 1000;
+        } else {
+            // TODO: Use RTC alarm to wake.
+            clocks_hw->sleep_en1 = 0;
+        }
+        scb_hw->scr |= M0PLUS_SCR_SLEEPDEEP_BITS;
+        __wfi();
+        scb_hw->scr &= ~M0PLUS_SCR_SLEEPDEEP_BITS;
+        clocks_hw->sleep_en0 = sleep_en0;
+        clocks_hw->sleep_en1 = sleep_en1;
+    }
+
+    // Enable ROSC.
+    rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
+
+    // Bring back all clocks.
+    clocks_init();
+
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
