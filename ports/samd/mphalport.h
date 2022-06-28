@@ -27,6 +27,7 @@
 #ifndef MICROPY_INCLUDED_SAMD_MPHALPORT_H
 #define MICROPY_INCLUDED_SAMD_MPHALPORT_H
 
+#include "py/ringbuf.h"
 #include "py/mpconfig.h"
 
 // ASF4
