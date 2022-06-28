@@ -46,3 +46,6 @@
 
 // Explanation of how a user got into safe mode
 #define BOARD_USER_SAFE_MODE_ACTION translate("pressing SW38 button at start up.\n")
+
+#define CIRCUITPY_DEBUG_UART_TX (&pin_GPIO8)
+#define CIRCUITPY_DEBUG_UART_RX (&pin_GPIO7)

@@ -82,9 +82,12 @@ with open(sys.argv[2], "r") as f:
                     elif subtype == "ota_0":
                         ota = partition[4].strip()
                 size = app if ota is None else ota
-                if size[-1] not in ("k", "K"):
-                    raise RuntimeError("Unhandled partition size suffix")
-                firmware_region = int(size[:-1]) * 1024
+                if size[-1] in ("k", "K"):
+                    firmware_region = int(size[:-1]) * 1024
+                elif size[-1] in ("m", "M"):
+                    firmware_region = int(size[:-1]) * 1024 * 1024
+                else:
+                    raise RuntimeError("Unhandled partition size suffix:", size[-1])
 
 regions = dict((name, 0) for name, _, _ in internal_memory[target])
 

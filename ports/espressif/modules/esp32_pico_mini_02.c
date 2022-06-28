@@ -27,11 +27,10 @@
 #include "modules/module.h"
 
 void never_reset_module_internal_pins(void) {
-    // SPI Flash
+    // SPI Flash and PSRAM
     common_hal_never_reset_pin(&pin_GPIO6);
-    common_hal_never_reset_pin(&pin_GPIO11);
-
-    // PSRAM
     common_hal_never_reset_pin(&pin_GPIO9);
     common_hal_never_reset_pin(&pin_GPIO10);
+    common_hal_never_reset_pin(&pin_GPIO11);
+
 }

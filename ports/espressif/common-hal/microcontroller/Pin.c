@@ -33,6 +33,10 @@
 #include "components/driver/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
 
@@ -57,7 +61,7 @@ MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
 STATIC void _reset_pin(gpio_num_t pin_number) {
    // Never ever reset pins used for flash and RAM.
     #if defined(CONFIG_IDF_TARGET_ESP32)
-    if (pin_number == 6 || pin_number == 11 || pin_number == 9 || pin_number == 10) {
+    if (pin_number == 1 || pin_number == 6 || pin_number == 11 || pin_number == 9 || pin_number == 10 || pin_number == 17 || pin_number == 23) {
         return;
     }
     #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -129,12 +133,15 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 void reset_all_pins(void) {
+    ESP_LOGI("Pin.c", "reset_all_pins");
     for (uint8_t i = 0; i < GPIO_PIN_COUNT; i++) {
         uint32_t iomux_address = GPIO_PIN_MUX_REG[i];
         if (iomux_address == 0 ||
             (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
             continue;
         }
+        ESP_LOGI("Pin.c", "about to reset pin %d", i);
+        vTaskDelay(100);
         _reset_pin(i);
     }
     in_use[0] = never_reset_pins[0];

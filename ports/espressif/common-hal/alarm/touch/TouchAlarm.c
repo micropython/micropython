@@ -132,11 +132,11 @@ void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alar
             #if defined(CONFIG_IDF_TARGET_ESP32)
             uint16_t touch_value;
             touch_pad_read(touch_channel, &touch_value);
-            touch_pad_set_thresh(touch_channel, touch_value * 0.1); // 10%
+            touch_pad_set_thresh(touch_channel, touch_value / 10); // 10%
             #else
             uint32_t touch_value;
             touch_pad_read_benchmark(touch_channel, &touch_value);
-            touch_pad_set_threshold(touch_channel, touch_value * 0.1); // 10%
+            touch_pad_set_thresh(touch_channel, touch_value / 10); // 10%
             #endif
         }
     }
