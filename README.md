@@ -190,7 +190,7 @@ More info about LVGL:
 More info about lvgl Micropython bindings:
 - https://github.com/lvgl/lv_binding_micropython/blob/master/README.md
 
-Discussions about the Microptyhon binding: https://github.com/lvgl/lvgl/issues/557
+Discussions about the Micropython binding: https://github.com/lvgl/lvgl/issues/557
 
 More info about the unix port: https://github.com/micropython/micropython/wiki/Getting-Started#debian-ubuntu-mint-and-variants
 
