@@ -44,6 +44,7 @@
 // #include "lwip/dns.h"
 
 NORETURN void esp_exceptions_helper(esp_err_t e) {
+    /*
     switch (e) {
         case ESP_ERR_WIFI_NOT_INIT:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Wifi Not Initialized"));
@@ -78,6 +79,8 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
         default:
             mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("Wifi Unknown Error 0x%04x"), e);
     }
+    */
+    mp_raise_msg(&mp_type_OSError, esp_err_to_name(e));
 }
 
 STATIC mp_obj_t esp_initialize() {

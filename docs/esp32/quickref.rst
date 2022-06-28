@@ -806,3 +806,29 @@ the corresponding functions, or you can use the command-line client
 
 See the MicroPython forum for other community-supported alternatives
 to transfer files to an ESP32 board.
+
+Error handling
+--------------
+
+To raise eroor from MicroPython module::
+
+    import errno
+    raise(OSError(errno.ETIMEDOUT))
+
+    >>> OSError: [Errno 116] ETIMEDOUT
+
+or::
+
+    raise(ValueError('Must be positive'))
+
+    >>> ValueError: Must be positive
+
+Internally in C code esp-idf raises ecceptions in format::
+
+    >>> OSError: (-12293, 0x3005, 'ESP_ERR_WIFI_MODE')
+
+Additional information about error codes see on Espressif esp-idf
+`esp_err.h <https://github.com/espressif/esp-idf/blob/master/components/esp_common/include/esp_err.h>`_,
+`esp_wifi.h <https://github.com/espressif/esp-idf/blob/master/components/esp_wifi/include/esp_wifi.h>`_,
+`esp_netif_types.h <https://github.com/espressif/esp-idf/blob/master/components/esp_netif/include/esp_netif_types.h>`_
+etc.

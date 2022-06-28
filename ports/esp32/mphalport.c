@@ -33,6 +33,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_timer.h"
+#include "esp_wifi.h"
 
 #include "py/obj.h"
 #include "py/objstr.h"
@@ -58,9 +59,14 @@ void check_esp_err(esp_err_t code) {
         // map esp-idf error code to posix error code
         uint32_t pcode = -code;
         switch (code) {
+            case ESP_ERR_ESP_NETIF_NO_MEM:
+            #ifdef ESP_ERR_TCPIP_ADAPTER_NO_MEM
+            case ESP_ERR_TCPIP_ADAPTER_NO_MEM:
+            #endif
             case ESP_ERR_NO_MEM:
                 pcode = MP_ENOMEM;
                 break;
+            case ESP_ERR_WIFI_TIMEOUT:
             case ESP_ERR_TIMEOUT:
                 pcode = MP_ETIMEDOUT;
                 break;
@@ -68,19 +74,7 @@ void check_esp_err(esp_err_t code) {
                 pcode = MP_EOPNOTSUPP;
                 break;
         }
-        // construct string object
-        mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-        if (o_str == NULL) {
-            mp_raise_OSError(pcode);
-            return;
-        }
-        o_str->base.type = &mp_type_str;
-        o_str->data = (const byte *)esp_err_to_name(code); // esp_err_to_name ret's ptr to const str
-        o_str->len = strlen((char *)o_str->data);
-        o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-        // raise
-        mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(pcode), MP_OBJ_FROM_PTR(o_str)};
-        nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
+        mp_raise_msg_varg(&mp_type_OSError, "(%d, 0x%04X, '%s')", pcode, code, (const char *)esp_err_to_name(code));
     }
 }
 
