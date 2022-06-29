@@ -30,10 +30,6 @@
 // Set base feature level.
 #define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
 
-// Disable some features that come enabled by default with the feature level.
-#define MICROPY_PY_BUILTINS_EXECFILE            (0)
-#define MICROPY_PY_SYS_STDIO_BUFFER             (0)
-
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
 #define MICROPY_TRACKED_ALLOC           (1)
