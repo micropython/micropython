@@ -51,7 +51,36 @@ uint32_t get_peripheral_freq(void) {
 }
 
 void set_cpu_freq(uint32_t cpu_freq_arg) {
-    cpu_freq = cpu_freq_arg;
+
+    // Set 1 waitstate to be safe
+    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(1);
+
+    int div = DFLL48M_FREQ / cpu_freq_arg;
+    peripheral_freq = cpu_freq = DFLL48M_FREQ / div;
+
+    // Enable GCLK output: 48M on both CCLK0 and GCLK2
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(0) | GCLK_GENDIV_DIV(div);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(0);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(div);
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(2);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    if (cpu_freq >= 8000000) {
+        // Enable GCLK output: 48MHz on GCLK5 for USB
+        GCLK->GENDIV.reg = GCLK_GENDIV_ID(5) | GCLK_GENDIV_DIV(1);
+        GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(5);
+        while (GCLK->STATUS.bit.SYNCBUSY) {
+        }
+    } else {
+        // Disable GCLK output on GCLK5 for USB, since USB is not reliable below 8 Mhz.
+        GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(5);
+        while (GCLK->STATUS.bit.SYNCBUSY) {
+        }
+    }
+    // Set 0 waitstates for slower CPU clock
+    NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(cpu_freq > 24000000 ? 1 : 0);
 }
 
 void check_usb_recovery_mode(void) {
@@ -76,6 +105,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK2: 48MHz from DFLL for Peripherals
     // GCLK3: 1Mhz for the us-counter (TC4/TC5)
     // GCLK4: 32kHz from crystal, if present
+    // GCLK5: 48MHz from DFLL for USB
     // GCLK8: 1kHz clock for WDT
 
     NVMCTRL->CTRLB.bit.MANW = 1; // errata "Spurious Writes"
@@ -180,15 +210,7 @@ void init_clocks(uint32_t cpu_freq) {
 
     #endif // MICROPY_HW_XOSC32K
 
-    // Enable GCLK output: 48M on both CCLK0 and GCLK2
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(0) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(0);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
-    GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(1);
-    GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL48M | GCLK_GENCTRL_ID(2);
-    while (GCLK->STATUS.bit.SYNCBUSY) {
-    }
+    set_cpu_freq(cpu_freq);
 
     // Enable GCLK output: 1MHz on GCLK3 for TC4
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(3) | GCLK_GENDIV_DIV(48);
@@ -200,7 +222,6 @@ void init_clocks(uint32_t cpu_freq) {
     GCLK->GENCTRL.reg = GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_OSCULP32K | GCLK_GENCTRL_ID(8);
     while (GCLK->STATUS.bit.SYNCBUSY) {
     }
-
 }
 
 void enable_sercom_clock(int id) {
