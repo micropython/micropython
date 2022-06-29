@@ -65,6 +65,7 @@ volatile uint32_t nesting_count = 0;
 static portMUX_TYPE cp_mutex = portMUX_INITIALIZER_UNLOCKED;
 
 void common_hal_mcu_disable_interrupts(void) {
+    assert(xPortGetCoreID() == CONFIG_ESP_MAIN_TASK_AFFINITY);
     if (nesting_count == 0) {
         portENTER_CRITICAL(&cp_mutex);
     }
@@ -72,9 +73,8 @@ void common_hal_mcu_disable_interrupts(void) {
 }
 
 void common_hal_mcu_enable_interrupts(void) {
-    if (nesting_count == 0) {
-        // Maybe log here because it's very bad.
-    }
+    assert(xPortGetCoreID() == CONFIG_ESP_MAIN_TASK_AFFINITY);
+    assert(nesting_count > 0);
     nesting_count--;
     if (nesting_count > 0) {
         return;

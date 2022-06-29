@@ -42,12 +42,25 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 #include "components/log/include/esp_log.h"
 
+#include "supervisor/port.h"
 #include "supervisor/workflow.h"
+
+#include "esp_ipc.h"
 
 static const char *TAG = "wifi";
 
+STATIC void schedule_background_on_cp_core(void *arg) {
+    supervisor_workflow_request_background();
+
+    // CircuitPython's VM is run in a separate FreeRTOS task from wifi callbacks. So, we have to
+    // notify the main task every time in case it's waiting for us.
+    port_wake_main_task();
+}
+
 static void event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
+    // This runs on the PRO CORE! It cannot share CP interrupt enable/disable
+    // directly.
     wifi_radio_obj_t *radio = arg;
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
@@ -108,7 +121,14 @@ static void event_handler(void *arg, esp_event_base_t event_base,
         radio->retries_left = radio->starting_retries;
         xEventGroupSetBits(radio->event_group_handle, WIFI_CONNECTED_BIT);
     }
-    supervisor_workflow_request_background();
+    // Use IPC to ensure we run schedule background on the same core as CircuitPython.
+    #if defined(CONFIG_FREERTOS_UNICORE) && CONFIG_FREERTOS_UNICORE
+    schedule_background_on_cp_core(NULL);
+    #else
+    // This only blocks until the start of the function. That's ok since the PRO
+    // core shouldn't care what we do.
+    esp_ipc_call(CONFIG_ESP_MAIN_TASK_AFFINITY, schedule_background_on_cp_core, NULL);
+    #endif
 }
 
 static bool wifi_inited;
