@@ -46,7 +46,7 @@ static void usb_init(void) {
     PM->APBBMASK.bit.USB_ = 1;
     uint8_t alt = 6; // alt G, USB
     #elif defined(MCU_SAMD51)
-    GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
+    GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK5;
     while (GCLK->PCHCTRL[USB_GCLK_ID].bit.CHEN == 0) {
     }
     MCLK->AHBMASK.bit.USB_ = 1;

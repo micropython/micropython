@@ -54,35 +54,63 @@ uint32_t get_peripheral_freq(void) {
 }
 
 void set_cpu_freq(uint32_t cpu_freq_arg) {
-    cpu_freq = cpu_freq_arg;
 
     // Setup GCLK0 for 48MHz as default state to keep the MCU running during config change.
     GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
     while (GCLK->SYNCBUSY.bit.GENCTRL0) {
     }
-
     // Setup DPLL0 for 120 MHz
     // first: disable DPLL0 in case it is running
     OSCCTRL->Dpll[0].DPLLCTRLA.bit.ENABLE = 0;
     while (OSCCTRL->Dpll[0].DPLLSYNCBUSY.bit.ENABLE == 1) {
     }
-    // Now configure the registers
-    OSCCTRL->Dpll[0].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_DIV(1) | OSCCTRL_DPLLCTRLB_LBYPASS |
-        OSCCTRL_DPLLCTRLB_REFCLK(0) | OSCCTRL_DPLLCTRLB_WUF | OSCCTRL_DPLLCTRLB_FILTER(0x01);
+    if (cpu_freq_arg > DFLL48M_FREQ) {
 
-    uint32_t div = cpu_freq / DPLLx_REF_FREQ;
-    uint32_t frac = (cpu_freq - div * DPLLx_REF_FREQ) / (DPLLx_REF_FREQ / 32);
-    OSCCTRL->Dpll[0].DPLLRATIO.reg = (frac << 16) + div - 1;
-    // enable it again
-    OSCCTRL->Dpll[0].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE | OSCCTRL_DPLLCTRLA_RUNSTDBY;
+        cpu_freq = cpu_freq_arg;
+        peripheral_freq = DFLL48M_FREQ;
+        // Now configure the registers
+        OSCCTRL->Dpll[0].DPLLCTRLB.reg = OSCCTRL_DPLLCTRLB_DIV(1) | OSCCTRL_DPLLCTRLB_LBYPASS |
+            OSCCTRL_DPLLCTRLB_REFCLK(0) | OSCCTRL_DPLLCTRLB_WUF | OSCCTRL_DPLLCTRLB_FILTER(0x01);
 
-    // Per errata 2.13.1
-    while (!(OSCCTRL->Dpll[0].DPLLSTATUS.bit.CLKRDY == 1)) {
+        uint32_t div = cpu_freq / DPLLx_REF_FREQ;
+        uint32_t frac = (cpu_freq - div * DPLLx_REF_FREQ) / (DPLLx_REF_FREQ / 32);
+        OSCCTRL->Dpll[0].DPLLRATIO.reg = (frac << 16) + div - 1;
+        // enable it again
+        OSCCTRL->Dpll[0].DPLLCTRLA.reg = OSCCTRL_DPLLCTRLA_ENABLE | OSCCTRL_DPLLCTRLA_RUNSTDBY;
+
+        // Per errata 2.13.1
+        while (!(OSCCTRL->Dpll[0].DPLLSTATUS.bit.CLKRDY == 1)) {
+        }
+        // Setup GCLK0 for DPLL0 output (48 or 48-200MHz)
+        GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL0;
+        while (GCLK->SYNCBUSY.bit.GENCTRL0) {
+        }
+        // Set GCLK 2 back to 48 MHz
+        GCLK->GENCTRL[2].reg = GCLK_GENCTRL_DIV(1) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        while (GCLK->SYNCBUSY.bit.GENCTRL2) {
+        }
+    } else {
+        int div = DFLL48M_FREQ / cpu_freq_arg;
+        // Setup GCLK1 for the low freq
+        GCLK->GENCTRL[2].reg = GCLK_GENCTRL_DIV(div) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        while (GCLK->SYNCBUSY.bit.GENCTRL2) {
+        }
+        GCLK->GENCTRL[0].reg = GCLK_GENCTRL_DIV(div) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        while (GCLK->SYNCBUSY.bit.GENCTRL0) {
+        }
+        peripheral_freq = DFLL48M_FREQ / div;
+        cpu_freq = DFLL48M_FREQ / div;
     }
-
-    // Setup GCLK0 for DPLL0 output (48 or 48-200MHz)
-    GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DPLL0;
-    while (GCLK->SYNCBUSY.bit.GENCTRL0) {
+    if (cpu_freq >= 8000000) {
+        // Setup GCLK5 for DFLL48M output (48 MHz)
+        GCLK->GENCTRL[5].reg = GCLK_GENCTRL_DIV(1) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
+        while (GCLK->SYNCBUSY.bit.GENCTRL5) {
+        }
+    } else {
+        // Setup GCLK5 off if CPU Clk < 8 MHz
+        GCLK->GENCTRL[5].reg = 0;
+        while (GCLK->SYNCBUSY.bit.GENCTRL5) {
+        }
     }
 }
 
@@ -120,9 +148,10 @@ void init_clocks(uint32_t cpu_freq) {
     // SAMD51 clock settings
     // GCLK0: 48MHz from DFLL48M or 48 - 200 MHz from DPLL0 (SAMD51)
     // GCLK1: 32768 Hz from 32KULP or DFLL48M
-    // GCLK2: 48MHz from DFLL48M for Peripheral devices
-    // GCLK3: 16Mhz for the us-counter (TC0/TC1)
+    // GCLK2: 8-48MHz from DFLL48M for Peripheral devices
+    // GCLK3: 8Mhz for the us-counter (TC0/TC1)
     // GCLK4: 32kHz from crystal, if present
+    // GCLK5: 48MHz from DFLL48M for USB
     // DPLL0: 48 - 200 MHz
 
     // Steps to set up clocks:
@@ -136,6 +165,7 @@ void init_clocks(uint32_t cpu_freq) {
     // Setup GCLK2 to 48MHz for Peripherals
     // Setup GCLK3 to 8MHz for TC0/TC1
     // Setup GCLK4 to 32kHz crystal, if present
+    // Setup GCLK5 to 48 MHz
 
     // Setup GCLK0 for 48MHz as default state to keep the MCU running during config change.
     GCLK->GENCTRL[0].reg = GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
@@ -238,7 +268,7 @@ void init_clocks(uint32_t cpu_freq) {
 
     peripheral_freq = DFLL48M_FREQ;  // To be changed if CPU_FREQ < 48M
 
-    // Setup GCLK2 for DPLL1 output (48 MHz)
+    // Setup GCLK2 for DFLL48M output (48 MHz), may be scaled down later by calls to set_cpu_freq
     GCLK->GENCTRL[2].reg = GCLK_GENCTRL_DIV(1) | GCLK_GENCTRL_RUNSTDBY | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC_DFLL;
     while (GCLK->SYNCBUSY.bit.GENCTRL2) {
     }
