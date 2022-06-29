@@ -179,8 +179,11 @@
 #define MICROPY_PY_UHASHLIB_SHA1    (1)
 #define MICROPY_PY_UCRYPTOLIB       (1)
 #endif
+#ifndef MICROPY_PY_USELECT
+#define MICROPY_PY_USELECT          (0)
+#endif
 #ifndef MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_POSIX    (1)
+#define MICROPY_PY_USELECT_POSIX    (!MICROPY_PY_USELECT)
 #endif
 #define MICROPY_PY_UWEBSOCKET       (1)
 #define MICROPY_PY_MACHINE          (1)

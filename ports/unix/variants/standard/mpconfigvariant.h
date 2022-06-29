@@ -38,7 +38,6 @@
 #define MICROPY_PY_MATH_FACTORIAL               (0)
 #define MICROPY_PY_SYS_PS1_PS2                  (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER             (0)
-#define MICROPY_PY_USELECT                      (0)
 #define MICROPY_PY_UASYNCIO                     (0)
 #define MICROPY_PY_URE_SUB                      (0)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS          (0)

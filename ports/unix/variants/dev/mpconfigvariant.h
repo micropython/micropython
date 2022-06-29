@@ -30,7 +30,6 @@
 // Disable some features that come enabled by default with the feature level.
 #define MICROPY_PY_BUILTINS_EXECFILE            (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER             (0)
-#define MICROPY_PY_USELECT                      (0)
 
 // Enable some additional features.
 #define MICROPY_REPL_EMACS_WORDS_MOVE           (1)
