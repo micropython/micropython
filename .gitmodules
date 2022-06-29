@@ -292,3 +292,18 @@
 [submodule "frozen/mixgo_cp_lib"]
 	path = frozen/mixgo_cp_lib
 	url = https://github.com/dahanzimin/circuitpython_lib.git
+[submodule "frozen/Adafruit_CircuitPython_IS31FL3731"]
+	path = frozen/Adafruit_CircuitPython_IS31FL3731
+	url = https://github.com/adafruit/Adafruit_CircuitPython_IS31FL3731.git
+[submodule "frozen/Adafruit_CircuitPython_Ticks"]
+	path = frozen/Adafruit_CircuitPython_Ticks
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Ticks.git
+[submodule "frozen/Adafruit_CircuitPython_asyncio"]
+	path = frozen/Adafruit_CircuitPython_asyncio
+	url = https://github.com/adafruit/Adafruit_CircuitPython_asyncio.git
+[submodule "frozen/circuitpython_ef_music"]
+	path = frozen/circuitpython_ef_music
+	url = https://github.com/elecfreaks/circuitpython_ef_music.git
+[submodule "frozen/circuitpython_picoed"]
+	path = frozen/circuitpython_picoed
+	url = https://github.com/elecfreaks/circuitpython_picoed.git
