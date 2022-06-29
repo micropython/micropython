@@ -26,6 +26,7 @@ unsigned long trng_random_u32(void);
 
 #define CPU_FREQ                        (120000000)
 #define DFLL48M_FREQ                    (48000000)
+#define MAX_CPU_FREQ                    (200000000)
 #define DPLLx_REF_FREQ                  (32768)
 
 #define NVIC_PRIORITYGROUP_4            ((uint32_t)0x00000003)

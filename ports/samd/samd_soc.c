@@ -41,7 +41,7 @@
 static void usb_init(void) {
     // Init USB clock
     #if defined(MCU_SAMD21)
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID_USB;
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK5 | GCLK_CLKCTRL_ID_USB;
     PM->AHBMASK.bit.USB_ = 1;
     PM->APBBMASK.bit.USB_ = 1;
     uint8_t alt = 6; // alt G, USB

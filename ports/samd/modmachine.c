@@ -67,13 +67,11 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
     } else {
-        #if defined(MCU_SAMD51)
         uint32_t freq = mp_obj_get_int(args[0]);
-        if (freq >= 1000000 && freq <= 200000000) {
+        if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
             set_cpu_freq(freq);
             SysTick_Config(get_cpu_freq() / 1000);
         }
-        #endif
         return mp_const_none;
     }
 }
