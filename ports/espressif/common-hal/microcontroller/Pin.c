@@ -40,6 +40,73 @@
 STATIC uint32_t never_reset_pins[2];
 STATIC uint32_t in_use[2];
 
+// Bit mask of all pins that should never ever be reset.
+// Typically these are SPI flash and PSRAM control pins, and communication pins.
+static const uint64_t pin_mask_reset_forbidden =
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    // Never ever reset serial pins for bootloader and possibly USB-serial converter.
+    GPIO_SEL_1 |          // TXD0
+    GPIO_SEL_3 |          // RXD0
+    // Never ever reset pins used to communicate with SPI flash and PSRAM.
+    GPIO_SEL_6 |          // CLK
+    GPIO_SEL_9 |          // (PSRAM) SD2
+    GPIO_SEL_10 |         // (PSRAM) SD3
+    GPIO_SEL_11 |         // CMD
+    GPIO_SEL_16 |         // SPIHD
+    GPIO_SEL_17 |         // SPIDO
+    GPIO_SEL_18 |         // SPIWP
+    GPIO_SEL_23 |         // SPIDI
+    #endif // ESP32
+
+    #if defined(CONFIG_IDF_TARGET_ESP32C3)
+    // Never ever reset pins used to communicate with SPI flash.
+    GPIO_SEL_11 |         // VDD_SPI
+    GPIO_SEL_12 |         // SPIHD
+    GPIO_SEL_13 |         // SPIWP
+    GPIO_SEL_14 |         // SPICS0
+    GPIO_SEL_15 |         // SPICLK
+    GPIO_SEL_16 |         // SPID
+    GPIO_SEL_17 |         // SPIQ
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_18 |         // USB D-
+    GPIO_SEL_19 |         // USB D+
+    #endif
+    #endif // ESP32C3
+
+    #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
+    // Never ever reset pins used to communicate with SPI flash and PSRAM.
+    GPIO_SEL_19 |         // USB D-
+    GPIO_SEL_20 |         // USB D+
+    #if CIRCUITPY_ESP_PSRAM
+    // Board uses PSRAM, and needs another chip select.
+    GPIO_SEL_26 |         // SPICS1
+    #endif
+    GPIO_SEL_27 |         // SPIHD
+    GPIO_SEL_28 |         // SPIWP
+    GPIO_SEL_29 |         // SPICS0
+    GPIO_SEL_30 |         // SPICLK
+    GPIO_SEL_31 |         // SPIHD
+    GPIO_SEL_32 |         // SPIQ
+    #if defined(CONFIG_SPIRAM_MODE_OCT)
+    // Never reset octal SPI flash pins DQ4-DQ7 and DQS/DM.
+    GPIO_SEL_33 |         // SPIIO4
+    GPIO_SEL_34 |         // SPIIO5
+    GPIO_SEL_35 |         // SPIIO6
+    GPIO_SEL_36 |         // SPIIO7
+    GPIO_SEL_37 |         // SPIDQS
+    #endif
+    #if CIRCUITPY_USB
+    // Never ever reset USB pins.
+    GPIO_SEL_19 |         // USB D-
+    GPIO_SEL_20 |         // USB D+
+    #endif
+    #endif // ESP32S2, ESP32S3
+
+    0;                    // Terminate last "|".
+
+
+
 void never_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
@@ -59,40 +126,10 @@ MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
 }
 
 STATIC void _reset_pin(gpio_num_t pin_number) {
-   // Never ever reset pins used for flash and RAM.
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    if (pin_number == 1 || pin_number == 6 || pin_number == 11 || pin_number == 9 || pin_number == 10 || pin_number == 17 || pin_number == 23) {
+    // Never ever reset pins used for flash, RAM, and basic communication.
+    if (pin_mask_reset_forbidden & (((uint64_t)1) << pin_number)) {
         return;
     }
-    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
-    // Never ever reset pins used for flash and RAM.
-    if (26 <= pin_number && pin_number <= 32) {
-        return;
-    }
-    #ifdef CONFIG_SPIRAM_MODE_OCT
-    // Octal DQ4-DQ7 and DQS/DM
-    if (33 <= pin_number && pin_number <= 37) {
-        return;
-    }
-    #endif
-
-    #if CIRCUITPY_USB
-    // Never reset USB pins.
-    if (pin_number == 19 || pin_number == 20) {
-        return;
-    }
-    #endif
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    // Never ever reset pins used for flash and RAM.
-    if (11 <= pin_number && pin_number <= 17) {
-        return;
-    }
-    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
-    if (pin_number == 18 || pin_number == 19) {
-        return;
-    }
-    #endif
-    #endif
 
     // Give the board a chance to reset the pin in a particular way.
     if (espressif_board_reset_pin_number(pin_number)) {

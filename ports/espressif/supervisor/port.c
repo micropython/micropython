@@ -29,7 +29,6 @@
 #include <sys/time.h>
 #include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "modules/module.h"
 #include "py/runtime.h"
 #include "supervisor/esp_port.h"
 
@@ -162,7 +161,6 @@ safe_mode_t port_init(void) {
     #endif
 
     heap = NULL;
-    never_reset_module_internal_pins();
 
     #ifndef DEBUG
     #define DEBUG (0)

@@ -247,7 +247,6 @@ SRC_C += \
 	bindings/espidf/__init__.c \
 	boards/$(BOARD)/board.c \
 	boards/$(BOARD)/pins.c \
-	modules/$(CIRCUITPY_MODULE).c \
 	shared/netutils/netutils.c \
 	peripherals/i2c.c \
 	peripherals/rmt.c \
