@@ -34,7 +34,10 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
+#include "py/stream.h"
+#include "py/mperrno.h"
 #include "extmod/misc.h"
+#include "extmod/vfs_posix.h"
 
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 25)
@@ -72,8 +75,12 @@ STATIC void sighandler(int signum) {
 }
 #endif
 
+// Implementation for lib/utils/interupt_char.h
+int mp_interrupt_char = -1;
+
 void mp_hal_set_interrupt_char(char c) {
     // configure terminal settings to (not) let ctrl-C through
+    mp_interrupt_char = c;
     if (c == CHAR_CTRL_C) {
         #ifndef _WIN32
         // enable signal handler
@@ -122,72 +129,44 @@ void mp_hal_stdio_mode_orig(void) {
 #endif
 
 #if MICROPY_PY_OS_DUPTERM
-static int call_dupterm_read(size_t idx) {
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t read_m[3];
-        mp_load_method(MP_STATE_VM(dupterm_objs[idx]), MP_QSTR_read, read_m);
-        read_m[2] = MP_OBJ_NEW_SMALL_INT(1);
-        mp_obj_t res = mp_call_method_n_kw(1, 0, read_m);
-        if (res == mp_const_none) {
-            return -2;
-        }
-        mp_buffer_info_t bufinfo;
-        mp_get_buffer_raise(res, &bufinfo, MP_BUFFER_READ);
-        if (bufinfo.len == 0) {
-            mp_printf(&mp_plat_print, "dupterm: EOF received, deactivating\n");
-            MP_STATE_VM(dupterm_objs[idx]) = MP_OBJ_NULL;
-            return -1;
-        }
-        nlr_pop();
-        return *(byte *)bufinfo.buf;
-    } else {
-        // Temporarily disable dupterm to avoid infinite recursion
-        mp_obj_t save_term = MP_STATE_VM(dupterm_objs[idx]);
-        MP_STATE_VM(dupterm_objs[idx]) = NULL;
-        mp_printf(&mp_plat_print, "dupterm: ");
-        mp_obj_print_exception(&mp_plat_print, nlr.ret_val);
-        MP_STATE_VM(dupterm_objs[idx]) = save_term;
-    }
-
-    return -1;
+void init_dupterm_stdio() {
+    MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_FROM_PTR(&mp_sys_raw_stdio_obj);   
 }
 #endif
 
 int mp_hal_stdin_rx_chr(void) {
     #if MICROPY_PY_OS_DUPTERM
-    // TODO only support dupterm one slot at the moment
-    if (MP_STATE_VM(dupterm_objs[0]) != MP_OBJ_NULL) {
-        int c;
-        do {
-            c = call_dupterm_read(0);
-        } while (c == -2);
-        if (c == -1) {
-            goto main_term;
-        }
-        if (c == '\n') {
-            c = '\r';
-        }
-        return c;
+    int c;
+    do {
+        c = mp_uos_dupterm_rx_chr();
+    } while (c == -2);
+    if (c == '\n') {
+        c = '\r';
     }
-main_term:;
-    #endif
-
+    return c;
+    
+    #else // ! MICROPY_PY_OS_DUPTERM
     unsigned char c;
-    ssize_t ret;
-    MP_HAL_RETRY_SYSCALL(ret, read(STDIN_FILENO, &c, 1), {});
+    int errcode = 0;
+    const mp_stream_p_t *stream_p = mp_get_stream(&mp_sys_raw_stdio_obj);
+    mp_uint_t ret = stream_p->read((mp_obj_t)&mp_sys_raw_stdio_obj, &c, 1, &errcode);
     if (ret == 0) {
         c = 4; // EOF, ctrl-D
     } else if (c == '\n') {
         c = '\r';
     }
     return c;
+    #endif
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    ssize_t ret;
-    MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
+    #if MICROPY_PY_OS_DUPTERM
     mp_uos_dupterm_tx_strn(str, len);
+    #else
+    int errcode = 0;
+    const mp_stream_p_t *stream_p = mp_get_stream(&mp_sys_raw_stdio_obj);
+    stream_p->write((mp_obj_t)&mp_sys_raw_stdio_obj, str, len, &errcode);
+    #endif
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
