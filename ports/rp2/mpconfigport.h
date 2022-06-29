@@ -238,7 +238,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
-#define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
+#define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
         MICROPY_HW_USBDEV_TASK_HOOK \
 }
@@ -250,7 +250,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \
-        MICROPY_HW_USBDEV_TASK_HOOK \
+        if (get_core_num() == 0) { MICROPY_HW_USBDEV_TASK_HOOK } \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
     } while (0)
