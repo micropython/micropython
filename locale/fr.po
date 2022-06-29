@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Neradoc <weblate@ri1.fr>\n"
+"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -32,8 +32,8 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 "\n"
-"Le code a été arrêté par l'actualisation automatique. Rechargement "
-"prochain.\n"
+"Le code a été arrêté par l'actualisation automatique. Rechargement prochain."
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -841,8 +841,7 @@ msgstr "Ne peut démonter '/' quand est visible par USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
-"Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
+msgstr "Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
