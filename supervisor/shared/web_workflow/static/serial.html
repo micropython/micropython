@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple client</title>
+
+  <script src="/serial.js" defer=true></script>
+</head>
+<body>
+  <pre id="log"></pre>
+  <form onsubmit="onSubmit(); return false;">
+    <input type="text" id="input">
+    <input type="submit" value="Send">
+    <button onclick="onCloseClick(); return false;">close</button>
+  </form>
+</body>
+</html>

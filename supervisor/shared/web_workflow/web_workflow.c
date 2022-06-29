@@ -86,6 +86,10 @@ typedef struct {
     bool authenticated;
     bool expect;
     bool json;
+    bool websocket;
+    uint32_t websocket_version;
+    // RFC6455 for websockets says this header should be 24 base64 characters long.
+    char websocket_key[24 + 1];
 } _request;
 
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
@@ -519,6 +523,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
         "Location: http://", hostname, ".local", path, "\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
+    ESP_LOGI(TAG, "redirect");
 }
 
 static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
@@ -826,6 +831,8 @@ STATIC_FILE(directory_html);
 STATIC_FILE(directory_js);
 STATIC_FILE(welcome_html);
 STATIC_FILE(welcome_js);
+STATIC_FILE(serial_html);
+STATIC_FILE(serial_js);
 STATIC_FILE(blinka_16x16_ico);
 
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
@@ -843,6 +850,13 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
 }
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
+
+static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *request) {
+    ESP_LOGI(TAG, "websocket!");
+    // Compute accept key
+    // Reply with upgrade
+    // Copy socket state into websocket and mark given socket as closed even though it isn't actually.
+}
 
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
@@ -980,6 +994,22 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
+        } else if (strcmp(path, "/serial/") == 0) {
+            if (!request->authenticated) {
+                if (_api_password[0] != '\0') {
+                    _reply_unauthorized(socket, request);
+                } else {
+                    _reply_forbidden(socket, request);
+                }
+            } else if (request->websocket) {
+                ESP_LOGI(TAG, "websocket!");
+                _reply_websocket_upgrade(socket, request);
+            } else {
+                _REPLY_STATIC(socket, request, serial_html);
+            }
+            _reply_with_version_json(socket, request);
+        } else {
+            _reply_missing(socket, request);
         }
     } else if (strcmp(request->method, "GET") != 0) {
         _reply_method_not_allowed(socket, request);
@@ -992,6 +1022,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _REPLY_STATIC(socket, request, directory_js);
         } else if (strcmp(request->path, "/welcome.js") == 0) {
             _REPLY_STATIC(socket, request, welcome_js);
+        } else if (strcmp(request->path, "/serial.js") == 0) {
+            _REPLY_STATIC(socket, request, serial_js);
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
             // TODO: Autogenerate this based on the blinka bitmap and change the
             // palette based on MAC address.
@@ -1015,6 +1047,7 @@ static void _reset_request(_request *request) {
     request->authenticated = false;
     request->expect = false;
     request->json = false;
+    request->websocket = false;
 }
 
 static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
@@ -1111,6 +1144,13 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         strcpy(request->origin, request->header_value);
                     } else if (strcmp(request->header_key, "X-Timestamp") == 0) {
                         request->timestamp_ms = strtoull(request->header_value, NULL, 10);
+                    } else if (strcmp(request->header_key, "Upgrade") == 0) {
+                        request->websocket = strcmp(request->header_value, "websocket") == 0;
+                    } else if (strcmp(request->header_key, "Sec-WebSocket-Version") == 0) {
+                        request->websocket_version = strtoul(request->header_value, NULL, 10);
+                    } else if (strcmp(request->header_key, "Sec-WebSocket-Key") == 0 &&
+                               strlen(request->header_value) == 24) {
+                        strcpy(request->websocket_key, request->header_value);
                     }
                     ESP_LOGI(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {
