@@ -453,7 +453,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         break;
                     }
                     case MP_QSTR_hostname:
-                    case MP_QSTR_dhcp_hostname : {
+                    case MP_QSTR_dhcp_hostname: {
                         const char *s = mp_obj_str_get_str(kwargs->table[i].value);
                         esp_exceptions(tcpip_adapter_set_hostname(self->if_id, s));
                         break;
@@ -540,7 +540,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
         case MP_QSTR_hostname:
-        case MP_QSTR_dhcp_hostname : {
+        case MP_QSTR_dhcp_hostname: {
             const char *s;
             esp_exceptions(tcpip_adapter_get_hostname(self->if_id, &s));
             val = mp_obj_new_str(s, strlen(s));
