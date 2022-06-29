@@ -214,6 +214,9 @@ safe_mode_t port_init(void) {
         case ESP_RST_PANIC:
             return HARD_CRASH;
         case ESP_RST_INT_WDT:
+            // The interrupt watchdog is used internally to make sure that latency sensitive
+            // interrupt code isn't blocked. User watchdog resets come through ESP_RST_WDT.
+            return WATCHDOG_RESET;
         case ESP_RST_WDT:
         default:
             break;
