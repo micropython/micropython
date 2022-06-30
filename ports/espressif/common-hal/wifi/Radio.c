@@ -142,11 +142,11 @@ void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t
 uint8_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self) {
     int8_t tx_power;
     esp_wifi_get_max_tx_power(&tx_power);
-    return tx_power;
+    return tx_power / 4;
 }
 
 void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const uint8_t tx_power) {
-    esp_wifi_set_max_tx_power(tx_power);
+    esp_wifi_set_max_tx_power(tx_power * 4);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
