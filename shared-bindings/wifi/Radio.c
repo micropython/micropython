@@ -570,6 +570,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mac_address), MP_ROM_PTR(&wifi_radio_mac_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_mac_address_ap), MP_ROM_PTR(&wifi_radio_mac_address_ap_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_tx_power), MP_ROM_PTR(&wifi_radio_tx_power_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_scanning_networks),    MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_scanning_networks),    MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj) },
 
