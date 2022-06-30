@@ -100,6 +100,8 @@ STATIC mp_vfs_mount_t *lookup_path(mp_obj_t path_in, mp_obj_t *path_out) {
     if (vfs != MP_VFS_NONE && vfs != MP_VFS_ROOT) {
         *path_out = mp_obj_new_str_of_type(mp_obj_get_type(path_in),
             (const byte *)p_out, strlen(p_out));
+    } else {
+        *path_out = MP_OBJ_NULL;
     }
     return vfs;
 }
