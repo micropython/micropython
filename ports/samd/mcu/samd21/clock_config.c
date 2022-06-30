@@ -33,7 +33,7 @@
 #include "samd_soc.h"
 
 static uint32_t cpu_freq = CPU_FREQ;
-static uint32_t apb_freq = APB_FREQ;
+static uint32_t peripheral_freq = DFLL48M_FREQ;
 static uint32_t dfll48m_calibration;
 
 int sercom_gclk_id[] = {
@@ -46,8 +46,8 @@ uint32_t get_cpu_freq(void) {
     return cpu_freq;
 }
 
-uint32_t get_apb_freq(void) {
-    return apb_freq;
+uint32_t get_peripheral_freq(void) {
+    return peripheral_freq;
 }
 
 void set_cpu_freq(uint32_t cpu_freq_arg) {
