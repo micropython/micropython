@@ -30,6 +30,7 @@
 #include "hardware/spi.h"
 #include "hardware/sync.h"
 #include "pico/binary_info.h"
+#include "pico/multicore.h"
 #include "mpconfigboard.h"
 #if MICROPY_HW_USB_MSC
 #include "hardware/flash.h"
@@ -225,9 +226,11 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 
 // Miscellaneous settings
 
-// TODO need to look and see if these could/should be spinlock/mutex
-#define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
-#define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+// Entering a critical section.
+extern uint32_t mp_thread_begin_atomic_section(void);
+extern void mp_thread_end_atomic_section(uint32_t);
+#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
+#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
 
 // Prevent the "lwIP task" from running when unsafe to do so.
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
