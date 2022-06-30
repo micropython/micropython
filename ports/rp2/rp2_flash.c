@@ -37,6 +37,7 @@
 #ifndef MICROPY_HW_FLASH_STORAGE_BYTES
 #define MICROPY_HW_FLASH_STORAGE_BYTES (1408 * 1024)
 #endif
+static_assert(MICROPY_HW_FLASH_STORAGE_BYTES % 4096 == 0, "Flash storage size must be a multiple of 4K");
 
 #ifndef MICROPY_HW_FLASH_STORAGE_BASE
 #define MICROPY_HW_FLASH_STORAGE_BASE (PICO_FLASH_SIZE_BYTES - MICROPY_HW_FLASH_STORAGE_BYTES)
@@ -71,6 +72,11 @@ bi_decl(bi_block_device(
 STATIC mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    #ifndef NDEBUG
+    extern char __flash_binary_end;
+    assert((uintptr_t)&__flash_binary_end - XIP_BASE <= MICROPY_HW_FLASH_STORAGE_BASE);
+    #endif
 
     // Return singleton object.
     return MP_OBJ_FROM_PTR(&rp2_flash_obj);
