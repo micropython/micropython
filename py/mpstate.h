@@ -324,13 +324,12 @@ extern mp_state_ctx_t mp_state_ctx;
 
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
-#define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #else
-#define MP_STATE_THREAD(x)  MP_STATE_MAIN_THREAD(x)
+#define MP_STATE_THREAD(x) (mp_state_ctx.thread.x)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPSTATE_H

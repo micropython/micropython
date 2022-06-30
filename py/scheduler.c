@@ -28,10 +28,8 @@
 
 #include "py/runtime.h"
 
-// Schedules an exception on the main thread (for exceptions "thrown" by async
-// sources such as interrupts and UNIX signal handlers).
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
-    MP_STATE_MAIN_THREAD(mp_pending_exception) = exc;
+    MP_STATE_THREAD(mp_pending_exception) = exc;
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
