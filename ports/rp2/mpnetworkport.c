@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "pendsv.h"
 
 #if MICROPY_PY_LWIP
 
@@ -36,14 +37,14 @@
 #define LWIP_TICK_RATE_MS 64
 
 static alarm_id_t lwip_alarm_id = -1;
-static bool lwip_can_poll = true;
-static bool lwip_poll_pending = false;
 
 #if MICROPY_PY_NETWORK_WIZNET5K
-static bool wiznet_poll_pending = false;
-
 void wiznet5k_poll(void);
 void wiznet5k_deinit(void);
+
+void wiznet5k_try_poll(void) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
+}
 #endif
 
 u32_t sys_now(void) {
@@ -51,62 +52,27 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC uint32_t lwip_poll(void) {
+STATIC void lwip_poll(void) {
     // Run the lwIP internal updates
     sys_check_timeouts();
-
-    return MAX(5, MIN(sys_timeouts_sleeptime(), LWIP_TICK_RATE_MS));
 }
 
 void lwip_lock_acquire(void) {
-    lwip_can_poll = false;
+    // Prevent PendSV from running.
+    pendsv_suspend();
 }
 
 void lwip_lock_release(void) {
-    lwip_can_poll = false;
-    #if MICROPY_PY_NETWORK_WIZNET5K
-    if (wiznet_poll_pending) {
-        wiznet5k_poll();
-        wiznet_poll_pending = false;
-    }
-    #endif
-
-    if (lwip_poll_pending) {
-        lwip_poll();
-        lwip_poll_pending = false;
-    }
-    lwip_can_poll = true;
+    // Allow PendSV to run again.
+    pendsv_resume();
 }
-
-uint32_t lwip_try_poll(void) {
-    uint32_t ret = LWIP_TICK_RATE_MS;
-    if (lwip_can_poll) {
-        lwip_can_poll = false;
-        ret = lwip_poll();
-        lwip_can_poll = true;
-    } else {
-        lwip_poll_pending = true;
-    }
-    return ret;
-}
-
-#if MICROPY_PY_NETWORK_WIZNET5K
-void wiznet5k_try_poll(void) {
-    if (lwip_can_poll) {
-        lwip_can_poll = false;
-        wiznet5k_poll();
-        lwip_can_poll = true;
-    } else {
-        wiznet_poll_pending = true;
-    }
-}
-#endif
 
 STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, lwip_poll);
     #if MICROPY_PY_NETWORK_WIZNET5K
-    wiznet5k_try_poll();
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
     #endif
-    return (int64_t)lwip_try_poll() * 1000;
+    return LWIP_TICK_RATE_MS * 1000;
 }
 
 void mod_network_lwip_init(void) {

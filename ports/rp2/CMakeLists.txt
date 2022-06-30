@@ -111,6 +111,7 @@ set(MICROPY_SOURCE_PORT
     mphalport.c
     mpnetworkport.c
     mpthreadport.c
+    pendsv.c
     rp2_flash.c
     rp2_pio.c
     tusb_port.c
@@ -141,6 +142,7 @@ set(MICROPY_SOURCE_QSTR
 )
 
 set(PICO_SDK_COMPONENTS
+    cmsis_core
     hardware_adc
     hardware_base
     hardware_clocks
