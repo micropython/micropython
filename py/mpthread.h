@@ -47,6 +47,17 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 
+// Allow a port to implement this more efficiently, but provide fallback based
+// on the mp_thread_get_state implementation.
+#ifndef MP_THREAD_IS_MAIN
+#define MP_THREAD_IS_MAIN() (mp_thread_get_state() == &mp_state_ctx.thread)
+#endif
+
+#else
+
+// Only the main thread may dispatch pending exceptions.
+#define MP_THREAD_IS_MAIN() (true)
+
 #endif // MICROPY_PY_THREAD
 
 #if MICROPY_PY_THREAD && MICROPY_PY_THREAD_GIL

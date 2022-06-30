@@ -67,7 +67,7 @@ void mp_handle_pending(bool raise_exc) {
         // Re-check state is still pending now that we're in the atomic section.
         if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
             mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
-            if (obj != MP_OBJ_NULL) {
+            if (MP_THREAD_IS_MAIN() && obj != MP_OBJ_NULL) {
                 MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                 if (!mp_sched_num_pending()) {
                     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;

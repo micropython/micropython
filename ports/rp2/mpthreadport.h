@@ -62,4 +62,6 @@ static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *m) {
     mutex_exit(m);
 }
 
+#define MP_THREAD_IS_MAIN() (get_core_num() == 0)
+
 #endif // MICROPY_INCLUDED_RP2_MPTHREADPORT_H
