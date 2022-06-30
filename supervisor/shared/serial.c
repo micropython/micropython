@@ -54,7 +54,7 @@
 #include "py/mpprint.h"
 #include "shared-bindings/busio/UART.h"
 busio_uart_obj_t debug_uart;
-byte buf_array[64];
+byte buf_array[256];
 #endif
 
 #if CIRCUITPY_USB_VENDOR

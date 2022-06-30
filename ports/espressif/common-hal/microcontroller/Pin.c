@@ -33,12 +33,11 @@
 #include "components/driver/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+STATIC uint64_t never_reset_pins;
+STATIC uint64_t in_use;
 
-STATIC uint32_t never_reset_pins[2];
-STATIC uint32_t in_use[2];
+// 64-bit pin mask for a single bit
+#define PIN_BIT(pin_number) (((uint64_t)1) << pin_number)
 
 // Bit mask of all pins that should never ever be reset.
 // Typically these are SPI flash and PSRAM control pins, and communication pins.
@@ -111,7 +110,7 @@ void never_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
     }
-    never_reset_pins[pin_number / 32] |= 1 << pin_number % 32;
+    never_reset_pins |= PIN_BIT(pin_number);
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {
@@ -127,7 +126,7 @@ MP_WEAK bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
 
 STATIC void _reset_pin(gpio_num_t pin_number) {
     // Never ever reset pins used for flash, RAM, and basic communication.
-    if (pin_mask_reset_forbidden & (((uint64_t)1) << pin_number)) {
+    if (pin_mask_reset_forbidden & PIN_BIT(pin_number)) {
         return;
     }
 
@@ -152,8 +151,8 @@ void reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
     }
-    never_reset_pins[pin_number / 32] &= ~(1 << pin_number % 32);
-    in_use[pin_number / 32] &= ~(1 << pin_number % 32);
+    never_reset_pins &= ~PIN_BIT(pin_number);
+    in_use &= ~PIN_BIT(pin_number);
 
     _reset_pin(pin_number);
 }
@@ -170,30 +169,26 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 }
 
 void reset_all_pins(void) {
-    ESP_LOGI("Pin.c", "reset_all_pins");
     for (uint8_t i = 0; i < GPIO_PIN_COUNT; i++) {
         uint32_t iomux_address = GPIO_PIN_MUX_REG[i];
         if (iomux_address == 0 ||
-            (never_reset_pins[i / 32] & (1 << i % 32)) != 0) {
+            (never_reset_pins & PIN_BIT(i))) {
             continue;
         }
-        ESP_LOGI("Pin.c", "about to reset pin %d", i);
-        vTaskDelay(100);
         _reset_pin(i);
     }
-    in_use[0] = never_reset_pins[0];
-    in_use[1] = never_reset_pins[1];
+    in_use = never_reset_pins;
 }
 
 void claim_pin_number(gpio_num_t pin_number) {
     if (pin_number == NO_PIN) {
         return;
     }
-    in_use[pin_number / 32] |= (1 << (pin_number % 32));
+    in_use |= PIN_BIT(pin_number);
 }
 
 void claim_pin(const mcu_pin_obj_t *pin) {
-    in_use[pin->number / 32] |= (1 << (pin->number % 32));
+    claim_pin_number(pin->number);
 }
 
 void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
@@ -201,9 +196,7 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
 }
 
 bool pin_number_is_free(gpio_num_t pin_number) {
-    uint8_t offset = pin_number / 32;
-    uint32_t mask = 1 << (pin_number % 32);
-    return (in_use[offset] & mask) == 0;
+    return in_use & PIN_BIT(pin_number);
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {

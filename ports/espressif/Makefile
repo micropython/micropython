@@ -412,7 +412,7 @@ ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/$(IDF_TARGET)_out.ld $(B
 
 FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
-ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset --baud 460800
+ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset --baud 921600
 
 ifeq ($(UF2_BOOTLOADER),1)
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2

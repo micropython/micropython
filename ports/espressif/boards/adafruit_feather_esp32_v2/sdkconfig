@@ -34,6 +34,7 @@ CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-8MB-no-uf2.csv"
 # ESP32-specific
 #
 CONFIG_ESP32_SPIRAM_SUPPORT=y
+CONFIG_UART_ISR_IN_IRAM=y
 # end of ESP32-specific
 
 #

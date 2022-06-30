@@ -75,8 +75,8 @@ static void uart_event_task(void *param) {
 void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
         // Ignore the UART used by the IDF.
-        #ifdef CONFIG_CONSOLE_UART_NUM
-        if (num == CONFIG_CONSOLE_UART_NUM) {
+        #ifdef CONFIG_ESP_CONSOLE_UART_NUM
+        if (num == CONFIG_ESP_CONSOLE_UART_NUM) {
             continue;
         }
         #endif
