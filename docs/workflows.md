@@ -70,6 +70,17 @@ The web workflow is depends on adding Wi-Fi credentials into the `/.env` file. T
 automatically connect to the network and start the webserver used for the workflow. The webserver
 is on port 80. It also enables MDNS.
 
+Here is an example `/.env`:
+
+```bash
+# To auto-connect to Wi-Fi
+CIRCUITPY_WIFI_SSID='scottswifi'
+CIRCUITPY_WIFI_PASSWORD='secretpassword'
+
+# To enable modifying files from the web. Change this too!
+CIRCUITPY_WEB_API_PASSWORD='passw0rd'
+```
+
 MDNS is used to resolve [`circuitpython.local`](http://circuitpython.local) to a device specific
 hostname of the form `cpy-XXXXXX.local`. The `XXXXXX` is based on network MAC address. The device
 also provides the MDNS service with service type `_circuitpython` and protocol `_tcp`.

@@ -281,6 +281,19 @@ static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
     _send_raw(socket, (const uint8_t *)str, strlen(str));
 }
 
+// The last argument must be NULL! Otherwise, it won't stop.
+static void _send_strs(socketpool_socket_obj_t *socket, ...) {
+    va_list ap;
+    va_start(ap, socket);
+
+    const char *str = va_arg(ap, const char *);
+    while (str != NULL) {
+        _send_str(socket, str);
+        str = va_arg(ap, const char *);
+    }
+    va_end(ap);
+}
+
 static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     char encoded_len[sizeof(size_t) * 2 + 1];
     int len = snprintf(encoded_len, sizeof(encoded_len), "%X", strlen(chunk));
@@ -288,6 +301,37 @@ static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     _send_raw(socket, (const uint8_t *)"\r\n", 2);
     _send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
     _send_raw(socket, (const uint8_t *)"\r\n", 2);
+}
+
+// A bit of a misnomer because it sends all arguments as one chunk.
+// The last argument must be NULL! Otherwise, it won't stop.
+static void _send_chunks(socketpool_socket_obj_t *socket, ...) {
+    va_list strs_to_count;
+    va_start(strs_to_count, socket);
+
+    va_list strs_to_send;
+    va_copy(strs_to_send, strs_to_count);
+
+    size_t chunk_len = 0;
+    const char *str = va_arg(strs_to_count, const char *);
+    while (str != NULL) {
+        chunk_len += strlen(str);
+        str = va_arg(strs_to_count, const char *);
+    }
+    va_end(strs_to_count);
+
+    char encoded_len[sizeof(size_t) * 2 + 1];
+    snprintf(encoded_len, sizeof(encoded_len), "%X", chunk_len);
+    _send_strs(socket, encoded_len, "\r\n", NULL);
+
+    str = va_arg(strs_to_send, const char *);
+    while (str != NULL) {
+        _send_str(socket, str);
+        str = va_arg(strs_to_send, const char *);
+    }
+    va_end(strs_to_send);
+
+    _send_str(socket, "\r\n");
 }
 
 static bool _endswith(const char *str, const char *suffix) {
@@ -348,44 +392,46 @@ STATIC bool _usb_active(void) {
     return false;
 }
 
+
+static const char *OK_JSON = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
+
 static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
-    _send_str(socket, "Access-Control-Allow-Credentials: true\r\nVary: Origin\r\n");
-    _send_str(socket, "Access-Control-Allow-Origin: ");
-    _send_str(socket, request->origin);
-    _send_str(socket, "\r\n");
+    _send_strs(socket,
+        "Access-Control-Allow-Credentials: true\r\n",
+        "Vary: Origin\r\n",
+        "Access-Control-Allow-Origin: ", request->origin, "\r\n",
+        NULL);
 }
 
 static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 100 Continue\r\n";
-    _send_str(socket, response);
+    _send_str(socket, "HTTP/1.1 100 Continue\r\n");
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 201 Created\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 201 Created\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 204 No Content\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 204 No Content\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_access_control(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 204 No Content\r\n"
-        "Content-Length: 0\r\n"
-        "Access-Control-Expose-Headers: Access-Control-Allow-Methods\r\n"
-        "Access-Control-Allow-Headers: X-Timestamp, Content-Type\r\n"
-        "Access-Control-Allow-Methods:GET, OPTIONS";
-
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 204 No Content\r\n",
+        "Content-Length: 0\r\n",
+        "Access-Control-Expose-Headers: Access-Control-Allow-Methods\r\n",
+        "Access-Control-Allow-Headers: X-Timestamp, Content-Type\r\n",
+        "Access-Control-Allow-Methods:GET, OPTIONS", NULL);
     if (!_usb_active()) {
         _send_str(socket, ", PUT, DELETE");
     }
@@ -398,89 +444,85 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
 }
 
 static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 404 Not Found\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 404 Not Found\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 405 Method Not Allowed\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 405 Method Not Allowed\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 403 Forbidden\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 403 Forbidden\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 409 Conflict\r\n"
-        "Content-Length: 19\r\n";
-
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 409 Conflict\r\n",
+        "Content-Length: 19\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\nUSB storage active.");
 }
 
 static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 413 Payload Too Large\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 413 Payload Too Large\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 417 Expectation Failed\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 417 Expectation Failed\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 401 Unauthorized\r\n"
-        "Content-Length: 0\r\n"
-        "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n";
-
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 401 Unauthorized\r\n",
+        "Content-Length: 0\r\n",
+        "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_server_error(socketpool_socket_obj_t *socket, _request *request) {
-    const char *response = "HTTP/1.1 500 Internal Server Error\r\n"
-        "Content-Length: 0\r\n";
-    _send_str(socket, response);
+    _send_strs(socket,
+        "HTTP/1.1 500 Internal Server Error\r\n",
+        "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, const char *path) {
-    const char *redirect_response = "HTTP/1.1 301 Moved Permanently\r\nConnection: close\r\nContent-Length: 0\r\nLocation: http://";
     int nodelay = 1;
     lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
-    _send_str(socket, redirect_response);
-    _send_str(socket, common_hal_mdns_server_get_hostname(&mdns));
-    _send_str(socket, ".local");
-    _send_str(socket, path);
-    _send_str(socket, "\r\n");
+    const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    _send_strs(socket,
+        "HTTP/1.1 301 Moved Permanently\r\n",
+        "Connection: close\r\n",
+        "Content-Length: 0\r\n",
+        "Location: http://", hostname, ".local", path, "\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
 
 static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n"
-        "Content-Type: application/json\r\n";
-    socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
     _send_chunk(socket, "[");
@@ -493,9 +535,9 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
         if (!first) {
             _send_chunk(socket, ",");
         }
-        _send_chunk(socket, "{\"name\": \"");
-        _send_chunk(socket, file_info.fname);
-        _send_chunk(socket, "\", \"directory\": ");
+        _send_chunks(socket,
+            "{\"name\": \"", file_info.fname, "\",",
+            "\"directory\": ", NULL);
         if ((file_info.fattrib & AM_DIR) != 0) {
             _send_chunk(socket, "true");
         } else {
@@ -514,17 +556,13 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
 
         char encoded_number[32];
         snprintf(encoded_number, sizeof(encoded_number), "%lld", truncated_time);
-        _send_chunk(socket, encoded_number);
-
-        _send_chunk(socket, ", \"file_size\": ");
+        _send_chunks(socket, encoded_number, ", \"file_size\": ", NULL);
         size_t file_size = 0;
         if ((file_info.fattrib & AM_DIR) == 0) {
             file_size = file_info.fsize;
         }
         snprintf(encoded_number, sizeof(encoded_number), "%d", file_size);
-        _send_chunk(socket, encoded_number);
-
-        _send_chunk(socket, "}");
+        _send_chunks(socket, encoded_number, "}", NULL);
         first = false;
         res = f_readdir(dir, &file_info);
     }
@@ -537,9 +575,10 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     char encoded_len[10];
     snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
 
-    _send_str(socket, "HTTP/1.1 200 OK\r\nContent-Length: ");
-    _send_str(socket, encoded_len);
-    _send_str(socket, "\r\n");
+    _send_strs(socket,
+        "HTTP/1.1 200 OK\r\n",
+        "Content-Length: ", encoded_len, "\r\n", NULL);
+    // TODO: Make this a table to save space.
     if (_endswith(filename, ".txt") || _endswith(filename, ".py")) {
         _send_str(socket, "Content-Type: text/plain\r\n");
     } else if (_endswith(filename, ".js")) {
@@ -583,36 +622,30 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
     mdns_remoteservice_obj_t found_devices[32];
     size_t total_results = mdns_server_find(&mdns, "_circuitpython", "_tcp", 1, found_devices, MP_ARRAY_SIZE(found_devices));
     size_t count = MIN(total_results, MP_ARRAY_SIZE(found_devices));
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
-    socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
-    _send_chunk(socket, "{\"total\": ");
     char total_encoded[4];
     snprintf(total_encoded, sizeof(total_encoded), "%d", total_results);
-    _send_chunk(socket, total_encoded);
-    _send_chunk(socket, ", \"devices\": [");
+    _send_chunks(socket, "{\"total\": ", total_encoded, ", \"devices\": [", NULL);
     for (size_t i = 0; i < count; i++) {
         if (i > 0) {
             _send_chunk(socket, ",");
         }
-        _send_chunk(socket, "{\"hostname\": \"");
-        _send_chunk(socket, common_hal_mdns_remoteservice_get_hostname(&found_devices[i]));
-        _send_chunk(socket, "\", \"instance_name\": \"");
-        _send_chunk(socket, common_hal_mdns_remoteservice_get_instance_name(&found_devices[i]));
-        _send_chunk(socket, "\", \"port\": ");
+        const char *hostname = common_hal_mdns_remoteservice_get_hostname(&found_devices[i]);
+        const char *instance_name = common_hal_mdns_remoteservice_get_instance_name(&found_devices[i]);
         char port_encoded[4];
         int port = common_hal_mdns_remoteservice_get_port(&found_devices[i]);
         snprintf(port_encoded, sizeof(port_encoded), "%d", port);
-        _send_chunk(socket, port_encoded);
-        _send_chunk(socket, ", \"ip\": \"");
-
         char ip_encoded[4 * 4];
         uint32_t ipv4_address = mdns_remoteservice_get_ipv4_address(&found_devices[i]);
         uint8_t *octets = (uint8_t *)&ipv4_address;
         snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
-        _send_chunk(socket, ip_encoded);
-        _send_chunk(socket, "\"}");
+        _send_chunks(socket,
+            "{\"hostname\": \"", hostname, "\", ",
+            "\"instance_name\": \"", instance_name, "\", ",
+            "\"port\": ", port_encoded, ", ",
+            "\"ip\": \"", ip_encoded, "\"}", NULL);
         common_hal_mdns_remoteservice_deinit(&found_devices[i]);
     }
     _send_chunk(socket, "]}");
@@ -621,33 +654,27 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
 }
 
 static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *request) {
-    const char *ok_response = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
-    socketpool_socket_send(socket, (const uint8_t *)ok_response, strlen(ok_response));
+    _send_str(socket, OK_JSON);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
-    _send_chunk(socket, "{\"web_api_version\": 1, \"version\": \"");
-    _send_chunk(socket, MICROPY_GIT_TAG);
-    _send_chunk(socket, "\", \"build_date\": \"");
-    _send_chunk(socket, MICROPY_BUILD_DATE);
-    _send_chunk(socket, "\", \"board_name\": \"");
-    _send_chunk(socket, MICROPY_HW_BOARD_NAME);
-    _send_chunk(socket, "\", \"mcu_name\": \"");
-    _send_chunk(socket, MICROPY_HW_MCU_NAME);
-    _send_chunk(socket, "\", \"board_id\": \"");
-    _send_chunk(socket, CIRCUITPY_BOARD_ID);
-    _send_chunk(socket, "\", \"creator_id\": ");
-    char encoded_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
-    snprintf(encoded_id, sizeof(encoded_id), "%u", CIRCUITPY_CREATOR_ID);
-    _send_chunk(socket, encoded_id);
-    _send_chunk(socket, ", \"creation_id\": ");
-    snprintf(encoded_id, sizeof(encoded_id), "%u", CIRCUITPY_CREATION_ID);
-    _send_chunk(socket, encoded_id);
-    _send_chunk(socket, ", \"hostname\": \"");
-    _send_chunk(socket, common_hal_mdns_server_get_hostname(&mdns));
-    _send_chunk(socket, "\", \"port\": 80");
-    _send_chunk(socket, ", \"ip\": \"");
-    _send_chunk(socket, _our_ip_encoded);
-    _send_chunk(socket, "\"}");
+    char encoded_creator_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
+    snprintf(encoded_creator_id, sizeof(encoded_creator_id), "%u", CIRCUITPY_CREATOR_ID);
+    char encoded_creation_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
+    snprintf(encoded_creation_id, sizeof(encoded_creation_id), "%u", CIRCUITPY_CREATION_ID);
+    const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    _send_chunks(socket,
+        "{\"web_api_version\": 1, ",
+        "\"version\": \"", MICROPY_GIT_TAG, "\", ",
+        "\"build_date\": \"", MICROPY_BUILD_DATE, "\", ",
+        "\"board_name\": \"", MICROPY_HW_BOARD_NAME, "\", ",
+        "\"mcu_name\": \"", MICROPY_HW_MCU_NAME, "\", ",
+        "\"board_id\": \"", CIRCUITPY_BOARD_ID, "\", ",
+        "\"creator_id\": ", encoded_creator_id, ", ",
+        "\"creation_id\": ", encoded_creation_id, ", ",
+        "\"hostname\": \"", hostname, "\", ",
+        "\"port\": 80, ",
+        "\"ip\": \"", _our_ip_encoded,
+        "\"}", NULL);
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
@@ -806,13 +833,12 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
     char encoded_len[10];
     snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
 
-    _send_str(socket, "HTTP/1.1 200 OK\r\nContent-Encoding: gzip\r\nContent-Length: ");
-    _send_str(socket, encoded_len);
-    _send_str(socket, "\r\n");
-    _send_str(socket, "Content-Type: ");
-    _send_str(socket, content_type);
-    _send_str(socket, "\r\n");
-    _send_str(socket, "\r\n");
+    _send_strs(socket,
+        "HTTP/1.1 200 OK\r\n",
+        "Content-Encoding: gzip\r\n",
+        "Content-Length: ", encoded_len, "\r\n",
+        "Content-Type: ", content_type, "\r\n",
+        "\r\n", NULL);
     _send_raw(socket, response, response_len);
 }
 
