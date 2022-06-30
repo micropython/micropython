@@ -276,9 +276,9 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         while (uart->USART.SYNCBUSY.bit.CTRLB) {
         }
 
-        // USART is driven by the clock of GCLK Generator 2, freq by get_apb_freq()
+        // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
         // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
-        uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_apb_freq() / 2) / get_apb_freq();
+        uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
         uart->USART.BAUD.bit.BAUD = baud; // Set Baud
 
         sercom_register_irq(self->id, &common_uart_irq_handler);

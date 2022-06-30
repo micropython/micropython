@@ -16,7 +16,7 @@
 #define MICROPY_HW_UART_TXBUF           (1)
 
 #define CPU_FREQ                        (48000000)
-#define APB_FREQ                        (48000000)
+#define DFLL48M_FREQ                    (48000000)
 
 #define IRQ_PRI_PENDSV                  ((1 << __NVIC_PRIO_BITS) - 1)
 

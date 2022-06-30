@@ -185,7 +185,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     // baud = peripheral_freq / (2 * baudrate) - 5 - (rise_time * peripheral_freq) / 2
     // Just set the minimal configuration for standard and fast mode.
     // Set Baud. Assume ~300ns rise time. Maybe set later by a keyword argument.
-    i2c->I2CM.BAUD.reg = get_apb_freq() / (2 * self->freq) - 5 - (get_apb_freq() / 1000000) * RISETIME_NS / 2000;
+    i2c->I2CM.BAUD.reg = get_peripheral_freq() / (2 * self->freq) - 5 - (get_peripheral_freq() / 1000000) * RISETIME_NS / 2000;
 
     // Enable interrupts
     sercom_register_irq(self->id, &common_i2c_irq_handler);
