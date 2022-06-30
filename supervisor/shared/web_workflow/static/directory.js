@@ -37,6 +37,10 @@ async function refresh_list() {
         editable = status.headers.get("Access-Control-Allow-Methods").includes("DELETE");
         new_directory_name.disabled = !editable;
         files.disabled = !editable;
+        if (!editable) {
+            let usbwarning = document.querySelector("#usbwarning");
+            usbwarning.style.display = "block";
+        }
     }
 
     if (window.location.path != "/fs/") {
