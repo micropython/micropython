@@ -65,7 +65,7 @@ void mp_init(void) {
     qstr_init();
 
     // no pending exceptions to start with
-    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+    MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
     #if MICROPY_SCHEDULER_STATIC_NODES
     if (MP_STATE_VM(sched_head) == NULL) {

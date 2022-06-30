@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
-    MP_STATE_THREAD(mp_pending_exception) = exc;
+    MP_STATE_VM(mp_pending_exception) = exc;
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
@@ -66,9 +66,9 @@ void mp_handle_pending(bool raise_exc) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         // Re-check state is still pending now that we're in the atomic section.
         if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-            mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+            mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
             if (obj != MP_OBJ_NULL) {
-                MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+                MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
                 if (!mp_sched_num_pending()) {
                     MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
                 }
@@ -134,7 +134,7 @@ void mp_sched_unlock(void) {
     assert(MP_STATE_VM(sched_state) < 0);
     if (++MP_STATE_VM(sched_state) == 0) {
         // vm became unlocked
-        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
+        if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL
             #if MICROPY_SCHEDULER_STATIC_NODES
             || MP_STATE_VM(sched_head) != NULL
             #endif
@@ -198,9 +198,9 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
 
 // A variant of this is inlined in the VM at the pending exception check
 void mp_handle_pending(bool raise_exc) {
-    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+    if (MP_STATE_VM(mp_pending_exception) != MP_OBJ_NULL) {
+        mp_obj_t obj = MP_STATE_VM(mp_pending_exception);
+        MP_STATE_VM(mp_pending_exception) = MP_OBJ_NULL;
         if (raise_exc) {
             nlr_raise(obj);
         }
