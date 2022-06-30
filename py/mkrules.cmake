@@ -182,6 +182,9 @@ endif()
 # Update submodules
 if(ECHO_SUBMODULES)
     # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
-    # settings then print the final GIT_SUBMODULES variable as a fatal error and exit.
-    message(FATAL_ERROR "GIT_SUBMODULES=${GIT_SUBMODULES}")
+    # settings then print the final GIT_SUBMODULES variable and exit.
+    # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
+    # the output onto multiple lines
+    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
+    message(FATAL_ERROR "Done")
 endif()
