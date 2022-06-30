@@ -33,9 +33,14 @@
 #if MICROPY_PY_NETWORK_CYW43
 
 #include "lwip/netif.h"
-#include "drivers/cyw43/cyw43.h"
 #include "extmod/network_cyw43.h"
 #include "modnetwork.h"
+
+#if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+#include "lib/cyw43-driver/src/cyw43.h"
+#else
+#include "drivers/cyw43/cyw43.h"
+#endif
 
 typedef struct _network_cyw43_obj_t {
     mp_obj_base_t base;
@@ -119,7 +124,11 @@ STATIC mp_obj_t network_cyw43_active(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         return mp_obj_new_bool(cyw43_tcpip_link_status(self->cyw, self->itf));
     } else {
+        #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+        cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]), MICROPY_CYW43_COUNTRY);
+        #else
         cyw43_wifi_set_up(self->cyw, self->itf, mp_obj_is_true(args[1]));
+        #endif
         return mp_const_none;
     }
 }
