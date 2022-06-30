@@ -138,6 +138,27 @@ MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
 
+//|     tx_power: int
+//|     """Set TX WiFi power."""
+//|
+STATIC mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_int(common_hal_wifi_radio_get_tx_power(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_tx_power_obj, wifi_radio_get_tx_power);
+
+STATIC mp_obj_t wifi_radio_set_tx_power(mp_obj_t self_in, mp_obj_t tx_power_in) {
+    mp_int_t tx_power = mp_obj_get_int(tx_power_in);
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_wifi_radio_set_tx_power(self, tx_power);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_tx_power_obj, wifi_radio_set_tx_power);
+
+MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
+    (mp_obj_t)&wifi_radio_get_tx_power_obj,
+    (mp_obj_t)&wifi_radio_set_tx_power_obj);
+
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
 //|        the changes would only be reflected once the interface restarts."""
