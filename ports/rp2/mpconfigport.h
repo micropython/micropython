@@ -154,6 +154,20 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 #endif
 
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43 \
+    { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_IDLE), MP_ROM_INT(CYW43_LINK_DOWN) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECTING), MP_ROM_INT(CYW43_LINK_JOIN) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_WRONG_PASSWORD), MP_ROM_INT(CYW43_LINK_BADAUTH) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_NO_AP_FOUND), MP_ROM_INT(CYW43_LINK_NONET) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_CONNECT_FAIL), MP_ROM_INT(CYW43_LINK_FAIL) }, \
+    { MP_ROM_QSTR(MP_QSTR_STAT_GOT_IP), MP_ROM_INT(CYW43_LINK_UP) },
+#else
+#define MICROPY_HW_NIC_CYW43
+#endif
+
 #if MICROPY_PY_NETWORK_NINAW10
 // This Network interface requires the extended socket state.
 #ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
@@ -184,6 +198,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
+    MICROPY_HW_NIC_CYW43 \
     MICROPY_HW_NIC_NINAW10  \
     MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
@@ -258,3 +273,10 @@ typedef intptr_t mp_off_t;
 extern uint32_t rosc_random_u32(void);
 extern void lwip_lock_acquire(void);
 extern void lwip_lock_release(void);
+
+extern uint32_t cyw43_country_code;
+extern void cyw43_irq_init(void);
+extern void cyw43_post_poll_hook(void);
+
+#define CYW43_POST_POLL_HOOK cyw43_post_poll_hook();
+#define MICROPY_CYW43_COUNTRY cyw43_country_code

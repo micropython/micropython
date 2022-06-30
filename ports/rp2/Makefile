@@ -29,9 +29,11 @@ all:
 clean:
 	$(RM) -rf $(BUILD)
 
-GIT_SUBMODULES += lib/mbedtls lib/pico-sdk lib/tinyusb
+GIT_SUBMODULES += lib/mbedtls lib/tinyusb
 
 submodules:
+	# lib/pico-sdk is required for the cmake build to function (as used for boards other than PICO below)
+	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="lib/pico-sdk" submodules
 ifeq ($(BOARD),PICO)
 	# Run the standard submodules target with minimum required submodules above
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$(GIT_SUBMODULES)" submodules

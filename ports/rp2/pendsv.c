@@ -28,6 +28,10 @@
 #include "pendsv.h"
 #include "RP2040.h"
 
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43_stats.h"
+#endif
+
 static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
 static int pendsv_lock;
 
@@ -54,12 +58,21 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
     pendsv_dispatch_table[slot] = f;
     if (pendsv_lock == 0) {
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    } else {
+        #if MICROPY_PY_NETWORK_CYW43
+        CYW43_STAT_INC(PENDSV_DISABLED_COUNT);
+        #endif
     }
 }
 
 // PendSV interrupt handler to perform background processing.
 void PendSV_Handler(void) {
     assert(pendsv_lock == 0);
+
+    #if MICROPY_PY_NETWORK_CYW43
+    CYW43_STAT_INC(PENDSV_RUN_COUNT);
+    #endif
+
     for (size_t i = 0; i < PENDSV_DISPATCH_NUM_SLOTS; ++i) {
         if (pendsv_dispatch_table[i] != NULL) {
             pendsv_dispatch_t f = pendsv_dispatch_table[i];

@@ -30,6 +30,7 @@
 #include "pico/time.h"
 #include "hardware/clocks.h"
 #include "hardware/structs/systick.h"
+#include "RP2040.h" // cmsis, for __WFI
 
 #define SYSTICK_MAX (0xffffff)
 
@@ -74,6 +75,11 @@ static inline mp_uint_t mp_hal_get_cpu_freq(void) {
 
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint
+#define MP_HAL_PIN_MODE_INPUT           (GPIO_IN)
+#define MP_HAL_PIN_MODE_OUTPUT          (GPIO_OUT)
+#define MP_HAL_PIN_PULL_NONE            (0)
+#define MP_HAL_PIN_PULL_UP              (1)
+#define MP_HAL_PIN_PULL_DOWN            (2)
 
 extern uint32_t machine_pin_open_drain_mask;
 
@@ -100,6 +106,12 @@ static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
     gpio_set_dir(pin, GPIO_IN);
     gpio_put(pin, 0);
     machine_pin_open_drain_mask |= 1 << pin;
+}
+
+static inline void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
+    assert((mode == MP_HAL_PIN_MODE_INPUT || mode == MP_HAL_PIN_MODE_OUTPUT) && alt == 0);
+    gpio_set_dir(pin, mode);
+    gpio_set_pulls(pin, pull == MP_HAL_PIN_PULL_UP, pull == MP_HAL_PIN_PULL_DOWN);
 }
 
 static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
@@ -143,6 +155,7 @@ enum {
 };
 
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
+void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 
 #endif // MICROPY_INCLUDED_RP2_MPHALPORT_H

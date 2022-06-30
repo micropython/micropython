@@ -103,8 +103,13 @@ STATIC void pio1_irq0(void) {
 
 void rp2_pio_init(void) {
     // Reset all PIO instruction memory.
+    #if MICROPY_PY_NETWORK_CYW43
+    // TODO: cannot reset PIO memory when CYW43 driver is enabled and active
+    // because it uses a PIO for the bus interface.
+    #else
     pio_clear_instruction_memory(pio0);
     pio_clear_instruction_memory(pio1);
+    #endif
 
     // Set up interrupts.
     memset(MP_STATE_PORT(rp2_pio_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_pio_irq_obj)));

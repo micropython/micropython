@@ -16,6 +16,10 @@ endif()
 
 # Use the local tinyusb instead of the one in pico-sdk
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
+# Use the local cyw43_driver instead of the one in pico-sdk
+set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
+# Use the local lwip instead of the one in pico-sdk
+set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
 
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_SOURCE_DIR})
@@ -73,6 +77,7 @@ set(MICROPY_SOURCE_LIB
     ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
     ${MICROPY_DIR}/lib/oofatfs/ff.c
     ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+    ${MICROPY_DIR}/shared/netutils/dhcpserver.c
     ${MICROPY_DIR}/shared/netutils/netutils.c
     ${MICROPY_DIR}/shared/netutils/trace.c
     ${MICROPY_DIR}/shared/readline/readline.c
@@ -214,6 +219,30 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     target_link_libraries(${MICROPY_TARGET} micropy_extmod_nimble)
     get_target_property(NIMBLE_INCLUDE micropy_extmod_nimble INTERFACE_INCLUDE_DIRECTORIES)
     list(APPEND MICROPY_INC_CORE ${NIMBLE_INCLUDE})
+endif()
+
+if (MICROPY_PY_NETWORK_CYW43)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_PY_NETWORK_CYW43=1
+        MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER=1
+        MICROPY_PY_SOCKET_DEFAULT_TIMEOUT_MS=30000 # default socket timeout
+    )
+    if (CMAKE_BUILD_TYPE MATCHES Debug)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        CYW43_USE_STATS=1
+    )
+    endif()
+
+    list(APPEND MICROPY_SOURCE_EXTMOD
+        ${MICROPY_DIR}/extmod/network_cyw43.c
+    )
+
+    target_link_libraries(${MICROPY_TARGET}
+        cyw43_driver_picow
+        cmsis_core
+    )
 endif()
 
 if (MICROPY_PY_NETWORK_NINAW10)

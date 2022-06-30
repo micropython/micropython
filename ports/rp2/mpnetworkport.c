@@ -38,6 +38,41 @@
 
 static alarm_id_t lwip_alarm_id = -1;
 
+#if MICROPY_PY_NETWORK_CYW43
+#include "lib/cyw43-driver/src/cyw43.h"
+#include "lib/cyw43-driver/src/cyw43_country.h"
+#include "lib/cyw43-driver/src/cyw43_stats.h"
+#include "hardware/irq.h"
+
+#define CYW43_IRQ_LEVEL GPIO_IRQ_LEVEL_HIGH
+#define CYW43_SHARED_IRQ_HANDLER_PRIORITY PICO_SHARED_IRQ_HANDLER_HIGHEST_ORDER_PRIORITY
+
+uint32_t cyw43_country_code = CYW43_COUNTRY_WORLDWIDE;
+
+static void gpio_irq_handler(void) {
+    uint32_t events = gpio_get_irq_event_mask(CYW43_PIN_WL_HOST_WAKE);
+    if (events & CYW43_IRQ_LEVEL) {
+        // As we use a high level interrupt, it will go off forever until it's serviced.
+        // So disable the interrupt until this is done.  It's re-enabled again by
+        // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
+        gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+        CYW43_STAT_INC(IRQ_COUNT);
+    }
+}
+
+void cyw43_irq_init(void) {
+    gpio_add_raw_irq_handler_with_order_priority(IO_IRQ_BANK0, gpio_irq_handler, CYW43_SHARED_IRQ_HANDLER_PRIORITY);
+    irq_set_enabled(IO_IRQ_BANK0, true);
+    NVIC_SetPriority(PendSV_IRQn, PICO_LOWEST_IRQ_PRIORITY);
+}
+
+void cyw43_post_poll_hook(void) {
+    gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, true);
+}
+
+#endif
+
 #if MICROPY_PY_NETWORK_WIZNET5K
 void wiznet5k_poll(void);
 void wiznet5k_deinit(void);
