@@ -62,8 +62,7 @@ bool register_open_socket(socketpool_socket_obj_t *self) {
     return false;
 }
 
-socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
-    uint8_t *ip, uint32_t *port) {
+int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_t *port) {
     struct sockaddr_in accept_addr;
     socklen_t socklen = sizeof(accept_addr);
     int newsoc = -1;
@@ -71,17 +70,15 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     uint64_t start_ticks = supervisor_ticks_ms64();
 
     // Allow timeouts and interrupts
-    while (newsoc == -1 &&
-           !timed_out &&
-           !mp_hal_is_interrupted()) {
+    while (newsoc == -1 && !timed_out) {
         if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
             timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
         }
         RUN_BACKGROUND_TASKS;
         newsoc = lwip_accept(self->num, (struct sockaddr *)&accept_addr, &socklen);
         // In non-blocking mode, fail instead of timing out
-        if (newsoc == -1 && self->timeout_ms == 0) {
-            mp_raise_OSError(MP_EAGAIN);
+        if (newsoc == -1 && (self->timeout_ms == 0 || mp_hal_is_interrupted())) {
+            return -MP_EAGAIN;
         }
     }
 
@@ -90,8 +87,17 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         memcpy((void *)ip, (void *)&accept_addr.sin_addr.s_addr, sizeof(accept_addr.sin_addr.s_addr));
         *port = accept_addr.sin_port;
     } else {
-        mp_raise_OSError(ETIMEDOUT);
+        return -ETIMEDOUT;
     }
+    if (newsoc < 0) {
+        return -MP_EBADF;
+    }
+    return newsoc;
+}
+
+socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_obj_t *self,
+    uint8_t *ip, uint32_t *port) {
+    int newsoc = socketpool_socket_accept(self, ip, port);
 
     if (newsoc > 0) {
         // Create the socket
@@ -108,7 +114,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         lwip_fcntl(newsoc, F_SETFL, O_NONBLOCK);
         return sock;
     } else {
-        mp_raise_OSError(MP_EBADF);
+        mp_raise_OSError(-newsoc);
         return NULL;
     }
 }
@@ -116,7 +122,17 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
 bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
-    bind_addr.sin_addr.s_addr = inet_addr(host);
+    const char *broadcast = "<broadcast>";
+    uint32_t ip;
+    if (hostlen == 0) {
+        ip = IPADDR_ANY;
+    } else if (hostlen == strlen(broadcast) &&
+               memcmp(host, broadcast, strlen(broadcast)) == 0) {
+        ip = IPADDR_BROADCAST;
+    } else {
+        ip = inet_addr(host);
+    }
+    bind_addr.sin_addr.s_addr = ip;
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port);
 
@@ -125,17 +141,21 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     if (err != 0) {
         mp_raise_RuntimeError(translate("Cannot set socket options"));
     }
-    int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr)) == 0;
-    return result;
+    int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
+    return result == 0;
 }
 
-void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
+void socketpool_socket_close(socketpool_socket_obj_t *self) {
     self->connected = false;
     if (self->num >= 0) {
-        lwip_shutdown(self->num, 0);
+        lwip_shutdown(self->num, SHUT_RDWR);
         lwip_close(self->num);
         self->num = -1;
     }
+}
+
+void common_hal_socketpool_socket_close(socketpool_socket_obj_t *self) {
+    socketpool_socket_close(self);
     // Remove socket record
     for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_handles); i++) {
         if (open_socket_handles[i] == self) {
@@ -199,7 +219,7 @@ bool common_hal_socketpool_socket_get_connected(socketpool_socket_obj_t *self) {
 }
 
 bool common_hal_socketpool_socket_listen(socketpool_socket_obj_t *self, int backlog) {
-    return lwip_listen(self->num, backlog) == 0;
+    return lwip_listen(self->num, backlog);
 }
 
 mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *self,
@@ -242,7 +262,8 @@ mp_uint_t common_hal_socketpool_socket_recvfrom_into(socketpool_socket_obj_t *se
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
+int socketpool_socket_recv_into(socketpool_socket_obj_t *self,
+    const uint8_t *buf, uint32_t len) {
     int received = 0;
     bool timed_out = false;
 
@@ -251,8 +272,7 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, 
         uint64_t start_ticks = supervisor_ticks_ms64();
         received = -1;
         while (received == -1 &&
-               !timed_out &&
-               !mp_hal_is_interrupted()) {
+               !timed_out) {
             if (self->timeout_ms != (uint)-1 && self->timeout_ms != 0) {
                 timed_out = supervisor_ticks_ms64() - start_ticks >= self->timeout_ms;
             }
@@ -261,31 +281,64 @@ mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, 
 
             // In non-blocking mode, fail instead of looping
             if (received == -1 && self->timeout_ms == 0) {
-                mp_raise_OSError(MP_EAGAIN);
+                if (errno == ENOTCONN) {
+                    self->connected = false;
+                    return -MP_ENOTCONN;
+                }
+                return -MP_EAGAIN;
+            }
+            // Check this after going through the loop once so it can make
+            // progress while interrupted.
+            if (mp_hal_is_interrupted()) {
+                if (received == -1) {
+                    return -MP_EAGAIN;
+                }
+                break;
             }
         }
     } else {
-        mp_raise_OSError(MP_EBADF);
+        return -MP_EBADF;
     }
 
     if (timed_out) {
-        mp_raise_OSError(ETIMEDOUT);
+        return -ETIMEDOUT;
     }
     return received;
 }
 
-mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
+mp_uint_t common_hal_socketpool_socket_recv_into(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
+    int received = socketpool_socket_recv_into(self, buf, len);
+    if (received < 0) {
+        mp_raise_OSError(received);
+    }
+    return received;
+}
+
+int socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int sent = -1;
     if (self->num != -1) {
         // LWIP Socket
         // TODO: deal with potential failure/add timeout?
         sent = lwip_send(self->num, buf, len, 0);
     } else {
-        mp_raise_OSError(MP_EBADF);
+        sent = -MP_EBADF;
     }
 
     if (sent < 0) {
-        mp_raise_OSError(errno);
+        if (errno == ECONNRESET || errno == ENOTCONN) {
+            self->connected = false;
+        }
+        return -errno;
+    }
+
+    return sent;
+}
+
+mp_uint_t common_hal_socketpool_socket_send(socketpool_socket_obj_t *self, const uint8_t *buf, uint32_t len) {
+    int sent = socketpool_socket_send(self, buf, len);
+
+    if (sent < 0) {
+        mp_raise_OSError(-sent);
     }
     return sent;
 }

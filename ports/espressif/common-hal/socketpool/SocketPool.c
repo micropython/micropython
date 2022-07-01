@@ -40,9 +40,9 @@ void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *sel
     }
 }
 
-socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
-
+bool socketpool_socket(socketpool_socketpool_obj_t *self,
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    socketpool_socket_obj_t *sock) {
     int addr_family;
     int ipproto;
     if (family == SOCKETPOOL_AF_INET) {
@@ -61,13 +61,6 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     } else { // SOCKETPOOL_SOCK_RAW
         socket_type = SOCK_RAW;
     }
-
-    if (addr_family == AF_INET6 || ipproto == IPPROTO_IPV6) {
-        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
-    }
-
-    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
-    sock->base.type = &socketpool_socket_type;
     sock->type = socket_type;
     sock->family = addr_family;
     sock->ipproto = ipproto;
@@ -77,12 +70,28 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     // Create LWIP socket
     int socknum = -1;
     socknum = lwip_socket(sock->family, sock->type, sock->ipproto);
-    if (socknum < 0 || !register_open_socket(sock)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
+    if (socknum < 0) {
+        return false;
     }
     sock->num = socknum;
     // Sockets should be nonblocking in most cases
     lwip_fcntl(socknum, F_SETFL, O_NONBLOCK);
+    return true;
+}
+
+socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    if (family != SOCKETPOOL_AF_INET) {
+        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
+    }
+
+    socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
+    sock->base.type = &socketpool_socket_type;
+
+    if (!socketpool_socket(self, family, type, sock) ||
+        !register_open_socket(sock)) {
+        mp_raise_RuntimeError(translate("Out of sockets"));
+    }
     return sock;
 }
 

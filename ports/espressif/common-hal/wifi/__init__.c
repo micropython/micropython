@@ -47,7 +47,7 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 
 #include "esp_ipc.h"
 
-static const char *TAG = "wifi";
+static const char *TAG = "CP wifi";
 
 STATIC void schedule_background_on_cp_core(void *arg) {
     supervisor_workflow_request_background();

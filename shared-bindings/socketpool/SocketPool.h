@@ -52,4 +52,10 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host);
 
+// Non-allocating version for internal use. These sockets are not registered and, therefore, not
+// closed automatically.
+bool socketpool_socket(socketpool_socketpool_obj_t *self,
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    socketpool_socket_obj_t *sock);
+
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_SOCKETPOOL_SOCKETPOOL_H
