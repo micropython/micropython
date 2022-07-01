@@ -83,7 +83,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr ""
 
@@ -443,7 +443,6 @@ msgstr "suǒyǒu píndào dōu zài shǐyòng zhōng"
 msgid "All event channels in use"
 msgstr "suǒyǒu shìjiàn píndào dōu zài shǐyòng zhōng"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "suǒyǒu zhuàngtàijī dōu zài shǐyòng zhōng"
@@ -530,7 +529,7 @@ msgstr "yīnpín zhuǎnhuàn wèi bèi shíxiàn"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN wèi shǐyòng mìmǎ"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "shēnfèn ren4zheng4 shībài"
 
@@ -1193,6 +1192,10 @@ msgstr "nèi bù cuò wù"
 #, c-format
 msgid "Internal error #%d"
 msgstr "nèi bù cuò wù #%d"
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr ""
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -2300,10 +2303,6 @@ msgstr ""
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
 
 #: py/builtinhelp.c
 #, c-format
@@ -3991,10 +3990,6 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr "ssid bù néng chāo guò 32 gè zì jié"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "kāishǐ/jiéshù zhǐshù"
@@ -4348,6 +4343,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid bù néng chāo guò 32 gè zì jié"
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
