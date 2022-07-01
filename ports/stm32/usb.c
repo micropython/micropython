@@ -1152,4 +1152,9 @@ void USR_KEYBRD_ProcessData(uint8_t pbuf) {
 
 #endif // USE_HOST_MODE
 
+#if MICROPY_HW_USB_HID
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_hid_report_desc);
+#endif
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]);
+
 #endif // MICROPY_HW_ENABLE_USB

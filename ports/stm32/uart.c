@@ -1202,3 +1202,5 @@ const mp_irq_methods_t uart_irq_methods = {
     .trigger = uart_irq_trigger,
     .info = uart_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART + MICROPY_HW_MAX_LPUART]);
