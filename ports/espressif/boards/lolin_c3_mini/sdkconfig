@@ -1,10 +1,4 @@
 #
-# PHY
-#
-CONFIG_ESP_PHY_MAX_WIFI_TX_POWER=15
-# end of PHY
-
-#
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="lolin-c3-mini"
