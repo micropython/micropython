@@ -192,6 +192,13 @@ typedef struct _mp_state_vm_t {
     // include any root pointers defined by a port
     MICROPY_PORT_ROOT_POINTERS
 
+    // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
+    #ifndef NO_QSTR
+    // Only include root pointer definitions when not doing qstr extraction, because
+    // the qstr extraction stage also generates the root pointers header file.
+    #include "genhdr/root_pointers.h"
+    #endif
+
     // root pointers for extmod
 
     #if MICROPY_REPL_EVENT_DRIVEN

@@ -213,6 +213,7 @@ PREFIX_FILE = ../boards/stm32f4xx_prefix.c
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 HEADER_BUILD = $(BUILD)/genhdr
 GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
+GEN_ROOT_POINTERS = $(HEADER_BUILD)/root_pointers.h
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
@@ -220,12 +221,15 @@ GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_PINS_AF_DEFS)
+$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS)
 
 $(HEADER_BUILD):
 	$(MKDIR) -p $(BUILD)/genhdr
 
 $(GEN_QSTRDEFS_GENERATED): | $(HEADER_BUILD)
+	$(Q)echo "// empty" > $@
+
+$(GEN_ROOT_POINTERS): | $(HEADER_BUILD)
 	$(Q)echo "// empty" > $@
 
 $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)

@@ -416,13 +416,18 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 #define MP_DEFINE_CONST_STATICMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_staticmethod}, fun_name}
 #define MP_DEFINE_CONST_CLASSMETHOD_OBJ(obj_name, fun_name) const mp_rom_obj_static_class_method_t obj_name = {{&mp_type_classmethod}, fun_name}
 
+#ifndef NO_QSTR
+
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-
-#ifndef NO_QSTR
 #define MP_REGISTER_MODULE(module_name, obj_module)
-#endif
+
+// Declare a root pointer (to avoid garbage collection of a global static variable).
+// param variable_declaration: a valid C variable declaration
+#define MP_REGISTER_ROOT_POINTER(variable_declaration)
+
+#endif // NO_QSTR
 
 // Underlying map/hash table implementation (not dict object or map function)
 

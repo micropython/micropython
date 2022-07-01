@@ -11,6 +11,9 @@ set(MICROPY_QSTRDEFS_GENERATED "${MICROPY_GENHDR_DIR}/qstrdefs.generated.h")
 set(MICROPY_MODULEDEFS_SPLIT "${MICROPY_GENHDR_DIR}/moduledefs.split")
 set(MICROPY_MODULEDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/moduledefs.collected")
 set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
+set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
+set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
+set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
 
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
@@ -46,6 +49,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_MPVERSION}
     ${MICROPY_QSTRDEFS_GENERATED}
     ${MICROPY_MODULEDEFS}
+    ${MICROPY_ROOT_POINTERS}
 )
 
 # Command to force the build of another command
@@ -139,6 +143,31 @@ add_custom_command(
     DEPENDS ${MICROPY_MODULEDEFS_COLLECTED}
 )
 
+# Generate root_pointers.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split root_pointer ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/root_pointer _
+    COMMAND touch ${MICROPY_ROOT_POINTERS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer _ ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
+    DEPENDS ${MICROPY_ROOT_POINTERS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/make_root_pointers.py ${MICROPY_ROOT_POINTERS_COLLECTED} > ${MICROPY_ROOT_POINTERS}
+    DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
+)
+
 # Build frozen code if enabled
 
 if(MICROPY_FROZEN_MANIFEST)
@@ -174,6 +203,7 @@ if(MICROPY_FROZEN_MANIFEST)
         COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" -f${MICROPY_CROSS_FLAGS} ${MICROPY_FROZEN_MANIFEST}
         DEPENDS MICROPY_FORCE_BUILD
             ${MICROPY_QSTRDEFS_GENERATED}
+            ${MICROPY_ROOT_POINTERS}
             ${MICROPY_MPYCROSS_DEPENDENCY}
         VERBATIM
     )
