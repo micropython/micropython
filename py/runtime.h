@@ -76,7 +76,6 @@ void mp_deinit(void);
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
 void mp_handle_pending(bool raise_exc);
-void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
