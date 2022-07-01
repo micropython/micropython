@@ -139,16 +139,7 @@
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_machine) },  \
 
-// vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM
-#define MICROPY_PORT_ROOT_POINTERS                                        \
-    mp_obj_t machine_config_main;                                         \
-    mp_obj_list_t pyb_sleep_obj_list;                                     \
-    mp_obj_list_t mp_irq_obj_list;                                        \
-    mp_obj_list_t pyb_timer_channel_obj_list;                             \
-    struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
-    struct _os_term_dup_obj_t *os_term_dup_obj;                           \
-
 
 // type definitions for the specific machine
 #define MICROPY_MAKE_POINTER_CALLABLE(p)            ((void *)((mp_uint_t)(p) | 1))
