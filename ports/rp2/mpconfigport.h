@@ -197,12 +197,10 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
 // It also requires an additional root pointer for the SPI object.
-#define MICROPY_PORT_ROOT_POINTER_NINAW10   struct _machine_spi_obj_t *mp_wifi_spi; struct _machine_timer_obj_t *mp_wifi_timer; struct _mp_obj_list_t *mp_wifi_sockpoll_list;
 extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
 #define MICROPY_HW_NIC_NINAW10
-#define MICROPY_PORT_ROOT_POINTER_NINAW10
 #endif
 
 #if MICROPY_PY_NETWORK_WIZNET5K
@@ -239,7 +237,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
     void *machine_i2s_obj[2]; \
     NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
-    MICROPY_PORT_ROOT_POINTER_NINAW10 \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
         MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 

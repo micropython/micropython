@@ -150,4 +150,8 @@ int nina_bsp_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t size)
     return 0;
 }
 
+MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
+MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);
+MP_REGISTER_ROOT_POINTER(struct _mp_obj_list_t *mp_wifi_sockpoll_list);
+
 #endif // MICROPY_PY_NETWORK_NINAW10
