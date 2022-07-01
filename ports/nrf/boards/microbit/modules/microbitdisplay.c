@@ -574,3 +574,5 @@ void microbit_display_init(void) {
         nrf_gpio_cfg_output(i);
     }
 }
+
+MP_REGISTER_ROOT_POINTER(void *async_data[2]);

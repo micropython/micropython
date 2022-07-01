@@ -37,6 +37,12 @@
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
 
+#if defined(NRF52840_XXAA)
+#define NUM_OF_PINS 48
+#else
+#define NUM_OF_PINS 32
+#endif
+
 extern const pin_obj_t machine_board_pin_obj[];
 extern const uint8_t machine_pin_num_of_board_pins;
 
@@ -671,3 +677,7 @@ const mp_obj_type_t pin_af_type = {
     .print = pin_af_obj_print,
     .locals_dict = (mp_obj_dict_t*)&pin_af_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_mapper);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_map_dict);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_irq_handlers[NUM_OF_PINS]);

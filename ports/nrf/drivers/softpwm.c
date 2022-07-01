@@ -255,4 +255,7 @@ void pwm_release(int32_t pin) {
     nrf_gpio_pin_clear(pin);
 }
 
+MP_REGISTER_ROOT_POINTER(const struct _pwm_events *pwm_active_events);
+MP_REGISTER_ROOT_POINTER(const struct _pwm_events *pwm_pending_events);
+
 #endif // MICROPY_PY_MACHINE_SOFT_PWM
