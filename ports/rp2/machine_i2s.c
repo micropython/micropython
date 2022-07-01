@@ -1147,3 +1147,5 @@ const mp_obj_type_t machine_i2s_type = {
     .make_new = machine_i2s_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_i2s_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);

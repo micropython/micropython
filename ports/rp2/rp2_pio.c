@@ -839,3 +839,6 @@ STATIC const mp_irq_methods_t rp2_state_machine_irq_methods = {
     .trigger = rp2_state_machine_irq_trigger,
     .info = rp2_state_machine_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *rp2_pio_irq_obj[2]);
+MP_REGISTER_ROOT_POINTER(void *rp2_state_machine_irq_obj[8]);

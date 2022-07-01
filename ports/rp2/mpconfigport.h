@@ -135,12 +135,6 @@
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
 
-#if MICROPY_PY_BLUETOOTH
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH
-#endif
-
 // By default networking should include sockets, ssl, websockets, webrepl, dupterm.
 #if MICROPY_PY_NETWORK
 #ifndef MICROPY_PY_USOCKET
@@ -215,14 +209,7 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    void *machine_pin_irq_obj[30]; \
-    void *rp2_pio_irq_obj[2]; \
-    void *rp2_state_machine_irq_obj[8]; \
-    void *rp2_uart_rx_buffer[2]; \
-    void *rp2_uart_tx_buffer[2]; \
-    void *machine_i2s_obj[2]; \
     MICROPY_BOARD_ROOT_POINTERS \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
 
 #define MP_STATE_PORT MP_STATE_VM
 
