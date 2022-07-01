@@ -562,3 +562,6 @@ const mp_obj_type_t machine_uart_type = {
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(void *rp2_uart_rx_buffer[2]);
+MP_REGISTER_ROOT_POINTER(void *rp2_uart_tx_buffer[2]);
