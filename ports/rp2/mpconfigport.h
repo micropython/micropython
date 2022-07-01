@@ -204,13 +204,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
     MICROPY_HW_NIC_WIZNET5K \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
-#ifndef MICROPY_BOARD_ROOT_POINTERS
-#define MICROPY_BOARD_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    MICROPY_BOARD_ROOT_POINTERS \
-
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings

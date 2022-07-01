@@ -238,14 +238,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#ifndef MICROPY_BOARD_ROOT_POINTERS
-#define MICROPY_BOARD_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    /* root pointers defined by a board */ \
-        MICROPY_BOARD_ROOT_POINTERS \
-
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((uint32_t)(p) | 1))
