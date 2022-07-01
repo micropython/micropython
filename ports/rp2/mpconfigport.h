@@ -135,12 +135,6 @@
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
 
-#if MICROPY_PY_NETWORK
-#define NETWORK_ROOT_POINTERS               mp_obj_list_t mod_network_nic_list;
-#else
-#define NETWORK_ROOT_POINTERS
-#endif
-
 #if MICROPY_PY_BLUETOOTH
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH struct _machine_uart_obj_t *mp_bthci_uart;
 #else
@@ -227,7 +221,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
     void *rp2_uart_rx_buffer[2]; \
     void *rp2_uart_tx_buffer[2]; \
     void *machine_i2s_obj[2]; \
-    NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
 

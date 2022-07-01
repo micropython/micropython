@@ -163,4 +163,6 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
 
 #endif
 
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t mod_network_nic_list);
+
 #endif  // MICROPY_PY_NETWORK
