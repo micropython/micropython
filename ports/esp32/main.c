@@ -265,3 +265,5 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     memcpy(p, buf, len);
     return p;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t native_code_pointers);

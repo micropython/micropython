@@ -136,14 +136,6 @@
 
 #define MP_STATE_PORT MP_STATE_VM
 
-struct _machine_timer_obj_t;
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t machine_pin_irq_handler[40]; \
-    struct _machine_timer_obj_t *machine_timer_obj_head; \
-    struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
-    mp_obj_t native_code_pointers; \
-
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p)))

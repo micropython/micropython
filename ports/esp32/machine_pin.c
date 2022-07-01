@@ -729,3 +729,5 @@ STATIC const mp_obj_type_t machine_pin_irq_type = {
     .call = machine_pin_irq_call,
     .locals_dict = (mp_obj_dict_t *)&machine_pin_irq_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t machine_pin_irq_handler[40]);
