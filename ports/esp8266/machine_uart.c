@@ -329,3 +329,5 @@ const mp_obj_type_t pyb_uart_type = {
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t *)&pyb_uart_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(byte * uart0_rxbuf);
