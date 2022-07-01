@@ -1081,4 +1081,6 @@ const mp_obj_type_t pyb_can_type = {
     .locals_dict = (mp_obj_dict_t *)&pyb_can_locals_dict,
 };
 
+MP_REGISTER_ROOT_POINTER(struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]);
+
 #endif // MICROPY_HW_ENABLE_CAN

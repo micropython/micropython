@@ -143,4 +143,6 @@ const mp_obj_type_t pyb_switch_type = {
     .locals_dict = (mp_obj_dict_t *)&pyb_switch_locals_dict,
 };
 
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_switch_callback);
+
 #endif // MICROPY_HW_HAS_SWITCH

@@ -243,35 +243,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t pyb_hid_report_desc; \
-    \
-    mp_obj_t pyb_config_main; \
-    \
-    mp_obj_t pyb_switch_callback; \
-    \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    \
-    mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]; \
-    \
-    /* pointers to all Timer objects (if they have been created) */ \
-    struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]; \
-    \
-    /* stdio is repeated on this UART object if it's not null */ \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
-    \
-    /* pointers to all UART objects (if they have been created) */ \
-    struct _pyb_uart_obj_t *pyb_uart_obj_all[MICROPY_HW_MAX_UART + MICROPY_HW_MAX_LPUART]; \
-    \
-    /* pointers to all CAN objects (if they have been created) */ \
-    struct _pyb_can_obj_t *pyb_can_obj_all[MICROPY_HW_MAX_CAN]; \
-    \
-    /* pointers to all I2S objects (if they have been created) */ \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_MAX_I2S]; \
-    \
-    /* USB_VCP IRQ callbacks (if they have been set) */ \
-    mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]; \
-    \
     /* root pointers defined by a board */ \
         MICROPY_BOARD_ROOT_POINTERS \
 

@@ -675,3 +675,6 @@ const mp_obj_type_t pin_af_type = {
     .print = pin_af_obj_print,
     .locals_dict = (mp_obj_dict_t *)&pin_af_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_mapper);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pin_class_map_dict);
