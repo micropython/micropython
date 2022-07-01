@@ -196,7 +196,7 @@ void common_hal_mcu_pin_claim(const mcu_pin_obj_t *pin) {
 }
 
 bool pin_number_is_free(gpio_num_t pin_number) {
-    return in_use & PIN_BIT(pin_number);
+    return !(in_use & PIN_BIT(pin_number));
 }
 
 bool common_hal_mcu_pin_is_free(const mcu_pin_obj_t *pin) {

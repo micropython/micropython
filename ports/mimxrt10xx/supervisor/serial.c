@@ -33,9 +33,7 @@
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
-// TODO: Switch this to using DEBUG_UART.
-// If the board defined a debug uart tx or rx pin then we enable this code
-#if defined(CIRCUITPY_DEBUG_UART_TX) || defined(CIRCUITPY_DEBUG_UART_RX)
+#if defined(CIRCUITPY_CONSOLE_UART)
 // static LPUART_Type *uart_instance = LPUART1; // evk
 static LPUART_Type *uart_instance = LPUART4; // feather 1011
 // static LPUART_Type *uart_instance = LPUART2; // feather 1062
@@ -89,4 +87,4 @@ void port_serial_write_substring(const char *text, uint32_t len) {
 
     LPUART_WriteBlocking(uart_instance, (uint8_t *)text, len);
 }
-#endif // USE_DEBUG_PORT_CODE
+#endif // CIRCUITPY_CONSOLE_UART

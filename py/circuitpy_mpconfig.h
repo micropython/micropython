@@ -198,10 +198,11 @@ typedef long mp_off_t;
 
 
 // extra built in names to add to the global namespace
+// Not indented so as not to confused the editor.
 #define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
+{ MP_OBJ_NEW_QSTR(MP_QSTR_help), (mp_obj_t)&mp_builtin_help_obj },      \
+{ MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
+{ MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },   \
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // board-specific definitions, which control and may override definitions below.
@@ -294,6 +295,18 @@ typedef long mp_off_t;
 #endif
 #else
 #define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
+#endif
+
+#if defined(CIRCUITPY_CONSOLE_UART_RX) || defined(CIRCUITPY_CONSOLE_UART_TX)
+#if !(defined(CIRCUITPY_CONSOLE_UART_RX) && defined(CIRCUITPY_CONSOLE_UART_TX))
+#error Both CIRCUITPY_CONSOLE_UART_RX and CIRCUITPY_CONSOLE_UART_TX must be defined if one is defined.
+#endif
+#define CIRCUITPY_CONSOLE_UART (1)
+#ifndef CIRCUITPY_CONSOLE_UART_BAUDRATE
+#define CIRCUITPY_CONSOLE_UART_BAUDRATE (115200)
+#endif
+#else
+#define CIRCUITPY_CONSOLE_UART (0)
 #endif
 
 // These CIRCUITPY_xxx values should all be defined in the *.mk files as being on or off.
