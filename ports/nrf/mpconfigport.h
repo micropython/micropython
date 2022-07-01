@@ -310,41 +310,6 @@ typedef long mp_off_t;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_MUSIC
-#define ROOT_POINTERS_MUSIC \
-    struct _music_data_t *music_data;
-#else
-#define ROOT_POINTERS_MUSIC
-#endif
-
-#if MICROPY_PY_MACHINE_SOFT_PWM
-#define ROOT_POINTERS_SOFTPWM \
-    const struct _pwm_events *pwm_active_events; \
-    const struct _pwm_events *pwm_pending_events;
-#else
-#define ROOT_POINTERS_SOFTPWM
-#endif
-
-#if defined(NRF52840_XXAA)
-#define NUM_OF_PINS 48
-#else
-#define NUM_OF_PINS 32
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    mp_obj_t pin_irq_handlers[NUM_OF_PINS]; \
-    \
-    /* stdio is repeated on this UART object if it's not null */ \
-    struct _machine_hard_uart_obj_t *board_stdio_uart; \
-    \
-    ROOT_POINTERS_MUSIC \
-    ROOT_POINTERS_SOFTPWM \
-    \
-    /* micro:bit root pointers */ \
-    void *async_data[2]; \
-
 #if MICROPY_HW_USB_CDC
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #else
