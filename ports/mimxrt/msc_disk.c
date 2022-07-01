@@ -36,7 +36,7 @@
 
 uint8_t tud_msc_state = EJECTED;
 
-static bool msc_enabled = false;
+static bool msc_enabled = true;
 
 void update_msc_state(void) {
     if (tud_msc_state == TRANSIT) {

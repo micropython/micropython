@@ -38,6 +38,7 @@ if fs == FS_FAT or (fs == FS_UNDEF and hasattr(mimxrt, "MSC")):
         os.VfsFat.mkfs(bdev)
         vfs = os.VfsFat(bdev)
         os.mount(vfs, "/flash")
+    usb_mode = "vcp+msc"
 else:
     try:
         vfs = os.VfsLfs2(bdev, progsize=256)
@@ -46,10 +47,24 @@ else:
         os.VfsLfs2.mkfs(bdev, progsize=256)
         vfs = os.VfsLfs2(bdev, progsize=256)
         os.mount(vfs, "/flash")
+    usb_mode = "vcp"
 
 os.chdir("/flash")
 sys.path.append("/flash")
 sys.path.append("/flash/lib")
+
+try:
+    from set_usb_mode import usb_mode
+except:
+    pass
+
+# Configure USB mode according to the default or the
+# config file in the file system
+if hasattr(mimxrt, "usb_mode"):
+    try:
+        mimxrt.usb_mode(usb_mode)
+    except:
+        pass
 
 # do not mount the SD card if SKIPSD exists.
 try:
