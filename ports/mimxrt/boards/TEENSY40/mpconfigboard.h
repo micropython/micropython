@@ -104,6 +104,3 @@
         .data2 = { GPIO_SD_B0_04_USDHC1_DATA2 }, \
         .data3 = { GPIO_SD_B0_05_USDHC1_DATA3 }, \
     }
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

@@ -469,3 +469,5 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]);
