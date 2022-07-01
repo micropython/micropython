@@ -80,7 +80,3 @@
         I2S_GPIO(3, WS, TX, GPIO_SD_00, IOMUXC_GPIO_SD_00_SAI3_TX_SYNC), /* pin D9 */ \
         I2S_GPIO(3, SD, TX, GPIO_SD_02, IOMUXC_GPIO_SD_02_SAI3_TX_DATA) /* pin D11 */ \
     }
-
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

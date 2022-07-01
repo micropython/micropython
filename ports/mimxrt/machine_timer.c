@@ -218,3 +218,5 @@ const mp_obj_type_t machine_timer_type = {
     .make_new = machine_timer_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_timer_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]);

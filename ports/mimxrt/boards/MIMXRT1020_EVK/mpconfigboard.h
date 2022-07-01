@@ -172,6 +172,3 @@
     { IOMUXC_GPIO_AD_B0_15_ENET_TDATA01, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_40_ENET_MDIO, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_EMC_41_ENET_MDC, 0, 0xB0E9u },
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];

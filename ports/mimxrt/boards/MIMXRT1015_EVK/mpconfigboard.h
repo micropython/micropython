@@ -79,6 +79,3 @@
         I2S_GPIO(1, WS, TX, GPIO_EMC_27, IOMUXC_GPIO_EMC_27_SAI1_TX_SYNC),  \
         I2S_GPIO(1, SD, TX, GPIO_EMC_25, IOMUXC_GPIO_EMC_25_SAI1_TX_DATA00), \
     }
-
-#define MICROPY_BOARD_ROOT_POINTERS \
-    struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_I2S_NUM];
