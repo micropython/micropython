@@ -290,19 +290,6 @@ static inline unsigned long mp_urandom_seed_init(void) {
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_PY_BLUETOOTH
-#if MICROPY_BLUETOOTH_NIMBLE
-struct _mp_bluetooth_nimble_root_pointers_t;
-struct _mp_bluetooth_nimble_malloc_t;
-#define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#endif
-#else
-#define MICROPY_BLUETOOTH_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    MICROPY_BLUETOOTH_ROOT_POINTERS \
-
 // We need to provide a declaration/definition of alloca()
 // unless support for it is disabled.
 #if !defined(MICROPY_NO_ALLOCA) || MICROPY_NO_ALLOCA == 0

@@ -147,14 +147,6 @@
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH
 #endif
 
-#if MICROPY_BLUETOOTH_NIMBLE
-struct _mp_bluetooth_nimble_root_pointers_t;
-struct _mp_bluetooth_nimble_malloc_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
 // By default networking should include sockets, ssl, websockets, webrepl, dupterm.
 #if MICROPY_PY_NETWORK
 #ifndef MICROPY_PY_USOCKET
@@ -238,7 +230,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
     NETWORK_ROOT_POINTERS \
     MICROPY_BOARD_ROOT_POINTERS \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH \
-        MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
 
 #define MP_STATE_PORT MP_STATE_VM
 

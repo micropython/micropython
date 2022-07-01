@@ -238,14 +238,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#if MICROPY_BLUETOOTH_NIMBLE
-struct _mp_bluetooth_nimble_root_pointers_t;
-struct _mp_bluetooth_nimble_malloc_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory; struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
 #endif
@@ -282,9 +274,6 @@ struct _mp_bluetooth_nimble_malloc_t;
     \
     /* list of registered NICs */ \
     mp_obj_list_t mod_network_nic_list; \
-    \
-    /* root pointers for sub-systems */ \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
     \
     /* root pointers defined by a board */ \
         MICROPY_BOARD_ROOT_POINTERS \
