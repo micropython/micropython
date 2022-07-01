@@ -80,7 +80,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr ""
 
@@ -441,7 +441,6 @@ msgstr "Alle Kanäle werden verwendet"
 msgid "All event channels in use"
 msgstr "Alle Event-Kanäle werden benutzt"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Alle State-Maschinen in Verwendung"
@@ -527,7 +526,7 @@ msgstr "Audio-Konvertierung nicht implementiert"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN wird mit Passwort nicht verwendet"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "Authentifizierungsfehler"
 
@@ -1187,6 +1186,10 @@ msgstr "Interner Fehler"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Interner Fehler #%d"
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr ""
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -2306,10 +2309,6 @@ msgstr ""
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.timeout muss größer als 0 sein"
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "Watchdog timer abgelaufen."
 
 #: py/builtinhelp.c
 #, c-format
@@ -4012,10 +4011,6 @@ msgstr "source_bitmap muss value_count von 65536 haben"
 msgid "source_bitmap must have value_count of 8"
 msgstr "source_bitmap muss value_count von 8 haben"
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr "ssid kann nicht mehr als 32 Bytes lang sein"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start/end Indizes"
@@ -4372,6 +4367,12 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Watchdog timer abgelaufen."
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid kann nicht mehr als 32 Bytes lang sein"
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q muss ein Tupel der Länge 2 sein"

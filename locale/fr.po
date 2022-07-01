@@ -31,8 +31,8 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 "\n"
-"Le code a été arrêté par l'actualisation automatique. Rechargement prochain."
-"\n"
+"Le code a été arrêté par l'actualisation automatique. Rechargement "
+"prochain.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -84,7 +84,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr "%q"
 
@@ -444,7 +444,6 @@ msgstr "Tout les canaux sont utilisés"
 msgid "All event channels in use"
 msgstr "Tous les canaux d'événements sont utilisés"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Tous les automates finis sont utilisés"
@@ -532,7 +531,7 @@ msgstr "La conversion audio n'est pas implémentée"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN n'est pas utilisé avec un mot de passe"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "Échec d'authentification"
 
@@ -740,7 +739,8 @@ msgstr "Ne peut démonter '/' quand est visible par USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
+msgstr ""
+"Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -1205,6 +1205,10 @@ msgstr "Erreur interne"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Erreur interne #%d"
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr ""
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -2326,10 +2330,6 @@ msgstr ""
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.timeout doit être supérieur à 0"
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "Le minuteur Watchdog a expiré."
 
 #: py/builtinhelp.c
 #, c-format
@@ -4029,10 +4029,6 @@ msgstr "source_bitmap doit avoir une value_count de 65536"
 msgid "source_bitmap must have value_count of 8"
 msgstr "source_bitmap doit avoir une value_count de 8"
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr "un ssid ne peut pas faire plus de 32 octets"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "indices de début/fin"
@@ -4387,6 +4383,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Le minuteur Watchdog a expiré."
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "un ssid ne peut pas faire plus de 32 octets"
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q doit être un tuple de longueur 2"
