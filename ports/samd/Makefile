@@ -127,6 +127,7 @@ SRC_QSTR += \
 	machine_led.c \
 	modsamd.c \
 	samd_flash.c \
+	shared/readline/readline.c \
 
 SRC_QSTR += $(SRC_MOD) $(SRC_CXX)
 

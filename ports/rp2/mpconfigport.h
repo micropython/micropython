@@ -231,7 +231,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
     void *machine_pin_irq_obj[30]; \
     void *rp2_pio_irq_obj[2]; \
     void *rp2_state_machine_irq_obj[8]; \

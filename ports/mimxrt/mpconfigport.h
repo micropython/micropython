@@ -242,7 +242,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
     struct _machine_timer_obj_t *timer_table[MICROPY_HW_PIT_NUM_CHANNELS]; \
     void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]; \
     /* list of registered NICs */ \

@@ -130,6 +130,7 @@ set(MICROPY_SOURCE_PORT
 
 set(MICROPY_SOURCE_QSTR
     ${MICROPY_SOURCE_PY}
+    ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${PROJECT_SOURCE_DIR}/machine_adc.c

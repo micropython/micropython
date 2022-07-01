@@ -30,7 +30,7 @@ SRC_C = \
 	mphalport.c \
 	modutime.c \
 
-SRC_QSTR += $(SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SHARED)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED:.c=.o))

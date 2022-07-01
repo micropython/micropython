@@ -146,7 +146,6 @@ struct mp_bluetooth_nimble_root_pointers_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
     struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
