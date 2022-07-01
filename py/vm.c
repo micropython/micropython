@@ -1295,41 +1295,37 @@ yield:
 #endif
 
 pending_exception_check:
+                // We've just done a branch, use this as a convenient point to
+                // run periodic code/checks and/or bounce the GIL.. i.e.
+                // not _every_ instruction but on average a branch should
+                // occur every few instructions.
                 MICROPY_VM_HOOK_LOOP
 
+                // Check for pending exceptions or scheduled tasks to run.
+                // Note: it's safe to just call mp_handle_pending(true), but
+                // we can inline the check for the common case where there is
+                // neither.
+                if (
                 #if MICROPY_ENABLE_SCHEDULER
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    // Re-check state is still pending now that we're in the atomic section.
-                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                        MARK_EXC_IP_SELECTIVE();
-                        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                        if (obj != MP_OBJ_NULL) {
-                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                            if (!mp_sched_num_pending()) {
-                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-                            }
-                            MICROPY_END_ATOMIC_SECTION(atomic_state);
-                            RAISE(obj);
-                        }
-                        mp_handle_pending_tail(atomic_state);
-                    } else {
-                        MICROPY_END_ATOMIC_SECTION(atomic_state);
-                    }
-                }
+                #if MICROPY_PY_THREAD
+                    // Scheduler + threading: Scheduler and pending exceptions are independent, check both.
+                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING || MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
                 #else
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-                    MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                    RAISE(obj);
-                }
+                    // Scheduler + non-threading: Optimisation: pending exception sets sched_state, only check sched_state.
+                    MP_STATE_VM(sched_state) == MP_SCHED_PENDING
                 #endif
+                #else
+                    // No scheduler: Just check pending exception.
+                    MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
+                #endif
+                ) {
+                    MARK_EXC_IP_SELECTIVE();
+                    mp_handle_pending(true);
+                }
 
                 #if MICROPY_PY_THREAD_GIL
                 #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
+                // Don't bounce the GIL too frequently (default every 32 branches).
                 if (--gil_divisor == 0)
                 #endif
                 {
