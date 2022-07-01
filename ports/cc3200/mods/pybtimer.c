@@ -728,3 +728,4 @@ STATIC const mp_obj_type_t pyb_timer_channel_type = {
     .locals_dict = (mp_obj_t)&pyb_timer_channel_locals_dict,
 };
 
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t pyb_timer_channel_obj_list);

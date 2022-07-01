@@ -197,3 +197,4 @@ const mp_obj_type_t mp_irq_type = {
     .locals_dict = (mp_obj_t)&mp_irq_locals_dict,
 };
 
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_irq_obj_list);

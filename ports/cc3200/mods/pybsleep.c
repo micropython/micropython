@@ -652,3 +652,4 @@ STATIC bool setup_timer_hibernate_wake (void) {
     return false;
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t pyb_sleep_obj_list);
