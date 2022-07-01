@@ -305,7 +305,6 @@ struct _mp_bluetooth_nimble_malloc_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    void *mmap_region_head; \
     MICROPY_BLUETOOTH_ROOT_POINTERS \
 
 // We need to provide a declaration/definition of alloca()
