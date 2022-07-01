@@ -237,14 +237,6 @@ extern const struct _mp_obj_type_t network_lan_type;
 
 #define MICROPY_HW_PIT_NUM_CHANNELS 3
 
-#ifndef MICROPY_BOARD_ROOT_POINTERS
-#define MICROPY_BOARD_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    /* root pointers defined by a board */ \
-    MICROPY_BOARD_ROOT_POINTERS \
-
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings

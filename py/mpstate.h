@@ -189,9 +189,6 @@ typedef struct _mp_state_vm_t {
     mp_obj_t track_reloc_code_list;
     #endif
 
-    // include any root pointers defined by a port
-    MICROPY_PORT_ROOT_POINTERS
-
     // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
     #ifndef NO_QSTR
     // Only include root pointer definitions when not doing qstr extraction, because
