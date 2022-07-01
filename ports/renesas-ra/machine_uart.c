@@ -581,3 +581,5 @@ const mp_obj_type_t machine_uart_type = {
     .protocol = &uart_stream_p,
     .locals_dict = (mp_obj_dict_t *)&machine_uart_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *machine_uart_obj_all[MICROPY_HW_MAX_UART + MICROPY_HW_MAX_LPUART]);

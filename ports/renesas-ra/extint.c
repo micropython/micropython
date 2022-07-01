@@ -399,3 +399,5 @@ void extint_init0(void) {
         MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_extint_callback[PYB_EXTI_NUM_VECTORS]);

@@ -567,3 +567,5 @@ void timer_irq_handler(void *param) {
         // }
     }
 }
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]);
