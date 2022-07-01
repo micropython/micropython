@@ -418,4 +418,6 @@ int mp_bluetooth_gap_peripheral_connect_cancel(void) {
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 
+MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_zephyr_root_pointers_t *bluetooth_zephyr_root_pointers);
+
 #endif // MICROPY_PY_BLUETOOTH
