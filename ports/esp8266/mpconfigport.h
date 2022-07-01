@@ -147,10 +147,6 @@ extern const struct _mp_print_t mp_debug_print;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    mp_obj_t pin_irq_handler[16]; \
-    byte *uart0_rxbuf; \
-
 // We need an implementation of the log2 function which is not a macro
 #define MP_NEED_LOG2 (1)
 
