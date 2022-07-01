@@ -139,7 +139,7 @@ MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
 
 //|     tx_power: int
-//|     """Set TX WiFi power."""
+//|     """Wifi transmission power, in dBm."""
 //|
 STATIC mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
