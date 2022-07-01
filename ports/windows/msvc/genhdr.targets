@@ -4,7 +4,7 @@
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
 
   <!--Generate qstrdefs.generated.h and mpversion.h similar to what is done in py/mkrules.mk and py/py.mk-->
-  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeQstrData">
+  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeRootPointers;MakeQstrData">
   </Target>
 
   <PropertyGroup>
@@ -15,6 +15,7 @@
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>
     <ModuleDefsCollected>$(DestDir)/moduledefs.collected</ModuleDefsCollected>
+    <RootPointersCollected>$(DestDir)/root_pointers.collected</RootPointersCollected>
     <PyPython Condition="'$(PyPython)' == ''">$(MICROPY_CPYTHON3)</PyPython>
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
     <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
@@ -45,7 +46,7 @@
 using(var outFile = System.IO.File.CreateText(OutputFile)) {
   foreach(var inFile in InputFiles)
     foreach(var line in System.IO.File.ReadAllLines(inFile))
-      if((line.Contains(".c") && line.StartsWith("#line")) || line.Contains("MP_QSTR"))
+      if((line.Contains(".c") && line.StartsWith("#line")) || line.Contains("MP_QSTR") || line.Contains("MP_REGISTER"))
         outFile.WriteLine( line );
 }
         ]]>
@@ -114,6 +115,20 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
+  <Target Name="CollectRootPointers" DependsOnTargets="MakeQstrDefs" Inputs="$(DestDir)qstr.i.last" Outputs="$(RootPointersCollected)">
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split root_pointer $(DestDir)qstr.i.last $(DestDir)root_pointer _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat root_pointer _ $(DestDir)root_pointer $(RootPointersCollected)"/>
+  </Target>
+
+  <Target Name="MakeRootPointers" DependsOnTargets="CollectRootPointers" Inputs="$(PySrcDir)make_root_pointers.py;$(RootPointersCollected)" Outputs="$(DestDir)root_pointers.h">
+    <PropertyGroup>
+      <DestFile>$(DestDir)root_pointers.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <Exec Command="$(PyPython) $(PySrcDir)make_root_pointers.py $(RootPointersCollected) > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
   <Target Name="MakeQstrData" DependsOnTargets="MakeQstrDefs" Inputs="$(QstrDefsCollected);$(PyQstrDefs);$(QstrDefs)" Outputs="$(QstrGen)">
     <PropertyGroup>
       <TmpFile>$(QstrGen).tmp</TmpFile>
@@ -132,7 +147,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
-  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
+  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData;MakeRootPointers" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
     <ItemGroup>
       <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
       <ClCompile>

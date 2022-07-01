@@ -7,8 +7,8 @@ endif
 # Extra deps that need to happen before object compilation.
 OBJ_EXTRA_ORDER_DEPS =
 
-# Generate moduledefs.h.
-OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h
+# Generate header files.
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h
 
 ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
 # If compression is enabled, trigger the build of compressed.data.h...
@@ -126,6 +126,16 @@ $(HEADER_BUILD)/moduledefs.collected: $(HEADER_BUILD)/moduledefs.split
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat module _ $(HEADER_BUILD)/module $@
 
+# Module definitions via MP_REGISTER_ROOT_POINTER.
+$(HEADER_BUILD)/root_pointers.split: $(HEADER_BUILD)/qstr.i.last
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split root_pointer $< $(HEADER_BUILD)/root_pointer _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/root_pointers.collected: $(HEADER_BUILD)/root_pointers.split
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat root_pointer _ $(HEADER_BUILD)/root_pointer $@
+
 # Compressed error strings.
 $(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
 	$(ECHO) "GEN $@"
@@ -165,7 +175,7 @@ endif
 
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY)
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
