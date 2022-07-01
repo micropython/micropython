@@ -570,6 +570,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             else if (awoke_from_true_deep_sleep ||
                      port_get_raw_ticks(NULL) > CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY * 1024) {
                 // OK to start sleeping, real or fake.
+                #if CIRCUITPY_DISPLAYIO
+                common_hal_displayio_release_displays();
+                #endif
                 status_led_deinit();
                 deinit_rxtx_leds();
                 board_deinit();
