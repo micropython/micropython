@@ -185,9 +185,6 @@
     /* pointers to all UART objects (if they have been created) */ \
     struct _machine_uart_obj_t *machine_uart_obj_all[MICROPY_HW_MAX_UART + MICROPY_HW_MAX_LPUART]; \
     \
-    /* list of registered NICs */ \
-    /* mp_obj_list_t mod_network_nic_list; */ \
-    \
     /* root pointers for sub-systems */ \
     \
     /* root pointers defined by a board */ \

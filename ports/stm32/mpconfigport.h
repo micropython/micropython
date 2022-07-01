@@ -272,9 +272,6 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_cc3k;
     /* USB_VCP IRQ callbacks (if they have been set) */ \
     mp_obj_t pyb_usb_vcp_irq[MICROPY_HW_USB_CDC_NUM]; \
     \
-    /* list of registered NICs */ \
-    mp_obj_list_t mod_network_nic_list; \
-    \
     /* root pointers defined by a board */ \
         MICROPY_BOARD_ROOT_POINTERS \
 
