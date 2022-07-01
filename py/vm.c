@@ -1297,36 +1297,30 @@ yield:
 pending_exception_check:
                 MICROPY_VM_HOOK_LOOP
 
-                #if MICROPY_ENABLE_SCHEDULER
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-                    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-                    // Re-check state is still pending now that we're in the atomic section.
-                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+                // This is an inlined, always-raising variant of mp_handle_pending.
+
+                #if MICROPY_ENABLE_SCHEDULER && !MICROPY_PY_THREAD
+                if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
+                #endif
+                {
+                    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
                         MARK_EXC_IP_SELECTIVE();
                         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                        if (obj != MP_OBJ_NULL) {
-                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                            if (!mp_sched_num_pending()) {
-                                MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-                            }
-                            MICROPY_END_ATOMIC_SECTION(atomic_state);
-                            RAISE(obj);
-                        }
-                        mp_handle_pending_tail(atomic_state);
-                    } else {
-                        MICROPY_END_ATOMIC_SECTION(atomic_state);
+                        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+                        // Note (scheduler+non-threading optimisation):
+                        // MP_STATE_VM(sched_state) will be cleared the next
+                        // time the scheduler code below runs.
+                        RAISE(obj);
                     }
+                    #if MICROPY_ENABLE_SCHEDULER
+                    #if MICROPY_PY_THREAD
+                    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
+                    #endif
+                    {
+                        mp_sched_run_pending();
+                    }
+                    #endif
                 }
-                #else
-                // This is an inlined variant of mp_handle_pending
-                if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-                    MARK_EXC_IP_SELECTIVE();
-                    mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                    MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                    RAISE(obj);
-                }
-                #endif
 
                 #if MICROPY_PY_THREAD_GIL
                 #if MICROPY_PY_THREAD_GIL_VM_DIVISOR

@@ -76,11 +76,11 @@ void mp_deinit(void);
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
 void mp_handle_pending(bool raise_exc);
-void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
+void mp_sched_run_pending(void);
 #define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
 bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
