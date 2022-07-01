@@ -291,10 +291,6 @@ static inline unsigned long mp_urandom_seed_init(void) {
 #define MP_STATE_PORT MP_STATE_VM
 
 #if MICROPY_PY_BLUETOOTH
-#if MICROPY_BLUETOOTH_BTSTACK
-struct _mp_bluetooth_btstack_root_pointers_t;
-#define MICROPY_BLUETOOTH_ROOT_POINTERS struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
-#endif
 #if MICROPY_BLUETOOTH_NIMBLE
 struct _mp_bluetooth_nimble_root_pointers_t;
 struct _mp_bluetooth_nimble_malloc_t;

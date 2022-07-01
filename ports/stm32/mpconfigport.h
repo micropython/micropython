@@ -246,13 +246,6 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 #endif
 
-#if MICROPY_BLUETOOTH_BTSTACK
-struct _mp_bluetooth_btstack_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK struct _mp_bluetooth_btstack_root_pointers_t *bluetooth_btstack_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK
-#endif
-
 #ifndef MICROPY_BOARD_ROOT_POINTERS
 #define MICROPY_BOARD_ROOT_POINTERS
 #endif
@@ -292,7 +285,6 @@ struct _mp_bluetooth_btstack_root_pointers_t;
     \
     /* root pointers for sub-systems */ \
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_BTSTACK \
     \
     /* root pointers defined by a board */ \
         MICROPY_BOARD_ROOT_POINTERS \
