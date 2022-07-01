@@ -42,6 +42,8 @@ SRC_C = \
 	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
 
+SRC_QSTR += shared/readline/readline.c
+
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(BUILD)/head.o

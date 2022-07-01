@@ -129,6 +129,9 @@
 #define MICROPY_READER_POSIX        (1)
 #define MICROPY_READER_VFS          (1)
 #define MICROPY_USE_READLINE_HISTORY (1)
+#ifndef MICROPY_READLINE_HISTORY_SIZE
+#define MICROPY_READLINE_HISTORY_SIZE 50
+#endif
 #define MICROPY_HELPER_LEXER_UNIX   (1)
 #ifndef MICROPY_FLOAT_IMPL
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
@@ -302,7 +305,6 @@ struct _mp_bluetooth_nimble_malloc_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[50]; \
     void *mmap_region_head; \
     MICROPY_BLUETOOTH_ROOT_POINTERS \
 

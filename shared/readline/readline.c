@@ -40,16 +40,19 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-#define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
-
 // flags for readline_t.auto_indent_state
 #define AUTO_INDENT_ENABLED (0x01)
 #define AUTO_INDENT_JUST_ADDED (0x02)
 
 enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O };
 
+#ifdef _MSC_VER
+// work around MSVC compiler bug: https://stackoverflow.com/q/62259834/1976323
+#pragma warning(disable : 4090)
+#endif
+
 void readline_init0(void) {
-    memset(MP_STATE_PORT(readline_hist), 0, READLINE_HIST_SIZE * sizeof(const char*));
+    memset(MP_STATE_PORT(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char*));
 }
 
 STATIC char *str_dup_maybe(const char *str) {
@@ -334,7 +337,7 @@ backward_kill_word:
 up_arrow_key:
 #endif
                 // up arrow
-                if (rl.hist_cur + 1 < (int)READLINE_HIST_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
+                if (rl.hist_cur + 1 < MICROPY_READLINE_HISTORY_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
@@ -570,10 +573,12 @@ void readline_push_history(const char *line) {
         // so update the history
         char *most_recent_hist = str_dup_maybe(line);
         if (most_recent_hist != NULL) {
-            for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
+            for (int i = MICROPY_READLINE_HISTORY_SIZE - 1; i > 0; i--) {
                 MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
             }
             MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
         }
     }
 }
+
+MP_REGISTER_ROOT_POINTER(const char *readline_hist[MICROPY_READLINE_HISTORY_SIZE]);

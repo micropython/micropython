@@ -168,8 +168,6 @@
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    \
     mp_obj_t pyb_hid_report_desc; \
     \
     mp_obj_t pyb_config_main; \

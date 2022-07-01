@@ -87,8 +87,6 @@
 #define MICROPY_PY_UHASHLIB         (0)
 #define MICROPY_PY_UBINASCII        (0)
 
-#define MICROPY_PORT_ROOT_POINTERS \
-
 //////////////////////////////////////////
 // Do not change anything beyond this line
 //////////////////////////////////////////

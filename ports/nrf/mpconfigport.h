@@ -332,7 +332,6 @@ typedef long mp_off_t;
 #endif
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
     mp_obj_t pin_class_mapper; \
     mp_obj_t pin_class_map_dict; \
     mp_obj_t pin_irq_handlers[NUM_OF_PINS]; \

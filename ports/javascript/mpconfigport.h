@@ -182,6 +182,3 @@ typedef long mp_off_t;
 #define MICROPY_HW_MCU_NAME "Emscripten"
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];

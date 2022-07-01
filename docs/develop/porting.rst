@@ -174,9 +174,6 @@ The following is an example of an ``mpconfigport.h`` file:
 
    #define MP_STATE_PORT MP_STATE_VM
 
-   #define MICROPY_PORT_ROOT_POINTERS \
-       const char *readline_hist[8];
-
 This configuration file contains machine-specific configurations including aspects like if different
 MicroPython features should be enabled e.g. ``#define MICROPY_ENABLE_GC (1)``. Making this Setting
 ``(0)`` disables the feature.

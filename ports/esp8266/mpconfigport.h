@@ -148,7 +148,6 @@ extern const struct _mp_print_t mp_debug_print;
 #define MP_STATE_PORT MP_STATE_VM
 
 #define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
     mp_obj_t pin_irq_handler[16]; \
     byte *uart0_rxbuf; \
 

@@ -142,7 +142,6 @@
 // vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM
 #define MICROPY_PORT_ROOT_POINTERS                                        \
-    const char *readline_hist[8];                                         \
     mp_obj_t mp_const_user_interrupt;                                     \
     mp_obj_t machine_config_main;                                         \
     mp_obj_list_t pyb_sleep_obj_list;                                     \

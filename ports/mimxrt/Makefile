@@ -290,6 +290,7 @@ SRC_QSTR += \
 	modmimxrt.c \
 	modutime.c \
 	pin.c \
+	shared/readline/readline.c \
 	shared/runtime/mpirq.c \
 	shared/runtime/sys_stdio_mphal.c \
 	$(GEN_PINS_SRC)
