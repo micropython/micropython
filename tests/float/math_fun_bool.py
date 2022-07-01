@@ -1,7 +1,10 @@
 # Test the bool functions from math
 
 try:
-    from math import isfinite, isnan, isinf
+    try:
+        from umath import isfinite, isnan, isinf
+    except ImportError:
+        from math import isfinite, isnan, isinf
 except ImportError:
     print("SKIP")
     raise SystemExit

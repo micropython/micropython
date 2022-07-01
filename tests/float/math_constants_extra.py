@@ -1,7 +1,12 @@
 # Tests constants of the math module available only with MICROPY_PY_MATH_CONSTANTS.
+
 try:
-    import math
-    from math import isnan
+    try:
+        import umath as math
+        from umath import isnan
+    except ImportError:
+        import math
+        from math import isnan
 
     math.tau
 except (ImportError, AttributeError):

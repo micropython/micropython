@@ -1,7 +1,10 @@
 # Tests domain errors in special math functions
 
 try:
-    import math
+    try:
+        import umath as math
+    except ImportError:
+        import math
 
     math.erf
 except (ImportError, AttributeError):

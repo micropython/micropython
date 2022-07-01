@@ -1,7 +1,10 @@
 # Tests the functions imported from math
 
 try:
-    from math import *
+    try:
+        from umath import *
+    except ImportError:
+        from math import *
 except ImportError:
     print("SKIP")
     raise SystemExit

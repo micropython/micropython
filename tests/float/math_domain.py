@@ -1,7 +1,10 @@
 # Tests domain errors in math functions
 
 try:
-    import math
+    try:
+        import umath as math
+    except ImportError:
+        import math
 except ImportError:
     print("SKIP")
     raise SystemExit

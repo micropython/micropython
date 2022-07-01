@@ -1,7 +1,10 @@
 # evolve the RGEs of the standard model from electroweak scale up
 # by dpgeorge
 
-import math
+try:
+    import umath as math
+except ImportError:
+    import math
 
 
 class RungeKutta(object):

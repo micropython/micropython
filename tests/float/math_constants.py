@@ -1,7 +1,11 @@
 # Tests various constants of the math module.
 try:
-    import math
-    from math import exp, cos
+    try:
+        import umath as math
+        from umath import exp, cos
+    except ImportError:
+        import math
+        from math import exp, cos
 except ImportError:
     print("SKIP")
     raise SystemExit

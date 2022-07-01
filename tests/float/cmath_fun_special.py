@@ -1,7 +1,10 @@
 # test the special functions imported from cmath
 
 try:
-    from cmath import *
+    try:
+        from ucmath import *
+    except ImportError:
+        from cmath import *
 
     log10
 except (ImportError, NameError):

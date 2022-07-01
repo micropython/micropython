@@ -1,7 +1,10 @@
 # test the functions imported from cmath
 
 try:
-    from cmath import *
+    try:
+        from ucmath import *
+    except ImportError:
+        from cmath import *
 except ImportError:
     print("SKIP")
     raise SystemExit

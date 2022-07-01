@@ -368,7 +368,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_math_factorial_obj, mp_math_factorial);
 #endif
 
 STATIC const mp_rom_map_elem_t mp_module_math_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_math) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umath) },
     { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
     { MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi },
     #if MICROPY_PY_MATH_CONSTANTS
@@ -435,6 +435,6 @@ const mp_obj_module_t mp_module_math = {
     .globals = (mp_obj_dict_t *)&mp_module_math_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_math, mp_module_math);
+MP_REGISTER_MODULE(MP_QSTR_umath, mp_module_math);
 
 #endif // MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH

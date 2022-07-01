@@ -1,5 +1,8 @@
 try:
-    import math
+    try:
+        import umath as math
+    except ImportError:
+        import math
 
     math.factorial
 except (ImportError, AttributeError):

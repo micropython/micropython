@@ -1,7 +1,10 @@
 # test the math functions that return ints, with very large results
 
 try:
-    import math
+    try:
+        import umath as math
+    except ImportError:
+        import math
 except ImportError:
     print("SKIP")
     raise SystemExit

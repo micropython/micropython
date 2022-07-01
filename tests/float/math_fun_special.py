@@ -1,7 +1,10 @@
 # test the special functions imported from math
 
 try:
-    from math import *
+    try:
+        from umath import *
+    except ImportError:
+        from math import *
 
     erf
 except (ImportError, NameError):

@@ -1,7 +1,10 @@
 # test math.isclose (appeared in Python 3.5)
 
 try:
-    from math import isclose
+    try:
+        from umath import isclose
+    except ImportError:
+        from math import isclose
 except ImportError:
     print("SKIP")
     raise SystemExit
