@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-03 01:35+0000\n"
-"Last-Translator: ajs256 <alex.sirota@icloud.com>\n"
+"PO-Revision-Date: 2022-06-30 22:19+0000\n"
+"Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: main.c
 msgid ""
@@ -30,6 +30,9 @@ msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"Le code a été arrêté par l'actualisation automatique. Rechargement prochain."
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -115,7 +118,7 @@ msgstr "les indices %q doivent être des entiers, pas %s"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
-msgstr ""
+msgstr "échec de l'initialisation %q"
 
 #: py/argcheck.c
 msgid "%q length must be %d"
@@ -665,7 +668,7 @@ msgstr "Appelez super().__init__() avant d'accéder à l'objet natif."
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Camera init"
-msgstr ""
+msgstr "Initialisation de la caméra"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
@@ -737,7 +740,7 @@ msgstr "Ne peut démonter '/' quand est visible par USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
+msgstr "Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -958,7 +961,7 @@ msgstr "Echec de l'obtention de mutex, err 0x%04x"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
-msgstr ""
+msgstr "Échec d'allocation du tampon %q"
 
 #: ports/espressif/common-hal/wifi/__init__.c
 msgid "Failed to allocate Wifi memory"
@@ -1050,7 +1053,7 @@ msgstr "La fonction nécessite un verrou ('lock')"
 
 #: ports/cxd56/common-hal/gnss/GNSS.c
 msgid "GNSS init"
-msgstr ""
+msgstr "Initialisation GNSS"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Generic Failure"
@@ -1085,7 +1088,7 @@ msgstr "Opération d'E/S sur un fichier fermé"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C init error"
-msgstr ""
+msgstr "Erreur d'initialisation I2C"
 
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "I2C peripheral in use"
@@ -1310,11 +1313,11 @@ msgstr "Le délais au démarrage du micro doit être entre 0.0 et 1.0"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
-msgstr ""
+msgstr "La taille des données ne correspond pas"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched swap flag"
-msgstr ""
+msgstr "Le drapeau d'échange ne correspond pas"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 msgid "Missing MISO or MOSI Pin"
@@ -1388,7 +1391,7 @@ msgstr "Nom trop long"
 
 #: shared-bindings/displayio/TileGrid.c
 msgid "New bitmap must be same size as old bitmap"
-msgstr ""
+msgstr "La taille du nouveau bitmap doit être la même que l'ancien"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 msgid "Nimble out of memory"
@@ -1422,7 +1425,7 @@ msgstr "Aucun périphérique I2S à l'adresse : 0x%x"
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "No IP"
-msgstr ""
+msgstr "Aucune IP"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1633,7 +1636,7 @@ msgstr "Seulement une adresse est autorisée"
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set"
-msgstr ""
+msgstr "Seule une alarme alarm.time peut être définie"
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
@@ -1685,7 +1688,7 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
-msgstr ""
+msgstr "Redémarrage PWM"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
@@ -1873,7 +1876,7 @@ msgstr "Le format de carte SD CSD n'est pas supporté"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "SDCard init"
-msgstr ""
+msgstr "Initialisation SDCard"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
@@ -1891,7 +1894,7 @@ msgstr "La configuration SPI a échoué"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI init error"
-msgstr ""
+msgstr "Erreur d'initialisation SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
@@ -2070,7 +2073,7 @@ msgstr "Pour quitter, SVP redémarrez la carte sans "
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
-msgstr ""
+msgstr "Trop de canaux dans l'échantillon"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -2110,7 +2113,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "UART init"
-msgstr ""
+msgstr "Initialisation UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
@@ -2118,7 +2121,7 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
-msgstr ""
+msgstr "Écriture UART"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
@@ -2182,7 +2185,7 @@ msgstr "Impossible de lire les données de la palette de couleurs"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
-msgstr ""
+msgstr "Impossible de lancer la requête mDNS"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
@@ -2204,12 +2207,12 @@ msgstr "Erreur ESP TLS non gérée %d %d %x %d"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
-msgstr ""
+msgstr "Erreur BLE inconnue à %s:%d : %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error: %d"
-msgstr ""
+msgstr "Erreur BLE inconnue : %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
@@ -2244,7 +2247,7 @@ msgstr "Faute inconnue du logiciel systême : %04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr ""
+msgstr "Erreur du firmware système inconnue : %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #, c-format
@@ -2345,7 +2348,7 @@ msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
-msgstr ""
+msgstr "Wi-Fi : "
 
 #: main.c
 msgid "Woken up by alarm.\n"
@@ -3181,7 +3184,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "init I2C"
-msgstr ""
+msgstr "initialisation I2C"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
@@ -3246,7 +3249,7 @@ msgstr "l'entrée doit être un ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "l'entrée doit être un ndarray, ou un scalaire"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3420,7 +3423,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr ""
+msgstr "mDNS ne fonctionne que avec le WiFi intégré"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3695,7 +3698,7 @@ msgstr "chaîne de longueur impaire"
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "off"
-msgstr ""
+msgstr "inactif"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
@@ -4339,7 +4342,7 @@ msgstr "type d'entrée incorrect"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
-msgstr ""
+msgstr "mauvaise taille du tableau de condition"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
