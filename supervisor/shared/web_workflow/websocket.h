@@ -24,34 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/hashlib/Hash.h"
+#pragma once
 
-#include "components/mbedtls/mbedtls/include/mbedtls/ssl.h"
+#include <stdbool.h>
 
-void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen) {
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        mbedtls_sha1_update_ret(&self->sha1, data, datalen);
-        return;
-    }
-}
+#include "shared-bindings/socketpool/Socket.h"
 
-void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen) {
-    if (datalen < common_hal_hashlib_hash_get_digest_size(self)) {
-        return;
-    }
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        // We copy the sha1 state so we can continue to update if needed or get
-        // the digest a second time.
-        mbedtls_sha1_context copy;
-        mbedtls_sha1_clone(&copy, &self->sha1);
-        mbedtls_sha1_finish_ret(&self->sha1, data);
-        mbedtls_sha1_clone(&self->sha1, &copy);
-    }
-}
-
-size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self) {
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        return 20;
-    }
-    return 0;
-}
+void websocket_init(void);
+void websocket_handoff(socketpool_socket_obj_t *socket);
+bool websocket_connected(void);
+bool websocket_available(void);
+char websocket_read_char(void);
+void websocket_write(const char *text, size_t len);

@@ -45,6 +45,10 @@
 #include "tusb.h"
 #endif
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/websocket.h"
+#endif
+
 /*
  * Note: DEBUG_UART currently only works on STM32 and nRF.
  * Enabling on another platform will cause a crash.
@@ -165,6 +169,13 @@ bool serial_connected(void) {
     }
     #endif
 
+    #if CIRCUITPY_WEB_WORKFLOW
+    if (websocket_connected()) {
+        return true;
+    }
+    #endif
+
+
     if (port_serial_connected()) {
         return true;
     }
@@ -192,6 +203,12 @@ char serial_read(void) {
     #if CIRCUITPY_SERIAL_BLE
     if (ble_serial_available() > 0) {
         return ble_serial_read_char();
+    }
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    if (websocket_available()) {
+        return websocket_read_char();
     }
     #endif
 
@@ -225,6 +242,12 @@ bool serial_bytes_available(void) {
 
     #if CIRCUITPY_SERIAL_BLE
     if (ble_serial_available()) {
+        return true;
+    }
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    if (websocket_available()) {
         return true;
     }
     #endif
@@ -269,6 +292,10 @@ void serial_write_substring(const char *text, uint32_t length) {
 
     #if CIRCUITPY_SERIAL_BLE
     ble_serial_write(text, length);
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    websocket_write(text, length);
     #endif
 
     #if CIRCUITPY_USB_CDC

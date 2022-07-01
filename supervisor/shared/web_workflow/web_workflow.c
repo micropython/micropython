@@ -39,8 +39,11 @@
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
+#include "supervisor/shared/web_workflow/websocket.h"
 #include "supervisor/usb.h"
 
+#include "shared-bindings/hashlib/__init__.h"
+#include "shared-bindings/hashlib/Hash.h"
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
 #include "shared-bindings/socketpool/__init__.h"
@@ -260,20 +263,19 @@ void supervisor_start_web_workflow(void) {
     active.num = -1;
     active.connected = false;
 
+    websocket_init();
+
     // TODO:
     // GET /cp/serial.txt
     //   - Most recent 1k of serial output.
     // GET /edit/
     //   - Super basic editor
-    // GET /ws/circuitpython
-    // GET /ws/user
-    //   - WebSockets
     #endif
 }
 
 static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
     int sent = -EAGAIN;
-    while (sent == -EAGAIN) {
+    while (sent == -EAGAIN && common_hal_socketpool_socket_get_connected(socket)) {
         sent = socketpool_socket_send(socket, buf, len);
     }
     if (sent < len) {
@@ -851,17 +853,39 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
 
+
+
 static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *request) {
     ESP_LOGI(TAG, "websocket!");
     // Compute accept key
+    hashlib_hash_obj_t hash;
+    common_hal_hashlib_new(&hash, "sha1");
+    common_hal_hashlib_hash_update(&hash, (const uint8_t *)request->websocket_key, strlen(request->websocket_key));
+    const char *magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    common_hal_hashlib_hash_update(&hash, (const uint8_t *)magic_string, strlen(magic_string));
+    size_t digest_size = common_hal_hashlib_hash_get_digest_size(&hash);
+    size_t encoded_size = (digest_size + 1) * 4 / 3 + 1;
+    uint8_t encoded_accept[encoded_size];
+    common_hal_hashlib_hash_digest(&hash, encoded_accept, sizeof(encoded_accept));
+    _base64_in_place((char *)encoded_accept, digest_size, encoded_size);
+
     // Reply with upgrade
-    // Copy socket state into websocket and mark given socket as closed even though it isn't actually.
+    _send_strs(socket, "HTTP/1.1 101 Switching Protocols\r\n",
+        "Upgrade: websocket\r\n",
+        "Connection: Upgrade\r\n",
+        "Sec-WebSocket-Accept: ", encoded_accept, "\r\n",
+        "\r\n", NULL);
+    websocket_handoff(socket);
+
+    ESP_LOGI(TAG, "socket upgrade done");
+    // socket is now closed and "disconnected".
 }
 
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
+        ESP_LOGI(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
@@ -995,7 +1019,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
         } else if (strcmp(path, "/serial/") == 0) {
-            if (!request->authenticated) {
+            if (false && !request->authenticated) {
                 if (_api_password[0] != '\0') {
                     _reply_unauthorized(socket, request);
                 } else {
@@ -1007,7 +1031,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             } else {
                 _REPLY_STATIC(socket, request, serial_html);
             }
-            _reply_with_version_json(socket, request);
         } else {
             _reply_missing(socket, request);
         }
@@ -1177,6 +1200,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         return;
     }
     bool reload = _reply(socket, request);
+    ESP_LOGI(TAG, "reply done");
     _reset_request(request);
     autoreload_resume(AUTORELOAD_SUSPEND_WEB);
     if (reload) {
@@ -1194,10 +1218,12 @@ void supervisor_web_workflow_background(void) {
         uint32_t port;
         int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
         if (newsoc == -EBADF) {
+            ESP_LOGI(TAG, "listen closed");
             common_hal_socketpool_socket_close(&listening);
             return;
         }
         if (newsoc > 0) {
+            ESP_LOGI(TAG, "new socket %d", newsoc);
             // Close the active socket because we have another we accepted.
             if (!common_hal_socketpool_socket_get_closed(&active)) {
                 common_hal_socketpool_socket_close(&active);
@@ -1218,6 +1244,7 @@ void supervisor_web_workflow_background(void) {
 
     // If we have a request in progress, continue working on it.
     if (common_hal_socketpool_socket_get_connected(&active)) {
+        ESP_LOGI(TAG, "active connected");
         _process_request(&active, &active_request);
     }
 }
