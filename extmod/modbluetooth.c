@@ -1675,4 +1675,6 @@ int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, 
     return entry ? 0 : MP_EINVAL;
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_t bluetooth);
+
 #endif // MICROPY_PY_BLUETOOTH
