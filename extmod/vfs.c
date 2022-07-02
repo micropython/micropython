@@ -547,4 +547,7 @@ int mp_vfs_mount_and_chdir_protected(mp_obj_t bdev, mp_obj_t mount_point) {
     return ret;
 }
 
+MP_REGISTER_ROOT_POINTER(struct _mp_vfs_mount_t *vfs_cur);
+MP_REGISTER_ROOT_POINTER(struct _mp_vfs_mount_t *vfs_mount_table);
+
 #endif // MICROPY_VFS
