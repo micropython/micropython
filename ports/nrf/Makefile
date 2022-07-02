@@ -61,8 +61,6 @@ include ../../extmod/extmod.mk
 GIT_SUBMODULES = lib/nrfx lib/tinyusb
 
 MICROPY_VFS_FAT ?= 0
-MPY_CROSS = ../../mpy-cross/mpy-cross
-MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE ?= arm-none-eabi-
 
