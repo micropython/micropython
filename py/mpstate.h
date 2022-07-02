@@ -154,30 +154,8 @@ typedef struct _mp_state_vm_t {
     mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH];
     #endif
 
-    // current exception being handled, for sys.exc_info()
-    #if MICROPY_PY_SYS_EXC_INFO
-    mp_obj_base_t *cur_exception;
-    #endif
-
-    #if MICROPY_PY_SYS_ATEXIT
-    // exposed through sys.atexit function
-    mp_obj_t sys_exitfunc;
-    #endif
-
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
-
-    #if MICROPY_PY_SYS
-    // If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is not enabled then these two lists
-    // must be initialised after the call to mp_init.
-    mp_obj_list_t mp_sys_path_obj;
-    mp_obj_list_t mp_sys_argv_obj;
-
-    #if MICROPY_PY_SYS_ATTR_DELEGATION
-    // Contains mutable sys attributes.
-    mp_obj_t sys_mutable[MP_SYS_MUTABLE_NUM];
-    #endif
-    #endif
 
     // dictionary for overridden builtins
     #if MICROPY_CAN_OVERRIDE_BUILTINS
