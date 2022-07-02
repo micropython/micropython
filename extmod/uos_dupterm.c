@@ -201,4 +201,6 @@ STATIC mp_obj_t mp_uos_dupterm(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_dupterm_obj, 1, 2, mp_uos_dupterm);
 
-#endif
+MP_REGISTER_ROOT_POINTER(mp_obj_t dupterm_objs[MICROPY_PY_OS_DUPTERM]);
+
+#endif // MICROPY_PY_OS_DUPTERM
