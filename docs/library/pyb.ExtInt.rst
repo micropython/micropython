@@ -21,7 +21,7 @@ Note: ExtInt will automatically configure the gpio line as an input. ::
 Now every time a falling edge is seen on the X1 pin, the callback will be
 called. Caution: mechanical pushbuttons have "bounce" and pushing or
 releasing a switch will often generate multiple edges.
-See: http://www.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
+See: https://my.eng.utah.edu/~cs5780/debouncing.pdf for a detailed
 explanation, along with various techniques for debouncing.
 
 Trying to register 2 callbacks onto the same pin will throw an exception.

@@ -18,7 +18,7 @@ of Git for your operating system to follow through the rest of the steps.
 .. note::
    For a reference on the installation instructions, please refer to
    the `Git installation instructions <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`_.
-   Learn about the basic git commands in this `Git Handbook <https://guides.github.com/introduction/git-handbook/>`_
+   Learn about the basic git commands in this `Git Handbook <https://docs.github.com/en/get-started/using-git/about-git>`_
    or any other sources on the internet.
 
 .. note::
@@ -112,10 +112,10 @@ Check that you have Python available on your system:
 .. code-block:: bash
 
    $ python3
-   Python 3.5.0 (default, Jul 17 2020, 14:04:10) 
+   Python 3.5.0 (default, Jul 17 2020, 14:04:10)
    [GCC 5.4.0 20160609] on linux
    Type "help", "copyright", "credits" or "license" for more information.
-   >>> 
+   >>>
 
 All supported ports have different dependency requirements, see their respective
 `readme files <https://github.com/micropython/micropython/tree/master/ports>`_.
@@ -201,7 +201,7 @@ Building the Windows port
 The Windows port includes a Visual Studio project file micropython.vcxproj that you can use to build micropython.exe.
 It can be opened in Visual Studio or built from the command line using msbuild. Alternatively, it can be built using mingw,
 either in Windows with Cygwin, or on Linux.
-See `windows port documentation <https://github.com/micropython/micropython/tree/master/ports/windows>`_ for more information.
+See `Windows port documentation <https://github.com/micropython/micropython/tree/master/ports/windows>`_ for more information.
 
 Building the STM32 port
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -314,7 +314,7 @@ extmod
 
 docs
 
-  Has the standard documentation found at https://docs.micropython.org/.
+  Has the standard documentation found at https://docs.micropython.org/en/latest/.
 
 tests
 
@@ -322,7 +322,7 @@ tests
 
 tools
 
-  Contains helper tools including the ``upip`` and the ``pyboard.py`` module.
+  Contains helper tools including the ``upip``, ``mpremote``, and the ``pyboard.py`` module.
 
 examples
 

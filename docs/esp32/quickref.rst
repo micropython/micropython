@@ -233,7 +233,7 @@ PWM (pulse width modulation)
 PWM can be enabled on all output-enabled pins. The base frequency can
 range from 1Hz to 40MHz but there is a tradeoff; as the base frequency
 *increases* the duty resolution *decreases*. See
-`LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/ledc.html>`_
+`LED Control <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/ledc.html>`_
 for more details.
 
 Use the :ref:`machine.PWM <machine.PWM>` class::
@@ -702,7 +702,7 @@ Note that TouchPads can be used to wake an ESP32 from sleep::
     machine.lightsleep()        # put the MCU to sleep until a touchpad is touched
 
 For more details on touchpads refer to `Espressif Touch Sensor
-<https://docs.espressif.com/projects/esp-idf/en/latest/api-reference/peripherals/touch_pad.html>`_.
+<https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/touch_pad.html>`_.
 
 
 DHT driver
@@ -752,5 +752,5 @@ for file transfer (both upload and download).  The web client has buttons for
 the corresponding functions, or you can use the command-line client
 ``webrepl_cli.py`` from the repository above.
 
-See the MicroPython forum for other community-supported alternatives
+See the `MicroPython forum <https://forum.micropython.org>`_ for other community-supported alternatives
 to transfer files to an ESP32 board.

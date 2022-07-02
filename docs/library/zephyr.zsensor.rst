@@ -15,7 +15,7 @@ class Sensor --- sensor control for the Zephyr port
 
 Use this class to access data from sensors on your board.
 See Zephyr documentation for sensor usage here: `Sensors
-<https://docs.zephyrproject.org/latest/reference/peripherals/sensor.html?highlight=sensor#sensors>`_.
+<hhttps://docs.zephyrproject.org/latest/hardware/peripherals/sensor.html>`_.
 
 Sensors are defined in the Zephyr devicetree for each board. The quantities that a given sensor can
 measure are called a sensor channels. Sensors can have multiple channels to represent different axes

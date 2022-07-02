@@ -541,6 +541,7 @@ Transferring files
 ------------------
 
 Files can be transferred to the i.MXRT devices for instance with the ``mpremote``
-tool or using an SD card.  If Ethernet is available, you can also use ftp.
-See the MicroPython forum for the FTP server or other community-supported
-alternatives to transfer files to an i.MXRT board, like rshell or Thonny.
+tool or using an SD card.  If Ethernet is available, you can also use FTP.
+See the `MicroPython forum <https://forum.micropython.org>`_  for the FTP server
+or other community-supported alternatives to transfer files to an i.MXRT board, like
+``rshell`` or Thonny.

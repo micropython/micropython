@@ -1,11 +1,11 @@
 Fading LEDs
 ===========
 
-In addition to turning LEDs on and off, it is also possible to control the brightness of an LED using `Pulse-Width Modulation (PWM) <http://en.wikipedia.org/wiki/Pulse-width_modulation>`_, a common technique for obtaining variable output from a digital pin. This allows us to fade an LED:
+In addition to turning LEDs on and off, it is also possible to control the brightness of an LED using `Pulse-Width Modulation (PWM) <https://en.wikipedia.org/wiki/Pulse-width_modulation>`_, a common technique for obtaining variable output from a digital pin. This allows us to fade an LED:
 
 .. only:: not latex
 
-   .. image:: http://upload.wikimedia.org/wikipedia/commons/a/a9/Fade.gif
+   .. image:: https://upload.wikimedia.org/wikipedia/commons/a/a9/Fade.gif
 
 Components
 ----------
@@ -15,7 +15,7 @@ You will need:
 - Standard 5 or 3 mm LED
 - 100 Ohm resistor
 - Wires
-- `Breadboard <http://en.wikipedia.org/wiki/Breadboard>`_ (optional, but makes things easier)
+- `Breadboard <https://en.wikipedia.org/wiki/Breadboard>`_ (optional, but makes things easier)
 
 Connecting Things Up
 --------------------
@@ -82,7 +82,7 @@ If we want to have a breathing effect, where the LED fades from dim to bright th
 Advanced Exercise
 -----------------
 
-You may have noticed that the LED brightness seems to fade slowly, but increases quickly. This is because our eyes interprets brightness logarithmically (`Weber's Law <http://www.telescope-optics.net/eye_intensity_response.htm>`_
+You may have noticed that the LED brightness seems to fade slowly, but increases quickly. This is because our eyes interprets brightness logarithmically (`Weber's Law <https://www.telescope-optics.net/eye_intensity_response.htm>`_
 ), while the LED's brightness changes linearly, that is by the same amount each time. How do you solve this problem? (Hint: what is the opposite of the logarithmic function?)
 
 Addendum

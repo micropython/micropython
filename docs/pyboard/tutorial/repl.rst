@@ -24,19 +24,19 @@ navigate to the pyboard's USB drive, and select that.  It should then install.
 After installing, go back to the Device Manager to find the installed pyboard,
 and see which COM port it is (eg COM4).
 More comprehensive instructions can be found in the
-`Guide for pyboard on Windows (PDF) <http://micropython.org/resources/Micro-Python-Windows-setup.pdf>`_.
+`Guide for pyboard on Windows (PDF) <https://micropython.org/resources/Micro-Python-Windows-setup.pdf>`_.
 Please consult this guide if you are having problems installing the driver.
 
 You now need to run your terminal program.  You can use HyperTerminal if you
 have it installed, or download the free program PuTTY:
-`putty.exe <http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html>`_.
+`putty.exe <https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html>`_.
 Using your serial program you must connect to the COM port that you found in the
 previous step.  With PuTTY, click on "Session" in the left-hand panel, then click
 the "Serial" radio button on the right, then enter you COM port (eg COM4) in the
 "Serial Line" box.  Finally, click the "Open" button.
 
-Mac OS X
---------
+macOS
+-----
 
 Open a terminal and run::
 
@@ -95,7 +95,7 @@ Resetting the board
 If something goes wrong, you can reset the board in two ways. The first is to press CTRL-D
 at the MicroPython prompt, which performs a soft reset.  You will see a message something like ::
 
-    >>> 
+    >>>
     MPY: sync filesystems
     MPY: soft reboot
     Micro Python v1.0 on 2014-05-03; PYBv1.0 with STM32F405RG

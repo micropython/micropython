@@ -4,7 +4,7 @@
 class FlashArea -- access to built-in flash storage
 ===================================================
 
-Uses `Zephyr flash map API <https://docs.zephyrproject.org/latest/reference/storage/flash_map/flash_map.html#flash-map>`_.
+Uses `Zephyr flash map API <https://docs.zephyrproject.org/latest/services/storage/flash_map/flash_map.html>`_.
 
 This class allows access to device flash partition data.
 Flash area structs consist of a globally unique ID number, the name of the flash device the partition is in,

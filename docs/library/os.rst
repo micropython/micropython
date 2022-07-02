@@ -218,10 +218,10 @@ represented by VFS classes.
     .. note:: There are reports of littlefs v2 failing in certain situations,
               for details see `littlefs issue 295`_.
 
-.. _littlefs v1 filesystem format: https://github.com/ARMmbed/littlefs/tree/v1
-.. _littlefs v2 filesystem format: https://github.com/ARMmbed/littlefs
-.. _littlefs issue 295: https://github.com/ARMmbed/littlefs/issues/295
-.. _littlefs issue 347: https://github.com/ARMmbed/littlefs/issues/347
+.. _littlefs v1 filesystem format: https://github.com/littlefs-project/littlefs/tree/v1
+.. _littlefs v2 filesystem format: https://github.com/littlefs-project/littlefs
+.. _littlefs issue 295: https://github.com/littlefs-project/littlefs/issues/295
+.. _littlefs issue 347: https://github.com/littlefs-project/littlefs/issues/347
 
 Block devices
 -------------
