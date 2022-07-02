@@ -198,10 +198,6 @@ typedef struct _mp_state_vm_t {
 
     // root pointers for extmod
 
-    #if MICROPY_PY_LWIP_SLIP
-    mp_obj_t lwip_slip_stream;
-    #endif
-
     #if MICROPY_VFS
     struct _mp_vfs_mount_t *vfs_cur;
     struct _mp_vfs_mount_t *vfs_mount_table;
