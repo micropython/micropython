@@ -196,12 +196,6 @@ typedef struct _mp_state_vm_t {
     #include "genhdr/root_pointers.h"
     #endif
 
-    // root pointers for extmod
-
-    #if MICROPY_PY_BLUETOOTH
-    mp_obj_t bluetooth;
-    #endif
-
     //
     // END ROOT POINTER SECTION
     ////////////////////////////////////////////////////////////
