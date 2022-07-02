@@ -12,8 +12,6 @@
 #define MICROPY_PY_MATH                 (0)
 #define MICROPY_PY_CMATH                (0)
 
-#define MICROPY_HW_FLASH_STORAGE_BASE   (0x30000)
-#define MICROPY_HW_FLASH_STORAGE_BYTES  (0xFFFF)
 #define VFS_BLOCK_SIZE_BYTES            (1536) // 24x 64B flash pages;
 
 #define MICROPY_HW_UART_TXBUF           (1)
