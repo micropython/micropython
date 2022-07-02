@@ -52,6 +52,10 @@
 #include "shared-bindings/_bleio/ScanEntry.h"
 #include "shared-bindings/time/__init__.h"
 
+#if CIRCUITPY_DOTENV
+#include "shared-module/dotenv/__init__.h"
+#endif
+
 #define BLE_MIN_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_MAX_CONN_INTERVAL        MSEC_TO_UNITS(15, UNIT_0_625_MS)
 #define BLE_SLAVE_LATENCY            0
@@ -329,18 +333,30 @@ STATIC void get_address(bleio_adapter_obj_t *self, ble_gap_addr_t *address) {
 char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0, 0};
 
 STATIC void bleio_adapter_reset_name(bleio_adapter_obj_t *self) {
-    uint8_t len = sizeof(default_ble_name) - 1;
-
-    ble_gap_addr_t local_address;
-    get_address(self, &local_address);
-
-    default_ble_name[len - 4] = nibble_to_hex_lower[local_address.addr[1] >> 4 & 0xf];
-    default_ble_name[len - 3] = nibble_to_hex_lower[local_address.addr[1] & 0xf];
-    default_ble_name[len - 2] = nibble_to_hex_lower[local_address.addr[0] >> 4 & 0xf];
-    default_ble_name[len - 1] = nibble_to_hex_lower[local_address.addr[0] & 0xf];
+    // setup the default name
+    ble_gap_addr_t addr; // local_address
+    get_address(self, &addr);
+    mp_int_t len = sizeof(default_ble_name) - 1;
+    default_ble_name[len - 4] = nibble_to_hex_lower[addr.addr[1] >> 4 & 0xf];
+    default_ble_name[len - 3] = nibble_to_hex_lower[addr.addr[1] & 0xf];
+    default_ble_name[len - 2] = nibble_to_hex_lower[addr.addr[0] >> 4 & 0xf];
+    default_ble_name[len - 1] = nibble_to_hex_lower[addr.addr[0] & 0xf];
     default_ble_name[len] = '\0'; // for now we add null for compatibility with C ASCIIZ strings
 
-    common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
+    mp_int_t name_len = 0;
+
+    #if CIRCUITPY_DOTENV
+    char ble_name[32];
+    name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
+    if (name_len > 0) {
+        ble_name[name_len] = '\0';
+        common_hal_bleio_adapter_set_name(self, (char *)ble_name);
+    }
+    #endif
+
+    if (name_len <= 0) {
+        common_hal_bleio_adapter_set_name(self, (char *)default_ble_name);
+    }
 }
 
 static void bluetooth_adapter_background(void *data) {
@@ -448,7 +464,17 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *na
     ble_gap_conn_sec_mode_t sec;
     sec.lv = 0;
     sec.sm = 0;
-    sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, strlen(name));
+    int result;
+    result = sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, strlen(name));
+    for (int name_len = strlen(name); name_len > 0; --name_len) {
+        result = sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, name_len);
+        // expecting NRF_ERROR_DATA_SIZE when name too long
+        if (result == NRF_SUCCESS) {
+            return;
+        }
+    }
+    // default back to default if all fails
+    sd_ble_gap_device_name_set(&sec, (const uint8_t *)default_ble_name, sizeof(default_ble_name) - 1);
 }
 
 STATIC uint32_t _update_identities(bool is_central) {
