@@ -644,3 +644,8 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
 #endif // MICROPY_PERSISTENT_CODE_SAVE_FILE
 
 #endif // MICROPY_PERSISTENT_CODE_SAVE
+
+#if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
+// An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
+MP_REGISTER_ROOT_POINTER(mp_obj_t track_reloc_code_list);
+#endif
