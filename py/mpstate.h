@@ -150,10 +150,6 @@ typedef struct _mp_state_vm_t {
     // dictionary with loaded modules (may be exposed as sys.modules)
     mp_obj_dict_t mp_loaded_modules_dict;
 
-    #if MICROPY_ENABLE_SCHEDULER
-    mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH];
-    #endif
-
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 

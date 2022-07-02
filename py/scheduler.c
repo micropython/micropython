@@ -196,6 +196,8 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
 }
 #endif
 
+MP_REGISTER_ROOT_POINTER(mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH]);
+
 #endif // MICROPY_ENABLE_SCHEDULER
 
 // Called periodically from the VM or from "waiting" code (e.g. sleep) to
