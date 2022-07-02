@@ -42,7 +42,7 @@ SRC_C = \
 	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
 
-SRC_QSTR += shared/readline/readline.c
+SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
