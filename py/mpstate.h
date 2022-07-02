@@ -184,11 +184,6 @@ typedef struct _mp_state_vm_t {
     mp_obj_dict_t *mp_module_builtins_override_dict;
     #endif
 
-    #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-    // An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
-    mp_obj_t track_reloc_code_list;
-    #endif
-
     // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
     #ifndef NO_QSTR
     // Only include root pointer definitions when not doing qstr extraction, because
