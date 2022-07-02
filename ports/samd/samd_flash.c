@@ -53,11 +53,13 @@ typedef struct _samd_flash_obj_t {
     uint32_t flash_size;
 } samd_flash_obj_t;
 
+extern uint8_t _oflash_fs, _sflash_fs;
+
 // Build a Flash storage at top.
 STATIC samd_flash_obj_t samd_flash_obj = {
     .base = { &samd_flash_type },
-    .flash_base = MICROPY_HW_FLASH_STORAGE_BASE, // Board specific: mpconfigboard.h
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES, // Board specific: mpconfigboard.h
+    .flash_base = (uint32_t)&_oflash_fs, // Get from MCU-Specific loader script.
+    .flash_size = (uint32_t)&_sflash_fs, // Get from MCU-Specific loader script.
 };
 
 // FLASH stuff
