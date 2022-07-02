@@ -464,17 +464,11 @@ void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *na
     ble_gap_conn_sec_mode_t sec;
     sec.lv = 0;
     sec.sm = 0;
-    int result;
-    result = sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, strlen(name));
-    for (int name_len = strlen(name); name_len > 0; --name_len) {
-        result = sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, name_len);
-        // expecting NRF_ERROR_DATA_SIZE when name too long
-        if (result == NRF_SUCCESS) {
-            return;
-        }
+    uint16_t len = strlen(name);
+    if (len > BLE_GAP_DEVNAME_MAX_LEN) {
+        len = BLE_GAP_DEVNAME_MAX_LEN;
     }
-    // default back to default if all fails
-    sd_ble_gap_device_name_set(&sec, (const uint8_t *)default_ble_name, sizeof(default_ble_name) - 1);
+    sd_ble_gap_device_name_set(&sec, (const uint8_t *)name, len);
 }
 
 STATIC uint32_t _update_identities(bool is_central) {

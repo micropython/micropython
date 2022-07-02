@@ -106,6 +106,9 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         char ble_name[32];
         name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
         if (name_len > 0) {
+            if (name_len > MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH) {
+                name_len = MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH;
+            }
             ble_name[name_len] = '\0';
             ble_svc_gap_device_name_set(ble_name);
         } else {
