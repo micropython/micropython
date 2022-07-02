@@ -286,4 +286,24 @@ const mp_obj_module_t mp_module_sys = {
 
 MP_REGISTER_MODULE(MP_QSTR_usys, mp_module_sys);
 
+// If MICROPY_PY_SYS_PATH_ARGV_DEFAULTS is not enabled then these two lists
+// must be initialised after the call to mp_init.
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_sys_path_obj);
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t mp_sys_argv_obj);
+
+#if MICROPY_PY_SYS_EXC_INFO
+// current exception being handled, for sys.exc_info()
+MP_REGISTER_ROOT_POINTER(mp_obj_base_t * cur_exception);
 #endif
+
+#if MICROPY_PY_SYS_ATEXIT
+// exposed through sys.atexit function
+MP_REGISTER_ROOT_POINTER(mp_obj_t sys_exitfunc);
+#endif
+
+#if MICROPY_PY_SYS_ATTR_DELEGATION
+// Contains mutable sys attributes.
+MP_REGISTER_ROOT_POINTER(mp_obj_t sys_mutable[MP_SYS_MUTABLE_NUM]);
+#endif
+
+#endif // MICROPY_PY_SYS
