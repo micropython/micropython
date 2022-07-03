@@ -11,7 +11,7 @@ the set of rows is different.
 
 .. _samd21_pinout_table:
 
-Adafruit ItsyBitsy M0 Express pin assignment Table
+Adafruit ItsyBitsy M0 Express pin assignment table
 --------------------------------------------------
 
 |
@@ -138,7 +138,7 @@ The DAC output for the Adafruit ItsyBitsy M0 Express board is avalable at the pi
 
 .. _samd51_pinout_table:
 
-Adafruit ItsyBitsy M4 Express pin assignment Table
+Adafruit ItsyBitsy M4 Express pin assignment table
 --------------------------------------------------
 
 |
@@ -266,7 +266,7 @@ The DAC outputs for the Adafruit ItsyBitsy M4 Express board are avalable at the 
 |
 |
 
-Adafruit Feather M4 Express pin assignment Table
+Adafruit Feather M4 Express pin assignment table
 ------------------------------------------------
 
 |
@@ -320,7 +320,7 @@ The default devices at the board are:
 |
 |
 
-SEEED XIAO pin assignment Table
+SEEED XIAO pin assignment table
 -------------------------------
 
 |
@@ -354,7 +354,7 @@ The default devices at the board are:
 |
 |
 
-Adafruit Feather M0 Express pin assignment Table
+Adafruit Feather M0 Express pin assignment table
 ------------------------------------------------
 
 |
@@ -406,7 +406,7 @@ The default devices at the board are:
 |
 |
 
-Adafruit Trinket M0 pin assignment Table
+Adafruit Trinket M0 pin assignment table
 ------------------------------------------------
 
 |
@@ -496,7 +496,7 @@ is on pin 32, labeled EXT3_PIN3
 |
 |
 
-Minisam M4 pin assignment Table
+Minisam M4 pin assignment table
 -------------------------------
 
 |
@@ -540,7 +540,7 @@ The default devices at the board are:
 |
 |
 
-Seeed WIO Terminal pin assignment Table
+Seeed WIO Terminal pin assignment table
 ---------------------------------------
 
 |
@@ -575,6 +575,60 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 There seems to be no default pin assignment for this board. 
 
+|
+|
+
+Spakrfun SAMD51 Thing Plus pin assignment table
+------------------------------------------------
+
+|
+
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+  0 PA13           D0  13    -    -    2/1    4/0   2/1   0/7   1/3
+  1 PA12           D1  12    -    -    2/0    4/1   2/0   0/6   1/2
+  2 PB23          RXD   7    -    -    1/3    5/3   7/1    -     - 
+  3 PB22          TXD  22    -    -    1/2    5/2   7/0    -     - 
+  4 PA06           D4   6    6    -     -     0/2   1/0    -     - 
+  5 PA15           D5  15    -    -    2/3    4/3   3/1   2/1   1/3
+  6 PA20           D6   4    -    -    5/2    3/2   7/0   1/4   0/0
+  7 PA21           D7   5    -    -    5/3    3/3   7/1   1/5   0/1
+  9 PA07           D9   7    7    -     -     0/3   1/1    -     - 
+ 10 PA18          D10   2    -    -    1/2    3/2   3/0   1/2   0/6
+ 11 PA16          D11   0    -    -    1/0    3/1   2/0   1/0   0/4
+ 12 PA19          D12   3    -    -    1/3    3/3   3/1   1/3   0/7
+ 13 PA17          D13   1    -    -    1/1    3/0   2/1   1/1   0/5
+ 14 PA02           A0   2    0    -     -      -     -     -     - 
+ 15 PB08           A1   8    2    0     -     4/0   4/0    -     - 
+ 16 PB09           A2   9    3    1     -     4/1   4/1    -     - 
+ 17 PA04           A3   4    4    -     -     0/0   0/0    -     - 
+ 18 PA05           A4   5    5    -     -     0/1   0/1    -     - 
+ 19 PB02           A5   2   14    -     -     5/0   6/0   2/2    - 
+ 20 PA22          SDA   6    -    -    3/0    5/1   4/0   1/6   0/2
+ 21 PA23          SCL   7    -    -    3/1    5/0   4/1   1/7   0/3
+ 22 PB12         MOSI  12    -    -    4/0     -    4/0   3/0   0/0
+ 23 PB11         MISO  12    -    -     -     4/3   5/1   0/5   1/1
+ 24 PB13          SCK  13    -    -    4/1     -    4/1   3/1   0/1
+ 25 PA08   FLASH_MOSI   -    8    2    0/0    2/1   0/0   0/0   1/4
+ 26 PA09    FLASH_SCK   9    9    3    0/1    2/0   0/1   0/1   1/5
+ 27 PA10     FLASH_CS  10   10    -    0/2    2/2   1/0   0/2   1/6
+ 28 PA11   FLASH_MISO  11   11    -    0/3    2/3   1/1   0/3   1/7
+ 29 PA30       SWDCLK  14    -    -    7/2    1/2   6/0   2/0    - 
+ 30 PA31        SWDIO  15    -    -    7/3    1/3   6/1   2/1    - 
+=== ==== ============ ==== ==== ==== ====== ====== ===== ===== =====
+
+For the definition of the table columns see the explanation at the table for
+Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
+
+The default devices at the board are:
+
+- UART 1 at pins 2/3, labeled RX/TX
+- I2C 5 at pins 20/21, labeled SDA/SCL
+- SPI 4 at pins 22/23/24, labeled MOSI, MISO and SCK
+- DAC output on pins 14 and 18, labeled A0 and A4
+
+|
 
 Scripts for creating the pin assignment tables
 ----------------------------------------------
