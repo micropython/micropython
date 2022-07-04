@@ -355,9 +355,13 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     } else if (mp_obj_is_float(arg)) {
         val = mp_obj_float_get(arg);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_FLOAT_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL && mp_obj_is_float(arg)) {
+            val = mp_obj_float_get(arg);
+        } else {
+            return false;
+        }
     }
-
     *value = val;
     return true;
 }
@@ -399,7 +403,12 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
     } else if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_COMPLEX_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL && mp_obj_is_type(arg, &mp_type_complex)) {
+            mp_obj_complex_get(arg, real, imag);
+        } else {
+            return false;
+        }
     }
     return true;
 }
