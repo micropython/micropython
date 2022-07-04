@@ -8,3 +8,5 @@ include(
     l2cap=True,
     security=True,
 )
+if os.path.isdir(convert_path("$(MPY_LIB_DIR)")):
+    freeze("$(MPY_LIB_DIR)/python-ecosys/urequests", "urequests.py")
