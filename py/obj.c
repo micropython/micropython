@@ -412,7 +412,20 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
     } else if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        return false;
+        // Call __complex__() function if it exists.
+        mp_obj_t dest[2];
+        mp_load_method_maybe(arg, MP_QSTR___complex__, dest);
+        if (dest[0] == MP_OBJ_NULL) {
+            // No conversion to complex available
+            return false;
+        }
+        arg = mp_call_method_n_kw(0, 0, dest);
+        if (mp_obj_is_type(arg, &mp_type_complex)) {
+            mp_obj_complex_get(arg, real, imag);
+        } else {
+            // __complex__ returned non-complex value
+            return false;
+        }
     }
     return true;
 }
