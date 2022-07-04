@@ -355,9 +355,22 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     } else if (mp_obj_is_float(arg)) {
         val = mp_obj_float_get(arg);
     } else {
-        return false;
+        // Call __float__() function if it exists.
+        mp_obj_t dest[2];
+        mp_load_method_maybe(arg, MP_QSTR___float__, dest);
+        if (dest[0] != MP_OBJ_NULL) {
+            arg = mp_call_method_n_kw(0, 0, dest);
+            if (mp_obj_is_float(arg)) {
+                val = mp_obj_float_get(arg);
+            } else {
+                // __float__ returned non-float value
+                return false;
+            }
+        } else {
+            // No conversion to float available
+            return false;
+        }
     }
-
     *value = val;
     return true;
 }
