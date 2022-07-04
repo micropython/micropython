@@ -372,6 +372,12 @@ const byte mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     [MP_UNARY_OP_HASH] = MP_QSTR___hash__,
     [MP_UNARY_OP_INT] = MP_QSTR___int__,
+    #if MICROPY_PY_BUILTINS_FLOAT
+    [MP_UNARY_OP_FLOAT_MAYBE] = MP_QSTR___float__,
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    [MP_UNARY_OP_COMPLEX_MAYBE] = MP_QSTR___complex__,
+    #endif
+    #endif
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_UNARY_OP_POSITIVE] = MP_QSTR___pos__,
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
