@@ -16,8 +16,6 @@ endif()
 
 # Use the local tinyusb instead of the one in pico-sdk
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
-# Use the local cyw43_driver instead of the one in pico-sdk
-set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
 # Use the local lwip instead of the one in pico-sdk
 set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
 
@@ -50,6 +48,11 @@ endif()
 # Enable extmod components that will be configured by extmod.cmake.
 # A board may also have enabled additional components.
 set(MICROPY_SSL_MBEDTLS ON)
+
+# Use the local cyw43_driver instead of the one in pico-sdk
+if (MICROPY_PY_NETWORK_CYW43)
+    set(PICO_CYW43_DRIVER_PATH ${MICROPY_DIR}/lib/cyw43-driver)
+endif()
 
 # Include component cmake fragments
 include(${MICROPY_DIR}/py/py.cmake)
