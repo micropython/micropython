@@ -637,7 +637,7 @@ The tables shown above were created with small Python scripts running at the tar
 
 SAMD21 script::
 
-  from samd import pin_info
+  from samd import pininfo
   from machine import Pin
 
   def print_entry(e, txt):
@@ -647,9 +647,9 @@ SAMD21 script::
       else:
           print("%d/%d" % (e >> 4, e & 0x0f), end="")
 
-  def pininfo(pin):
+  def get_pininfo(pin):
       p = Pin(pin)
-      info = pin_info(p)
+      info = pininfo(p)
 
       print("%3d" % pin, end=" ")
       print(repr(p), end="")
@@ -658,24 +658,23 @@ SAMD21 script::
       print(" ADC:%2s" % (info[2] if info[2] != 255 else "-"), end="")
       print_entry(info[3], " Serial1")
       print_entry(info[4], " Serial2")
-      print_entry(info[5], " TC(C)1")
-      print_entry(info[6], " TCC2")
+      print_entry(info[5], " PWM1" if (info[5] >> 4) < 3 else "   TC")
+      print_entry(info[6], " PWM2")
       print()
 
-  def table(num = 50):
+  def table(num=64):
       for i in range(num):
           try:
-              pininfo(i)
+              get_pininfo(i)
           except:
               pass
-              # print("not defined")
 
   table()  
 
 
 SAMD51 script::
 
-  from samd import pin_info
+  from samd import pininfo
   from machine import Pin
 
   def print_entry(e, txt):
@@ -685,9 +684,9 @@ SAMD51 script::
       else:
           print("%d/%d" % (e >> 4, e & 0x0f), end="")
 
-  def pininfo(pin):
+  def get_pininfo(pin):
       p = Pin(pin)
-      info = pin_info(p)
+      info = pininfo(p)
 
       print("%3d" % pin, end=" ")
       print(repr(p), end="")
@@ -702,13 +701,12 @@ SAMD51 script::
       print_entry(info[8], " PWM2")
       print()
 
-  def table(num = 50):
+  def table(num=128):
       for i in range(num):
           try:
-              pininfo(i)
+              get_pininfo(i)
           except:
               pass
-              # print("not defined")
 
   table()
  
