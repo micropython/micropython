@@ -209,11 +209,7 @@ int mboot_get_reset_mode_default(void);
 void mboot_state_change_default(mboot_state_t state, uint32_t arg);
 
 static inline void mboot_state_change(mboot_state_t state, uint32_t arg) {
-    #if defined(MBOOT_BOARD_STATE_CHANGE)
     return MBOOT_BOARD_STATE_CHANGE(state, arg);
-    #else
-    return mboot_state_change_default(state, arg);
-    #endif
 }
 
 #endif // MICROPY_INCLUDED_STM32_MBOOT_MBOOT_H
