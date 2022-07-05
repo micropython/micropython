@@ -248,12 +248,17 @@ extern const struct _mod_network_nic_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_USBDEV_TASK_HOOK
 #endif
 
-#define MICROPY_EVENT_POLL_HOOK \
+#define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \
+        MICROPY_HW_USBDEV_TASK_HOOK \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
+    } while (0)
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        MICROPY_EVENT_POLL_HOOK_FAST; \
         best_effort_wfe_or_timeout(make_timeout_time_ms(1)); \
-        MICROPY_HW_USBDEV_TASK_HOOK \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))

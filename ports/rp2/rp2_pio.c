@@ -657,8 +657,7 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
     for (;;) {
         while (pio_sm_is_rx_fifo_empty(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            MICROPY_EVENT_POLL_HOOK_FAST;
         }
         uint32_t value = pio_sm_get(self->pio, self->sm) >> shift;
         if (dest == NULL) {
@@ -716,8 +715,7 @@ STATIC mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
         }
         while (pio_sm_is_tx_fifo_full(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            MICROPY_EVENT_POLL_HOOK_FAST;
         }
         pio_sm_put(self->pio, self->sm, value << shift);
     }

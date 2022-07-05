@@ -157,9 +157,8 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
     while (!time_reached(t)) {
-        mp_handle_pending(true);
+        MICROPY_EVENT_POLL_HOOK_FAST;
         best_effort_wfe_or_timeout(t);
-        MICROPY_HW_USBDEV_TASK_HOOK
     }
 }
 
