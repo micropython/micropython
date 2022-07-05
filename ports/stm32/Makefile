@@ -242,18 +242,22 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
+#ifndef EXTMOD_SRC_C
 EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
 	modnetwork.c \
 	modusocket.c \
 	)
+#endif
 
+#ifndef DRIVERS_SRC_C
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	bus/softqspi.c \
 	memory/spiflash.c \
 	dht/dht.c \
 	)
+#endif
 
 SRC_C += \
 	boardctrl.c \
@@ -409,7 +413,7 @@ ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4))
     HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H747xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H747xx STM32H750xx STM32H755xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
     HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7))
@@ -538,8 +542,12 @@ OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+#ifneq ($(EXTMOD_SRC_C),"")
 OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
+#endif
+#ifneq ($(DRIVERS_SRC_C),"")
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+#endif
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

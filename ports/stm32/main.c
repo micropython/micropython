@@ -348,8 +348,10 @@ void stm32_main(uint32_t reset_mode) {
     __HAL_FLASH_ART_ENABLE();
     #endif
 
+    #if __CORTEX_M == 7U
     SCB_EnableICache();
     SCB_EnableDCache();
+    #endif
 
     #elif defined(STM32L4)
 
