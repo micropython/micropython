@@ -365,6 +365,11 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                     return mp_obj_new_str((const char *)buf, len);
                 }
             }
+            #if MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+            case MP_QSTR_security: {
+                return MP_OBJ_NEW_SMALL_INT(cyw43_wifi_ap_get_auth(self->cyw));
+            }
+            #endif
             case MP_QSTR_mac: {
                 uint8_t buf[6];
                 cyw43_wifi_get_mac(self->cyw, self->itf, buf);
@@ -419,6 +424,10 @@ STATIC mp_obj_t network_cyw43_config(size_t n_args, const mp_obj_t *args, mp_map
                         } else {
                             self->cyw->trace_flags &= ~CYW43_TRACE_MAC;
                         }
+                        break;
+                    }
+                    case MP_QSTR_security: {
+                        cyw43_wifi_ap_set_auth(self->cyw, mp_obj_get_int(e->value));
                         break;
                     }
                     case MP_QSTR_key:
