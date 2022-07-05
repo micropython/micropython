@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-03 00:22+0000\n"
+"PO-Revision-Date: 2022-07-06 05:15+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -1074,8 +1074,9 @@ msgstr "Groupe déjà utilisé"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
+#, fuzzy
 msgid "Half duplex SPI is not implemented"
-msgstr ""
+msgstr "Le half duplex du SPI n'est pas implémenté"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
@@ -1212,8 +1213,9 @@ msgid "Internal error #%d"
 msgstr "Erreur interne #%d"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Internal watchdog timer expired."
-msgstr ""
+msgstr "Le minuteur du watchdog interne a expiré."
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -1307,8 +1309,9 @@ msgid "MAC address was invalid"
 msgstr "Adresse physique (MAC) invalide"
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
+#, fuzzy
 msgid "Mapping must be a tuple"
-msgstr ""
+msgstr "Le mapping doit être un tuple"
 
 #: shared-module/displayio/Shape.c
 #, c-format
@@ -1403,8 +1406,9 @@ msgid "New bitmap must be same size as old bitmap"
 msgstr "La taille du nouveau bitmap doit être la même que l'ancien"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
+#, fuzzy
 msgid "Nimble out of memory"
-msgstr ""
+msgstr "Nimble n'a plus de mémoire"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -1912,7 +1916,7 @@ msgstr "Périphérique SPI utilisé"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI re-init"
-msgstr ""
+msgstr "Ré-initialisation du SPI"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
@@ -2118,7 +2122,7 @@ msgstr "Paramètre de type tuple ou struct_time requis"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
-msgstr ""
+msgstr "Dé-initialisation du UART"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/espressif/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
@@ -2127,7 +2131,7 @@ msgstr "Initialisation UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
-msgstr ""
+msgstr "Ré-initialisation du UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
@@ -2745,7 +2749,7 @@ msgstr "typage"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "channel re-init"
-msgstr ""
+msgstr "Ré-initialisation du canal"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -3834,7 +3838,7 @@ msgstr ""
 
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
-msgstr ""
+msgstr "le polling sur un fichier n'est pas disponible sous win32"
 
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 msgid "pop from an empty PulseIn"
@@ -4128,7 +4132,7 @@ msgstr "Délai d’expiration dépassé en attendant une carte v2"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr ""
+msgstr "Ré-initialisation du miniteur"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
