@@ -242,22 +242,18 @@ ifeq ($(MICROPY_FLOAT_IMPL),double)
 $(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
-#ifndef EXTMOD_SRC_C
 EXTMOD_SRC_C += $(addprefix extmod/,\
 	modonewire.c \
 	modnetwork.c \
 	modusocket.c \
 	)
-#endif
 
-#ifndef DRIVERS_SRC_C
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	bus/softqspi.c \
 	memory/spiflash.c \
 	dht/dht.c \
 	)
-#endif
 
 SRC_C += \
 	boardctrl.c \
