@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-30 22:19+0000\n"
+"PO-Revision-Date: 2022-07-03 00:22+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -558,7 +558,9 @@ msgstr "Au-dessous de la fréquence d'images minimale"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential pins"
-msgstr "Bit clock et word select doivent êtres sur des broches séquentielles"
+msgstr ""
+"La sélection du bit d'horloge et de mot doit être sur des broches "
+"séquentielles"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -603,7 +605,7 @@ msgstr "Tampon + décalage trop petit %d %d %d"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr "Éléments du tampon doit être 4 octets ou moins"
+msgstr "Les éléments du tampon doivent faire 4 octets ou moins"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
@@ -655,7 +657,7 @@ msgstr "Les blocs CBC doivent être des multiples de 16 octets"
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr ""
+msgstr "L’appareil CIRCUITPY ne peut pas être trouvé ou créé."
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "CRC or checksum was invalid"
@@ -671,18 +673,18 @@ msgstr "Initialisation de la caméra"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr "L'alarme peut seulement être depuis TRC IO depuis le someil profond."
+msgstr "L'alarme ne peut être que sur TRC IO depuis un sommeil profond."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
 "L'alarme peut seulement être sur une broche basse tandis que d'autres "
-"alarment sont sur des broches hautes depuis le someil profond."
+"alarment sont sur des broches hautes depuis le sommeil profond."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
-"L'alarme peut seulement être sur deux broches basses depuis le someil "
+"L'alarme peut seulement être sur deux broches basses depuis le sommeil "
 "profond."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
@@ -762,7 +764,7 @@ msgstr "On ne peut faire de sous-classes de tranches"
 
 #: shared-module/bitbangio/SPI.c
 msgid "Cannot transfer without MOSI and MISO pins"
-msgstr ""
+msgstr "Impossible de transférer sans une broche MOSI ou MISO"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -771,10 +773,13 @@ msgstr "Impossible de faire varier la fréquence sur un minuteur déjà utilisé
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
 msgstr ""
+"Impossible de réveiller via une bordure d'une broche, seulement via un niveau"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr "Ne peut reveillé sur le board de broche. Seuleument à niveau."
+msgstr ""
+"Impossible de réveiller via une bordure d'une broche. Seulement via un "
+"niveau."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -782,7 +787,7 @@ msgstr "Ecriture sur 'CharacteristicBuffer' non fournie"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython core code crashed hard. Whoops!\n"
-msgstr "Le code principal de CircuitPython s'est écrasé durement. Oups !\n"
+msgstr "Le code principal de CircuitPython s'est complètement planté. Oups !\n"
 
 #: supervisor/shared/safe_mode.c
 msgid "CircuitPython was unable to allocate the heap."
@@ -1027,7 +1032,7 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
 msgstr ""
-"Avec l'espace de couleur RGB, l'image d'entrée doit avoir 16 bits par pixel"
+"Avec l'espace de couleur RVB, l'image d'entrée doit avoir 16 bits par pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1295,7 +1300,7 @@ msgstr "Ce calque est déjà dans un groupe"
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
-msgstr ""
+msgstr "Le calque doit être une sous-classe de Group ou TileGrid"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 msgid "MAC address was invalid"
@@ -1521,7 +1526,7 @@ msgstr "Aucun out dans le programme"
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr "Aucun pull up trouvé sur SDA ou SCL; vérifiez votre cablage"
+msgstr "Aucun pull up trouvé sur SDA ou SCL; vérifiez votre câblage"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1579,7 +1584,7 @@ msgstr "Le nombre de data_pins doit être 8 ou 16, et non %d"
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
 msgstr ""
-"L'objet a été désinitialisé et ne peut plus être utilisé. Créez un nouvel "
+"L'objet a été dés-initialisé et ne peut plus être utilisé. Créez un nouvel "
 "objet."
 
 #: ports/nrf/common-hal/busio/UART.c
@@ -1630,7 +1635,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one TouchAlarm can be set in deep sleep."
-msgstr "Seulement une TouchAlarm peu être réglée en someil profond."
+msgstr "Seulement une TouchAlarm peu être réglée en sommeil profond."
 
 #: ports/espressif/common-hal/i2cperipheral/I2CPeripheral.c
 msgid "Only one address is allowed"
@@ -1780,7 +1785,8 @@ msgstr ""
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
-"Feinte de someil profond jusqu'à l'alarme, CTRL-C ou écriture au fichier.\n"
+"Feinte un sommeil profond jusqu'à l'alarme, CTRL-C ou l'écriture d'un "
+"fichier.\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
@@ -1818,7 +1824,7 @@ msgstr "Erreur d'initialisation du RNG"
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
-msgstr ""
+msgstr "RS485"
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -2241,7 +2247,7 @@ msgstr "Erreur de sécurité inconnue : 0x%04x"
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error at %s:%d: %d"
-msgstr ""
+msgstr "Erreur du firmware système inconnue à %s:%d : %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2314,7 +2320,7 @@ msgstr "ATTENTION : le nom de fichier de votre code a deux extensions\n"
 #: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
-"WatchDogTimer ne peut pas être désinitialisé une fois que le mode est réglé "
+"WatchDogTimer ne peut pas être dés-initialisé une fois que le mode est réglé "
 "sur RESET"
 
 #: shared-bindings/watchdog/WatchDogTimer.c
@@ -2367,8 +2373,8 @@ msgstr "Vous êtres en mode sûr parce que :\n"
 msgid ""
 "You pressed the reset button during boot. Press again to exit safe mode."
 msgstr ""
-"Vous avez pressé le bouton de reset pendant le démarrage. Pressez le à "
-"nouveau pour sortir du mode sûr."
+"Vous avez pressé le bouton reset pendant le démarrage. Pressez-le à nouveau "
+"pour sortir du mode sûr."
 
 #: supervisor/shared/safe_mode.c
 msgid "You requested starting safe mode by "
@@ -2518,7 +2524,7 @@ msgstr "tampon est plus petit que la taille demandée"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
-msgstr "taille du tampon doit être un multiple de la taille de l'élement"
+msgstr "taille du tampon doit être un multiple de la taille de l’élément"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2564,11 +2570,11 @@ msgstr "ne peut avoir qu'un seul parent"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
-msgstr "il peut y avoir jusqu'à 4 paramètres pour l'assemblage Thumb"
+msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Thumb"
 
 #: py/emitinlinextensa.c
 msgid "can only have up to 4 parameters to Xtensa assembly"
-msgstr "maximum 4 paramètres pour l'assembleur Xtensa"
+msgstr "il ne peut pas y avoir plus de 4 paramètres pour l'assemblage Xtensa"
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
@@ -2659,7 +2665,7 @@ msgstr "impossible de charger avec l'indice '%q'"
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "ne peut importer relativement"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2772,7 +2778,9 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr "tampon color doit être un bytearray ou une matrice de type 'b' ou 'B'"
+msgstr ""
+"le tampon de couleurs doit être un bytearray ou une matrice de type 'b' ou "
+"'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -3082,7 +3090,7 @@ msgstr "fonction définie que pour les ndarrays"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "la fonction n'est implémentée que pour les ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3220,7 +3228,7 @@ msgstr "les données d'entrée doivent être un itérable"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "le dtype d'entrée doit être un flottant ou un complexe"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3273,7 +3281,7 @@ msgstr "les entrées ne sont pas itérables"
 
 #: py/parsenum.c
 msgid "int() arg 2 must be >= 2 and <= 36"
-msgstr "l'argument 2 de int() doit être >=2 et <=36"
+msgstr "Le deuxième argument de int() doit être compris entre 2 et 36 inclus"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -3356,7 +3364,8 @@ msgstr "l'argument 1 de issubclass() doit être une classe"
 #: py/objtype.c
 msgid "issubclass() arg 2 must be a class or a tuple of classes"
 msgstr ""
-"l'argument 2 de issubclass() doit être une classe ou un tuple de classes"
+"le deuxième argument de issubclass() doit être une classe ou un tuple de "
+"classes"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "iterations did not converge"
@@ -3419,7 +3428,7 @@ msgstr "loopback + silent mode non pris en charge par le périphérique"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
-msgstr ""
+msgstr "mDNS a déjà été initialisé"
 
 #: ports/espressif/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
@@ -3710,7 +3719,8 @@ msgstr "offset doit être >= 0"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
-msgstr "offset doit être non-négatif, et au plus la taille du tampon"
+msgstr ""
+"offset ne doit pas être négatif, et pas plus grand que la taille du tampon"
 
 #: py/objstr.c py/objstrunicode.c
 msgid "offset out of bounds"
@@ -3766,8 +3776,7 @@ msgstr "ord attend un caractère"
 #, c-format
 msgid "ord() expected a character, but string of length %d found"
 msgstr ""
-"ord() attend un caractère mais une chaîne de caractère de longueur %d a été "
-"trouvée"
+"ord() attend un caractère mais une chaîne de %d caractères a été trouvée"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
