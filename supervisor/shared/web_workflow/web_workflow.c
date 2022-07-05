@@ -356,6 +356,7 @@ static bool _origin_ok(const char *origin) {
     const char *http = "http://";
     const char *local = ".local";
 
+    // note: redirected requests send an Origin of "null" and will be caught by this
     if (memcmp(origin, http, strlen(http)) != 0) {
         return false;
     }
@@ -374,8 +375,11 @@ static bool _origin_ok(const char *origin) {
         return true;
     }
 
-    const char *localhost = "127.0.0.1:";
-    if (memcmp(origin + strlen(http), localhost, strlen(localhost)) == 0) {
+    // Port or no port
+    const char *localhost = "127.0.0.1";
+    const int locallen = 9;
+    if (memcmp(origin + strlen(http), localhost, locallen) == 0
+        && (localhost[locallen] == '\0' || localhost[locallen] == ':')) {
         return true;
     }
 
@@ -909,7 +913,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
-        if (!request->authenticated) {
+        // OPTIONS is sent for CORS preflight, unauthenticated
+        if (!request->authenticated && strcmp(request->method, "OPTIONS") != 0) {
             if (_api_password[0] != '\0') {
                 _reply_unauthorized(socket, request);
             } else {
@@ -1030,7 +1035,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         }
     } else if (memcmp(request->path, "/cp/", 4) == 0) {
         const char *path = request->path + 3;
-        if (strcmp(request->method, "GET") != 0) {
+        if (strcmp(request->method, "OPTIONS") == 0) {
+            // handle preflight requests to /cp/
+            _reply_access_control(socket, request);
+        } else if (strcmp(request->method, "GET") != 0) {
             _reply_method_not_allowed(socket, request);
         } else if (strcmp(path, "/devices.json") == 0) {
             _reply_with_devices_json(socket, request);
