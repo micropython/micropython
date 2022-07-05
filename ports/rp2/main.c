@@ -143,6 +143,7 @@ int main(int argc, char **argv) {
         buf[6] = hexchr[pid.id[5] >> 4];
         buf[7] = hexchr[pid.id[4] & 0xf];
         cyw43_wifi_ap_set_ssid(&cyw43_state, 8, buf);
+        cyw43_wifi_ap_set_auth(&cyw43_state, CYW43_AUTH_WPA2_AES_PSK);
         cyw43_wifi_ap_set_password(&cyw43_state, 8, (const uint8_t *)"picoW123");
     }
     #endif
