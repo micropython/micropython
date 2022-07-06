@@ -1300,20 +1300,30 @@ pending_exception_check:
                 // This is an inlined, always-raising variant of mp_handle_pending.
 
                 #if MICROPY_ENABLE_SCHEDULER && !MICROPY_PY_THREAD
+                // Scheduler but no threading -- sched_state can also indicate
+                // pending exception to avoid needing to check both
+                // separately in the common case where there is neither.
                 if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
                 #endif
                 {
                     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-                        MARK_EXC_IP_SELECTIVE();
+                        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
                         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-                        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                        // Note (scheduler+non-threading optimisation):
-                        // MP_STATE_VM(sched_state) will be cleared the next
-                        // time the scheduler code below runs.
-                        RAISE(obj);
+                        if (obj != MP_OBJ_NULL) {
+                            MARK_EXC_IP_SELECTIVE();
+                            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+                            // Note (scheduler+non-threading optimisation):
+                            // MP_STATE_VM(sched_state) will be cleared the next
+                            // time the scheduler code below runs.
+                            MICROPY_END_ATOMIC_SECTION(atomic_state);
+                            RAISE(obj);
+                        }
+                        MICROPY_END_ATOMIC_SECTION(atomic_state);
                     }
                     #if MICROPY_ENABLE_SCHEDULER
                     #if MICROPY_PY_THREAD
+                    // Scheduler with threading -- we skipped the sched_state
+                    // check above, so do it here.
                     if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING)
                     #endif
                     {

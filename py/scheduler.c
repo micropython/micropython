@@ -203,11 +203,16 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
 // This is also inlined in the VM at the pending exception check.
 void mp_handle_pending(bool raise_exc) {
     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-        if (raise_exc) {
-            nlr_raise(obj);
+        if (obj != MP_OBJ_NULL) {
+            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+            if (raise_exc) {
+                MICROPY_END_ATOMIC_SECTION(atomic_state);
+                nlr_raise(obj);
+            }
         }
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
     }
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
