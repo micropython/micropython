@@ -483,28 +483,30 @@ MP_DEFINE_CONST_FUN_OBJ_1(int_bit_length_obj, int_bit_length);
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Support signed param (assumes signed=False at the moment)
 
-    enum { ARG_signed };
+    enum { ARG_bytes, ARG_byteorder, ARG_signed };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_signed,    MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_bytes, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_byteorder, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 3, pos_args + 3, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_signed].u_bool) {
-        mp_raise_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("from_bytes() does not implement signed=True"));
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q=%q"), MP_QSTR_signed, MP_QSTR_True);
     }
 
     // get the buffer info
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(pos_args[1], &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(args[ARG_bytes].u_obj, &bufinfo, MP_BUFFER_READ);
 
     const byte *buf = (const byte *)bufinfo.buf;
     int delta = 1;
-    if (pos_args[2] == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
+    if (args[ARG_byteorder].u_obj == MP_OBJ_NEW_QSTR(MP_QSTR_little)) {
         buf += bufinfo.len - 1;
         delta = -1;
-    } else if (pos_args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_big)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("byteorder must be 'little' or 'big'"));
+    } else if (args[ARG_byteorder].u_obj != MP_OBJ_NEW_QSTR(MP_QSTR_big)) {
+        mp_arg_error_invalid(MP_QSTR_byteorder);
     }
 
     mp_uint_t value = 0;
@@ -513,7 +515,7 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
         if (value > (MP_SMALL_INT_MAX >> 8)) {
             // Result will overflow a small-int so construct a big-int
-            return mp_obj_int_from_bytes_impl(pos_args[2] != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
+            return mp_obj_int_from_bytes_impl(args[ARG_byteorder].u_obj != MP_OBJ_NEW_QSTR(MP_QSTR_little), bufinfo.len, bufinfo.buf);
         }
         #endif
         value = (value << 8) | *buf;
