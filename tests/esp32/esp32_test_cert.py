@@ -1,4 +1,5 @@
 import network
+import time
 import socket
 import ssl
 
@@ -33,6 +34,7 @@ if not wlan.isconnected():
 while True:
     if wlan.isconnected():
         break
+    time.sleep(0.2)
 host = 'letsencrypt.org'
 
 ai = socket.getaddrinfo(host, 443)
@@ -47,6 +49,7 @@ s2.close()
 s = socket.socket()
 s.connect(ai[-1])
 s.setblocking(False)
+print("Starting connection which should raise, probably you get a message like: \"mbedtls_cert error: 8\"")
 try:
     s2 = ssl.wrap_socket(s, server_hostname=host, cert_reqs=0xffffff)
 except OSError:
@@ -59,6 +62,7 @@ finally:
 s = socket.socket()
 s.connect(ai[-1])
 s.setblocking(False)
+print("Starting connection which should work")
 try:
     s2 = ssl.wrap_socket(s, server_hostname=host, ca_certs=CA, cert_reqs=0xffffff)
 except OSError:
