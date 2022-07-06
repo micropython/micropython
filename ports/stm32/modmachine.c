@@ -339,8 +339,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret == -MP_EINVAL) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
         } else if (ret < 0) {
-            void NORETURN __fatal_error(const char *msg);
-            __fatal_error("can't change freq");
+            MICROPY_BOARD_FATAL_ERROR("can't change freq");
         }
         return mp_const_none;
         #endif

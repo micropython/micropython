@@ -112,8 +112,6 @@
 
 #endif
 
-extern void NORETURN __fatal_error(const char *msg);
-
 typedef struct _pyb_uart_irq_map_t {
     uint16_t irq_en;
     uint16_t flag;
@@ -152,7 +150,7 @@ void uart_init0(void) {
     RCC_PeriphClkInit.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
     RCC_PeriphClkInit.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
     if (HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit) != HAL_OK) {
-        __fatal_error("HAL_RCCEx_PeriphCLKConfig");
+        MICROPY_BOARD_FATAL_ERROR("HAL_RCCEx_PeriphCLKConfig");
     }
     #endif
 }

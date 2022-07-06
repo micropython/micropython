@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
+
 #include "py/runtime.h"
 #include "py/objstr.h"
 #include "py/mphal.h"
@@ -32,6 +34,26 @@
 #include "powerctrl.h"
 #include "led.h"
 #include "usrsw.h"
+
+NORETURN void boardctrl_fatal_error(const char *msg) {
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    led_state(1, 1);
+    led_state(2, 1);
+    led_state(3, 1);
+    led_state(4, 1);
+    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    mp_hal_stdout_tx_strn(msg, strlen(msg));
+    for (uint i = 0;;) {
+        led_toggle(((i++) & 3) + 1);
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
+        }
+        if (i >= 16) {
+            // to conserve power
+            __WFI();
+        }
+    }
+}
 
 STATIC void flash_error(int n) {
     for (int i = 0; i < n; i++) {

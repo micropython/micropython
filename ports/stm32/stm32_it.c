@@ -83,7 +83,6 @@
 #include "i2c.h"
 #include "usb.h"
 
-extern void __fatal_error(const char *);
 #if defined(MICROPY_HW_USB_FS)
 extern PCD_HandleTypeDef pcd_fs_handle;
 #endif
@@ -192,7 +191,7 @@ void HardFault_C_Handler(ExceptionRegisters_t *regs) {
 
     /* Go to infinite loop when Hard Fault exception occurs */
     while (1) {
-        __fatal_error("HardFault");
+        MICROPY_BOARD_FATAL_ERROR("HardFault");
     }
 }
 
@@ -246,7 +245,7 @@ void NMI_Handler(void) {
 void MemManage_Handler(void) {
     /* Go to infinite loop when Memory Manage exception occurs */
     while (1) {
-        __fatal_error("MemManage");
+        MICROPY_BOARD_FATAL_ERROR("MemManage");
     }
 }
 
@@ -258,7 +257,7 @@ void MemManage_Handler(void) {
 void BusFault_Handler(void) {
     /* Go to infinite loop when Bus Fault exception occurs */
     while (1) {
-        __fatal_error("BusFault");
+        MICROPY_BOARD_FATAL_ERROR("BusFault");
     }
 }
 
@@ -270,7 +269,7 @@ void BusFault_Handler(void) {
 void UsageFault_Handler(void) {
     /* Go to infinite loop when Usage Fault exception occurs */
     while (1) {
-        __fatal_error("UsageFault");
+        MICROPY_BOARD_FATAL_ERROR("UsageFault");
     }
 }
 
