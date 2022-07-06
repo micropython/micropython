@@ -2450,6 +2450,10 @@ msgstr ""
 msgid "byteorder is not a string"
 msgstr ""
 
+#: py/objint.c
+msgid "byteorder must be 'little' or 'big'"
+msgstr ""
+
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2951,6 +2955,10 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Processor.c
 msgid "frequency is read-only for this board"
+msgstr ""
+
+#: py/objint.c
+msgid "from_bytes() does not implement signed=True"
 msgstr ""
 
 #: py/objdeque.c
