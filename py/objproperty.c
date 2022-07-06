@@ -82,6 +82,23 @@ STATIC mp_obj_t property_deleter(mp_obj_t self_in, mp_obj_t deleter) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(property_deleter_obj, property_deleter);
 
+STATIC void property_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // Read-only.
+        return;
+    }
+    mp_obj_property_t *self = MP_OBJ_TO_PTR(self_in);
+    if (attr == MP_QSTR_fget) {
+        dest[0] = self->proxy[0];
+    } else if (attr == MP_QSTR_fset) {
+        dest[0] = self->proxy[1];
+    } else if (attr == MP_QSTR_fdel) {
+        dest[0] = self->proxy[2];
+    } else {
+        dest[1] = MP_OBJ_SENTINEL;
+    }
+}
+
 STATIC const mp_rom_map_elem_t property_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_getter), MP_ROM_PTR(&property_getter_obj) },
     { MP_ROM_QSTR(MP_QSTR_setter), MP_ROM_PTR(&property_setter_obj) },
@@ -94,6 +111,7 @@ const mp_obj_type_t mp_type_property = {
     { &mp_type_type },
     .name = MP_QSTR_property,
     .make_new = property_make_new,
+    .attr = property_attr,
     .locals_dict = (mp_obj_dict_t *)&property_locals_dict,
 };
 
