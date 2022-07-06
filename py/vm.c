@@ -202,14 +202,30 @@
 //  MP_VM_RETURN_YIELD, ip, sp valid, yielded value in *sp
 //  MP_VM_RETURN_EXCEPTION, exception in state[0]
 mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_code_state_t *code_state, volatile mp_obj_t inject_exc) {
+
 #define SELECTIVE_EXC_IP (0)
+// When disabled, code_state->ip is updated unconditionally during op
+// dispatch, and this is subsequently used in the exception handler
+// (either NLR jump or direct RAISE). This is good for code size because it
+// happens in a single place but is more work than necessary, as many opcodes
+// cannot raise. Enabling SELECTIVE_EXC_IP means that code_state->ip
+// is "selectively" updated only during handling of opcodes that might raise.
+// This costs about 360 bytes on PYBV11 for a 1-3% performance gain (e.g. 3%
+// in bm_fft.py). On rp2040, there is zero code size diff for a 0-1% gain.
+// (Both with computed goto enabled).
 #if SELECTIVE_EXC_IP
-#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; } /* stores ip 1 byte past last opcode */
+// Note: Because ip has already been advanced by one byte in the dispatch, the
+// value of ip here is one byte past the last opcode.
+#define MARK_EXC_IP_SELECTIVE() { code_state->ip = ip; }
+// No need to update in dispatch.
 #define MARK_EXC_IP_GLOBAL()
 #else
 #define MARK_EXC_IP_SELECTIVE()
-#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; } /* stores ip pointing to last opcode */
+// Immediately before dispatch, save the current ip, which will be the opcode
+// about to be dispatched.
+#define MARK_EXC_IP_GLOBAL() { code_state->ip = ip; }
 #endif
+
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
