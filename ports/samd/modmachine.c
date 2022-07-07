@@ -30,6 +30,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
+#include "drivers/dht/dht.h"
 #include "modmachine.h"
 #include "samd_soc.h"
 
@@ -179,6 +180,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
+    #if MICROPY_PY_MACHINE_DHT_READINTO
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
+    #endif
 
     // Class constants.
     // Use numerical constants instead of the symbolic names,

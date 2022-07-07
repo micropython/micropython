@@ -99,6 +99,9 @@ static inline uint64_t mp_hal_time_ns(void) {
 #define MP_HAL_PIN_FMT "%u"
 #define mp_hal_pin_obj_t uint
 
+#define mp_hal_quiet_timing_enter() MICROPY_BEGIN_ATOMIC_SECTION()
+#define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
+
 extern uint32_t machine_pin_open_drain_mask[];
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
