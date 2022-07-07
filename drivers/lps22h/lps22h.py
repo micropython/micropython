@@ -53,14 +53,6 @@ class LPS22H:
         self.addr = address
         self.oneshot = oneshot
         self.buf = bytearray(1)
-
-        if hasattr(machine, "idle"):
-            self._go_idle = machine.idle()
-        else:
-            import time
-
-            self._go_idle = lambda: time.sleep_ms(1)
-
         # ODR=1 EN_LPFP=1 BDU=1
         self._write_reg(_LPS22_CTRL_REG1, 0x1A)
         self.set_oneshot_mode(self.oneshot)
@@ -86,7 +78,7 @@ class LPS22H:
             while True:
                 if self._read_reg(_LPS22_STATUS) & b:
                     return
-                self._go_idle()
+                machine.idle()
 
     def set_oneshot_mode(self, oneshot):
         self._read_reg(_LPS22_CTRL_REG1)
