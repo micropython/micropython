@@ -193,9 +193,9 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
             for (uint16_t i = 0; i < length; i++) {
                 #if MICROPY_KBD_EXCEPTION
                 if (data[i] == mp_interrupt_char) {
-                    mp_sched_keyboard_interrupt();
                     m_rx_ring_buffer.start = 0;
                     m_rx_ring_buffer.end = 0;
+                    mp_sched_keyboard_interrupt();
                 } else
                 #endif
                 {
