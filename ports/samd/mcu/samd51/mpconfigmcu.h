@@ -13,6 +13,7 @@
 #define MP_NEED_LOG2                    (1)
 #define MICROPY_PY_CMATH                (0)
 
+#define MICOPY_PY_DHT                   (1)
 #define MICROPY_PY_UOS_URANDOM          (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
@@ -20,7 +21,7 @@ unsigned long trng_random_u32(void);
 // Due to a limitation in the TC counter for us, the ticks period is 2**29
 #define MICROPY_PY_UTIME_TICKS_PERIOD   (0x20000000)
 
-#define VFS_BLOCK_SIZE_BYTES            (1536) //
+#define VFS_BLOCK_SIZE_BYTES            (1536)
 
 #define MICROPY_HW_UART_TXBUF           (1)
 

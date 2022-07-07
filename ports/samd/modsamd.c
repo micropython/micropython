@@ -27,6 +27,7 @@
 #include "string.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "modmachine.h"
 
 #include "sam.h"
 #include "pin_af.h"
@@ -71,9 +72,9 @@ STATIC mp_obj_t samd_pininfo(mp_obj_t pin_obj) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(samd_pininfo_obj, samd_pininfo);
 
 STATIC const mp_rom_map_elem_t samd_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_samd) },
-    { MP_ROM_QSTR(MP_QSTR_Flash),    MP_ROM_PTR(&samd_flash_type) },
-    { MP_ROM_QSTR(MP_QSTR_pininfo),  MP_ROM_PTR(&samd_pininfo_obj) },
+    { MP_ROM_QSTR(MP_QSTR___name__),     MP_ROM_QSTR(MP_QSTR_samd) },
+    { MP_ROM_QSTR(MP_QSTR_Flash),        MP_ROM_PTR(&samd_flash_type) },
+    { MP_ROM_QSTR(MP_QSTR_pininfo),      MP_ROM_PTR(&samd_pininfo_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(samd_module_globals, samd_module_globals_table);
 
