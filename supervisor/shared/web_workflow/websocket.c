@@ -32,6 +32,7 @@ typedef struct {
     uint8_t frame_len;
     uint8_t payload_len_size;
     bool masked;
+    bool closed;
     uint8_t mask[4];
     int frame_index;
     size_t payload_remaining;
@@ -49,6 +50,10 @@ void websocket_init(void) {
 void websocket_handoff(socketpool_socket_obj_t *socket) {
     ESP_LOGI(TAG, "socket handed off");
     cp_serial.socket = *socket;
+    cp_serial.closed = false;
+    cp_serial.opcode = 0;
+    cp_serial.frame_index = 0;
+    cp_serial.frame_len = 2;
     // Mark the original socket object as closed without telling the lower level.
     socket->connected = false;
     socket->num = -1;
@@ -56,7 +61,7 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
 }
 
 bool websocket_connected(void) {
-    return common_hal_socketpool_socket_get_connected(&cp_serial.socket);
+    return !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
 static bool _read_byte(uint8_t *c) {
@@ -68,6 +73,16 @@ static bool _read_byte(uint8_t *c) {
         return false;
     }
     return true;
+}
+
+static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+    int sent = -EAGAIN;
+    while (sent == -EAGAIN) {
+        sent = socketpool_socket_send(socket, buf, len);
+    }
+    if (sent < len) {
+        ESP_LOGE(TAG, "short send on %d err %d len %d", socket->num, sent, len);
+    }
 }
 
 static void _read_next_frame_header(void) {
@@ -111,20 +126,53 @@ static void _read_next_frame_header(void) {
         cp_serial.frame_index++;
         ESP_LOGI(TAG, "mask %08x", (uint32_t)*cp_serial.mask);
     }
+    // Reply to PINGs and CLOSE.
+    while ((cp_serial.opcode == 0x8 ||
+            cp_serial.opcode == 0x9) &&
+           cp_serial.frame_index >= cp_serial.frame_len) {
+
+        if (cp_serial.frame_index == cp_serial.frame_len) {
+            uint8_t opcode = 0x8; // CLOSE
+            if (cp_serial.opcode == 0x9) {
+                ESP_LOGI(TAG, "websocket ping");
+                opcode = 0xA; // PONG
+            }
+            uint8_t frame_header[2];
+            frame_header[0] = 1 << 7 | opcode;
+            if (cp_serial.payload_remaining > 125) {
+                ESP_LOGE(TAG, "CLOSE or PING has long payload");
+            }
+            frame_header[1] = cp_serial.payload_remaining;
+            _send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
+        }
+
+        if (cp_serial.payload_remaining > 0 && _read_byte(&h)) {
+            // Send the payload back to the client.
+            cp_serial.frame_index++;
+            cp_serial.payload_remaining--;
+            _send_raw(&cp_serial.socket, &h, 1);
+        }
+
+        if (cp_serial.payload_remaining == 0) {
+            cp_serial.frame_index = 0;
+            if (cp_serial.opcode == 0x8) {
+                ESP_LOGI(TAG, "websocket closed");
+                cp_serial.closed = true;
+            }
+        }
+    }
 }
 
 static bool _read_next_payload_byte(uint8_t *c) {
     _read_next_frame_header();
-    if (cp_serial.frame_index >= cp_serial.frame_len &&
+    if (cp_serial.opcode == 0x1 &&
+        cp_serial.frame_index >= cp_serial.frame_len &&
         cp_serial.payload_remaining > 0) {
         if (_read_byte(c)) {
             uint8_t mask_offset = (cp_serial.frame_index - cp_serial.frame_len) % 4;
-            ESP_LOGI(TAG, "payload byte read %02x mask offset %d", *c, mask_offset);
             *c ^= cp_serial.mask[mask_offset];
-            ESP_LOGI(TAG, "byte unmasked %02x", *c);
             cp_serial.frame_index++;
             cp_serial.payload_remaining--;
-            ESP_LOGI(TAG, "payload remaining %d", cp_serial.payload_remaining);
             if (cp_serial.payload_remaining == 0) {
                 cp_serial.frame_index = 0;
             }
@@ -146,16 +194,6 @@ char websocket_read_char(void) {
     uint8_t c;
     _read_next_payload_byte(&c);
     return c;
-}
-
-static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
-    int sent = -EAGAIN;
-    while (sent == -EAGAIN) {
-        sent = socketpool_socket_send(socket, buf, len);
-    }
-    if (sent < len) {
-        ESP_LOGE(TAG, "short send %d %d", sent, len);
-    }
 }
 
 static void _websocket_send(_websocket *ws, const char *text, size_t len) {
