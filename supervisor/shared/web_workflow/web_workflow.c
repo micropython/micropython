@@ -1059,6 +1059,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
 }
 
 static void _reset_request(_request *request) {
+    ESP_LOGI(TAG, "reset request");
     request->state = STATE_METHOD;
     request->origin[0] = '\0';
     request->content_length = 0;
@@ -1244,7 +1245,7 @@ void supervisor_web_workflow_background(void) {
 
     // If we have a request in progress, continue working on it.
     if (common_hal_socketpool_socket_get_connected(&active)) {
-        ESP_LOGI(TAG, "active connected");
+        // ESP_LOGI(TAG, "active connected %d", active_request.in_progress);
         _process_request(&active, &active_request);
     }
 }

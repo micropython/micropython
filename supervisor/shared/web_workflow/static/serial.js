@@ -5,7 +5,7 @@ function onSubmit() {
   var input = document.getElementById("input");
   // You can send message to the Web Socket using ws.send.
   ws.send(input.value);
-  output("send: " + input.value);
+  // output("send: " + input.value);
   input.value = "";
   input.focus();
 }
@@ -25,19 +25,19 @@ ws = new WebSocket("ws://cpy-f57ce8.local/cp/serial/");
 
 // Set event handlers.
 ws.onopen = function() {
-  output("onopen");
+  console.log("onopen");
 };
 
 ws.onmessage = function(e) {
   // e.data contains received string.
-  output("onmessage: " + e.data);
+  output(e.data);
 };
 
 ws.onclose = function() {
-  output("onclose");
+  console.log("onclose");
 };
 
 ws.onerror = function(e) {
-  output("onerror");
+  // output("onerror");
   console.log(e)
 };

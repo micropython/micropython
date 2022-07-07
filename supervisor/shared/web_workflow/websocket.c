@@ -32,8 +32,8 @@ typedef struct {
     uint8_t frame_len;
     uint8_t payload_len_size;
     bool masked;
-    uint32_t mask;
-    size_t frame_index;
+    uint8_t mask[4];
+    int frame_index;
     size_t payload_remaining;
 } _websocket;
 
@@ -96,27 +96,38 @@ static void _read_next_frame_header(void) {
 
         ESP_LOGI(TAG, "mask %d length %x", cp_serial.masked, len);
     }
-    while (cp_serial.frame_index > 1 &&
+    while (cp_serial.frame_index >= 2 &&
            cp_serial.frame_index < (cp_serial.payload_len_size + 2) &&
            _read_byte(&h)) {
         cp_serial.frame_index++;
-        cp_serial.payload_remaining = cp_serial.payload_remaining << 8 | c;
+        cp_serial.payload_remaining = cp_serial.payload_remaining << 8 | h;
     }
-    while (cp_serial.frame_index > (cp_serial.payload_len_size + 2) &&
+    int mask_start = cp_serial.payload_len_size + 2;
+    while (cp_serial.frame_index >= mask_start &&
            cp_serial.frame_index < cp_serial.frame_len &&
            _read_byte(&h)) {
+        size_t mask_offset = cp_serial.frame_index - mask_start;
+        cp_serial.mask[mask_offset] = h;
         cp_serial.frame_index++;
-        cp_serial.mask = cp_serial.mask << 8 | c;
+        ESP_LOGI(TAG, "mask %08x", (uint32_t)*cp_serial.mask);
     }
 }
 
 static bool _read_next_payload_byte(uint8_t *c) {
     _read_next_frame_header();
-    if (cp_serial.frame_index > cp_serial.frame_len &&
+    if (cp_serial.frame_index >= cp_serial.frame_len &&
         cp_serial.payload_remaining > 0) {
         if (_read_byte(c)) {
+            uint8_t mask_offset = (cp_serial.frame_index - cp_serial.frame_len) % 4;
+            ESP_LOGI(TAG, "payload byte read %02x mask offset %d", *c, mask_offset);
+            *c ^= cp_serial.mask[mask_offset];
+            ESP_LOGI(TAG, "byte unmasked %02x", *c);
             cp_serial.frame_index++;
             cp_serial.payload_remaining--;
+            ESP_LOGI(TAG, "payload remaining %d", cp_serial.payload_remaining);
+            if (cp_serial.payload_remaining == 0) {
+                cp_serial.frame_index = 0;
+            }
             return true;
         }
     }
@@ -132,7 +143,9 @@ bool websocket_available(void) {
 }
 
 char websocket_read_char(void) {
-    return _read_next_payload_byte();
+    uint8_t c;
+    _read_next_payload_byte(&c);
+    return c;
 }
 
 static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
@@ -171,7 +184,10 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         _send_raw(&ws->socket, (const uint8_t *)&len, 4);
     }
     _send_raw(&ws->socket, (const uint8_t *)text, len);
-    ESP_LOGI(TAG, "sent over websocket: %s", text);
+    char copy[len];
+    memcpy(copy, text, len);
+    copy[len] = '\0';
+    ESP_LOGI(TAG, "sent over websocket: %s", copy);
 }
 
 void websocket_write(const char *text, size_t len) {
