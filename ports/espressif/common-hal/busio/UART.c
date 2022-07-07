@@ -41,7 +41,7 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
-uint8_t never_reset_uart_mask = 0;
+static uint8_t never_reset_uart_mask = 0;
 
 static void uart_event_task(void *param) {
     busio_uart_obj_t *self = param;
@@ -74,13 +74,13 @@ static void uart_event_task(void *param) {
 
 void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
-        // Ignore the UART used by the IDF.
         #ifdef CONFIG_ESP_CONSOLE_UART_NUM
+        // Do not reset the UART used by the IDF for logging.
         if (num == CONFIG_ESP_CONSOLE_UART_NUM) {
             continue;
         }
         #endif
-        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & 1 << num)) {
+        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & (1 << num))) {
             uart_driver_delete(num);
         }
     }

@@ -297,6 +297,10 @@ typedef long mp_off_t;
 #define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #endif
 
+#if MICROPY_PY_ASYNC_AWAIT && !CIRCUITPY_TRACEBACK
+#error CIRCUITPY_ASYNCIO requires CIRCUITPY_TRACEBACK
+#endif
+
 #if defined(CIRCUITPY_CONSOLE_UART_RX) || defined(CIRCUITPY_CONSOLE_UART_TX)
 #if !(defined(CIRCUITPY_CONSOLE_UART_RX) && defined(CIRCUITPY_CONSOLE_UART_TX))
 #error Both CIRCUITPY_CONSOLE_UART_RX and CIRCUITPY_CONSOLE_UART_TX must be defined if one is defined.
