@@ -34,8 +34,12 @@
 #define RCC_SR          RSR
 #if defined(STM32H743xx) || defined(STM32H750xx)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
-#elif defined(STM32H747xx)
+#elif defined(STM32H747xx) || defined(STM32H755xx)
+#if defined(CORE_CM4)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFT2RSTF
+#else
+#define RCC_SR_SFTRSTF  RCC_RSR_SFT1RSTF
+#endif
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
 #define RCC_SR_SFTRSTF  RCC_RSR_SFTRSTF
 #endif
