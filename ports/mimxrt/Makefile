@@ -7,7 +7,7 @@ BOARD_DIR ?= boards/$(BOARD)
 BUILD ?= build-$(BOARD)
 PORT ?= /dev/ttyACM0
 CROSS_COMPILE ?= arm-none-eabi-
-GIT_SUBMODULES = lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
+GIT_SUBMODULES += lib/tinyusb lib/nxp_driver lib/lwip lib/mbedtls
 
 # MicroPython feature configurations
 FROZEN_MANIFEST ?= boards/manifest.py

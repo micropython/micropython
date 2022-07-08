@@ -32,7 +32,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx
 
 FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
