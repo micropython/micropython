@@ -48,6 +48,10 @@
 #define MICROPY_HW_SPI1_MISO                    (pin_A6)    // Arduino D12, pin 5 on CN5
 #define MICROPY_HW_SPI1_MOSI                    (pin_A7)    // Arduino D11, pin 4 on CN5
 
+// SUBGHZSPI Internal radio SPI BUS
+#define MICROPY_HW_SUBGHZSPI_NAME               "SUBGHZ"
+#define MICROPY_HW_SUBGHZSPI_ID                 3
+
 // User switch; pressing the button makes the input go low
 #define MICROPY_HW_USRSW_PIN                    (pin_A0)
 #define MICROPY_HW_USRSW_PULL                   (GPIO_PULLUP)

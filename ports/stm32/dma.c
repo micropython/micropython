@@ -558,6 +558,10 @@ const dma_descr_t dma_SPI_1_RX = { DMA1_Channel1, DMA_REQUEST_SPI1_RX, dma_id_0,
 const dma_descr_t dma_SPI_1_TX = { DMA1_Channel2, DMA_REQUEST_SPI1_TX, dma_id_1, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { DMA1_Channel3, DMA_REQUEST_SPI2_RX, dma_id_2, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { DMA1_Channel4, DMA_REQUEST_SPI2_TX, dma_id_3, &dma_init_struct_spi_i2c };
+#if defined(STM32WL)
+const dma_descr_t dma_SPI_SUBGHZ_RX = { DMA1_Channel5, DMA_REQUEST_SUBGHZSPI_RX, dma_id_4, &dma_init_struct_spi_i2c };
+const dma_descr_t dma_SPI_SUBGHZ_TX = { DMA1_Channel6, DMA_REQUEST_SUBGHZSPI_TX, dma_id_5, &dma_init_struct_spi_i2c };
+#endif
 
 static const uint8_t dma_irqn[NSTREAM] = {
     DMA1_Channel1_IRQn,
