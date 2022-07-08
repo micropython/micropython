@@ -24,40 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/port.h"
-#include "supervisor/shared/stack.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/board.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "components/driver/include/driver/gpio.h"
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
-
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#endif
-
-#if CIRCUITPY_WEB_WORKFLOW
-#include "supervisor/shared/web_workflow/web_workflow.h"
-#endif
-
-void port_background_task(void) {
-    // Zero delay in case FreeRTOS wants to switch to something else.
-    vTaskDelay(0);
-    #if CIRCUITPY_PULSEIO
-    pulsein_background();
-    #endif
-
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_background();
-    #endif
+void board_init(void) {
 }
 
-void port_start_background_task(void) {
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void port_finish_background_task(void) {
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    return false;
+}
+
+void reset_board(void) {
+}
+
+void board_deinit(void) {
 }

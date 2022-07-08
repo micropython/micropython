@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CircuitPython</title>
+    <meta charset="UTF-8">
+</head>
+<script src="/welcome.js" defer=true></script>
+<body>
+    <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;Welcome!</h1>
+    Welcome to CircuitPython's Web API. Go to the <a href="/fs/">file browser</a> to work with files in the CIRCUITPY drive. Make sure you've set <code>CIRCUITPY_WEB_API_PASSWORD='somepassword'</code> in <code>/.env</code>. Provide the password when the browser prompts for it. Leave the username blank.
+    <h2>Device Info</h2>
+    Board: <a id="board"></a><br>
+    Version: <span id="version"></span><br>
+    Hostname: <a id="hostname"></a><br>
+    IP: <a id="ip"></a>
+    <h2>Other Devices</h2>
+    Here are other CircuitPython devices on your network:
+    <ul id="devices">
+    </ul>
+</body>
+</html>

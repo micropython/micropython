@@ -82,7 +82,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr ""
 
@@ -442,7 +442,6 @@ msgstr "All channels in use"
 msgid "All event channels in use"
 msgstr "All event channels in use"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "All state machines in use"
@@ -528,7 +527,7 @@ msgstr "Audio conversion not implemented"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN is not used with password"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "Authentication failure"
 
@@ -1175,6 +1174,10 @@ msgstr ""
 #, c-format
 msgid "Internal error #%d"
 msgstr "Internal error #%d"
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr ""
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -2276,10 +2279,6 @@ msgstr "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.timeout must be greater than 0"
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "WatchDog timer expired."
 
 #: py/builtinhelp.c
 #, c-format
@@ -3954,10 +3953,6 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr ""
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr ""
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start/end indices"
@@ -4311,6 +4306,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "WatchDog timer expired."
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q must be a tuple of length 2"

@@ -178,7 +178,7 @@ void print_safe_mode_message(safe_mode_t reason) {
             message = translate("Boot device must be first device (interface #0).");
             break;
         case WATCHDOG_RESET:
-            message = translate("Watchdog timer expired.");
+            message = translate("Internal watchdog timer expired.");
             break;
         case NO_CIRCUITPY:
             message = translate("CIRCUITPY drive could not be found or created.");

@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-06-16 08:18+0000\n"
+"PO-Revision-Date: 2022-07-01 17:46+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.13.1-dev\n"
 
 #: main.c
 msgid ""
@@ -80,7 +80,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr "%q"
 
@@ -440,7 +440,6 @@ msgstr "Alla kanaler används"
 msgid "All event channels in use"
 msgstr "Alla händelsekanaler används"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr "Alla tillståndsmaskiner används"
@@ -526,7 +525,7 @@ msgstr "Ljudkonvertering inte implementerad"
 msgid "AuthMode.OPEN is not used with password"
 msgstr "AuthMode.OPEN används inte med lösenord"
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr "Autentiseringsfel"
 
@@ -1179,6 +1178,10 @@ msgstr "Internt fel"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Internt fel #%d"
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
+msgstr "Intern watchdog-timer har löpt ut."
 
 #: py/argcheck.c
 msgid "Invalid %q"
@@ -2289,10 +2292,6 @@ msgstr ""
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
 msgstr "WatchDogTimer.timeout måste vara större än 0"
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
-msgstr "Watchdog-timern har löpt ut."
 
 #: py/builtinhelp.c
 #, c-format
@@ -3979,10 +3978,6 @@ msgstr "source_bitmap måste ha value_count av 65536"
 msgid "source_bitmap must have value_count of 8"
 msgstr "source_bitmap måste ha value_count av 8"
 
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
-msgstr "ssid kan vara max 32 bytes"
-
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "start-/slutindex"
@@ -4336,6 +4331,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Watchdog-timern har löpt ut."
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid kan vara max 32 bytes"
 
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q måste vara en tuple av längd 2"

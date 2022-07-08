@@ -287,12 +287,13 @@ jobs:
         fetch-depth: 1
     - name: Get CP deps
       run: python tools/ci_fetch_deps.py ${{ matrix.board }} ${{ github.sha }}
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
     - name: Install dependencies
       run: |
         sudo apt-get install -y gettext
         pip install -r requirements-ci.txt -r requirements-dev.txt
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
     - name: Versions
       run: |
         gcc --version
@@ -487,8 +488,9 @@ jobs:
         pip install -r requirements-ci.txt -r requirements-dev.txt
         wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
         sudo tar -C /usr --strip-components=1 -xaf gcc-arm-10.3-2021.07-x86_64-aarch64-none-elf.tar.xz
-        wget --no-verbose https://adafruit-circuit-python.s3.amazonaws.com/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
-        sudo tar -C /usr --strip-components=1 -xaf gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+    - uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '10-2020-q4'
     - name: Install mkfs.fat
       run: |
         wget https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz

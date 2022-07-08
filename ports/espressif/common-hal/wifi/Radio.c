@@ -139,6 +139,16 @@ void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const uint8_t
     esp_wifi_set_mac(ESP_IF_WIFI_STA, mac);
 }
 
+uint8_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self) {
+    int8_t tx_power;
+    esp_wifi_get_max_tx_power(&tx_power);
+    return tx_power / 4;
+}
+
+void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const uint8_t tx_power) {
+    esp_wifi_set_max_tx_power(tx_power * 4);
+}
+
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
     uint8_t mac[MAC_ADDRESS_LENGTH];
     esp_wifi_get_mac(ESP_IF_WIFI_AP, mac);
@@ -318,6 +328,7 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             self->retries_left = 0;
         }
     } while ((bits & (WIFI_CONNECTED_BIT | WIFI_DISCONNECTED_BIT)) == 0 && !mp_hal_is_interrupted());
+
     if ((bits & WIFI_DISCONNECTED_BIT) != 0) {
         if (self->last_disconnect_reason == WIFI_REASON_AUTH_FAIL) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;

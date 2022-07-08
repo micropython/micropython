@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,28 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/port.h"
-#include "supervisor/shared/stack.h"
+// Board setup
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#define MICROPY_HW_BOARD_NAME       "Wemos Lolin C3 Mini" // from Wemos MP
+#define MICROPY_HW_MCU_NAME         "ESP32-C3FH4" // from Wemos MP
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+// From Wemos C3 Mini Schematic
+// https://www.wemos.cc/en/latest/_static/files/sch_c3_mini_v1.0.0.pdf
+// And MP Config
+// https://github.com/micropython/micropython/blob/master/ports/esp32/boards/LOLIN_C3_MINI
+// Status LED
+#define MICROPY_HW_NEOPIXEL         (&pin_GPIO7)
 
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#endif
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO6, .sda = &pin_GPIO5}}
 
-#if CIRCUITPY_WEB_WORKFLOW
-#include "supervisor/shared/web_workflow/web_workflow.h"
-#endif
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO10, .mosi = &pin_GPIO7, .miso = &pin_GPIO8}}
 
-void port_background_task(void) {
-    // Zero delay in case FreeRTOS wants to switch to something else.
-    vTaskDelay(0);
-    #if CIRCUITPY_PULSEIO
-    pulsein_background();
-    #endif
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
 
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_background();
-    #endif
-}
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
 
-void port_start_background_task(void) {
-}
-
-void port_finish_background_task(void) {
-}
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

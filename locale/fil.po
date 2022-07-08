@@ -73,7 +73,7 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c
 #: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c
+#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/rtc/RTC.c
 msgid "%q"
 msgstr ""
 
@@ -436,7 +436,6 @@ msgstr ""
 msgid "All event channels in use"
 msgstr "Lahat ng event channels ginagamit"
 
-#: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "All state machines in use"
 msgstr ""
@@ -522,7 +521,7 @@ msgstr ""
 msgid "AuthMode.OPEN is not used with password"
 msgstr ""
 
-#: shared-bindings/wifi/Radio.c
+#: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
 msgstr ""
 
@@ -1171,6 +1170,10 @@ msgstr ""
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Internal error #%d"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Internal watchdog timer expired."
 msgstr ""
 
 #: py/argcheck.c
@@ -2262,10 +2265,6 @@ msgstr ""
 
 #: shared-bindings/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer.timeout must be greater than 0"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "Watchdog timer expired."
 msgstr ""
 
 #: py/builtinhelp.c
@@ -3954,10 +3953,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
-msgstr ""
-
-#: shared-bindings/wifi/Radio.c
-msgid "ssid can't be more than 32 bytes"
 msgstr ""
 
 #: py/objstr.c
