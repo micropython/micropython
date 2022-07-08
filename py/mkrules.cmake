@@ -180,7 +180,12 @@ if(MICROPY_FROZEN_MANIFEST)
     # Note: target_compile_definitions already added earlier.
 
     if(NOT MICROPY_LIB_DIR)
-        set(MICROPY_LIB_DIR ${MICROPY_DIR}/../micropython-lib)
+        string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/micropython-lib)
+        set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
+    endif()
+
+    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+        message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
     # If MICROPY_MPYCROSS is not explicitly defined in the environment (which
