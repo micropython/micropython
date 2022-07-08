@@ -121,28 +121,6 @@ def check_vid_pid(files, clusterlist):
         )
         sys.exit(duplicate_message)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     else:
         print("No USB PID duplicates found.")
 

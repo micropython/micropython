@@ -89,7 +89,7 @@ void common_hal_mcu_enable_interrupts(void) {
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     switch (runmode) {
         case RUNMODE_UF2:
-            #if defined(CONFIG_IDF_TARGET_ESP32) ||defined(CONFIG_IDF_TARGET_ESP32C3)
+            #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3)
             mp_arg_error_invalid(MP_QSTR_run_mode);
             #else
             // 0x11F2 is APP_REQUEST_UF2_RESET_HINT & is defined by TinyUF2
@@ -112,7 +112,7 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             break;
         case RUNMODE_BOOTLOADER:
             // DFU download
-            #if defined(CONFIG_IDF_TARGET_ESP32) ||defined(CONFIG_IDF_TARGET_ESP32C3)
+            #if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32C3)
             mp_arg_error_invalid(MP_QSTR_run_mode);
             #else
             chip_usb_set_persist_flags(USBDC_BOOT_DFU);

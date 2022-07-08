@@ -56,8 +56,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
         self->channel = DAC_CHANNEL_1;
     } else if (pin == &pin_CHANNEL_2) {
         self->channel = DAC_CHANNEL_2;
-    }
-    else {
+    } else {
         raise_ValueError_invalid_pin();
     }
     dac_output_enable(self->channel);
