@@ -47,22 +47,22 @@
 // SPI6_RX: DMA2_Stream6.CHANNEL_1
 
 #if defined(MICROPY_HW_SPI1_SCK)
-SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle1 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI2_SCK)
-SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle2 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI3_SCK)
-SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle3 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI4_SCK)
-SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle4 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI5_SCK)
-SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 #endif
 #if defined(MICROPY_HW_SPI6_SCK)
-SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
+STATIC SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
 
 const spi_t spi_obj[6] = {
