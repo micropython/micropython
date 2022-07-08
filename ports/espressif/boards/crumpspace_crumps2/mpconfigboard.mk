@@ -18,7 +18,5 @@ CIRCUITPY_ESP_FLASH_SIZE = 4MB
 
 CIRCUITPY_BITBANG_APA102 = 1
 
-CIRCUITPY_ESP_PSRAM = 0
-
 # Include these Python libraries in firmware.
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_DotStar

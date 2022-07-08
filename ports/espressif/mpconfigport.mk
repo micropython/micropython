@@ -80,8 +80,3 @@ endif
 # only if something else is turned off, such as HID.
 USB_NUM_ENDPOINT_PAIRS = 7
 USB_NUM_IN_ENDPOINTS = 5
-
-#ifndef CIRCUITPY_ESP_PSRAM
-#error CIRCUITPY_ESP_PSRAM must be specified in mpconfigboard.mk as 0 or 1. Use 1 if the board has PSRAM.
-#endif
-CFLAGS += -DCIRCUITPY_ESP_PSRAM=$(CIRCUITPY_ESP_PSRAM)

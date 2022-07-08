@@ -77,7 +77,8 @@ static const uint64_t pin_mask_reset_forbidden =
     // Never ever reset pins used to communicate with SPI flash and PSRAM.
     GPIO_SEL_19 |         // USB D-
     GPIO_SEL_20 |         // USB D+
-    #if CIRCUITPY_ESP_PSRAM
+    #if defined (CONFIG_ESP32_SPIRAM_SUPPORT) || defined(CONFIG_ESP32S2_SPIRAM_SUPPORT) || defined(CONFIG_ESP32S3_SPIRAM_SUPPORT)
+    // Note ESP32-C3 does not have SPIRAM support.
     // Board uses PSRAM, and needs another chip select.
     GPIO_SEL_26 |         // SPICS1
     #endif
