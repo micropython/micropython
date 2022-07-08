@@ -124,7 +124,6 @@ static void _read_next_frame_header(void) {
         size_t mask_offset = cp_serial.frame_index - mask_start;
         cp_serial.mask[mask_offset] = h;
         cp_serial.frame_index++;
-        ESP_LOGI(TAG, "mask %08x", (uint32_t)*cp_serial.mask);
     }
     // Reply to PINGs and CLOSE.
     while ((cp_serial.opcode == 0x8 ||
@@ -136,6 +135,11 @@ static void _read_next_frame_header(void) {
             if (cp_serial.opcode == 0x9) {
                 ESP_LOGI(TAG, "websocket ping");
                 opcode = 0xA; // PONG
+            } else {
+                // Set the TCP socket to send immediately so that we send the payload back before
+                // closing the connection.
+                int nodelay = 1;
+                lwip_setsockopt(cp_serial.socket.num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
             }
             uint8_t frame_header[2];
             frame_header[0] = 1 << 7 | opcode;
@@ -158,6 +162,8 @@ static void _read_next_frame_header(void) {
             if (cp_serial.opcode == 0x8) {
                 ESP_LOGI(TAG, "websocket closed");
                 cp_serial.closed = true;
+
+                common_hal_socketpool_socket_close(&cp_serial.socket);
             }
         }
     }
@@ -193,6 +199,7 @@ bool websocket_available(void) {
 char websocket_read_char(void) {
     uint8_t c;
     _read_next_payload_byte(&c);
+    ESP_LOGI(TAG, "read %c", c);
     return c;
 }
 
