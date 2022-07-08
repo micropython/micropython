@@ -1683,10 +1683,18 @@ STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
 }
 
 STATIC void emit_native_store_attr(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype_base, vtype_val;
-    emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
+    vtype_kind_t vtype_base;
+    vtype_kind_t vtype_val = peek_vtype(emit, 1);
+    if (vtype_val == VTYPE_PYOBJ) {
+        emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
+    } else {
+        emit_access_stack(emit, 2, &vtype_val, REG_ARG_1); // arg1 = value
+        emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype_val, REG_ARG_2); // arg2 = type
+        ASM_MOV_REG_REG(emit->as, REG_ARG_3, REG_RET); // arg3 = value (converted)
+        emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
+        adjust_stack(emit, -1); // pop value
+    }
     assert(vtype_base == VTYPE_PYOBJ);
-    assert(vtype_val == VTYPE_PYOBJ);
     emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
