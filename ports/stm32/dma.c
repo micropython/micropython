@@ -161,7 +161,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)) || defined(STM32WL)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -171,7 +171,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
     .MemDataAlignment = DMA_MDATAALIGN_WORD,
     #if defined(STM32F4) || defined(STM32F7)
     .Mode = DMA_PFCTRL,
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     .Mode = DMA_NORMAL,
     #endif
     .Priority = DMA_PRIORITY_VERY_HIGH,
@@ -189,7 +189,7 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -1221,7 +1221,7 @@ void DMA1_Channel4_5_6_7_IRQHandler(void) {
     IRQ_EXIT(DMA1_Channel4_5_6_7_IRQn);
 }
 
-#elif defined(STM32L1) || defined(STM32L4) || defined(STM32WB)
+#elif defined(STM32L1) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
 void DMA1_Channel1_IRQHandler(void) {
     IRQ_ENTER(DMA1_Channel1_IRQn);
@@ -1344,9 +1344,9 @@ static void dma_enable_clock(dma_id_t dma_id) {
     dma_enable_mask |= (1 << dma_id);
     MICROPY_END_ATOMIC_SECTION(irq_state);
 
-    #if defined(STM32WB)
-    // This MCU has a DMAMUX peripheral which needs to be enabled to multiplex the channels.
+    #if defined(STM32G4) || defined(STM32WB) || defined(STM32WL)
     if (!__HAL_RCC_DMAMUX1_IS_CLK_ENABLED()) {
+        // MCU has a DMAMUX peripheral which needs to be enabled to multiplex the channels.
         __HAL_RCC_DMAMUX1_CLK_ENABLE();
     }
     #endif
@@ -1354,9 +1354,6 @@ static void dma_enable_clock(dma_id_t dma_id) {
     if (dma_id < NSTREAMS_PER_CONTROLLER) {
         if (((old_enable_mask & DMA1_ENABLE_MASK) == 0) && !DMA1_IS_CLK_ENABLED()) {
             __HAL_RCC_DMA1_CLK_ENABLE();
-            #if defined(STM32G4)
-            __HAL_RCC_DMAMUX1_CLK_ENABLE();
-            #endif
 
             // We just turned on the clock. This means that anything stored
             // in dma_last_channel (for DMA1) needs to be invalidated.
@@ -1371,9 +1368,6 @@ static void dma_enable_clock(dma_id_t dma_id) {
         if (((old_enable_mask & DMA2_ENABLE_MASK) == 0) && !DMA2_IS_CLK_ENABLED()) {
             __HAL_RCC_DMA2_CLK_ENABLE();
 
-            #if defined(STM32G4)
-            __HAL_RCC_DMAMUX1_CLK_ENABLE();
-            #endif
             // We just turned on the clock. This means that anything stored
             // in dma_last_channel (for DMA2) needs to be invalidated.
 
