@@ -164,8 +164,15 @@ $(error Support for FROZEN_MPY_DIR was removed. Please use manifest.py instead, 
 endif
 
 ifneq ($(FROZEN_MANIFEST),)
+# If we're using the default submodule path for micropython-lib, then make
+# sure it's included in "make submodules".
+ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
+GIT_SUBMODULES += lib/micropython-lib
+endif
+
 # to build frozen_content.c from a manifest
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY)
+	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo "Error: micropython-lib not initialized. Run 'make submodules'"; false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
