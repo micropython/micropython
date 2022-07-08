@@ -26,6 +26,8 @@
 
 // This code glues the code emitters to the runtime.
 
+#include "esp_log.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -195,6 +197,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, mp_obj_t def_ar
             break;
         #endif
         default:
+            ESP_LOGI("mp_make_function_from_raw_code", "kind: %d, scope_flags: 0x%x, n_pos_args: %d, fun_data: %p, const_table: %p", rc->kind, rc->scope_flags, rc->n_pos_args, rc->fun_data, rc->const_table);
             // rc->kind should always be set and BYTECODE is the only remaining case
             assert(rc->kind == MP_CODE_BYTECODE);
             fun = mp_obj_new_fun_bc(def_args, def_kw_args, rc->fun_data, rc->const_table);
