@@ -14,7 +14,7 @@ BAUD ?= 460800
 
 PYTHON ?= python3
 
-GIT_SUBMODULES = lib/berkeley-db-1.xx
+GIT_SUBMODULES += lib/berkeley-db-1.xx
 
 .PHONY: all clean deploy erase submodules FORCE
 

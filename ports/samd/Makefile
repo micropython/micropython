@@ -24,7 +24,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES = lib/asf4 lib/tinyusb
+GIT_SUBMODULES += lib/asf4 lib/tinyusb
 
 INC += -I.
 INC += -I$(TOP)
