@@ -558,7 +558,7 @@ def execfile(filename, device="/dev/ttyACM0", baudrate=115200, user="micro", pas
     pyb.close()
 
 
-def filesystem_command(pyb, args, progress_callback=None):
+def filesystem_command(pyb, args, progress_callback=None, verbose=False):
     def fname_remote(src):
         if src.startswith(":"):
             src = src[1:]
@@ -590,7 +590,8 @@ def filesystem_command(pyb, args, progress_callback=None):
             for src in srcs:
                 src = fname_remote(src)
                 dest2 = fname_cp_dest(src, dest)
-                print(fmt % (src, dest2))
+                if verbose:
+                    print(fmt % (src, dest2))
                 op(src, dest2, progress_callback=progress_callback)
         else:
             op = {
@@ -604,7 +605,8 @@ def filesystem_command(pyb, args, progress_callback=None):
                 args = [""]
             for src in args:
                 src = fname_remote(src)
-                print("%s :%s" % (cmd, src))
+                if verbose:
+                    print("%s :%s" % (cmd, src))
                 op(src)
     except PyboardError as er:
         print(str(er.args[2], "ascii"))
@@ -756,7 +758,7 @@ def main():
 
         # do filesystem commands, if given
         if args.filesystem:
-            filesystem_command(pyb, args.files)
+            filesystem_command(pyb, args.files, verbose=True)
             del args.files[:]
 
         # run the command, if given
