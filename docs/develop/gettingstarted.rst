@@ -103,7 +103,7 @@ For the stm32 port, the ARM cross-compiler is required:
    $ sudo apt-get install arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
 
 See the `ARM GCC
-toolchain <https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm>`_
+toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
 for the latest details.
 
 Python is also required. Python 2 is supported for now, but we recommend using Python 3.
