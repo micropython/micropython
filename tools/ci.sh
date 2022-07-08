@@ -245,8 +245,10 @@ function ci_qemu_arm_setup {
 
 function ci_qemu_arm_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/qemu-arm submodules
     make ${MAKEOPTS} -C ports/qemu-arm CFLAGS_EXTRA=-DMP_ENDIANNESS_BIG=1
     make ${MAKEOPTS} -C ports/qemu-arm clean
+    make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test submodules
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test clean
     make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test BOARD=sabrelite test
@@ -354,6 +356,7 @@ function ci_teensy_setup {
 }
 
 function ci_teensy_build {
+    make ${MAKEOPTS} -C ports/teensy submodules
     make ${MAKEOPTS} -C ports/teensy
 }
 
@@ -577,6 +580,7 @@ function ci_unix_float_clang_run_tests {
 
 function ci_unix_settrace_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE[@]}"
 }
 
@@ -586,6 +590,7 @@ function ci_unix_settrace_run_tests {
 
 function ci_unix_settrace_stackless_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/unix submodules
     make ${MAKEOPTS} -C ports/unix "${CI_UNIX_OPTS_SYS_SETTRACE_STACKLESS[@]}"
 }
 
@@ -661,6 +666,7 @@ function ci_windows_setup {
 
 function ci_windows_build {
     make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/windows submodules
     make ${MAKEOPTS} -C ports/windows CROSS_COMPILE=i686-w64-mingw32-
 }
 
