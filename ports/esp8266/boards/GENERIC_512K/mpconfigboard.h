@@ -6,6 +6,7 @@
 #define MICROPY_PY_FSTRINGS             (0)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS  (0)
+#define MICROPY_PY_REVERSE_SPECIAL_METHODS (0)
 #define MICROPY_PY_SYS_STDIO_BUFFER     (0)
 #define MICROPY_PY_UASYNCIO             (0)
 #define MICROPY_PY_URE_SUB              (0)
