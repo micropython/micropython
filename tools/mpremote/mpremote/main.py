@@ -308,6 +308,9 @@ def do_filesystem(pyb, args):
         else:
             files.append(os.path.split(path))
 
+    # Don't be verbose when using cat, so output can be redirected to something.
+    verbose = args[0] != "cat"
+
     if args[0] == "cp" and args[1] == "-r":
         args.pop(0)
         args.pop(0)
@@ -329,9 +332,10 @@ def do_filesystem(pyb, args):
                 pyb,
                 ["cp", "/".join((dir, file)), ":" + dir + "/"],
                 progress_callback=show_progress_bar,
+                verbose=verbose,
             )
     else:
-        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar)
+        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar, verbose=verbose)
     args.clear()
 
 
