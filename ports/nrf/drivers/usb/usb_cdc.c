@@ -155,12 +155,13 @@ static void cdc_task(bool tx)
     }
 }
 
-static void usb_cdc_loop(void) {
+void usb_cdc_loop(void) {
     tud_task();
     cdc_task(true);
 }
 
 void tud_cdc_rx_cb(uint8_t itf) {
+    tud_task();
     cdc_task(false);
 }
 
