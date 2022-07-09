@@ -71,6 +71,8 @@ extension_by_board = {
     "meowbit_v121": UF2,
     "sparkfun_stm32_thing_plus": BIN_UF2,
     "swan_r5": BIN_UF2,
+    # esp32
+    "adafruit_feather_esp32_v2": BIN,
     # esp32c3
     "adafruit_qtpy_esp32c3": BIN,
     "ai_thinker_esp32-c3s": BIN,
