@@ -19,7 +19,6 @@ Example usage::
     qe.init(cpc=128)                # Specify 128 counts/cycle
     qe.init(index=Pin(3))           # Specify Pin 3 as Index pulse input
     qe.deinit()                     # turn off the Quadrature Encoder
-    qe.init(match=64)               # Set a match event at count 64
     qe.irq(qe.IRQ_MATCH, value=100, handler=handler)
                                     # Call the function handler at a match event
 
@@ -62,7 +61,7 @@ Constructors
         (1000000000 * 2550 * 4 / CPU_CLK). A value of 0 sets the filter off.
       - *cpc*\=value. Specify the number of counts per cycle. Since the
         Encoder counts all four phases of the input signal, the cpc value has to be four
-        time the ppr value given in the encoder data sheet. The position counter will count up
+        times the ppr value given in the encoder data sheet. The position counter will count up
         from the 0 up to cpc - 1, and then reset to the init value of 0 and increase
         the cycles counter by one. The default is: no cpc set. In that case the
         position counter overflows at 2**32 - 1. When counting down, the cycles counter changes
@@ -78,7 +77,7 @@ The arguments phase_a, phase_b and filter_ns are generic across ports, all other
 Methods
 -------
 
-.. method:: Encoder.init(*, phase_a, phase_b, home, reverse, match_pin, filter_ns, cpc, match, signed, index)
+.. method:: Encoder.init(*, phase_a, phase_b, home, match_pin, filter_ns, cpc, signed, index)
 
    Modify settings for the Encoder object.  See the above constructor for details
    about the parameters.
@@ -183,7 +182,6 @@ Example usage::
     counter.value(0)                      # Set the counter to 0
     counter.init(cpc=128)                 # Specify 128 counts/cycle
     counter.deinit()                      # turn off the Counter
-    counter.init(match=1000)              # Create a match event at count 1000
     counter.irq(Counter.IRQ_MATCH, handler) # Call the function handler at a counter match
 
     counter                               # show the Counter object properties
