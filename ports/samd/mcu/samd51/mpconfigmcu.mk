@@ -1,8 +1,11 @@
 MICROPY_VFS_LFS2 ?= 1
+MICROPY_VFS_FAT ?= 1
 
 SRC_S += shared/runtime/gchelper_m3.s
 
-SRC_C += drivers/dht/dht.c \
+SRC_C += \
+	fatfs_port.c \
+	drivers/dht/dht.c \
 
 LIBM_SRC_C +=  $(addprefix lib/libm/,\
 	acoshf.c \
