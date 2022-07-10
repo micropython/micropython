@@ -1,4 +1,6 @@
 
+MICROPY_VFS_LFS2 ?= 1
+
 SRC_S += shared/runtime/gchelper_m3.s
 
 SRC_MOD +=  $(addprefix lib/libm/,\

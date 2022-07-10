@@ -6,6 +6,7 @@
 // MicroPython emitters
 #define MICROPY_EMIT_THUMB              (0)
 #define MICROPY_EMIT_INLINE_THUMB       (0)
+#define MICROPY_MODULE_BUILTIN_INIT     (1)
 
 #define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_PY_BUILTINS_COMPLEX     (0)
@@ -18,6 +19,10 @@
 
 #define CPU_FREQ                        (48000000)
 #define DFLL48M_FREQ                    (48000000)
+
+// Use VfsLfs's types for fileio/textio
+#define mp_type_fileio mp_type_vfs_lfs1_fileio
+#define mp_type_textio mp_type_vfs_lfs1_textio
 
 #define IRQ_PRI_PENDSV                  ((1 << __NVIC_PRIO_BITS) - 1)
 
