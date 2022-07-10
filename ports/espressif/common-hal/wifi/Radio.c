@@ -146,7 +146,7 @@ mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t tx_power) {
-    esp_wifi_set_max_tx_power(tx_power * 4.0);
+    esp_wifi_set_max_tx_power(tx_power * 4.0f);
 }
 
 mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self) {
