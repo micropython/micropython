@@ -29,7 +29,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "mphalport.h"
 
-static uint32_t time_offset = 0;
+uint32_t time_offset = 0;
 
 // localtime([secs])
 STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
