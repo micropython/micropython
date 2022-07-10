@@ -8,6 +8,9 @@ ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),STM32F405xx STM32F407xx))
         CIRCUITPY_SDIOIO ?= 1
         # Number of USB endpoint pairs.
         USB_NUM_ENDPOINT_PAIRS = 4
+endif
+
+ifeq ($(MCU_VARIANT),STM32F407xx)
         UF2_FAMILY_ID ?= 0x6d0922fa
 endif
 
