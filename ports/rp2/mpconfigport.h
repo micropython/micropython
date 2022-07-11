@@ -154,6 +154,28 @@ struct _mp_bluetooth_nimble_malloc_t;
 #define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 #endif
 
+// By default networking should include sockets, ssl, websockets, webrepl, dupterm.
+#if MICROPY_PY_NETWORK
+#ifndef MICROPY_PY_USOCKET
+#define MICROPY_PY_USOCKET              (1)
+#endif
+#ifndef MICROPY_PY_USSL
+#define MICROPY_PY_USSL                 (1)
+#endif
+#ifndef MICROPY_PY_UWEBSOCKET
+#define MICROPY_PY_UWEBSOCKET           (1)
+#endif
+#ifndef MICROPY_PY_UHASHLIB_SHA1
+#define MICROPY_PY_UHASHLIB_SHA1        (1)
+#endif
+#ifndef MICROPY_PY_WEBREPL
+#define MICROPY_PY_WEBREPL              (1)
+#endif
+#ifndef MICROPY_PY_OS_DUPTERM
+#define MICROPY_PY_OS_DUPTERM           (1)
+#endif
+#endif
+
 #if MICROPY_PY_NETWORK_CYW43
 extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_HW_NIC_CYW43 \
