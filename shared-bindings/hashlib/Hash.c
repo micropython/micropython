@@ -26,13 +26,6 @@
 
 #include "shared-bindings/hashlib/Hash.h"
 
-// #include "shared-bindings/util.h"
-
-// #include "shared/runtime/buffer_helper.h"
-// #include "shared/runtime/interrupt_char.h"
-
-// #include "py/mperrno.h"
-// #include "py/mphal.h"
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/objstr.h"

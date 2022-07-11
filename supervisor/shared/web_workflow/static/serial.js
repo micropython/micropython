@@ -21,7 +21,6 @@ function onSubmit() {
     input.focus();
 }
 
-// Connect to Web Socket
 ws = new WebSocket("ws://" + window.location.host + "/cp/serial/");
 
 ws.onopen = function() {
@@ -32,7 +31,6 @@ var setting_title = false;
 var encoder = new TextEncoder();
 var left_count = 0;
 ws.onmessage = function(e) {
-  // e.data contains received string.
   if (e.data == "\x1b]0;") {
     setting_title = true;
     title.textContent = "";

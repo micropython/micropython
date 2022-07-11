@@ -522,10 +522,16 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
         "HTTP/1.1 301 Moved Permanently\r\n",
         "Connection: close\r\n",
         "Content-Length: 0\r\n",
-        "Location: http://", hostname, ".local", path, "\r\n", NULL);
+        "Location: ", NULL);
+    if (request->websocket) {
+        _send_str(socket, "ws");
+    } else {
+        _send_str(socket, "http");
+    }
+
+    _send_strs(socket, "://", hostname, ".local", path, "\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
-    ESP_LOGI(TAG, "redirect");
 }
 
 static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
@@ -853,10 +859,7 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
 
-
-
 static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *request) {
-    ESP_LOGI(TAG, "websocket!");
     // Compute accept key
     hashlib_hash_obj_t hash;
     common_hal_hashlib_new(&hash, "sha1");
@@ -876,8 +879,6 @@ static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *
         "Sec-WebSocket-Accept: ", encoded_accept, "\r\n",
         "\r\n", NULL);
     websocket_handoff(socket);
-
-    ESP_LOGI(TAG, "socket upgrade done");
     // socket is now closed and "disconnected".
 }
 
@@ -885,7 +886,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
-        ESP_LOGI(TAG, "bad origin %s", request->origin);
+        ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
@@ -1199,7 +1200,6 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         return;
     }
     bool reload = _reply(socket, request);
-    ESP_LOGI(TAG, "reply done");
     _reset_request(request);
     autoreload_resume(AUTORELOAD_SUSPEND_WEB);
     if (reload) {
@@ -1217,12 +1217,10 @@ void supervisor_web_workflow_background(void) {
         uint32_t port;
         int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port);
         if (newsoc == -EBADF) {
-            ESP_LOGI(TAG, "listen closed");
             common_hal_socketpool_socket_close(&listening);
             return;
         }
         if (newsoc > 0) {
-            ESP_LOGI(TAG, "new socket %d", newsoc);
             // Close the active socket because we have another we accepted.
             if (!common_hal_socketpool_socket_get_closed(&active)) {
                 common_hal_socketpool_socket_close(&active);
@@ -1243,7 +1241,6 @@ void supervisor_web_workflow_background(void) {
 
     // If we have a request in progress, continue working on it.
     if (common_hal_socketpool_socket_get_connected(&active)) {
-        // ESP_LOGI(TAG, "active connected %d", active_request.in_progress);
         _process_request(&active, &active_request);
     }
 }
