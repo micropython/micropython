@@ -4,9 +4,8 @@
 // todo: We need something to check our binary size
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (848 * 1024)
 
+// Enable networking.
 #define MICROPY_PY_NETWORK 1
-#define MICROPY_PY_USOCKET 1
-#define MICROPY_PY_USSL 1
 
 // CYW43 driver configuration.
 #define CYW43_USE_SPI (1)

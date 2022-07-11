@@ -4,13 +4,8 @@
 #define MICROPY_HW_BOARD_NAME           "Arduino Nano RP2040 Connect"
 #define MICROPY_HW_FLASH_STORAGE_BYTES  (8 * 1024 * 1024)
 
-// Enable networking and sockets.
+// Enable networking.
 #define MICROPY_PY_NETWORK              (1)
-#define MICROPY_PY_USOCKET              (1)
-#define MICROPY_PY_WEBREPL              (1)
-#define MICROPY_PY_UWEBSOCKET           (1)
-#define MICROPY_PY_UHASHLIB_SHA1        (1)
-#define MICROPY_PY_OS_DUPTERM           (1)
 
 // Disable internal error numbers.
 #define MICROPY_USE_INTERNAL_ERRNO      (0)

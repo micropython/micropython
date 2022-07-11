@@ -4,10 +4,8 @@
 #define MICROPY_HW_BOARD_NAME             "W5100S-EVB-Pico"
 #define MICROPY_HW_FLASH_STORAGE_BYTES    (1408 * 1024)
 
-// Enable networking and sockets.
+// Enable networking.
 #define MICROPY_PY_NETWORK                (1)
-#define MICROPY_PY_USOCKET                (1)
-#define MICROPY_PY_USSL                   (1)
 
 // Wiznet HW config.
 #define MICROPY_HW_WIZNET_SPI_ID          (0)
