@@ -138,17 +138,17 @@ MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
 
-//|     tx_power: int
+//|     tx_power: float
 //|     """Wifi transmission power, in dBm."""
 //|
 STATIC mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return mp_obj_new_int(common_hal_wifi_radio_get_tx_power(self));
+    return mp_obj_new_float(common_hal_wifi_radio_get_tx_power(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_tx_power_obj, wifi_radio_get_tx_power);
 
 STATIC mp_obj_t wifi_radio_set_tx_power(mp_obj_t self_in, mp_obj_t tx_power_in) {
-    mp_int_t tx_power = mp_obj_get_int(tx_power_in);
+    mp_float_t tx_power = mp_obj_get_float(tx_power_in);
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
     common_hal_wifi_radio_set_tx_power(self, tx_power);
     return mp_const_none;
