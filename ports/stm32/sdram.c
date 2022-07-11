@@ -11,6 +11,7 @@
 #include <string.h>
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "boardctrl.h"
 #include "pin.h"
 #include "pin_static_af.h"
 #include "mpu.h"
