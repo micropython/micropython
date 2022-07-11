@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-01 17:46+0000\n"
+"PO-Revision-Date: 2022-07-12 13:10+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -2407,7 +2407,7 @@ msgstr "array och indexlängd måste vara lika"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
-msgstr ""
+msgstr "array har för många dimensioner"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2780,7 +2780,7 @@ msgstr "Argumenten convolve kan inte vara tomma"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "corrupted file"
-msgstr ""
+msgstr "korrupt fil"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -2878,7 +2878,7 @@ msgstr "tom"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "empty file"
-msgstr ""
+msgstr "tom fil"
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3200,7 +3200,7 @@ msgstr "indatamatrisen är singulär"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be 1- or 2-d"
-msgstr ""
+msgstr "input måste vara 1- eller 2-d"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
@@ -3415,7 +3415,7 @@ msgstr "max_length måste vara 0-%d när fixed_length är %s"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
-msgstr ""
+msgstr "maximalt antal dimensioner är "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -4254,11 +4254,11 @@ msgstr "typen %q stöder inte '%q', '%q'"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols is too high"
-msgstr ""
+msgstr "usecols är för hög"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols keyword must be specified"
-msgstr ""
+msgstr "nyckelordet usecols måste anges"
 
 #: py/objint.c
 #, c-format
@@ -4303,7 +4303,7 @@ msgstr "fel axel angiven"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "wrong dtype"
-msgstr ""
+msgstr "fel dtype"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong index type"
@@ -4321,7 +4321,7 @@ msgstr "fel längd på villkorsmatrisen"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of index array"
-msgstr ""
+msgstr "fel längd av index array"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
