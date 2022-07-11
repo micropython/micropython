@@ -1019,14 +1019,13 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
         } else if (strcmp(path, "/serial/") == 0) {
-            if (false && !request->authenticated) {
+            if (!request->authenticated) {
                 if (_api_password[0] != '\0') {
                     _reply_unauthorized(socket, request);
                 } else {
                     _reply_forbidden(socket, request);
                 }
             } else if (request->websocket) {
-                ESP_LOGI(TAG, "websocket!");
                 _reply_websocket_upgrade(socket, request);
             } else {
                 _REPLY_STATIC(socket, request, serial_html);
@@ -1059,7 +1058,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
 }
 
 static void _reset_request(_request *request) {
-    ESP_LOGI(TAG, "reset request");
     request->state = STATE_METHOD;
     request->origin[0] = '\0';
     request->content_length = 0;

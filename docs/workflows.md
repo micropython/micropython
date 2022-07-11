@@ -286,6 +286,44 @@ not protected by basic auth in case the device is someone elses.
 
 Only `GET` requests are supported and will return `405 Method Not Allowed` otherwise.
 
+#### `/cp/devices.json`
+
+Returns information about other devices found on the network using MDNS.
+
+* `total`: Total MDNS response count. May be more than in `devices` if internal limits were hit.
+* `devices`: List of discovered devices.
+	* `hostname`: MDNS hostname
+	* `instance_name`: MDNS instance name. Defaults to human readable board name.
+	* `port`: Port of CircuitPython Web API
+	* `ip`: IP address
+
+Example:
+```sh
+curl -v -L http://circuitpython.local/cp/devices.json
+```
+
+```json
+{
+	"total": 1,
+	"devices": [
+		{
+			"hostname": "cpy-951032",
+			"instance_name": "Adafruit Feather ESP32-S2 TFT",
+			"port": 80,
+			"ip": "192.168.1.235"
+		}
+	]
+}
+```
+
+#### `/cp/serial/`
+
+
+Serves a basic serial terminal program when a `GET` request is received without the
+`Upgrade: websocket` header. Otherwise the socket is upgraded to a WebSocket. See WebSockets below for more detail.
+
+This is an authenticated endpoint in both modes.
+
 #### `/cp/version.json`
 
 Returns information about the device.
@@ -323,36 +361,6 @@ curl -v -L http://circuitpython.local/cp/version.json
 }
 ```
 
-#### `/cp/devices.json`
-
-Returns information about other devices found on the network using MDNS.
-
-* `total`: Total MDNS response count. May be more than in `devices` if internal limits were hit.
-* `devices`: List of discovered devices.
-	* `hostname`: MDNS hostname
-	* `instance_name`: MDNS instance name. Defaults to human readable board name.
-	* `port`: Port of CircuitPython Web API
-	* `ip`: IP address
-
-Example:
-```sh
-curl -v -L http://circuitpython.local/cp/devices.json
-```
-
-```json
-{
-	"total": 1,
-	"devices": [
-		{
-			"hostname": "cpy-951032",
-			"instance_name": "Adafruit Feather ESP32-S2 TFT",
-			"port": 80,
-			"ip": "192.168.1.235"
-		}
-	]
-}
-```
-
 ### Static files
 
 * `/favicon.ico` - Blinka
@@ -361,4 +369,12 @@ curl -v -L http://circuitpython.local/cp/devices.json
 
 ### WebSocket
 
-Coming soon!
+The CircuitPython serial interactions are available over a WebSocket. A WebSocket begins as a
+special HTTP request that gets upgraded to a WebSocket. Authentication happens before upgrading.
+
+WebSockets are *not* bare sockets once upgraded. Instead they have their own framing format for data.
+CircuitPython can handle PING and CLOSE opcodes. All others are treated as TEXT. Data to
+CircuitPython is expected to be masked UTF-8, as the spec requires. Data from CircuitPython to the
+client is unmasked. It is also unbuffered so the client will get a variety of frame sizes.
+
+Only one WebSocket at a time is supported.

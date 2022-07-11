@@ -48,7 +48,6 @@ void websocket_init(void) {
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
-    ESP_LOGI(TAG, "socket handed off");
     cp_serial.socket = *socket;
     cp_serial.closed = false;
     cp_serial.opcode = 0;
@@ -57,7 +56,6 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
     // Mark the original socket object as closed without telling the lower level.
     socket->connected = false;
     socket->num = -1;
-    ESP_LOGI(TAG, "socket hand off done");
 }
 
 bool websocket_connected(void) {
@@ -90,7 +88,6 @@ static void _read_next_frame_header(void) {
     if (cp_serial.frame_index == 0 && _read_byte(&h)) {
         cp_serial.frame_index++;
         cp_serial.opcode = h & 0xf;
-        ESP_LOGI(TAG, "fin %d opcode %x", h >> 7, cp_serial.opcode);
     }
     if (cp_serial.frame_index == 1 && _read_byte(&h)) {
         cp_serial.frame_index++;
@@ -108,8 +105,6 @@ static void _read_next_frame_header(void) {
         if (cp_serial.masked) {
             cp_serial.frame_len += 4;
         }
-
-        ESP_LOGI(TAG, "mask %d length %x", cp_serial.masked, len);
     }
     while (cp_serial.frame_index >= 2 &&
            cp_serial.frame_index < (cp_serial.payload_len_size + 2) &&
@@ -133,7 +128,6 @@ static void _read_next_frame_header(void) {
         if (cp_serial.frame_index == cp_serial.frame_len) {
             uint8_t opcode = 0x8; // CLOSE
             if (cp_serial.opcode == 0x9) {
-                ESP_LOGI(TAG, "websocket ping");
                 opcode = 0xA; // PONG
             } else {
                 // Set the TCP socket to send immediately so that we send the payload back before
@@ -160,7 +154,6 @@ static void _read_next_frame_header(void) {
         if (cp_serial.payload_remaining == 0) {
             cp_serial.frame_index = 0;
             if (cp_serial.opcode == 0x8) {
-                ESP_LOGI(TAG, "websocket closed");
                 cp_serial.closed = true;
 
                 common_hal_socketpool_socket_close(&cp_serial.socket);
@@ -199,7 +192,6 @@ bool websocket_available(void) {
 char websocket_read_char(void) {
     uint8_t c;
     _read_next_payload_byte(&c);
-    ESP_LOGI(TAG, "read %c", c);
     return c;
 }
 
@@ -232,7 +224,6 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
     char copy[len];
     memcpy(copy, text, len);
     copy[len] = '\0';
-    ESP_LOGI(TAG, "sent over websocket: %s", copy);
 }
 
 void websocket_write(const char *text, size_t len) {
