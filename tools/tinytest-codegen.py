@@ -79,6 +79,7 @@ exclude_tests = (
     "float/float_divmod.py",
     # requires double precision floating point to work
     "float/float2int_doubleprec_intbig.py",
+    "float/float_format_ints_doubleprec.py",
     "float/float_parse_doubleprec.py",
     # inline asm FP tests (require Cortex-M4)
     "inlineasm/asmfpaddsub.py",
