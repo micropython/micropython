@@ -307,14 +307,14 @@ outer_dispatch_loop:
             // loop to execute byte code
             for (;;) {
 dispatch_loop:
-#if MICROPY_OPT_COMPUTED_GOTO
+                #if MICROPY_OPT_COMPUTED_GOTO
                 DISPATCH();
-#else
+                #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();
                 TRACE_TICK(ip, sp, false);
                 switch (*ip++) {
-#endif
+                #endif
 
                 ENTRY(MP_BC_LOAD_CONST_FALSE):
                     PUSH(mp_const_false);
@@ -831,7 +831,7 @@ unwind_jump:;
                     mp_obj_dict_store(sp[0], sp[2], sp[1]);
                     DISPATCH();
 
-#if MICROPY_PY_BUILTINS_SET
+                #if MICROPY_PY_BUILTINS_SET
                 ENTRY(MP_BC_BUILD_SET): {
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_UINT;
@@ -839,9 +839,9 @@ unwind_jump:;
                     SET_TOP(mp_obj_new_set(unum, sp));
                     DISPATCH();
                 }
-#endif
+                #endif
 
-#if MICROPY_PY_BUILTINS_SLICE
+                #if MICROPY_PY_BUILTINS_SLICE
                 ENTRY(MP_BC_BUILD_SLICE): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t step = mp_const_none;
@@ -854,7 +854,7 @@ unwind_jump:;
                     SET_TOP(mp_obj_new_slice(start, stop, step));
                     DISPATCH();
                 }
-#endif
+                #endif
 
                 ENTRY(MP_BC_STORE_COMP): {
                     MARK_EXC_IP_SELECTIVE();
@@ -1248,7 +1248,7 @@ yield:
                     mp_import_all(POP());
                     DISPATCH();
 
-#if MICROPY_OPT_COMPUTED_GOTO
+                #if MICROPY_OPT_COMPUTED_GOTO
                 ENTRY(MP_BC_LOAD_CONST_SMALL_INT_MULTI):
                     PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
                     DISPATCH();
@@ -1276,7 +1276,7 @@ yield:
 
                 ENTRY_DEFAULT:
                     MARK_EXC_IP_SELECTIVE();
-#else
+                #else
                 ENTRY_DEFAULT:
                     if (ip[-1] < MP_BC_LOAD_CONST_SMALL_INT_MULTI + MP_BC_LOAD_CONST_SMALL_INT_MULTI_NUM) {
                         PUSH(MP_OBJ_NEW_SMALL_INT((mp_int_t)ip[-1] - MP_BC_LOAD_CONST_SMALL_INT_MULTI - MP_BC_LOAD_CONST_SMALL_INT_MULTI_EXCESS));
@@ -1296,9 +1296,8 @@ yield:
                         SET_TOP(mp_binary_op(ip[-1] - MP_BC_BINARY_OP_MULTI, lhs, rhs));
                         DISPATCH();
                     } else
-#endif
+                #endif // MICROPY_OPT_COMPUTED_GOTO
                 {
-
                     mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_NotImplementedError, MP_ERROR_TEXT("opcode"));
                     nlr_pop();
                     code_state->state[0] = obj;
@@ -1306,9 +1305,9 @@ yield:
                     return MP_VM_RETURN_EXCEPTION;
                 }
 
-#if !MICROPY_OPT_COMPUTED_GOTO
+                #if !MICROPY_OPT_COMPUTED_GOTO
                 } // switch
-#endif
+                #endif
 
 pending_exception_check:
                 // We've just done a branch, use this as a convenient point to
