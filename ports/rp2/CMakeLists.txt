@@ -323,7 +323,7 @@ list(APPEND MICROPY_SOURCE_QSTR
 )
 
 # Define mpy-cross flags
-set(MICROPY_CROSS_FLAGS -march=armv7m)
+set(MICROPY_CROSS_FLAGS -march=armv6m)
 
 # Set the frozen manifest file
 if (MICROPY_USER_FROZEN_MANIFEST)
