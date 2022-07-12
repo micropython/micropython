@@ -126,9 +126,7 @@ static void cdc_task(bool tx)
     if ( tud_cdc_connected() ) {
         // connected and there are data available
         while (tud_cdc_available()) {
-            int c;
-            uint32_t count = tud_cdc_read(&c, 1);
-            (void)count;
+            int c = tud_cdc_read_char();
             if (c == mp_interrupt_char) {
                 rx_ringbuf.iget = 0;
                 rx_ringbuf.iput = 0;
@@ -161,7 +159,6 @@ void usb_cdc_loop(void) {
 }
 
 void tud_cdc_rx_cb(uint8_t itf) {
-    tud_task();
     cdc_task(false);
 }
 

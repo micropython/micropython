@@ -356,6 +356,7 @@ extern const struct _mp_obj_module_t music_module;
     void *async_data[2]; \
 
 #if MICROPY_HW_USB_CDC
+#include "device/usbd.h"
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #else
 #define MICROPY_HW_USBDEV_TASK_HOOK ;
