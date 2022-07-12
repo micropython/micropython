@@ -57,7 +57,7 @@ ws.onerror = function(e) {
   set_enabled(false);
 };
 
-input.onbeforeinput = function(e) {
+input.addEventListener("beforeinput", function(e) {
   if (e.inputType == "insertLineBreak") {
     ws.send("\r");
     input.value = "";
@@ -68,7 +68,7 @@ input.onbeforeinput = function(e) {
   } else if (e.inputType == "deleteContentBackward") {
     ws.send("\b");
   }
-}
+});
 
 let ctrl_c = document.querySelector("#c");
 ctrl_c.onclick = function() {
