@@ -138,6 +138,27 @@ MP_PROPERTY_GETSET(wifi_radio_mac_address_obj,
     (mp_obj_t)&wifi_radio_get_mac_address_obj,
     (mp_obj_t)&wifi_radio_set_mac_address_obj);
 
+//|     tx_power: float
+//|     """Wifi transmission power, in dBm."""
+//|
+STATIC mp_obj_t wifi_radio_get_tx_power(mp_obj_t self_in) {
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    return mp_obj_new_float(common_hal_wifi_radio_get_tx_power(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_tx_power_obj, wifi_radio_get_tx_power);
+
+STATIC mp_obj_t wifi_radio_set_tx_power(mp_obj_t self_in, mp_obj_t tx_power_in) {
+    mp_float_t tx_power = mp_obj_get_float(tx_power_in);
+    wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_wifi_radio_set_tx_power(self, tx_power);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(wifi_radio_set_tx_power_obj, wifi_radio_set_tx_power);
+
+MP_PROPERTY_GETSET(wifi_radio_tx_power_obj,
+    (mp_obj_t)&wifi_radio_get_tx_power_obj,
+    (mp_obj_t)&wifi_radio_set_tx_power_obj);
+
 //|     mac_address_ap: ReadableBuffer
 //|     """MAC address for the AP. When the address is altered after interface is started
 //|        the changes would only be reflected once the interface restarts."""
@@ -549,6 +570,7 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mac_address), MP_ROM_PTR(&wifi_radio_mac_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_mac_address_ap), MP_ROM_PTR(&wifi_radio_mac_address_ap_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_tx_power), MP_ROM_PTR(&wifi_radio_tx_power_obj) },
     { MP_ROM_QSTR(MP_QSTR_start_scanning_networks),    MP_ROM_PTR(&wifi_radio_start_scanning_networks_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_scanning_networks),    MP_ROM_PTR(&wifi_radio_stop_scanning_networks_obj) },
 

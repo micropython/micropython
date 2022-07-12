@@ -2382,6 +2382,10 @@ msgstr ""
 msgid "array and index length must be equal"
 msgstr ""
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "array has too many dimensions"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2755,6 +2759,10 @@ msgstr ""
 msgid "convolve arguments must not be empty"
 msgstr ""
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "corrupted file"
+msgstr ""
+
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr ""
@@ -2848,6 +2856,10 @@ msgstr ""
 #: py/objdeque.c
 msgid "empty"
 msgstr "vuoto"
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "empty file"
+msgstr ""
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -2953,7 +2965,7 @@ msgstr ""
 msgid "first argument must be a tuple of ndarrays"
 msgstr ""
 
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/transform.c extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
 msgstr ""
 
@@ -3102,7 +3114,7 @@ msgstr ""
 msgid "incorrect padding"
 msgstr "padding incorretto"
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/transform.c
 msgid "index is out of bounds"
 msgstr ""
 
@@ -3169,6 +3181,10 @@ msgstr ""
 msgid "input matrix is singular"
 msgstr ""
 
+#: extmod/ulab/code/numpy/create.c
+msgid "input must be 1- or 2-d"
+msgstr ""
+
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
 msgstr ""
@@ -3177,11 +3193,7 @@ msgstr ""
 msgid "input must be a dense ndarray"
 msgstr ""
 
-#: extmod/ulab/code/numpy/create.c
-msgid "input must be a tensor of rank 2"
-msgstr ""
-
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr ""
 
@@ -3387,7 +3399,7 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
-msgid "maximum number of dimensions is 4"
+msgid "maximum number of dimensions is "
 msgstr ""
 
 #: py/runtime.c
@@ -3638,7 +3650,7 @@ msgstr "stringa di lunghezza dispari"
 msgid "off"
 msgstr ""
 
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr ""
 
@@ -3792,6 +3804,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argomenti richiede interi"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr ""
@@ -4230,6 +4243,14 @@ msgstr "tipo non supportato per l'operando"
 msgid "unsupported types for %q: '%q', '%q'"
 msgstr ""
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols is too high"
+msgstr ""
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols keyword must be specified"
+msgstr ""
+
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
@@ -4271,12 +4292,26 @@ msgstr ""
 msgid "wrong axis specified"
 msgstr ""
 
-#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/io/io.c
+msgid "wrong dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong index type"
+msgstr ""
+
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/create.c
+#: extmod/ulab/code/numpy/io/io.c extmod/ulab/code/numpy/transform.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "wrong input type"
 msgstr ""
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of index array"
 msgstr ""
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
