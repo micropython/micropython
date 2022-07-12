@@ -404,7 +404,7 @@ static const char *OK_JSON = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nC
 static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
     _send_strs(socket,
         "Access-Control-Allow-Credentials: true\r\n",
-        "Vary: Origin\r\n",
+        "Vary: Origin, Accept, Upgrade\r\n",
         "Access-Control-Allow-Origin: ", request->origin, "\r\n",
         NULL);
 }
@@ -440,10 +440,10 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
         "Access-Control-Allow-Methods:GET, OPTIONS", NULL);
     if (!_usb_active()) {
         _send_str(socket, ", PUT, DELETE");
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
     }
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
     _send_str(socket, "\r\n");
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
@@ -740,14 +740,25 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     return truncated_time;
 }
 
+STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
+    size_t discarded = 0;
+    while (discarded < amount) {
+        uint8_t bytes[64];
+        size_t read_len = MIN(sizeof(bytes), amount - discarded);
+        int len = socketpool_socket_recv_into(socket, bytes, read_len);
+        if (len < 0) {
+            break;
+        }
+        discarded += read_len;
+    }
+}
+
 static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *request, FATFS *fs, const TCHAR *path) {
     FIL active_file;
 
     if (_usb_active()) {
+        _discard_incoming(socket, request->content_length);
         _reply_conflict(socket, request);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
         return;
     }
     if (request->timestamp_ms > 0) {
@@ -765,12 +776,20 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
 
     if (result == FR_NO_PATH) {
         override_fattime(0);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+        _discard_incoming(socket, request->content_length);
         _reply_missing(socket, request);
         return;
     }
     if (result != FR_OK) {
         ESP_LOGE(TAG, "file write error %d %s", result, path);
         override_fattime(0);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+        _discard_incoming(socket, request->content_length);
         _reply_server_error(socket, request);
         return;
     } else if (request->expect) {
@@ -785,6 +804,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
+        _discard_incoming(socket, request->content_length);
         // Too large.
         if (request->expect) {
             _reply_expectation_failed(socket, request);
@@ -915,9 +935,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             } else if (strcmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
                     _reply_conflict(socket, request);
-                    #if CIRCUITPY_USB_MSC
-                    usb_msc_unlock();
-                    #endif
                     return false;
                 }
 
@@ -932,6 +949,9 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
                 }
 
+                #if CIRCUITPY_USB_MSC
+                usb_msc_unlock();
+                #endif
                 if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
@@ -965,9 +985,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 } else if (strcmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
                         _reply_conflict(socket, request);
-                        #if CIRCUITPY_USB_MSC
-                        usb_msc_unlock();
-                        #endif
                         return false;
                     }
 

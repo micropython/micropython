@@ -53,6 +53,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
+#include "shared-bindings/socketpool/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -294,6 +295,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_RTC
     rtc_reset();
+    #endif
+
+    #if CIRCUITPY_SOCKETPOOL
+    socketpool_user_reset();
     #endif
 
     #if CIRCUITPY_TOUCHIO_USE_NATIVE
