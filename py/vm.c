@@ -1188,9 +1188,6 @@ yield:
 
                 ENTRY(MP_BC_YIELD_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-//#define EXC_MATCH(exc, type) mp_obj_is_type(exc, type)
-#define EXC_MATCH(exc, type) mp_obj_exception_match(exc, type)
-#define GENERATOR_EXIT_IF_NEEDED(t) if (t != MP_OBJ_NULL && EXC_MATCH(t, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) { mp_obj_t raise_t = mp_make_raise_obj(t); RAISE(raise_t); }
                     mp_vm_return_kind_t ret_kind;
                     mp_obj_t send_value = POP();
                     mp_obj_t t_exc = MP_OBJ_NULL;
@@ -1214,11 +1211,14 @@ yield:
                         SET_TOP(ret_value);
                         // If we injected GeneratorExit downstream, then even
                         // if it was swallowed, we re-raise GeneratorExit
-                        GENERATOR_EXIT_IF_NEEDED(t_exc);
+                        if (t_exc != MP_OBJ_NULL && mp_obj_exception_match(t_exc, MP_OBJ_FROM_PTR(&mp_type_GeneratorExit))) {
+                            mp_obj_t raise_t = mp_make_raise_obj(t_exc);
+                            RAISE(raise_t);
+                        }
                         DISPATCH();
                     } else {
                         assert(ret_kind == MP_VM_RETURN_EXCEPTION);
-                        assert(!EXC_MATCH(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
+                        assert(!mp_obj_exception_match(ret_value, MP_OBJ_FROM_PTR(&mp_type_StopIteration)));
                         // Pop exhausted gen
                         sp--;
                         RAISE(ret_value);
