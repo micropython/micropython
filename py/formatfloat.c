@@ -25,6 +25,7 @@
  */
 
 #include "py/mpconfig.h"
+#include "py/misc.h"
 #if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
 
 #include <assert.h>
@@ -96,7 +97,16 @@ static inline int fp_isless1(float x) {
 #define fp_iszero(x) (x == 0)
 #define fp_isless1(x) (x < 1.0)
 
-#endif
+#endif // MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT/DOUBLE
+
+static inline int fp_ge_eps(FPTYPE x, FPTYPE y) {
+    mp_float_union_t fb_y = {y};
+    // Back off 2 eps.
+    // This is valid for almost all values, but in practice
+    // it's only used when y = 1eX for X>=0.
+    fb_y.i -= 2;
+    return x >= fb_y.f;
+}
 
 static const FPTYPE g_pos_pow[] = {
     #if FPDECEXP > 32
@@ -173,6 +183,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     int num_digits = 0;
     const FPTYPE *pos_pow = g_pos_pow;
     const FPTYPE *neg_pow = g_neg_pow;
+    int signed_e = 0;
 
     if (fp_iszero(f)) {
         e = 0;
@@ -192,31 +203,24 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             }
         }
     } else if (fp_isless1(f)) {
-        // We need to figure out what an integer digit will be used
-        // in case 'f' is used (or we revert other format to it below).
-        // As we just tested number to be <1, this is obviously 0,
-        // but we can round it up to 1 below.
-        char first_dig = '0';
-        if (f >= FPROUND_TO_ONE) {
-            first_dig = '1';
-        }
-
+        FPTYPE f_mod = f;
         // Build negative exponent
         for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
-            if (*neg_pow > f) {
+            if (*neg_pow > f_mod) {
                 e += e1;
-                f *= *pos_pow;
+                f_mod *= *pos_pow;
             }
         }
+
         char e_sign_char = '-';
-        if (fp_isless1(f) && f >= FPROUND_TO_ONE) {
-            f = FPCONST(1.0);
+        if (fp_isless1(f_mod) && f_mod >= FPROUND_TO_ONE) {
+            f_mod = FPCONST(1.0);
             if (e == 0) {
                 e_sign_char = '+';
             }
-        } else if (fp_isless1(f)) {
+        } else if (fp_isless1(f_mod)) {
             e++;
-            f *= FPCONST(10.0);
+            f_mod *= FPCONST(10.0);
         }
 
         // If the user specified 'g' format, and e is <= 4, then we'll switch
@@ -224,8 +228,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
 
         if (fmt == 'f' || (fmt == 'g' && e <= 4)) {
             fmt = 'f';
-            dec = -1;
-            *s++ = first_dig;
+            dec = 0;
 
             if (org_fmt == 'g') {
                 prec += (e - 1);
@@ -237,13 +240,8 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             }
 
             num_digits = prec;
-            if (num_digits) {
-                *s++ = '.';
-                while (--e && num_digits) {
-                    *s++ = '0';
-                    num_digits--;
-                }
-            }
+            signed_e = 0;
+            ++num_digits;
         } else {
             // For e & g formats, we'll be printing the exponent, so set the
             // sign.
@@ -256,20 +254,27 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                     prec++;
                 }
             }
+            signed_e = -e;
         }
     } else {
-        // Build positive exponent
-        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
-            if (*pos_pow <= f) {
+        // Build positive exponent.
+        // We don't modify f at this point to avoid innaccuracies from
+        // scaling it.  Instead, we find the product of powers of 10
+        // that is not greater than it, and use that to start the
+        // mantissa.
+        FPTYPE u_base = FPCONST(1.0);
+        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++) {
+            FPTYPE next_u = u_base * *pos_pow;
+            // fp_ge_eps performs "f >= (next_u - 2eps)" so that if, for
+            // numerical reasons, f is very close to a power of ten but
+            // not strictly equal, we still treat it as that power of 10.
+            // The comparison was failing for maybe 10% of 1eX values, but
+            // although rounding fixed many of them, there were still some
+            // rendering as 9.99999998e(X-1).
+            if (fp_ge_eps(f, next_u)) {
+                u_base = next_u;
                 e += e1;
-                f *= *neg_pow;
             }
-        }
-
-        // It can be that f was right on the edge of an entry in pos_pow needs to be reduced
-        if ((int)f >= 10) {
-            e += 1;
-            f *= FPCONST(0.1);
         }
 
         // If the user specified fixed format (fmt == 'f') and e makes the
@@ -310,15 +315,15 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         } else {
             e_sign = '+';
         }
+        signed_e = e;
     }
     if (prec < 0) {
         // This can happen when the prec is trimmed to prevent buffer overflow
         prec = 0;
     }
 
-    // We now have num.f as a floating point number between >= 1 and < 10
-    // (or equal to zero), and e contains the absolute value of the power of
-    // 10 exponent. and (dec + 1) == the number of dgits before the decimal.
+    // At this point e contains the absolute value of the power of 10 exponent.
+    // (dec + 1) == the number of dgits before the decimal.
 
     // For e, prec is # digits after the decimal
     // For f, prec is # digits after the decimal
@@ -336,25 +341,63 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         num_digits = prec;
     }
 
-    // Print the digits of the mantissa
-    for (int i = 0; i < num_digits; ++i, --dec) {
-        int32_t d = (int32_t)f;
-        if (d < 0) {
-            *s++ = '0';
-        } else {
-            *s++ = '0' + d;
+    if (signed_e < 0) {
+        // The algorithm below treats numbers smaller than 1 by scaling them
+        // repeatedly by 10 to bring the new digit to the top.  Our input number
+        // was smaller than 1, so scale it up to be 1 <= f < 10.
+        FPTYPE u_base = FPCONST(1.0);
+        const FPTYPE *pow_u = g_pos_pow;
+        for (int m = FPDECEXP; m; m >>= 1, pow_u++) {
+            if (m & e) {
+                u_base *= *pow_u;
+            }
         }
-        if (dec == 0 && prec > 0) {
-            *s++ = '.';
-        }
-        f -= (FPTYPE)d;
-        f *= FPCONST(10.0);
+        f *= u_base;
     }
 
-    // Round
-    // If we print non-exponential format (i.e. 'f'), but a digit we're going
-    // to round by (e) is too far away, then there's nothing to round.
-    if ((org_fmt != 'f' || e <= num_digits) && f >= FPCONST(5.0)) {
+    int d = 0;
+    int num_digits_left = num_digits;
+    for (int digit_index = signed_e; num_digits_left >= 0; --digit_index) {
+        FPTYPE u_base = FPCONST(1.0);
+        if (digit_index > 0) {
+            // Generate 10^digit_index for positive digit_index.
+            const FPTYPE *pow_u = g_pos_pow;
+            int target_index = digit_index;
+            for (int m = FPDECEXP; m; m >>= 1, pow_u++) {
+                if (m & target_index) {
+                    u_base *= *pow_u;
+                }
+            }
+        }
+        for (d = 0; d < 9; ++d) {
+            // This is essentially "if (f < u_base)", but with 2eps margin
+            // so that if f is just a tiny bit smaller, we treat it as
+            // equal (and accept the additional digit value).
+            if (!fp_ge_eps(f, u_base)) {
+                break;
+            }
+            f -= u_base;
+        }
+        // We calculate one more digit than we display, to use in rounding
+        // below.  So only emit the digit if it's one that we display.
+        if (num_digits_left > 0) {
+            // Emit this number (the leading digit).
+            *s++ = '0' + d;
+            if (dec == 0 && prec > 0) {
+                *s++ = '.';
+            }
+        }
+        --dec;
+        --num_digits_left;
+        if (digit_index <= 0) {
+            // Once we get below 1.0, we scale up f instead of calculting
+            // negative powers of 10 in u_base.  This provides better
+            // renditions of exact decimals like 1/16 etc.
+            f *= FPCONST(10.0);
+        }
+    }
+    // Rounding.  If the next digit to print is >= 5, round up.
+    if (d >= 5) {
         char *rs = s;
         rs--;
         while (1) {
@@ -394,7 +437,10 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
                 }
             } else {
                 // Need at extra digit at the end to make room for the leading '1'
-                s++;
+                // but if we're at the buffer size limit, just drop the final digit.
+                if ((size_t)(s + 1 - buf) < buf_size) {
+                    s++;
+                }
             }
             char *ss = s;
             while (ss > rs) {
