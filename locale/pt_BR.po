@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-03 00:22+0000\n"
+"PO-Revision-Date: 2022-07-12 13:10+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -2437,7 +2437,7 @@ msgstr "a matriz e comprimento do índice devem ser iguais"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
-msgstr ""
+msgstr "a matriz possui muitas dimensões"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2814,7 +2814,7 @@ msgstr "os argumentos convolutivos não devem estar vazios"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "corrupted file"
-msgstr ""
+msgstr "arquivo corrompido"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -2912,7 +2912,7 @@ msgstr "vazio"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "empty file"
-msgstr ""
+msgstr "arquivo vazio"
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3235,7 +3235,7 @@ msgstr "a matriz da entrada é singular"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be 1- or 2-d"
-msgstr ""
+msgstr "a entrada deve ser 1- ou 2-d"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
@@ -3450,7 +3450,7 @@ msgstr "o max_length deve ser 0-%d quando Fixed_length for %s"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
-msgstr ""
+msgstr "a quantidade máxima de dimensões é "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -4295,11 +4295,11 @@ msgstr "tipo sem suporte para %q: '%q', '%q'"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols is too high"
-msgstr ""
+msgstr "usecols é muito alto"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols keyword must be specified"
-msgstr ""
+msgstr "palavra-chave para o usecols deve ser definida"
 
 #: py/objint.c
 #, c-format
@@ -4344,7 +4344,7 @@ msgstr "um eixo errado foi definido"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "wrong dtype"
-msgstr ""
+msgstr "dtype errado"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong index type"
@@ -4362,7 +4362,7 @@ msgstr "comprimento errado na condição da matriz"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of index array"
-msgstr ""
+msgstr "comprimento errado do índice da matriz"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"
