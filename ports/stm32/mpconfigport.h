@@ -80,6 +80,11 @@
 #define MICROPY_SCHEDULER_DEPTH     (8)
 #define MICROPY_VFS                 (1)
 
+#if defined(STM32F0) || defined(STM32L0)
+// Only support basic GC stats on constrained devices.
+#define MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS (0)
+#endif
+
 // control over Python builtins
 #ifndef MICROPY_PY_BUILTINS_HELP_TEXT
 #define MICROPY_PY_BUILTINS_HELP_TEXT stm32_help_text

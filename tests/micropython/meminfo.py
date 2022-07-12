@@ -8,5 +8,6 @@ if not hasattr(micropython, "mem_info"):
 else:
     micropython.mem_info()
     micropython.mem_info(1)
+    micropython.mem_info(2)
     micropython.qstr_info()
     micropython.qstr_info(1)

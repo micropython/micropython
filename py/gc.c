@@ -29,8 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "py/gc.h"
 #include "py/runtime.h"
+#include "py/gc.h"
 
 #if MICROPY_ENABLE_GC
 
@@ -569,7 +569,7 @@ found:
     #endif
 
     #if EXTENSIVE_HEAP_PROFILING
-    gc_dump_alloc_table();
+    gc_dump_alloc_table(true, true);
     #endif
 
     return ret_ptr;
@@ -623,7 +623,7 @@ void gc_free(void *ptr) {
         GC_EXIT();
 
         #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(true, true);
         #endif
     }
 }
@@ -752,7 +752,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         GC_EXIT();
 
         #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(true, true);
         #endif
 
         return ptr_in;
@@ -777,7 +777,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         #endif
 
         #if EXTENSIVE_HEAP_PROFILING
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(true, true);
         #endif
 
         return ptr_in;
@@ -820,16 +820,42 @@ void gc_dump_info(void) {
         (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block, (uint)info.max_free);
 }
 
-void gc_dump_alloc_table(void) {
+#if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+// Power-of-two size classes. i.e. class[0] is how many single-block
+// allocations are possible. class[5] is how many 32-block allocations.
+#define NUM_FRAGMENTATION_CLASSES (20)
+
+// Given a number of contiguous blocks, figure out how many allocations of
+// each size class would fit in that many blocks.
+STATIC void gc_update_fragmentation_stats(size_t n, MICROPY_GC_STACK_ENTRY_TYPE *frag_classes) {
+    for (size_t c = 1, i = 0; c < n && i < NUM_FRAGMENTATION_CLASSES; c <<= 1, ++i) {
+        frag_classes[i] += n / c;
+    }
+}
+#endif
+
+#if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS || MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+void gc_dump_alloc_table(bool print_table, bool print_fragmentation) {
     GC_ENTER();
+    #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
     static const size_t DUMP_BYTES_PER_LINE = 64;
+    #endif
     #if !EXTENSIVE_HEAP_PROFILING
-    // When comparing heap output we don't want to print the starting
-    // pointer of the heap because it changes from run to run.
-    mp_printf(&mp_plat_print, "GC memory layout; from %p:", MP_STATE_MEM(gc_pool_start));
+    // Skip this when EXTENSIVE_HEAP_PROFILING is on because the starting
+    // pointer of the heap changes from run to run.
+    if (print_table) {
+        mp_printf(&mp_plat_print, "GC memory layout; from %p:", MP_STATE_MEM(gc_pool_start));
+    }
+    #endif
+    #if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+    // How many consecutive free blocks.
+    size_t nfree = 0;
+    // Number of allocs that would succeed for 1, 2, 4, .. 2^n blocks.
+    MICROPY_GC_STACK_ENTRY_TYPE frag_classes[NUM_FRAGMENTATION_CLASSES] = {0};
     #endif
     for (size_t bl = 0; bl < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB; bl++) {
-        if (bl % DUMP_BYTES_PER_LINE == 0) {
+        #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
+        if (print_table && bl % DUMP_BYTES_PER_LINE == 0) {
             // a new line of blocks
             {
                 // check if this line contains only free blocks
@@ -837,10 +863,16 @@ void gc_dump_alloc_table(void) {
                 while (bl2 < MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB && ATB_GET_KIND(bl2) == AT_FREE) {
                     bl2++;
                 }
-                if (bl2 - bl >= 2 * DUMP_BYTES_PER_LINE) {
+                size_t skip = bl2 - bl;
+                size_t lines = skip / DUMP_BYTES_PER_LINE;
+                if (lines >= 2) {
                     // there are at least 2 lines containing only free blocks, so abbreviate their printing
-                    mp_printf(&mp_plat_print, "\n       (%u lines all free)", (uint)(bl2 - bl) / DUMP_BYTES_PER_LINE);
-                    bl = bl2 & (~(DUMP_BYTES_PER_LINE - 1));
+                    mp_printf(&mp_plat_print, "\n       (%u lines all free)", (uint)lines);
+                    skip = lines * DUMP_BYTES_PER_LINE;
+                    #if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+                    nfree += skip;
+                    #endif
+                    bl += skip;
                     if (bl >= MP_STATE_MEM(gc_alloc_table_byte_len) * BLOCKS_PER_ATB) {
                         // got to end of heap
                         break;
@@ -852,13 +884,22 @@ void gc_dump_alloc_table(void) {
             // mp_printf(&mp_plat_print, "\n%05x: ", (uint)(PTR_FROM_BLOCK(bl) & (uint32_t)0xfffff));
             mp_printf(&mp_plat_print, "\n%05x: ", (uint)((bl * BYTES_PER_BLOCK) & (uint32_t)0xfffff));
         }
+        #endif
+        #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
         int c = ' ';
+        #endif
         switch (ATB_GET_KIND(bl)) {
             case AT_FREE:
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
                 c = '.';
+                #endif
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+                ++nfree;
+                #endif
                 break;
             /* this prints out if the object is reachable from BSS or STACK (for unix only)
             case AT_HEAD: {
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
                 c = 'h';
                 void **ptrs = (void**)(void*)&mp_state_ctx;
                 mp_uint_t len = offsetof(mp_state_ctx_t, vm.stack_top) / sizeof(mp_uint_t);
@@ -880,11 +921,13 @@ void gc_dump_alloc_table(void) {
                         }
                     }
                 }
-                break;
+                #endif
+                goto reset_frag;
             }
             */
             /* this prints the uPy object type of the head block */
             case AT_HEAD: {
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
                 void **ptr = (void **)(MP_STATE_MEM(gc_pool_start) + bl * BYTES_PER_BLOCK);
                 if (*ptr == &mp_type_tuple) {
                     c = 'T';
@@ -934,20 +977,47 @@ void gc_dump_alloc_table(void) {
                     }
                     #endif
                 }
-                break;
+                #endif
+                goto reset_frag;
             }
             case AT_TAIL:
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
                 c = '=';
-                break;
+                #endif
+                goto reset_frag;
             case AT_MARK:
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
                 c = 'm';
+                #endif
+                goto reset_frag;
+            reset_frag:
+                #if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+                gc_update_fragmentation_stats(nfree, frag_classes);
+                nfree = 0;
+                #endif
                 break;
         }
-        mp_printf(&mp_plat_print, "%c", c);
+        #if MICROPY_PY_MICROPYTHON_MEM_INFO_BLOCKS
+        if (print_table) {
+            mp_printf(&mp_plat_print, "%c", c);
+        }
+        #endif
     }
+    #if MICROPY_PY_MICROPYTHON_MEM_INFO_FRAGMENTATION
+    if (print_fragmentation) {
+        gc_update_fragmentation_stats(nfree, frag_classes);
+        mp_print_str(&mp_plat_print, "Frag:");
+        size_t c = 1;
+        for (int i = 0; i < NUM_FRAGMENTATION_CLASSES; ++i) {
+            mp_printf(&mp_plat_print, " %u: %u,", c, frag_classes[i]);
+            c <<= 1;
+        }
+    }
+    #endif
     mp_print_str(&mp_plat_print, "\n");
     GC_EXIT();
 }
+#endif
 
 #if 0
 // For testing the GC functions
@@ -976,13 +1046,13 @@ void gc_test(void) {
     }
 
     printf("Before GC:\n");
-    gc_dump_alloc_table();
+    gc_dump_alloc_table(true, true);
     printf("Starting GC...\n");
     gc_collect_start();
     gc_collect_root(ptrs, sizeof(ptrs) / sizeof(void *));
     gc_collect_end();
     printf("After GC:\n");
-    gc_dump_alloc_table();
+    gc_dump_alloc_table(true, true);
 }
 #endif
 
