@@ -401,8 +401,10 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
     // Save settings
     uart_word_length_t word_length;
     uart_parity_t parity;
+    uint32_t baudrate;
     uart_get_word_length(self->uart_num, &word_length);
     uart_get_parity(self->uart_num, &parity);
+    uart_get_baudrate(self->uart_num, &baudrate);
 
     // Synthesise the break condition by either a longer word or using even parity
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
@@ -414,6 +416,7 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
         // Cannot synthesise break
         mp_raise_OSError(MP_EPERM);
     }
+    uart_set_baudrate(self->uart_num, baudrate * 2 / 3);
     char buf[1] = {0};
     uart_write_bytes(self->uart_num, buf, 1);
     uart_wait_tx_done(self->uart_num, pdMS_TO_TICKS(1000));
@@ -421,6 +424,7 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
     // Restore original settings
     uart_set_word_length(self->uart_num, word_length);
     uart_set_parity(self->uart_num, parity);
+    uart_set_baudrate(self->uart_num, baudrate);
 
     return mp_const_none;
 }
