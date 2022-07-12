@@ -262,3 +262,12 @@ Methods
    for which the pulse is active.  The value can be an integer or
    floating-point number for more accuracy.  For example, a value of 25 gives
    a duty cycle of 25%.
+
+Constants
+---------
+
+.. data:: Timer.UP
+          Timer.DOWN
+          Timer.CENTER
+
+   Configures the timer to count Up, Down, or from 0 to ARR and then back down to 0.

@@ -69,6 +69,7 @@ static inline uint64_t timeutils_mktime(mp_uint_t year, mp_int_t month, mp_int_t
 
 static inline uint64_t timeutils_seconds_since_epoch(mp_uint_t year, mp_uint_t month,
     mp_uint_t date, mp_uint_t hour, mp_uint_t minute, mp_uint_t second) {
+    // TODO this will give incorrect results for dates before 2000/1/1
     return timeutils_seconds_since_2000(year, month, date, hour, minute, second) + TIMEUTILS_SECONDS_1970_TO_2000;
 }
 

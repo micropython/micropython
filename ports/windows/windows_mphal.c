@@ -32,6 +32,7 @@
 #include <sys/time.h>
 #include <windows.h>
 #include <unistd.h>
+#include <bcrypt.h>
 
 HANDLE std_in = NULL;
 HANDLE con_out = NULL;
@@ -262,8 +263,34 @@ uint64_t mp_hal_time_ns(void) {
     return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
 }
 
-// TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-// "The useconds argument shall be less than one million."
+void msec_sleep(double msec) {
+    if (msec < 0.0) {
+        msec = 0.0;
+    }
+    SleepEx((DWORD)msec, TRUE);
+}
+
+#ifdef _MSC_VER
+int usleep(__int64 usec) {
+    msec_sleep((double)usec / 1000.0);
+    return 0;
+}
+#endif
+
 void mp_hal_delay_ms(mp_uint_t ms) {
-    usleep((ms) * 1000);
+    #ifdef MICROPY_EVENT_POLL_HOOK
+    mp_uint_t start = mp_hal_ticks_ms();
+    while (mp_hal_ticks_ms() - start < ms) {
+        MICROPY_EVENT_POLL_HOOK
+    }
+    #else
+    msec_sleep((double)ms);
+    #endif
+}
+
+void mp_hal_get_random(size_t n, void *buf) {
+    NTSTATUS result = BCryptGenRandom(NULL, (unsigned char *)buf, n, BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+    if (!BCRYPT_SUCCESS(result)) {
+        mp_raise_OSError(errno);
+    }
 }

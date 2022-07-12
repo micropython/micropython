@@ -47,6 +47,13 @@
 // This current MicroPython implementation lacks some major features, notably receive pulses
 // and carrier output.
 
+// Last available RMT channel that can transmit.
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 4, 0)
+#define RMT_LAST_TX_CHANNEL (RMT_CHANNEL_MAX - 1)
+#else
+#define RMT_LAST_TX_CHANNEL (SOC_RMT_TX_CANDIDATES_PER_GROUP - 1)
+#endif
+
 // Forward declaration
 extern const mp_obj_type_t esp32_rmt_type;
 
@@ -60,15 +67,17 @@ typedef struct _esp32_rmt_obj_t {
     bool loop_en;
 } esp32_rmt_obj_t;
 
+// Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
+// implementation.  A value of -1 means do not use RMT.
+int8_t esp32_rmt_bitstream_channel_id = RMT_LAST_TX_CHANNEL;
+
+#if MP_TASK_COREID == 0
+
 typedef struct _rmt_install_state_t {
     SemaphoreHandle_t handle;
     uint8_t channel_id;
     esp_err_t ret;
 } rmt_install_state_t;
-
-// Current channel used for machine.bitstream, in the machine_bitstream_high_low_rmt
-// implementation.  A value of -1 means do not use RMT.
-int8_t esp32_rmt_bitstream_channel_id = RMT_CHANNEL_MAX - 1;
 
 STATIC void rmt_install_task(void *pvParameter) {
     rmt_install_state_t *state = pvParameter;
@@ -91,6 +100,16 @@ esp_err_t rmt_driver_install_core1(uint8_t channel_id) {
     vSemaphoreDelete(state.handle);
     return state.ret;
 }
+
+#else
+
+// MicroPython runs on core 1, so we can call the RMT installer directly and its
+// interrupt handler will also run on core 1.
+esp_err_t rmt_driver_install_core1(uint8_t channel_id) {
+    return rmt_driver_install(channel_id, 0, 0);
+}
+
+#endif
 
 STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -324,7 +343,7 @@ STATIC mp_obj_t esp32_rmt_bitstream_channel(size_t n_args, const mp_obj_t *args)
             esp32_rmt_bitstream_channel_id = -1;
         } else {
             mp_int_t channel_id = mp_obj_get_int(args[0]);
-            if (channel_id < 0 || channel_id >= RMT_CHANNEL_MAX) {
+            if (channel_id < 0 || channel_id > RMT_LAST_TX_CHANNEL) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
             }
             esp32_rmt_bitstream_channel_id = channel_id;

@@ -5,7 +5,7 @@ Source repo: https://github.com/hoihu/projects/tree/master/raspi-hat
 The MIT License (MIT)
 
 Copyright (c) 2021 Damien P. George
-Copyright (c) 2021 Ibrahim Abdelkader <iabdalkader@openmv.io>
+Copyright (c) 2021-2022 Ibrahim Abdelkader <iabdalkader@openmv.io>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,12 @@ Basic example usage:
 import time
 from lsm6dsox import LSM6DSOX
 
-from machine import Pin, I2C
+from machine import Pin, SPI, I2C
+# Init in I2C mode.
 lsm = LSM6DSOX(I2C(0, scl=Pin(13), sda=Pin(12)))
+
+# Or init in SPI mode.
+#lsm = LSM6DSOX(SPI(5), cs_pin=Pin(10))
 
 while (True):
     print('Accelerometer: x:{:>8.3f} y:{:>8.3f} z:{:>8.3f}'.format(*lsm.read_accel()))
@@ -39,6 +43,7 @@ while (True):
     print("")
     time.sleep_ms(100)
 """
+
 import array
 from micropython import const
 
@@ -73,7 +78,8 @@ class LSM6DSOX:
 
     def __init__(
         self,
-        i2c,
+        bus,
+        cs_pin=None,
         address=_DEFAULT_ADDR,
         gyro_odr=104,
         accel_odr=104,
@@ -88,8 +94,13 @@ class LSM6DSOX:
         accel_scale: (+/-2g, +/-4g, +/-8g, +-16g)
         ucf: MLC program to load.
         """
-        self.i2c = i2c
+        self.bus = bus
+        self.cs_pin = cs_pin
         self.address = address
+        self._use_i2c = hasattr(self.bus, "readfrom_mem")
+
+        if not self._use_i2c and cs_pin is None:
+            raise ValueError("A CS pin must be provided in SPI mode")
 
         # check the id of the Accelerometer/Gyro
         if self.__read_reg(_WHO_AM_I_REG) != 108:
@@ -149,13 +160,39 @@ class LSM6DSOX:
         self.accel_scale = 32768 / accel_scale
 
     def __read_reg(self, reg, size=1):
-        buf = self.i2c.readfrom_mem(self.address, reg, size)
+        if self._use_i2c:
+            buf = self.bus.readfrom_mem(self.address, reg, size)
+        else:
+            try:
+                self.cs_pin(0)
+                self.bus.write(bytes([reg | 0x80]))
+                buf = self.bus.read(size)
+            finally:
+                self.cs_pin(1)
         if size == 1:
             return int(buf[0])
         return [int(x) for x in buf]
 
     def __write_reg(self, reg, val):
-        self.i2c.writeto_mem(self.address, reg, bytes([val]))
+        if self._use_i2c:
+            self.bus.writeto_mem(self.address, reg, bytes([val]))
+        else:
+            try:
+                self.cs_pin(0)
+                self.bus.write(bytes([reg, val]))
+            finally:
+                self.cs_pin(1)
+
+    def __read_reg_into(self, reg, buf):
+        if self._use_i2c:
+            self.bus.readfrom_mem_into(self.address, reg, buf)
+        else:
+            try:
+                self.cs_pin(0)
+                self.bus.write(bytes([reg | 0x80]))
+                self.bus.readinto(buf)
+            finally:
+                self.cs_pin(1)
 
     def reset(self):
         self.__write_reg(_CTRL3_C, self.__read_reg(_CTRL3_C) | 0x1)
@@ -223,12 +260,12 @@ class LSM6DSOX:
         """Returns gyroscope vector in degrees/sec."""
         mv = memoryview(self.scratch_int)
         f = self.gyro_scale
-        self.i2c.readfrom_mem_into(self.address, _OUTX_L_G, mv)
+        self.__read_reg_into(_OUTX_L_G, mv)
         return (mv[0] / f, mv[1] / f, mv[2] / f)
 
     def read_accel(self):
         """Returns acceleration vector in gravity units (9.81m/s^2)."""
         mv = memoryview(self.scratch_int)
         f = self.accel_scale
-        self.i2c.readfrom_mem_into(self.address, _OUTX_L_XL, mv)
+        self.__read_reg_into(_OUTX_L_XL, mv)
         return (mv[0] / f, mv[1] / f, mv[2] / f)

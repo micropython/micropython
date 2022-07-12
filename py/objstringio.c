@@ -177,8 +177,7 @@ STATIC mp_obj_t stringio___exit__(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
 
 STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
-    mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
-    o->base.type = type;
+    mp_obj_stringio_t *o = mp_obj_malloc(mp_obj_stringio_t, type);
     o->pos = 0;
     o->ref_obj = MP_OBJ_NULL;
     return o;

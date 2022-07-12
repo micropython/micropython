@@ -35,6 +35,7 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "modmachine.h"
+#include "uart.h"
 
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
 #define UART_INV_TX UART_INVERSE_TXD
@@ -138,10 +139,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -151,6 +152,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
         // must reinitialise driver to change the tx/rx buffer size
+        if (self->uart_num == MICROPY_HW_UART_REPL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("UART buffer size is fixed"));
+        }
+
         if (args[ARG_txbuf].u_int >= 0) {
             self->txbuf = args[ARG_txbuf].u_int;
         }
@@ -176,8 +181,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     uint32_t baudrate = 115200;
     if (args[ARG_baudrate].u_int > 0) {
         uart_set_baudrate(self->uart_num, args[ARG_baudrate].u_int);
-        uart_get_baudrate(self->uart_num, &baudrate);
     }
+    uart_get_baudrate(self->uart_num, &baudrate);
 
     uart_set_pin(self->uart_num, args[ARG_tx].u_int, args[ARG_rx].u_int, args[ARG_rts].u_int, args[ARG_cts].u_int);
     if (args[ARG_tx].u_int != UART_PIN_NO_CHANGE) {
@@ -257,28 +262,36 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
 
     // set timeout
-    self->timeout = args[ARG_timeout].u_int;
+    if (args[ARG_timeout].u_int != -1) {
+        self->timeout = args[ARG_timeout].u_int;
+    }
 
     // set timeout_char
     // make sure it is at least as long as a whole character (13 bits to be safe)
-    self->timeout_char = args[ARG_timeout_char].u_int;
-    uint32_t min_timeout_char = 13000 / baudrate + 1;
-    if (self->timeout_char < min_timeout_char) {
-        self->timeout_char = min_timeout_char;
+    if (args[ARG_timeout_char].u_int != -1) {
+        self->timeout_char = args[ARG_timeout_char].u_int;
+        uint32_t min_timeout_char = 13000 / baudrate + 1;
+        if (self->timeout_char < min_timeout_char) {
+            self->timeout_char = min_timeout_char;
+        }
     }
 
     // set line inversion
-    if (args[ARG_invert].u_int & ~UART_INV_MASK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
+    if (args[ARG_invert].u_int != -1) {
+        if (args[ARG_invert].u_int & ~UART_INV_MASK) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid inversion mask"));
+        }
+        self->invert = args[ARG_invert].u_int;
     }
-    self->invert = args[ARG_invert].u_int;
     uart_set_line_inverse(self->uart_num, self->invert);
 
     // set hardware flow control
-    if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
+    if (args[ARG_flow].u_int != -1) {
+        if (args[ARG_flow].u_int & ~UART_HW_FLOWCTRL_CTS_RTS) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid flow control mask"));
+        }
+        self->flowcontrol = args[ARG_flow].u_int;
     }
-    self->flowcontrol = args[ARG_flow].u_int;
     uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4);
 }
 
@@ -289,12 +302,6 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_int_t uart_num = mp_obj_get_int(args[0]);
     if (uart_num < 0 || uart_num >= UART_NUM_MAX) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) does not exist"), uart_num);
-    }
-
-    // Attempts to use UART0 from Python has resulted in all sorts of fun errors.
-    // FIXME: UART0 is disabled for now.
-    if (uart_num == UART_NUM_0) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("UART(%d) is disabled (dedicated to REPL)"), uart_num);
     }
 
     // Defaults
@@ -308,8 +315,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     };
 
     // create instance
-    machine_uart_obj_t *self = m_new_obj(machine_uart_obj_t);
-    self->base.type = &machine_uart_type;
+    machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
     self->uart_num = uart_num;
     self->bits = 8;
     self->parity = 0;
@@ -320,6 +326,8 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->rxbuf = 256; // IDF minimum
     self->timeout = 0;
     self->timeout_char = 0;
+    self->invert = 0;
+    self->flowcontrol = 0;
 
     switch (uart_num) {
         case UART_NUM_0:
@@ -338,14 +346,17 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         #endif
     }
 
-    // Remove any existing configuration
-    uart_driver_delete(self->uart_num);
+    // Only reset the driver if it's not the REPL UART.
+    if (uart_num != MICROPY_HW_UART_REPL) {
+        // Remove any existing configuration
+        uart_driver_delete(self->uart_num);
 
-    // init the peripheral
-    // Setup
-    uart_param_config(self->uart_num, &uartcfg);
+        // init the peripheral
+        // Setup
+        uart_param_config(self->uart_num, &uartcfg);
 
-    uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
+        uart_driver_install(uart_num, self->rxbuf, self->txbuf, 0, NULL, 0);
+    }
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);

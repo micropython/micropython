@@ -4,3 +4,5 @@
 // of lvgl and its bindings. Developers should review this setting when adding additional features 
 #define MICROPY_HW_FLASH_STORAGE_BYTES          (1024 * 1024)
 
+// Enable USB Mass Storage with FatFS filesystem.
+// #define MICROPY_HW_USB_MSC  (1)

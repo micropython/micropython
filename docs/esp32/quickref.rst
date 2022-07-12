@@ -160,12 +160,30 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_3) # set maximum drive strength
 
 Available Pins are from the following ranges (inclusive): 0-19, 21-23, 25-27, 32-39.
 These correspond to the actual GPIO pin numbers of ESP32 chip.  Note that many
 end-user boards use their own adhoc pin numbering (marked e.g. D0, D1, ...).
 For mapping between board logical pins and physical chip pins consult your board
 documentation.
+
+Four drive strengths are supported, using the ``drive`` keyword argument to the
+``Pin()`` constructor or ``Pin.init()`` method, with different corresponding
+safe maximum source/sink currents and approximate internal driver resistances:
+
+ - ``Pin.DRIVE_0``: 5mA / 130 ohm
+ - ``Pin.DRIVE_1``: 10mA / 60 ohm
+ - ``Pin.DRIVE_2``: 20mA / 30 ohm (default strength if not configured)
+ - ``Pin.DRIVE_3``: 40mA / 15 ohm
+
+The ``hold=`` keyword argument to ``Pin()`` and ``Pin.init()`` will enable the
+ESP32 "pad hold" feature. When set to ``True``, the pin configuration
+(direction, pull resistors and output value) will be held and any further
+changes (including changing the output level) will not be applied. Setting
+``hold=False`` will immediately apply any outstanding pin configuration changes
+and release the pin. Using ``hold=True`` while a pin is already held will apply
+any configuration changes and then immediately reapply the hold.
 
 Notes:
 
@@ -176,8 +194,7 @@ Notes:
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
 
-* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
-  consumption during deepsleep.
+* See :ref:`Deep_sleep_Mode` for a discussion of pin behaviour during sleep
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
@@ -264,54 +281,99 @@ See more examples in the :ref:`esp32_pwm` tutorial.
 ADC (analog to digital conversion)
 ----------------------------------
 
-On the ESP32 ADC functionality is available on Pins 32-39. Note that, when
-using the default configuration, input voltages on the ADC pin must be between
-0.0v and 1.0v (anything above 1.0v will just read as 4095).  Attenuation must
-be applied in order to increase this usable voltage range.
+On the ESP32, ADC functionality is available on pins 32-39 (ADC block 1) and
+pins 0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object on ADC pin
-    adc.read()                  # read value, 0-4095 across voltage range 0.0v - 1.0v
+    adc = ADC(pin)        # create an ADC object acting on a pin
+    val = adc.read_u16()  # read a raw analog value in the range 0-65535
+    val = adc.read_uv()   # read an analog value in microvolts
 
-    adc.atten(ADC.ATTN_11DB)    # set 11dB input attenuation (voltage range roughly 0.0v - 3.6v)
-    adc.width(ADC.WIDTH_9BIT)   # set 9 bit return values (returned range 0-511)
-    adc.read()                  # read value using the newly configured attenuation and width
+ADC block 2 is also used by WiFi and so attempting to read analog values from
+block 2 pins when WiFi is active will raise an exception.
 
-ESP32 specific ADC class method reference:
+The internal ADC reference voltage is typically 1.1V, but varies slightly from
+package to package. The ADC is less linear close to the reference voltage
+(particularly at higher attenuations) and has a minimum measurement voltage
+around 100mV, voltages at or below this will read as 0. To read voltages
+accurately, it is recommended to use the ``read_uv()`` method (see below).
 
-.. method:: ADC.atten(attenuation)
+ESP32-specific ADC class method reference:
 
-    This method allows for the setting of the amount of attenuation on the
-    input of the ADC. This allows for a wider possible input voltage range,
-    at the cost of accuracy (the same number of bits now represents a wider
-    range). The possible attenuation options are:
+.. class:: ADC(pin, *, atten)
 
-      - ``ADC.ATTN_0DB``: 0dB attenuation, gives a maximum input voltage
-        of 1.00v - this is the default configuration
-      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage
-        of approximately 1.34v
-      - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage
-        of approximately 2.00v
-      - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage
-        of approximately 3.6v
+    Return the ADC object for the specified pin. ESP32 does not support
+    different timings for ADC sampling and so the ``sample_ns`` keyword argument
+    is not supported.
+
+    To read voltages above the reference voltage, apply input attenuation with
+    the ``atten`` keyword argument. Valid values (and approximate linear
+    measurement ranges) are:
+
+      - ``ADC.ATTN_0DB``: No attenuation (100mV - 950mV)
+      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation (100mV - 1250mV)
+      - ``ADC.ATTN_6DB``: 6dB attenuation (150mV - 1750mV)
+      - ``ADC.ATTN_11DB``: 11dB attenuation (150mV - 2450mV)
 
 .. Warning::
-   Despite 11dB attenuation allowing for up to a 3.6v range, note that the
-   absolute maximum voltage rating for the input pins is 3.6v, and so going
-   near this boundary may be damaging to the IC!
+   Note that the absolute maximum voltage rating for input pins is 3.6V. Going
+   near to this boundary risks damage to the IC!
 
-.. method:: ADC.width(width)
+.. method:: ADC.read_uv()
 
-    This method allows for the setting of the number of bits to be utilised
-    and returned during ADC reads. Possible width options are:
+    This method uses the known characteristics of the ADC and per-package eFuse
+    values - set during manufacture - to return a calibrated input voltage
+    (before attenuation) in microvolts. The returned value has only millivolt
+    resolution (i.e., will always be a multiple of 1000 microvolts).
 
-      - ``ADC.WIDTH_9BIT``: 9 bit data
-      - ``ADC.WIDTH_10BIT``: 10 bit data
-      - ``ADC.WIDTH_11BIT``: 11 bit data
-      - ``ADC.WIDTH_12BIT``: 12 bit data - this is the default configuration
+    The calibration is only valid across the linear range of the ADC. In
+    particular, an input tied to ground will read as a value above 0 microvolts.
+    Within the linear range, however, more accurate and consistent results will
+    be obtained than using `read_u16()` and scaling the result with a constant.
+
+The ESP32 port also supports the :ref:`machine.ADC <machine.ADCBlock>` API:
+
+.. class:: ADCBlock(id, *, bits)
+
+    Return the ADC block object with the given ``id`` (1 or 2) and initialize
+    it to the specified resolution (9 to 12-bits depending on the ESP32 series)
+    or the highest supported resolution if not specified.
+
+.. method:: ADCBlock.connect(pin)
+            ADCBlock.connect(channel)
+            ADCBlock.connect(channel, pin)
+
+    Return the ``ADC`` object for the specified ADC pin or channel number.
+    Arbitrary connection of ADC channels to GPIO is not supported and so
+    specifying a pin that is not connected to this block, or specifying a
+    mismatched channel and pin, will raise an exception.
+
+Legacy methods:
+
+.. method:: ADC.read()
+
+    This method returns the raw ADC value ranged according to the resolution of
+    the block, e.g., 0-4095 for 12-bit resolution.
+
+.. method:: ADC.atten(atten)
+
+    Equivalent to ``ADC.init(atten=atten)``.
+
+.. method:: ADC.width(bits)
+
+    Equivalent to ``ADC.block().init(bits=bits)``.
+
+For compatibility, the ``ADC`` object also provides constants matching the
+supported ADC resolutions:
+
+  - ``ADC.WIDTH_9BIT`` = 9
+  - ``ADC.WIDTH_10BIT`` = 10
+  - ``ADC.WIDTH_11BIT`` = 11
+  - ``ADC.WIDTH_12BIT`` = 12
+
 
 Software SPI bus
 ----------------
@@ -453,6 +515,8 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
+.. _Deep_sleep_mode:
+
 Deep-sleep mode
 ---------------
 
@@ -472,15 +536,49 @@ Notes:
 * Calling ``deepsleep()`` without an argument will put the device to sleep
   indefinitely
 * A software reset does not change the reset cause
-* There may be some leakage current flowing through enabled internal pullups.
-  To further reduce power consumption it is possible to disable the internal pullups::
 
-    p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
+Some ESP32 pins (0, 2, 4, 12-15, 25-27, 32-39) are connected to the RTC during
+deep-sleep and can be used to wake the device with the ``wake_on_`` functions in
+the :mod:`esp32` module. The output-capable RTC pins (all except 34-39) will
+also retain their pull-up or pull-down resistor configuration when entering
+deep-sleep.
 
-  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
-  it is an output pin) via::
+If the pull resistors are not actively required during deep-sleep and are likely
+to cause current leakage (for example a pull-up resistor is connected to ground
+through a switch), then they should be disabled to save power before entering
+deep-sleep mode::
 
-    p1 = Pin(4, Pin.OUT, None)
+    from machine import Pin, deepsleep
+
+    # configure input RTC pin with pull-up on boot
+    pin = Pin(2, Pin.IN, Pin.PULL_UP)
+
+    # disable pull-up and put the device to sleep for 10 seconds
+    pin.init(pull=None)
+    machine.deepsleep(10000)
+
+Output-configured RTC pins will also retain their output direction and level in
+deep-sleep if pad hold is enabled with the ``hold=True`` argument to
+``Pin.init()``.
+
+Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
+Configuration of non-RTC pins - including output level - can be retained by
+enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep::
+
+    from machine import Pin, deepsleep
+    import esp32
+
+    opin = Pin(19, Pin.OUT, value=1, hold=True) # hold output level
+    ipin = Pin(21, Pin.IN, Pin.PULL_UP, hold=True) # hold pull-up
+
+    # enable pad hold in deep-sleep for non-RTC GPIO
+    esp32.gpio_deep_sleep_hold(True)
+
+    # put the device to sleep for 10 seconds
+    deepsleep(10000)
+
+The pin configuration - including the pad hold - will be retained on wake from
+sleep. See :ref:`Pins_and_GPIO` above for a further discussion of pad holding.
 
 SD card
 -------
@@ -562,18 +660,14 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
     ap = APA106(pin, 8)
     r, g, b = ap[0]
 
-For low-level driving of a NeoPixel::
-
-    import esp
-    esp.neopixel_write(pin, grb_buf, is800khz)
-
 .. Warning::
    By default ``NeoPixel`` is configured to control the more popular *800kHz*
    units. It is possible to use alternative timing to control other (typically
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
 
-The low-level driver uses an RMT channel by default.  To configure this see
+For low-level driving of a NeoPixel see `machine.bitstream`.
+This low-level driver uses an RMT channel by default.  To configure this see
 `RMT.bitstream_channel`.
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.

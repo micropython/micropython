@@ -29,6 +29,7 @@
 // options to control how MicroPython is built
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_B)
 #define MICROPY_ALLOC_PATH_MAX      (64)
+#define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -87,11 +88,6 @@ typedef int mp_off_t;
 // extra builtin names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-// extra builtin modules to add to the list of known ones
-extern const struct _mp_obj_module_t pyb_module;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 

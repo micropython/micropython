@@ -39,15 +39,13 @@ struct _mp_lexer_t;
 //  - xxxx...xx00: pointer to mp_parse_node_struct_t
 //  - xx...xx0010: an identifier; bits 4 and above are the qstr
 //  - xx...xx0110: a string; bits 4 and above are the qstr holding the value
-//  - xx...xx1010: a string of bytes; bits 4 and above are the qstr holding the value
-//  - xx...xx1110: a token; bits 4 and above are mp_token_kind_t
+//  - xx...xx1010: a token; bits 4 and above are mp_token_kind_t
 
 #define MP_PARSE_NODE_NULL      (0)
 #define MP_PARSE_NODE_SMALL_INT (0x1)
 #define MP_PARSE_NODE_ID        (0x02)
 #define MP_PARSE_NODE_STRING    (0x06)
-#define MP_PARSE_NODE_BYTES     (0x0a)
-#define MP_PARSE_NODE_TOKEN     (0x0e)
+#define MP_PARSE_NODE_TOKEN     (0x0a)
 
 typedef uintptr_t mp_parse_node_t; // must be pointer size
 
@@ -79,9 +77,20 @@ typedef struct _mp_parse_node_struct_t {
 static inline mp_parse_node_t mp_parse_node_new_small_int(mp_int_t val) {
     return (mp_parse_node_t)(MP_PARSE_NODE_SMALL_INT | ((mp_uint_t)val << 1));
 }
+
 static inline mp_parse_node_t mp_parse_node_new_leaf(size_t kind, mp_int_t arg) {
     return (mp_parse_node_t)(kind | ((mp_uint_t)arg << 4));
 }
+
+static inline mp_obj_t mp_parse_node_extract_const_object(mp_parse_node_struct_t *pns) {
+    #if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_D
+    // nodes are 32-bit pointers, but need to extract 64-bit object
+    return (uint64_t)pns->nodes[0] | ((uint64_t)pns->nodes[1] << 32);
+    #else
+    return (mp_obj_t)pns->nodes[0];
+    #endif
+}
+
 bool mp_parse_node_is_const_false(mp_parse_node_t pn);
 bool mp_parse_node_is_const_true(mp_parse_node_t pn);
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o);

@@ -44,26 +44,39 @@ PATHS = [
     "shared/timeutils/*.[ch]",
     "shared/runtime/*.[ch]",
     "mpy-cross/*.[ch]",
-    "ports/*/*.[ch]",
-    "ports/windows/msvc/**/*.[ch]",
-    "ports/nrf/modules/nrf/*.[ch]",
+    "ports/**/*.[ch]",
     "py/*.[ch]",
     # Python
     "drivers/**/*.py",
     "examples/**/*.py",
     "extmod/**/*.py",
     "ports/**/*.py",
-    "ports/mimxrt/**/*.[ch]",
     "py/**/*.py",
     "tools/**/*.py",
     "tests/**/*.py",
 ]
 
 EXCLUSIONS = [
+    # The cc3200 port is not fully formatted yet.
+    "ports/cc3200/*/*.[ch]",
+    # The nrf port is not fully formatted yet.
+    "ports/nrf/boards/*.[ch]",
+    "ports/nrf/device/*.[ch]",
+    "ports/nrf/drivers/*.[ch]",
+    "ports/nrf/modules/ble/*.[ch]",
+    "ports/nrf/modules/board/*.[ch]",
+    "ports/nrf/modules/machine/*.[ch]",
+    "ports/nrf/modules/music/*.[ch]",
+    "ports/nrf/modules/ubluepy/*.[ch]",
+    "ports/nrf/modules/uos/*.[ch]",
+    "ports/nrf/modules/utime/*.[ch]",
+    # STM32 USB dev/host code is mostly 3rd party.
+    "ports/stm32/usbdev/**/*.[ch]",
+    "ports/stm32/usbhost/**/*.[ch]",
+    # Teensy core code is 3rd party.
+    "ports/teensy/core/*.[ch]",
     # STM32 build includes generated Python code.
     "ports/*/build*",
-    # gitignore in ports/unix ignores *.py, so also do it here.
-    "ports/unix/*.py",
     # not real python files
     "tests/**/repl_*.py",
     # needs careful attention before applying automatic formatting

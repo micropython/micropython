@@ -28,11 +28,16 @@
 
 #include "py/obj.h"
 
+// Place at the very end of a module's globals_table.
+#define MP_MODULE_ATTR_DELEGATION_ENTRY(ptr) { MP_ROM_QSTR(MP_QSTRnull), MP_ROM_PTR(ptr) }
+
 extern const mp_map_t mp_builtin_module_map;
 
 mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name);
 #if MICROPY_MODULE_WEAK_LINKS
 mp_obj_t mp_module_get_builtin(qstr module_name);
 #endif
+
+void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values);
 
 #endif // MICROPY_INCLUDED_PY_OBJMODULE_H

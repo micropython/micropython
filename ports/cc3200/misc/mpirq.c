@@ -62,8 +62,7 @@ void mp_irq_init0 (void) {
 }
 
 mp_obj_t mp_irq_new (mp_obj_t parent, mp_obj_t handler, const mp_irq_methods_t *methods) {
-    mp_irq_obj_t *self = m_new_obj(mp_irq_obj_t);
-    self->base.type = &mp_irq_type;
+    mp_irq_obj_t *self = mp_obj_malloc(mp_irq_obj_t, &mp_irq_type);
     self->handler = handler;
     self->parent = parent;
     self->methods = (mp_irq_methods_t *)methods;

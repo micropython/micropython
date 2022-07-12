@@ -268,7 +268,7 @@ STATIC void machine_hw_spi_init_internal(
     // Select DMA channel based on the hardware SPI host
     int dma_chan = 0;
     if (self->host == HSPI_HOST) {
-        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+        #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C3
         dma_chan = 3;
         #else
         dma_chan = 1;

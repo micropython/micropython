@@ -102,6 +102,8 @@ const mp_obj_module_t mp_module_network = {
     .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);
+
 /*******************************************************************************/
 // Implementations of network methods that can be used by any interface
 

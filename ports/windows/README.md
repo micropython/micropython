@@ -3,7 +3,7 @@ It is based on Unix port, and expected to remain so.
 The port requires additional testing, debugging, and patches. Please
 consider to contribute.
 
-All gcc-based builds use the gcc compiler from [Mingw-w64](mingw-w64.org),
+All gcc-based builds use the gcc compiler from [Mingw-w64](https://www.mingw-w64.org/),
 which is the advancement of the original mingw project. The latter is
 getting obsolete and is not actively supported by MicroPython.
 

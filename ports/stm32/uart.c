@@ -41,16 +41,25 @@
 #if defined(STM32F4)
 #define UART_RXNE_IS_SET(uart) ((uart)->SR & USART_SR_RXNE)
 #else
-#if defined(STM32H7)
+#if defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
 #define USART_ISR_RXNE USART_ISR_RXNE_RXFNE
 #endif
 #define UART_RXNE_IS_SET(uart) ((uart)->ISR & USART_ISR_RXNE)
 #endif
 
+#if defined(STM32G0) || defined(STM32WL)
+#define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE_RXFNEIE; } while (0)
+#define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE_RXFNEIE; } while (0)
+#else
 #define UART_RXNE_IT_EN(uart) do { (uart)->CR1 |= USART_CR1_RXNEIE; } while (0)
 #define UART_RXNE_IT_DIS(uart) do { (uart)->CR1 &= ~USART_CR1_RXNEIE; } while (0)
+#endif
 
+#if defined(STM32G0) || defined(STM32WL)
+#define USART_CR1_IE_BASE (USART_CR1_PEIE | USART_CR1_TXEIE_TXFNFIE | USART_CR1_TCIE | USART_CR1_RXNEIE_RXFNEIE | USART_CR1_IDLEIE)
+#else
 #define USART_CR1_IE_BASE (USART_CR1_PEIE | USART_CR1_TXEIE | USART_CR1_TCIE | USART_CR1_RXNEIE | USART_CR1_IDLEIE)
+#endif
 #define USART_CR2_IE_BASE (USART_CR2_LBDIE)
 #define USART_CR3_IE_BASE (USART_CR3_CTSIE | USART_CR3_EIE)
 
@@ -73,6 +82,15 @@
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE)
 #endif
 
+#elif defined(STM32G0) || defined(STM32G4)
+#define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
+#define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
+#if defined(USART_CR3_TCBGTIE)
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_TCBGTIE | USART_CR3_WUFIE)
+#else
+#define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
+#endif
+
 #elif defined(STM32H7)
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_RXFFIE | USART_CR1_TXFEIE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
@@ -83,7 +101,7 @@
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
 
-#elif defined(STM32L4) || defined(STM32WB)
+#elif defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 #define USART_CR1_IE_ALL (USART_CR1_IE_BASE | USART_CR1_EOBIE | USART_CR1_RTOIE | USART_CR1_CMIE)
 #define USART_CR2_IE_ALL (USART_CR2_IE_BASE)
 #if defined(USART_CR3_TCBGTIE)
@@ -91,6 +109,7 @@
 #else
 #define USART_CR3_IE_ALL (USART_CR3_IE_BASE | USART_CR3_WUFIE)
 #endif
+
 #endif
 
 extern void NORETURN __fatal_error(const char *msg);
@@ -103,9 +122,17 @@ typedef struct _pyb_uart_irq_map_t {
 STATIC const pyb_uart_irq_map_t mp_uart_irq_map[] = {
     { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
     { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
+    #if defined(STM32G0) || defined(STM32WL)
+    { USART_CR1_TXEIE_TXFNFIE, UART_FLAG_TXE}, // TX register empty
+    #else
     { USART_CR1_TXEIE,  UART_FLAG_TXE},  // TX register empty
+    #endif
     { USART_CR1_TCIE,   UART_FLAG_TC},   // TX complete
+    #if defined(STM32G0) || defined(STM32WL)
+    { USART_CR1_RXNEIE_RXFNEIE, UART_FLAG_RXNE}, // RX register not empty
+    #else
     { USART_CR1_RXNEIE, UART_FLAG_RXNE}, // RX register not empty
+    #endif
     #if 0
     // For now only IRQs selected by CR1 are supported
     #if defined(STM32F4)
@@ -202,6 +229,11 @@ bool uart_exists(int uart_id) {
             return true;
         #endif
 
+        #if defined(MICROPY_HW_LPUART2_TX) && defined(MICROPY_HW_LPUART2_RX)
+        case PYB_LPUART_2:
+            return true;
+        #endif
+
         default:
             return false;
     }
@@ -243,7 +275,11 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
         case PYB_UART_2:
             uart_unit = 2;
             UARTx = USART2;
+            #if defined(STM32G0)
+            irqn = USART2_LPUART2_IRQn;
+            #else
             irqn = USART2_IRQn;
+            #endif
             pins[0] = MICROPY_HW_UART2_TX;
             pins[1] = MICROPY_HW_UART2_RX;
             #if defined(MICROPY_HW_UART2_RTS)
@@ -266,6 +302,8 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             UARTx = USART3;
             #if defined(STM32F0)
             irqn = USART3_8_IRQn;
+            #elif defined(STM32G0)
+            irqn = USART3_4_5_6_LPUART1_IRQn;
             #else
             irqn = USART3_IRQn;
             #endif
@@ -295,6 +333,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             #elif defined(STM32L0)
             UARTx = USART4;
             irqn = USART4_5_IRQn;
+            __HAL_RCC_USART4_CLK_ENABLE();
+            #elif defined(STM32G0)
+            UARTx = USART4;
+            irqn = USART3_4_5_6_LPUART1_IRQn;
             __HAL_RCC_USART4_CLK_ENABLE();
             #else
             UARTx = UART4;
@@ -327,6 +369,10 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             UARTx = USART5;
             irqn = USART4_5_IRQn;
             __HAL_RCC_USART5_CLK_ENABLE();
+            #elif defined(STM32G0)
+            UARTx = USART5;
+            irqn = USART3_4_5_6_LPUART1_IRQn;
+            __HAL_RCC_USART5_CLK_ENABLE();
             #else
             UARTx = UART5;
             irqn = UART5_IRQn;
@@ -353,6 +399,8 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             UARTx = USART6;
             #if defined(STM32F0)
             irqn = USART3_8_IRQn;
+            #elif defined(STM32G0)
+            irqn = USART3_4_5_6_LPUART1_IRQn;
             #else
             irqn = USART6_IRQn;
             #endif
@@ -453,7 +501,11 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             uart_fn = AF_FN_LPUART;
             uart_unit = 1;
             UARTx = LPUART1;
+            #if defined(STM32G0)
+            irqn = USART3_4_5_6_LPUART1_IRQn;
+            #else
             irqn = LPUART1_IRQn;
+            #endif
             pins[0] = MICROPY_HW_LPUART1_TX;
             pins[1] = MICROPY_HW_LPUART1_RX;
             #if defined(MICROPY_HW_LPUART1_RTS)
@@ -467,6 +519,30 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
             }
             #endif
             __HAL_RCC_LPUART1_CLK_ENABLE();
+            break;
+        #endif
+
+        #if defined(MICROPY_HW_LPUART2_TX) && defined(MICROPY_HW_LPUART2_RX)
+        case PYB_LPUART_2:
+            uart_fn = AF_FN_LPUART;
+            uart_unit = 2;
+            UARTx = LPUART2;
+            #if defined(STM32G0)
+            irqn = USART2_LPUART2_IRQn;
+            #endif
+            pins[0] = MICROPY_HW_LPUART2_TX;
+            pins[1] = MICROPY_HW_LPUART2_RX;
+            #if defined(MICROPY_HW_LPUART2_RTS)
+            if (flow & UART_HWCONTROL_RTS) {
+                pins[2] = MICROPY_HW_LPUART2_RTS;
+            }
+            #endif
+            #if defined(MICROPY_HW_LPUART2_CTS)
+            if (flow & UART_HWCONTROL_CTS) {
+                pins[3] = MICROPY_HW_LPUART2_CTS;
+            }
+            #endif
+            __HAL_RCC_LPUART2_CLK_ENABLE();
             break;
         #endif
 
@@ -501,6 +577,11 @@ bool uart_init(pyb_uart_obj_t *uart_obj,
     huart.Init.Mode = UART_MODE_TX_RX;
     huart.Init.HwFlowCtl = flow;
     huart.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    #if defined(STM32G4)  // H7 and WB also have fifo..
+    huart.FifoMode = UART_FIFOMODE_ENABLE;
+    #endif
+
     #if !defined(STM32F4)
     huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
     #endif
@@ -594,14 +675,20 @@ void uart_deinit(pyb_uart_obj_t *self) {
         __HAL_RCC_USART1_CLK_DISABLE();
     #if defined(USART2)
     } else if (self->uart_id == 2) {
+        #if defined(STM32G0)
+        HAL_NVIC_DisableIRQ(USART2_LPUART2_IRQn);
+        #else
         HAL_NVIC_DisableIRQ(USART2_IRQn);
+        #endif
         __HAL_RCC_USART2_FORCE_RESET();
         __HAL_RCC_USART2_RELEASE_RESET();
         __HAL_RCC_USART2_CLK_DISABLE();
     #endif
     #if defined(USART3)
     } else if (self->uart_id == 3) {
-        #if !defined(STM32F0)
+        #if defined(STM32G0)
+        HAL_NVIC_DisableIRQ(USART3_4_5_6_LPUART1_IRQn);
+        #elif !defined(STM32F0)
         HAL_NVIC_DisableIRQ(USART3_IRQn);
         #endif
         __HAL_RCC_USART3_FORCE_RESET();
@@ -683,10 +770,25 @@ void uart_deinit(pyb_uart_obj_t *self) {
     #endif
     #if defined(LPUART1)
     } else if (self->uart_id == PYB_LPUART_1) {
+        #if defined(STM32G0)
+        HAL_NVIC_DisableIRQ(USART3_4_5_6_LPUART1_IRQn);
+        #else
         HAL_NVIC_DisableIRQ(LPUART1_IRQn);
+        #endif
         __HAL_RCC_LPUART1_FORCE_RESET();
         __HAL_RCC_LPUART1_RELEASE_RESET();
         __HAL_RCC_LPUART1_CLK_DISABLE();
+    #endif
+    #if defined(LPUART2)
+    } else if (self->uart_id == PYB_LPUART_2) {
+        #if defined(STM32G0)
+        HAL_NVIC_DisableIRQ(USART2_LPUART2_IRQn);
+        #else
+        HAL_NVIC_DisableIRQ(LPUART2_IRQn);
+        #endif
+        __HAL_RCC_LPUART2_FORCE_RESET();
+        __HAL_RCC_LPUART2_RELEASE_RESET();
+        __HAL_RCC_LPUART2_CLK_DISABLE();
     #endif
     }
 }
@@ -698,7 +800,7 @@ void uart_attach_to_repl(pyb_uart_obj_t *self, bool attached) {
 uint32_t uart_get_source_freq(pyb_uart_obj_t *self) {
     uint32_t uart_clk = 0;
 
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32G0)
     uart_clk = HAL_RCC_GetPCLK1Freq();
     #elif defined(STM32F7)
     switch ((RCC->DCKCFGR2 >> ((self->uart_id - 1) * 2)) & 3) {
@@ -798,14 +900,14 @@ uint32_t uart_get_baudrate(pyb_uart_obj_t *self) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         return LL_LPUART_GetBaudRate(self->uartx, uart_get_source_freq(self)
-            #if defined(STM32H7) || defined(STM32WB)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
             , self->uartx->PRESC
             #endif
             );
     }
     #endif
     return LL_USART_GetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32H7) || defined(STM32WB)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
         self->uartx->PRESC,
         #endif
         LL_USART_OVERSAMPLING_16);
@@ -815,7 +917,7 @@ void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate) {
     #if defined(LPUART1)
     if (self->uart_id == PYB_LPUART_1) {
         LL_LPUART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-            #if defined(STM32H7) || defined(STM32WB)
+            #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
             LL_LPUART_PRESCALER_DIV1,
             #endif
             baudrate);
@@ -823,7 +925,7 @@ void uart_set_baudrate(pyb_uart_obj_t *self, uint32_t baudrate) {
     }
     #endif
     LL_USART_SetBaudRate(self->uartx, uart_get_source_freq(self),
-        #if defined(STM32H7) || defined(STM32WB)
+        #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
         LL_USART_PRESCALER_DIV1,
         #endif
         LL_USART_OVERSAMPLING_16, baudrate);
@@ -874,7 +976,7 @@ int uart_rx_char(pyb_uart_obj_t *self) {
         return data;
     } else {
         // no buffering
-        #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB) || defined(STM32WL)
         int data = self->uartx->RDR & self->char_mask;
         self->uartx->ICR = USART_ICR_ORECF; // clear ORE if it was set
         return data;
@@ -1024,7 +1126,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
             uint16_t next_head = (self->read_buf_head + 1) % self->read_buf_len;
             if (next_head != self->read_buf_tail) {
                 // only read data if room in buf
-                #if defined(STM32F0) || defined(STM32F7) || defined(STM32L0) || defined(STM32L4) || defined(STM32H7) || defined(STM32WB)
+                #if defined(STM32F0) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
                 int data = self->uartx->RDR; // clears UART_FLAG_RXNE
                 #else
                 self->mp_irq_flags = self->uartx->SR; // resample to get any new flags since next read of DR will clear SR

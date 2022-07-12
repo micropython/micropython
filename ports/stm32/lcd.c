@@ -32,10 +32,10 @@
 
 #if MICROPY_HW_HAS_LCD
 
+#include "extmod/font_petme128_8x8.h"
 #include "pin.h"
 #include "bufhelper.h"
 #include "spi.h"
-#include "font_petme128_8x8.h"
 #include "lcd.h"
 
 /// \moduleref pyb
@@ -200,8 +200,7 @@ STATIC mp_obj_t pyb_lcd_make_new(const mp_obj_type_t *type, size_t n_args, size_
     const char *lcd_id = mp_obj_str_get_str(args[0]);
 
     // create lcd object
-    pyb_lcd_obj_t *lcd = m_new_obj(pyb_lcd_obj_t);
-    lcd->base.type = &pyb_lcd_type;
+    pyb_lcd_obj_t *lcd = mp_obj_malloc(pyb_lcd_obj_t, &pyb_lcd_type);
 
     // configure pins
     // TODO accept an SPI object and pin objects for full customisation

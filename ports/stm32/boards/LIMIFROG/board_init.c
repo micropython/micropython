@@ -40,23 +40,18 @@ void LIMIFROG_board_early_init(void) {
   #define   CONN_POS10_PORT     GPIOB
 #endif
 
-static inline void  GPIO_HIGH(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
-{
-       GPIOx->BSRR = (uint32_t)GPIO_Pin;
+static inline void  GPIO_HIGH(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
+    GPIOx->BSRR = (uint32_t)GPIO_Pin;
 }
 
-static inline int  IS_GPIO_RESET(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
-{
+static inline int  IS_GPIO_RESET(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
     GPIO_PinState bitstatus;
-      if((GPIOx->IDR & GPIO_Pin) != (uint32_t)GPIO_PIN_RESET)
-            {
-                    bitstatus = GPIO_PIN_SET;
-                      }
-        else
-              {
-                      bitstatus = GPIO_PIN_RESET;
-                        }
-          return (bitstatus==GPIO_PIN_RESET);
+    if ((GPIOx->IDR & GPIO_Pin) != (uint32_t)GPIO_PIN_RESET) {
+        bitstatus = GPIO_PIN_SET;
+    } else {
+        bitstatus = GPIO_PIN_RESET;
+    }
+    return bitstatus == GPIO_PIN_RESET;
 }
 
 /**************************************************************
@@ -94,15 +89,14 @@ static inline int  IS_GPIO_RESET(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 
   ********************************************************************/
 
-static void LBF_DFU_If_Needed(void)
-{
+static void LBF_DFU_If_Needed(void) {
 
 
- GPIO_InitTypeDef GPIO_InitStruct;
+    GPIO_InitTypeDef GPIO_InitStruct;
 
 
-   // Initialize and assert pin BTLE_RST
-   // (hw reset to BLE module, so it won't drive UART3)
+    // Initialize and assert pin BTLE_RST
+    // (hw reset to BLE module, so it won't drive UART3)
 
     __HAL_RCC_GPIOC_CLK_ENABLE();
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -114,11 +108,11 @@ static void LBF_DFU_If_Needed(void)
     GPIO_HIGH(BT_RST_PORT, BT_RST_PIN); // assert BTLE reset
 
 
- /* -- Bootloader will be called if position 10 on the extension port
-       is actively pulled low -- */
-       // Note - this is an arbitrary choice, code could be modified to
-       // monitor another GPIO of the STM32 and/or decide that active level
-       // is high rather than low
+    /* -- Bootloader will be called if position 10 on the extension port
+          is actively pulled low -- */
+    // Note - this is an arbitrary choice, code could be modified to
+    // monitor another GPIO of the STM32 and/or decide that active level
+    // is high rather than low
 
 
     // Initialize Extension Port Position 10 = PB8 (bears I2C1_SCL)
@@ -131,24 +125,22 @@ static void LBF_DFU_If_Needed(void)
     HAL_GPIO_Init(CONN_POS10_PORT, &GPIO_InitStruct);
 
     // If selection pin pulled low...
-    if ( IS_GPIO_RESET(CONN_POS10_PORT, CONN_POS10_PIN ))
-
-    {
+    if (IS_GPIO_RESET(CONN_POS10_PORT, CONN_POS10_PIN)) {
         // Remap bootloader ROM (ie System Flash) to address 0x0
         SYSCFG->MEMRMP = 0x00000001;
 
         // Init stack pointer with value residing at ROM base
-    asm (
-        "LDR     R0, =0x00000000\n\t"  // load ROM base address"
-        "LDR     SP,[R0, #0]\n\t"      // assign main stack pointer"
-        );
+        asm (
+            "LDR     R0, =0x00000000\n\t" // load ROM base address"
+            "LDR     SP,[R0, #0]\n\t"  // assign main stack pointer"
+            );
 
         // Jump to address pointed by 0x00000004 -- */
 
-    asm (
-        "LDR     R0,[R0, #4]\n\t"      // load bootloader address
-        "BX      R0\n\t"
-        );
+        asm (
+            "LDR     R0,[R0, #4]\n\t"  // load bootloader address
+            "BX      R0\n\t"
+            );
 
     }
 }

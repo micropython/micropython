@@ -158,7 +158,7 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYTES] = {
     { 0,  1, -1, -1, -1, -1, -1, -1 },  // Mono, 16-bits
     { 2,  3,  0,  1, -1, -1, -1, -1 },  // Mono, 32-bits
-    { 0,  1,  4,  5, -1, -1, -1, -1 },  // Stereo, 16-bits
+    { 0,  1, -1, -1,  2,  3, -1, -1 },  // Stereo, 16-bits
     { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
@@ -791,6 +791,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     init->AudioFreq = args[ARG_rate].u_int;
     init->CPOL = I2S_CPOL_LOW;
     init->ClockSource = I2S_CLOCK_PLL;
+    #if defined(STM32F4)
+    init->FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+    #endif
 
     // init the I2S bus
     if (!i2s_init(self)) {
@@ -856,9 +859,8 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
-        self = m_new_obj(machine_i2s_obj_t);
+        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
         MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] = self;
-        self->base.type = &machine_i2s_type;
         self->i2s_id = i2s_id;
     } else {
         self = MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base];
@@ -884,24 +886,26 @@ STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
 STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    dma_deinit(self->dma_descr_tx);
-    dma_deinit(self->dma_descr_rx);
-    HAL_I2S_DeInit(&self->hi2s);
+    if (self->ring_buffer_storage != NULL) {
+        dma_deinit(self->dma_descr_tx);
+        dma_deinit(self->dma_descr_rx);
+        HAL_I2S_DeInit(&self->hi2s);
 
-    if (self->hi2s.Instance == I2S1) {
-        __SPI1_FORCE_RESET();
-        __SPI1_RELEASE_RESET();
-        __SPI1_CLK_DISABLE();
-    } else if (self->hi2s.Instance == I2S2) {
-        __SPI2_FORCE_RESET();
-        __SPI2_RELEASE_RESET();
-        __SPI2_CLK_DISABLE();
+        if (self->hi2s.Instance == I2S1) {
+            __SPI1_FORCE_RESET();
+            __SPI1_RELEASE_RESET();
+            __SPI1_CLK_DISABLE();
+        } else if (self->hi2s.Instance == I2S2) {
+            __SPI2_FORCE_RESET();
+            __SPI2_RELEASE_RESET();
+            __SPI2_CLK_DISABLE();
+        }
+
+        m_free(self->ring_buffer_storage);
+        self->ring_buffer_storage = NULL;
     }
-
-    m_free(self->ring_buffer_storage);
 
     return mp_const_none;
 }

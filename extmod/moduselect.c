@@ -346,8 +346,7 @@ STATIC const mp_obj_type_t mp_type_poll = {
 
 // poll()
 STATIC mp_obj_t select_poll(void) {
-    mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
-    poll->base.type = &mp_type_poll;
+    mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     mp_map_init(&poll->poll_map, 0);
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
@@ -373,5 +372,7 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uselect, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT

@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "8MB SDRAM",
+        "16MB Flash",
+        "Dual-core processor",
+        "USB High Speed Phy",
+        "10/100 Ethernet Phy",
+        "CYW43 WiFi/BT Module",
+        "DisplayPort over USB-C",
+        "2x80 pin HD connectors"
+    ],
+    "images": [
+        "ABX00042_01.iso_1000x750.jpg"
+    ],
+    "mcu": "STM32H747",
+    "product": "Arduino Portenta H7",
+    "thumbnail": "",
+    "url": "https://store.arduino.cc/products/portenta-h7",
+    "vendor": "Arduino"
+}

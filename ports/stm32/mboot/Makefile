@@ -32,11 +32,6 @@ include $(BOARD_DIR)/mpconfigboard.mk
 # A board can set MBOOT_TEXT0_ADDR to a custom location where mboot should reside.
 MBOOT_TEXT0_ADDR ?= 0x08000000
 
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
-CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
-
-CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 DFU=$(TOP)/tools/dfu.py
 PYDFU ?= $(TOP)/tools/pydfu.py
@@ -45,8 +40,8 @@ BOOTLOADER_DFU_USB_PID ?= 0xDF11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
-STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
-SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
+
+include ../stm32.mk
 
 CROSS_COMPILE ?= arm-none-eabi-
 
@@ -55,19 +50,9 @@ INC += -I..
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/lib/cmsis/inc
-INC += -I$(CMSIS_DIR)/
-INC += -I$(TOP)/$(HAL_DIR)/Inc
+INC += -I$(STM32LIB_CMSIS_ABS)/Include
+INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I../$(USBDEV_DIR)/core/inc -I../$(USBDEV_DIR)/class/inc
-
-# Basic Cortex-M flags
-CFLAGS_CORTEX_M = -mthumb
-
-# Options for particular MCU series
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
@@ -125,6 +110,8 @@ SRC_C += \
 	fsload.c \
 	gzstream.c \
 	pack.c \
+	sdcard.c \
+	ui.c \
 	vfs_fat.c \
 	vfs_lfs.c \
 	drivers/bus/softspi.c \
@@ -154,15 +141,26 @@ CFLAGS += -DMBOOT_PACK_CHUNKSIZE=$(MBOOT_PACK_CHUNKSIZE)
 CFLAGS += -DMBOOT_PACK_KEYS_FILE=\"$(MBOOT_PACK_KEYS_FILE)\"
 endif
 
-$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
-SRC_HAL += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+$(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
+	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
+	hal_rcc.c \
+	hal_rcc_ex.c \
 	ll_usb.c \
 	)
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_mmc.c \
+	hal_sd.c \
+	ll_sdmmc.c \
+	)
+endif
 
 SRC_USBDEV += $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	core/src/usbd_core.c \

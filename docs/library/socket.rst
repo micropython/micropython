@@ -66,19 +66,6 @@ Tuple address format for ``socket`` module:
 Functions
 ---------
 
-.. function:: socket(af=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, /)
-
-   Create a new socket using the given address family, socket type and
-   protocol number. Note that specifying *proto* in most cases is not
-   required (and not recommended, as some MicroPython ports may omit
-   ``IPPROTO_*`` constants). Instead, *type* argument will select needed
-   protocol automatically::
-
-        # Create STREAM TCP socket
-        socket(AF_INET, SOCK_STREAM)
-        # Create DGRAM UDP socket
-        socket(AF_INET, SOCK_DGRAM)
-
 .. function:: getaddrinfo(host, port, af=0, type=0, proto=0, flags=0, /)
 
    Translate the host/port argument into a sequence of 5-tuples that contain all the
@@ -175,6 +162,19 @@ Constants specific to WiPy:
 
 class socket
 ============
+
+.. class:: socket(af=AF_INET, type=SOCK_STREAM, proto=IPPROTO_TCP, /)
+
+   Create a new socket using the given address family, socket type and
+   protocol number. Note that specifying *proto* in most cases is not
+   required (and not recommended, as some MicroPython ports may omit
+   ``IPPROTO_*`` constants). Instead, *type* argument will select needed
+   protocol automatically::
+
+        # Create STREAM TCP socket
+        socket(AF_INET, SOCK_STREAM)
+        # Create DGRAM UDP socket
+        socket(AF_INET, SOCK_DGRAM)
 
 Methods
 -------

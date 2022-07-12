@@ -529,7 +529,9 @@ void TAMP_STAMP_IRQHandler(void) {
 
 void RTC_WKUP_IRQHandler(void) {
     IRQ_ENTER(RTC_WKUP_IRQn);
-    #if defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
+    RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     RTC->SR &= ~RTC_SR_WUTF; // clear wakeup interrupt flag
     #else
     RTC->ISR &= ~RTC_ISR_WUTF; // clear wakeup interrupt flag
@@ -538,8 +540,17 @@ void RTC_WKUP_IRQHandler(void) {
     IRQ_EXIT(RTC_WKUP_IRQn);
 }
 
-#if defined(STM32F0) || defined(STM32L0)
+#if defined(STM32F0) || defined(STM32G0) || defined(STM32L0)
 
+#if defined(STM32G0)
+void RTC_TAMP_IRQHandler(void) {
+    IRQ_ENTER(RTC_TAMP_IRQn);
+    RTC->MISR &= ~RTC_MISR_WUTMF; // clear wakeup interrupt flag
+    Handle_EXTI_Irq(EXTI_RTC_WAKEUP);    // clear EXTI flag and execute optional callback
+    Handle_EXTI_Irq(EXTI_RTC_TIMESTAMP); // clear EXTI flag and execute optional callback
+    IRQ_EXIT(RTC_TAMP_IRQn);
+}
+#else
 void RTC_IRQHandler(void) {
     IRQ_ENTER(RTC_IRQn);
     if (RTC->ISR & RTC_ISR_WUTF) {
@@ -556,6 +567,7 @@ void RTC_IRQHandler(void) {
     }
     IRQ_EXIT(RTC_IRQn);
 }
+#endif
 
 void EXTI0_1_IRQHandler(void) {
     IRQ_ENTER(EXTI0_1_IRQn);
@@ -593,7 +605,7 @@ void TIM1_BRK_TIM9_IRQHandler(void) {
     IRQ_EXIT(TIM1_BRK_TIM9_IRQn);
 }
 
-#if defined(STM32L4)
+#if defined(STM32G4) || defined(STM32L4)
 void TIM1_BRK_TIM15_IRQHandler(void) {
     IRQ_ENTER(TIM1_BRK_TIM15_IRQn);
     timer_irq_handler(15);
@@ -608,7 +620,7 @@ void TIM1_UP_TIM10_IRQHandler(void) {
     IRQ_EXIT(TIM1_UP_TIM10_IRQn);
 }
 
-#if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
 void TIM1_UP_TIM16_IRQHandler(void) {
     IRQ_ENTER(TIM1_UP_TIM16_IRQn);
     timer_irq_handler(1);
@@ -631,7 +643,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void) {
     IRQ_EXIT(TIM1_TRG_COM_TIM11_IRQn);
 }
 
-#if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
 void TIM1_TRG_COM_TIM17_IRQHandler(void) {
     IRQ_ENTER(TIM1_TRG_COM_TIM17_IRQn);
     timer_irq_handler(17);
@@ -651,6 +663,15 @@ void TIM2_IRQHandler(void) {
     IRQ_EXIT(TIM2_IRQn);
 }
 
+#if defined(STM32G0)
+void TIM3_TIM4_IRQHandler(void) {
+    IRQ_ENTER(TIM3_TIM4_IRQn);
+    timer_irq_handler(3);
+    timer_irq_handler(4);
+    IRQ_EXIT(TIM3_TIM4_IRQn);
+}
+
+#else
 void TIM3_IRQHandler(void) {
     IRQ_ENTER(TIM3_IRQn);
     timer_irq_handler(3);
@@ -662,6 +683,7 @@ void TIM4_IRQHandler(void) {
     timer_irq_handler(4);
     IRQ_EXIT(TIM4_IRQn);
 }
+#endif
 
 void TIM5_IRQHandler(void) {
     IRQ_ENTER(TIM5_IRQn);
@@ -671,19 +693,41 @@ void TIM5_IRQHandler(void) {
 }
 
 #if defined(TIM6) // STM32F401 doesn't have TIM6
+#if defined(STM32G0)
+void TIM6_DAC_LPTIM1_IRQHandler(void) {
+    IRQ_ENTER(TIM6_DAC_LPTIM1_IRQn);
+    timer_irq_handler(6);
+    IRQ_EXIT(TIM6_DAC_LPTIM1_IRQn);
+}
+#else
 void TIM6_DAC_IRQHandler(void) {
     IRQ_ENTER(TIM6_DAC_IRQn);
     timer_irq_handler(6);
     IRQ_EXIT(TIM6_DAC_IRQn);
 }
 #endif
+#endif
 
 #if defined(TIM7) // STM32F401 doesn't have TIM7
+#if defined(STM32G0)
+void TIM7_LPTIM2_IRQHandler(void) {
+    IRQ_ENTER(TIM7_LPTIM2_IRQn);
+    timer_irq_handler(7);
+    IRQ_EXIT(TIM7_LPTIM2_IRQn);
+}
+#elif defined(STM32G4)
+void TIM7_DAC_IRQHandler(void) {
+    IRQ_ENTER(TIM7_DAC_IRQn);
+    timer_irq_handler(7);
+    IRQ_EXIT(TIM7_DAC_IRQn);
+}
+#else
 void TIM7_IRQHandler(void) {
     IRQ_ENTER(TIM7_IRQn);
     timer_irq_handler(7);
     IRQ_EXIT(TIM7_IRQn);
 }
+#endif
 #endif
 
 #if defined(TIM8) // STM32F401 doesn't have TIM8
@@ -700,7 +744,7 @@ void TIM8_UP_TIM13_IRQHandler(void) {
     IRQ_EXIT(TIM8_UP_TIM13_IRQn);
 }
 
-#if defined(STM32L4)
+#if defined(STM32G4) || defined(STM32L4)
 void TIM8_UP_IRQHandler(void) {
     IRQ_ENTER(TIM8_UP_IRQn);
     timer_irq_handler(8);
@@ -718,6 +762,32 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void) {
     IRQ_ENTER(TIM8_TRG_COM_TIM14_IRQn);
     timer_irq_handler(14);
     IRQ_EXIT(TIM8_TRG_COM_TIM14_IRQn);
+}
+#endif
+
+#if defined(STM32G0)
+void TIM14_IRQHandler(void) {
+    IRQ_ENTER(TIM14_IRQn);
+    timer_irq_handler(14);
+    IRQ_EXIT(TIM14_IRQn);
+}
+
+void TIM15_IRQHandler(void) {
+    IRQ_ENTER(TIM15_IRQn);
+    timer_irq_handler(15);
+    IRQ_EXIT(TIM15_IRQn);
+}
+
+void TIM16_FDCAN_IT0_IRQHandler(void) {
+    IRQ_ENTER(TIM16_FDCAN_IT0_IRQn);
+    timer_irq_handler(16);
+    IRQ_EXIT(TIM16_FDCAN_IT0_IRQn);
+}
+
+void TIM17_FDCAN_IT1_IRQHandler(void) {
+    IRQ_ENTER(TIM17_FDCAN_IT1_IRQn);
+    timer_irq_handler(17);
+    IRQ_EXIT(TIM17_FDCAN_IT1_IRQn);
 }
 #endif
 
@@ -769,6 +839,29 @@ void USART3_8_IRQHandler(void) {
     IRQ_EXIT(USART3_8_IRQn);
 }
 
+#elif defined(STM32G0)
+
+#if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+void USART2_LPUART2_IRQHandler(void) {
+    IRQ_ENTER(USART2_LPUART2_IRQn);
+    uart_irq_handler(2);
+    uart_irq_handler(PYB_LPUART_2);
+    IRQ_EXIT(USART2_LPUART2_IRQn);
+}
+
+void USART3_4_5_6_LPUART1_IRQHandler(void) {
+    IRQ_ENTER(USART3_4_5_6_LPUART1_IRQn);
+    uart_irq_handler(3);
+    uart_irq_handler(4);
+    uart_irq_handler(5);
+    uart_irq_handler(6);
+    uart_irq_handler(PYB_LPUART_1);
+    IRQ_EXIT(USART3_4_5_6_LPUART1_IRQn);
+}
+#else
+#error Unsupported processor
+#endif
+
 #elif defined(STM32L0)
 
 void USART4_5_IRQHandler(void) {
@@ -788,11 +881,27 @@ void USART3_IRQHandler(void) {
 }
 #endif
 
+#if defined(USART4)
+void USART4_IRQHandler(void) {
+    IRQ_ENTER(USART4_IRQn);
+    uart_irq_handler(4);
+    IRQ_EXIT(USART4_IRQn);
+}
+#endif
+
 #if defined(UART4)
 void UART4_IRQHandler(void) {
     IRQ_ENTER(UART4_IRQn);
     uart_irq_handler(4);
     IRQ_EXIT(UART4_IRQn);
+}
+#endif
+
+#if defined(USART5)
+void USART5_IRQHandler(void) {
+    IRQ_ENTER(USART5_IRQn);
+    uart_irq_handler(5);
+    IRQ_EXIT(USART5_IRQn);
 }
 #endif
 
@@ -851,6 +960,14 @@ void LPUART1_IRQHandler(void) {
     IRQ_ENTER(LPUART1_IRQn);
     uart_irq_handler(PYB_LPUART_1);
     IRQ_EXIT(LPUART1_IRQn);
+}
+#endif
+
+#if defined(LPUART2)
+void LPUART2_IRQHandler(void) {
+    IRQ_ENTER(LPUART2_IRQn);
+    uart_irq_handler(PYB_LPUART_2);
+    IRQ_EXIT(LPUART2_IRQn);
 }
 #endif
 
