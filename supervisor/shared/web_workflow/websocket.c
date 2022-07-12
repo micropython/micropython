@@ -26,6 +26,9 @@
 
 #include "supervisor/shared/web_workflow/websocket.h"
 
+// TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
+#include "esp_log.h"
+
 typedef struct {
     socketpool_socket_obj_t socket;
     uint8_t opcode;

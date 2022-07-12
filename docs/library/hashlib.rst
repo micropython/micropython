@@ -5,6 +5,7 @@
 
 .. module:: hashlib
    :synopsis: hashing algorithms
+   :noindex:
 
 |see_cpython_module| :mod:`cpython:hashlib`.
 
