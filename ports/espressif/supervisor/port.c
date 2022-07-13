@@ -235,6 +235,7 @@ safe_mode_t port_init(void) {
         heap_size = HEAP_SIZE / sizeof(uint32_t);
     }
     if (heap == NULL) {
+        heap_size = 0;
         return NO_HEAP;
     }
 
