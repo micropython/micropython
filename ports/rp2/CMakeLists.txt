@@ -18,6 +18,8 @@ endif()
 set(PICO_TINYUSB_PATH ${MICROPY_DIR}/lib/tinyusb)
 # Use the local lwip instead of the one in pico-sdk
 set(PICO_LWIP_PATH ${MICROPY_DIR}/lib/lwip)
+# Use the local btstack instead of the one in pico-sdk
+set(PICO_BTSTACK_PATH ${MICROPY_DIR}/lib/btstack)
 
 # Set the location of this port's directory.
 set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
@@ -217,9 +219,38 @@ if(MICROPY_PY_BLUETOOTH)
         MICROPY_PY_BLUETOOTH=1
         MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
         MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
-        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
     )
+endif()
+
+if (MICROPY_PY_BLUETOOTH_CYW43)
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        CYW43_ENABLE_BLUETOOTH=1
+        MICROPY_PY_BLUETOOTH_CYW43=1
+    )
+
+    if (MICROPY_BLUETOOTH_BTSTACK)
+        target_link_libraries(${MICROPY_TARGET}
+            pico_btstack_hci_transport_cyw43
+        )
+    endif()
+endif()
+
+if (MICROPY_BLUETOOTH_BTSTACK)
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/btstack)
+
+    list(APPEND MICROPY_SOURCE_PORT mpbtstackport.c)
+
+    include(${MICROPY_DIR}/extmod/btstack/btstack.cmake)
+    target_link_libraries(${MICROPY_TARGET} micropy_extmod_btstack)
+
+    target_compile_definitions(${MICROPY_TARGET} PRIVATE
+        MICROPY_BLUETOOTH_BTSTACK=1
+        MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE=\"btstack_inc/btstack_config.h\"
+    )
+
+    # For modbluetooth_btstack.c includes
+    get_target_property(BTSTACK_INCLUDE micropy_extmod_btstack INTERFACE_INCLUDE_DIRECTORIES)
+    list(APPEND MICROPY_INC_CORE ${BTSTACK_INCLUDE})
 endif()
 
 if(MICROPY_BLUETOOTH_NIMBLE)
@@ -232,6 +263,8 @@ if(MICROPY_BLUETOOTH_NIMBLE)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_NIMBLE=1
         MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=0
+        MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
+        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
     )
     target_compile_options(${MICROPY_TARGET} PRIVATE
     # TODO: This flag is currently needed to make nimble build.
@@ -272,6 +305,10 @@ if (MICROPY_PY_NETWORK_CYW43)
         cyw43_driver_picow
         cmsis_core
     )
+    target_include_directories(${MICROPY_TARGET} PRIVATE
+        ${MICROPY_DIR}/lib/cyw43-driver/
+    )
+
 endif()
 
 if (MICROPY_PY_NETWORK_NINAW10)
