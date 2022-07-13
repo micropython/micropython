@@ -47,9 +47,11 @@ def run(title, command):
     print("::group::" + title, flush=True)
     print(command, flush=True)
     start = time.monotonic()
-    subprocess.run(shlex.split(command), stderr=subprocess.STDOUT)
-    print("Duration:", time.monotonic() - start, flush=True)
-    print("::endgroup::", flush=True)
+    try:
+        subprocess.run(shlex.split(command), stderr=subprocess.STDOUT, check=True)
+    finally:
+        print("Duration:", time.monotonic() - start, flush=True)
+        print("::endgroup::", flush=True)
 
 
 run(
