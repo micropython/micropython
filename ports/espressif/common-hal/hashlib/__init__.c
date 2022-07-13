@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include "shared-bindings/hashlib/__init__.h"
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#include "components/mbedtls/mbedtls/include/mbedtls/ssl.h"
 
-#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 
-//| """Support for Sharp Memory Display framebuffers
-//|
-//| For more information about working with Sharp Memory Displays,
-//| see `this Learn guide <https://learn.adafruit.com/adafruit-sharp-memory-display-breakout/circuitpython-displayio-setup>`_.
-//| """
-//|
-STATIC const mp_rom_map_elem_t sharpdisplay_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sharpdisplay) },
-    { MP_ROM_QSTR(MP_QSTR_SharpMemoryFramebuffer), MP_ROM_PTR(&sharpdisplay_framebuffer_type) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(sharpdisplay_module_globals, sharpdisplay_module_globals_table);
-
-const mp_obj_module_t sharpdisplay_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&sharpdisplay_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_sharpdisplay, sharpdisplay_module, CIRCUITPY_SHARPDISPLAY);
+bool common_hal_hashlib_new(hashlib_hash_obj_t *self, const char *algorithm) {
+    if (strcmp(algorithm, "sha1") == 0) {
+        self->hash_type = MBEDTLS_SSL_HASH_SHA1;
+        mbedtls_sha1_init(&self->sha1);
+        mbedtls_sha1_starts_ret(&self->sha1);
+        return true;
+    }
+    return false;
+}

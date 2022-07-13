@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,34 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include "shared-bindings/hashlib/Hash.h"
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#include "components/mbedtls/mbedtls/include/mbedtls/ssl.h"
 
-#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
+void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen) {
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        mbedtls_sha1_update_ret(&self->sha1, data, datalen);
+        return;
+    }
+}
 
-//| """Support for Sharp Memory Display framebuffers
-//|
-//| For more information about working with Sharp Memory Displays,
-//| see `this Learn guide <https://learn.adafruit.com/adafruit-sharp-memory-display-breakout/circuitpython-displayio-setup>`_.
-//| """
-//|
-STATIC const mp_rom_map_elem_t sharpdisplay_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sharpdisplay) },
-    { MP_ROM_QSTR(MP_QSTR_SharpMemoryFramebuffer), MP_ROM_PTR(&sharpdisplay_framebuffer_type) },
-};
+void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen) {
+    if (datalen < common_hal_hashlib_hash_get_digest_size(self)) {
+        return;
+    }
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        // We copy the sha1 state so we can continue to update if needed or get
+        // the digest a second time.
+        mbedtls_sha1_context copy;
+        mbedtls_sha1_clone(&copy, &self->sha1);
+        mbedtls_sha1_finish_ret(&self->sha1, data);
+        mbedtls_sha1_clone(&self->sha1, &copy);
+    }
+}
 
-STATIC MP_DEFINE_CONST_DICT(sharpdisplay_module_globals, sharpdisplay_module_globals_table);
-
-const mp_obj_module_t sharpdisplay_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&sharpdisplay_module_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_sharpdisplay, sharpdisplay_module, CIRCUITPY_SHARPDISPLAY);
+size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self) {
+    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
+        return 20;
+    }
+    return 0;
+}

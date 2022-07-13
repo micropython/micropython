@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
 
 #include "py/obj.h"
-#include "py/runtime.h"
 
-#include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
+#include "common-hal/hashlib/Hash.h"
 
-//| """Support for Sharp Memory Display framebuffers
-//|
-//| For more information about working with Sharp Memory Displays,
-//| see `this Learn guide <https://learn.adafruit.com/adafruit-sharp-memory-display-breakout/circuitpython-displayio-setup>`_.
-//| """
-//|
-STATIC const mp_rom_map_elem_t sharpdisplay_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sharpdisplay) },
-    { MP_ROM_QSTR(MP_QSTR_SharpMemoryFramebuffer), MP_ROM_PTR(&sharpdisplay_framebuffer_type) },
-};
+extern const mp_obj_type_t hashlib_hash_type;
 
-STATIC MP_DEFINE_CONST_DICT(sharpdisplay_module_globals, sharpdisplay_module_globals_table);
+// So that new can call it when given data.
+mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in);
 
-const mp_obj_module_t sharpdisplay_module = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&sharpdisplay_module_globals,
-};
+void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen);
+void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen);
+size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self);
 
-MP_REGISTER_MODULE(MP_QSTR_sharpdisplay, sharpdisplay_module, CIRCUITPY_SHARPDISPLAY);
+#endif // MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H

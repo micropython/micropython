@@ -2386,6 +2386,10 @@ msgstr "arguments must be ndarrays"
 msgid "array and index length must be equal"
 msgstr "array and index length must be equal"
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "array has too many dimensions"
+msgstr ""
+
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "array/bytes required on right side"
@@ -2755,6 +2759,10 @@ msgstr "convolve arguments must be ndarrays"
 msgid "convolve arguments must not be empty"
 msgstr "convolve arguments must not be empty"
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "corrupted file"
+msgstr ""
+
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
 msgstr "could not invert Vandermonde matrix"
@@ -2846,6 +2854,10 @@ msgstr ""
 #: py/objdeque.c
 msgid "empty"
 msgstr "empty"
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "empty file"
+msgstr ""
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -2950,7 +2962,7 @@ msgstr "first argument must be a function"
 msgid "first argument must be a tuple of ndarrays"
 msgstr "first argument must be a tuple of ndarrays"
 
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/transform.c extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
 msgstr "first argument must be an ndarray"
 
@@ -3098,7 +3110,7 @@ msgstr "incomplete format key"
 msgid "incorrect padding"
 msgstr "incorrect padding"
 
-#: extmod/ulab/code/ndarray.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/transform.c
 msgid "index is out of bounds"
 msgstr "index is out of bounds"
 
@@ -3165,6 +3177,10 @@ msgstr "input matrix is asymmetric"
 msgid "input matrix is singular"
 msgstr "input matrix is singular"
 
+#: extmod/ulab/code/numpy/create.c
+msgid "input must be 1- or 2-d"
+msgstr ""
+
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
 msgstr ""
@@ -3173,11 +3189,7 @@ msgstr ""
 msgid "input must be a dense ndarray"
 msgstr "input must be a dense ndarray"
 
-#: extmod/ulab/code/numpy/create.c
-msgid "input must be a tensor of rank 2"
-msgstr "input must be a tensor of rank 2"
-
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/user/user.c
+#: extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
 msgstr "input must be an ndarray"
 
@@ -3378,8 +3390,8 @@ msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length must be 0-%d when fixed_length is %s"
 
 #: extmod/ulab/code/ndarray.c
-msgid "maximum number of dimensions is 4"
-msgstr "maximum number of dimensions is 4"
+msgid "maximum number of dimensions is "
+msgstr ""
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3627,7 +3639,7 @@ msgstr "odd-length string"
 msgid "off"
 msgstr ""
 
-#: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
+#: extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
 msgstr "offset is too large"
 
@@ -3777,6 +3789,7 @@ msgid "pow() with 3 arguments requires integers"
 msgstr "pow() with 3 arguments requires integers"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
 msgstr "pressing boot button at start up.\n"
@@ -4214,6 +4227,14 @@ msgstr "unsupported type for operator"
 msgid "unsupported types for %q: '%q', '%q'"
 msgstr "unsupported types for %q: '%q', '%q'"
 
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols is too high"
+msgstr ""
+
+#: extmod/ulab/code/numpy/io/io.c
+msgid "usecols keyword must be specified"
+msgstr ""
+
 #: py/objint.c
 #, c-format
 msgid "value must fit in %d byte(s)"
@@ -4255,12 +4276,26 @@ msgstr "wrong axis index"
 msgid "wrong axis specified"
 msgstr "wrong axis specified"
 
-#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/numpy/io/io.c
+msgid "wrong dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong index type"
+msgstr ""
+
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/create.c
+#: extmod/ulab/code/numpy/io/io.c extmod/ulab/code/numpy/transform.c
+#: extmod/ulab/code/numpy/vector.c
 msgid "wrong input type"
 msgstr "wrong input type"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of condition array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/transform.c
+msgid "wrong length of index array"
 msgstr ""
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
@@ -4306,6 +4341,12 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "input must be a tensor of rank 2"
+#~ msgstr "input must be a tensor of rank 2"
+
+#~ msgid "maximum number of dimensions is 4"
+#~ msgstr "maximum number of dimensions is 4"
 
 #~ msgid "Watchdog timer expired."
 #~ msgstr "WatchDog timer expired."

@@ -38,12 +38,12 @@ hashlib         json            math            qrio
 rainbowio       re              sys             termios
 traceback       ubinascii       uctypes         uerrno
 uheapq          uio             ujson           ulab
-ulab.fft        ulab.linalg     ulab.numpy      ulab.scipy
-ulab.scipy.linalg               ulab.scipy.optimize
-ulab.scipy.signal               ulab.scipy.special
-ulab.utils      uos             urandom         ure
-uselect         ustruct         utime           utimeq
-uzlib           zlib
+ulab.numpy      ulab.numpy.fft  ulab.numpy.linalg
+ulab.scipy      ulab.scipy.linalg
+ulab.scipy.optimize             ulab.scipy.signal
+ulab.scipy.special              ulab.utils      uos
+urandom         ure             uselect         ustruct
+utime           utimeq          uzlib           zlib
 ime
 
 utime           utimeq

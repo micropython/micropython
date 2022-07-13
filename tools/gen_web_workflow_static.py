@@ -4,6 +4,8 @@
 
 import argparse
 import gzip
+import minify_html
+import jsmin
 import mimetypes
 import pathlib
 
@@ -24,6 +26,10 @@ for f in args.files:
     variable = path.name.replace(".", "_")
     uncompressed = f.read()
     ulen = len(uncompressed)
+    if f.name.endswith(".html"):
+        uncompressed = minify_html.minify(uncompressed.decode("utf-8")).encode("utf-8")
+    elif f.name.endswith(".js"):
+        uncompressed = jsmin.jsmin(uncompressed.decode("utf-8")).encode("utf-8")
     compressed = gzip.compress(uncompressed)
     clen = len(compressed)
     compressed = ", ".join([hex(x) for x in compressed])
