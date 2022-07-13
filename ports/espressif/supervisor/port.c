@@ -89,6 +89,17 @@
 
 #ifdef CONFIG_SPIRAM
 #include "esp32/spiram.h"
+#ifdef CONFIG_IDF_TARGET_ESP32
+#include "esp32/himem.h"
+#else
+#define esp_himem_reserved_area_size() (0)
+#endif
+
+static size_t spiram_size_usable_for_malloc(void) {
+    /* SPIRAM chip may be larger than the size we can map into address space */
+    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
+    return s - esp_himem_reserved_area_size();
+}
 #endif
 
 // Heap sizes for when there is no external RAM for CircuitPython to use
@@ -209,8 +220,12 @@ safe_mode_t port_init(void) {
 
     #ifdef CONFIG_SPIRAM
     if (esp_spiram_is_initialized()) {
-        size_t spiram_size = esp_spiram_get_size();
+        size_t spiram_size = spiram_size_usable_for_malloc();
+        #ifdef CONFIG_IDF_TARGET_ESP32
+        heap = (uint32_t *)SOC_EXTRAM_DATA_LOW;
+        #else
         heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
+        #endif
         heap_size = spiram_size / sizeof(uint32_t);
     }
     #endif
