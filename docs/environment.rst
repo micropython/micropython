@@ -39,6 +39,10 @@ CIRCUITPY_WEB_API_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Password required to make modifications to the board from the Web Workflow.
 
+CIRCUITPY_WEB_API_PORT
+~~~~~~~~~~~~~~~~~~~~~~
+TCP port number used for the web HTTP API. Defaults to 80 when omitted.
+
 CIRCUITPY_WIFI_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~
 Wi-Fi password used to auto connect to CIRCUITPY_WIFI_SSID.

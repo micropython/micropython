@@ -98,6 +98,7 @@ typedef struct {
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
 
 static mdns_server_obj_t mdns;
+static uint32_t web_api_port = 80;
 
 static socketpool_socketpool_obj_t pool;
 static socketpool_socket_obj_t listening;
@@ -189,6 +190,9 @@ void supervisor_web_workflow_status(void) {
             }
 
             mp_printf(&mp_plat_print, "%s", _our_ip_encoded);
+            if (web_api_port != 80) {
+                mp_printf(&mp_plat_print, ":%d", web_api_port);
+            }
             // TODO: Use these unicode to show signal strength: ▂▄▆█
         }
     } else {
@@ -199,11 +203,6 @@ void supervisor_web_workflow_status(void) {
 void supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI
 
-    if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) &&
-        wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj) != 0) {
-        // Already started.
-        return;
-    }
 
     char ssid[33];
     char password[64];
@@ -218,8 +217,10 @@ void supervisor_start_web_workflow(void) {
         password_len <= 0 || (size_t)password_len >= sizeof(password)) {
         return;
     }
-    common_hal_wifi_init(false);
-    common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
+    if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
+        common_hal_wifi_init(false);
+        common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
+    }
 
     // TODO: Do our own scan so that we can find the channel we want before calling connect.
     // Otherwise, connect will do a full slow scan to pick the best AP.
@@ -227,6 +228,9 @@ void supervisor_start_web_workflow(void) {
     // NUL terminate the strings because dotenv doesn't.
     ssid[ssid_len] = '\0';
     password[password_len] = '\0';
+    // We can all connect again because it will return early if we're already connected to the
+    // network. If we are connected to a different network, then it will disconnect before
+    // attempting to connect to the given network.
     wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
         0, 0.1, NULL, 0);
@@ -236,21 +240,46 @@ void supervisor_start_web_workflow(void) {
         return;
     }
 
-    mdns_server_construct(&mdns, true);
-    common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
-    common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", 80);
+    char port_encoded[6];
+    size_t port_len = 0;
+    size_t new_port = web_api_port;
+    #if CIRCUITPY_DOTENV
+    port_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PORT", port_encoded, sizeof(port_encoded) - 1);
+    #endif
+    if (0 < port_len && port_len < sizeof(port_encoded)) {
+        new_port = strtoul(port_encoded, NULL, 10);
+    }
 
-    pool.base.type = &socketpool_socketpool_type;
-    common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
+    bool first_start = mdns.base.type != &mdns_server_type;
+    bool port_changed = new_port != web_api_port;
 
-    ESP_LOGI(TAG, "Starting web workflow");
-    listening.base.type = &socketpool_socket_type;
-    socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
-    common_hal_socketpool_socket_settimeout(&listening, 0);
-    // Bind to any ip.
-    // TODO: Make this port .env configurable.
-    common_hal_socketpool_socket_bind(&listening, "", 0, 80);
-    common_hal_socketpool_socket_listen(&listening, 1);
+    if (first_start) {
+        ESP_LOGI(TAG, "Starting web workflow");
+        mdns_server_construct(&mdns, true);
+        mdns.base.type = &mdns_server_type;
+        common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
+        pool.base.type = &socketpool_socketpool_type;
+        common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
+
+        listening.base.type = &socketpool_socket_type;
+        active.base.type = &socketpool_socket_type;
+        active.num = -1;
+        active.connected = false;
+
+        websocket_init();
+    }
+    if (port_changed) {
+        common_hal_socketpool_socket_close(&listening);
+    }
+    if (first_start || port_changed) {
+        web_api_port = new_port;
+        common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+        socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+        common_hal_socketpool_socket_settimeout(&listening, 0);
+        // Bind to any ip.
+        common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
+        common_hal_socketpool_socket_listen(&listening, 1);
+    }
 
     mp_int_t api_password_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, sizeof(_api_password) - 2);
     if (api_password_len > 0) {
@@ -258,12 +287,6 @@ void supervisor_start_web_workflow(void) {
         _api_password[api_password_len + 1] = '\0';
         _base64_in_place(_api_password, api_password_len + 1, sizeof(_api_password));
     }
-
-    active.base.type = &socketpool_socket_type;
-    active.num = -1;
-    active.connected = false;
-
-    websocket_init();
 
     // TODO:
     // GET /cp/serial.txt
@@ -529,7 +552,13 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
         _send_str(socket, "http");
     }
 
-    _send_strs(socket, "://", hostname, ".local", path, "\r\n", NULL);
+    _send_strs(socket, "://", hostname, ".local", NULL);
+    if (web_api_port != 80) {
+        char encoded_port[6];
+        snprintf(encoded_port, sizeof(encoded_port), "%d", web_api_port);
+        _send_strs(socket, ":", encoded_port, NULL);
+    }
+    _send_strs(socket, path, "\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
@@ -647,7 +676,7 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
         }
         const char *hostname = common_hal_mdns_remoteservice_get_hostname(&found_devices[i]);
         const char *instance_name = common_hal_mdns_remoteservice_get_instance_name(&found_devices[i]);
-        char port_encoded[4];
+        char port_encoded[6];
         int port = common_hal_mdns_remoteservice_get_port(&found_devices[i]);
         snprintf(port_encoded, sizeof(port_encoded), "%d", port);
         char ip_encoded[4 * 4];
@@ -675,6 +704,8 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     char encoded_creation_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
     snprintf(encoded_creation_id, sizeof(encoded_creation_id), "%u", CIRCUITPY_CREATION_ID);
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    char encoded_port[6];
+    snprintf(encoded_port, sizeof(encoded_port), "%d", web_api_port);
     _send_chunks(socket,
         "{\"web_api_version\": 1, ",
         "\"version\": \"", MICROPY_GIT_TAG, "\", ",
@@ -685,7 +716,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
         "\"creator_id\": ", encoded_creator_id, ", ",
         "\"creation_id\": ", encoded_creation_id, ", ",
         "\"hostname\": \"", hostname, "\", ",
-        "\"port\": 80, ",
+        "\"port\": ", encoded_port, ", ",
         "\"ip\": \"", _our_ip_encoded,
         "\"}", NULL);
     // Empty chunk signals the end of the response.
@@ -1173,7 +1204,9 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         request->authenticated = memcmp(request->header_value, prefix, strlen(prefix)) == 0 &&
                             strcmp(_api_password, request->header_value + strlen(prefix)) == 0;
                     } else if (strcmp(request->header_key, "Host") == 0) {
-                        request->redirect = strcmp(request->header_value, "circuitpython.local") == 0;
+                        // Do a prefix check so that port is ignored.
+                        const char *cp_local = "circuitpython.local";
+                        request->redirect = memcmp(request->header_value, cp_local, strlen(cp_local)) == 0;
                     } else if (strcmp(request->header_key, "Content-Length") == 0) {
                         request->content_length = strtoul(request->header_value, NULL, 10);
                     } else if (strcmp(request->header_key, "Expect") == 0) {
