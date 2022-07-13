@@ -11,8 +11,8 @@ class FrameBuffer
 -----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
-pixels, lines, rectangles, ellipses, text and even other FrameBuffers. It is
-useful when generating output for displays.
+pixels, lines, rectangles, ellipses, polygons, text and even other
+FrameBuffers. It is useful when generating output for displays.
 
 For example::
 
@@ -97,6 +97,17 @@ The following methods draw shapes onto the FrameBuffer.
     quadrants of the ellipse. The LS four bits determine which quadrants are
     to be drawn, with bit 0 specifying Q1, b1 Q2, b2 Q3 and b3 Q4. Quadrants
     are numbered counterclockwise with Q1 being top right.
+
+.. method:: FrameBuffer.poly(x, y, coords, c[, f])
+
+    Given a list of coordinates, draw an arbitrary (convex or concave) closed
+    polygon at the given x, y location using the given color.
+
+    The *coords* must be specified as a :mod:`array` of integers, e.g.
+    ``array('h', [x0, y0, x1, y1, ... xn, yn])``.
+
+    The optional *f* parameter can be set to ``True`` to fill the polygon.
+    Otherwise just a one pixel outline is drawn.
 
 Drawing text
 ------------
