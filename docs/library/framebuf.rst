@@ -11,8 +11,8 @@ class FrameBuffer
 -----------------
 
 The FrameBuffer class provides a pixel buffer which can be drawn upon with
-pixels, lines, rectangles, text and even other FrameBuffer's. It is useful
-when generating output for displays.
+pixels, lines, rectangles, polygons, text and even other FrameBuffers. It is
+useful when generating output for displays.
 
 For example::
 
@@ -83,6 +83,17 @@ The following methods draw shapes onto the FrameBuffer.
     Draw a rectangle at the given location, size and color. The `rect`
     method draws only a 1 pixel outline whereas the `fill_rect` method
     draws both the outline and interior.
+
+.. method:: FrameBuffer.poly(x, y, coords, c)
+.. method:: FrameBuffer.fill_poly(x, y, coords, c)
+
+    Given a list of coordinates, draw an arbitrary (convex or concave) closed
+    polygon at the given x, y location using the given color. The `poly`
+    method draws polygon edges as 1 pixel lines whereas the `fill_poly` method
+    draws filled polygons. For both methods, *coords* may be specified as a
+    list of x, y tuples, e.g. ``[(x0, y0), (x1, y1), ... (xn, yn)]`` or as an
+    :mod:`array`, e.g. ``array('h', [x0, y0, x1, y1, ... xn, yn])``.
+
 
 Drawing text
 ------------

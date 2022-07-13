@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/binary.h"
 
 #if MICROPY_PY_FRAMEBUF
 
@@ -404,16 +405,7 @@ STATIC mp_obj_t framebuf_rect(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_rect_obj, 6, 6, framebuf_rect);
 
-STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-
-    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_int_t x1 = mp_obj_get_int(args[1]);
-    mp_int_t y1 = mp_obj_get_int(args[2]);
-    mp_int_t x2 = mp_obj_get_int(args[3]);
-    mp_int_t y2 = mp_obj_get_int(args[4]);
-    mp_int_t col = mp_obj_get_int(args[5]);
-
+STATIC void line(const mp_obj_framebuf_t *fb, mp_int_t x1, mp_int_t y1, mp_int_t x2, mp_int_t y2, mp_int_t col) {
     mp_int_t dx = x2 - x1;
     mp_int_t sx;
     if (dx > 0) {
@@ -452,12 +444,12 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t e = 2 * dy - dx;
     for (mp_int_t i = 0; i < dx; ++i) {
         if (steep) {
-            if (0 <= y1 && y1 < self->width && 0 <= x1 && x1 < self->height) {
-                setpixel(self, y1, x1, col);
+            if (0 <= y1 && y1 < fb->width && 0 <= x1 && x1 < fb->height) {
+                setpixel(fb, y1, x1, col);
             }
         } else {
-            if (0 <= x1 && x1 < self->width && 0 <= y1 && y1 < self->height) {
-                setpixel(self, x1, y1, col);
+            if (0 <= x1 && x1 < fb->width && 0 <= y1 && y1 < fb->height) {
+                setpixel(fb, x1, y1, col);
             }
         }
         while (e >= 0) {
@@ -468,13 +460,189 @@ STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
         e += 2 * dy;
     }
 
-    if (0 <= x2 && x2 < self->width && 0 <= y2 && y2 < self->height) {
-        setpixel(self, x2, y2, col);
+    if (0 <= x2 && x2 < fb->width && 0 <= y2 && y2 < fb->height) {
+        setpixel(fb, x2, y2, col);
     }
+}
+
+STATIC mp_obj_t framebuf_line(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t x1 = mp_obj_get_int(args[1]);
+    mp_int_t y1 = mp_obj_get_int(args[2]);
+    mp_int_t x2 = mp_obj_get_int(args[3]);
+    mp_int_t y2 = mp_obj_get_int(args[4]);
+    mp_int_t col = mp_obj_get_int(args[5]);
+
+    line(self, x1, y1, x2, y2, col);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_line_obj, 6, 6, framebuf_line);
+
+STATIC mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+
+    size_t poly_len;
+    mp_buffer_info_t bufinfo;
+    mp_obj_t *polygon;
+
+    bool is_buffer = mp_get_buffer(args[3], &bufinfo, MP_BUFFER_READ);
+    if (is_buffer) {
+        poly_len = bufinfo.len / (mp_binary_get_size('@', bufinfo.typecode, NULL) * 2);
+    } else {
+        mp_obj_get_array(args[3], &poly_len, &polygon);
+    }
+
+    if (poly_len == 0) {
+        return mp_const_none;
+    }
+
+    mp_int_t col = mp_obj_get_int(args[4]);
+
+    mp_int_t px1, py1, px2, py2;
+
+    if (is_buffer) {
+        px1 = x + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, (poly_len - 1) * 2));
+        py1 = y + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, (poly_len - 1) * 2 + 1));
+    } else {
+        mp_obj_t *point;
+        mp_obj_get_array_fixed_n(polygon[poly_len - 1], 2, &point);
+        px1 = x + mp_obj_get_int(point[0]);
+        py1 = y + mp_obj_get_int(point[1]);
+    }
+
+    for (size_t i = 0; i < poly_len; i++) {
+        if (is_buffer) {
+            px2 = x + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, i * 2));
+            py2 = y + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, i * 2 + 1));
+        } else {
+            mp_obj_t *point;
+            mp_obj_get_array_fixed_n(polygon[i], 2, &point);
+            px2 = x + mp_obj_get_int(point[0]);
+            py2 = y + mp_obj_get_int(point[1]);
+        }
+
+        line(self, px1, py1, px2, py2, col);
+        px1 = px2;
+        py1 = py2;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 5, framebuf_poly);
+
+STATIC mp_obj_t framebuf_fill_poly(size_t n_args, const mp_obj_t *args) {
+    (void)n_args;
+
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    mp_int_t x = mp_obj_get_int(args[1]);
+    mp_int_t y = mp_obj_get_int(args[2]);
+
+    size_t poly_len;
+    mp_buffer_info_t bufinfo;
+    mp_obj_t *polygon;
+
+    bool is_buffer = mp_get_buffer(args[3], &bufinfo, MP_BUFFER_READ);
+    if (is_buffer) {
+        poly_len = bufinfo.len / (mp_binary_get_size('@', bufinfo.typecode, NULL) * 2);
+    } else {
+        mp_obj_get_array(args[3], &poly_len, &polygon);
+    }
+
+    if (poly_len == 0) {
+        return mp_const_none;
+    }
+
+    mp_int_t col = mp_obj_get_int(args[4]);
+
+    mp_int_t px, py;
+    mp_int_t y_min = INT_MAX, y_max = INT_MIN;
+
+    mp_int_t *points = m_malloc(poly_len * 2 * sizeof(mp_int_t));
+    for (size_t i = 0; i < poly_len; i++) {
+        if (is_buffer) {
+            px = x + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, i * 2));
+            py = y + mp_obj_get_int(mp_binary_get_val_array(bufinfo.typecode, bufinfo.buf, i * 2 + 1));
+        } else {
+            mp_obj_t *point;
+            mp_obj_get_array_fixed_n(polygon[i], 2, &point);
+            px = x + mp_obj_get_int(point[0]);
+            py = y + mp_obj_get_int(point[1]);
+        }
+
+        points[i * 2] = px;
+        points[i * 2 + 1] = py;
+        if (py < y_min) {
+            y_min = py;
+        }
+        if (py > y_max) {
+            y_max = py;
+        }
+    }
+
+    mp_int_t nodes[poly_len];
+    for (mp_int_t row = y_min; row <= y_max; row++) {
+        size_t node_count = 0;
+        mp_int_t px1 = points[(poly_len - 1) * 2];
+        mp_int_t py1 = points[(poly_len - 1) * 2 + 1];
+        for (size_t i = 0; i < poly_len; i++) {
+            mp_int_t px2 = points[i * 2];
+            mp_int_t py2 = points[i * 2 + 1];
+
+            // Find the x-coord of where the polygon side intersects the current row
+            if (py1 != py2
+                && ((py1 > row && py2 <= row) || (py1 <= row && py2 > row))) {
+                float node = px1
+                    + (float)(row - py1) / (float)(py2 - py1)
+                    * (px2 - px1);
+                if (node - (mp_int_t)node <= 0.5f) {
+                    nodes[node_count++] = (mp_int_t)(node);
+                } else {
+                    nodes[node_count++] = (mp_int_t)(node + 1);
+                }
+            }
+
+            px1 = px2;
+            py1 = py2;
+        }
+
+        size_t idx = 0;
+        if (node_count > 0) {
+            while (idx < node_count - 1) {
+                if (nodes[idx] > nodes[idx + 1]) {
+                    mp_int_t swap = nodes[idx];
+                    nodes[idx] = nodes[idx + 1];
+                    nodes[idx + 1] = swap;
+                    if (idx) {
+                        idx--;
+                    }
+                } else {
+                    idx++;
+                }
+            }
+        }
+
+        for (size_t i = 0; i < node_count; i += 2) {
+            fill_rect(self, nodes[i], row, (nodes[i + 1] - nodes[i]) + 1, 1, col);
+        }
+    }
+
+    m_free(points
+        #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
+        , poly_len * 2 * sizeof(mp_int_t)
+        #endif
+        );
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_fill_poly_obj, 5, 5, framebuf_fill_poly);
 
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -610,6 +778,8 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&framebuf_vline_obj) },
     { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&framebuf_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&framebuf_line_obj) },
+    { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&framebuf_poly_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fill_poly), MP_ROM_PTR(&framebuf_fill_poly_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
