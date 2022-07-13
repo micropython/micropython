@@ -106,7 +106,7 @@ static size_t spiram_size_usable(void) {
 // exclusively.
 #ifdef CONFIG_IDF_TARGET_ESP32
 // TODO: Determine better: 520kB of internal RAM; similar to 512kB for ESP32-S3.
-#define HEAP_SIZE (48 * 1024)
+#define HEAP_SIZE (88 * 1024)
 #endif
 #ifdef CONFIG_IDF_TARGET_ESP32S2
 #define HEAP_SIZE (48 * 1024)
