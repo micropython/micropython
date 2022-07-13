@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/wifi/__init__.h"
 #include "shared-bindings/wifi/__init__.h"
 
@@ -46,6 +47,10 @@ wifi_radio_obj_t common_hal_wifi_radio_obj;
 #include "supervisor/workflow.h"
 
 #include "esp_ipc.h"
+
+#ifdef CONFIG_IDF_TARGET_ESP32
+#include "nvs_flash.h"
+#endif
 
 static const char *TAG = "CP wifi";
 
@@ -174,11 +179,21 @@ void common_hal_wifi_init(bool user_initiated) {
         &self->handler_instance_got_ip));
 
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
+    #ifdef CONFIG_IDF_TARGET_ESP32
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+    #endif
     esp_err_t result = esp_wifi_init(&config);
     if (result == ESP_ERR_NO_MEM) {
         mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
     } else if (result != ESP_OK) {
-        mp_raise_RuntimeError(translate("Failed to init wifi"));
+        raise_esp_error(result);
     }
     // set station mode to avoid the default SoftAP
     common_hal_wifi_radio_start_station(self);
