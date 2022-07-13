@@ -2219,6 +2219,10 @@ msgstr "Hindi supportadong tipo ng bitmap"
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr ""

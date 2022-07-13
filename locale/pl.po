@@ -2210,6 +2210,10 @@ msgstr "Zły typ magistrali wyświetlaczy"
 msgid "Unsupported format"
 msgstr "Zły format"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr ""

@@ -2261,6 +2261,10 @@ msgstr "Sin capacidad de bus tipo display"
 msgid "Unsupported format"
 msgstr "Formato no soportado"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "La actualización fallo"

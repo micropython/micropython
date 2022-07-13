@@ -2244,6 +2244,10 @@ msgstr "Busstyp för display stöds inte"
 msgid "Unsupported format"
 msgstr "Formatet stöds inte"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "Uppdateringen misslyckades"

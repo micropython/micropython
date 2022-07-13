@@ -2213,6 +2213,10 @@ msgstr ""
 msgid "Unsupported format"
 msgstr "非対応の形式"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr ""
