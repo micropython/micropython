@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/binary.h"
 
 #if MICROPY_PY_FRAMEBUF
 
@@ -563,6 +564,116 @@ STATIC mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_ellipse_obj, 6, 8, framebuf_ellipse);
 
+#if MICROPY_PY_ARRAY && !MICROPY_ENABLE_DYNRUNTIME
+// TODO: poly needs mp_binary_get_size & mp_binary_get_val_array which aren't
+// available in dynruntime.h yet.
+
+STATIC mp_int_t poly_int(mp_buffer_info_t *bufinfo, size_t index) {
+    return mp_obj_get_int(mp_binary_get_val_array(bufinfo->typecode, bufinfo->buf, index));
+}
+
+STATIC mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
+    mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
+
+    mp_int_t x = mp_obj_get_int(args_in[1]);
+    mp_int_t y = mp_obj_get_int(args_in[2]);
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args_in[3], &bufinfo, MP_BUFFER_READ);
+    // If an odd number of values was given, this rounds down to multiple of two.
+    int n_poly = bufinfo.len / (mp_binary_get_size('@', bufinfo.typecode, NULL) * 2);
+
+    if (n_poly == 0) {
+        return mp_const_none;
+    }
+
+    mp_int_t col = mp_obj_get_int(args_in[4]);
+    bool fill = n_args > 5 && mp_obj_is_true(args_in[5]);
+
+    if (fill) {
+        // This implements an integer version of http://alienryderflex.com/polygon_fill/
+
+        // The idea is for each scan line, compute the sorted list of x
+        // coordinates where the scan line intersects the polygon edges,
+        // then fill between each resulting pair.
+
+        // Restrict just to the scan lines that include the vertical extent of
+        // this polygon.
+        mp_int_t y_min = INT_MAX, y_max = INT_MIN;
+        for (int i = 0; i < n_poly; i++) {
+            mp_int_t py = poly_int(&bufinfo, i * 2 + 1);
+            y_min = MIN(y_min, py);
+            y_max = MAX(y_max, py);
+        }
+
+        for (mp_int_t row = y_min; row <= y_max; row++) {
+            // Each node is the x coordinate where an edge crosses this scan line.
+            mp_int_t nodes[n_poly];
+            int n_nodes = 0;
+            mp_int_t px1 = poly_int(&bufinfo, 0);
+            mp_int_t py1 = poly_int(&bufinfo, 1);
+            int i = n_poly * 2 - 1;
+            do {
+                mp_int_t py2 = poly_int(&bufinfo, i--);
+                mp_int_t px2 = poly_int(&bufinfo, i--);
+
+                // Don't include the bottom pixel of a given edge to avoid
+                // duplicating the node with the start of the next edge. This
+                // will miss some pixels on the boundary, but we get them at
+                // the end when we unconditionally draw the outline.
+                if (py1 != py2 && ((py1 > row && py2 <= row) || (py1 <= row && py2 > row))) {
+                    mp_int_t node = (32 * px1 + 32 * (px2 - px1) * (row - py1) / (py2 - py1) + 16) / 32;
+                    nodes[n_nodes++] = node;
+                }
+
+                px1 = px2;
+                py1 = py2;
+            } while (i >= 0);
+
+            if (!n_nodes) {
+                continue;
+            }
+
+            // Sort the nodes left-to-right (bubble-sort for code size).
+            i = 0;
+            while (i < n_nodes - 1) {
+                if (nodes[i] > nodes[i + 1]) {
+                    mp_int_t swap = nodes[i];
+                    nodes[i] = nodes[i + 1];
+                    nodes[i + 1] = swap;
+                    if (i) {
+                        i--;
+                    }
+                } else {
+                    i++;
+                }
+            }
+
+            // Fill between each pair of nodes.
+            for (i = 0; i < n_nodes; i += 2) {
+                fill_rect(self, x + nodes[i], y + row, (nodes[i + 1] - nodes[i]) + 1, 1, col);
+            }
+        }
+    }
+
+    // Always draw the outline (either because fill=False, or to fix the
+    // boundary pixels for a fill, see above).
+    mp_int_t px1 = poly_int(&bufinfo, 0);
+    mp_int_t py1 = poly_int(&bufinfo, 1);
+    int i = n_poly * 2 - 1;
+    do {
+        mp_int_t py2 = poly_int(&bufinfo, i--);
+        mp_int_t px2 = poly_int(&bufinfo, i--);
+        line(self, x + px1, y + py1, x + px2, y + py2, col);
+        px1 = px2;
+        py1 = py2;
+    } while (i >= 0);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 6, framebuf_poly);
+#endif // MICROPY_PY_ARRAY && !MICROPY_ENABLE_DYNRUNTIME
+
 STATIC mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
     mp_obj_t source_in = mp_obj_cast_to_native_base(args_in[1], MP_OBJ_FROM_PTR(&mp_type_framebuf));
@@ -698,6 +809,9 @@ STATIC const mp_rom_map_elem_t framebuf_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&framebuf_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&framebuf_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_ellipse), MP_ROM_PTR(&framebuf_ellipse_obj) },
+    #if MICROPY_PY_ARRAY
+    { MP_ROM_QSTR(MP_QSTR_poly), MP_ROM_PTR(&framebuf_poly_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&framebuf_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_scroll), MP_ROM_PTR(&framebuf_scroll_obj) },
     { MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&framebuf_text_obj) },
