@@ -34,9 +34,12 @@
 #include "esp_ota_ops.h"
 
 // esp_partition_read and esp_partition_write can operate on arbitrary bytes
-// but esp_partition_erase_range operates on 4k blocks.  But to make a partition
-// implement the standard block protocol all operations are done on 4k blocks.
-#define BLOCK_SIZE_BYTES (4096)
+// but esp_partition_erase_range operates on 4k blocks.  The default block size
+// for a Partition object is therefore 4k, to make writes efficient, and also
+// make it work well with filesystems like littlefs.  The Partition object also
+// supports smaller block sizes, in which case a cache is used and writes may
+// be less efficient.
+#define NATIVE_BLOCK_SIZE_BYTES (4096)
 
 enum {
     ESP32_PARTITION_BOOT,
@@ -46,15 +49,22 @@ enum {
 typedef struct _esp32_partition_obj_t {
     mp_obj_base_t base;
     const esp_partition_t *part;
+    uint8_t *cache;
+    uint16_t block_size;
 } esp32_partition_obj_t;
 
-STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part) {
+STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part, uint16_t block_size) {
     if (part == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    esp32_partition_obj_t *self = m_new_obj(esp32_partition_obj_t);
-    self->base.type = &esp32_partition_type;
+    esp32_partition_obj_t *self = mp_obj_malloc(esp32_partition_obj_t, &esp32_partition_type);
     self->part = part;
+    self->block_size = block_size;
+    if (self->block_size < NATIVE_BLOCK_SIZE_BYTES) {
+        self->cache = m_new(uint8_t, NATIVE_BLOCK_SIZE_BYTES);
+    } else {
+        self->cache = NULL;
+    }
     return self;
 }
 
@@ -69,7 +79,7 @@ STATIC void esp32_partition_print(const mp_print_t *print, mp_obj_t self_in, mp_
 
 STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
 
     // Get requested partition
     const esp_partition_t *part;
@@ -94,17 +104,24 @@ STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_arg
         }
     }
 
+    // Get block size if given
+    uint16_t block_size = NATIVE_BLOCK_SIZE_BYTES;
+    if (n_args == 2) {
+        block_size = mp_obj_get_int(all_args[1]);
+    }
+
     // Return new object
-    return MP_OBJ_FROM_PTR(esp32_partition_new(part));
+    return MP_OBJ_FROM_PTR(esp32_partition_new(part, block_size));
 }
 
 STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Parse args
-    enum { ARG_type, ARG_subtype, ARG_label };
+    enum { ARG_type, ARG_subtype, ARG_label, ARG_block_size };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_type, MP_ARG_INT, {.u_int = ESP_PARTITION_TYPE_APP} },
         { MP_QSTR_subtype, MP_ARG_INT, {.u_int = ESP_PARTITION_SUBTYPE_ANY} },
         { MP_QSTR_label, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_block_size, MP_ARG_INT, {.u_int = NATIVE_BLOCK_SIZE_BYTES} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -115,11 +132,14 @@ STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp
         label = mp_obj_str_get_str(args[ARG_label].u_obj);
     }
 
+    // Get block size
+    uint16_t block_size = args[ARG_block_size].u_int;
+
     // Build list of matching partitions
     mp_obj_t list = mp_obj_new_list(0, NULL);
     esp_partition_iterator_t iter = esp_partition_find(args[ARG_type].u_int, args[ARG_subtype].u_int, label);
     while (iter != NULL) {
-        mp_obj_list_append(list, MP_OBJ_FROM_PTR(esp32_partition_new(esp_partition_get(iter))));
+        mp_obj_list_append(list, MP_OBJ_FROM_PTR(esp32_partition_new(esp_partition_get(iter), block_size)));
         iter = esp_partition_next(iter);
     }
     esp_partition_iterator_release(iter);
@@ -145,7 +165,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_info_obj, esp32_partition_info)
 
 STATIC mp_obj_t esp32_partition_readblocks(size_t n_args, const mp_obj_t *args) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
+    uint32_t offset = mp_obj_get_int(args[1]) * self->block_size;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
     if (n_args == 4) {
@@ -158,12 +178,36 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_partition_readblocks_obj, 3, 4,
 
 STATIC mp_obj_t esp32_partition_writeblocks(size_t n_args, const mp_obj_t *args) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
+    uint32_t offset = mp_obj_get_int(args[1]) * self->block_size;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     if (n_args == 3) {
-        check_esp_err(esp_partition_erase_range(self->part, offset, bufinfo.len));
+        // A simple write, which requires erasing first.
+        if (self->block_size >= NATIVE_BLOCK_SIZE_BYTES) {
+            // Block size is at least native erase-page size, so do an efficient erase.
+            check_esp_err(esp_partition_erase_range(self->part, offset, bufinfo.len));
+        } else {
+            // Block size is less than native erase-page size, so do erase in sections.
+            uint32_t addr = (offset / NATIVE_BLOCK_SIZE_BYTES) * NATIVE_BLOCK_SIZE_BYTES;
+            uint32_t o = offset % NATIVE_BLOCK_SIZE_BYTES;
+            uint32_t top_addr = offset + bufinfo.len;
+            while (addr < top_addr) {
+                if (o > 0 || top_addr < addr + NATIVE_BLOCK_SIZE_BYTES) {
+                    check_esp_err(esp_partition_read(self->part, addr, self->cache, NATIVE_BLOCK_SIZE_BYTES));
+                }
+                check_esp_err(esp_partition_erase_range(self->part, addr, NATIVE_BLOCK_SIZE_BYTES));
+                if (o > 0) {
+                    check_esp_err(esp_partition_write(self->part, addr, self->cache, o));
+                }
+                if (top_addr < addr + NATIVE_BLOCK_SIZE_BYTES) {
+                    check_esp_err(esp_partition_write(self->part, top_addr, self->cache, addr + NATIVE_BLOCK_SIZE_BYTES - top_addr));
+                }
+                o = 0;
+                addr += NATIVE_BLOCK_SIZE_BYTES;
+            }
+        }
     } else {
+        // An extended write, erasing must have been done explicitly before this write.
         offset += mp_obj_get_int(args[3]);
     }
     check_esp_err(esp_partition_write(self->part, offset, bufinfo.buf, bufinfo.len));
@@ -182,12 +226,15 @@ STATIC mp_obj_t esp32_partition_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_
         case MP_BLOCKDEV_IOCTL_SYNC:
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
-            return MP_OBJ_NEW_SMALL_INT(self->part->size / BLOCK_SIZE_BYTES);
+            return MP_OBJ_NEW_SMALL_INT(self->part->size / self->block_size);
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
-            return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+            return MP_OBJ_NEW_SMALL_INT(self->block_size);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
-            uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
-            check_esp_err(esp_partition_erase_range(self->part, offset, BLOCK_SIZE_BYTES));
+            if (self->block_size != NATIVE_BLOCK_SIZE_BYTES) {
+                return MP_OBJ_NEW_SMALL_INT(-MP_EINVAL);
+            }
+            uint32_t offset = mp_obj_get_int(arg_in) * NATIVE_BLOCK_SIZE_BYTES;
+            check_esp_err(esp_partition_erase_range(self->part, offset, NATIVE_BLOCK_SIZE_BYTES));
             return MP_OBJ_NEW_SMALL_INT(0);
         }
         default:
@@ -205,7 +252,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_set_boot_obj, esp32_partition_s
 
 STATIC mp_obj_t esp32_partition_get_next_update(mp_obj_t self_in) {
     esp32_partition_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_FROM_PTR(esp32_partition_new(esp_ota_get_next_update_partition(self->part)));
+    return MP_OBJ_FROM_PTR(esp32_partition_new(esp_ota_get_next_update_partition(self->part), NATIVE_BLOCK_SIZE_BYTES));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_partition_get_next_update_obj, esp32_partition_get_next_update);
 

@@ -9,8 +9,6 @@
 void ets_isr_mask(uint32_t mask);
 void ets_isr_unmask(uint32_t mask);
 
-void ets_wdt_disable(void);
-
 // Opaque structure
 #ifndef MD5_CTX
 typedef char MD5_CTX[88];

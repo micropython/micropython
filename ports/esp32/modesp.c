@@ -36,7 +36,6 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/dht/dht.h"
-#include "modesp.h"
 
 STATIC mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
     esp_log_level_t level = LOG_LOCAL_LEVEL;
@@ -143,3 +142,5 @@ const mp_obj_module_t esp_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&esp_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_esp, esp_module);

@@ -163,4 +163,6 @@ const mp_obj_module_t mp_module_onewire = {
     .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR__onewire, mp_module_onewire);
+
 #endif // MICROPY_PY_ONEWIRE

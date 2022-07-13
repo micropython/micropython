@@ -297,6 +297,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
+    { MP_ROM_QSTR(MP_QSTR_ADCBlock), MP_ROM_PTR(&machine_adcblock_type) },
     #if MICROPY_PY_MACHINE_DAC
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
     #endif
@@ -335,5 +336,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

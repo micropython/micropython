@@ -48,9 +48,21 @@
 #include "pico/binary_info.h"
 #include "hardware/rtc.h"
 #include "hardware/structs/rosc.h"
+#if MICROPY_PY_LWIP
+#include "lwip/init.h"
+#include "lwip/apps/mdns.h"
+#endif
+
+#ifndef MICROPY_GC_HEAP_SIZE
+#if MICROPY_PY_LWIP
+#define MICROPY_GC_HEAP_SIZE 166 * 1024
+#else
+#define MICROPY_GC_HEAP_SIZE 192 * 1024
+#endif
+#endif
 
 extern uint8_t __StackTop, __StackBottom;
-static char gc_heap[192 * 1024];
+static char gc_heap[MICROPY_GC_HEAP_SIZE];
 
 // Embed version info in the binary in machine readable form
 bi_decl(bi_program_version_string(MICROPY_GIT_TAG));
@@ -96,6 +108,16 @@ int main(int argc, char **argv) {
     mp_stack_set_limit(&__StackTop - &__StackBottom - 256);
     gc_init(&gc_heap[0], &gc_heap[MP_ARRAY_SIZE(gc_heap)]);
 
+    #if MICROPY_PY_LWIP
+    // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
+    // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
+    // So for now we only init the lwIP stack once on power-up.
+    lwip_init();
+    #if LWIP_MDNS_RESPONDER
+    mdns_resp_init();
+    #endif
+    #endif
+
     for (;;) {
 
         // Initialise MicroPython runtime.
@@ -114,9 +136,16 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_NETWORK
         mod_network_init();
         #endif
+        #if MICROPY_PY_LWIP
+        mod_network_lwip_init();
+        #endif
 
         // Execute _boot.py to set up the filesystem.
+        #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+        pyexec_frozen_module("_boot_fat.py");
+        #else
         pyexec_frozen_module("_boot.py");
+        #endif
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");

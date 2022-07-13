@@ -26,6 +26,22 @@ If you are only starting with Micropython+LVGL, it's recommended that you use `l
 
 ## Build Instructions
 
+First step is always to clone lv_micropython and update its submodules recursively:
+
+```
+git clone https://github.com/lvgl/lv_micropython.git
+cd lv_micropython
+git submodule update --init --recursive lib/lv_bindings
+```
+
+Next you should build mpy-cross
+
+```
+make -C mpy-cross
+```
+
+Port specific steps usually include updating the port's submodules with `make submodules` and running make for the port itself.
+
 ### Unix (Linux) port
 
 This script is designed to use asyncio which is currently only included in the dev variant of micropython.
@@ -67,7 +83,71 @@ For more details please refer to [Micropython ESP32 README](https://github.com/m
 
 ### JavaScript port
 
+<<<<<<< HEAD
 # This is still a work in progress
+=======
+Refer to the README of the `lvgl_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
+
+### Raspberry Pi Pico port
+
+This port uses [Micropython infrastructure for C modules](https://docs.micropython.org/en/latest/develop/cmodules.html#compiling-the-cmodule-into-micropython) and `USER_C_MODULES` must be given:
+
+1. `git clone https://github.com/lvgl/lv_micropython.git`
+2. `cd lv_micropython`
+3. `git submodule update --init --recursive lib/lv_bindings`
+4. `make -C ports/rp2 BOARD=PICO submodules`
+5. `make -j -C mpy-cross`
+6. `make -j -C ports/rp2 BOARD=PICO USER_C_MODULES=../../lib/lv_bindings/bindings.cmake`
+
+#### Troubleshooting
+
+If you experience unstable behaviour, it is worth checking the value of *MICROPY_HW_FLASH_STORAGE_BASE* against the value of *__flash_binary_end* from the firmware.elf.map file.
+If the storage base is lower than the binary end, parts of the firmware will be overwritten when the micropython filesystem is initialised.
+
+## Super Simple Example
+
+First, LVGL needs to be imported and initialized
+
+```python
+import lvgl as lv
+lv.init()
+```
+
+Then display driver and input driver needs to be registered.
+Refer to [Porting the library](https://docs.lvgl.io/8.0/porting/index.html) for more information.
+Here is an example of registering SDL drivers on Micropython unix port:
+
+```python
+import SDL
+SDL.init()
+
+# Register SDL display driver.
+
+draw_buf = lv.disp_draw_buf_t()
+buf1_1 = bytearray(480*10)
+draw_buf.init(buf1_1, None, len(buf1_1)//4)
+disp_drv = lv.disp_drv_t()
+disp_drv.init()
+disp_drv.draw_buf = draw_buf
+disp_drv.flush_cb = SDL.monitor_flush
+disp_drv.hor_res = 480
+disp_drv.ver_res = 320
+disp_drv.register()
+
+# Regsiter SDL mouse driver
+
+indev_drv = lv.indev_drv_t()
+indev_drv.init()
+indev_drv.type = lv.INDEV_TYPE.POINTER
+indev_drv.read_cb = SDL.mouse_read
+indev_drv.register()
+```
+
+Here is an alternative example, for registering ILI9341 drivers on Micropython ESP32 port:
+
+```python
+import lvgl as lv
+>>>>>>> 2e880fb7ebf131f5d359a5d1415d8346c145f3da
 
 Refer to the README of the `PyDive_javascript` branch: https://github.com/lvgl/lv_micropython/tree/lvgl_javascript_v8#javascript-port
 
@@ -83,7 +163,7 @@ More info about LVGL:
 More info about lvgl Micropython bindings:
 - https://github.com/lvgl/lv_binding_micropython/blob/master/README.md
 
-Discussions about the Microptyhon binding: https://github.com/lvgl/lvgl/issues/557
+Discussions about the Micropython binding: https://github.com/lvgl/lvgl/issues/557
 
 More info about the unix port: https://github.com/micropython/micropython/wiki/Getting-Started#debian-ubuntu-mint-and-variants
 
@@ -243,7 +323,7 @@ The STM32 version
 The "stm32" port requires an ARM compiler, arm-none-eabi-gcc, and associated
 bin-utils.  For those using Arch Linux, you need arm-none-eabi-binutils,
 arm-none-eabi-gcc and arm-none-eabi-newlib packages.  Otherwise, try here:
-https://launchpad.net/gcc-arm-embedded
+https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm
 
 To build:
 

@@ -313,50 +313,62 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
-// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
-STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_handler, ARG_trigger, ARG_hard };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE} },
-        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
-    };
-    machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
+STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
     // Get the IRQ object.
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
+    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[pin]);
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
         irq = m_new_obj(machine_pin_irq_obj_t);
         irq->base.base.type = &mp_irq_type;
         irq->base.methods = (mp_irq_methods_t *)&machine_pin_irq_methods;
-        irq->base.parent = MP_OBJ_FROM_PTR(self);
+        irq->base.parent = MP_OBJ_FROM_PTR(&machine_pin_obj[pin]);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(machine_pin_irq_obj[self->id]) = irq;
+        MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;
     }
+    return irq;
+}
+
+void mp_hal_pin_interrupt(mp_hal_pin_obj_t pin, mp_obj_t handler, mp_uint_t trigger, bool hard) {
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq(pin);
+
+    // Disable all IRQs while data is updated.
+    gpio_set_irq_enabled(pin, GPIO_IRQ_ALL, false);
+
+    // Update IRQ data.
+    irq->base.handler = handler;
+    irq->base.ishard = hard;
+    irq->flags = 0;
+    irq->trigger = trigger;
+
+    // Enable IRQ if a handler is given.
+    if (handler != mp_const_none && trigger != MP_HAL_PIN_TRIGGER_NONE) {
+        gpio_set_irq_enabled(pin, trigger, true);
+    }
+}
+
+// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
+STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger, ARG_hard };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = MP_HAL_PIN_TRIGGER_FALL | MP_HAL_PIN_TRIGGER_RISE} },
+        { MP_QSTR_hard, MP_ARG_BOOL, {.u_bool = false} },
+    };
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    machine_pin_irq_obj_t *irq = machine_pin_get_irq(self->id);
 
     if (n_args > 1 || kw_args->used != 0) {
-        // Configure IRQ.
-
-        // Disable all IRQs while data is updated.
-        gpio_set_irq_enabled(self->id, GPIO_IRQ_ALL, false);
-
         // Update IRQ data.
-        irq->base.handler = args[ARG_handler].u_obj;
-        irq->base.ishard = args[ARG_hard].u_bool;
-        irq->flags = 0;
-        irq->trigger = args[ARG_trigger].u_int;
-
-        // Enable IRQ if a handler is given.
-        if (args[ARG_handler].u_obj != mp_const_none) {
-            gpio_set_irq_enabled(self->id, args[ARG_trigger].u_int, true);
-        }
+        mp_obj_t handler = args[ARG_handler].u_obj;
+        mp_uint_t trigger = args[ARG_trigger].u_int;
+        bool hard = args[ARG_hard].u_bool;
+        mp_hal_pin_interrupt(self->id, handler, trigger, hard);
     }
-
     return MP_OBJ_FROM_PTR(irq);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);

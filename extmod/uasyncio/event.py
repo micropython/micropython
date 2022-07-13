@@ -17,7 +17,7 @@ class Event:
         # Note: This must not be called from anything except the thread running
         # the asyncio loop (i.e. neither hard or soft IRQ, or a different thread).
         while self.waiting.peek():
-            core._task_queue.push_head(self.waiting.pop_head())
+            core._task_queue.push(self.waiting.pop())
         self.state = True
 
     def clear(self):
@@ -26,7 +26,7 @@ class Event:
     async def wait(self):
         if not self.state:
             # Event not set, put the calling task on the event's waiting queue
-            self.waiting.push_head(core.cur_task)
+            self.waiting.push(core.cur_task)
             # Set calling task's data to the event's queue so it can be removed if needed
             core.cur_task.data = self.waiting
             yield

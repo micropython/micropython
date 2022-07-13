@@ -28,8 +28,43 @@
 
 #include "py/obj.h"
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
+typedef enum {
+    MP_IMPORT_STAT_NO_EXIST,
+    MP_IMPORT_STAT_DIR,
+    MP_IMPORT_STAT_FILE,
+} mp_import_stat_t;
+
+#if MICROPY_VFS
+
+// Delegate to the VFS for import stat and builtin open.
+
+#define mp_builtin_open_obj mp_vfs_open_obj
+
+mp_import_stat_t mp_vfs_import_stat(const char *path);
+mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+
+MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_open_obj);
+
+static inline mp_import_stat_t mp_import_stat(const char *path) {
+    return mp_vfs_import_stat(path);
+}
+
+static inline mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    return mp_vfs_open(n_args, args, kwargs);
+}
+
+#else
+
+// A port can provide implementations of these functions.
+mp_import_stat_t mp_import_stat(const char *path);
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+
+// A port can provide this object.
+MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
+
+#endif
+
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj);
@@ -76,9 +111,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
-// Defined by a port, but declared here for simplicity
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 MP_DECLARE_CONST_FUN_OBJ_2(mp_namedtuple_obj);
 
@@ -108,6 +141,7 @@ extern const mp_obj_module_t mp_module_uerrno;
 extern const mp_obj_module_t mp_module_uctypes;
 extern const mp_obj_module_t mp_module_uzlib;
 extern const mp_obj_module_t mp_module_ujson;
+extern const mp_obj_module_t mp_module_uos;
 extern const mp_obj_module_t mp_module_ure;
 extern const mp_obj_module_t mp_module_uheapq;
 extern const mp_obj_module_t mp_module_uhashlib;

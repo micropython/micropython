@@ -97,6 +97,13 @@ the following libraries.
    network.rst
    uctypes.rst
 
+The following libraries provide drivers for hardware components.
+
+.. toctree::
+  :maxdepth: 1
+
+  wm8960.rst
+
 
 Port-specific libraries
 -----------------------

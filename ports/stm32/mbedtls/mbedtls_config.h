@@ -65,7 +65,7 @@
 #define MBEDTLS_BIGNUM_C
 #define MBEDTLS_CIPHER_C
 #define MBEDTLS_CTR_DRBG_C
-//#define MBEDTLS_ECP_C
+// #define MBEDTLS_ECP_C
 #define MBEDTLS_ENTROPY_C
 #define MBEDTLS_ERROR_C
 #define MBEDTLS_MD_C
@@ -82,16 +82,17 @@
 #define MBEDTLS_SSL_CLI_C
 #define MBEDTLS_SSL_SRV_C
 #define MBEDTLS_SSL_TLS_C
+#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 #define MBEDTLS_X509_CRT_PARSE_C
 #define MBEDTLS_X509_USE_C
 
 // Memory allocation hooks
 #include <stdlib.h>
 #include <stdio.h>
-void *m_calloc_mbedtls(size_t nmemb, size_t size);
-void m_free_mbedtls(void *ptr);
-#define MBEDTLS_PLATFORM_STD_CALLOC m_calloc_mbedtls
-#define MBEDTLS_PLATFORM_STD_FREE m_free_mbedtls
+void *m_tracked_calloc(size_t nmemb, size_t size);
+void m_tracked_free(void *ptr);
+#define MBEDTLS_PLATFORM_STD_CALLOC m_tracked_calloc
+#define MBEDTLS_PLATFORM_STD_FREE m_tracked_free
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
 #include "mbedtls/check_config.h"

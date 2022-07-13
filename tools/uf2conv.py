@@ -33,20 +33,12 @@ import re
 import os
 import os.path
 import argparse
+import json
 
 
 UF2_MAGIC_START0 = 0x0A324655  # "UF2\n"
 UF2_MAGIC_START1 = 0x9E5D5157  # Randomly selected
 UF2_MAGIC_END = 0x0AB16F30  # Ditto
-
-families = {
-    "SAMD21": 0x68ED2B88,
-    "SAMD51": 0x55114460,
-    "NRF52": 0x1B57745F,
-    "STM32F1": 0x5EE21072,
-    "STM32F4": 0x57755A57,
-    "ATMEGA32": 0x16573617,
-}
 
 INFO_FILE = "/INFO_UF2.TXT"
 
@@ -71,9 +63,14 @@ def is_hex(buf):
 
 def convert_from_uf2(buf):
     global appstartaddr
+    global familyid
     numblocks = len(buf) // 512
     curraddr = None
-    outp = b""
+    currfamilyid = None
+    families_found = {}
+    prev_flag = None
+    all_flags_same = True
+    outp = []
     for blockno in range(numblocks):
         ptr = blockno * 512
         block = buf[ptr : ptr + 512]
@@ -88,9 +85,13 @@ def convert_from_uf2(buf):
         if datalen > 476:
             assert False, "Invalid UF2 data size at " + ptr
         newaddr = hd[3]
-        if curraddr == None:
-            appstartaddr = newaddr
+        if (hd[2] & 0x2000) and (currfamilyid == None):
+            currfamilyid = hd[7]
+        if curraddr == None or ((hd[2] & 0x2000) and hd[7] != currfamilyid):
+            currfamilyid = hd[7]
             curraddr = newaddr
+            if familyid == 0x0 or familyid == hd[7]:
+                appstartaddr = newaddr
         padding = newaddr - curraddr
         if padding < 0:
             assert False, "Block out of order at " + ptr
@@ -101,19 +102,53 @@ def convert_from_uf2(buf):
         while padding > 0:
             padding -= 4
             outp += b"\x00\x00\x00\x00"
-        outp += block[32 : 32 + datalen]
+        if familyid == 0x0 or ((hd[2] & 0x2000) and familyid == hd[7]):
+            outp.append(block[32 : 32 + datalen])
         curraddr = newaddr + datalen
-    return outp
+        if hd[2] & 0x2000:
+            if hd[7] in families_found.keys():
+                if families_found[hd[7]] > newaddr:
+                    families_found[hd[7]] = newaddr
+            else:
+                families_found[hd[7]] = newaddr
+        if prev_flag == None:
+            prev_flag = hd[2]
+        if prev_flag != hd[2]:
+            all_flags_same = False
+        if blockno == (numblocks - 1):
+            print("--- UF2 File Header Info ---")
+            families = load_families()
+            for family_hex in families_found.keys():
+                family_short_name = ""
+                for name, value in families.items():
+                    if value == family_hex:
+                        family_short_name = name
+                print(
+                    "Family ID is {:s}, hex value is 0x{:08x}".format(
+                        family_short_name, family_hex
+                    )
+                )
+                print("Target Address is 0x{:08x}".format(families_found[family_hex]))
+            if all_flags_same:
+                print("All block flag values consistent, 0x{:04x}".format(hd[2]))
+            else:
+                print("Flags were not all the same")
+            print("----------------------------")
+            if len(families_found) > 1 and familyid == 0x0:
+                outp = []
+                appstartaddr = 0x0
+    return b"".join(outp)
 
 
 def convert_to_carray(file_content):
-    outp = "const unsigned char bindata[] __attribute__((aligned(16))) = {"
+    outp = "const unsigned long bindata_len = %d;\n" % len(file_content)
+    outp += "const unsigned char bindata[] __attribute__((aligned(16))) = {"
     for i in range(len(file_content)):
         if i % 16 == 0:
             outp += "\n"
-        outp += "0x%02x, " % ord(file_content[i])
+        outp += "0x%02x, " % file_content[i]
     outp += "\n};\n"
-    return outp
+    return bytes(outp, "utf-8")
 
 
 def convert_to_uf2(file_content):
@@ -122,7 +157,7 @@ def convert_to_uf2(file_content):
     while len(datapadding) < 512 - 256 - 32 - 4:
         datapadding += b"\x00\x00\x00\x00"
     numblocks = (len(file_content) + 255) // 256
-    outp = b""
+    outp = []
     for blockno in range(numblocks):
         ptr = 256 * blockno
         chunk = file_content[ptr : ptr + 256]
@@ -144,8 +179,8 @@ def convert_to_uf2(file_content):
             chunk += b"\x00"
         block = hd + chunk + datapadding + struct.pack(b"<I", UF2_MAGIC_END)
         assert len(block) == 512
-        outp += block
-    return outp
+        outp.append(block)
+    return b"".join(outp)
 
 
 class Block:
@@ -195,11 +230,10 @@ def convert_from_hex_to_uf2(buf):
             upper = ((rec[4] << 8) | rec[5]) << 16
         elif tp == 2:
             upper = ((rec[4] << 8) | rec[5]) << 4
-            assert (upper & 0xFFFF) == 0
         elif tp == 1:
             break
         elif tp == 0:
-            addr = upper | (rec[1] << 8) | rec[2]
+            addr = upper + ((rec[1] << 8) | rec[2])
             if appstartaddr == None:
                 appstartaddr = addr
             i = 4
@@ -217,6 +251,10 @@ def convert_from_hex_to_uf2(buf):
     return resfile
 
 
+def to_str(b):
+    return b.decode("utf-8")
+
+
 def get_drives():
     drives = []
     if sys.platform == "win32":
@@ -232,7 +270,7 @@ def get_drives():
                 "DriveType",
             ]
         )
-        for line in r.split("\n"):
+        for line in to_str(r).split("\n"):
             words = re.split("\s+", line)
             if len(words) >= 3 and words[1] == "2" and words[2] == "FAT":
                 drives.append(words[0])
@@ -270,7 +308,23 @@ def list_drives():
 def write_file(name, buf):
     with open(name, "wb") as f:
         f.write(buf)
-    print("Wrote %d bytes to %s." % (len(buf), name))
+    print("Wrote %d bytes to %s" % (len(buf), name))
+
+
+def load_families():
+    # The expectation is that the `uf2families.json` file is in the same
+    # directory as this script. Make a path that works using `__file__`
+    # which contains the full path to this script.
+    filename = "uf2families.json"
+    pathname = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+    with open(pathname) as f:
+        raw_families = json.load(f)
+
+    families = {}
+    for family in raw_families:
+        families[family["short_name"]] = int(family["id"], 0)
+
+    return families
 
 
 def main():
@@ -303,6 +357,7 @@ def main():
     parser.add_argument("-d", "--device", dest="device_path", help="select a device path to flash")
     parser.add_argument("-l", "--list", action="store_true", help="list connected devices")
     parser.add_argument("-c", "--convert", action="store_true", help="do not flash, just convert")
+    parser.add_argument("-D", "--deploy", action="store_true", help="just flash, do not convert")
     parser.add_argument(
         "-f",
         "--family",
@@ -314,8 +369,16 @@ def main():
     parser.add_argument(
         "-C", "--carray", action="store_true", help="convert binary file to a C array, not UF2"
     )
+    parser.add_argument(
+        "-i",
+        "--info",
+        action="store_true",
+        help="display header information from UF2, do not convert",
+    )
     args = parser.parse_args()
     appstartaddr = int(args.base, 0)
+
+    families = load_families()
 
     if args.family.upper() in families:
         familyid = families[args.family.upper()]
@@ -334,9 +397,14 @@ def main():
             inpbuf = f.read()
         from_uf2 = is_uf2(inpbuf)
         ext = "uf2"
-        if from_uf2:
+        if args.deploy:
+            outbuf = inpbuf
+        elif from_uf2 and not args.info:
             outbuf = convert_from_uf2(inpbuf)
             ext = "bin"
+        elif from_uf2 and args.info:
+            outbuf = ""
+            convert_from_uf2(inpbuf)
         elif is_hex(inpbuf):
             outbuf = convert_from_hex_to_uf2(inpbuf.decode("utf-8"))
         elif args.carray:
@@ -344,11 +412,12 @@ def main():
             ext = "h"
         else:
             outbuf = convert_to_uf2(inpbuf)
-        print(
-            "Converting to %s, output size: %d, start address: 0x%x"
-            % (ext, len(outbuf), appstartaddr)
-        )
-        if args.convert:
+        if not args.deploy and not args.info:
+            print(
+                "Converted to %s, output size: %d, start address: 0x%x"
+                % (ext, len(outbuf), appstartaddr)
+            )
+        if args.convert or ext != "uf2":
             drives = []
             if args.output == None:
                 args.output = "flash." + ext

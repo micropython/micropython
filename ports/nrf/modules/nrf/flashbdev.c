@@ -165,8 +165,7 @@ STATIC mp_obj_t nrf_flashbdev_make_new(const mp_obj_type_t *type, size_t n_args,
         return MP_OBJ_FROM_PTR(&nrf_flash_obj);
     }
 
-    nrf_flash_obj_t *self = m_new_obj(nrf_flash_obj_t);
-    self->base.type = &nrf_flashbdev_type;
+    nrf_flash_obj_t *self = mp_obj_malloc(nrf_flash_obj_t, &nrf_flashbdev_type);
 
     mp_int_t start = args[ARG_start].u_int;
     mp_int_t len = args[ARG_len].u_int;

@@ -56,6 +56,12 @@ micropython.heap_unlock()
 # Here we test that the finaliser is actually called during a garbage collection.
 import gc
 
+# Preallocate global variables, and list of filenames for the test (which may
+# in turn allocate new qstrs and/or a new qstr pool).
+f = None
+n = None
+names = ["x%d" % i for i in range(4)]
+
 # Do a large number of single-block allocations to move the GC head forwards,
 # ensuring that the files are allocated from never-before-used blocks and
 # therefore couldn't possibly have any references to them left behind on
@@ -63,14 +69,13 @@ import gc
 for i in range(1024):
     []
 
-N = 4
-for i in range(N):
-    n = "x%d" % i
+# Run the test: create files without closing them, run GC, then read back files.
+for n in names:
     f = vfs.open(n, "w")
     f.write(n)
     f = None  # release f without closing
-    [0, 1, 2, 3]  # use up Python stack so f is really gone
+    sorted([0, 1, 2, 3], key=lambda x: x)  # use up Python and C stack so f is really gone
 gc.collect()  # should finalise all N files by closing them
-for i in range(N):
-    with vfs.open("x%d" % i, "r") as f:
+for n in names:
+    with vfs.open(n, "r") as f:
         print(f.read())

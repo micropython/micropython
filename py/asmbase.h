@@ -45,7 +45,7 @@ typedef struct _mp_asm_base_t {
 void mp_asm_base_init(mp_asm_base_t *as, size_t max_num_labels);
 void mp_asm_base_deinit(mp_asm_base_t *as, bool free_code);
 void mp_asm_base_start_pass(mp_asm_base_t *as, int pass);
-uint8_t *mp_asm_base_get_cur_to_write_bytes(mp_asm_base_t *as, size_t num_bytes_to_write);
+uint8_t *mp_asm_base_get_cur_to_write_bytes(void *as, size_t num_bytes_to_write);
 void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label);
 void mp_asm_base_align(mp_asm_base_t *as, unsigned int align);
 void mp_asm_base_data(mp_asm_base_t *as, unsigned int bytesize, uintptr_t val);

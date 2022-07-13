@@ -99,3 +99,11 @@ sm.active(1)
 ```
 
 See the `examples/rp2/` directory for further example code.
+
+### Troubleshooting
+
+If you experience unstable behaviour, it is worth checking the value of
+*MICROPY_HW_FLASH_STORAGE_BASE* against the value of *__flash_binary_end*
+from the firmware.elf.map file. If the storage base is lower than the
+binary end, parts of the firmware will be overwritten when the micro-
+python filesystem is initialised.

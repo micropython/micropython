@@ -33,16 +33,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/uart.h"
-#elif CONFIG_IDF_TARGET_ESP32C3
-#include "esp32c3/rom/uart.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/uart.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/uart.h"
-#endif
-
 #include "py/obj.h"
 #include "py/objstr.h"
 #include "py/stream.h"
@@ -54,6 +44,7 @@
 #include "mphalport.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
+#include "uart.h"
 
 TaskHandle_t mp_main_task_handle;
 
@@ -107,7 +98,6 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         MICROPY_EVENT_POLL_HOOK
-        ulTaskNotifyTake(pdFALSE, 1);
     }
 }
 
@@ -121,10 +111,9 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     usb_tx_strn(str, len);
     #elif CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
     usb_serial_jtag_tx_strn(str, len);
-    #else
-    for (uint32_t i = 0; i < len; ++i) {
-        uart_tx_one_char(str[i]);
-    }
+    #endif
+    #if MICROPY_HW_ENABLE_UART_REPL
+    uart_stdout_tx_strn(str, len);
     #endif
     if (release_gil) {
         MP_THREAD_GIL_ENTER();

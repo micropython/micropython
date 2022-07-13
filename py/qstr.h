@@ -39,16 +39,16 @@
 enum {
     #ifndef NO_QSTR
 
-#define QDEF0(id, str) id,
-#define QDEF1(id, str)
+#define QDEF0(id, hash, len, str) id,
+#define QDEF1(id, hash, len, str)
     #include "genhdr/qstrdefs.generated.h"
 #undef QDEF0
 #undef QDEF1
 
     MP_QSTRspecial_const_number_of, // no underscore so it can't clash with any of the above
 
-#define QDEF0(id, str)
-#define QDEF1(id, str) id,
+#define QDEF0(id, hash, len, str)
+#define QDEF1(id, hash, len, str) id,
     #include "genhdr/qstrdefs.generated.h"
 #undef QDEF0
 #undef QDEF1
@@ -58,14 +58,33 @@ enum {
 };
 
 typedef size_t qstr;
+typedef uint16_t qstr_short_t;
+
+#if MICROPY_QSTR_BYTES_IN_HASH == 1
+typedef uint8_t qstr_hash_t;
+#elif MICROPY_QSTR_BYTES_IN_HASH == 2
+typedef uint16_t qstr_hash_t;
+#else
+#error unimplemented qstr hash decoding
+#endif
+
+#if MICROPY_QSTR_BYTES_IN_LEN == 1
+typedef uint8_t qstr_len_t;
+#elif MICROPY_QSTR_BYTES_IN_LEN == 2
+typedef uint16_t qstr_len_t;
+#else
+#error unimplemented qstr length decoding
+#endif
 
 typedef struct _qstr_pool_t {
-    struct _qstr_pool_t *prev;
+    const struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;
+    qstr_hash_t *hashes;
+    qstr_len_t *lengths;
     bool sorted;
-    const byte *qstrs[];
+    const char *qstrs[];
 } qstr_pool_t;
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)

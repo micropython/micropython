@@ -468,7 +468,7 @@ def start(port=21, verbose=0, splash=True):
 
     datasocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     datasocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    datasocket.bind(('0.0.0.0', _DATA_PORT))
+    datasocket.bind(('0.0.0.0', str(_DATA_PORT)))
     datasocket.listen(1)
     datasocket.settimeout(10)
 

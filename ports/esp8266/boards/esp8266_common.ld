@@ -151,7 +151,6 @@ SECTIONS
         *help.o(.literal* .text*)
         *lexerstr32.o(.literal* .text*)
         *utils.o(.literal* .text*)
-        *modpyb.o(.literal*, .text*)
         *machine_pin.o(.literal*, .text*)
         *machine_pwm.o(.literal*, .text*)
         *machine_rtc.o(.literal*, .text*)

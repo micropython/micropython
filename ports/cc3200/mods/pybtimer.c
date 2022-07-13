@@ -406,8 +406,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
 
     // allocate a new timer channel
-    pyb_timer_channel_obj_t *ch = m_new_obj(pyb_timer_channel_obj_t);
-    ch->base.type = &pyb_timer_channel_type;
+    pyb_timer_channel_obj_t *ch = mp_obj_malloc(pyb_timer_channel_obj_t, &pyb_timer_channel_type);
     ch->timer = tim;
     ch->channel = channel_n;
 

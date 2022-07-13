@@ -98,7 +98,7 @@ Class methods
 Methods
 -------
 
-.. method:: Pin.init(mode, pull=Pin.PULL_NONE, \*, value=None, alt=-1)
+.. method:: Pin.init(mode, pull=Pin.PULL_NONE, *, value=None, alt=-1)
 
    Initialise the pin:
 
@@ -237,17 +237,17 @@ pin X3.
 For the pyboard, x3_af would contain:
     [Pin.AF1_TIM2, Pin.AF2_TIM5, Pin.AF3_TIM9, Pin.AF7_USART2]
 
-Normally, each peripheral would configure the af automatically, but sometimes
-the same function is available on multiple pins, and having more control
-is desired.
+Normally, each peripheral would configure the alternate function automatically,
+but sometimes the same function is available on multiple pins, and having more
+control is desired.
 
 To configure X3 to expose TIM2_CH3, you could use::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=pyb.Pin.AF1_TIM2)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=pyb.Pin.AF1_TIM2)
 
 or::
 
-   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, af=1)
+   pin = pyb.Pin(pyb.Pin.board.X3, mode=pyb.Pin.AF_PP, alt=1)
 
 Methods
 -------

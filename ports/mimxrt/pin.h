@@ -40,13 +40,13 @@
     ((MODE) == PIN_MODE_ALT))
 
 #define IS_GPIO_DRIVE(DRIVE) (((DRIVE) == PIN_DRIVE_OFF) || \
-    ((DRIVE) == PIN_DRIVE_POWER_0) || \
-    ((DRIVE) == PIN_DRIVE_POWER_1) || \
-    ((DRIVE) == PIN_DRIVE_POWER_2) || \
-    ((DRIVE) == PIN_DRIVE_POWER_3) || \
-    ((DRIVE) == PIN_DRIVE_POWER_4) || \
-    ((DRIVE) == PIN_DRIVE_POWER_5) || \
-    ((DRIVE) == PIN_DRIVE_POWER_6))
+    ((DRIVE) == PIN_DRIVE_0) || \
+    ((DRIVE) == PIN_DRIVE_1) || \
+    ((DRIVE) == PIN_DRIVE_2) || \
+    ((DRIVE) == PIN_DRIVE_3) || \
+    ((DRIVE) == PIN_DRIVE_4) || \
+    ((DRIVE) == PIN_DRIVE_5) || \
+    ((DRIVE) == PIN_DRIVE_6))
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
@@ -55,6 +55,7 @@ enum {
     PIN_MODE_OUT,
     PIN_MODE_OPEN_DRAIN,
     PIN_MODE_ALT,
+    PIN_MODE_SKIP,
 };
 
 enum {
@@ -81,13 +82,13 @@ enum {
 
 enum {
     PIN_DRIVE_OFF = 0b000,
-    PIN_DRIVE_POWER_0, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
-    PIN_DRIVE_POWER_1, // R0/2
-    PIN_DRIVE_POWER_2, // R0/3
-    PIN_DRIVE_POWER_3, // R0/4
-    PIN_DRIVE_POWER_4, // R0/5
-    PIN_DRIVE_POWER_5, // R0/6
-    PIN_DRIVE_POWER_6, // R0/7
+    PIN_DRIVE_0, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    PIN_DRIVE_1, // R0/2
+    PIN_DRIVE_2, // R0/3
+    PIN_DRIVE_3, // R0/4
+    PIN_DRIVE_4, // R0/5
+    PIN_DRIVE_5, // R0/6
+    PIN_DRIVE_6, // R0/7
 };
 
 
@@ -159,5 +160,6 @@ const machine_pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn
 const machine_pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
 const machine_pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
 void machine_pin_set_mode(const machine_pin_obj_t *pin, uint8_t mode);
+uint32_t pin_generate_config(const uint32_t pull, const uint32_t mode, const uint32_t drive, uint32_t config_register);
 
 #endif // MICROPY_INCLUDED_MIMXRT_PIN_H

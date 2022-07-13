@@ -30,8 +30,8 @@ function build_board {
             dest=$dest_dir/$descr$fw_tag.$ext
             if [ -r $build_dir/firmware.$ext ]; then
                 mv $build_dir/firmware.$ext $dest
-            else
-                # esp32 has micropython.elf and micropython.map
+            elif [ -r $build_dir/micropython.$ext ]; then
+                # esp32 has micropython.elf, etc
                 mv $build_dir/micropython.$ext $dest
             fi
         done
@@ -93,7 +93,7 @@ function build_esp32_boards {
         else
             if [ $mcu != esp32 ]; then
                 # build esp32-s2/s3/c3 based boards with IDF v4.4+
-                build_board $board_json $fw_tag $dest_dir bin elf map
+                build_board $board_json $fw_tag $dest_dir bin elf map uf2
             fi
         fi
     done
@@ -101,6 +101,10 @@ function build_esp32_boards {
 
 function build_mimxrt_boards {
     build_boards modmimxrt.c $1 $2 bin hex
+}
+
+function build_renesas_ra_boards {
+    build_boards ra_it.c $1 $2 hex
 }
 
 function build_rp2_boards {

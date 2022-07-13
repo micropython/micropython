@@ -54,7 +54,7 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     // the correct one
     if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
-        fun_bc->globals = globals;
+        ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
 
     // execute code
@@ -103,8 +103,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
 
-    mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
-    code->base.type = &mp_type_code;
+    mp_obj_code_t *code = mp_obj_malloc(mp_obj_code_t, &mp_type_code);
     code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
     return MP_OBJ_FROM_PTR(code);
 }

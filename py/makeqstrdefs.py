@@ -21,6 +21,17 @@ _MODE_QSTR = "qstr"
 # Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
 _MODE_COMPRESS = "compress"
 
+# Extract MP_REGISTER_MODULE(...) macros.
+_MODE_MODULE = "module"
+
+
+def is_c_source(fname):
+    return os.path.splitext(fname)[1] in [".c"]
+
+
+def is_cxx_source(fname):
+    return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
+
 
 def preprocess():
     if any(src in args.dependencies for src in args.changed_sources):
@@ -32,9 +43,9 @@ def preprocess():
     csources = []
     cxxsources = []
     for source in sources:
-        if source.endswith(".cpp"):
+        if is_cxx_source(source):
             cxxsources.append(source)
-        elif source.endswith(".c"):
+        elif is_c_source(source):
             csources.append(source)
     try:
         os.makedirs(os.path.dirname(args.output[0]))
@@ -77,6 +88,8 @@ def process_file(f):
         re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
+    elif args.mode == _MODE_MODULE:
+        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
     output = []
     last_fname = None
     for line in f:
@@ -87,7 +100,7 @@ def process_file(f):
             m = re_line.match(line)
             assert m is not None
             fname = m.group(1)
-            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
+            if not is_c_source(fname) and not is_cxx_source(fname):
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
@@ -98,7 +111,7 @@ def process_file(f):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
                 output.append("Q(" + name + ")")
-            elif args.mode == _MODE_COMPRESS:
+            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE):
                 output.append(match)
 
     if last_fname:
@@ -133,6 +146,8 @@ def cat_together():
     mode_full = "QSTR"
     if args.mode == _MODE_COMPRESS:
         mode_full = "Compressed data"
+    elif args.mode == _MODE_MODULE:
+        mode_full = "Module registrations"
     if old_hash != new_hash:
         print(mode_full, "updated")
         try:
@@ -193,7 +208,7 @@ if __name__ == "__main__":
     args.output_dir = sys.argv[4]
     args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
 
-    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS):
+    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE):
         print("error: mode %s unrecognised" % sys.argv[2])
         sys.exit(2)
 

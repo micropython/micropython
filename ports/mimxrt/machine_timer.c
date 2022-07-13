@@ -30,13 +30,13 @@
 #include "py/mphal.h"
 #include "fsl_pit.h"
 #include "modmachine.h"
+#include CLOCK_CONFIG_H
 
 #define TIMER_MODE_ONE_SHOT (0)
 #define TIMER_MODE_PERIODIC (1)
 #define TIMER_MIN_PERIOD 1
 
 #define alarm_callback PIT_IRQHandler
-#define PIT_SOURCE_CLOCK CLOCK_GetIpgFreq()
 #define PIT_IRQ_ID PIT_IRQn
 
 typedef struct _machine_timer_obj_t {
@@ -115,7 +115,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     self->callback = args[ARG_callback].u_obj;
 
     // Set timer period for channel id
-    PIT_SetTimerPeriod(PIT, self->channel, USEC_TO_COUNT(self->delta_us, PIT_SOURCE_CLOCK));
+    PIT_SetTimerPeriod(PIT, self->channel, USEC_TO_COUNT(self->delta_us, BOARD_BOOTCLOCKRUN_IPG_CLK_ROOT));
 
     // Enable timer interrupts for the channel
     PIT_EnableInterrupts(PIT, self->channel, kPIT_TimerInterruptEnable);

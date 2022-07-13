@@ -89,4 +89,6 @@ const mp_obj_module_t mp_module_zephyr = {
     .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_zephyr, mp_module_zephyr);
+
 #endif // MICROPY_PY_ZEPHYR

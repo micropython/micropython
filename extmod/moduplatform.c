@@ -29,87 +29,19 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/mphal.h"
+#include "extmod/moduplatform.h"
 #include "genhdr/mpversion.h"
 
 #if MICROPY_PY_UPLATFORM
 
 // platform - Access to underlying platform's identifying data
 
-// TODO: Add more architectures, compilers and libraries.
-// See: https://sourceforge.net/p/predef/wiki/Home/
-
-#if defined(__ARM_ARCH)
-#define PLATFORM_ARCH   "arm"
-#elif defined(__x86_64__) || defined(_WIN64)
-#define PLATFORM_ARCH   "x86_64"
-#elif defined(__i386__) || defined(_M_IX86)
-#define PLATFORM_ARCH   "x86"
-#elif defined(__xtensa__) || defined(_M_IX86)
-#define PLATFORM_ARCH   "xtensa"
-#else
-#define PLATFORM_ARCH   ""
-#endif
-
-#if defined(__GNUC__)
-#define PLATFORM_COMPILER \
-    "GCC " \
-    MP_STRINGIFY(__GNUC__) "." \
-    MP_STRINGIFY(__GNUC_MINOR__) "." \
-    MP_STRINGIFY(__GNUC_PATCHLEVEL__)
-#elif defined(__ARMCC_VERSION)
-#define PLATFORM_COMPILER \
-    "ARMCC " \
-    MP_STRINGIFY((__ARMCC_VERSION / 1000000)) "." \
-    MP_STRINGIFY((__ARMCC_VERSION / 10000 % 100)) "." \
-    MP_STRINGIFY((__ARMCC_VERSION % 10000))
-#elif defined(_MSC_VER)
-#if defined(_WIN64)
-#define COMPILER_BITS "64 bit"
-#elif defined(_M_IX86)
-#define COMPILER_BITS "32 bit"
-#else
-#define COMPILER_BITS ""
-#endif
-#define PLATFORM_COMPILER \
-    "MSC v." MP_STRINGIFY(_MSC_VER) " " COMPILER_BITS
-#else
-#define PLATFORM_COMPILER       ""
-#endif
-
-#if defined(__GLIBC__)
-#define PLATFORM_LIBC_LIB       "glibc"
-#define PLATFORM_LIBC_VER \
-    MP_STRINGIFY(__GLIBC__) "." \
-    MP_STRINGIFY(__GLIBC_MINOR__)
-#elif defined(__NEWLIB__)
-#define PLATFORM_LIBC_LIB       "newlib"
-#define PLATFORM_LIBC_VER       _NEWLIB_VERSION
-#else
-#define PLATFORM_LIBC_LIB       ""
-#define PLATFORM_LIBC_VER       ""
-#endif
-
-#if defined(__linux)
-#define PLATFORM_SYSTEM     "Linux"
-#elif defined(__unix__)
-#define PLATFORM_SYSTEM     "Unix"
-#elif defined(__CYGWIN__)
-#define PLATFORM_SYSTEM     "Cygwin"
-#elif defined(_WIN32)
-#define PLATFORM_SYSTEM     "Windows"
-#else
-#define PLATFORM_SYSTEM     "MicroPython"
-#endif
-
-#ifndef MICROPY_PLATFORM_VERSION
-#define MICROPY_PLATFORM_VERSION ""
-#endif
-
-STATIC const MP_DEFINE_STR_OBJ(info_platform_obj, PLATFORM_SYSTEM "-" MICROPY_VERSION_STRING "-" \
-    PLATFORM_ARCH "-" MICROPY_PLATFORM_VERSION "-with-" PLATFORM_LIBC_LIB "" PLATFORM_LIBC_VER);
-STATIC const MP_DEFINE_STR_OBJ(info_python_compiler_obj, PLATFORM_COMPILER);
-STATIC const MP_DEFINE_STR_OBJ(info_libc_lib_obj, PLATFORM_LIBC_LIB);
-STATIC const MP_DEFINE_STR_OBJ(info_libc_ver_obj, PLATFORM_LIBC_VER);
+STATIC const MP_DEFINE_STR_OBJ(info_platform_obj, MICROPY_PLATFORM_SYSTEM "-" \
+    MICROPY_VERSION_STRING "-" MICROPY_PLATFORM_ARCH "-" MICROPY_PLATFORM_VERSION "-with-" \
+    MICROPY_PLATFORM_LIBC_LIB "" MICROPY_PLATFORM_LIBC_VER);
+STATIC const MP_DEFINE_STR_OBJ(info_python_compiler_obj, MICROPY_PLATFORM_COMPILER);
+STATIC const MP_DEFINE_STR_OBJ(info_libc_lib_obj, MICROPY_PLATFORM_LIBC_LIB);
+STATIC const MP_DEFINE_STR_OBJ(info_libc_ver_obj, MICROPY_PLATFORM_LIBC_VER);
 STATIC const mp_rom_obj_tuple_t info_libc_tuple_obj = {
     {&mp_type_tuple}, 2, {MP_ROM_PTR(&info_libc_lib_obj), MP_ROM_PTR(&info_libc_ver_obj)}
 };
@@ -142,5 +74,7 @@ const mp_obj_module_t mp_module_uplatform = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&modplatform_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uplatform, mp_module_uplatform);
 
 #endif // MICROPY_PY_UPLATFORM

@@ -319,6 +319,26 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (0)
 
+// Configuration for STM32G0 series
+#elif defined(STM32G0)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (22) // previously 23
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (6)
+#define MICROPY_HW_MAX_LPUART (2)
+
+// Configuration for STM32G4 series
+#elif defined(STM32G4)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (42) // up to 42 event/interrupt requests: 28 configurable lines, 14 direct lines
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (20) // TIM1-8, 20
+#define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7A3/B3 series
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -394,6 +414,16 @@
 #define MICROPY_HW_RFCORE_BLE_LL_ONLY                   (1) // use LL only, we provide the rest of the BLE stack
 #endif
 
+// Configuration for STM32WL series
+#elif defined(STM32WL)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (UID_BASE)
+#define PYB_EXTI_NUM_VECTORS (21) // up to RTC_WKUP
+#define MICROPY_HW_MAX_I2C (3)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (2)
+#define MICROPY_HW_MAX_LPUART (1)
+
 #else
 #error Unsupported MCU series
 #endif
@@ -410,7 +440,12 @@
 #else
 // Use HSE as a clock source (bypass or oscillator)
 #define MICROPY_HW_CLK_VALUE (HSE_VALUE)
+#if defined(STM32G4)
+// enable HSI48 to run RNG on this clock
+#define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI48)
+#else
 #define MICROPY_HW_RCC_OSCILLATOR_TYPE (RCC_OSCILLATORTYPE_HSE)
+#endif
 #define MICROPY_HW_RCC_PLL_SRC (RCC_PLLSOURCE_HSE)
 #define MICROPY_HW_RCC_CR_HSxON (RCC_CR_HSEON)
 #define MICROPY_HW_RCC_HSI_STATE (RCC_HSI_OFF)
@@ -480,7 +515,7 @@
 // Enable CAN if there are any peripherals defined
 #if defined(MICROPY_HW_CAN1_TX) || defined(MICROPY_HW_CAN2_TX) || defined(MICROPY_HW_CAN3_TX)
 #define MICROPY_HW_ENABLE_CAN (1)
-#if defined(STM32H7)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
 #define MICROPY_HW_ENABLE_FDCAN (1) // define for MCUs with FDCAN
 #endif
 #else

@@ -219,6 +219,33 @@ Exceptions
 If an ISR raises an exception it will not propagate to the main loop. The interrupt will be disabled unless the
 exception is handled by the ISR code.
 
+Interfacing to uasyncio
+-----------------------
+
+When an ISR runs it can preempt the `uasyncio` scheduler. If the ISR performs a `uasyncio`
+operation the scheduler's operation can be disrupted. This applies whether the interrupt is hard
+or soft and also applies if the ISR has passed execution to another function via
+`micropython.schedule`. In particular creating or cancelling tasks is invalid in an ISR context.
+The safe way to interact with `uasyncio` is to implement a coroutine with synchronisation performed by
+`uasyncio.ThreadSafeFlag`. The following fragment illustrates the creation of a task in response
+to an interrupt:
+
+.. code:: python
+
+    tsf = uasyncio.ThreadSafeFlag()
+
+    def isr(_):  # Interrupt handler
+        tsf.set()
+
+    async def foo():
+        while True:
+            await tsf.wait()
+            uasyncio.create_task(bar())
+
+In this example there will be a variable amount of latency between the execution of the ISR and the execution
+of ``foo()``. This is inherent to cooperative scheduling. The maximum latency is application
+and platform dependent but may typically be measured in tens of ms.
+
 General issues
 --------------
 
@@ -339,8 +366,8 @@ A critical section can comprise a single line of code and a single variable. Con
 
 This example illustrates a subtle source of bugs. The line ``count += 1`` in the main loop carries a specific race
 condition hazard known as a read-modify-write. This is a classic cause of bugs in real time systems. In the main loop
-MicroPython reads the value of ``t.counter``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs
-after the read and before the write. The interrupt modifies ``t.counter`` but its change is overwritten by the main
+MicroPython reads the value of ``count``, adds 1 to it, and writes it back. On rare occasions the  interrupt occurs
+after the read and before the write. The interrupt modifies ``count`` but its change is overwritten by the main
 loop when the ISR returns. In a real system this could lead to rare, unpredictable failures.
 
 As mentioned above, care should be taken if an instance of a Python built in type is modified in the main code and

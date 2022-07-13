@@ -63,9 +63,15 @@
 #define RCC_CSR_BORRSTF RCC_CSR_PORRSTF
 #endif
 
-#if defined(STM32L4) || defined(STM32WB)
+#if defined(STM32G4) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 // L4 does not have a POR, so use BOR instead
 #define RCC_CSR_PORRSTF RCC_CSR_BORRSTF
+#endif
+
+#if defined(STM32G0)
+// G0 has BOR and POR combined
+#define RCC_CSR_BORRSTF RCC_CSR_PWRRSTF
+#define RCC_CSR_PORRSTF RCC_CSR_PWRRSTF
 #endif
 
 #if defined(STM32H7)
@@ -119,6 +125,12 @@ void machine_init(void) {
         reset_cause = PYB_RESET_DEEPSLEEP;
         PWR->SCR |= PWR_SCR_CSBF;
     } else
+    #elif defined(STM32WB)
+    if (PWR->EXTSCR & PWR_EXTSCR_C1SBF) {
+        // came out of standby
+        reset_cause = PYB_RESET_DEEPSLEEP;
+        PWR->EXTSCR |= PWR_EXTSCR_C1CSSF;
+    } else
     #endif
     {
         // get reset cause from RCC flags
@@ -161,7 +173,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print clock speeds
     // SYSCLK=168MHz, HCLK=168MHz, PCLK1=42MHz, PCLK2=84MHz
     {
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         printf("S=%u\nH=%u\nP1=%u\n",
             (unsigned int)HAL_RCC_GetSysClockFreq(),
             (unsigned int)HAL_RCC_GetHCLKFreq(),
@@ -304,14 +316,14 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
             mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
             mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
             mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-            #if !defined(STM32F0)
+            #if !defined(STM32F0) && !defined(STM32G0)
             mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
             #endif
         };
         return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
     } else {
         // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4)
+        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L4) || defined(STM32G0)
         mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
         #else
         mp_int_t sysclk = mp_obj_get_int(args[0]);
@@ -383,6 +395,8 @@ STATIC mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(reset_cause);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+#if MICROPY_PY_MACHINE
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
@@ -464,7 +478,11 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
 
-const mp_obj_module_t machine_module = {
+const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

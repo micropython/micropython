@@ -45,7 +45,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
     msec_sleep(tv->tv_sec * 1000.0 + tv->tv_usec / 1000.0);
     return 0;
 }
-#define sleep_select(a,b,c,d,e) msec_sleep_tv((e))
+#define sleep_select(a, b, c, d, e) msec_sleep_tv((e))
 #else
 #define sleep_select select
 #endif
@@ -231,5 +231,7 @@ const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_time);
 
 #endif // MICROPY_PY_UTIME

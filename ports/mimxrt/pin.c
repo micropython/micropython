@@ -62,6 +62,86 @@ uint32_t pin_get_af(const machine_pin_obj_t *pin) {
     return (uint32_t)(mux_register & IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_MASK) >> IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_SHIFT;
 }
 
+uint32_t pin_generate_config(const uint32_t pull, const uint32_t mode, const uint32_t drive, uint32_t config_register) {
+    uint32_t pad_config = 0x0UL;
+
+    #if defined MIMXRT117x_SERIES
+
+    // Set Pull-up
+    if ((config_register >= 0x400E8350 && config_register <= 0x400E83dc) ||   // GPIO_AD_xx
+        (config_register >= 0x40C08040 && config_register <= 0x40C0807C)) {   // GPIO_LPSR_xx
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U); // Set slew rate; there is a discrepancy between doc and header file
+        if (pull != PIN_PULL_DISABLED) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PUE(1) | // Pull Enabled
+                IOMUXC_SW_PAD_CTL_PAD_PUS(pull != PIN_PULL_DOWN_100K); // Up or DOWn
+        }
+    } else { // GPIO_SD_Bx_xx
+        if (pull == PIN_PULL_DISABLED) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PULL(0b11);
+        } else if (pull == PIN_PULL_DOWN_100K) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PULL(0b10);
+        } else {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PULL(0b01);
+        }
+    }
+    // Set open Drain; different for LPSR GPIO!
+    if (config_register >= 0x40C08040 && config_register <= 0x40C0807C) {  // GPIO_LPSR_xx
+        if (mode == PIN_MODE_OPEN_DRAIN) {
+            pad_config |= 1 << 5;  // Open Drain Enabled, no Macro provided
+        }
+    } else {
+        if (mode == PIN_MODE_OPEN_DRAIN) {
+            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
+        }
+    }
+    // Set drive strength
+    if (mode != PIN_MODE_IN) {
+        if (!IS_GPIO_DRIVE(drive)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
+        }
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive >= PIN_DRIVE_4);
+    }
+
+    #else
+
+    pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);      // Slow Slew Rate
+    pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);      // medium(100MHz)
+
+    if (mode == PIN_MODE_OPEN_DRAIN) {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
+    } else {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
+    }
+
+    if (pull == PIN_PULL_DISABLED) {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
+    } else if (pull == PIN_PULL_HOLD) {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
+            IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
+    } else {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) |  // Pull/Keeper Enabled
+            IOMUXC_SW_PAD_CTL_PAD_PUE(1) |            // Pull selected
+            IOMUXC_SW_PAD_CTL_PAD_PUS(pull);
+    }
+
+    if (mode == PIN_MODE_IN) {
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
+            IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
+    } else {
+
+        if (!IS_GPIO_DRIVE(drive)) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
+        }
+
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive) |
+            IOMUXC_SW_PAD_CTL_PAD_HYS(0U);  // Hysteresis disabled
+    }
+
+    #endif
+
+    return pad_config;
+}
+
 const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     const machine_pin_obj_t *pin_obj;
 
