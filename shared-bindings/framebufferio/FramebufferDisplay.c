@@ -353,7 +353,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
 
-//|     root_group: Group
+//|     root_group: displayio.Group
 //|     """The root group on the display."""
 //|
 //|
