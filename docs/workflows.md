@@ -45,6 +45,10 @@ using a rotating key rather than a static one. Non-bonded devices won't be able 
 connection, the central device can discover two default services. One for file transfer and one for
 CircuitPython specifically that includes serial characteristics.
 
+To change the default BLE advertising name without (or before) running user code, the desired name
+can be put in the `/.env` file. The key is `CIRCUITPY_BLE_NAME`. It's limited to approximately
+30 characters depending on the port's settings and will be truncated if longer.
+
 ### File Transfer API
 
 CircuitPython uses [an open File Transfer API](https://github.com/adafruit/Adafruit_CircuitPython_BLE_File_Transfer)
