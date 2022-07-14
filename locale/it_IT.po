@@ -2229,6 +2229,10 @@ msgstr "tipo di bitmap non supportato"
 msgid "Unsupported format"
 msgstr "Formato non supportato"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr ""
@@ -3802,6 +3806,10 @@ msgstr "il terzo argomento di pow() non può essere 0"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() con 3 argomenti richiede interi"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "pressing SW38 button at start up.\n"
+msgstr ""
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h

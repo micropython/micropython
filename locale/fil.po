@@ -2219,6 +2219,10 @@ msgstr "Hindi supportadong tipo ng bitmap"
 msgid "Unsupported format"
 msgstr "Hindi supportadong format"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr ""
@@ -3789,6 +3793,10 @@ msgstr "pow() 3rd argument ay hindi maaring 0"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() na may 3 argumento kailangan ng integers"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "pressing SW38 button at start up.\n"
+msgstr ""
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h

@@ -2225,6 +2225,10 @@ msgstr "Niet-ondersteund beeldscherm bus type"
 msgid "Unsupported format"
 msgstr "Niet-ondersteunde format"
 
+#: shared-bindings/hashlib/__init__.c
+msgid "Unsupported hash algorithm"
+msgstr ""
+
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
 msgstr "Update Mislukt"
@@ -3787,6 +3791,10 @@ msgstr "derde argument van pow() mag geen 0 zijn"
 #: py/objint_mpz.c
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() met 3 argumenten vereist integers"
+
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "pressing SW38 button at start up.\n"
+msgstr ""
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
