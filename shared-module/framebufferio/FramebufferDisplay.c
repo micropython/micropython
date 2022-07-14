@@ -372,3 +372,7 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
         release_framebufferdisplay(self);
     }
 }
+
+mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self) {
+    return self->core.current_group;
+}
