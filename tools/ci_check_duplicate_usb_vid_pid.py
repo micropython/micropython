@@ -79,7 +79,7 @@ def check_vid_pid(files, clusterlist):
 
     vid_pattern = re.compile(r"^USB_VID\s*=\s*(.*)", flags=re.M)
     pid_pattern = re.compile(r"^USB_PID\s*=\s*(.*)", flags=re.M)
-    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = esp32c3$", flags=re.M)
+    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3)$", flags=re.M)
 
     usb_ids = defaultdict(set)
     for board_config in files:
@@ -95,7 +95,7 @@ def check_vid_pid(files, clusterlist):
         elif non_usb:
             continue
         else:
-            raise SystemExit(f"Could not parse {board_config}")
+            raise SystemExit(f"Could not find expected settings in {board_config}")
 
         usb_ids[id_group].add(board_name)
 
@@ -120,6 +120,7 @@ def check_vid_pid(files, clusterlist):
             f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
         )
         sys.exit(duplicate_message)
+
     else:
         print("No USB PID duplicates found.")
 

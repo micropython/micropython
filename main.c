@@ -704,6 +704,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 vstr_t *boot_output;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+    if (safe_mode == NO_HEAP) {
+        return;
+    }
+
     // If not in safe mode, run boot before initing USB and capture output in a file.
 
     // There is USB setup to do even if boot.py is not actually run.
