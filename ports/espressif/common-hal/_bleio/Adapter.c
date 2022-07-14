@@ -59,6 +59,10 @@
 #include "esp_bt.h"
 #include "esp_nimble_hci.h"
 
+#if CIRCUITPY_DOTENV
+#include "shared-module/dotenv/__init__.h"
+#endif
+
 bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUNT];
 
 // static void bluetooth_adapter_background(void *data) {
@@ -96,7 +100,23 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
         // ble_hs_cfg.reset_cb = blecent_on_reset;
         ble_hs_cfg.sync_cb = _on_sync;
         // ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
+        #if CIRCUITPY_DOTENV
+        mp_int_t name_len = 0;
+        char ble_name[32];
+        name_len = dotenv_get_key("/.env", "CIRCUITPY_BLE_NAME", ble_name, sizeof(ble_name) - 1);
+        if (name_len > 0) {
+            if (name_len > MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH) {
+                name_len = MYNEWT_VAL_BLE_SVC_GAP_DEVICE_NAME_MAX_LENGTH;
+            }
+            ble_name[name_len] = '\0';
+            ble_svc_gap_device_name_set(ble_name);
+        } else {
+            ble_svc_gap_device_name_set("CIRCUITPY");
+        }
+        #else
         ble_svc_gap_device_name_set("CIRCUITPY");
+        #endif
 
         // Clear all of the internal connection objects.
         for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
