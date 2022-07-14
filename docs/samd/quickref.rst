@@ -437,6 +437,9 @@ with the neopixel driver from the MicroPython driver library::
     # Update the LED.
     n.write()
 
+machine.bitstream() is set up for a SAMD21 clock frequency of 48MHz and a SAMD51
+clock frequency of 120 MHz. At other clock frequencies, the timing will not fit.
+
 |
 
 Transferring files
