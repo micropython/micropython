@@ -141,7 +141,12 @@ static bool wifi_ever_inited;
 static bool wifi_user_initiated;
 
 void common_hal_wifi_init(bool user_initiated) {
+    wifi_radio_obj_t *self = &common_hal_wifi_radio_obj;
+
     if (wifi_inited) {
+        if (user_initiated && !wifi_user_initiated) {
+            common_hal_wifi_radio_set_enabled(self, true);
+        }
         return;
     }
     wifi_inited = true;
@@ -154,7 +159,6 @@ void common_hal_wifi_init(bool user_initiated) {
     }
     wifi_ever_inited = true;
 
-    wifi_radio_obj_t *self = &common_hal_wifi_radio_obj;
     self->netif = esp_netif_create_default_wifi_sta();
     self->ap_netif = esp_netif_create_default_wifi_ap();
     self->started = false;
@@ -204,6 +208,7 @@ void common_hal_wifi_init(bool user_initiated) {
 void wifi_user_reset(void) {
     if (wifi_user_initiated) {
         wifi_reset();
+        wifi_user_initiated = false;
     }
 }
 
