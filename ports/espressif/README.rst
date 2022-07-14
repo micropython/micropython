@@ -9,6 +9,7 @@ Support Status:
 .. csv-table::
     :header: SoC, Status
 
+    ESP, "beta"
     ESP32-C3, "beta"
     ESP32-S2, "stable"
     ESP32-S3, "beta"
@@ -20,12 +21,16 @@ How this port is organized:
 - **boards/** contains the configuration files for each development board and breakout available on the port.
 - **common-hal/** contains the port-specific module implementations, used by shared-module and shared-bindings.
 - **esp-idf/** contains the Espressif IoT Development Framework installation, including all the drivers for the port.
-- **modules/** contains information specific to certain Espressif SoC based hardware modules, such as the pins used for flash and RAM on the WROVER and WROOM.
 - **peripherals/** contains peripheral setup files and peripheral mapping information, sorted by family and sub-variant. Most files in this directory can be generated with the python scripts in **tools/**.
 - **supervisor/** contains port-specific implementations of internal flash, serial and USB, as well as the **port.c** file, which initializes the port at startup.
 - **tools/** includes useful Python scripts for debugging and other purposes.
 
 At the root level, refer to **mpconfigboard.h** and **mpconfigport.mk** for port specific settings and a list of enabled CircuitPython modules.
+
+Connecting to the ESP32
+---------------------------------------
+The ESP32 chip itself has no USB support. On many boards there is a USB-serial adapter chip, such as a CP2102N, CP2104 or CH9102F, usually connected to the ESP32 TXD0 (GPIO1)and RXD0 (GPIO3) pins, for access to the bootloader. CircuitPython also uses this serial channel for the REPL.
+
 
 Connecting to the ESP32-C3
 ---------------------------------------

@@ -46,6 +46,7 @@
 #endif
 static background_callback_t workflow_background_cb;
 
+#if CIRCUITPY_STATUS_BAR
 static void supervisor_workflow_update_status_bar(void) {
     // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
@@ -59,9 +60,12 @@ static void supervisor_workflow_update_status_bar(void) {
     // Send string terminator
     serial_write("\x1b" "\\");
 }
+#endif
 
 static void workflow_background(void *data) {
+    #if CIRCUITPY_STATUS_BAR
     supervisor_workflow_update_status_bar();
+    #endif
 }
 
 // Called during a VM reset. Doesn't actually reset things.

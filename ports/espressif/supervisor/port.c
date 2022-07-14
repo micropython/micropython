@@ -29,7 +29,6 @@
 #include <sys/time.h>
 #include "supervisor/board.h"
 #include "supervisor/port.h"
-#include "modules/module.h"
 #include "py/runtime.h"
 #include "supervisor/esp_port.h"
 
@@ -78,7 +77,10 @@
 #include "cam.h"
 #endif
 
+#ifndef CONFIG_IDF_TARGET_ESP32
 #include "soc/cache_memory.h"
+#endif
+
 #include "soc/rtc_cntl_reg.h"
 
 #include "esp_debug_helpers.h"
@@ -87,18 +89,17 @@
 
 #ifdef CONFIG_SPIRAM
 #include "esp32/spiram.h"
+#ifdef CONFIG_IDF_TARGET_ESP32
+#include "esp32/himem.h"
+#else
+#define esp_himem_reserved_area_size() (0)
 #endif
 
-// Heap sizes for when there is no external RAM for CircuitPython to use
-// exclusively.
-#ifdef CONFIG_IDF_TARGET_ESP32S2
-#define HEAP_SIZE (48 * 1024)
-#endif
-#ifdef CONFIG_IDF_TARGET_ESP32S3
-#define HEAP_SIZE (176 * 1024)
-#endif
-#ifdef CONFIG_IDF_TARGET_ESP32C3
-#define HEAP_SIZE (88 * 1024)
+static size_t spiram_size_usable(void) {
+    /* SPIRAM chip may be larger than the size we can map into address space */
+    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
+    return s - esp_himem_reserved_area_size();
+}
 #endif
 
 uint32_t *heap;
@@ -155,10 +156,20 @@ safe_mode_t port_init(void) {
     #endif
 
     heap = NULL;
-    never_reset_module_internal_pins();
 
     #ifndef DEBUG
     #define DEBUG (0)
+    #endif
+
+    #define pin_GPIOn(n) pin_GPIO##n
+    #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
+
+    #ifdef CONFIG_CONSOLE_UART_TX_GPIO
+    common_hal_never_reset_pin(&pin_GPIOn_EXPAND(CONFIG_CONSOLE_UART_TX_GPIO));
+    #endif
+
+    #ifdef CONFIG_CONSOLE_UART_RX_GPIO
+    common_hal_never_reset_pin(&pin_GPIOn_EXPAND(CONFIG_CONSOLE_UART_RX_GPIO));
     #endif
 
     #if DEBUG
@@ -193,17 +204,24 @@ safe_mode_t port_init(void) {
 
     #ifdef CONFIG_SPIRAM
     if (esp_spiram_is_initialized()) {
-        size_t spiram_size = esp_spiram_get_size();
+        size_t spiram_size = spiram_size_usable();
+        #ifdef CONFIG_IDF_TARGET_ESP32
+        heap = (uint32_t *)SOC_EXTRAM_DATA_LOW;
+        #else
         heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
+        #endif
         heap_size = spiram_size / sizeof(uint32_t);
     }
     #endif
 
     if (heap == NULL) {
-        heap = malloc(HEAP_SIZE);
-        heap_size = HEAP_SIZE / sizeof(uint32_t);
+        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
+        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
+        heap = malloc(heap_size);
+        heap_size = heap_size / sizeof(uint32_t);
     }
     if (heap == NULL) {
+        heap_size = 0;
         return NO_HEAP;
     }
 

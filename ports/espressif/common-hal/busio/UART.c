@@ -41,7 +41,7 @@
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
-uint8_t never_reset_uart_mask = 0;
+static uint8_t never_reset_uart_mask = 0;
 
 static void uart_event_task(void *param) {
     busio_uart_obj_t *self = param;
@@ -50,8 +50,8 @@ static void uart_event_task(void *param) {
         if (xQueueReceive(self->event_queue, &event, portMAX_DELAY)) {
             switch (event.type) {
                 case UART_PATTERN_DET:
-                    // When the debug uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
-                    if (self->is_debug) {
+                    // When the console uart receives CTRL+C, wake the main task and schedule a keyboard interrupt
+                    if (self->is_console) {
                         port_wake_main_task();
                         if (mp_interrupt_char == CHAR_CTRL_C) {
                             uart_flush(self->uart_num);
@@ -60,8 +60,8 @@ static void uart_event_task(void *param) {
                     }
                     break;
                 case UART_DATA:
-                    // When the debug uart receives any key, wake the main task
-                    if (self->is_debug) {
+                    // When the console uart receives any key, wake the main task
+                    if (self->is_console) {
                         port_wake_main_task();
                     }
                     break;
@@ -74,13 +74,13 @@ static void uart_event_task(void *param) {
 
 void uart_reset(void) {
     for (uart_port_t num = 0; num < UART_NUM_MAX; num++) {
-        // Ignore the UART used by the IDF.
-        #ifdef CONFIG_CONSOLE_UART_NUM
-        if (num == CONFIG_CONSOLE_UART_NUM) {
+        #ifdef CONFIG_ESP_CONSOLE_UART_NUM
+        // Do not reset the UART used by the IDF for logging.
+        if (num == CONFIG_ESP_CONSOLE_UART_NUM) {
             continue;
         }
         #endif
-        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & 1 << num)) {
+        if (uart_is_driver_installed(num) && !(never_reset_uart_mask & (1 << num))) {
             uart_driver_delete(num);
         }
     }
@@ -162,13 +162,15 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
         mp_raise_RuntimeError(translate("UART init"));
     }
-    // On the debug uart, enable pattern detection to look for CTRL+C
-    #ifdef CIRCUITPY_DEBUG_UART_RX
-    if (rx == CIRCUITPY_DEBUG_UART_RX) {
-        self->is_debug = true;
+
+    // On the console uart, enable pattern detection to look for CTRL+C
+    #if CIRCUITPY_CONSOLE_UART
+    if (rx == CIRCUITPY_CONSOLE_UART_RX) {
+        self->is_console = true;
         uart_enable_pattern_det_baud_intr(self->uart_num, CHAR_CTRL_C, 1, 1, 0, 0);
     }
     #endif
+
     // Start a task to listen for uart events
     xTaskCreatePinnedToCore(
         uart_event_task,

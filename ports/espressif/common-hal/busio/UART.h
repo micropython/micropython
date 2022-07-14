@@ -46,7 +46,7 @@ typedef struct {
     uint8_t character_bits;
     bool rx_error;
     uint32_t timeout_ms;
-    bool is_debug;
+    bool is_console;
     QueueHandle_t event_queue;
     TaskHandle_t event_task;
 } busio_uart_obj_t;
