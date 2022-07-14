@@ -214,6 +214,7 @@ void wifi_reset(void) {
     common_hal_wifi_monitor_deinit(MP_STATE_VM(wifi_monitor_singleton));
     wifi_radio_obj_t *radio = &common_hal_wifi_radio_obj;
     common_hal_wifi_radio_set_enabled(radio, false);
+    #ifndef CONFIG_IDF_TARGET_ESP32
     ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT,
         ESP_EVENT_ANY_ID,
         radio->handler_instance_all_wifi));
@@ -226,6 +227,7 @@ void wifi_reset(void) {
     esp_netif_destroy(radio->ap_netif);
     radio->ap_netif = NULL;
     wifi_inited = false;
+    #endif
     supervisor_workflow_request_background();
 }
 
