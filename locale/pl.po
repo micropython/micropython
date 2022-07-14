@@ -3768,6 +3768,10 @@ msgstr "trzeci argument pow() nie może być 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "trzyargumentowe pow() wymaga liczb całkowitych"
 
+#: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
+msgid "pressing SW38 button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
