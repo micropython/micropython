@@ -133,6 +133,16 @@ CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
+ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_SSL_MBEDTLS),1)
+GIT_SUBMODULES += lib/mbedtls
+CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
+# replace mbedtls' error.c by ours
+SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
+LIB_SRC_C += lib/mbedtls_errors/mp_mbedtls_errors.c
+endif
+endif
+
 # If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 
