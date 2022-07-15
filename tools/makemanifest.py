@@ -29,6 +29,9 @@ import sys
 import os
 import subprocess
 
+sys.path.append(os.path.join(os.path.dirname(__file__), "../mpy-cross"))
+import mpy_cross
+
 import manifestfile
 
 VARS = {}
@@ -173,7 +176,7 @@ def main():
     str_paths = []
     mpy_files = []
     ts_newest = 0
-    for full_path, target_path, timestamp, kind, version, opt in manifest.files():
+    for _file_type, full_path, target_path, timestamp, kind, version, opt in manifest.files():
         if kind == manifestfile.KIND_FREEZE_AS_STR:
             str_paths.append(
                 (
@@ -188,14 +191,18 @@ def main():
             if timestamp >= ts_outfile:
                 print("MPY", target_path)
                 mkdir(outfile)
-                res, out = system(
-                    [MPY_CROSS]
-                    + args.mpy_cross_flags.split()
-                    + ["-o", outfile, "-s", target_path, "-O{}".format(opt), full_path]
-                )
-                if res != 0:
-                    print("error compiling {}:".format(infile))
-                    sys.stdout.buffer.write(out)
+                try:
+                    mpy_cross.compile(
+                        full_path,
+                        dest=outfile,
+                        src_path=target_path,
+                        opt=opt,
+                        mpy_cross=MPY_CROSS,
+                        extra_args=args.mpy_cross_flags.split(),
+                    )
+                except mpy_cross.CrossCompileError as ex:
+                    print("error compiling {}:".format(target_path))
+                    print(ex.args[0])
                     raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
