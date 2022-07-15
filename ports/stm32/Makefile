@@ -355,6 +355,7 @@ SRC_C += \
 	dac.c \
 	adc.c \
 	sdio.c \
+	subghz.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
 SRC_O += \
