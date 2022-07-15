@@ -31,6 +31,7 @@
 #include "py/stackctrl.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/readline/readline.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -46,6 +47,8 @@ void samd_main(void) {
     for (;;) {
         gc_init(&_sheap, &_eheap);
         mp_init();
+        // Initialise sub-systems.
+        readline_init0();
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
