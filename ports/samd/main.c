@@ -29,6 +29,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 #include "py/stackctrl.h"
+#include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
@@ -47,6 +48,9 @@ void samd_main(void) {
     for (;;) {
         gc_init(&_sheap, &_eheap);
         mp_init();
+
+        // Initialise sub-systems.
+        readline_init0();
 
         // Execute _boot.py to set up the filesystem.
         pyexec_frozen_module("_boot.py");
