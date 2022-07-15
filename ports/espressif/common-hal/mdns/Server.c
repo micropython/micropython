@@ -90,6 +90,10 @@ const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {
 
 void common_hal_mdns_server_set_hostname(mdns_server_obj_t *self, const char *hostname) {
     mdns_hostname_set(hostname);
+    // Wait for the mdns task to set the new hostname.
+    while (!mdns_hostname_exists(hostname)) {
+        RUN_BACKGROUND_TASKS;
+    }
     self->hostname = hostname;
 }
 
