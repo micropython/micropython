@@ -451,7 +451,7 @@ STATIC void btstack_packet_handler(uint8_t packet_type, uint8_t *packet, uint8_t
         gatt_event_characteristic_query_result_get_characteristic(packet, &characteristic);
         mp_obj_bluetooth_uuid_t characteristic_uuid = create_mp_uuid(characteristic.uuid16, characteristic.uuid128);
         mp_bluetooth_gattc_on_characteristic_result(conn_handle, characteristic.start_handle, characteristic.value_handle, characteristic.properties, &characteristic_uuid);
-    } else if (event_type == GATT_EVENT_CHARACTERISTIC_DESCRIPTOR_QUERY_RESULT) {
+    } else if (event_type == GATT_EVENT_ALL_CHARACTERISTIC_DESCRIPTORS_QUERY_RESULT) {
         DEBUG_printf("  --> gatt descriptor query result\n");
         uint16_t conn_handle = gatt_event_all_characteristic_descriptors_query_result_get_handle(packet);
         gatt_client_characteristic_descriptor_t descriptor;
@@ -1358,9 +1358,9 @@ int mp_bluetooth_gattc_discover_descriptors(uint16_t conn_handle, uint16_t start
     }
 
     gatt_client_characteristic_t characteristic = {
-        // Only start/end handles needed for gatt_client_discover_characteristic_descriptors.
-        .start_handle = start_handle,
-        .value_handle = 0,
+        // Only value/end handles needed for gatt_client_discover_characteristic_descriptors.
+        .start_handle = 0,
+        .value_handle = start_handle,
         .end_handle = end_handle,
         .properties = 0,
         .uuid16 = 0,
