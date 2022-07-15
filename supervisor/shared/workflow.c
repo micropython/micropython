@@ -66,6 +66,10 @@ static void workflow_background(void *data) {
     #if CIRCUITPY_STATUS_BAR
     supervisor_workflow_update_status_bar();
     #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_web_workflow_background();
+    #endif
 }
 
 // Called during a VM reset. Doesn't actually reset things.
