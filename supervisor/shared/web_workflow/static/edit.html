@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Code Edit</title>
+    <style>
+        #code_textarea {
+            width: 90%;
+            height: 600px;
+        }
+
+        #output_text {
+            margin: 0;
+            font-size: 0.7em;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+            integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.6.0/ace.min.js"
+            integrity="sha512-Ky7AOm/5oRYp5QzV9diL95tE/OKjzfAkugQ+llHy1scOlzIyAt2SoyriapPAZTvtZNL/xbYI1Gvt5jJYurPBdw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.6.0/mode-python.min.js"
+            integrity="sha512-SdtfSOaR+TnSvGsZ2dmErFrcMC/CK6J/l2kNaXv3AU9BtNzqLDtK69ImVp6zOAY9Udii9GrtH7NssygOh/w0hg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.6.0/ext-settings_menu.min.js"
+            integrity="sha512-GqA/hV/4FrUn8lUmY+5EWvrB4Bbw3iv0TMY4wVFLWp+OyMqhKhYWXCtYA0+X68TdEA8nUq3og+d6VLTtwprvyw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<button id="save_btn">Save</button>
+<button id="docs_btn">Docs</button>
+<button id="undo_btn">Undo</button>
+<button id="redo_btn">Redo</button>
+<p id="output_text">Loading</p>
+<div id="code_textarea"></div>
+
+<script src="/edit.js" defer=true></script>
+</body>
+</html>
