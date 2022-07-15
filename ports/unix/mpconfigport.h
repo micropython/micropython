@@ -328,7 +328,7 @@ static inline unsigned long mp_urandom_seed_init(void) {
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        mp_hal_delay_us(500); \
+        usleep(500); /* equivalent to mp_hal_delay_us(500) */ \
     } while (0);
 
 #include <sched.h>
