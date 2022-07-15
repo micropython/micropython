@@ -1,7 +1,7 @@
 include("../manifest.py")
 
-freeze("$(MPY_DIR)/tools", "upip.py")
-freeze("$(MPY_DIR)/tools", "upip_utarfile.py")
-freeze("$(MPY_DIR)/extmod", "ntptime.py")
+module("upip.py", base_path="$(MPY_DIR)/tools", opt=3)
+module("upip_utarfile.py", base_path="$(MPY_DIR)/tools", opt=3)
+module("ntptime.py", base_path="$(MPY_DIR)/extmod", opt=3)
 
-freeze("$(MPY_LIB_DIR)/python-ecosys/urequests", "urequests.py")
+require("urequests")
