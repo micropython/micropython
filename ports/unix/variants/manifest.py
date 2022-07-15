@@ -1,2 +1,2 @@
-freeze_as_mpy("$(MPY_DIR)/tools", "upip.py")
-freeze_as_mpy("$(MPY_DIR)/tools", "upip_utarfile.py", opt=3)
+module("upip.py", base_path="$(MPY_DIR)/tools", opt=3)
+module("upip_utarfile.py", base_path="$(MPY_DIR)/tools", opt=3)

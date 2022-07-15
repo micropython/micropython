@@ -1,5 +1,1 @@
-freeze(
-    ".",
-    "neopixel.py",
-    opt=3,
-)
+module("neopixel.py", opt=3)
