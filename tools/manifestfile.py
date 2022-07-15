@@ -198,13 +198,6 @@ class ManifestFile:
         # TODO
         pass
 
-    def include_maybe(self, manifest_path, **kwargs):
-        """
-        Include the manifest file if it exists. See docs for include().
-        """
-        if os.path.exists(manifest_path):
-            self.include(manifest_path, **kwargs)
-
     def include(self, manifest_path, **kwargs):
         """
         Include another manifest.
@@ -213,6 +206,9 @@ class ManifestFile:
         strings.
 
         Relative paths are resolved with respect to the current manifest file.
+
+        If the path is to a directory, then it implicitly includes the
+        manifest.py file inside that directory.
 
         Optional kwargs can be provided which will be available to the
         included script via the `options` variable.
@@ -233,6 +229,9 @@ class ManifestFile:
                 self.include(m)
         else:
             manifest_path = self._resolve_path(manifest_path)
+            # Including a directory grabs the manifest.py inside it.
+            if os.path.isdir(manifest_path):
+                manifest_path = os.path.join(manifest_path, "manifest.py")
             if manifest_path in self._visited:
                 return
             self._visited.add(manifest_path)
