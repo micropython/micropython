@@ -40,8 +40,6 @@ require(["ace/ace", "ace/ext/settings_menu"], function (ace) {
         },
         readOnly: true
     }]);
-
-
 });
 
 let filename = location.hash.substring(1);

@@ -1013,6 +1013,16 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 }
             }
         }
+    } else if (strcmp(request->path, "/edit/") == 0) {
+        if (!request->authenticated) {
+            if (_api_password[0] != '\0') {
+                _reply_unauthorized(socket, request);
+            } else {
+                _reply_forbidden(socket, request);
+            }
+        } else {
+            _REPLY_STATIC(socket, request, edit_html);
+        }
     } else if (memcmp(request->path, "/cp/", 4) == 0) {
         const char *path = request->path + 3;
         if (strcmp(request->method, "GET") != 0) {
