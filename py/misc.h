@@ -52,6 +52,11 @@ typedef unsigned int uint;
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+#if defined(_MSC_VER)
+#define MP_STATIC_ASSERT_NOT_MSC(cond) (1)
+#else
+#define MP_STATIC_ASSERT_NOT_MSC(cond) MP_STATIC_ASSERT(cond)
+#endif
 
 // Round-up integer division
 #define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
