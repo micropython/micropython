@@ -244,12 +244,6 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         LPUART_EnableTx(self->lpuart, false);
         self->lpuart->STAT |= 1 << LPUART_STAT_BRK13_SHIFT;
         LPUART_EnableTx(self->lpuart, true);
-
-        // Allocate the TX ring buffer. Not used yet, but maybe later.
-
-        // ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
-        // MP_STATE_PORT(rp2_uart_tx_buffer[uart_id]) = self->write_buffer.buf;
-
     }
 
     return MP_OBJ_FROM_PTR(self);
