@@ -75,6 +75,7 @@ extension_by_board = {
     "adafruit_qtpy_esp32c3": BIN,
     "ai_thinker_esp32-c3s": BIN,
     "ai_thinker_esp32-c3s-2m": BIN,
+    "beetle-esp32-c3": BIN,
     "espressif_esp32c3_devkitm_1_n4": BIN,
     "lilygo_ttgo_t-01c3": BIN,
     "lolin_c3_mini": BIN,
