@@ -394,6 +394,11 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
                 ? service->end_handle
                 : next_characteristic->def_handle - 1;
 
+            // Pre-check if characteristic is empty so descriptor discovery doesn't fail
+            if (end_handle <= characteristic->handle) {
+                continue;
+            }
+
             _last_discovery_status = BLE_ERR_SUCCESS;
             CHECK_NIMBLE_ERROR(ble_gattc_disc_all_dscs(self->conn_handle, characteristic->handle,
                 end_handle,
