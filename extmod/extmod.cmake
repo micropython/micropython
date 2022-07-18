@@ -114,6 +114,7 @@ if(MICROPY_SSL_MBEDTLS)
     )
 
     target_sources(micropy_lib_mbedtls INTERFACE
+        ${MICROPY_DIR}/lib/mbedtls_errors/mp_mbedtls_errors.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/aes.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/aesni.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/arc4.c
@@ -141,7 +142,6 @@ if(MICROPY_SSL_MBEDTLS)
         ${MICROPY_LIB_MBEDTLS_DIR}/library/ecp_curves.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/entropy_poll.c
-        ${MICROPY_LIB_MBEDTLS_DIR}/library/error.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/gcm.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/havege.c
         ${MICROPY_LIB_MBEDTLS_DIR}/library/hmac_drbg.c

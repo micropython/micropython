@@ -119,6 +119,7 @@ SRC_MOD += $(addprefix $(AXTLS_DIR)/,\
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
 CFLAGS_MOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
+SRC_MOD += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
 	aesni.c \
@@ -147,7 +148,6 @@ SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 	ecp_curves.c \
 	entropy.c \
 	entropy_poll.c \
-	error.c \
 	gcm.c \
 	havege.c \
 	hmac_drbg.c \

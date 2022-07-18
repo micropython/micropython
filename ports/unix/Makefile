@@ -140,9 +140,6 @@ endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 GIT_SUBMODULES += lib/mbedtls
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
-# replace mbedtls' error.c by ours
-SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
-LIB_SRC_C += lib/mbedtls_errors/mp_mbedtls_errors.c
 endif
 endif
 
