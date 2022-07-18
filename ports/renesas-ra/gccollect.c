@@ -32,7 +32,7 @@
 #include "py/mpthread.h"
 #include "shared/runtime/gchelper.h"
 #include "gccollect.h"
-#include "softtimer.h"
+#include "shared/runtime/softtimer.h"
 #include "systick.h"
 
 void gc_collect(void) {

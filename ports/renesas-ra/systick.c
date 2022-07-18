@@ -30,7 +30,7 @@
 #include "irq.h"
 #include "pendsv.h"
 #include "systick.h"
-#include "softtimer.h"
+#include "shared/runtime/softtimer.h"
 #include "pybthread.h"
 #include "hal_data.h"
 
