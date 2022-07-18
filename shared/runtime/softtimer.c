@@ -28,7 +28,6 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
-#include "irq.h"
 #include "softtimer.h"
 
 #define TICKS_PERIOD 0x80000000
