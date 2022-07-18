@@ -30,7 +30,7 @@ UNAME_S := $(shell uname -s)
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -134,6 +134,9 @@ LDFLAGS_MOD += $(LIBPTHREAD)
 endif
 
 ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_SSL_AXTLS),1)
+GIT_SUBMODULES += lib/axtls
+endif
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
 GIT_SUBMODULES += lib/mbedtls
 CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
@@ -325,7 +328,7 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi axtls
+deplibs: libffi
 
 libffi: $(BUILD)/lib/libffi/include/ffi.h
 
@@ -338,12 +341,6 @@ $(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
 	mkdir -p $(BUILD)/lib/libffi; cd $(BUILD)/lib/libffi; \
 	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
-
-axtls: $(TOP)/lib/axtls/README
-
-$(TOP)/lib/axtls/README:
-	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd $(TOP); git submodule update --init --recursive)
 
 PREFIX = /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
