@@ -909,6 +909,11 @@ typedef double mp_float_t;
 #define MICROPY_SCHEDULER_DEPTH (4)
 #endif
 
+// Whether to allow filesystem overlay of frozen code via micropython.frozen_overlay()
+#ifndef MICROPY_ENABLE_FROZEN_OVERLAY
+#define MICROPY_ENABLE_FROZEN_OVERLAY (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
+#endif
+
 // Support for generic VFS sub-system
 #ifndef MICROPY_VFS
 #define MICROPY_VFS (0)
