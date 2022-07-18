@@ -39,11 +39,16 @@
 #define MICROPY_HW_USB_STR_MANUF ("MicroPython")
 #endif
 
-#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN)
-#define USBD_MAX_POWER_MA (250)
+enum
+{
+    ITF_NUM_CDC, // needs 2 interfaces
+    ITF_NUM_CDC_DUMMY,
+    ITF_NUM_DFU_RT,
+    ITF_NUM_TOTAL
+};
 
-#define USBD_ITF_CDC (0) // needs 2 interfaces
-#define USBD_ITF_MAX (2)
+#define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN + TUD_DFU_RT_DESC_LEN)
+#define USBD_MAX_POWER_MA (250)
 
 #define USBD_CDC_EP_CMD (0x81)
 #define USBD_CDC_EP_OUT (0x02)
@@ -51,11 +56,16 @@
 #define USBD_CDC_CMD_MAX_SIZE (8)
 #define USBD_CDC_IN_OUT_MAX_SIZE (512)
 
-#define USBD_STR_0 (0x00)
-#define USBD_STR_MANUF (0x01)
-#define USBD_STR_PRODUCT (0x02)
-#define USBD_STR_SERIAL (0x03)
-#define USBD_STR_CDC (0x04)
+enum {
+    USBD_STR_0,
+    USBD_STR_MANUF,
+    USBD_STR_PRODUCT,
+    USBD_STR_SERIAL,
+    USBD_STR_CDC,
+    USBD_STR_DFU,
+};
+
+extern void reset_boot(void);
 
 // Note: descriptors returned from callbacks must exist long enough for transfer to complete
 
@@ -77,11 +87,14 @@ static const tusb_desc_device_t usbd_desc_device = {
 };
 
 static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
-    TUD_CONFIG_DESCRIPTOR(1, USBD_ITF_MAX, USBD_STR_0, USBD_DESC_LEN,
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, USBD_STR_0, USBD_DESC_LEN,
         TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP, USBD_MAX_POWER_MA),
 
-    TUD_CDC_DESCRIPTOR(USBD_ITF_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, USBD_STR_CDC, USBD_CDC_EP_CMD,
         USBD_CDC_CMD_MAX_SIZE, USBD_CDC_EP_OUT, USBD_CDC_EP_IN, USBD_CDC_IN_OUT_MAX_SIZE),
+
+    // Interface number, string index, attributes, detach timeout, transfer size */
+    TUD_DFU_RT_DESCRIPTOR(ITF_NUM_DFU_RT, USBD_STR_DFU, 0x0d, 1000, 4096),
 };
 
 static const char *const usbd_desc_str[] = {
@@ -89,6 +102,7 @@ static const char *const usbd_desc_str[] = {
     [USBD_STR_PRODUCT] = MICROPY_HW_BOARD_NAME,
     [USBD_STR_SERIAL] = "00000000000000000000",
     [USBD_STR_CDC] = "Board CDC",
+    [USBD_STR_DFU] = "Board DFU Runtime"
 };
 
 const uint8_t *tud_descriptor_device_cb(void) {
@@ -135,4 +149,8 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     desc_str[0] = (TUSB_DESC_STRING << 8) | (2 * len + 2);
 
     return desc_str;
+}
+
+void tud_dfu_runtime_reboot_to_dfu_cb() {
+    reset_boot();
 }

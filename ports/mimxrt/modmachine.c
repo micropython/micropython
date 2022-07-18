@@ -38,6 +38,7 @@
 #include "modmachine.h"
 #include "fsl_clock.h"
 #include "fsl_wdog.h"
+#include "mboot/shared/mboot_command.h"
 
 #if MICROPY_PY_MACHINE
 
@@ -50,6 +51,14 @@ typedef enum {
     MP_DEEPSLEEP_RESET,
     MP_SOFT_RESET
 } reset_reason_t;
+
+__attribute__((section("._bl_command"))) mboot_command_t bl_command;
+
+void reset_boot(void) {
+    bl_command.magic = BOOT_COMMAND_MAGIC;
+    bl_command.command = BOOT_COMMAND_RESET_DFU;
+    NVIC_SystemReset();
+}
 
 STATIC mp_obj_t machine_unique_id(void) {
     unsigned char id[8];
