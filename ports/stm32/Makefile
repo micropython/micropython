@@ -144,6 +144,7 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/interrupt_char.c \
 	runtime/mpirq.c \
 	runtime/pyexec.c \
+	runtime/softtimer.c  \
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
@@ -270,7 +271,6 @@ SRC_C += \
 	irq.c \
 	pendsv.c \
 	systick.c  \
-	softtimer.c  \
 	powerctrl.c \
 	powerctrlboot.c \
 	rfcore.c \

@@ -30,7 +30,7 @@
 #include "extmod/mpbthci.h"
 #include "extmod/modbluetooth.h"
 #include "mpbthciport.h"
-#include "softtimer.h"
+#include "shared/runtime/softtimer.h"
 #include "pendsv.h"
 #include "shared/runtime/mpirq.h"
 
