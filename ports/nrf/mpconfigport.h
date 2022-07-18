@@ -311,6 +311,7 @@ typedef long mp_off_t;
 #define MP_STATE_PORT MP_STATE_VM
 
 #if MICROPY_HW_USB_CDC
+#include "device/usbd.h"
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
 #else
 #define MICROPY_HW_USBDEV_TASK_HOOK ;
