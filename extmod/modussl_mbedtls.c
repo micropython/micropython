@@ -64,7 +64,7 @@ struct ssl_args {
     mp_arg_val_t server_side;
     mp_arg_val_t server_hostname;
     mp_arg_val_t cert_reqs;
-    mp_arg_val_t ca_certs;
+    mp_arg_val_t cadata;
     mp_arg_val_t do_handshake;
 };
 
@@ -242,9 +242,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
     }
 
-    if (args->ca_certs.u_obj != mp_const_none) {
+    if (args->cadata.u_obj != mp_const_none) {
         size_t cacert_len;
-        const byte *cacert = (const byte *)mp_obj_str_get_data(args->ca_certs.u_obj, &cacert_len);
+        const byte *cacert = (const byte *)mp_obj_str_get_data(args->cadata.u_obj, &cacert_len);
         // len should include terminating null
         ret = mbedtls_x509_crt_parse(&o->cacert, cacert, cacert_len + 1);
         if (ret != 0) {
@@ -415,7 +415,7 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = MBEDTLS_SSL_VERIFY_NONE}},
-        { MP_QSTR_ca_certs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
 

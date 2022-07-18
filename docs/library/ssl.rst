@@ -13,7 +13,7 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, ca_certs=None, do_handshake=True)
+.. function:: ssl.wrap_socket(sock, server_side=False, keyfile=None, certfile=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True)
 
    Takes a `stream` *sock* (usually socket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, which wraps the underlying stream in
@@ -35,7 +35,10 @@ Functions
      Note that for mbedtls based ports, ``ssl.CERT_NONE`` and ``ssl.CERT_OPTIONAL`` will not
      validate any certificate, only ``ssl.CERT_REQUIRED`` will.
 
-   - *ca_certs* is the CA certificate chain that will validate the peer's certificate.
+   - *cadata* is the CA certificate chain (in *DER* format) that will validate the peer's certificate.
+
+   - *server_hostname* determines which hostname to connect to, allowing the server
+     to present the proper certificate (this is known as Server Name Indication (SNI)) 
 
 
    Depending on the underlying module implementation in a particular
