@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "softtimer.h"
+#include "shared/runtime/softtimer.h"
 
 typedef soft_timer_entry_t machine_timer_obj_t;
 
