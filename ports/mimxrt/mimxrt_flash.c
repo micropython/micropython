@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modmimxrt.h"
+#include "flash.h"
 #include BOARD_FLASH_OPS_HEADER_H
 
 #define SECTOR_SIZE_BYTES (qspiflash_config.sectorSize)
@@ -59,52 +60,6 @@ typedef struct _mimxrt_flash_obj_t {
 STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
     .base = { &mimxrt_flash_type }
 };
-
-// flash_erase_block(erase_addr_bytes)
-// erases the sector starting at addr. Sector size according to the flash properties.
-status_t flash_erase_block(uint32_t erase_addr) __attribute__((section(".ram_functions")));
-status_t flash_erase_block(uint32_t erase_addr) {
-    status_t status;
-    SCB_CleanInvalidateDCache();
-    SCB_DisableDCache();
-    __disable_irq();
-    status = flexspi_nor_flash_erase_sector(FLEXSPI, erase_addr);
-    __enable_irq();
-    SCB_EnableDCache();
-    return status;
-}
-
-// flash_write_block(flash_dest_addr_bytes, data_source, length_bytes)
-// writes length_byte data to the destination address
-// the vfs driver takes care for erasing the sector if required
-status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) __attribute__((section(".ram_functions")));
-status_t flash_write_block(uint32_t dest_addr, const uint8_t *src, uint32_t length) {
-    status_t status = 0;
-    uint32_t size;
-    uint32_t next_addr;
-
-    SCB_CleanInvalidateDCache();
-    SCB_DisableDCache();
-    // write data in chunks not crossing a page boundary
-    while (length > 0) {
-        next_addr = dest_addr - (dest_addr % PAGE_SIZE_BYTES) + PAGE_SIZE_BYTES; // next page boundary
-        size = next_addr - dest_addr;  // maximal chunk length
-        if (size > length) { // compare against remaining data size
-            size = length;
-        }
-        __disable_irq();
-        status = flexspi_nor_flash_page_program(FLEXSPI, dest_addr, (uint32_t *)src, size);
-        __enable_irq();
-        if (status != kStatus_Success) {
-            break;
-        }
-        length -= size;
-        src += size;
-        dest_addr += size;
-    }
-    SCB_EnableDCache();
-    return status;
-}
 
 STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args.
@@ -161,7 +116,7 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = mp_obj_get_int(args[1]) * SECTOR_SIZE_BYTES;
 
     if (n_args == 3) {
-        status = flash_erase_block(self->flash_base + offset);
+        status = flash_erase_sector(self->flash_base + offset);
 
         if (status != kStatus_Success) {
             mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("flash erase command failed with %d"), status);
@@ -199,7 +154,7 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
             return MP_OBJ_NEW_SMALL_INT(SECTOR_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in) * SECTOR_SIZE_BYTES;
-            status = flash_erase_block(self->flash_base + offset);
+            status = flash_erase_sector(self->flash_base + offset);
             return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
         }
         default:

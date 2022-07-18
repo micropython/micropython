@@ -158,6 +158,7 @@ SRC_C += \
 	extmod/modusocket.c \
 	extmod/uos_dupterm.c \
 	fatfs_port.c \
+	flash.c \
 	hal/pwm_backport.c \
 	led.c \
 	machine_adc.c \
