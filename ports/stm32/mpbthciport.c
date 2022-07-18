@@ -29,8 +29,8 @@
 #include "py/mphal.h"
 #include "extmod/mpbthci.h"
 #include "extmod/modbluetooth.h"
+#include "shared/runtime/softtimer.h"
 #include "mpbthciport.h"
-#include "softtimer.h"
 #include "pendsv.h"
 #include "shared/runtime/mpirq.h"
 

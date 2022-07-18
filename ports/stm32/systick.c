@@ -26,10 +26,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "shared/runtime/softtimer.h"
 #include "irq.h"
 #include "pendsv.h"
 #include "systick.h"
-#include "softtimer.h"
 #include "pybthread.h"
 
 extern __IO uint32_t uwTick;
