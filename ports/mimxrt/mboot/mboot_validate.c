@@ -84,8 +84,7 @@ mboot_validate_status_t mboot_validate_header(fw_header_t *img_header) {
 static uint8_t reflect8(uint8_t val) {
     uint8_t resVal = 0;
 
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++) {
         if ((val & (1 << i)) != 0) {
             resVal |= (uint8_t)(1 << (7 - i));
         }
@@ -97,8 +96,7 @@ static uint8_t reflect8(uint8_t val) {
 static uint32_t reflect32(uint32_t val) {
     uint32_t resVal = 0;
 
-    for (int i = 0; i < 32; i++)
-    {
+    for (int i = 0; i < 32; i++) {
         if ((val & (1 << i)) != 0) {
             resVal |= (uint32_t)(1 << (31 - i));
         }
@@ -110,14 +108,12 @@ static uint32_t reflect32(uint32_t val) {
 uint32_t crc32(const uint8_t *data, size_t len) {
     uint32_t crc = crc_initial;
 
-    for (int i = 0; i < len; ++i)
-    {
+    for (int i = 0; i < len; ++i) {
         uint8_t curByte = reflect8(data[i]);
 
         crc ^= (uint32_t)(curByte << 24); /* move byte into MSB of 32bit CRC */
 
-        for (int i = 0; i < 8; i++)
-        {
+        for (int i = 0; i < 8; i++) {
             if ((crc & 0x80000000) != 0) { /* test for MSB = bit 31 */
                 crc = (uint32_t)((crc << 1) ^ crc_polynomial);
             } else {

@@ -105,6 +105,7 @@ CFLAGS_BL += \
 	-nostdlib \
 	-std=c99 \
 	-Wall \
+	-Werror \
 	-Wdouble-promotion \
 	-Werror \
 	-Wfloat-conversion \

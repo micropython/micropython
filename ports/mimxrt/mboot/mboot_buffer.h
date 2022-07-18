@@ -41,7 +41,7 @@
 // --------------------------------------------------------------------+
 // Global Function Declarations
 // --------------------------------------------------------------------+
-void mboot_buffer_init();
+void mboot_buffer_init(void);
 size_t mboot_buffer_append(const uint8_t *data, size_t length);
 void mboot_buffer_pad(void);
 void mboot_buffer_reset(void);

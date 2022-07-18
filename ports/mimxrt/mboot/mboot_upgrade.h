@@ -45,12 +45,12 @@ typedef enum _mboot_upgrade_status_t {
 /**
  * Initializes firmware upgrade session base don selected configuration.
  */
-mboot_upgrade_status_t mboot_upgrade_init();
+mboot_upgrade_status_t mboot_upgrade_init(void);
 
 /**
  * De-initializes firmware upgrade session.
  */
-mboot_upgrade_status_t mboot_upgrade_deinit();
+mboot_upgrade_status_t mboot_upgrade_deinit(void);
 
 /**
  * Write block of data to memory.
@@ -63,13 +63,13 @@ mboot_upgrade_status_t mboot_upgrade_write_data(uint16_t block_num, const uint8_
  * Finalize firmware upgrade by:
  *  - flushing remaining data from buffer and write to memory
  **/
-mboot_upgrade_status_t mboot_upgrade_finalize();
+mboot_upgrade_status_t mboot_upgrade_finalize(void);
 
 /**
  * Check and validate firmware upgrade:
  *  - check written data
  *  - valdiate firmware image if check ok
  **/
-mboot_upgrade_status_t mboot_upgrade_validate();
+mboot_upgrade_status_t mboot_upgrade_validate(void);
 
 #endif // MICROPY_INCLUDED_MIMXRT_MBOOT_UPGRADE_H

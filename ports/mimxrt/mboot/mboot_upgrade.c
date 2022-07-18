@@ -74,8 +74,8 @@ extern uintptr_t __flash_start;
 // --------------------------------------------------------------------+
 // Local Function Declarations
 // --------------------------------------------------------------------+
-static mboot_upgrade_status_t write_initial_block_handler();
-static mboot_upgrade_status_t write_block_handler();
+static mboot_upgrade_status_t write_initial_block_handler(void);
+static mboot_upgrade_status_t write_block_handler(void);
 static mboot_upgrade_status_t write_block(uint8_t *data, uint32_t length, uintptr_t *eaddr, uintptr_t *waddr);
 
 // --------------------------------------------------------------------+
@@ -83,7 +83,7 @@ static mboot_upgrade_status_t write_block(uint8_t *data, uint32_t length, uintpt
 // --------------------------------------------------------------------+
 
 // Todo: Add configuration structure
-mboot_upgrade_status_t mboot_upgrade_init() {
+mboot_upgrade_status_t mboot_upgrade_init(void) {
     flash_init();
 
     // Initialize firmware upgrade session
@@ -109,7 +109,7 @@ mboot_upgrade_status_t mboot_upgrade_init() {
     return BU_STATUS_OK;
 }
 
-mboot_upgrade_status_t mboot_upgrade_deinit() {
+mboot_upgrade_status_t mboot_upgrade_deinit(void) {
     // De-initialize firmware upgrade session
     session.n_blocks = 0UL;
     session.n_bytes_written = 0UL;
@@ -213,7 +213,7 @@ mboot_upgrade_status_t mboot_upgrade_validate() {
 // --------------------------------------------------------------------+
 // Local Function Definitions
 // --------------------------------------------------------------------+
-static mboot_upgrade_status_t write_initial_block_handler() {
+static mboot_upgrade_status_t write_initial_block_handler(void) {
     mboot_upgrade_status_t ret_status = BU_STATUS_UNKNOWN_ERROR;
     uint8_t *data = mboot_buffer_data_ptr();
     uint32_t length = mboot_buffer_len();
@@ -253,7 +253,7 @@ static mboot_upgrade_status_t write_initial_block_handler() {
     return ret_status;
 }
 
-static mboot_upgrade_status_t write_block_handler() {
+static mboot_upgrade_status_t write_block_handler(void) {
     mboot_upgrade_status_t ret_status = BU_STATUS_UNKNOWN_ERROR;
     uint8_t *data = mboot_buffer_data_ptr();
     uint32_t length = mboot_buffer_len();

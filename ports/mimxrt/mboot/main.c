@@ -67,7 +67,7 @@ extern uint32_t __firmware_start;  // Linker symbol
 // --------------------------------------------------------------------+
 // External Function Declarations
 // --------------------------------------------------------------------+
-extern void SystemInit();
+extern void SystemInit(void);
 
 // --------------------------------------------------------------------+
 // Local Function Declarations
@@ -94,8 +94,7 @@ int main(void) {
     }
 
     // Fatal error occured - wait for power cycle
-    for (;;)
-    {
+    for (;;) {
         __asm__ ("nop");
     }
 
@@ -105,7 +104,7 @@ int main(void) {
 // --------------------------------------------------------------------+
 // Local Function Definitions
 // --------------------------------------------------------------------+
-static bool reprog_request() {
+static bool reprog_request(void) {
     bool reprogramming_requested = false;
 
     if ((bl_command.magic == BOOT_COMMAND_MAGIC) && (bl_command.command == BOOT_COMMAND_RESET_DFU)) {
@@ -121,7 +120,7 @@ static bool reprog_request() {
     return reprogramming_requested;
 }
 
-static bool valid_fw_available() {
+static bool valid_fw_available(void) {
     fw_header_t *fw_header = (fw_header_t *)MEM_GET_SYMBOL_VALUE(__firmware_start);
     uintptr_t start_addr = ((uintptr_t)MEM_GET_SYMBOL_VALUE(__firmware_start)) + sizeof(fw_header_t);
     mboot_validate_status_t fw_status = mboot_validate_firmware(fw_header, start_addr);
@@ -135,18 +134,17 @@ static inline firmware_entry_func get_entry_func() {
     return entry_func;
 }
 
-static inline void fw_start() {
+static inline void fw_start(void) {
     firmware_entry_func entry_func = get_entry_func();
 
     entry_func();
 
-    for (;;)
-    {
+    for (;;) {
         __asm__ ("nop");
     }
 }
 
-static void board_init() {
+static void board_init(void) {
     // Init clock
     BOARD_BootClockRUN();
     SystemCoreClockUpdate();
