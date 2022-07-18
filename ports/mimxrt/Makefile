@@ -91,7 +91,7 @@ SRC_TINYUSB_C += \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/device/usbd_control.c \
-	lib/tinyusb/src/portable/nxp/transdimension/dcd_transdimension.c \
+	lib/tinyusb/src/portable/chipidea/ci_hs/dcd_ci_hs.c \
 	lib/tinyusb/src/tusb.c
 
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP

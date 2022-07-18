@@ -220,7 +220,7 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task_ext(uint32_t, bool); tud_task_ext(0, false);
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
