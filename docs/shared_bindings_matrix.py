@@ -204,7 +204,7 @@ def get_repository_url(directory):
     repository_urls[directory] = path
     return path
 
-def frozen_modules_from_dirs(frozen_mpy_dirs):
+def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
     Go through the list of frozen directories and extract the python modules.
     Paths are of the type:
@@ -221,10 +221,16 @@ def frozen_modules_from_dirs(frozen_mpy_dirs):
             if sub.name in frozen_excludes:
                 continue
             if sub.name.endswith(".py"):
-                frozen_modules.append((sub.name[:-3], url_repository))
+                if withurl:
+                    frozen_modules.append((sub.name[:-3], url_repository))
+                else:
+                    frozen_modules.append(sub.name[:-3])
                 continue
             if next(sub.glob("**/*.py"), None): # tests if not empty
-                frozen_modules.append((sub.name, url_repository))
+                if withurl:
+                    frozen_modules.append((sub.name, url_repository))
+                else:
+                    frozen_modules.append(sub.name)
     return frozen_modules
 
 def lookup_setting(settings, key, default=''):
@@ -244,7 +250,7 @@ def all_ports_all_boards(ports=SUPPORTED_PORTS):
                 continue
             yield (port, entry)
 
-def support_matrix_by_board(use_branded_name=True):
+def support_matrix_by_board(use_branded_name=True, withurl=True):
     """ Compiles a list of the available core modules available for each
         board.
     """
@@ -275,17 +281,21 @@ def support_matrix_by_board(use_branded_name=True):
         if "CIRCUITPY_BUILD_EXTENSIONS" in settings:
             board_extensions = settings["CIRCUITPY_BUILD_EXTENSIONS"]
         else:
-            raise "Board extensions undefined."
+            raise OSError(f"Board extensions undefined: {board_name}.")
 
         frozen_modules = []
         if "FROZEN_MPY_DIRS" in settings:
-            frozen_modules = frozen_modules_from_dirs(settings["FROZEN_MPY_DIRS"])
+            frozen_modules = frozen_modules_from_dirs(settings["FROZEN_MPY_DIRS"], withurl)
             if frozen_modules:
                 frozen_modules.sort()
 
         # generate alias boards too
         board_matrix = [(
-            board_name, (board_modules, frozen_modules, board_extensions)
+            board_name, {
+                "modules": board_modules,
+                "frozen_libraries": frozen_modules,
+                "extensions": board_extensions,
+            }
         )]
         if entry.name in aliases_by_board:
             for alias in aliases_by_board[entry.name]:
@@ -295,7 +305,11 @@ def support_matrix_by_board(use_branded_name=True):
                     else:
                         alias = alias.replace("_"," ").title()
                 board_matrix.append((
-                    alias, (board_modules, frozen_modules, board_extensions),
+                    alias, {
+                        "modules": board_modules,
+                        "frozen_libraries": frozen_modules,
+                        "extensions": board_extensions,
+                    },
                 ))
 
         return board_matrix # this is now a list of (board,modules)
@@ -303,7 +317,7 @@ def support_matrix_by_board(use_branded_name=True):
     executor = ThreadPoolExecutor(max_workers=os.cpu_count())
     mapped_exec = executor.map(support_matrix, all_ports_all_boards())
     # flatmap with comprehensions
-    boards = dict(sorted([board for matrix in mapped_exec for board in matrix]))
+    boards = dict(sorted([board for matrix in mapped_exec for board in matrix], key=lambda x: x[0]))
 
     return boards
 

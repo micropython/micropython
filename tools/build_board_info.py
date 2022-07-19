@@ -23,20 +23,6 @@ from shared_bindings_matrix import (
     support_matrix_by_board,
 )
 
-extensions_by_macro = {
-    "BIN": ("bin",),
-    "UF2": ("uf2",),
-    "BIN_UF2": ("bin", "uf2"),
-    "HEX": ("hex",),
-    "HEX_UF2": ("hex", "uf2"),
-    "SPK": ("spk",),
-    "DFU": ("dfu",),
-    "BIN_DFU": ("bin", "dfu"),
-    "COMBINED_HEX": ("combined.hex",),
-    "KERNEL8_IMG": ("disk.img.zip", "kernel8.img"),
-    "KERNEL_IMG": ("disk.img.zip", "kernel.img"),
-}
-
 language_allow_list = set(
     [
         "ID",
@@ -228,7 +214,7 @@ def generate_download_info():
 
     languages = get_languages()
 
-    support_matrix = support_matrix_by_board(use_branded_name=False)
+    support_matrix = support_matrix_by_board(use_branded_name=False, withurl=False)
 
     new_stable = "-" not in new_tag
 
@@ -257,19 +243,17 @@ def generate_download_info():
                 board_info = board_mapping[board_id]
                 for alias in [board_id] + board_info["aliases"]:
                     alias_info = board_mapping[alias]
-                    modules_list = support_matrix[alias][0]
-                    frozen_libraries = [frozen[0] for frozen in support_matrix[alias][1]]
-                    extensions = support_matrix[alias][2]
                     if alias not in current_info:
                         changes["new_boards"].append(alias)
                         current_info[alias] = {"downloads": 0, "versions": []}
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix[alias][0],
                         "languages": languages,
-                        "extensions": extensions,
-                        "frozen_libraries": frozen_libraries,
+                        # add modules, extensions, frozen_libraries explicitly
+                        "modules": support_matrix[alias]["modules"],
+                        "extensions": support_matrix[alias]["extensions"],
+                        "frozen_libraries": support_matrix[alias]["frozen_libraries"],
                     }
                     current_info[alias]["downloads"] = alias_info["download_count"]
                     current_info[alias]["versions"].append(new_version)
@@ -279,9 +263,10 @@ def generate_download_info():
     if changes["new_release"] and user:
         create_pr(changes, current_info, git_info, user)
     else:
-        print("No new release to update")
         if "DEBUG" in os.environ:
             print(create_json(current_info).decode("utf8"))
+        else:
+            print("No new release to update")
 
 
 if __name__ == "__main__":

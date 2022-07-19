@@ -86,8 +86,10 @@ for board in build_boards:
             success = "\033[31mfailed\033[0m"
 
         other_output = ""
-        extensions_id = board_settings["CIRCUITPY_BUILD_EXTENSIONS"]
-        extensions = build_info.extensions_by_macro[extensions_id]
+        extensions = [
+            extension.strip()
+            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
+        ]
 
         for extension in extensions:
             temp_filename = "../ports/{port}/{build}/firmware.{extension}".format(
