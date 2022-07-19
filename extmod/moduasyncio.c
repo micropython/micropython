@@ -273,8 +273,13 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (TASK_IS_DONE(self)) {
-        // Task finished, raise return value to caller so it can continue.
-        nlr_raise(self->data);
+        if (self->data == mp_const_none) {
+            // Task finished but has already been sent to the loop's exception handler.
+            mp_raise_StopIteration(MP_OBJ_NULL);
+        } else {
+            // Task finished, raise return value to caller so it can continue.
+            nlr_raise(self->data);
+        }
     } else {
         // Put calling task on waiting queue.
         mp_obj_t cur_task = mp_obj_dict_get(uasyncio_context, MP_OBJ_NEW_QSTR(MP_QSTR_cur_task));
