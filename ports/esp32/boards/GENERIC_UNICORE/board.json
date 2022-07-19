@@ -15,8 +15,5 @@
     "product": "ESP32 Unicore",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
-    "variants": {
-        "idf3": "Compiled with IDF 3.x"
-    },
     "vendor": "Espressif"
 }
