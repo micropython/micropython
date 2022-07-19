@@ -30,6 +30,13 @@
 #define MICROPY_EMIT_XTENSAWIN              (1)
 #endif
 
+// workaround for xtensa-esp32-elf-gcc esp-2020r3, which can generate wrong code for loops
+// see https://github.com/espressif/esp-idf/issues/9130
+// this was fixed in newer versions of the compiler by:
+//   "gas: use literals/const16 for xtensa loop relaxation"
+//   https://github.com/jcmvbkbc/binutils-gdb-xtensa/commit/403b0b61f6d4358aee8493cb1d11814e368942c9
+#define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
+
 // optimisations
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
 
@@ -72,7 +79,11 @@
 #define MICROPY_PY_UHASHLIB_SHA256          (1)
 #define MICROPY_PY_UCRYPTOLIB               (1)
 #define MICROPY_PY_URANDOM_SEED_INIT_FUNC   (esp_random())
+#define MICROPY_PY_UOS_INCLUDEFILE          "ports/esp32/moduos.c"
 #define MICROPY_PY_OS_DUPTERM               (1)
+#define MICROPY_PY_UOS_DUPTERM_NOTIFY       (1)
+#define MICROPY_PY_UOS_UNAME                (1)
+#define MICROPY_PY_UOS_URANDOM              (1)
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
@@ -83,6 +94,7 @@
 #define MICROPY_PY_MACHINE_PWM_DUTY_U16_NS  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/esp32/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C              (1)
+#define MICROPY_PY_MACHINE_I2C_TRANSFER_WRITE1 (1)
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)
 #define MICROPY_PY_MACHINE_SPI_MSB          (0)
@@ -122,51 +134,7 @@
 #define mp_type_fileio                      mp_type_vfs_fat_fileio
 #define mp_type_textio                      mp_type_vfs_fat_textio
 
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_input), (mp_obj_t)&mp_builtin_input_obj }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_open), (mp_obj_t)&mp_builtin_open_obj },
-
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t esp_module;
-extern const struct _mp_obj_module_t esp32_module;
-extern const struct _mp_obj_module_t utime_module;
-extern const struct _mp_obj_module_t uos_module;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_onewire;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_esp32), (mp_obj_t)&esp32_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_utime), (mp_obj_t)&utime_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_uos), (mp_obj_t)&uos_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
-
 #define MP_STATE_PORT MP_STATE_VM
-
-struct _machine_timer_obj_t;
-
-#if MICROPY_BLUETOOTH_NIMBLE
-struct mp_bluetooth_nimble_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    mp_obj_t machine_pin_irq_handler[40]; \
-    struct _machine_timer_obj_t *machine_timer_obj_head; \
-    struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]; \
-    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
 
@@ -195,6 +163,7 @@ void *esp_native_code_commit(void *, size_t, void *);
         mp_handle_pending(true); \
         MICROPY_PY_USOCKET_EVENTS_HANDLER \
         MP_THREAD_GIL_EXIT(); \
+        ulTaskNotifyTake(pdFALSE, 1); \
         MP_THREAD_GIL_ENTER(); \
     } while (0);
 #else

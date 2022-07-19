@@ -82,8 +82,16 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 20 && freq != 40 && freq != 80 && freq != 160 && freq != 240) {
+        if (freq != 20 && freq != 40 && freq != 80 && freq != 160
+            #if !CONFIG_IDF_TARGET_ESP32C3
+            && freq != 240
+            #endif
+            ) {
+            #if CONFIG_IDF_TARGET_ESP32C3
+            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz or 160MHz"));
+            #else
             mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
+            #endif
         }
         #if CONFIG_IDF_TARGET_ESP32
         esp_pm_config_esp32_t pm;
@@ -141,6 +149,12 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
     if (machine_rtc_config.wake_on_touch) {
         if (esp_sleep_enable_touchpad_wakeup() != ESP_OK) {
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_touchpad_wakeup() failed"));
+        }
+    }
+
+    if (machine_rtc_config.wake_on_ulp) {
+        if (esp_sleep_enable_ulp_wakeup() != ESP_OK) {
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_ulp_wakeup() failed"));
         }
     }
 
@@ -336,5 +350,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

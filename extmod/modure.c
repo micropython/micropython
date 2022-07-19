@@ -187,7 +187,7 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     }
     Subject subj;
     size_t len;
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
     mp_obj_match_t *match = m_new_obj_var(mp_obj_match_t, char *, caps_num);
@@ -220,7 +220,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     Subject subj;
     size_t len;
     const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
 
@@ -280,7 +280,7 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     size_t where_len;
     const char *where_str = mp_obj_str_get_data(where, &where_len);
     Subject subj;
-    subj.begin = where_str;
+    subj.begin_line = subj.begin = where_str;
     subj.end = subj.begin + where_len;
     int caps_num = (self->re.sub + 1) * 2;
 
@@ -406,8 +406,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-    mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
-    o->base.type = &re_type;
+    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, &re_type);
     #if MICROPY_PY_URE_DEBUG
     int flags = 0;
     if (n_args > 1) {
@@ -448,6 +447,8 @@ const mp_obj_module_t mp_module_ure = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ure, mp_module_ure);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

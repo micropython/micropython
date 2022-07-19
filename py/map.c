@@ -174,7 +174,7 @@ mp_map_elem_t *MICROPY_WRAP_MP_MAP_LOOKUP(mp_map_lookup)(mp_map_t * map, mp_obj_
     if (compare_only_ptrs) {
         if (mp_obj_is_qstr(index)) {
             // Index is a qstr, so can just do ptr comparison.
-        } else if (mp_obj_is_type(index, &mp_type_str)) {
+        } else if (mp_obj_is_exact_type(index, &mp_type_str)) {
             // Index is a non-interned string.
             // We can either intern the string, or force a full equality comparison.
             // We chose the latter, since interning costs time and potentially RAM,

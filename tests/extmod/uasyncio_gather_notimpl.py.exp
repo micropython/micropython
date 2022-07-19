@@ -1,0 +1,14 @@
+task start 1
+task start 2
+gather_task start
+RuntimeError("can't wait",)
+task end 1
+task end 2
+gather_task end
+====
+task start 1
+task start 2
+gather_task start
+RuntimeError("can't gather",)
+task end 1
+task end 2

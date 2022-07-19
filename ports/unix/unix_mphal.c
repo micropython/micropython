@@ -29,11 +29,19 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 25)
+#include <sys/random.h>
+#define _HAVE_GETRANDOM
+#endif
+#endif
 
 #ifndef _WIN32
 #include <signal.h>
@@ -225,12 +233,23 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     #ifdef MICROPY_EVENT_POLL_HOOK
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
+        // MICROPY_EVENT_POLL_HOOK does usleep(500).
         MICROPY_EVENT_POLL_HOOK
     }
     #else
     // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
     // "The useconds argument shall be less than one million."
     usleep(ms * 1000);
+    #endif
+}
+
+void mp_hal_get_random(size_t n, void *buf) {
+    #ifdef _HAVE_GETRANDOM
+    RAISE_ERRNO(getrandom(buf, n, 0), errno);
+    #else
+    int fd = open("/dev/urandom", O_RDONLY);
+    RAISE_ERRNO(fd, errno);
+    RAISE_ERRNO(read(fd, buf, n), errno);
+    close(fd);
     #endif
 }

@@ -1966,4 +1966,9 @@ STATIC int ble_secret_store_delete(int obj_type, const union ble_store_key *key)
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
+#if !MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY
+MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_nimble_malloc_t *bluetooth_nimble_memory);
+#endif
+MP_REGISTER_ROOT_POINTER(struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers);
+
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

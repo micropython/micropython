@@ -70,7 +70,7 @@ enum {
     ASYNC_MUSIC_STATE_ARTICULATE,
 };
 
-#define music_data MP_STATE_PORT(music_data)
+#define music_data MP_STATE_PORT(modmusic_music_data)
 
 extern volatile uint32_t ticks;
 
@@ -508,5 +508,8 @@ const mp_obj_module_t music_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t*)&microbit_music_locals_dict,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_music, music_module);
+MP_REGISTER_ROOT_POINTER(struct _music_data_t *modmusic_music_data);
 
 #endif // MICROPY_PY_MUSIC

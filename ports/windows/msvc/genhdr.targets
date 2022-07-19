@@ -4,7 +4,7 @@
   <Import Project="paths.props" Condition="'$(PyPathsIncluded)' != 'True'"/>
 
   <!--Generate qstrdefs.generated.h and mpversion.h similar to what is done in py/mkrules.mk and py/py.mk-->
-  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeQstrData">
+  <Target Name="GenerateHeaders" DependsOnTargets="MakeVersionHdr;MakeModuleDefs;MakeRootPointers;MakeCompressedData;MakeQstrData">
   </Target>
 
   <PropertyGroup>
@@ -14,6 +14,9 @@
     <PyQstrDefs>$(PySrcDir)qstrdefs.h</PyQstrDefs>
     <QstrDefsCollected>$(DestDir)qstrdefscollected.h</QstrDefsCollected>
     <QstrGen>$(DestDir)qstrdefs.generated.h</QstrGen>
+    <ModuleDefsCollected>$(DestDir)/moduledefs.collected</ModuleDefsCollected>
+    <RootPointersCollected>$(DestDir)/root_pointers.collected</RootPointersCollected>
+    <CompressedCollected>$(DestDir)/compressed.collected</CompressedCollected>
     <PyPython Condition="'$(PyPython)' == ''">$(MICROPY_CPYTHON3)</PyPython>
     <PyPython Condition="'$(PyPython)' == ''">python</PyPython>
     <CLToolExe Condition="'$(CLToolExe)' == ''">cl.exe</CLToolExe>
@@ -44,7 +47,8 @@
 using(var outFile = System.IO.File.CreateText(OutputFile)) {
   foreach(var inFile in InputFiles)
     foreach(var line in System.IO.File.ReadAllLines(inFile))
-      if((line.Contains(".c") && line.StartsWith("#line")) || line.Contains("MP_QSTR"))
+      if((line.Contains(".c") && line.StartsWith("#line")) || line.Contains("MP_QSTR") ||
+          line.Contains("MP_REGISTER") || line.Contains("MP_COMPRESSED_ROM_TEXT"))
         outFile.WriteLine( line );
 }
         ]]>
@@ -99,17 +103,45 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat qstr _ $(DestDir)qstr $(QstrDefsCollected)"/>
   </Target>
 
-  <Target Name="MakeModuleDefs" DependsOnTargets="MakeDestDir">
+  <Target Name="CollectCompressedData" DependsOnTargets="MakeQstrDefs" Inputs="$(DestDir)qstr.i.last" Outputs="$(CompressedCollected)">
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split compress $(DestDir)qstr.i.last $(DestDir)compress _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat compress _ $(DestDir)compress $(CompressedCollected)"/>
+  </Target>
+
+  <Target Name="CollectModuleDefs" DependsOnTargets="MakeQstrDefs" Inputs="$(DestDir)qstr.i.last" Outputs="$(ModuleDefsCollected)">
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split module $(DestDir)qstr.i.last $(DestDir)module _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat module _ $(DestDir)module $(ModuleDefsCollected)"/>
+  </Target>
+
+  <Target Name="MakeModuleDefs" DependsOnTargets="CollectModuleDefs" Inputs="$(ModuleDefsCollected)" Outputs="$(DestDir)moduledefs.h">
     <PropertyGroup>
       <DestFile>$(DestDir)moduledefs.h</DestFile>
       <TmpFile>$(DestFile).tmp</TmpFile>
     </PropertyGroup>
-    <ItemGroup>
-      <PyUserModuleFiles Include="@(ClCompile)">
-        <Path>$([System.String]::new('%(FullPath)').Replace('$(PyBaseDir)', ''))</Path>
-      </PyUserModuleFiles>
-    </ItemGroup>
-    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py --vpath=&quot;., $(PyBaseDir), $(PyUserCModules)&quot; @(PyUserModuleFiles->'%(Path)', ' ') > $(TmpFile)"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makemoduledefs.py $(ModuleDefsCollected) > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="CollectRootPointers" DependsOnTargets="MakeQstrDefs" Inputs="$(DestDir)qstr.i.last" Outputs="$(RootPointersCollected)">
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py split root_pointer $(DestDir)qstr.i.last $(DestDir)root_pointer _"/>
+    <Exec Command="$(PyPython) $(PySrcDir)makeqstrdefs.py cat root_pointer _ $(DestDir)root_pointer $(RootPointersCollected)"/>
+  </Target>
+
+  <Target Name="MakeRootPointers" DependsOnTargets="CollectRootPointers" Inputs="$(PySrcDir)make_root_pointers.py;$(RootPointersCollected)" Outputs="$(DestDir)root_pointers.h">
+    <PropertyGroup>
+      <DestFile>$(DestDir)root_pointers.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <Exec Command="$(PyPython) $(PySrcDir)make_root_pointers.py $(RootPointersCollected) > $(TmpFile)"/>
+    <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
+  </Target>
+
+  <Target Name="MakeCompressedData" DependsOnTargets="CollectCompressedData" Inputs="$(CompressedCollected)" Outputs="$(DestDir)compressed.data.h">
+    <PropertyGroup>
+      <DestFile>$(DestDir)compressed.data.h</DestFile>
+      <TmpFile>$(DestFile).tmp</TmpFile>
+    </PropertyGroup>
+    <Exec Command="$(PyPython) $(PySrcDir)makecompresseddata.py $(CompressedCollected) > $(TmpFile)"/>
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
@@ -131,7 +163,7 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
     <MSBuild Projects="$(MSBuildThisFileFullPath)" Targets="CopyFileIfDifferent" Properties="SourceFile=$(TmpFile);DestFile=$(DestFile)"/>
   </Target>
 
-  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
+  <Target Name="FreezeModules" Condition="'$(FrozenManifest)' != ''" DependsOnTargets="MakeQstrData;MakeRootPointers" Inputs="$(FrozenManifest)" Outputs="$(PyBuildDir)frozen_content.c">
     <ItemGroup>
       <ClCompile Include="$(PyBuildDir)frozen_content.c"/>
       <ClCompile>

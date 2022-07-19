@@ -1,4 +1,3 @@
 micropython
 micropython-*
-*.py
 *.gcov

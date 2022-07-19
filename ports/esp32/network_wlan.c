@@ -218,7 +218,7 @@ STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_wlan_active_obj, 1, 2, network_wlan_active);
 
 STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_ssid, ARG_password, ARG_bssid };
+    enum { ARG_ssid, ARG_key, ARG_bssid };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -239,8 +239,8 @@ STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
             p = mp_obj_str_get_data(args[ARG_ssid].u_obj, &len);
             memcpy(wifi_sta_config.sta.ssid, p, MIN(len, sizeof(wifi_sta_config.sta.ssid)));
         }
-        if (args[ARG_password].u_obj != mp_const_none) {
-            p = mp_obj_str_get_data(args[ARG_password].u_obj, &len);
+        if (args[ARG_key].u_obj != mp_const_none) {
+            p = mp_obj_str_get_data(args[ARG_key].u_obj, &len);
             memcpy(wifi_sta_config.sta.password, p, MIN(len, sizeof(wifi_sta_config.sta.password)));
         }
         if (args[ARG_bssid].u_obj != mp_const_none) {
@@ -345,6 +345,12 @@ STATIC mp_obj_t network_wlan_scan(mp_obj_t self_in) {
     if (status == 0) {
         uint16_t count = 0;
         esp_exceptions(esp_wifi_scan_get_ap_num(&count));
+        if (count == 0) {
+            // esp_wifi_scan_get_ap_records must be called to free internal buffers from the scan.
+            // But it returns an error if wifi_ap_records==NULL.  So allocate at least 1 AP entry.
+            // esp_wifi_scan_get_ap_records will then return the actual number of APs in count.
+            count = 1;
+        }
         wifi_ap_record_t *wifi_ap_records = calloc(count, sizeof(wifi_ap_record_t));
         esp_exceptions(esp_wifi_scan_get_ap_records(&count, wifi_ap_records));
         for (uint16_t i = 0; i < count; i++) {
@@ -410,6 +416,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         esp_exceptions(esp_wifi_set_mac(self->if_id, bufinfo.buf));
                         break;
                     }
+                    case MP_QSTR_ssid:
                     case MP_QSTR_essid: {
                         req_if = WIFI_IF_AP;
                         size_t len;
@@ -424,11 +431,13 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         cfg.ap.ssid_hidden = mp_obj_is_true(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_security:
                     case MP_QSTR_authmode: {
                         req_if = WIFI_IF_AP;
                         cfg.ap.authmode = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_key:
                     case MP_QSTR_password: {
                         req_if = WIFI_IF_AP;
                         size_t len;
@@ -443,6 +452,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         cfg.ap.channel = mp_obj_get_int(kwargs->table[i].value);
                         break;
                     }
+                    case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         const char *s = mp_obj_str_get_str(kwargs->table[i].value);
                         esp_exceptions(tcpip_adapter_set_hostname(self->if_id, s));
@@ -459,6 +469,11 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         // parameter reconnects == -1 means to retry forever.
                         // here means conf_wifi_sta_reconnects == 0 to retry forever.
                         conf_wifi_sta_reconnects = (reconnects == -1) ? 0 : reconnects + 1;
+                        break;
+                    }
+                    case MP_QSTR_txpower: {
+                        int8_t power = (mp_obj_get_float(kwargs->table[i].value) * 4);
+                        esp_exceptions(esp_wifi_set_max_tx_power(power));
                         break;
                     }
                     default:
@@ -498,6 +513,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     goto unknown;
             }
         }
+        case MP_QSTR_ssid:
         case MP_QSTR_essid:
             switch (self->if_id) {
                 case WIFI_IF_STA:
@@ -514,6 +530,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             req_if = WIFI_IF_AP;
             val = mp_obj_new_bool(cfg.ap.ssid_hidden);
             break;
+        case MP_QSTR_security:
         case MP_QSTR_authmode:
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.authmode);
@@ -522,6 +539,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             req_if = WIFI_IF_AP;
             val = MP_OBJ_NEW_SMALL_INT(cfg.ap.channel);
             break;
+        case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
             const char *s;
             esp_exceptions(tcpip_adapter_get_hostname(self->if_id, &s));
@@ -537,6 +555,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             int rec = conf_wifi_sta_reconnects - 1;
             val = MP_OBJ_NEW_SMALL_INT(rec);
             break;
+        case MP_QSTR_txpower: {
+            int8_t power;
+            esp_exceptions(esp_wifi_get_max_tx_power(&power));
+            val = mp_obj_new_float(power * 0.25);
+            break;
+        }
         default:
             goto unknown;
     }

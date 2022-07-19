@@ -103,8 +103,13 @@ STATIC void pio1_irq0(void) {
 
 void rp2_pio_init(void) {
     // Reset all PIO instruction memory.
+    #if MICROPY_PY_NETWORK_CYW43
+    // TODO: cannot reset PIO memory when CYW43 driver is enabled and active
+    // because it uses a PIO for the bus interface.
+    #else
     pio_clear_instruction_memory(pio0);
     pio_clear_instruction_memory(pio1);
+    #endif
 
     // Set up interrupts.
     memset(MP_STATE_PORT(rp2_pio_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_pio_irq_obj)));
@@ -652,8 +657,7 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
     for (;;) {
         while (pio_sm_is_rx_fifo_empty(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            MICROPY_EVENT_POLL_HOOK_FAST;
         }
         uint32_t value = pio_sm_get(self->pio, self->sm) >> shift;
         if (dest == NULL) {
@@ -711,8 +715,7 @@ STATIC mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
         }
         while (pio_sm_is_tx_fifo_full(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            MICROPY_EVENT_POLL_HOOK_FAST;
         }
         pio_sm_put(self->pio, self->sm, value << shift);
     }
@@ -836,3 +839,6 @@ STATIC const mp_irq_methods_t rp2_state_machine_irq_methods = {
     .trigger = rp2_state_machine_irq_trigger,
     .info = rp2_state_machine_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *rp2_pio_irq_obj[2]);
+MP_REGISTER_ROOT_POINTER(void *rp2_state_machine_irq_obj[8]);

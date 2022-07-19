@@ -897,9 +897,8 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
-        self = m_new_obj(machine_i2s_obj_t);
+        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
         MP_STATE_PORT(machine_i2s_obj[i2s_id]) = self;
-        self->base.type = &machine_i2s_type;
         self->i2s_id = i2s_id;
     } else {
         self = MP_STATE_PORT(machine_i2s_obj[i2s_id]);
@@ -1148,3 +1147,5 @@ const mp_obj_type_t machine_i2s_type = {
     .make_new = machine_i2s_make_new,
     .locals_dict = (mp_obj_dict_t *)&machine_i2s_locals_dict,
 };
+
+MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);

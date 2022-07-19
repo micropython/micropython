@@ -1,3 +1,3 @@
 # cmake file
 
-set(PICO_BOARD pybstick26_rp2040)
+set(PICO_BOARD garatronic_pybstick26_rp2040)

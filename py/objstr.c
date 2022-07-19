@@ -2026,8 +2026,7 @@ const mp_obj_str_t mp_const_empty_bytes_obj = {{&mp_type_bytes}, 0, 0, (const by
 // the data is copied across.  This function should only be used if the type is bytes,
 // or if the type is str and the string data is known to be not interned.
 mp_obj_t mp_obj_new_str_copy(const mp_obj_type_t *type, const byte *data, size_t len) {
-    mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
-    o->base.type = type;
+    mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, type);
     o->len = len;
     if (data) {
         o->hash = qstr_compute_hash(data, len);
@@ -2070,8 +2069,7 @@ mp_obj_t mp_obj_new_str_from_vstr(const mp_obj_type_t *type, vstr_t *vstr) {
     }
 
     // make a new str/bytes object
-    mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
-    o->base.type = type;
+    mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, type);
     o->len = vstr->len;
     o->hash = qstr_compute_hash((byte *)vstr->buf, vstr->len);
     if (vstr->len + 1 == vstr->alloc) {
@@ -2146,7 +2144,7 @@ STATIC NORETURN void bad_implicit_conversion(mp_obj_t self_in) {
 qstr mp_obj_str_get_qstr(mp_obj_t self_in) {
     if (mp_obj_is_qstr(self_in)) {
         return MP_OBJ_QSTR_VALUE(self_in);
-    } else if (mp_obj_is_type(self_in, &mp_type_str)) {
+    } else if (mp_obj_is_exact_type(self_in, &mp_type_str)) {
         mp_obj_str_t *self = MP_OBJ_TO_PTR(self_in);
         return qstr_from_strn((char *)self->data, self->len);
     } else {

@@ -128,6 +128,8 @@ STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
         nrfx_uart_rx(self->p_uart, &self->buf->rx_buf[0], 1);
         #if !MICROPY_PY_BLE_NUS && MICROPY_KBD_EXCEPTION
         if (chr == mp_interrupt_char) {
+            self->buf->rx_ringbuf.iget = 0;
+            self->buf->rx_ringbuf.iput = 0;
             mp_sched_keyboard_interrupt();
         } else
         #endif

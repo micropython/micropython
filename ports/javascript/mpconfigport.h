@@ -126,11 +126,6 @@
 
 #define MP_SSIZE_MAX (0x7fffffff)
 
-extern const struct _mp_obj_module_t mp_module_utime;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-
 // #define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
@@ -180,10 +175,6 @@ typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
 
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
 
@@ -191,6 +182,3 @@ typedef long mp_off_t;
 #define MICROPY_HW_MCU_NAME "Emscripten"
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];

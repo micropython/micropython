@@ -1,6 +1,6 @@
 """
 MicroPython Remote - Interaction and automation tool for MicroPython
-MIT license; Copyright (c) 2019-2021 Damien P. George
+MIT license; Copyright (c) 2019-2022 Damien P. George
 
 This program provides a set of utilities to interact with and automate a
 MicroPython device over a serial connection.  Commands supported are:
@@ -41,7 +41,16 @@ _COMMANDS = {
     "disconnect": (False, False, 0, "disconnect current device"),
     "resume": (False, False, 0, "resume a previous mpremote session (will not auto soft-reset)"),
     "soft-reset": (False, True, 0, "perform a soft-reset of the device"),
-    "mount": (True, False, 1, "mount local directory on device"),
+    "mount": (
+        True,
+        False,
+        1,
+        """\
+        mount local directory on device
+        options:
+            --unsafe-links, -l
+                follow symbolic links pointing outside of local directory""",
+    ),
     "umount": (True, False, 0, "unmount the local directory"),
     "repl": (
         False,
@@ -59,6 +68,7 @@ _COMMANDS = {
     "run": (True, True, 1, "run the given local script"),
     "fs": (True, True, 1, "execute filesystem commands on the device"),
     "help": (False, False, 0, "print help and exit"),
+    "version": (False, False, 0, "print version and exit"),
 }
 
 _BUILTIN_COMMAND_EXPANSIONS = {
@@ -100,6 +110,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
     ],
     "--help": "help",
+    "--version": "version",
 }
 
 for port_num in range(4):
@@ -268,6 +279,27 @@ def do_disconnect(pyb):
     pyb.close()
 
 
+def show_progress_bar(size, total_size):
+    if not sys.stdout.isatty():
+        return
+    verbose_size = 2048
+    bar_length = 20
+    if total_size < verbose_size:
+        return
+    elif size >= total_size:
+        # Clear progress bar when copy completes
+        print("\r" + " " * (20 + bar_length) + "\r", end="")
+    else:
+        progress = size / total_size
+        bar = round(progress * bar_length)
+        print(
+            "\r ... copying {:3.0f}% [{}{}]".format(
+                progress * 100, "#" * bar, "-" * (bar_length - bar)
+            ),
+            end="",
+        )
+
+
 def do_filesystem(pyb, args):
     def _list_recursive(files, path):
         if os.path.isdir(path):
@@ -275,6 +307,9 @@ def do_filesystem(pyb, args):
                 _list_recursive(files, "/".join((path, entry)))
         else:
             files.append(os.path.split(path))
+
+    # Don't be verbose when using cat, so output can be redirected to something.
+    verbose = args[0] != "cat"
 
     if args[0] == "cp" and args[1] == "-r":
         args.pop(0)
@@ -293,9 +328,14 @@ def do_filesystem(pyb, args):
                 if d not in known_dirs:
                     pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
                     known_dirs.add(d)
-            pyboard.filesystem_command(pyb, ["cp", "/".join((dir, file)), ":" + dir + "/"])
+            pyboard.filesystem_command(
+                pyb,
+                ["cp", "/".join((dir, file)), ":" + dir + "/"],
+                progress_callback=show_progress_bar,
+                verbose=verbose,
+            )
     else:
-        pyboard.filesystem_command(pyb, args)
+        pyboard.filesystem_command(pyb, args, progress_callback=show_progress_bar, verbose=verbose)
     args.clear()
 
 
@@ -431,6 +471,12 @@ def print_help():
     print_commands_help(_command_expansions, 2)
 
 
+def print_version():
+    from . import __version__
+
+    print(f"{_PROG} {__version__}")
+
+
 def main():
     config = load_user_config()
     prepare_command_expansions(config)
@@ -464,6 +510,9 @@ def main():
             elif cmd == "help":
                 print_help()
                 sys.exit(0)
+            elif cmd == "version":
+                print_version()
+                sys.exit(0)
             elif cmd == "resume":
                 auto_soft_reset = False
                 continue
@@ -491,8 +540,12 @@ def main():
                 pyb.enter_raw_repl(soft_reset=True)
                 auto_soft_reset = False
             elif cmd == "mount":
+                unsafe_links = False
+                if args[0] == "--unsafe-links" or args[0] == "-l":
+                    args.pop(0)
+                    unsafe_links = True
                 path = args.pop(0)
-                pyb.mount_local(path)
+                pyb.mount_local(path, unsafe_links=unsafe_links)
                 print(f"Local directory {path} is mounted at /remote")
             elif cmd == "umount":
                 pyb.umount_local()

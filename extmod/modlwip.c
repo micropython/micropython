@@ -35,6 +35,8 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_LWIP
+
 #include "shared/netutils/netutils.h"
 
 #include "lwip/init.h"
@@ -911,9 +913,14 @@ STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_bind_obj, lwip_socket_bind);
 
-STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
-    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
-    mp_int_t backlog = mp_obj_get_int(backlog_in);
+STATIC mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
+    lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(args[0]);
+
+    mp_int_t backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    if (n_args > 1) {
+        backlog = mp_obj_get_int(args[1]);
+        backlog = (backlog < 0) ? 0 : backlog;
+    }
 
     if (socket->pcb.tcp == NULL) {
         mp_raise_OSError(MP_EBADF);
@@ -946,7 +953,7 @@ STATIC mp_obj_t lwip_socket_listen(mp_obj_t self_in, mp_obj_t backlog_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_listen_obj, lwip_socket_listen);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_listen_obj, 1, 2, lwip_socket_listen);
 
 STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
@@ -1736,8 +1743,6 @@ STATIC mp_obj_t lwip_print_pcbs() {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(lwip_print_pcbs_obj, lwip_print_pcbs);
 
-#if MICROPY_PY_LWIP
-
 STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_lwip) },
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&mod_lwip_reset_obj) },
@@ -1772,5 +1777,12 @@ const mp_obj_module_t mp_module_lwip = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_lwip_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_lwip, mp_module_lwip);
+
+// On LWIP-ports, this is the usocket module (replaces extmod/modusocket.c).
+MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_lwip);
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t lwip_slip_stream);
 
 #endif // MICROPY_PY_LWIP

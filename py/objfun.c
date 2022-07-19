@@ -209,7 +209,6 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
-    code_state->ip = _fun_bc->bytecode; \
     code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
@@ -393,8 +392,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
         def_kw_args = def_args[1];
         n_extra_args += 1;
     }
-    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
-    o->base.type = &mp_type_fun_bc;
+    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args, &mp_type_fun_bc);
     o->bytecode = code;
     o->context = context;
     o->child_table = child_table;
@@ -423,8 +421,14 @@ STATIC const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_function,
+    #if MICROPY_CPYTHON_COMPAT
+    .print = fun_bc_print,
+    #endif
     .call = fun_native_call,
     .unary_op = mp_generic_unary_op,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
 };
 
 mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
@@ -464,7 +468,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 0;
     } else if (obj == mp_const_true) {
         return 1;
-    } else if (mp_obj_is_type(obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(obj, &mp_type_int)) {
         return mp_obj_int_get_truncated(obj);
     } else if (mp_obj_is_str(obj)) {
         // pointer to the string (it's probably constant though!)
@@ -536,8 +540,7 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
 };
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
-    mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
-    o->base.type = &mp_type_fun_asm;
+    mp_obj_fun_asm_t *o = mp_obj_malloc(mp_obj_fun_asm_t, &mp_type_fun_asm);
     o->n_args = n_args;
     o->fun_data = fun_data;
     o->type_sig = type_sig;

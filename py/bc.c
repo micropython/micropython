@@ -122,22 +122,14 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 // contain the following valid entries:
 //    - code_state->fun_bc should contain a pointer to the function object
 //    - code_state->ip should contain a pointer to the beginning of the prelude
+//    - code_state->sp should be: &code_state->state[0] - 1
 //    - code_state->n_state should be the number of objects in the local state
-void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
 
     // get the function object that we want to set up (could be bytecode or native code)
     mp_obj_fun_bc_t *self = code_state->fun_bc;
-
-    #if MICROPY_STACKLESS
-    code_state->prev = NULL;
-    #endif
-
-    #if MICROPY_PY_SYS_SETTRACE
-    code_state->prev_state = NULL;
-    code_state->frame = NULL;
-    #endif
 
     // Get cached n_state (rather than decode it again)
     size_t n_state = code_state->n_state;
@@ -149,16 +141,16 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     (void)n_state_unused;
     (void)n_exc_stack_unused;
 
-    code_state->sp = &code_state->state[0] - 1;
+    mp_obj_t *code_state_state = code_state->sp + 1;
     code_state->exc_sp_idx = 0;
 
     // zero out the local stack to begin with
-    memset(code_state->state, 0, n_state * sizeof(*code_state->state));
+    memset(code_state_state, 0, n_state * sizeof(*code_state->state));
 
     const mp_obj_t *kwargs = args + n_args;
 
     // var_pos_kw_args points to the stack where the var-args tuple, and var-kw dict, should go (if they are needed)
-    mp_obj_t *var_pos_kw_args = &code_state->state[n_state - 1 - n_pos_args - n_kwonly_args];
+    mp_obj_t *var_pos_kw_args = &code_state_state[n_state - 1 - n_pos_args - n_kwonly_args];
 
     // check positional arguments
 
@@ -181,7 +173,7 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             if (n_args >= (size_t)(n_pos_args - n_def_pos_args)) {
                 // given enough arguments, but may need to use some default arguments
                 for (size_t i = n_args; i < n_pos_args; i++) {
-                    code_state->state[n_state - 1 - i] = self->extra_args[i - (n_pos_args - n_def_pos_args)];
+                    code_state_state[n_state - 1 - i] = self->extra_args[i - (n_pos_args - n_def_pos_args)];
                 }
             } else {
                 fun_pos_args_mismatch(self, n_pos_args - n_def_pos_args, n_args);
@@ -191,14 +183,14 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
 
     // copy positional args into state
     for (size_t i = 0; i < n_args; i++) {
-        code_state->state[n_state - 1 - i] = args[i];
+        code_state_state[n_state - 1 - i] = args[i];
     }
 
     // check keyword arguments
 
     if (n_kw != 0 || (scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
         DEBUG_printf("Initial args: ");
-        dump_args(code_state->state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
+        dump_args(code_state_state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
 
         mp_obj_t dict = MP_OBJ_NULL;
         if ((scope_flags & MP_SCOPE_FLAG_VARKEYWORDS) != 0) {
@@ -220,11 +212,11 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
                 arg_qstr = self->context->constants.qstr_table[arg_qstr];
                 #endif
                 if (wanted_arg_name == MP_OBJ_NEW_QSTR(arg_qstr)) {
-                    if (code_state->state[n_state - 1 - j] != MP_OBJ_NULL) {
+                    if (code_state_state[n_state - 1 - j] != MP_OBJ_NULL) {
                         mp_raise_msg_varg(&mp_type_TypeError,
                             MP_ERROR_TEXT("function got multiple values for argument '%q'"), MP_OBJ_QSTR_VALUE(wanted_arg_name));
                     }
-                    code_state->state[n_state - 1 - j] = kwargs[2 * i + 1];
+                    code_state_state[n_state - 1 - j] = kwargs[2 * i + 1];
                     goto continue2;
                 }
             }
@@ -242,10 +234,10 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         }
 
         DEBUG_printf("Args with kws flattened: ");
-        dump_args(code_state->state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
+        dump_args(code_state_state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
 
         // fill in defaults for positional args
-        mp_obj_t *d = &code_state->state[n_state - n_pos_args];
+        mp_obj_t *d = &code_state_state[n_state - n_pos_args];
         mp_obj_t *s = &self->extra_args[n_def_pos_args - 1];
         for (size_t i = n_def_pos_args; i > 0; i--, d++, s--) {
             if (*d == MP_OBJ_NULL) {
@@ -254,13 +246,13 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
         }
 
         DEBUG_printf("Args after filling default positional: ");
-        dump_args(code_state->state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
+        dump_args(code_state_state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
 
         // Check that all mandatory positional args are specified
-        while (d < &code_state->state[n_state]) {
+        while (d < &code_state_state[n_state]) {
             if (*d++ == MP_OBJ_NULL) {
                 mp_raise_msg_varg(&mp_type_TypeError,
-                    MP_ERROR_TEXT("function missing required positional argument #%d"), &code_state->state[n_state] - d);
+                    MP_ERROR_TEXT("function missing required positional argument #%d"), &code_state_state[n_state] - d);
             }
         }
 
@@ -275,13 +267,13 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
             #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
             arg_qstr = self->context->constants.qstr_table[arg_qstr];
             #endif
-            if (code_state->state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
+            if (code_state_state[n_state - 1 - n_pos_args - i] == MP_OBJ_NULL) {
                 mp_map_elem_t *elem = NULL;
                 if ((scope_flags & MP_SCOPE_FLAG_DEFKWARGS) != 0) {
                     elem = mp_map_lookup(&((mp_obj_dict_t *)MP_OBJ_TO_PTR(self->extra_args[n_def_pos_args]))->map, MP_OBJ_NEW_QSTR(arg_qstr), MP_MAP_LOOKUP);
                 }
                 if (elem != NULL) {
-                    code_state->state[n_state - 1 - n_pos_args - i] = elem->value;
+                    code_state_state[n_state - 1 - n_pos_args - i] = elem->value;
                 } else {
                     mp_raise_msg_varg(&mp_type_TypeError,
                         MP_ERROR_TEXT("function missing required keyword argument '%q'"), arg_qstr);
@@ -305,42 +297,43 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
     // bytecode prelude: initialise closed over variables
     for (; n_cell; --n_cell) {
         size_t local_num = *ip++;
-        code_state->state[n_state - 1 - local_num] =
-            mp_obj_new_cell(code_state->state[n_state - 1 - local_num]);
+        code_state_state[n_state - 1 - local_num] =
+            mp_obj_new_cell(code_state_state[n_state - 1 - local_num]);
     }
 
     // now that we skipped over the prelude, set the ip for the VM
     code_state->ip = ip;
 
     DEBUG_printf("Calling: n_pos_args=%d, n_kwonly_args=%d\n", n_pos_args, n_kwonly_args);
-    dump_args(code_state->state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
-    dump_args(code_state->state, n_state);
+    dump_args(code_state_state + n_state - n_pos_args - n_kwonly_args, n_pos_args + n_kwonly_args);
+    dump_args(code_state_state, n_state);
 }
 
-#if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
-
-// The following table encodes the number of bytes that a specific opcode
-// takes up.  Some opcodes have an extra byte, defined by MP_BC_MASK_EXTRA_BYTE.
-uint mp_opcode_format(const byte *ip, size_t *opcode_size, bool count_var_uint) {
-    uint f = MP_BC_FORMAT(*ip);
-    const byte *ip_start = ip;
-    if (f == MP_BC_FORMAT_QSTR) {
-        ip += 3;
-    } else {
-        int extra_byte = (*ip & MP_BC_MASK_EXTRA_BYTE) == 0;
-        ip += 1;
-        if (f == MP_BC_FORMAT_VAR_UINT) {
-            if (count_var_uint) {
-                while ((*ip++ & 0x80) != 0) {
-                }
-            }
-        } else if (f == MP_BC_FORMAT_OFFSET) {
-            ip += 2;
-        }
-        ip += extra_byte;
-    }
-    *opcode_size = ip - ip_start;
-    return f;
+// On entry code_state should be allocated somewhere (stack/heap) and
+// contain the following valid entries:
+//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->n_state should be the number of objects in the local state
+void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    code_state->ip = code_state->fun_bc->bytecode;
+    code_state->sp = &code_state->state[0] - 1;
+    #if MICROPY_STACKLESS
+    code_state->prev = NULL;
+    #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    code_state->prev_state = NULL;
+    code_state->frame = NULL;
+    #endif
+    mp_setup_code_state_helper(code_state, n_args, n_kw, args);
 }
 
-#endif // MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
+#if MICROPY_EMIT_NATIVE
+// On entry code_state should be allocated somewhere (stack/heap) and
+// contain the following valid entries:
+//    - code_state->fun_bc should contain a pointer to the function object
+//    - code_state->ip should contain a pointer to the beginning of the prelude
+//    - code_state->n_state should be the number of objects in the local state
+void mp_setup_code_state_native(mp_code_state_native_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    code_state->sp = &code_state->state[0] - 1;
+    mp_setup_code_state_helper((mp_code_state_t *)code_state, n_args, n_kw, args);
+}
+#endif

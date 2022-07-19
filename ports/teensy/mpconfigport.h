@@ -34,24 +34,12 @@
 // extra built in names to add to the global namespace
 #define MICROPY_PORT_BUILTINS \
 
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t os_module;
-extern const struct _mp_obj_module_t pyb_module;
-extern const struct _mp_obj_module_t time_module;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
-
 // extra constants
+extern const struct _mp_obj_module_t pyb_module;
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8]; \
-    mp_obj_t pin_class_mapper; \
-    mp_obj_t pin_class_map_dict; \
-    struct _pyb_uart_obj_t *pyb_stdio_uart; \
 
 // type definitions for the specific machine
 
@@ -111,10 +99,6 @@ __attribute__((always_inline)) static inline mp_uint_t disable_irq(void) {
 #define MICROPY_HW_ENABLE_TIMER     (0)
 #define MICROPY_HW_ENABLE_SERVO     (0)
 #define MICROPY_HW_ENABLE_DAC       (0)
-#define MICROPY_HW_ENABLE_I2C1      (0)
-#define MICROPY_HW_ENABLE_SPI1      (0)
-#define MICROPY_HW_ENABLE_SPI3      (0)
-#define MICROPY_HW_ENABLE_CC3K      (0)
 
 #define MICROPY_HW_LED1             (pin_C5)
 #define MICROPY_HW_LED_OTYPE        (GPIO_MODE_OUTPUT_PP)

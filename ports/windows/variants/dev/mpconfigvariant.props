@@ -3,4 +3,9 @@
   <PropertyGroup>
     <PyProg>micropython-dev</PyProg>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MICROPY_ROM_TEXT_COMPRESSION=1</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
 </Project>

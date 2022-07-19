@@ -133,7 +133,19 @@ The full list of supported commands are:
 
   .. code-block:: bash
 
-      $ mpremote mount <local-dir>
+      $ mpremote mount [options] <local-dir>
+
+  During usage, Ctrl-D will soft-reboot and normally reconnect the mount automatically.
+  If the unit has a main.py running at startup however the remount cannot occur.
+  In this case a raw mode soft reboot can be used: Ctrl-A Ctrl-D to reboot,
+  then Ctrl-B to get back to normal repl at which point the mount will be ready.
+
+  Options are:
+
+  - ``-l``, ``--unsafe-links``: By default an error will be raised if the device
+    accesses a file or directory which is outside (up one or more directory levels) the
+    local directory that is mounted.  This option disables this check for symbolic
+    links, allowing the device to follow symbolic links outside of the local directory.
 
 - unmount the local directory from the remote device:
 

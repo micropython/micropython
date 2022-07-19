@@ -60,8 +60,7 @@
 #define NINA_ARGS(...)          (nina_args_t []) {__VA_ARGS__}
 #define NINA_VALS(...)          (nina_vals_t []) {__VA_ARGS__}
 
-#define NINA_SSELECT_TIMEOUT    (10000)
-#define NINA_RESPONSE_TIMEOUT   (1000)
+#define NINA_SSELECT_TIMEOUT    (1000)
 #define NINA_CONNECT_TIMEOUT    (10000)
 
 #if NINA_DEBUG
@@ -130,18 +129,24 @@ typedef enum {
     NINA_CMD_GET_MAC_ADDR           = 0x22,
 
     // Sockets commands.
-    NINA_CMD_SOCKET_OPEN            = 0x3F,
-    NINA_CMD_SOCKET_CLOSE           = 0x2E,
-    NINA_CMD_SOCKET_CONNECT         = 0x2D,
-    NINA_CMD_SOCKET_AVAIL           = 0x2B,
-    NINA_CMD_SOCKET_BIND            = 0x28,
-    NINA_CMD_SOCKET_STATE           = 0x2F,
     NINA_CMD_SOCKET_REMOTE_ADDR     = 0x3A,
 
-    // TCP commands
-    NINA_CMD_TCP_SEND               = 0x44,
-    NINA_CMD_TCP_RECV               = 0x45,
-    NINA_CMD_TCP_ACK                = 0x2A,
+    NINA_CMD_SOCKET_SOCKET          = 0x70,
+    NINA_CMD_SOCKET_CLOSE           = 0x71,
+    NINA_CMD_SOCKET_ERRNO           = 0x72,
+    NINA_CMD_SOCKET_BIND            = 0x73,
+    NINA_CMD_SOCKET_LISTEN          = 0x74,
+    NINA_CMD_SOCKET_ACCEPT          = 0x75,
+    NINA_CMD_SOCKET_CONNECT         = 0x76,
+    NINA_CMD_SOCKET_SEND            = 0x77,
+    NINA_CMD_SOCKET_RECV            = 0x78,
+    NINA_CMD_SOCKET_SENDTO          = 0x79,
+    NINA_CMD_SOCKET_RECVFROM        = 0x7A,
+    NINA_CMD_SOCKET_IOCTL           = 0x7B,
+    NINA_CMD_SOCKET_POLL            = 0x7C,
+    NINA_CMD_SOCKET_SETSOCKOPT      = 0x7D,
+    NINA_CMD_SOCKET_GETSOCKOPT      = 0x7E,
+    NINA_CMD_SOCKET_GETPEERNAME     = 0x7F,
 
     // UDP commands.
     NINA_CMD_UDP_SEND               = 0x46,
@@ -201,28 +206,15 @@ static uint8_t nina_bsp_spi_read_byte(void) {
     return byte;
 }
 
-static int nina_wait_for_cmd(uint8_t cmd, uint32_t timeout) {
-    uint8_t buf = 0;
-    for (mp_uint_t start = mp_hal_ticks_ms(); ;) {
-        buf = nina_bsp_spi_read_byte();
-        if (buf == CMD_ERROR || buf == cmd
-            || ((mp_hal_ticks_ms() - start) >= timeout)) {
-            break;
-        }
-        mp_hal_delay_ms(1);
-    }
-
-    return (buf == cmd) ? 0 : -1;
-}
-
 static int nina_send_command(uint32_t cmd, uint32_t nargs, uint32_t width, nina_args_t *args) {
     int ret = -1;
     uint32_t length = 4; // 3 bytes header + 1 end byte
 
     debug_printf("nina_send_command (cmd 0x%x nargs %d width %d): ", cmd, nargs, width);
 
+    nina_bsp_spi_slave_deselect();
     if (nina_bsp_spi_slave_select(NINA_SSELECT_TIMEOUT) != 0) {
-        return -1;
+        goto error_out;
     }
 
     // Send command header.
@@ -265,29 +257,31 @@ error_out:
 
 static int nina_read_response(uint32_t cmd, uint32_t nvals, uint32_t width, nina_vals_t *vals) {
     int ret = -1;
+    uint32_t length = 3; // 3 bytes response header
+    uint8_t header[3] = {0, 0, 0};
 
     debug_printf("nina_read_response(cmd 0x%x nvals %d width %d): ", cmd, nvals, width);
 
     // Read reply
-    if (nina_bsp_spi_slave_select(NINA_SSELECT_TIMEOUT) != 0) {
-        return -1;
-    }
-
-    // Wait for CMD_START
-    if (nina_wait_for_cmd(CMD_START, NINA_RESPONSE_TIMEOUT) != 0) {
+    nina_bsp_spi_slave_deselect();
+    if (nina_bsp_spi_slave_select(0) != 0) {
         goto error_out;
     }
 
-    // Should return CMD + REPLY flag.
-    if (nina_bsp_spi_read_byte() != (cmd | CMD_REPLY)) {
+    if (nina_bsp_spi_transfer(NULL, header, sizeof(header)) != 0
+        || header[1] != (cmd | CMD_REPLY)) {
+        // Read padding.
+        uint8_t header_padding = nina_bsp_spi_read_byte();
+        (void)header_padding;
+        debug_printf("nina_read_response() hdr 0x%x 0x%x 0x%x 0x%x\n",
+            header[0], header[1], header[2], header_padding);
         goto error_out;
     }
 
     // Sanity check the number of returned values.
     // NOTE: This is to handle the special case for the scan command.
-    uint32_t rvals = nina_bsp_spi_read_byte();
-    if (nvals > rvals) {
-        nvals = rvals;
+    if (nvals > header[2]) {
+        nvals = header[2];
     }
 
     // Read return value(s).
@@ -310,9 +304,12 @@ static int nina_read_response(uint32_t cmd, uint32_t nvals, uint32_t width, nina
 
         // Set the size.
         *(vals[i].size) = bytes;
+        length += bytes + width;
     }
 
-    if (nina_bsp_spi_read_byte() != CMD_END) {
+    // Read CMD_END and padding.
+    uint8_t rspbuf_end[4];
+    if (nina_bsp_spi_transfer(NULL, rspbuf_end, ((length + 1) % 4) + 1) != 0 || rspbuf_end[0] != CMD_END) {
         goto error_out;
     }
 
@@ -328,21 +325,25 @@ error_out:
 static int nina_send_command_read_ack(uint32_t cmd, uint32_t nargs, uint32_t width, nina_args_t *args) {
     uint16_t size = 1;
     uint8_t rval = SPI_ERR;
+    nina_bsp_atomic_enter();
     if (nina_send_command(cmd, nargs, width, args) != 0 ||
         nina_read_response(cmd, 1, ARG_8BITS, NINA_VALS({&size, &rval})) != 0) {
-        return -1;
+        rval = -1;
     }
+    nina_bsp_atomic_exit();
     return rval;
 }
 
 static int nina_send_command_read_vals(uint32_t cmd, uint32_t nargs,
     uint32_t argsw, nina_args_t *args, uint32_t nvals, uint32_t valsw, nina_vals_t *vals) {
-
+    int ret = 0;
+    nina_bsp_atomic_enter();
     if (nina_send_command(cmd, nargs, argsw, args) != 0 ||
         nina_read_response(cmd, nvals, valsw, vals) != 0) {
-        return -1;
+        ret = -1;
     }
-    return 0;
+    nina_bsp_atomic_exit();
+    return ret;
 }
 
 static void nina_fix_mac_addr(uint8_t *mac) {
@@ -365,16 +366,6 @@ int nina_deinit(void) {
 
 static int nina_connection_status() {
     return nina_send_command_read_ack(NINA_CMD_CONN_STATUS, 0, ARG_8BITS, NULL);
-}
-
-static int nina_socket_status(uint8_t fd) {
-    return nina_send_command_read_ack(NINA_CMD_SOCKET_STATE,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)));
-}
-
-static int nina_server_socket_status(uint8_t fd) {
-    return nina_send_command_read_ack(NINA_CMD_SOCKET_STATE & 0xF9,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)));
 }
 
 int nina_connect(const char *ssid, uint8_t security, const char *key, uint16_t channel) {
@@ -469,19 +460,11 @@ int nina_disconnect(void) {
 }
 
 int nina_isconnected(void) {
-    int status = nina_connection_status();
-    if (status == -1) {
-        return -1;
-    }
-    return status == NINA_STATUS_CONNECTED;
+    return nina_connection_status() == NINA_STATUS_CONNECTED;
 }
 
 int nina_connected_sta(uint32_t *sta_ip) {
     return -1;
-}
-
-int nina_wait_for_sta(uint32_t *sta_ip, uint32_t timeout) {
-    return -MP_ETIMEDOUT;
 }
 
 int nina_ifconfig(nina_ifconfig_t *ifconfig, bool set) {
@@ -728,257 +711,213 @@ int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface) {
     return 0;
 }
 
-int nina_socket_socket(uint8_t type) {
+int nina_socket_socket(uint8_t type, uint8_t proto) {
     uint16_t size = 1;
     uint8_t sock = 0;
 
-    if (nina_send_command_read_vals(NINA_CMD_SOCKET_OPEN,
-        0, ARG_8BITS, NULL,
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_SOCKET,
+        2, ARG_8BITS, NINA_ARGS(ARG_BYTE(type), ARG_BYTE(proto)),
         1, ARG_8BITS, NINA_VALS({&size, &sock})) != 0) {
         return -1;
     }
-    return sock;
+    return (sock == NO_SOCKET_AVAIL) ? -1 : sock;
 }
 
 int nina_socket_close(int fd) {
-    if (fd > 0 && fd < 255) {
-        if (nina_send_command_read_ack(NINA_CMD_SOCKET_CLOSE,
-            1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd))) != SPI_ACK) {
-            return -1;
-        }
-        for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
-            if (nina_socket_status(fd) == SOCKET_STATE_CLOSED) {
-                break;
-            }
-            if ((mp_hal_ticks_ms() - start) >= 5000) {
-                return -MP_ETIMEDOUT;
-            }
-        }
+    if (nina_send_command_read_ack(NINA_CMD_SOCKET_CLOSE,
+        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd))) != SPI_ACK) {
+        return -1;
     }
     return 0;
 }
 
-int nina_socket_bind(int fd, uint8_t *ip, uint16_t port, int type) {
-    if (nina_send_command_read_ack(NINA_CMD_SOCKET_BIND,
-        3, ARG_8BITS,
-        NINA_ARGS(
-            ARG_SHORT(__REVSH(port)),
-            ARG_BYTE(fd),
-            ARG_BYTE(type))) != SPI_ACK) {
+int nina_socket_errno(int *_errno) {
+    uint16_t size = 1;
+    *_errno = 0;
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_ERRNO,
+        0, ARG_8BITS, NULL,
+        1, ARG_8BITS, NINA_VALS({&size, _errno})) != 0) {
         return -1;
     }
+    return 0;
+}
 
-    // Only TCP sockets' states should be checked.
-    if (type == NINA_SOCKET_TYPE_TCP &&
-        nina_server_socket_status(fd) != SOCKET_STATE_LISTEN) {
+int nina_socket_bind(int fd, uint8_t *ip, uint16_t port) {
+    if (nina_send_command_read_ack(NINA_CMD_SOCKET_BIND,
+        2, ARG_8BITS,
+        NINA_ARGS(
+            ARG_BYTE(fd),
+            ARG_SHORT(__REVSH(port)))) != SPI_ACK) {
         return -1;
     }
     return 0;
 }
 
 int nina_socket_listen(int fd, uint32_t backlog) {
-    return 0; // No listen ?
-}
-
-int nina_socket_avail(int fd, int type, uint16_t *data) {
-    uint16_t size = 2;
-
-    if (nina_send_command_read_vals(NINA_CMD_SOCKET_AVAIL,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
-        1, ARG_8BITS, NINA_VALS({&size, data})) != 0) {
+    if (nina_send_command_read_ack(NINA_CMD_SOCKET_LISTEN,
+        2, ARG_8BITS,
+        NINA_ARGS(
+            ARG_BYTE(fd),
+            ARG_BYTE(backlog))) != SPI_ACK) {
         return -1;
     }
-
-    // For TCP sockets in listen state, return 0 if there's no accepted socket.
-    if (*data == NO_SOCKET_AVAIL && type == NINA_SOCKET_TYPE_TCP
-        && nina_server_socket_status(fd) == SOCKET_STATE_LISTEN) {
-        *data = 0;
-    }
-
     return 0;
 }
 
-int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out, int32_t timeout) {
-    uint16_t sock = 0;
-
-    if (nina_server_socket_status(fd) != SOCKET_STATE_LISTEN) {
-        return -1;
-    }
-
-    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
-        if (nina_socket_avail(fd, NINA_SOCKET_TYPE_TCP, &sock) != 0) {
-            return -1;
-        }
-        if (sock != 0) {
-            break;
-        }
-        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return -MP_ETIMEDOUT;
-        }
-    }
-
+int nina_socket_accept(int fd, uint8_t *ip, uint16_t *port, int *fd_out) {
+    uint16_t fd_len = 1;
     uint16_t port_len = 2;
     uint16_t ip_len = NINA_IPV4_ADDR_LEN;
-    if (nina_send_command_read_vals(NINA_CMD_SOCKET_REMOTE_ADDR,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(sock)),
-        2, ARG_8BITS, NINA_VALS({&ip_len, ip}, {&port_len, port})) != 0) {
+    *fd_out = 0;
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_ACCEPT,
+        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
+        3, ARG_8BITS, NINA_VALS({&fd_len, fd_out}, {&ip_len, ip}, {&port_len, port})) != 0) {
         return -1;
     }
-    *fd_out = sock;
-    *port = __REVSH(*port);
-    return 0;
+    return (*fd_out == NO_SOCKET_AVAIL) ? -1 : 0;
 }
 
-int nina_socket_connect(int fd, uint8_t *ip, uint16_t port, int32_t timeout) {
+int nina_socket_connect(int fd, uint8_t *ip, uint16_t port) {
     if (nina_send_command_read_ack(NINA_CMD_SOCKET_CONNECT,
-        4, ARG_8BITS,
+        3, ARG_8BITS,
         NINA_ARGS(
-            ARG_WORD((*(uint32_t *)ip)),
-            ARG_SHORT(__REVSH(port)),
             ARG_BYTE(fd),
-            ARG_BYTE(NINA_SOCKET_TYPE_TCP))) != SPI_ACK) {
+            ARG_WORD((*(uint32_t *)ip)),
+            ARG_SHORT(__REVSH(port)))) != SPI_ACK) {
         return -1;
     }
-
-    for (mp_uint_t start = mp_hal_ticks_ms(); ; mp_hal_delay_ms(10)) {
-        int state = nina_socket_status(fd);
-        if (state == -1) {
-            return -1;
-        }
-
-        if (state == SOCKET_STATE_ESTABLISHED) {
-            break;
-        }
-
-        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return -MP_ETIMEDOUT;
-        }
-    }
-
     return 0;
 }
 
-int nina_socket_send(int fd, const uint8_t *buf, uint32_t len, int32_t timeout) {
+int nina_socket_send(int fd, const uint8_t *buf, uint32_t len) {
     uint16_t size = 2;
     uint16_t bytes = 0;
 
-    if (nina_socket_status(fd) != SOCKET_STATE_ESTABLISHED) {
-        return -MP_ENOTCONN;
-    }
-
-    if (nina_send_command_read_vals(NINA_CMD_TCP_SEND,
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_SEND,
         2, ARG_16BITS, NINA_ARGS(ARG_BYTE(fd), {len, buf}),
-        1, ARG_8BITS, NINA_VALS({&size, &bytes})) != 0 || bytes <= 0) {
+        1, ARG_8BITS, NINA_VALS({&size, &bytes})) != 0) {
         return -1;
     }
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); ;) {
-        int resp = nina_send_command_read_ack(NINA_CMD_TCP_ACK,
-            1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)));
+    // Only args sizes (not args themselves) are reversed in read_response().
+    bytes = __REVSH(bytes);
 
-        if (resp == -1) {
+    if (bytes == 0) {
+        int _errno = 0;
+        if (nina_socket_errno(&_errno) != 0 || _errno != 0) {
             return -1;
         }
-
-        if (resp == SPI_ACK) {
-            break;
-        }
-
-        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return -MP_ETIMEDOUT;
-        }
-        mp_hal_delay_ms(1);
     }
 
     return bytes;
 }
 
-int nina_socket_recv(int fd, uint8_t *buf, uint32_t len, int32_t timeout) {
-    uint16_t bytes = 0;
+int nina_socket_recv(int fd, uint8_t *buf, uint32_t len) {
+    uint16_t bytes = len;
 
-    if (nina_socket_status(fd) != SOCKET_STATE_ESTABLISHED) {
-        return -MP_ENOTCONN;
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_RECV,
+        2, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd), ARG_SHORT(bytes)),
+        1, ARG_16BITS, NINA_VALS({&bytes, buf})) != 0) {
+        return -1;
     }
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); bytes == 0; mp_hal_delay_ms(1)) {
-        bytes = len;
-        if (nina_send_command_read_vals(NINA_CMD_TCP_RECV,
-            2, ARG_16BITS, NINA_ARGS(ARG_BYTE(fd), ARG_SHORT(bytes)),
-            1, ARG_16BITS, NINA_VALS({&bytes, buf})) != 0) {
+    if (bytes == 0) {
+        int _errno = 0;
+        if (nina_socket_errno(&_errno) != 0 || _errno != 0) {
             return -1;
         }
-
-        if (bytes != 0) {
-            break;
-        }
-
-        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return -MP_ETIMEDOUT;
-        }
     }
+
     return bytes;
 }
 
 // Check from the upper layer if the socket is bound, if not then auto-bind it first.
-int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port, int32_t timeout) {
-    // TODO do we need to split the packet somewhere?
-    if (nina_send_command_read_ack(NINA_CMD_SOCKET_CONNECT,
-        4, ARG_8BITS,
-        NINA_ARGS(
-            ARG_WORD((*(uint32_t *)ip)),
-            ARG_SHORT(__REVSH(port)),
-            ARG_BYTE(fd),
-            ARG_BYTE(NINA_SOCKET_TYPE_UDP))) != SPI_ACK) {
+int nina_socket_sendto(int fd, const uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t port) {
+    uint16_t size = 2;
+    uint16_t bytes = 0;
+
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_SENDTO,
+        4, ARG_16BITS, NINA_ARGS(ARG_BYTE(fd), ARG_WORD((*(uint32_t *)ip)), ARG_SHORT(__REVSH(port)), {len, buf}),
+        1, ARG_8BITS, NINA_VALS({&size, &bytes})) != 0) {
         return -1;
     }
 
-    // Buffer length and socket number are passed as 16bits.
-    if (nina_send_command_read_ack(NINA_CMD_UDP_SEND,
-        2, ARG_16BITS, NINA_ARGS(ARG_BYTE(fd), {len, buf})) != SPI_ACK) {
-        return -1;
+    // Only args sizes (not args themselves) are reversed in read_response().
+    bytes = __REVSH(bytes);
+
+    if (bytes == 0) {
+        int _errno = 0;
+        if (nina_socket_errno(&_errno) != 0 || _errno != 0) {
+            return -1;
+        }
     }
 
-    if (nina_send_command_read_ack(NINA_CMD_UDP_ACK,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd))) != SPI_ACK) {
-        return -1;
-    }
-
-    return 0;
+    return bytes;
 }
 
 // Check from the upper layer if the socket is bound, if not then auto-bind it first.
-int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port, int32_t timeout) {
-    uint16_t bytes = 0;
+int nina_socket_recvfrom(int fd, uint8_t *buf, uint32_t len, uint8_t *ip, uint16_t *port) {
+    uint16_t bytes = len;
     uint16_t port_len = 2;
     uint16_t ip_len = NINA_IPV4_ADDR_LEN;
 
-    for (mp_uint_t start = mp_hal_ticks_ms(); bytes == 0; mp_hal_delay_ms(1)) {
-        bytes = len;
-        if (nina_send_command_read_vals(NINA_CMD_UDP_RECV,
-            2, ARG_16BITS, NINA_ARGS(ARG_BYTE(fd), ARG_SHORT(bytes)),
-            1, ARG_16BITS, NINA_VALS({&bytes, buf})) != 0) {
-            return -1;
-        }
-
-        if (bytes != 0) {
-            break;
-        }
-
-        if (timeout == 0 || (timeout > 0 && (mp_hal_ticks_ms() - start) >= timeout)) {
-            return -MP_ETIMEDOUT;
-        }
-    }
-    if (nina_send_command_read_vals(NINA_CMD_SOCKET_REMOTE_ADDR,
-        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
-        2, ARG_8BITS, NINA_VALS({&ip_len, ip}, {&port_len, port})) != 0) {
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_RECVFROM,
+        2, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd), ARG_SHORT(bytes)),
+        3, ARG_16BITS, NINA_VALS({&ip_len, ip}, {&port_len, port}, {&bytes, buf})) != 0) {
         return -1;
     }
 
+    if (bytes == 0) {
+        int _errno = 0;
+        if (nina_socket_errno(&_errno) != 0 || _errno != 0) {
+            return -1;
+        }
+    }
     return bytes;
 }
 
-int nina_socket_setsockopt(int fd, uint32_t level, uint32_t opt, const void *optval, uint32_t optlen) {
-    return -1;
+int nina_socket_ioctl(int fd, uint32_t cmd, void *argval, uint32_t arglen) {
+    uint16_t len = arglen;
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_IOCTL,
+        3, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd), ARG_WORD(cmd), {len, argval}),
+        1, ARG_8BITS, NINA_VALS({&len, argval})) != 0 || arglen == 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int nina_socket_poll(int fd, uint8_t *flags) {
+    uint16_t flags_len = 1;
+    if (nina_send_command_read_vals(NINA_CMD_SOCKET_POLL,
+        1, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd)),
+        1, ARG_8BITS, NINA_VALS({&flags_len, flags})) != 0) {
+        return -1;
+    }
+    if (*flags & 0x80) {
+        // lwip_select() failed.
+        return -1;
+    }
+    return 0;
+}
+
+int nina_socket_setsockopt(int fd, uint32_t level, uint32_t optname, const void *optval, uint16_t optlen) {
+    if (nina_send_command_read_ack(
+        NINA_CMD_SOCKET_SETSOCKOPT,
+        3, ARG_8BITS,
+        NINA_ARGS(ARG_BYTE(fd), ARG_WORD(optname), {optlen, optval})) != SPI_ACK) {
+        return -1;
+    }
+    return 0;
+}
+
+int nina_socket_getsockopt(int fd, uint32_t level, uint32_t optname, void *optval, uint16_t optlen) {
+    if (nina_send_command_read_vals(
+        NINA_CMD_SOCKET_GETSOCKOPT,
+        3, ARG_8BITS, NINA_ARGS(ARG_BYTE(fd), ARG_WORD(optname), ARG_BYTE(optlen)),
+        1, ARG_8BITS, NINA_VALS({&optlen, optval})) != 0 || optlen == 0) {
+        return -1;
+    }
+    return 0;
 }
 
 #endif // MICROPY_PY_NINAW10

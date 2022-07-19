@@ -97,8 +97,7 @@ STATIC mp_obj_t bluetooth_uuid_make_new(const mp_obj_type_t *type, size_t n_args
 
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    mp_obj_bluetooth_uuid_t *self = m_new_obj(mp_obj_bluetooth_uuid_t);
-    self->base.type = &mp_type_bluetooth_uuid;
+    mp_obj_bluetooth_uuid_t *self = mp_obj_malloc(mp_obj_bluetooth_uuid_t, &mp_type_bluetooth_uuid);
 
     if (mp_obj_is_int(all_args[0])) {
         self->type = MP_BLUETOOTH_UUID_TYPE_16;
@@ -1005,6 +1004,8 @@ const mp_obj_module_t mp_module_ubluetooth = {
     .globals = (mp_obj_dict_t *)&mp_module_bluetooth_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_ubluetooth, mp_module_ubluetooth);
+
 // Helpers
 
 #if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
@@ -1673,5 +1674,7 @@ int mp_bluetooth_gatts_db_resize(mp_gatts_db_t db, uint16_t handle, size_t len, 
     MICROPY_PY_BLUETOOTH_EXIT
     return entry ? 0 : MP_EINVAL;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t bluetooth);
 
 #endif // MICROPY_PY_BLUETOOTH

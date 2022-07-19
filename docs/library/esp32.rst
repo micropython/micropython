@@ -18,6 +18,11 @@ Functions
     Configure whether or not a touch will wake the device from sleep.
     *wake* should be a boolean value.
 
+.. function:: wake_on_ulp(wake)
+
+    Configure whether or not the Ultra-Low-Power co-processor can wake the
+    device from sleep. *wake* should be a boolean value.
+
 .. function:: wake_on_ext0(pin, level)
 
     Configure how EXT0 wakes the device from sleep.  *pin* can be ``None``
@@ -29,6 +34,11 @@ Functions
     Configure how EXT1 wakes the device from sleep.  *pins* can be ``None``
     or a tuple/list of valid Pin objects.  *level* should be ``esp32.WAKEUP_ALL_LOW``
     or ``esp32.WAKEUP_ANY_HIGH``.
+
+.. function:: gpio_deep_sleep_hold(enable)
+
+    Configure whether non-RTC GPIO pin configuration is retained during
+    deep-sleep mode for held pads. *enable* should be a boolean value.
 
 .. function:: raw_temperature()
 
@@ -68,7 +78,7 @@ Flash partitions
 This class gives access to the partitions in the device's flash memory and includes
 methods to enable over-the-air (OTA) updates.
 
-.. class:: Partition(id, block_size=4096)
+.. class:: Partition(id, block_size=4096, /)
 
     Create an object representing a partition.  *id* can be a string which is the label
     of the partition to retrieve, or one of the constants: ``BOOT`` or ``RUNNING``.

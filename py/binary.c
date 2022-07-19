@@ -334,7 +334,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
         #endif
         default:
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_type(val_in, &mp_type_int)) {
+            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
                 mp_obj_int_to_bytes_impl(val_in, struct_type == '>', size, p);
                 return;
             }
@@ -371,7 +371,7 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             break;
         default:
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-            if (mp_obj_is_type(val_in, &mp_type_int)) {
+            if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
                 size_t size = mp_binary_get_size('@', typecode, NULL);
                 mp_obj_int_to_bytes_impl(val_in, MP_ENDIANNESS_BIG,
                     size, (uint8_t *)p + index * size);

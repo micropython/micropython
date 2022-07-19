@@ -76,12 +76,12 @@ The :mod:`network` module::
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
-    wlan.connect('essid', 'password') # connect to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
-    ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
@@ -93,7 +93,7 @@ A useful function for connecting to your local WiFi network is::
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
-            wlan.connect('essid', 'password')
+            wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
         print('network config:', wlan.ifconfig())
@@ -160,12 +160,30 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_3) # set maximum drive strength
 
 Available Pins are from the following ranges (inclusive): 0-19, 21-23, 25-27, 32-39.
 These correspond to the actual GPIO pin numbers of ESP32 chip.  Note that many
 end-user boards use their own adhoc pin numbering (marked e.g. D0, D1, ...).
 For mapping between board logical pins and physical chip pins consult your board
 documentation.
+
+Four drive strengths are supported, using the ``drive`` keyword argument to the
+``Pin()`` constructor or ``Pin.init()`` method, with different corresponding
+safe maximum source/sink currents and approximate internal driver resistances:
+
+ - ``Pin.DRIVE_0``: 5mA / 130 ohm
+ - ``Pin.DRIVE_1``: 10mA / 60 ohm
+ - ``Pin.DRIVE_2``: 20mA / 30 ohm (default strength if not configured)
+ - ``Pin.DRIVE_3``: 40mA / 15 ohm
+
+The ``hold=`` keyword argument to ``Pin()`` and ``Pin.init()`` will enable the
+ESP32 "pad hold" feature. When set to ``True``, the pin configuration
+(direction, pull resistors and output value) will be held and any further
+changes (including changing the output level) will not be applied. Setting
+``hold=False`` will immediately apply any outstanding pin configuration changes
+and release the pin. Using ``hold=True`` while a pin is already held will apply
+any configuration changes and then immediately reapply the hold.
 
 Notes:
 
@@ -176,8 +194,7 @@ Notes:
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
 
-* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
-  consumption during deepsleep.
+* See :ref:`Deep_sleep_Mode` for a discussion of pin behaviour during sleep
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
@@ -498,6 +515,8 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
+.. _Deep_sleep_mode:
+
 Deep-sleep mode
 ---------------
 
@@ -517,15 +536,49 @@ Notes:
 * Calling ``deepsleep()`` without an argument will put the device to sleep
   indefinitely
 * A software reset does not change the reset cause
-* There may be some leakage current flowing through enabled internal pullups.
-  To further reduce power consumption it is possible to disable the internal pullups::
 
-    p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
+Some ESP32 pins (0, 2, 4, 12-15, 25-27, 32-39) are connected to the RTC during
+deep-sleep and can be used to wake the device with the ``wake_on_`` functions in
+the :mod:`esp32` module. The output-capable RTC pins (all except 34-39) will
+also retain their pull-up or pull-down resistor configuration when entering
+deep-sleep.
 
-  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
-  it is an output pin) via::
+If the pull resistors are not actively required during deep-sleep and are likely
+to cause current leakage (for example a pull-up resistor is connected to ground
+through a switch), then they should be disabled to save power before entering
+deep-sleep mode::
 
-    p1 = Pin(4, Pin.OUT, None)
+    from machine import Pin, deepsleep
+
+    # configure input RTC pin with pull-up on boot
+    pin = Pin(2, Pin.IN, Pin.PULL_UP)
+
+    # disable pull-up and put the device to sleep for 10 seconds
+    pin.init(pull=None)
+    machine.deepsleep(10000)
+
+Output-configured RTC pins will also retain their output direction and level in
+deep-sleep if pad hold is enabled with the ``hold=True`` argument to
+``Pin.init()``.
+
+Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
+Configuration of non-RTC pins - including output level - can be retained by
+enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep::
+
+    from machine import Pin, deepsleep
+    import esp32
+
+    opin = Pin(19, Pin.OUT, value=1, hold=True) # hold output level
+    ipin = Pin(21, Pin.IN, Pin.PULL_UP, hold=True) # hold pull-up
+
+    # enable pad hold in deep-sleep for non-RTC GPIO
+    esp32.gpio_deep_sleep_hold(True)
+
+    # put the device to sleep for 10 seconds
+    deepsleep(10000)
+
+The pin configuration - including the pad hold - will be retained on wake from
+sleep. See :ref:`Pins_and_GPIO` above for a further discussion of pad holding.
 
 SD card
 -------

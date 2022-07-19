@@ -5,6 +5,7 @@ CROSS = 0
 QSTR_DEFS = qstrdefsport.h
 
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 CC = emcc
 LD = emcc
@@ -29,7 +30,7 @@ SRC_C = \
 	mphalport.c \
 	modutime.c \
 
-SRC_QSTR += $(SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_SHARED)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED:.c=.o))

@@ -242,6 +242,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
                 goto cleanup;
             }
+            #ifdef MICROPY_EVENT_POLL_HOOK
+            MICROPY_EVENT_POLL_HOOK
+            #endif
         }
     }
 
@@ -418,4 +421,6 @@ const mp_obj_module_t mp_module_ussl = {
     .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
 };
 
-#endif // MICROPY_PY_USSL
+MP_REGISTER_MODULE(MP_QSTR_ussl, mp_module_ussl);
+
+#endif // MICROPY_PY_USSL && MICROPY_SSL_MBEDTLS

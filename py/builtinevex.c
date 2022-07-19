@@ -103,8 +103,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
 
-    mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
-    code->base.type = &mp_type_code;
+    mp_obj_code_t *code = mp_obj_malloc(mp_obj_code_t, &mp_type_code);
     code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
     return MP_OBJ_FROM_PTR(code);
 }

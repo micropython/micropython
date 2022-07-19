@@ -30,6 +30,7 @@ FROZEN_MANIFEST ?= boards/manifest.py
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx
 
@@ -90,7 +91,6 @@ SRC_C = \
 	uart.c \
 	esppwm.c \
 	espapa102.c \
-	modpyb.c \
 	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
@@ -102,7 +102,6 @@ SRC_C = \
 	modesp.c \
 	modnetwork.c \
 	modutime.c \
-	moduos.c \
 	ets_alt_task.c \
 	fatfs_port.c \
 	posix_helpers.c \
@@ -111,7 +110,6 @@ SRC_C = \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\
-	modlwip.c \
 	modonewire.c \
         )
 

@@ -65,7 +65,7 @@
 #define PORT_DHCP_SERVER (67)
 #define PORT_DHCP_CLIENT (68)
 
-#define DEFAULT_DNS MAKE_IP4(8, 8, 8, 8)
+#define DEFAULT_DNS MAKE_IP4(192, 168, 4, 1)
 #define DEFAULT_LEASE_TIME_S (24 * 60 * 60) // in seconds
 
 #define MAC_LEN (6)

@@ -29,63 +29,82 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "shared/timeutils/timeutils.h"
+#include "shared/runtime/interrupt_char.h"
 #include "extmod/misc.h"
 #include "ticks.h"
 #include "tusb.h"
 #include "fsl_snvs_lp.h"
-#include "fsl_ocotp.h"
+
+#ifndef MICROPY_HW_STDIN_BUFFER_LEN
+#define MICROPY_HW_STDIN_BUFFER_LEN 512
+#endif
 
 #include CPU_HEADER_H
 
-STATIC uint8_t stdin_ringbuf_array[260];
+STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
-#if MICROPY_KBD_EXCEPTION
+uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
-int mp_interrupt_char = -1;
-
-void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
-    (void)itf;
-    (void)wanted_char;
-    tud_cdc_read_char(); // discard interrupt char
-    mp_sched_keyboard_interrupt();
+void poll_cdc_interfaces(void) {
+    // any CDC interfaces left to poll?
+    if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
+        for (uint8_t itf = 0; itf < 8; ++itf) {
+            if (cdc_itf_pending & (1 << itf)) {
+                tud_cdc_rx_cb(itf);
+                if (!cdc_itf_pending) {
+                    break;
+                }
+            }
+        }
+    }
 }
 
-void mp_hal_set_interrupt_char(int c) {
-    mp_interrupt_char = c;
-    tud_cdc_set_wanted_char(c);
-}
 
-#endif
+void tud_cdc_rx_cb(uint8_t itf) {
+    // consume pending USB data immediately to free usb buffer and keep the endpoint from stalling.
+    // in case the ringbuffer is full, mark the CDC interface that need attention later on for polling
+    cdc_itf_pending &= ~(1 << itf);
+    for (uint32_t bytes_avail = tud_cdc_n_available(itf); bytes_avail > 0; --bytes_avail) {
+        if (ringbuf_free(&stdin_ringbuf)) {
+            int data_char = tud_cdc_read_char();
+            if (data_char == mp_interrupt_char) {
+                mp_sched_keyboard_interrupt();
+            } else {
+                ringbuf_put(&stdin_ringbuf, data_char);
+            }
+        } else {
+            cdc_itf_pending |= (1 << itf);
+            return;
+        }
+    }
+}
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    poll_cdc_interfaces();
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
-    if (tud_cdc_connected() && tud_cdc_available()) {
-        ret |= MP_STREAM_POLL_RD;
-    }
+    #if MICROPY_PY_OS_DUPTERM
+    ret |= mp_uos_dupterm_poll(poll_flags);
+    #endif
     return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
-        // TODO
-        // if (USARTx->USART.INTFLAG.bit.RXC) {
-        //     return USARTx->USART.DATA.bit.DATA;
-        // }
+        poll_cdc_interfaces();
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
         }
-        if (tud_cdc_connected() && tud_cdc_available()) {
-            uint8_t buf[1];
-            uint32_t count = tud_cdc_read(buf, sizeof(buf));
-            if (count) {
-                return buf[0];
-            }
+        #if MICROPY_PY_OS_DUPTERM
+        int dupterm_c = mp_uos_dupterm_rx_chr();
+        if (dupterm_c >= 0) {
+            return dupterm_c;
         }
+        #endif
         MICROPY_EVENT_POLL_HOOK
     }
 }
@@ -105,12 +124,9 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             i += n2;
         }
     }
+    #if MICROPY_PY_OS_DUPTERM
     mp_uos_dupterm_tx_strn(str, len);
-    // TODO
-    // while (len--) {
-    //     while (!(USARTx->USART.INTFLAG.bit.DRE)) { }
-    //     USARTx->USART.DATA.bit.DATA = *str++;
-    // }
+    #endif
 }
 
 uint64_t mp_hal_time_ns(void) {
@@ -124,9 +140,8 @@ uint64_t mp_hal_time_ns(void) {
 // MAC address
 
 void mp_hal_get_unique_id(uint8_t id[]) {
-    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
-    *(uint32_t *)&id[0] = OCOTP->CFG0;
-    *(uint32_t *)&id[4] = OCOTP->CFG1;
+    *(uint32_t *)id = OCOTP->CFG0;
+    *(uint32_t *)(id + 4) = OCOTP->CFG1;
 }
 
 // Generate a random locally administered MAC address (LAA)
@@ -135,12 +150,12 @@ void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]) {
     unsigned char id[8];
     mp_hal_get_unique_id(id);
 
-    uint32_t pt1 = *(uint32_t *)&id[0];
-    uint32_t pt2 = *(uint32_t *)&id[4];
+    uint32_t *pt1 = (uint32_t *)id;
+    uint32_t *pt2 = (uint32_t *)(id + 4);
 
     buf[0] = 0x02; // Locally Administered MAC
-    *(uint32_t *)&buf[1] = pt1 ^ (pt1 >> 8);
-    *(uint16_t *)&buf[4] = (uint16_t)(pt2 ^ pt2 >> 16);
+    *(uint32_t *)&buf[1] = *pt1 ^ (*pt1 >> 8);
+    *(uint16_t *)&buf[4] = (uint16_t)(*pt2 ^ *pt2 >> 16);
     buf[5] ^= (uint8_t)idx;
 }
 

@@ -71,9 +71,9 @@ Additional functions
     than *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
 
-    If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
+    If a timeout occurs, it cancels the task and raises ``uasyncio.TimeoutError``:
     this should be trapped by the caller.  The task receives
-    ``asyncio.CancelledError`` which may be ignored or trapped using ``try...except``
+    ``uasyncio.CancelledError`` which may be ignored or trapped using ``try...except``
     or ``try...finally`` to run cleanup code.
 
     Returns the return value of *awaitable*.
@@ -108,7 +108,7 @@ class Task
 
 .. method:: Task.cancel()
 
-    Cancel the task by injecting ``asyncio.CancelledError`` into it.  The task may
+    Cancel the task by injecting ``uasyncio.CancelledError`` into it.  The task may
     ignore this exception.  Cleanup code may be run by trapping it, or via
     ``try ... finally``.
 
@@ -148,7 +148,7 @@ class ThreadSafeFlag
 .. class:: ThreadSafeFlag()
 
     Create a new flag which can be used to synchronise a task with code running
-    outside the asyncio loop, such as other threads, IRQs, or scheduler
+    outside the uasyncio loop, such as other threads, IRQs, or scheduler
     callbacks.  Flags start in the cleared state.
 
 .. method:: ThreadSafeFlag.set()
@@ -237,9 +237,11 @@ TCP stream connections
 
     This is a coroutine.
 
-.. method:: Stream.read(n)
+.. method:: Stream.read(n=-1)
 
-    Read up to *n* bytes and return them.
+    Read up to *n* bytes and return them.  If *n* is not provided or -1 then read all
+    bytes until EOF.  The returned value will be an empty bytes object if EOF is
+    encountered before any bytes are read.
 
     This is a coroutine.
 

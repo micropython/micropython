@@ -29,6 +29,7 @@
 #include "py/mperrno.h"
 #include "extmod/machine_i2c.h"
 #include "modmachine.h"
+#include CLOCK_CONFIG_H
 
 #include "fsl_iomuxc.h"
 #include "fsl_lpi2c.h"
@@ -100,8 +101,6 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_DRIVE} },
     };
 
-    static bool clk_init = true;
-
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -113,8 +112,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
 
     // Get I2C Object.
-    machine_i2c_obj_t *self = m_new_obj(machine_i2c_obj_t);
-    self->base.type = &machine_i2c_type;
+    machine_i2c_obj_t *self = mp_obj_malloc(machine_i2c_obj_t, &machine_i2c_type);
     self->i2c_id = i2c_id;
     self->i2c_hw_id = i2c_index_table[i2c_id];  // the hw i2c number 1..n
     self->i2c_inst = i2c_base_ptr_table[self->i2c_hw_id];
@@ -124,20 +122,13 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         drive = DEFAULT_I2C_DRIVE;
     }
 
-    if (clk_init) {
-        clk_init = false;
-        // Set clock source for LPI2C
-        CLOCK_SetMux(kCLOCK_Lpi2cMux, LPI2C_CLOCK_SOURCE_SELECT); // USB1 PLL (480 MHz)
-        CLOCK_SetDiv(kCLOCK_Lpi2cDiv, LPI2C_CLOCK_SOURCE_DIVIDER);
-    }
-
     // Initialise the I2C peripheral if any arguments given, or it was not initialised previously.
     lpi2c_set_iomux(self->i2c_hw_id, drive);
     self->master_config = m_new_obj(lpi2c_master_config_t);
     LPI2C_MasterGetDefaultConfig(self->master_config);
     // Initialise the I2C peripheral.
     self->master_config->baudRate_Hz = args[ARG_freq].u_int;
-    LPI2C_MasterInit(self->i2c_inst, self->master_config, LPI2C_CLOCK_FREQUENCY);
+    LPI2C_MasterInit(self->i2c_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPI2C_CLK_ROOT);
 
     return MP_OBJ_FROM_PTR(self);
 }

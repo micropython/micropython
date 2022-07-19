@@ -103,6 +103,14 @@ function build_mimxrt_boards {
     build_boards modmimxrt.c $1 $2 bin hex
 }
 
+function build_nrf_boards {
+    build_boards nrfx_glue.h $1 $2 bin hex
+}
+
+function build_renesas_ra_boards {
+    build_boards ra_it.c $1 $2 hex
+}
+
 function build_rp2_boards {
     build_boards modrp2.c $1 $2 uf2
 }

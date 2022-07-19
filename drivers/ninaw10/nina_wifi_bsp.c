@@ -90,6 +90,20 @@ int nina_bsp_deinit(void) {
     return 0;
 }
 
+int nina_bsp_atomic_enter(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_lock();
+    #endif
+    return 0;
+}
+
+int nina_bsp_atomic_exit(void) {
+    #if MICROPY_ENABLE_SCHEDULER
+    mp_sched_unlock();
+    #endif
+    return 0;
+}
+
 int nina_bsp_read_irq(void) {
     return mp_hal_pin_read(MICROPY_HW_NINA_GPIO0);
 }
@@ -97,7 +111,7 @@ int nina_bsp_read_irq(void) {
 int nina_bsp_spi_slave_select(uint32_t timeout) {
     // Wait for ACK to go low.
     for (mp_uint_t start = mp_hal_ticks_ms(); mp_hal_pin_read(MICROPY_HW_NINA_ACK) == 1; mp_hal_delay_ms(1)) {
-        if ((mp_hal_ticks_ms() - start) >= timeout) {
+        if (timeout && ((mp_hal_ticks_ms() - start) >= timeout)) {
             return -1;
         }
     }
@@ -135,5 +149,9 @@ int nina_bsp_spi_transfer(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t size)
     #endif
     return 0;
 }
+
+MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
+MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);
+MP_REGISTER_ROOT_POINTER(struct _mp_obj_list_t *mp_wifi_sockpoll_list);
 
 #endif // MICROPY_PY_NETWORK_NINAW10

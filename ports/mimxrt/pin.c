@@ -99,7 +99,7 @@ uint32_t pin_generate_config(const uint32_t pull, const uint32_t mode, const uin
         if (!IS_GPIO_DRIVE(drive)) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
         }
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive >= PIN_DRIVE_POWER_4);
+        pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive >= PIN_DRIVE_4);
     }
 
     #else

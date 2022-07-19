@@ -5,6 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 # potato or lpc_serial
 UART ?= potato
@@ -40,6 +41,8 @@ SRC_C = \
 	shared/runtime/pyexec.c \
 	shared/runtime/stdout_helpers.c \
 	$(BUILD)/_frozen_mpy.c \
+
+SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))

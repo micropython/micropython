@@ -190,7 +190,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_POWER_3}},
+        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_3}},
         // TODO: Implement additional arguments
         /*
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
@@ -381,14 +381,14 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(PIN_PULL_DOWN_100K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(PIN_PULL_HOLD) },
 
-    { MP_ROM_QSTR(MP_QSTR_DRIVER_OFF), MP_ROM_INT(PIN_DRIVE_OFF) },
-    { MP_ROM_QSTR(MP_QSTR_POWER_0),    MP_ROM_INT(PIN_DRIVE_POWER_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
-    { MP_ROM_QSTR(MP_QSTR_POWER_1),    MP_ROM_INT(PIN_DRIVE_POWER_1) }, // R0/2
-    { MP_ROM_QSTR(MP_QSTR_POWER_2),    MP_ROM_INT(PIN_DRIVE_POWER_2) }, // R0/3
-    { MP_ROM_QSTR(MP_QSTR_POWER_3),    MP_ROM_INT(PIN_DRIVE_POWER_3) }, // R0/4
-    { MP_ROM_QSTR(MP_QSTR_POWER_4),    MP_ROM_INT(PIN_DRIVE_POWER_4) }, // R0/5
-    { MP_ROM_QSTR(MP_QSTR_POWER_5),    MP_ROM_INT(PIN_DRIVE_POWER_5) }, // R0/6
-    { MP_ROM_QSTR(MP_QSTR_POWER_6),    MP_ROM_INT(PIN_DRIVE_POWER_6) }, // R0/7
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_OFF),  MP_ROM_INT(PIN_DRIVE_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0),    MP_ROM_INT(PIN_DRIVE_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1),    MP_ROM_INT(PIN_DRIVE_1) }, // R0/2
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2),    MP_ROM_INT(PIN_DRIVE_2) }, // R0/3
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3),    MP_ROM_INT(PIN_DRIVE_3) }, // R0/4
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_4),    MP_ROM_INT(PIN_DRIVE_4) }, // R0/5
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_5),    MP_ROM_INT(PIN_DRIVE_5) }, // R0/6
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_6),    MP_ROM_INT(PIN_DRIVE_6) }, // R0/7
 
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(2) },
@@ -469,3 +469,5 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]);

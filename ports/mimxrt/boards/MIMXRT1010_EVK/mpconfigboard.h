@@ -44,3 +44,33 @@
 #define IOMUX_TABLE_I2C \
     { IOMUXC_GPIO_02_LPI2C1_SCL }, { IOMUXC_GPIO_01_LPI2C1_SDA }, \
     { IOMUXC_GPIO_10_LPI2C2_SCL }, { IOMUXC_GPIO_09_LPI2C2_SDA },
+
+#define MICROPY_PY_MACHINE_I2S (1)
+#define MICROPY_HW_I2S_NUM (1)
+#define I2S_CLOCK_MUX { 0, kCLOCK_Sai1Mux }
+#define I2S_CLOCK_PRE_DIV { 0, kCLOCK_Sai1PreDiv }
+#define I2S_CLOCK_DIV { 0, kCLOCK_Sai1Div }
+#define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir }
+#define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx }
+#define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx }
+#define I2S_WM8960_RX_MODE  (1)
+
+#define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
+    { \
+        .hw_id = _hwid, \
+        .fn = _fn, \
+        .mode = _mode, \
+        .name = MP_QSTR_##_pin, \
+        .iomux = {_iomux}, \
+    }
+
+#define I2S_GPIO_MAP \
+    { \
+        I2S_GPIO(1, MCK, TX, GPIO_08, IOMUXC_GPIO_08_SAI1_MCLK),  \
+        I2S_GPIO(1, SCK, RX, GPIO_01, IOMUXC_GPIO_01_SAI1_RX_BCLK),  \
+        I2S_GPIO(1, WS, RX, GPIO_02, IOMUXC_GPIO_02_SAI1_RX_SYNC),  \
+        I2S_GPIO(1, SD, RX, GPIO_03, IOMUXC_GPIO_03_SAI1_RX_DATA00),  \
+        I2S_GPIO(1, SCK, TX, GPIO_06, IOMUXC_GPIO_06_SAI1_TX_BCLK),  \
+        I2S_GPIO(1, WS, TX, GPIO_07, IOMUXC_GPIO_07_SAI1_TX_SYNC),  \
+        I2S_GPIO(1, SD, TX, GPIO_04, IOMUXC_GPIO_04_SAI1_TX_DATA00),  \
+    }

@@ -27,24 +27,16 @@ Compatibility is based on the following:
 * Version of the .mpy file: the version of the file must match the version
   supported by the system loading it.
 
-* Bytecode features used in the .mpy file: there are two bytecode features
-  which must match between the file and the system: unicode support and
-  inline caching of map lookups in the bytecode.
-
 * Small integer bits: the .mpy file will require a minimum number of bits in
   a small integer and the system loading it must support at least this many
   bits.
-
-* Qstr compression window size: the .mpy file will require a minimum window
-  size for qstr decompression and the system loading it must have a window
-  greater or equal to this size.
 
 * Native architecture: if the .mpy file contains native machine code then
   it will specify the architecture of that machine code and the system
   loading it must support execution of that architecture's code.
 
 If a MicroPython system supports importing .mpy files then the
-``sys.implementation.mpy`` field will exist and return an integer which
+``sys.implementation._mpy`` field will exist and return an integer which
 encodes the version (lower 8 bits), features and native architecture.
 
 Trying to import an .mpy file that fails one of the first four tests will
@@ -58,7 +50,7 @@ If importing an .mpy file fails then try the following:
   by executing::
 
     import sys
-    sys_mpy = sys.implementation.mpy
+    sys_mpy = sys.implementation._mpy
     arch = [None, 'x86', 'x64',
         'armv6', 'armv6m', 'armv7m', 'armv7em', 'armv7emsp', 'armv7emdp',
         'xtensa', 'xtensawin'][sys_mpy >> 10]
@@ -66,8 +58,6 @@ If importing an .mpy file fails then try the following:
     print('mpy flags:', end='')
     if arch:
         print(' -march=' + arch, end='')
-    if not sys_mpy & 0x200:
-        print(' -mno-unicode', end='')
     print()
 
 * Check the validity of the .mpy file by inspecting the first two bytes of
@@ -90,7 +80,8 @@ and .mpy version.
 =================== ============
 MicroPython release .mpy version
 =================== ============
-v1.12 and up        5
+v1.19 and up        6
+v1.12 - v1.18       5
 v1.11               4
 v1.9.3 - v1.10      3
 v1.9 - v1.9.2       2
@@ -103,6 +94,7 @@ MicroPython repository at which the .mpy version was changed.
 =================== ========================================
 .mpy version change Git commit
 =================== ========================================
+5 to 6              f2040bfc7ee033e48acef9f289790f3b4e6b74e5
 4 to 5              5716c5cf65e9b2cb46c2906f40302401bdd27517
 3 to 4              9a5f92ea72754c01cc03e5efcdfe94021120531e
 2 to 3              ff93fd4f50321c6190e1659b19e64fef3045a484
@@ -114,20 +106,30 @@ initial version 0   d8c834c95d506db979ec871417de90b7951edc30
 Binary encoding of .mpy files
 -----------------------------
 
-MicroPython .mpy files are a binary container format with code objects
-stored internally in a nested hierarchy.  To keep files small while still
+MicroPython .mpy files are a binary container format with code objects (bytecode
+and native machine code) stored internally in a nested hierarchy.  The code for
+the outer module is stored first, and then its children follow.  Each child may
+have further children, for example in the case of a class having methods, or a
+function defining a lambda or comprehension.  To keep files small while still
 providing a large range of possible values it uses the concept of a
 variably-encoded-unsigned-integer (vuint) in many places.  Similar to utf-8
 encoding, this encoding stores 7 bits per byte with the 8th bit (MSB) set
 if one or more bytes follow.  The bits of the unsigned integer are stored
 in the vuint in LSB form.
 
-The top-level of an .mpy file consists of two parts:
+The top-level of an .mpy file consists of three parts:
 
 * The header.
 
+* The global qstr and constant tables.
+
 * The raw-code for the outer scope of the module.
   This outer scope is executed when the .mpy file is imported.
+
+You can inspect the contents of a .mpy file by using ``mpy-tool.py``, for
+example (run from the root of the main MicroPython repository)::
+
+    $ ./tools/mpy-tool.py -xd myfile.mpy
 
 The header
 ~~~~~~~~~~
@@ -141,7 +143,26 @@ byte    value 0x4d (ASCII 'M')
 byte    .mpy version number
 byte    feature flags
 byte    number of bits in a small int
-vuint   size of qstr window
+======  ================================
+
+The global qstr and constant tables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An .mpy file contains a single qstr table, and a single constant object table.
+These are global to the .mpy file, they are referenced by all nested raw-code
+objects.  The qstr table maps internal qstr number (internal to the .mpy file)
+to the resolved qstr number of the runtime that the .mpy file is imported into.
+This links the .mpy file with the rest of the system that it executes within.
+The constant object table is populated with references to all constant objects
+that the .mpy file needs.
+
+======  ================================
+size    field
+======  ================================
+vuint   number of qstrs
+vuint   number of constant objects
+...     qstr data
+...     encoded constant objects
 ======  ================================
 
 Raw code elements
@@ -153,24 +174,21 @@ contents are:
 ======  ================================
 size    field
 ======  ================================
-vuint   type and size
+vuint   type, size and whether there are sub-raw-code elements
 ...     code (bytecode or machine code)
-vuint   number of constant objects
-vuint   number of sub-raw-code elements
-...     constant objects
+vuint   number of sub-raw-code elements (only if non-zero)
 ...     sub-raw-code elements
 ======  ================================
 
 The first vuint in a raw-code element encodes the type of code stored in this
-element (the two least-significant bits), and the decompressed length of the code
-(the amount of RAM to allocate for it).
+element (the two least-significant bits), whether this raw-code has any
+children (the third least-significant bit), and the length of the code that
+follows (the amount of RAM to allocate for it).
 
-Following the vuint comes the code itself.  In the case of bytecode it also contains
-compressed qstr values.
+Following the vuint comes the code itself.  Unless the code type is viper code
+with relocations, this code is constant data and does not need to be modified.
 
-Following the code comes a vuint counting the number of constant objects, and
-another vuint counting the number of sub-raw-code elements.
-
-The constant objects are then stored next.
+If this raw-code has any children (as indicated by a bit in the first vuint),
+following the code comes a vuint counting the number of sub-raw-code elements.
 
 Finally any sub-raw-code elements are stored, recursively.

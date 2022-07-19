@@ -100,9 +100,11 @@ class SDCard:
         if csd[0] & 0xC0 == 0x40:  # CSD version 2.0
             self.sectors = ((csd[8] << 8 | csd[9]) + 1) * 1024
         elif csd[0] & 0xC0 == 0x00:  # CSD version 1.0 (old, <=2GB)
-            c_size = csd[6] & 0b11 | csd[7] << 2 | (csd[8] & 0b11000000) << 4
-            c_size_mult = ((csd[9] & 0b11) << 1) | csd[10] >> 7
-            self.sectors = (c_size + 1) * (2 ** (c_size_mult + 2))
+            c_size = (csd[6] & 0b11) << 10 | csd[7] << 2 | csd[8] >> 6
+            c_size_mult = (csd[9] & 0b11) << 1 | csd[10] >> 7
+            read_bl_len = csd[5] & 0b1111
+            capacity = (c_size + 1) * (2 ** (c_size_mult + 2)) * (2**read_bl_len)
+            self.sectors = capacity // 512
         else:
             raise OSError("SD card CSD format not supported")
         # print('sectors', self.sectors)
@@ -118,6 +120,7 @@ class SDCard:
         for i in range(_CMD_TIMEOUT):
             self.cmd(55, 0, 0)
             if self.cmd(41, 0, 0) == 0:
+                # SDSC card, uses byte addressing in read/write/erase commands
                 self.cdv = 512
                 # print("[SDCard] v1 card")
                 return
@@ -129,8 +132,14 @@ class SDCard:
             self.cmd(58, 0, 0, 4)
             self.cmd(55, 0, 0)
             if self.cmd(41, 0x40000000, 0) == 0:
-                self.cmd(58, 0, 0, 4)
-                self.cdv = 1
+                self.cmd(58, 0, 0, -4)  # 4-byte response, negative means keep the first byte
+                ocr = self.tokenbuf[0]  # get first byte of response, which is OCR
+                if not ocr & 0x40:
+                    # SDSC card, uses byte addressing in read/write/erase commands
+                    self.cdv = 512
+                else:
+                    # SDHC/SDXC card, uses block addressing in read/write/erase commands
+                    self.cdv = 1
                 # print("[SDCard] v2 card")
                 return
         raise OSError("timeout waiting for v2 card")
@@ -157,6 +166,10 @@ class SDCard:
             response = self.tokenbuf[0]
             if not (response & 0x80):
                 # this could be a big-endian integer that we are getting here
+                # if final<0 then store the first byte to tokenbuf and discard the rest
+                if final < 0:
+                    self.spi.readinto(self.tokenbuf, 0xFF)
+                    final = -1 - final
                 for j in range(final):
                     self.spi.write(b"\xff")
                 if release:
@@ -281,3 +294,5 @@ class SDCard:
     def ioctl(self, op, arg):
         if op == 4:  # get number of blocks
             return self.sectors
+        if op == 5:  # get block size in bytes
+            return 512

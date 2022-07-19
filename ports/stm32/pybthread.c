@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "py/obj.h"
+#include "boardctrl.h"
 #include "gccollect.h"
 #include "irq.h"
 #include "pybthread.h"
@@ -42,8 +43,6 @@
 #define RAISE_IRQ_PRI() raise_irq_pri(IRQ_PRI_PENDSV)
 #define RESTORE_IRQ_PRI(state) restore_irq_pri(state)
 
-extern void __fatal_error(const char *);
-
 volatile int pyb_thread_enabled;
 pyb_thread_t *volatile pyb_thread_all;
 pyb_thread_t *volatile pyb_thread_cur;
@@ -57,7 +56,7 @@ static inline void pyb_thread_add_to_runable(pyb_thread_t *thread) {
 
 static inline void pyb_thread_remove_from_runable(pyb_thread_t *thread) {
     if (thread->run_next == thread) {
-        __fatal_error("deadlock");
+        MICROPY_BOARD_FATAL_ERROR("deadlock");
     }
     thread->run_prev->run_next = thread->run_next;
     thread->run_next->run_prev = thread->run_prev;
@@ -112,7 +111,7 @@ STATIC void pyb_thread_terminate(void) {
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     enable_irq(irq_state);
     // should not return
-    __fatal_error("could not terminate");
+    MICROPY_BOARD_FATAL_ERROR("could not terminate");
 }
 
 uint32_t pyb_thread_new(pyb_thread_t *thread, void *stack, size_t stack_len, void *entry, void *arg) {

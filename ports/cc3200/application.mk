@@ -166,7 +166,7 @@ OBJ += $(BUILD)/shared/runtime/gchelper_m3.o
 OBJ += $(BUILD)/pins.o
 
 # List of sources for qstr extraction
-SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C) $(APP_SHARED_SRC_C)
+SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C) $(APP_SHARED_SRC_C) $(APP_HAL_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=

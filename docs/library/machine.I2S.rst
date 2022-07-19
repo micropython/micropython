@@ -72,30 +72,34 @@ uasyncio::
    sreader = uasyncio.StreamReader(audio_in)
    num_read = await sreader.readinto(buf)
 
+Some codec devices like the WM8960 or SGTL5000 require separate initialization
+before they can operate with the I2S class.  For these, separate drivers are
+supplied, which also offer methods for controlling volume, audio processing and
+other things.  For these drivers see:
+
+- :ref:`wm8960`
+
 Constructor
 -----------
 
-.. class:: I2S(id, *, sck, ws, sd, mode, bits, format, rate, ibuf)
+.. class:: I2S(id, *, sck, ws, sd, mck=None, mode, bits, format, rate, ibuf)
 
    Construct an I2S object of the given id:
 
-   - ``id`` identifies a particular I2S bus.
-
-   ``id`` is board and port specific:
-
-     - PYBv1.0/v1.1: has one I2S bus with id=2.
-     - PYBD-SFxW: has two I2S buses with id=1 and id=2.
-     - ESP32: has two I2S buses with id=0 and id=1.
+   - ``id`` identifies a particular I2S bus; it is board and port specific
 
    Keyword-only parameters that are supported on all ports:
 
      - ``sck`` is a pin object for the serial clock line
      - ``ws`` is a pin object for the word select line
      - ``sd`` is a pin object for the serial data line
+     - ``mck`` is a pin object for the master clock line;
+       master clock frequency is sampling rate * 256
      - ``mode`` specifies receive or transmit
      - ``bits`` specifies sample size (bits), 16 or 32
      - ``format`` specifies channel format, STEREO or MONO
-     - ``rate`` specifies audio sampling rate (samples/s)
+     - ``rate`` specifies audio sampling rate (Hz);
+       this is the frequency of the ``ws`` signal
      - ``ibuf`` specifies internal buffer length (bytes)
 
    For all ports, DMA runs continuously in the background and allows user applications to perform other operations while

@@ -57,8 +57,7 @@ STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part, u
     if (part == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    esp32_partition_obj_t *self = m_new_obj(esp32_partition_obj_t);
-    self->base.type = &esp32_partition_type;
+    esp32_partition_obj_t *self = mp_obj_malloc(esp32_partition_obj_t, &esp32_partition_type);
     self->part = part;
     self->block_size = block_size;
     if (self->block_size < NATIVE_BLOCK_SIZE_BYTES) {

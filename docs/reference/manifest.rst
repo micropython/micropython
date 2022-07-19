@@ -57,7 +57,7 @@ Freezing source code
     directory then all files in that directory will be frozen.
 
     *opt* is the optimisation level to pass to mpy-cross when compiling ``.py``
-    to ``.mpy``.
+    to ``.mpy``.  These levels are described in :func:`micropython.opt_level`.
 
 .. function:: freeze_as_str(path)
 

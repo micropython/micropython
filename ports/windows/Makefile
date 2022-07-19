@@ -25,6 +25,7 @@ QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 INC += -I.
 INC += -I$(TOP)
@@ -33,7 +34,7 @@ INC += -I$(VARIANT_DIR)
 
 # compiler settings
 CFLAGS = $(INC) -Wall -Wpointer-arith -Wdouble-promotion -Werror -std=gnu99 -DUNIX -D__USE_MINGW_ANSI_STDIO=1 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
-LDFLAGS = $(LDFLAGS_MOD) -lm $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) -lm -lbcrypt $(LDFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -49,14 +50,12 @@ SRC_C = \
 	shared/runtime/gchelper_generic.c \
 	ports/unix/main.c \
 	ports/unix/input.c \
-	ports/unix/modos.c \
 	ports/unix/modmachine.c \
 	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
-	sleep.c \
 	fmode.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)

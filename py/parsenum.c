@@ -166,13 +166,24 @@ value_error:
     }
 }
 
+enum {
+    REAL_IMAG_STATE_START = 0,
+    REAL_IMAG_STATE_HAVE_REAL = 1,
+    REAL_IMAG_STATE_HAVE_IMAG = 2,
+};
+
 typedef enum {
     PARSE_DEC_IN_INTG,
     PARSE_DEC_IN_FRAC,
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
-mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex) {
+#if MICROPY_PY_BUILTINS_COMPLEX
+mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)
+#else
+mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lexer_t *lex)
+#endif
+{
     #if MICROPY_PY_BUILTINS_FLOAT
 
 // DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
@@ -196,7 +207,12 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
     const char *top = str + len;
     mp_float_t dec_val = 0;
     bool dec_neg = false;
-    bool imag = false;
+
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    unsigned int real_imag_state = REAL_IMAG_STATE_START;
+    mp_float_t dec_real = 0;
+parse_start:
+    #endif
 
     // skip leading space
     for (; str < top && unichar_isspace(*str); str++) {
@@ -280,9 +296,6 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
                 if (str == top) {
                     goto value_error;
                 }
-            } else if (allow_imag && (dig | 0x20) == 'j') {
-                imag = true;
-                break;
             } else if (dig == '_') {
                 continue;
             } else {
@@ -316,6 +329,19 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
         }
     }
 
+    if (allow_imag && str < top && (*str | 0x20) == 'j') {
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (str == str_val_start) {
+            // Convert "j" to "1j".
+            dec_val = 1;
+        }
+        ++str;
+        real_imag_state |= REAL_IMAG_STATE_HAVE_IMAG;
+        #else
+        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
+        #endif
+    }
+
     // negate value if needed
     if (dec_neg) {
         dec_val = -dec_val;
@@ -332,24 +358,36 @@ mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool
 
     // check we reached the end of the string
     if (str != top) {
+        #if MICROPY_PY_BUILTINS_COMPLEX
+        if (force_complex && real_imag_state == REAL_IMAG_STATE_START) {
+            // If we've only seen a real so far, keep parsing for the imaginary part.
+            dec_real = dec_val;
+            dec_val = 0;
+            real_imag_state |= REAL_IMAG_STATE_HAVE_REAL;
+            goto parse_start;
+        }
+        #endif
         goto value_error;
     }
 
-    // return the object
     #if MICROPY_PY_BUILTINS_COMPLEX
-    if (imag) {
-        return mp_obj_new_complex(0, dec_val);
+    if (real_imag_state == REAL_IMAG_STATE_HAVE_REAL) {
+        // We're on the second part, but didn't get the expected imaginary number.
+        goto value_error;
+    }
+    #endif
+
+    // return the object
+
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    if (real_imag_state != REAL_IMAG_STATE_START) {
+        return mp_obj_new_complex(dec_real, dec_val);
     } else if (force_complex) {
         return mp_obj_new_complex(dec_val, 0);
     }
-    #else
-    if (imag || force_complex) {
-        raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("complex values not supported")), lex);
-    }
     #endif
-    else {
-        return mp_obj_new_float(dec_val);
-    }
+
+    return mp_obj_new_float(dec_val);
 
 value_error:
     raise_exc(mp_obj_new_exception_msg(&mp_type_ValueError, MP_ERROR_TEXT("invalid syntax for number")), lex);

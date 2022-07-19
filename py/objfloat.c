@@ -137,7 +137,7 @@ STATIC mp_obj_t float_make_new(const mp_obj_type_t *type_in, size_t n_args, size
             mp_buffer_info_t bufinfo;
             if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
                 // a textual representation, parse it
-                return mp_parse_num_decimal(bufinfo.buf, bufinfo.len, false, false, NULL);
+                return mp_parse_num_float(bufinfo.buf, bufinfo.len, false, NULL);
             } else if (mp_obj_is_float(args[0])) {
                 // a float, just return it
                 return args[0];
@@ -195,7 +195,8 @@ const mp_obj_type_t mp_type_float = {
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D
 
 mp_obj_t mp_obj_new_float(mp_float_t value) {
-    mp_obj_float_t *o = m_new(mp_obj_float_t, 1);
+    // Don't use mp_obj_malloc here to avoid extra function call overhead.
+    mp_obj_float_t *o = m_new_obj(mp_obj_float_t);
     o->base.type = &mp_type_float;
     o->value = value;
     return MP_OBJ_FROM_PTR(o);

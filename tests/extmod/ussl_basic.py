@@ -7,40 +7,49 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+
+class TestSocket(io.IOBase):
+    def write(self, buf):
+        return len(buf)
+
+    def readinto(self, buf):
+        return 0
+
+    def ioctl(self, cmd, arg):
+        print("TestSocket.ioctl", cmd, arg)
+        return 0
+
+    def setblocking(self, value):
+        print("TestSocket.setblocking({})".format(value))
+
+
 # create in client mode
 try:
-    ss = ssl.wrap_socket(io.BytesIO(), server_hostname="test.example.com")
+    ss = ssl.wrap_socket(TestSocket(), server_hostname="test.example.com")
 except OSError as er:
-    print("wrap_socket:", repr(er))
+    print("OSError: client")
 
 # create in server mode (can use this object for further tests)
-socket = io.BytesIO()
-ss = ssl.wrap_socket(socket, server_side=1)
+ss = ssl.wrap_socket(TestSocket(), server_side=1, do_handshake=0)
 
 # print
 print(repr(ss)[:12])
 
-# setblocking() propagates call to the underlying stream object, and
-# io.BytesIO doesn't have setblocking() (in CPython too).
-# try:
-#    ss.setblocking(False)
-# except NotImplementedError:
-#    print('setblocking: NotImplementedError')
-# ss.setblocking(True)
+# setblocking() propagates call to the underlying stream object
+ss.setblocking(False)
+ss.setblocking(True)
 
 # write
-print(ss.write(b"aaaa"))
+try:
+    ss.write(b"aaaa")
+except OSError:
+    pass
 
 # read (underlying socket has no data)
-print(ss.read(8))
-
-# read (underlying socket has data, but it's bad data)
-socket.write(b"aaaaaaaaaaaaaaaa")
-socket.seek(0)
 try:
     ss.read(8)
-except OSError as er:
-    print("read:", repr(er))
+except OSError:
+    pass
 
 # close
 ss.close()
@@ -51,10 +60,10 @@ ss.close()
 try:
     ss.read(10)
 except OSError as er:
-    print("read:", repr(er))
+    print("OSError: read")
 
 # write on closed socket
 try:
     ss.write(b"aaaa")
 except OSError as er:
-    print("write:", repr(er))
+    print("OSError: write")

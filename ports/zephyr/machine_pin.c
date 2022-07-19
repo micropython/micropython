@@ -29,8 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/gpio.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/gpio.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -321,5 +321,8 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
+
+/* Linked list of pin irq objects */
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_list);
 
 #endif // MICROPY_PY_MACHINE

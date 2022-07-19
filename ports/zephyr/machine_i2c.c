@@ -29,8 +29,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/i2c.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/i2c.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -84,9 +84,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_NotImplementedError(MP_ERROR_TEXT("explicit choice of timeout is not implemented"));
     }
 
-    machine_hard_i2c_obj_t *self = m_new_obj(machine_hard_i2c_obj_t);
-
-    self->base.type = &machine_hard_i2c_type;
+    machine_hard_i2c_obj_t *self = mp_obj_malloc(machine_hard_i2c_obj_t, &machine_hard_i2c_type);
     self->dev = dev;
     self->restart = false;
 

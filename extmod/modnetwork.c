@@ -44,6 +44,11 @@
 #include "lwip/apps/mdns.h"
 #endif
 
+#if MICROPY_PY_NETWORK_CYW43 && MICROPY_PY_NETWORK_CYW43_USE_LIB_DRIVER
+// So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
+
 /// \module network - network configuration
 ///
 /// This module provides network drivers and routing configuration.
@@ -102,6 +107,8 @@ const mp_obj_module_t mp_module_network = {
     .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);
+
 /*******************************************************************************/
 // Implementations of network methods that can be used by any interface
 
@@ -155,5 +162,7 @@ mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_o
 }
 
 #endif
+
+MP_REGISTER_ROOT_POINTER(mp_obj_list_t mod_network_nic_list);
 
 #endif  // MICROPY_PY_NETWORK

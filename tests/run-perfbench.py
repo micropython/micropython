@@ -13,6 +13,8 @@ from glob import glob
 sys.path.append("../tools")
 import pyboard
 
+prepare_script_for_target = __import__("run-tests").prepare_script_for_target
+
 # Paths for host executables
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
@@ -85,9 +87,10 @@ def run_benchmark_on_target(target, script):
         return -1, -1, "CRASH: %r" % err
 
 
-def run_benchmarks(target, param_n, param_m, n_average, test_list):
+def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
     skip_complex = run_feature_test(target, "complex") != "complex"
     skip_native = run_feature_test(target, "native_check") != "native"
+    target_had_error = False
 
     for test_file in sorted(test_list):
         print(test_file + ": ", end="")
@@ -115,13 +118,22 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
             with open("%s.full" % test_file, "wb") as f:
                 f.write(test_script)
 
+        # Process script through mpy-cross if needed
+        if isinstance(target, pyboard.Pyboard) or args.via_mpy:
+            crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
+            if crash:
+                print("CRASH:", test_script_target)
+                continue
+        else:
+            test_script_target = test_script
+
         # Run MicroPython a given number of times
         times = []
         scores = []
         error = None
         result_out = None
         for _ in range(n_average):
-            time, norm, result = run_benchmark_on_target(target, test_script)
+            time, norm, result = run_benchmark_on_target(target, test_script_target)
             if time < 0 or norm < 0:
                 error = result
                 break
@@ -147,6 +159,8 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
                 error = "FAIL truth"
 
         if error is not None:
+            if not error.startswith("SKIP"):
+                target_had_error = True
             print(error)
         else:
             t_avg, t_sd = compute_stats(times)
@@ -162,6 +176,8 @@ def run_benchmarks(target, param_n, param_m, n_average, test_list):
 
         sys.stdout.flush()
 
+    return target_had_error
+
 
 def parse_output(filename):
     with open(filename) as f:
@@ -171,7 +187,7 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if l.find(": ") != -1 and l.find(": SKIP") == -1 and l.find("CRASH: ") == -1:
+            if ": " in l and ": SKIP" not in l and "CRASH: " not in l:
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -242,7 +258,11 @@ def main():
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
     )
-    cmd_parser.add_argument("N", nargs=1, help="N parameter (approximate target CPU frequency)")
+    cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
+    cmd_parser.add_argument(
+        "N", nargs=1, help="N parameter (approximate target CPU frequency in MHz)"
+    )
     cmd_parser.add_argument("M", nargs=1, help="M parameter (approximate target heap in kbytes)")
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
@@ -259,6 +279,8 @@ def main():
     n_average = int(args.average)
 
     if args.pyboard:
+        if not args.mpy_cross_flags:
+            args.mpy_cross_flags = "-march=armv7m"
         target = pyboard.Pyboard(args.device)
         target.enter_raw_repl()
     else:
@@ -279,11 +301,14 @@ def main():
 
     print("N={} M={} n_average={}".format(N, M, n_average))
 
-    run_benchmarks(target, N, M, n_average, tests)
+    target_had_error = run_benchmarks(args, target, N, M, n_average, tests)
 
     if isinstance(target, pyboard.Pyboard):
         target.exit_raw_repl()
         target.close()
+
+    if target_had_error:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

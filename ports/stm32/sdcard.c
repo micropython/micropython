@@ -200,6 +200,14 @@ void sdcard_init(void) {
     #endif
 }
 
+void sdcard_select_sd(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_SD;
+}
+
+void sdcard_select_mmc(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_MMC;
+}
+
 STATIC void sdmmc_msp_init(void) {
     // enable SDIO clock
     SDMMC_CLK_ENABLE();
@@ -249,7 +257,7 @@ bool sdcard_is_present(void) {
     }
     #endif
     #if defined(MICROPY_HW_SDCARD_DETECT_PIN)
-    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN->gpio, MICROPY_HW_SDCARD_DETECT_PIN->pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    return mp_hal_pin_read(MICROPY_HW_SDCARD_DETECT_PIN) == MICROPY_HW_SDCARD_DETECT_PRESENT;
     #else
     return true;
     #endif
@@ -680,6 +688,8 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 //
 // Expose the SD card or MMC as an object with the block protocol.
 
+#if !BUILDING_MBOOT
+
 // There are singleton SDCard/MMCard objects
 #if MICROPY_HW_ENABLE_SDCARD
 const mp_obj_base_t pyb_sdcard_obj = {&pyb_sdcard_type};
@@ -896,5 +906,7 @@ void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
     vfs->blockdev.u.ioctl[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_ioctl_obj);
     vfs->blockdev.u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
 }
+
+#endif // !BUILDING_MBOOT
 
 #endif // MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD

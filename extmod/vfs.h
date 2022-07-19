@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_VFS_H
 #define MICROPY_INCLUDED_EXTMOD_VFS_H
 
-#include "py/lexer.h"
+#include "py/builtin.h"
 #include "py/obj.h"
 
 // return values of mp_vfs_lookup_path

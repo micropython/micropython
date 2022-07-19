@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/stackctrl.h"
@@ -69,8 +70,7 @@ STATIC void mp_reset(void) {
         args[1] = MP_OBJ_NEW_SMALL_INT(115200);
         args[0] = pyb_uart_type.make_new(&pyb_uart_type, 2, 0, args);
         args[1] = MP_OBJ_NEW_SMALL_INT(1);
-        extern mp_obj_t os_dupterm(size_t n_args, const mp_obj_t *args);
-        os_dupterm(2, args);
+        mp_uos_dupterm_obj.fun.var(2, args);
     }
 
     #if MICROPY_MODULE_FROZEN

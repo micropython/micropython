@@ -9,6 +9,7 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(MPTOP)/py/py.mk
+include $(MPTOP)/extmod/extmod.mk
 
 INC +=  -I.
 INC +=  -I..
@@ -137,7 +138,6 @@ SRC_C = $(addprefix ports/unix/,\
 	unix_mphal.c \
 	input.c \
 	modmachine.c \
-	modos.c \
 	moduselect.c \
 	alloc.c \
 	coverage.c \
@@ -172,7 +172,7 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi axtls
+deplibs: libffi
 
 # install-exec-recursive & install-data-am targets are used to avoid building
 # docs and depending on makeinfo
@@ -182,13 +182,3 @@ libffi:
 	mkdir -p $(MPTOP)/lib/libffi/build_dir; cd $(MPTOP)/lib/libffi/build_dir; \
 	../configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out CC="$(CC)" CXX="$(CXX)" LD="$(LD)"; \
 	make install-exec-recursive; make -C include install-data-am
-
-axtls: $(MPTOP)/lib/axtls/README
-	cd $(MPTOP)/lib/axtls; cp config/upyconfig config/.config
-	cd $(MPTOP)/lib/axtls; make oldconfig -B
-	cd $(MPTOP)/lib/axtls; make clean
-	cd $(MPTOP)/lib/axtls; make all CC="$(CC)" LD="$(LD)"
-
-$(MPTOP)/lib/axtls/README:
-	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd $(MPTOP); git submodule update --init --recursive)

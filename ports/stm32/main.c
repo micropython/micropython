@@ -34,6 +34,7 @@
 #include "py/mphal.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/littlefs/lfs1.h"
 #include "lib/littlefs/lfs1_util.h"
@@ -65,7 +66,6 @@
 #include "gccollect.h"
 #include "factoryreset.h"
 #include "modmachine.h"
-#include "softtimer.h"
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
@@ -97,41 +97,21 @@ STATIC pyb_uart_obj_t pyb_uart_repl_obj;
 STATIC uint8_t pyb_uart_repl_rxbuf[MICROPY_HW_UART_REPL_RXBUF];
 #endif
 
-void NORETURN __fatal_error(const char *msg) {
-    for (volatile uint delay = 0; delay < 10000000; delay++) {
-    }
-    led_state(1, 1);
-    led_state(2, 1);
-    led_state(3, 1);
-    led_state(4, 1);
-    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
-    mp_hal_stdout_tx_strn(msg, strlen(msg));
-    for (uint i = 0;;) {
-        led_toggle(((i++) & 3) + 1);
-        for (volatile uint delay = 0; delay < 10000000; delay++) {
-        }
-        if (i >= 16) {
-            // to conserve power
-            __WFI();
-        }
-    }
-}
-
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught exception %p\n", val);
     mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(val));
-    __fatal_error("");
+    MICROPY_BOARD_FATAL_ERROR("");
 }
 
 void abort(void) {
-    __fatal_error("abort");
+    MICROPY_BOARD_FATAL_ERROR("abort");
 }
 
 #ifndef NDEBUG
 void MP_WEAK __assert_func(const char *file, int line, const char *func, const char *expr) {
     (void)func;
     printf("Assertion '%s' failed, at file %s:%d\n", expr, file, line);
-    __fatal_error("");
+    MICROPY_BOARD_FATAL_ERROR("");
 }
 #endif
 
@@ -233,7 +213,7 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 #if MICROPY_HW_SDCARD_MOUNT_AT_BOOT
 STATIC bool init_sdcard_fs(void) {
     bool first_part = true;
-    for (int part_num = 1; part_num <= 4; ++part_num) {
+    for (int part_num = 1; part_num <= 5; ++part_num) {
         // create vfs object
         fs_user_mount_t *vfs_fat = m_new_obj_maybe(fs_user_mount_t);
         mp_vfs_mount_t *vfs = m_new_obj_maybe(mp_vfs_mount_t);
@@ -241,7 +221,16 @@ STATIC bool init_sdcard_fs(void) {
             break;
         }
         vfs_fat->blockdev.flags = MP_BLOCKDEV_FLAG_FREE_OBJ;
-        sdcard_init_vfs(vfs_fat, part_num);
+        if (part_num == 5) {
+            if (!first_part) {
+                break;
+            }
+            // partitions 1-4 couldn't be mounted, so try FATFS auto-detect mode
+            // which will work if there is no partition table, just a filesystem
+            sdcard_init_vfs(vfs_fat, 0);
+        } else {
+            sdcard_init_vfs(vfs_fat, part_num);
+        }
 
         // try to mount the partition
         FRESULT res = f_mount(&vfs_fat->fatfs);
@@ -670,3 +659,5 @@ soft_reset_exit:
 
     goto soft_reset;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t pyb_config_main);

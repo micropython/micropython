@@ -9,6 +9,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 BOARD ?= mps2-an385
 
@@ -77,7 +78,6 @@ LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 SRC_COMMON_C = \
 	startup.c \
 	uart.c \
-	moduos.c \
 	modmachine.c \
 	shared/libc/string0.c \
 	shared/runtime/sys_stdio_mphal.c \

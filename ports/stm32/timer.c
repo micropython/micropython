@@ -236,7 +236,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     uint32_t source, clk_div;
     if (tim_id == 1 || (8 <= tim_id && tim_id <= 11)) {
         // TIM{1,8,9,10,11} are on APB2
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         source = HAL_RCC_GetPCLK1Freq();
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
         #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -252,7 +252,7 @@ uint32_t timer_get_source_freq(uint32_t tim_id) {
     } else {
         // TIM{2,3,4,5,6,7,12,13,14} are on APB1
         source = HAL_RCC_GetPCLK1Freq();
-        #if defined(STM32F0)
+        #if defined(STM32F0) || defined(STM32G0)
         clk_div = RCC->CFGR & RCC_CFGR_PPRE;
         #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
         clk_div = RCC->CDCFGR1 & RCC_CDCFGR2_CDPPRE1;
@@ -482,7 +482,7 @@ STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk)
     deadTimeConfig.DeadTime = compute_dtg_from_ticks(ticks);
     deadTimeConfig.BreakState = brk == BRK_OFF ? TIM_BREAK_DISABLE : TIM_BREAK_ENABLE;
     deadTimeConfig.BreakPolarity = brk == BRK_LOW ? TIM_BREAKPOLARITY_LOW : TIM_BREAKPOLARITY_HIGH;
-    #if defined(STM32F7) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     deadTimeConfig.BreakFilter = 0;
     deadTimeConfig.Break2State = TIM_BREAK_DISABLE;
     deadTimeConfig.Break2Polarity = TIM_BREAKPOLARITY_LOW;
@@ -804,7 +804,7 @@ STATIC mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, cons
 #define TIM_ENTRY(id, irq) [id - 1] = (uint32_t)TIM##id | irq
 STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM1)
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32G0)
     TIM_ENTRY(1, TIM1_BRK_UP_TRG_COM_IRQn),
     #elif defined(STM32F4) || defined(STM32F7)
     TIM_ENTRY(1, TIM1_UP_TIM10_IRQn),
@@ -816,10 +816,18 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #endif
     TIM_ENTRY(2, TIM2_IRQn),
     #if defined(TIM3)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(3, TIM3_TIM4_IRQn),
+    #else
     TIM_ENTRY(3, TIM3_IRQn),
     #endif
+    #endif
     #if defined(TIM4)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(3, TIM3_TIM4_IRQn),
+    #else
     TIM_ENTRY(4, TIM4_IRQn),
+    #endif
     #endif
     #if defined(TIM5)
     TIM_ENTRY(5, TIM5_IRQn),
@@ -827,12 +835,16 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM6)
     #if defined(STM32F412Zx)
     TIM_ENTRY(6, TIM6_IRQn),
+    #elif defined(STM32G0)
+    TIM_ENTRY(6, TIM6_DAC_LPTIM1_IRQn),
     #else
     TIM_ENTRY(6, TIM6_DAC_IRQn),
     #endif
     #endif
     #if defined(TIM7)
-    #if defined(STM32G4)
+    #if defined(STM32G0)
+    TIM_ENTRY(7, TIM7_LPTIM2_IRQn),
+    #elif defined(STM32G4)
     TIM_ENTRY(7, TIM7_DAC_IRQn),
     #else
     TIM_ENTRY(7, TIM7_IRQn),
@@ -860,27 +872,31 @@ STATIC const uint32_t tim_instance_table[MICROPY_HW_MAX_TIMER] = {
     #if defined(TIM13)
     TIM_ENTRY(13, TIM8_UP_TIM13_IRQn),
     #endif
-    #if defined(STM32F0)
+    #if defined(STM32F0) || defined(STM32G0)
     TIM_ENTRY(14, TIM14_IRQn),
     #elif defined(TIM14)
     TIM_ENTRY(14, TIM8_TRG_COM_TIM14_IRQn),
     #endif
     #if defined(TIM15)
-    #if defined(STM32F0) || defined(STM32H7)
+    #if defined(STM32F0) || defined(STM32G0) || defined(STM32H7)
     TIM_ENTRY(15, TIM15_IRQn),
     #else
     TIM_ENTRY(15, TIM1_BRK_TIM15_IRQn),
     #endif
     #endif
     #if defined(TIM16)
-    #if defined(STM32F0) || defined(STM32H7) || defined(STM32WL)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(16, TIM16_FDCAN_IT0_IRQn),
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(16, TIM16_IRQn),
     #else
     TIM_ENTRY(16, TIM1_UP_TIM16_IRQn),
     #endif
     #endif
     #if defined(TIM17)
-    #if defined(STM32F0) || defined(STM32H7) || defined(STM32WL)
+    #if defined(STM32G0B1xx) || defined(STM32G0C1xx)
+    TIM_ENTRY(17, TIM17_FDCAN_IT1_IRQn),
+    #elif defined(STM32F0) || defined(STM32G0) || defined(STM32H7) || defined(STM32WL)
     TIM_ENTRY(17, TIM17_IRQn),
     #else
     TIM_ENTRY(17, TIM1_TRG_COM_TIM17_IRQn),
@@ -1668,3 +1684,5 @@ void timer_irq_handler(uint tim_id) {
         }
     }
 }
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_timer_obj_t *pyb_timer_obj_all[MICROPY_HW_MAX_TIMER]);

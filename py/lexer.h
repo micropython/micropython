@@ -189,24 +189,15 @@ typedef struct _mp_lexer_t {
 mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader);
 mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len);
 
-void mp_lexer_free(mp_lexer_t *lex);
-void mp_lexer_to_next(mp_lexer_t *lex);
-
-/******************************************************************/
-// platform specific import function; must be implemented for a specific port
-// TODO tidy up, rename, or put elsewhere
-
-typedef enum {
-    MP_IMPORT_STAT_NO_EXIST,
-    MP_IMPORT_STAT_DIR,
-    MP_IMPORT_STAT_FILE,
-} mp_import_stat_t;
-
-mp_import_stat_t mp_import_stat(const char *path);
+// If MICROPY_READER_POSIX or MICROPY_READER_VFS aren't enabled then
+// this function must be implemented by the port.
 mp_lexer_t *mp_lexer_new_from_file(const char *filename);
 
 #if MICROPY_HELPER_LEXER_UNIX
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);
 #endif
+
+void mp_lexer_free(mp_lexer_t *lex);
+void mp_lexer_to_next(mp_lexer_t *lex);
 
 #endif // MICROPY_INCLUDED_PY_LEXER_H

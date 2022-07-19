@@ -44,6 +44,7 @@ endif # USE_FROZEN
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
 # If you set USE_ARDUINO_TOOLCHAIN=1 then this makefile will attempt to use
 # the toolchain that comes with Teensyduino

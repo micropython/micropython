@@ -78,6 +78,14 @@ STATIC void closure_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_
 }
 #endif
 
+#if MICROPY_PY_FUNCTION_ATTRS
+STATIC void mp_obj_closure_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    // forward to self_in->fun
+    mp_obj_closure_t *o = MP_OBJ_TO_PTR(self_in);
+    mp_load_method_maybe(o->fun, attr, dest);
+}
+#endif
+
 const mp_obj_type_t mp_type_closure = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF,
@@ -86,11 +94,13 @@ const mp_obj_type_t mp_type_closure = {
     .print = closure_print,
     #endif
     .call = closure_call,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_closure_attr,
+    #endif
 };
 
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed_over, const mp_obj_t *closed) {
-    mp_obj_closure_t *o = m_new_obj_var(mp_obj_closure_t, mp_obj_t, n_closed_over);
-    o->base.type = &mp_type_closure;
+    mp_obj_closure_t *o = mp_obj_malloc_var(mp_obj_closure_t, mp_obj_t, n_closed_over, &mp_type_closure);
     o->fun = fun;
     o->n_closed = n_closed_over;
     memcpy(o->closed, closed, n_closed_over * sizeof(mp_obj_t));

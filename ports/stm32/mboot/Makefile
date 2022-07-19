@@ -110,6 +110,8 @@ SRC_C += \
 	fsload.c \
 	gzstream.c \
 	pack.c \
+	sdcard.c \
+	ui.c \
 	vfs_fat.c \
 	vfs_lfs.c \
 	drivers/bus/softspi.c \
@@ -142,6 +144,7 @@ endif
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_cortex.c \
+	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
@@ -150,6 +153,14 @@ SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_rcc_ex.c \
 	ll_usb.c \
 	)
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
+SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_mmc.c \
+	hal_sd.c \
+	ll_sdmmc.c \
+	)
+endif
 
 SRC_USBDEV += $(addprefix ports/stm32/$(USBDEV_DIR)/,\
 	core/src/usbd_core.c \
@@ -202,6 +213,7 @@ PREFIX_FILE = ../boards/stm32f4xx_prefix.c
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 HEADER_BUILD = $(BUILD)/genhdr
 GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
+GEN_ROOT_POINTERS = $(HEADER_BUILD)/root_pointers.h
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
@@ -209,12 +221,15 @@ GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
 GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
-$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_PINS_AF_DEFS)
+$(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS)
 
 $(HEADER_BUILD):
 	$(MKDIR) -p $(BUILD)/genhdr
 
 $(GEN_QSTRDEFS_GENERATED): | $(HEADER_BUILD)
+	$(Q)echo "// empty" > $@
+
+$(GEN_ROOT_POINTERS): | $(HEADER_BUILD)
 	$(Q)echo "// empty" > $@
 
 $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)

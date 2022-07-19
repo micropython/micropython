@@ -78,7 +78,7 @@
 // Location in RAM of bootloader state (just after the top of the stack).
 // STM32H7 has ECC and writes to RAM must be 64-bit so they are fully committed
 // to actual SRAM before a system reset occurs.
-#define BL_STATE_PTR                ((uint64_t *)&_estack)
+#define BL_STATE_PTR                ((uint64_t *)&_bl_state)
 #define BL_STATE_KEY                (0x5a5)
 #define BL_STATE_KEY_MASK           (0xfff)
 #define BL_STATE_KEY_SHIFT          (32)
@@ -87,7 +87,7 @@
 #define BL_STATE_GET_REG(s)         ((s) & 0xffffffff)
 #define BL_STATE_GET_KEY(s)         (((s) >> BL_STATE_KEY_SHIFT) & BL_STATE_KEY_MASK)
 #define BL_STATE_GET_ADDR(s)        (((s) >> BL_STATE_KEY_SHIFT) & ~BL_STATE_KEY_MASK)
-extern uint64_t _estack[];
+extern uint64_t _bl_state[];
 #endif
 
 static inline void powerctrl_disable_hsi_if_unused(void) {
@@ -143,7 +143,7 @@ void powerctrl_check_enter_bootloader(void) {
     if (BL_STATE_GET_KEY(bl_state) == BL_STATE_KEY && (RCC->RCC_SR & RCC_SR_SFTRSTF)) {
         // Reset by NVIC_SystemReset with bootloader data set -> branch to bootloader
         RCC->RCC_SR = RCC_SR_RMVF;
-        #if defined(STM32F0) || defined(STM32F4) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
+        #if defined(STM32F0) || defined(STM32F4) || defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)
         __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
         #endif
         branch_to_bootloader(BL_STATE_GET_REG(bl_state), BL_STATE_GET_ADDR(bl_state));
@@ -286,7 +286,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #endif
 
-#if !defined(STM32F0) && !defined(STM32L0) && !defined(STM32L4)
+#if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L4)
 
 STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
@@ -378,14 +378,17 @@ STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
     #endif
 }
 
-#if defined(STM32F4) || defined(STM32F7) || defined(STM32G4) || defined(STM32H7)
+#if defined(STM32F4) || defined(STM32F7) || defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
 
 int powerctrl_set_sysclk(uint32_t sysclk, uint32_t ahb, uint32_t apb1, uint32_t apb2) {
     // Return straightaway if the clocks are already at the desired frequency
     if (sysclk == HAL_RCC_GetSysClockFreq()
         && ahb == HAL_RCC_GetHCLKFreq()
         && apb1 == HAL_RCC_GetPCLK1Freq()
-        && apb2 == HAL_RCC_GetPCLK2Freq()) {
+        #if !defined(STM32G0)
+        && apb2 == HAL_RCC_GetPCLK2Freq()
+        #endif
+        ) {
         return 0;
     }
 
@@ -428,7 +431,11 @@ set_clk:
 
     // Desired system clock source is in sysclk_source
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
+    #if defined(STM32G0) || defined(STM32G4)
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_ALL;
+    #else
     RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+    #endif
     if (sysclk_source == RCC_SYSCLKSOURCE_PLLCLK) {
         // Set HSE as system clock source to allow modification of the PLL configuration
         // We then change to PLL after re-configuring PLL
@@ -449,7 +456,9 @@ set_clk:
     ahb = sysclk >> AHBPrescTable[RCC_ClkInitStruct.AHBCLKDivider >> RCC_CFGR_HPRE_Pos];
     #endif
     RCC_ClkInitStruct.APB1CLKDivider = calc_apb1_div(ahb / apb1);
+    #if !defined(STM32G0)
     RCC_ClkInitStruct.APB2CLKDivider = calc_apb2_div(ahb / apb2);
+    #endif
     #if defined(STM32H7)
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.APB3CLKDivider = MICROPY_HW_CLK_APB3_DIV;
@@ -676,10 +685,17 @@ void powerctrl_enter_stop_mode(void) {
     // executed until after the clocks are reconfigured
     uint32_t irq_state = disable_irq();
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || \
+    defined(STM32F427xx) || defined(STM32F437xx) || \
+    defined(STM32F429xx) || defined(STM32F439xx) || \
+    defined(STM32WB55xx) || defined(STM32WB35xx)
     // Disable SysTick Interrupt
     // Note: This seems to be required at least on the H7 REV Y,
     // otherwise the MCU will leave stop mode immediately on entry.
+    // Note: According to ST Errata ES0206 Rev 18, Section 2.2.1 this is needed
+    // for STM32F427xx, STM32F437xx, STM32F429xx and STM32F439xx
+    // Note: According to ST Errata ES0394 Rev 11, Section 2.2.17 this is needed
+    // for STM32WB55xx and STM32WB35xx
     SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
     #endif
 
@@ -692,7 +708,7 @@ void powerctrl_enter_stop_mode(void) {
     __HAL_RCC_WAKEUPSTOP_CLK_CONFIG(RCC_STOP_WAKEUPCLOCK_MSI);
     #endif
 
-    #if !defined(STM32F0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
+    #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32G4) && !defined(STM32L0) && !defined(STM32L4) && !defined(STM32WB) && !defined(STM32WL)
     // takes longer to wake but reduces stop current
     HAL_PWREx_EnableFlashPowerDown();
     #endif
@@ -771,7 +787,7 @@ void powerctrl_enter_stop_mode(void) {
     #if defined(STM32H7)
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_CFGR_SWS_PLL1) {
     }
-    #elif defined(STM32WB) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32WB) || defined(STM32WL)
     while (__HAL_RCC_GET_SYSCLK_SOURCE() != RCC_SYSCLKSOURCE_STATUS_PLLCLK) {
     }
     #else
@@ -840,7 +856,10 @@ void powerctrl_enter_stop_mode(void) {
     MICROPY_BOARD_LEAVE_STOP
     #endif
 
-    #if defined(STM32H7)
+    #if defined(STM32H7) || \
+    defined(STM32F427xx) || defined(STM32F437xx) || \
+    defined(STM32F429xx) || defined(STM32F439xx) || \
+    defined(STM32WB55xx) || defined(STM32WB35xx)
     // Enable SysTick Interrupt
     SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
     #endif
@@ -867,7 +886,7 @@ void powerctrl_enter_standby_mode(void) {
     #if defined(STM32F0) || defined(STM32L0)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_ISR_ALRAF | RTC_ISR_WUTF | RTC_ISR_TSF)
-    #elif defined(STM32G4) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     #define CR_BITS (RTC_CR_ALRAIE | RTC_CR_ALRBIE | RTC_CR_WUTIE | RTC_CR_TSIE)
     #define ISR_BITS (RTC_MISR_ALRAMF | RTC_MISR_ALRBMF | RTC_MISR_WUTMF | RTC_MISR_TSMF)
     #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -891,7 +910,7 @@ void powerctrl_enter_standby_mode(void) {
     // clear RTC wake-up flags
     #if defined(SR_BITS)
     RTC->SR &= ~SR_BITS;
-    #elif defined(STM32G4) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32WL)
     RTC->MISR &= ~ISR_BITS;
     #else
     RTC->ISR &= ~ISR_BITS;
@@ -909,7 +928,7 @@ void powerctrl_enter_standby_mode(void) {
     #elif defined(STM32H7)
     EXTI_D1->PR1 = 0x3fffff;
     PWR->WKUPCR |= PWR_WAKEUP_FLAG1 | PWR_WAKEUP_FLAG2 | PWR_WAKEUP_FLAG3 | PWR_WAKEUP_FLAG4 | PWR_WAKEUP_FLAG5 | PWR_WAKEUP_FLAG6;
-    #elif defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L4) || defined(STM32WB)
     // clear all wake-up flags
     PWR->SCR |= PWR_SCR_CWUF5 | PWR_SCR_CWUF4 | PWR_SCR_CWUF3 | PWR_SCR_CWUF2 | PWR_SCR_CWUF1;
     // TODO

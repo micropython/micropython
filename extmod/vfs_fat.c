@@ -66,8 +66,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // create new object
-    fs_user_mount_t *vfs = m_new_obj(fs_user_mount_t);
-    vfs->base.type = type;
+    fs_user_mount_t *vfs = mp_obj_malloc(fs_user_mount_t, type);
     vfs->fatfs.drv = vfs;
 
     // Initialise underlying block device
@@ -177,8 +176,7 @@ STATIC mp_obj_t fat_vfs_ilistdir_func(size_t n_args, const mp_obj_t *args) {
     }
 
     // Create a new iterator object to list the dir
-    mp_vfs_fat_ilistdir_it_t *iter = m_new_obj(mp_vfs_fat_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter;
+    mp_vfs_fat_ilistdir_it_t *iter = mp_obj_malloc(mp_vfs_fat_ilistdir_it_t, &mp_type_polymorph_iter);
     iter->iternext = mp_vfs_fat_ilistdir_it_iternext;
     iter->is_str = is_str_type;
     FRESULT res = f_opendir(&self->fatfs, &iter->dir, path);

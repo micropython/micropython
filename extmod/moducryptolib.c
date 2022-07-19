@@ -228,8 +228,7 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
             mp_raise_ValueError(MP_ERROR_TEXT("mode"));
     }
 
-    mp_obj_aes_t *o = m_new_obj_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode));
-    o->base.type = type;
+    mp_obj_aes_t *o = mp_obj_malloc_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode), type);
 
     o->block_mode = block_mode;
     o->key_type = AES_KEYTYPE_NONE;
@@ -374,5 +373,7 @@ const mp_obj_module_t mp_module_ucryptolib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_ucryptolib_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_ucryptolib, mp_module_ucryptolib);
 
 #endif // MICROPY_PY_UCRYPTOLIB

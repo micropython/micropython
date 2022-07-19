@@ -74,7 +74,7 @@ gpio pins.
 Constructors
 ------------
 
-.. class:: pyb.Pin(id, ...)
+.. class:: Pin(id, ...)
 
    Create a new Pin object associated with the id.  If additional arguments are given,
    they are used to initialise the pin.  See :meth:`pin.init`.

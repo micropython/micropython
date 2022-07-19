@@ -37,7 +37,7 @@
 #include "fsl_clock.h"
 #include "fsl_lpuart.h"
 
-#include "clock_config.h"
+#include CLOCK_CONFIG_H
 #include "modmachine.h"
 
 
@@ -52,7 +52,7 @@ void board_init(void) {
     CLOCK_EnableClock(kCLOCK_Iomuxc);
 
     // ------------- SDRAM ------------ //
-    #ifdef MICROPY_HW_SDRAM_AVAIL
+    #if MICROPY_HW_SDRAM_AVAIL
     mimxrt_sdram_init();
     #endif
 
@@ -96,6 +96,12 @@ void board_init(void) {
     #if MICROPY_PY_MACHINE_SDCARD
     machine_sdcard_init0();
     #endif
+
+    #if MICROPY_PY_MACHINE_I2S
+    machine_i2s_init0();
+    #endif
+    // RTC
+    machine_rtc_start();
 }
 
 void USB_OTG1_IRQHandler(void) {
