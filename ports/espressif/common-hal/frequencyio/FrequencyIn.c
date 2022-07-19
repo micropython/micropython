@@ -55,15 +55,29 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
 
     // reset interrupt
     timg_dev_t *device = self->timer.group ? &(TIMERG1) : &(TIMERG0);
+
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    if (self->timer.idx) {
+        device->int_clr_timers.t1 = 1;
+    } else {
+        device->int_clr_timers.t0 = 1;
+    }
+    #else
     if (self->timer.idx) {
         device->int_clr_timers.t1_int_clr = 1;
     } else {
         device->int_clr_timers.t0_int_clr = 1;
     }
-    #ifdef CONFIG_IDF_TARGET_ESP32S2
+    #endif
+
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    device->hw_timer[self->timer.idx].config.alarm_en = 1;
+    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C2)
     device->hw_timer[self->timer.idx].config.tx_alarm_en = 1;
     #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     device->hw_timer[self->timer.idx].config.tn_alarm_en = 1;
+    #else
+    #error No known CONFIG_IDF_TARGET_xxx found
     #endif
 }
 

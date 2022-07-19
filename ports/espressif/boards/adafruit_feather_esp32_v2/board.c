@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,12 +24,26 @@
  * THE SOFTWARE.
  */
 
-
-#ifndef MICROPY_INCLUDED_ESPRESSIF_MODULES_MODULE_H
-#define MICROPY_INCLUDED_ESPRESSIF_MODULES_MODULE_H
-
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-void never_reset_module_internal_pins(void);
+void board_init(void) {
+    reset_board();
+}
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_MODULES_MODULE_H
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+void reset_board(void) {
+    // Turn on NeoPixel and I2C power by default.
+    gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(2, true);
+}
+
+void board_deinit(void) {
+}

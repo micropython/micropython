@@ -311,7 +311,7 @@ uint32_t common_hal_busio_uart_rx_characters_available(busio_uart_obj_t *self) {
     // The UART only interrupts after a threshold so make sure to copy anything
     // out of its FIFO before measuring how many bytes we've received.
     _copy_into_ringbuf(&self->ringbuf, self->uart);
-    irq_set_enabled(self->uart_irq_id, false);
+    irq_set_enabled(self->uart_irq_id, true);
     return ringbuf_num_filled(&self->ringbuf);
 }
 

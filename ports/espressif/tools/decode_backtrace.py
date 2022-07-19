@@ -18,7 +18,7 @@ while True:
         addresses = addresses[len("Backtrace:") :]
     addresses = addresses.strip().split()
     addresses = [address.split(":")[0] for address in addresses]
-    print("got", addresses)
     subprocess.run(
-        ["xtensa-esp32s2-elf-addr2line", "-e", "build-{}/firmware.elf".format(board)] + addresses
+        ["xtensa-esp32s2-elf-addr2line", "-aipfe", "build-{}/firmware.elf".format(board)]
+        + addresses
     )

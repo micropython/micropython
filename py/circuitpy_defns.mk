@@ -207,6 +207,9 @@ endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
 endif
+ifeq ($(CIRCUITPY_HASHLIB),1)
+SRC_PATTERNS += hashlib/%
+endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
 endif
@@ -419,6 +422,8 @@ SRC_COMMON_HAL_ALL = \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
 	gnss/SatelliteSystem.c \
+	hashlib/__init__.c \
+	hashlib/Hash.c \
 	i2cperipheral/I2CPeripheral.c \
 	i2cperipheral/__init__.c \
 	microcontroller/Pin.c \

@@ -63,5 +63,6 @@ bool common_hal_framebufferio_framebufferdisplay_set_brightness(framebufferio_fr
 
 mp_obj_t common_hal_framebufferio_framebufferdisplay_framebuffer(framebufferio_framebufferdisplay_obj_t *self);
 
+mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferio_framebufferdisplay_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_DISPLAYIO_FRAMEBUFFERDISPLAY_H

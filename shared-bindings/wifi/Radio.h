@@ -82,8 +82,8 @@ extern void common_hal_wifi_radio_set_mac_address(wifi_radio_obj_t *self, const 
 extern mp_obj_t common_hal_wifi_radio_get_mac_address_ap(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint8_t *mac);
 
-extern uint8_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self);
-extern void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const uint8_t power);
+extern mp_float_t common_hal_wifi_radio_get_tx_power(wifi_radio_obj_t *self);
+extern void common_hal_wifi_radio_set_tx_power(wifi_radio_obj_t *self, const mp_float_t power);
 
 extern mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_scanning_networks(wifi_radio_obj_t *self);

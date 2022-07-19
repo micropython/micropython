@@ -353,6 +353,19 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
 
+//|     root_group: displayio.Group
+//|     """The root group on the display."""
+//|
+//|
+STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_root_group(mp_obj_t self_in) {
+    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
+    return common_hal_framebufferio_framebufferdisplay_get_root_group(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(framebufferio_framebufferdisplay_get_root_group_obj, framebufferio_framebufferdisplay_obj_get_root_group);
+
+MP_PROPERTY_GETTER(framebufferio_framebufferdisplay_root_group_obj,
+    (mp_obj_t)&framebufferio_framebufferdisplay_get_root_group_obj);
+
 STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&framebufferio_framebufferdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_refresh_obj) },
@@ -367,6 +380,7 @@ STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_tabl
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&framebufferio_framebufferdisplay_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&framebufferio_framebufferdisplay_rotation_obj) },
     { MP_ROM_QSTR(MP_QSTR_framebuffer), MP_ROM_PTR(&framebufferio_framebufferframebuffer_obj) },
+    { MP_ROM_QSTR(MP_QSTR_root_group), MP_ROM_PTR(&framebufferio_framebufferdisplay_root_group_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, framebufferio_framebufferdisplay_locals_dict_table);
 

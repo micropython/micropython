@@ -39,8 +39,11 @@
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
+#include "supervisor/shared/web_workflow/websocket.h"
 #include "supervisor/usb.h"
 
+#include "shared-bindings/hashlib/__init__.h"
+#include "shared-bindings/hashlib/Hash.h"
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
 #include "shared-bindings/socketpool/__init__.h"
@@ -86,6 +89,10 @@ typedef struct {
     bool authenticated;
     bool expect;
     bool json;
+    bool websocket;
+    uint32_t websocket_version;
+    // RFC6455 for websockets says this header should be 24 base64 characters long.
+    char websocket_key[24 + 1];
 } _request;
 
 static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
@@ -256,20 +263,19 @@ void supervisor_start_web_workflow(void) {
     active.num = -1;
     active.connected = false;
 
+    websocket_init();
+
     // TODO:
     // GET /cp/serial.txt
     //   - Most recent 1k of serial output.
     // GET /edit/
     //   - Super basic editor
-    // GET /ws/circuitpython
-    // GET /ws/user
-    //   - WebSockets
     #endif
 }
 
 static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
     int sent = -EAGAIN;
-    while (sent == -EAGAIN) {
+    while (sent == -EAGAIN && common_hal_socketpool_socket_get_connected(socket)) {
         sent = socketpool_socket_send(socket, buf, len);
     }
     if (sent < len) {
@@ -398,7 +404,7 @@ static const char *OK_JSON = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nC
 static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
     _send_strs(socket,
         "Access-Control-Allow-Credentials: true\r\n",
-        "Vary: Origin\r\n",
+        "Vary: Origin, Accept, Upgrade\r\n",
         "Access-Control-Allow-Origin: ", request->origin, "\r\n",
         NULL);
 }
@@ -434,10 +440,10 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
         "Access-Control-Allow-Methods:GET, OPTIONS", NULL);
     if (!_usb_active()) {
         _send_str(socket, ", PUT, DELETE");
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
     }
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
     _send_str(socket, "\r\n");
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
@@ -516,7 +522,14 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
         "HTTP/1.1 301 Moved Permanently\r\n",
         "Connection: close\r\n",
         "Content-Length: 0\r\n",
-        "Location: http://", hostname, ".local", path, "\r\n", NULL);
+        "Location: ", NULL);
+    if (request->websocket) {
+        _send_str(socket, "ws");
+    } else {
+        _send_str(socket, "http");
+    }
+
+    _send_strs(socket, "://", hostname, ".local", path, "\r\n", NULL);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
 }
@@ -727,14 +740,25 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
     return truncated_time;
 }
 
+STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
+    size_t discarded = 0;
+    while (discarded < amount) {
+        uint8_t bytes[64];
+        size_t read_len = MIN(sizeof(bytes), amount - discarded);
+        int len = socketpool_socket_recv_into(socket, bytes, read_len);
+        if (len < 0) {
+            break;
+        }
+        discarded += read_len;
+    }
+}
+
 static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *request, FATFS *fs, const TCHAR *path) {
     FIL active_file;
 
     if (_usb_active()) {
+        _discard_incoming(socket, request->content_length);
         _reply_conflict(socket, request);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
         return;
     }
     if (request->timestamp_ms > 0) {
@@ -752,12 +776,20 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
 
     if (result == FR_NO_PATH) {
         override_fattime(0);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+        _discard_incoming(socket, request->content_length);
         _reply_missing(socket, request);
         return;
     }
     if (result != FR_OK) {
         ESP_LOGE(TAG, "file write error %d %s", result, path);
         override_fattime(0);
+        #if CIRCUITPY_USB_MSC
+        usb_msc_unlock();
+        #endif
+        _discard_incoming(socket, request->content_length);
         _reply_server_error(socket, request);
         return;
     } else if (request->expect) {
@@ -772,6 +804,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
+        _discard_incoming(socket, request->content_length);
         // Too large.
         if (request->expect) {
             _reply_expectation_failed(socket, request);
@@ -826,6 +859,8 @@ STATIC_FILE(directory_html);
 STATIC_FILE(directory_js);
 STATIC_FILE(welcome_html);
 STATIC_FILE(welcome_js);
+STATIC_FILE(serial_html);
+STATIC_FILE(serial_js);
 STATIC_FILE(blinka_16x16_ico);
 
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
@@ -844,10 +879,34 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
 
+static void _reply_websocket_upgrade(socketpool_socket_obj_t *socket, _request *request) {
+    // Compute accept key
+    hashlib_hash_obj_t hash;
+    common_hal_hashlib_new(&hash, "sha1");
+    common_hal_hashlib_hash_update(&hash, (const uint8_t *)request->websocket_key, strlen(request->websocket_key));
+    const char *magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+    common_hal_hashlib_hash_update(&hash, (const uint8_t *)magic_string, strlen(magic_string));
+    size_t digest_size = common_hal_hashlib_hash_get_digest_size(&hash);
+    size_t encoded_size = (digest_size + 1) * 4 / 3 + 1;
+    uint8_t encoded_accept[encoded_size];
+    common_hal_hashlib_hash_digest(&hash, encoded_accept, sizeof(encoded_accept));
+    _base64_in_place((char *)encoded_accept, digest_size, encoded_size);
+
+    // Reply with upgrade
+    _send_strs(socket, "HTTP/1.1 101 Switching Protocols\r\n",
+        "Upgrade: websocket\r\n",
+        "Connection: Upgrade\r\n",
+        "Sec-WebSocket-Accept: ", encoded_accept, "\r\n",
+        "\r\n", NULL);
+    websocket_handoff(socket);
+    // socket is now closed and "disconnected".
+}
+
 static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
     if (request->redirect) {
         _reply_redirect(socket, request, request->path);
     } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
+        ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
         if (!request->authenticated) {
@@ -876,9 +935,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             } else if (strcmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
                     _reply_conflict(socket, request);
-                    #if CIRCUITPY_USB_MSC
-                    usb_msc_unlock();
-                    #endif
                     return false;
                 }
 
@@ -893,6 +949,9 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
                 }
 
+                #if CIRCUITPY_USB_MSC
+                usb_msc_unlock();
+                #endif
                 if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
@@ -926,9 +985,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 } else if (strcmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
                         _reply_conflict(socket, request);
-                        #if CIRCUITPY_USB_MSC
-                        usb_msc_unlock();
-                        #endif
                         return false;
                     }
 
@@ -980,6 +1036,20 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
+        } else if (strcmp(path, "/serial/") == 0) {
+            if (!request->authenticated) {
+                if (_api_password[0] != '\0') {
+                    _reply_unauthorized(socket, request);
+                } else {
+                    _reply_forbidden(socket, request);
+                }
+            } else if (request->websocket) {
+                _reply_websocket_upgrade(socket, request);
+            } else {
+                _REPLY_STATIC(socket, request, serial_html);
+            }
+        } else {
+            _reply_missing(socket, request);
         }
     } else if (strcmp(request->method, "GET") != 0) {
         _reply_method_not_allowed(socket, request);
@@ -992,6 +1062,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _REPLY_STATIC(socket, request, directory_js);
         } else if (strcmp(request->path, "/welcome.js") == 0) {
             _REPLY_STATIC(socket, request, welcome_js);
+        } else if (strcmp(request->path, "/serial.js") == 0) {
+            _REPLY_STATIC(socket, request, serial_js);
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
             // TODO: Autogenerate this based on the blinka bitmap and change the
             // palette based on MAC address.
@@ -1015,6 +1087,7 @@ static void _reset_request(_request *request) {
     request->authenticated = false;
     request->expect = false;
     request->json = false;
+    request->websocket = false;
 }
 
 static void _process_request(socketpool_socket_obj_t *socket, _request *request) {
@@ -1111,6 +1184,13 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         strcpy(request->origin, request->header_value);
                     } else if (strcmp(request->header_key, "X-Timestamp") == 0) {
                         request->timestamp_ms = strtoull(request->header_value, NULL, 10);
+                    } else if (strcmp(request->header_key, "Upgrade") == 0) {
+                        request->websocket = strcmp(request->header_value, "websocket") == 0;
+                    } else if (strcmp(request->header_key, "Sec-WebSocket-Version") == 0) {
+                        request->websocket_version = strtoul(request->header_value, NULL, 10);
+                    } else if (strcmp(request->header_key, "Sec-WebSocket-Key") == 0 &&
+                               strlen(request->header_value) == 24) {
+                        strcpy(request->websocket_key, request->header_value);
                     }
                     ESP_LOGI(TAG, "Header %s %s", request->header_key, request->header_value);
                 } else if (request->offset > sizeof(request->header_value) - 1) {

@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "modules/module.h"
+#include "shared-bindings/hashlib/__init__.h"
 
-void never_reset_module_internal_pins(void) {
-    // SPI Flash
-    common_hal_never_reset_pin(&pin_GPIO27);
-    common_hal_never_reset_pin(&pin_GPIO28);
-    common_hal_never_reset_pin(&pin_GPIO29);
-    common_hal_never_reset_pin(&pin_GPIO30);
-    common_hal_never_reset_pin(&pin_GPIO31);
-    common_hal_never_reset_pin(&pin_GPIO32);
+#include "components/mbedtls/mbedtls/include/mbedtls/ssl.h"
+
+
+bool common_hal_hashlib_new(hashlib_hash_obj_t *self, const char *algorithm) {
+    if (strcmp(algorithm, "sha1") == 0) {
+        self->hash_type = MBEDTLS_SSL_HASH_SHA1;
+        mbedtls_sha1_init(&self->sha1);
+        mbedtls_sha1_starts_ret(&self->sha1);
+        return true;
+    }
+    return false;
 }

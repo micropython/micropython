@@ -70,7 +70,7 @@ The test suite in the top level `tests` directory.  It needs the unix port to ru
 Then you can run the test suite:
 
     cd ../../tests
-    ./run-tests
+    ./run-tests.py
 
 A successful run will say something like
 

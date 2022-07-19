@@ -40,19 +40,11 @@
 #include "common-hal/pulseio/PulseIn.h"
 #endif
 
-#if CIRCUITPY_WEB_WORKFLOW
-#include "supervisor/shared/web_workflow/web_workflow.h"
-#endif
-
 void port_background_task(void) {
     // Zero delay in case FreeRTOS wants to switch to something else.
     vTaskDelay(0);
     #if CIRCUITPY_PULSEIO
     pulsein_background();
-    #endif
-
-    #if CIRCUITPY_WEB_WORKFLOW
-    supervisor_web_workflow_background();
     #endif
 }
 

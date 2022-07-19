@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -24,7 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include "modules/module.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/board.h"
 
-void never_reset_module_internal_pins(void) {
+#include "components/driver/include/driver/gpio.h"
+
+void board_init(void) {
+}
+
+bool board_requests_safe_mode(void) {
+    return false;
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    return false;
+}
+
+void reset_board(void) {
+}
+
+void board_deinit(void) {
 }
