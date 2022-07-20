@@ -100,8 +100,10 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout), MP_OBJ_NEW_SMALL_INT(1000),
     };
 
+    // This is a statically-allocated UART (see machine_uart.c), and doesn't
+    // contain any heap pointers other than the ringbufs (which are already
+    // root pointers), so no need to track this as a root pointer.
     mp_bthci_uart = machine_uart_type.make_new((mp_obj_t)&machine_uart_type, 2, 2, args);
-    MP_STATE_PORT(mp_bthci_uart) = mp_bthci_uart;
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();
@@ -196,7 +198,5 @@ MP_WEAK int mp_bluetooth_hci_controller_wakeup(void) {
     debug_printf("mp_bluetooth_hci_controller_wakeup (default)\n");
     return 0;
 }
-
-MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *mp_bthci_uart);
 
 #endif // MICROPY_PY_BLUETOOTH
