@@ -797,4 +797,8 @@ const mod_network_nic_type_t mod_network_nic_type_nina = {
     .ioctl = network_ninaw10_socket_ioctl,
 };
 
+MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
+MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);
+MP_REGISTER_ROOT_POINTER(struct _mp_obj_list_t *mp_wifi_sockpoll_list);
+
 #endif // #if MICROPY_PY_BLUETOOTH && MICROPY_PY_NETWORK_NINAW10
