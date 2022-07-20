@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-14 18:05+0000\n"
+"PO-Revision-Date: 2022-07-21 20:15+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -215,7 +215,7 @@ msgstr "%q, %q och %q måste vara lika långa"
 
 #: py/objint.c
 msgid "%q=%q"
-msgstr ""
+msgstr "%q=%q"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
