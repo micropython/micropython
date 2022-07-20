@@ -12,4 +12,4 @@
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO6, .mosi = &pin_GPIO7, .miso = &pin_GPIO4}}
 
 #define CIRCUITPY_BOARD_UART        (1)
-#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO28, .rx = &pin_GPIO29}}
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO24, .rx = &pin_GPIO25}}
