@@ -641,8 +641,8 @@ STATIC void wlan_set_security (uint8_t auth, const char *key, uint8_t len) {
     if (key != NULL) {
         memcpy(&wlan_obj.key, key, len);
         wlan_obj.key[len] = '\0';
+        _u8 wep_key[32];
         if (auth == SL_SEC_TYPE_WEP) {
-            _u8 wep_key[32];
             wlan_wep_key_unhexlify(key, (char *)&wep_key);
             key = (const char *)&wep_key;
             len /= 2;

@@ -25,6 +25,9 @@ CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += $(CFLAGS_MOD)
 
+# Workaround gcc 12.1 bug.
+CFLAGS += -Wno-array-bounds
+
 LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
 
 FLASH_SIZE_WIPY = 2M
