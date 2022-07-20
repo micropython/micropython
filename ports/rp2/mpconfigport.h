@@ -176,7 +176,6 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #ifndef MICROPY_PY_USOCKET_EXTENDED_STATE
 #define MICROPY_PY_USOCKET_EXTENDED_STATE   (1)
 #endif
-// It also requires an additional root pointer for the SPI object.
 extern const struct _mod_network_nic_type_t mod_network_nic_type_nina;
 #define MICROPY_HW_NIC_NINAW10              { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_nic_type_nina) },
 #else
