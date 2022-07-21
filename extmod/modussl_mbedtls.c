@@ -74,7 +74,7 @@ STATIC const mp_obj_type_t ussl_socket_type;
 STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     (void)ctx;
     (void)level;
-    printf("DBG:%s:%04d: %s\n", file, line, str);
+    mp_printf(&mp_plat_print, "DBG:%s:%04d: %s\n", file, line, str);
 }
 #endif
 
@@ -175,7 +175,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     mbedtls_ctr_drbg_init(&o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
-    mbedtls_debug_set_threshold(0);
+    mbedtls_debug_set_threshold(3);
     #endif
 
     mbedtls_entropy_init(&o->entropy);
