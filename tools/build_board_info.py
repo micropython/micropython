@@ -19,11 +19,11 @@ import adabot.github_requests as github
 sys.path.append("../docs")
 from shared_bindings_matrix import (
     SUPPORTED_PORTS,
-    aliases_by_board,
     support_matrix_by_board,
+    get_board_mapping,
 )
 
-language_allow_list = set(
+LANGUAGE_ALLOW_LIST = set(
     [
         "ID",
         "de_DE",
@@ -52,32 +52,8 @@ def get_languages(list_all=False):
         if f.name.endswith(".po"):
             languages.add(f.name[:-3])
     if not list_all:
-        languages = languages & language_allow_list
+        languages = languages & LANGUAGE_ALLOW_LIST
     return sorted(list(languages), key=str.casefold)
-
-
-def get_board_mapping():
-    boards = {}
-    for port in SUPPORTED_PORTS:
-        board_path = os.path.join("../ports", port, "boards")
-        for board_path in os.scandir(board_path):
-            if board_path.is_dir():
-                board_files = os.listdir(board_path.path)
-                board_id = board_path.name
-                aliases = aliases_by_board.get(board_path.name, [])
-                boards[board_id] = {
-                    "port": port,
-                    "download_count": 0,
-                    "aliases": aliases,
-                }
-                for alias in aliases:
-                    boards[alias] = {
-                        "port": port,
-                        "download_count": 0,
-                        "alias": True,
-                        "aliases": [],
-                    }
-    return boards
 
 
 def get_version_info():
