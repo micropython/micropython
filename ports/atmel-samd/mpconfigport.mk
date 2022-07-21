@@ -134,4 +134,4 @@ CIRCUITPY_RGBMATRIX ?= $(CIRCUITPY_FRAMEBUFFERIO)
 endif # same51
 ######################################################################
 
-CIRCUITPY_BUILD_EXTENSIONS ?= bin,uf2
+CIRCUITPY_BUILD_EXTENSIONS ?= uf2
