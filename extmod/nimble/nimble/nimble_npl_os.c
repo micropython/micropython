@@ -502,19 +502,17 @@ void ble_npl_time_delay(ble_npl_time_t ticks) {
 
 // This is used anywhere NimBLE modifies global data structures.
 
-// Currently all NimBLE code is invoked by the scheduler so there should be no
-// races, so on STM32 MICROPY_PY_BLUETOOTH_ENTER/MICROPY_PY_BLUETOOTH_EXIT are
-// no-ops. However, in the future we may wish to make HCI UART processing
-// happen asynchronously (e.g. on RX IRQ), so the port can implement these
-// macros accordingly.
+// Currently all NimBLE code is invoked by the scheduler so there is no
+// concurrency. In the future we may wish to make HCI UART processing happen
+// asynchronously (e.g. on RX IRQ), so the port can implement these macros
+// accordingly.
 
 uint32_t ble_npl_hw_enter_critical(void) {
     DEBUG_CRIT_printf("ble_npl_hw_enter_critical()\n");
-    MICROPY_PY_BLUETOOTH_ENTER
-    return atomic_state;
+    return 0;
 }
 
 void ble_npl_hw_exit_critical(uint32_t atomic_state) {
-    MICROPY_PY_BLUETOOTH_EXIT
+    (void)atomic_state;
     DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)atomic_state);
 }

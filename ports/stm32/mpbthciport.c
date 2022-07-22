@@ -65,8 +65,6 @@ void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms) {
     soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
 }
 
-#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-
 STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
@@ -83,14 +81,6 @@ STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
 void mp_bluetooth_hci_poll_now_default(void) {
     mp_sched_schedule_node(&mp_bluetooth_hci_sched_node, run_events_scheduled_task);
 }
-
-#else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-
-void mp_bluetooth_hci_poll_now_default(void) {
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll);
-}
-
-#endif
 
 #if defined(STM32WB)
 
@@ -126,9 +116,7 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
 }
 
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
-    MICROPY_PY_BLUETOOTH_ENTER
     rfcore_ble_hci_cmd(len, (const uint8_t *)buf);
-    MICROPY_PY_BLUETOOTH_EXIT
     return 0;
 }
 

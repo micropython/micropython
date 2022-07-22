@@ -49,10 +49,6 @@
 #error "STM32WB must use NimBLE."
 #endif
 
-#if !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-#error "STM32WB must use synchronous BLE events."
-#endif
-
 #endif
 
 #define DEBUG_printf(...) // printf("rfcore: " __VA_ARGS__)

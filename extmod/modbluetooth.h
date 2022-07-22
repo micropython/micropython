@@ -45,14 +45,8 @@
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
 // Enable the client by default if we're enabling central mode. It's possible
-// to enable client without central though.
+// to enable client without central though (e.g. non-connecting scanner).
 #define MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT (MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE)
-#endif
-
-#ifndef MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-// This can be enabled if the BLE stack runs entirely in scheduler context
-// and therefore is able to call directly into the VM to run Python callbacks.
-#define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (0)
 #endif
 
 // A port can optionally enable support for L2CAP "Connection Oriented Channels".
@@ -60,23 +54,15 @@
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (0)
 #endif
 
-// A port can optionally enable support for pairing and bonding.
-// Requires MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS.
+// Pairing and bonding enabled by default, but can be disabled by a port.
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (0)
+#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #endif
 
 // Optionally enable support for the `hci_cmd` function allowing
 // Python to directly low-level HCI commands.
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD
 #define MICROPY_PY_BLUETOOTH_ENABLE_HCI_CMD (0)
-#endif
-
-// This is used to protect the ringbuffer.
-// A port may no-op this if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS is enabled.
-#ifndef MICROPY_PY_BLUETOOTH_ENTER
-#define MICROPY_PY_BLUETOOTH_ENTER mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-#define MICROPY_PY_BLUETOOTH_EXIT MICROPY_END_ATOMIC_SECTION(atomic_state);
 #endif
 
 // Common constants.

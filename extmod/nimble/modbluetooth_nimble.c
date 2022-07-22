@@ -1832,7 +1832,6 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
         return MP_EINVAL;
     }
 
-    MICROPY_PY_BLUETOOTH_ENTER
     if (chan->rx_pending) {
         size_t avail = OS_MBUF_PKTLEN(chan->rx_pending);
 
@@ -1877,7 +1876,6 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
         *len = 0;
     }
 
-    MICROPY_PY_BLUETOOTH_EXIT
     return 0;
 }
 

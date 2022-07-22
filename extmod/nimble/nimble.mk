@@ -19,18 +19,6 @@ ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
 GIT_SUBMODULES += lib/mynewt-nimble
 
-# On all ports where we provide the full implementation (i.e. not just
-# bindings like on ESP32), then we don't need to use the ringbuffer. In this
-# case, all NimBLE events are run by the MicroPython scheduler. On Unix, the
-# scheduler is also responsible for polling the UART, whereas on STM32 the
-# UART is also polled by the RX IRQ.
-CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
-
-# Without the ringbuffer, and with the full implementation, we can also
-# enable pairing and bonding. This requires both synchronous events and
-# some customisation of the key store.
-CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
-
 NIMBLE_LIB_DIR = lib/mynewt-nimble
 
 SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
