@@ -95,10 +95,6 @@
 #define MICROPY_PY_UZLIB                    (1)
 #define MICROPY_PY_UASYNCIO                 (1)
 
-// Use VfsLfs's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs1_fileio
-#define mp_type_textio mp_type_vfs_lfs1_textio
-
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings

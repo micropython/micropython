@@ -131,10 +131,6 @@
     X(EINVAL) \
     X(ETIMEDOUT) \
 
-// TODO these should be generic, not bound to fatfs
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&mp_module_machine) },  \

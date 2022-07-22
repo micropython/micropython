@@ -151,18 +151,6 @@
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MULTI_PARTITION  (1)
 
-// TODO these should be generic, not bound to a particular FS implementation
-#if MICROPY_VFS_FAT
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-#elif MICROPY_VFS_LFS1
-#define mp_type_fileio mp_type_vfs_lfs1_fileio
-#define mp_type_textio mp_type_vfs_lfs1_textio
-#elif MICROPY_VFS_LFS2
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
-#endif
-
 #if MICROPY_PY_PYB
 extern const struct _mp_obj_module_t pyb_module;
 #define PYB_BUILTIN_MODULE_CONSTANTS \
