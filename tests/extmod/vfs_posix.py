@@ -42,8 +42,8 @@ f.close()
 # close on a closed file should succeed
 f.close()
 
-# construct a file object using the type constructor, with a raw fileno
-f = type(f)(2)
+# construct a file object with a raw fileno
+f = open(2)
 print(f)
 
 # file read

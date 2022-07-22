@@ -111,17 +111,6 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t vfs_posix_file_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_mode, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_QSTR(MP_QSTR_r)} },
-    };
-
-    mp_arg_val_t arg_vals[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, arg_vals);
-    return mp_vfs_posix_file_open(type, arg_vals[0].u_obj, arg_vals[1].u_obj);
-}
-
 STATIC mp_obj_t vfs_posix_file_fileno(mp_obj_t self_in) {
     mp_obj_vfs_posix_file_t *self = MP_OBJ_TO_PTR(self_in);
     check_fd_is_open(self);
@@ -268,7 +257,6 @@ const mp_obj_type_t mp_type_vfs_posix_fileio = {
     { &mp_type_type },
     .name = MP_QSTR_FileIO,
     .print = vfs_posix_file_print,
-    .make_new = vfs_posix_file_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_posix_fileio_stream_p,
@@ -287,15 +275,14 @@ const mp_obj_type_t mp_type_vfs_posix_textio = {
     { &mp_type_type },
     .name = MP_QSTR_TextIOWrapper,
     .print = vfs_posix_file_print,
-    .make_new = vfs_posix_file_make_new,
     .getiter = mp_identity_getiter,
     .iternext = mp_stream_unbuffered_iter,
     .protocol = &vfs_posix_textio_stream_p,
     .locals_dict = (mp_obj_dict_t *)&vfs_posix_rawfile_locals_dict,
 };
 
-const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_textio}, STDIN_FILENO};
-const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_textio}, STDOUT_FILENO};
-const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_textio}, STDERR_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdin_obj = {{&mp_type_vfs_posix_textio}, STDIN_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdout_obj = {{&mp_type_vfs_posix_textio}, STDOUT_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stderr_obj = {{&mp_type_vfs_posix_textio}, STDERR_FILENO};
 
 #endif // MICROPY_VFS_POSIX || MICROPY_VFS_POSIX_FILE
