@@ -220,9 +220,6 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE  (256)
 #define MICROPY_ASYNC_KBD_INTR      (1)
 
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
-
 // type definitions for the specific machine
 
 // For size_t and ssize_t
