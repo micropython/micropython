@@ -137,6 +137,9 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
     { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_unlink), MP_ROM_PTR(&mp_vfs_remove_obj) }, // unlink aliases to remove
+    #if MICROPY_VFS_POSIX
+    { MP_ROM_QSTR(MP_QSTR_fdopen), MP_ROM_PTR(&mp_vfs_open_obj) },
+    #endif
     #endif
 
     // The following are MicroPython extensions.

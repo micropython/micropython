@@ -43,7 +43,7 @@ f.close()
 f.close()
 
 # construct a file object using the type constructor, with a raw fileno
-f = type(f)(2)
+f = uos.fdopen(2)
 print(f)
 
 # file read
