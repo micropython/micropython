@@ -375,11 +375,10 @@ static bool _origin_ok(const char *origin) {
         return true;
     }
 
-    // Port or no port
     const char *localhost = "127.0.0.1";
-    const int locallen = 9;
-    if (memcmp(origin + strlen(http), localhost, locallen) == 0
-        && (localhost[locallen] == '\0' || localhost[locallen] == ':')) {
+    end = origin + strlen(http) + strlen(localhost);
+    if (memcmp(origin + strlen(http), localhost, strlen(localhost)) == 0
+        && (end[0] == '\0' || end[0] == ':')) {
         return true;
     }
 
@@ -913,8 +912,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
-        // OPTIONS is sent for CORS preflight, unauthenticated
-        if (!request->authenticated && strcmp(request->method, "OPTIONS") != 0) {
+        if (strcmp(request->method, "OPTIONS") == 0) {
+            // OPTIONS is sent for CORS preflight, unauthenticated
+            _reply_access_control(socket, request);
+        } else if (!request->authenticated) {
             if (_api_password[0] != '\0') {
                 _reply_unauthorized(socket, request);
             } else {
@@ -935,9 +936,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             }
             // Delete is almost identical for files and directories so share the
             // implementation.
-            if (strcmp(request->method, "OPTIONS") == 0) {
-                _reply_access_control(socket, request);
-            } else if (strcmp(request->method, "DELETE") == 0) {
+            if (strcmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
                     _reply_conflict(socket, request);
                     return false;
