@@ -912,7 +912,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         ESP_LOGE(TAG, "bad origin %s", request->origin);
         _reply_forbidden(socket, request);
     } else if (memcmp(request->path, "/fs/", 4) == 0) {
-        if (strcmp(request->method, "OPTIONS") == 0) {
+        if (strcasecmp(request->method, "OPTIONS") == 0) {
             // OPTIONS is sent for CORS preflight, unauthenticated
             _reply_access_control(socket, request);
         } else if (!request->authenticated) {
@@ -936,7 +936,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             }
             // Delete is almost identical for files and directories so share the
             // implementation.
-            if (strcmp(request->method, "DELETE") == 0) {
+            if (strcasecmp(request->method, "DELETE") == 0) {
                 if (_usb_active()) {
                     _reply_conflict(socket, request);
                     return false;
@@ -966,7 +966,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     return true;
                 }
             } else if (directory) {
-                if (strcmp(request->method, "GET") == 0) {
+                if (strcasecmp(request->method, "GET") == 0) {
                     FF_DIR dir;
                     FRESULT res = f_opendir(fs, &dir, path);
                     // Put the / back for replies.
@@ -986,7 +986,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
 
                     f_closedir(&dir);
-                } else if (strcmp(request->method, "PUT") == 0) {
+                } else if (strcasecmp(request->method, "PUT") == 0) {
                     if (_usb_active()) {
                         _reply_conflict(socket, request);
                         return false;
@@ -1015,7 +1015,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
                 }
             } else { // Dealing with a file.
-                if (strcmp(request->method, "GET") == 0) {
+                if (strcasecmp(request->method, "GET") == 0) {
                     FIL active_file;
                     FRESULT result = f_open(fs, &active_file, path, FA_READ);
 
@@ -1026,7 +1026,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
 
                     f_close(&active_file);
-                } else if (strcmp(request->method, "PUT") == 0) {
+                } else if (strcasecmp(request->method, "PUT") == 0) {
                     _write_file_and_reply(socket, request, fs, path);
                     return true;
                 }
@@ -1034,10 +1034,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         }
     } else if (memcmp(request->path, "/cp/", 4) == 0) {
         const char *path = request->path + 3;
-        if (strcmp(request->method, "OPTIONS") == 0) {
+        if (strcasecmp(request->method, "OPTIONS") == 0) {
             // handle preflight requests to /cp/
             _reply_access_control(socket, request);
-        } else if (strcmp(request->method, "GET") != 0) {
+        } else if (strcasecmp(request->method, "GET") != 0) {
             _reply_method_not_allowed(socket, request);
         } else if (strcmp(path, "/devices.json") == 0) {
             _reply_with_devices_json(socket, request);
@@ -1058,7 +1058,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else {
             _reply_missing(socket, request);
         }
-    } else if (strcmp(request->method, "GET") != 0) {
+    } else if (strcasecmp(request->method, "GET") != 0) {
         _reply_method_not_allowed(socket, request);
     } else {
         if (strcmp(request->path, "/") == 0) {
@@ -1175,27 +1175,27 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     request->header_value[request->offset - 1] = '\0';
                     request->offset = 0;
                     request->state = STATE_HEADER_KEY;
-                    if (strcmp(request->header_key, "Authorization") == 0) {
+                    if (strcasecmp(request->header_key, "Authorization") == 0) {
                         const char *prefix = "Basic ";
                         request->authenticated = memcmp(request->header_value, prefix, strlen(prefix)) == 0 &&
                             strcmp(_api_password, request->header_value + strlen(prefix)) == 0;
-                    } else if (strcmp(request->header_key, "Host") == 0) {
+                    } else if (strcasecmp(request->header_key, "Host") == 0) {
                         request->redirect = strcmp(request->header_value, "circuitpython.local") == 0;
-                    } else if (strcmp(request->header_key, "Content-Length") == 0) {
+                    } else if (strcasecmp(request->header_key, "Content-Length") == 0) {
                         request->content_length = strtoul(request->header_value, NULL, 10);
-                    } else if (strcmp(request->header_key, "Expect") == 0) {
+                    } else if (strcasecmp(request->header_key, "Expect") == 0) {
                         request->expect = strcmp(request->header_value, "100-continue") == 0;
-                    } else if (strcmp(request->header_key, "Accept") == 0) {
-                        request->json = strcmp(request->header_value, "application/json") == 0;
-                    } else if (strcmp(request->header_key, "Origin") == 0) {
+                    } else if (strcasecmp(request->header_key, "Accept") == 0) {
+                        request->json = strcasecmp(request->header_value, "application/json") == 0;
+                    } else if (strcasecmp(request->header_key, "Origin") == 0) {
                         strcpy(request->origin, request->header_value);
-                    } else if (strcmp(request->header_key, "X-Timestamp") == 0) {
+                    } else if (strcasecmp(request->header_key, "X-Timestamp") == 0) {
                         request->timestamp_ms = strtoull(request->header_value, NULL, 10);
-                    } else if (strcmp(request->header_key, "Upgrade") == 0) {
+                    } else if (strcasecmp(request->header_key, "Upgrade") == 0) {
                         request->websocket = strcmp(request->header_value, "websocket") == 0;
-                    } else if (strcmp(request->header_key, "Sec-WebSocket-Version") == 0) {
+                    } else if (strcasecmp(request->header_key, "Sec-WebSocket-Version") == 0) {
                         request->websocket_version = strtoul(request->header_value, NULL, 10);
-                    } else if (strcmp(request->header_key, "Sec-WebSocket-Key") == 0 &&
+                    } else if (strcasecmp(request->header_key, "Sec-WebSocket-Key") == 0 &&
                                strlen(request->header_value) == 24) {
                         strcpy(request->websocket_key, request->header_value);
                     }
