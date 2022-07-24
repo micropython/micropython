@@ -177,7 +177,14 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
 STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
+    /*
     wizchip_clrinterrupt(IK_SOCK_0);
+    ** The original wizchip_clrinterrupt seems a bit buggy and if forgets to reset 
+    ** the socket irq flag register SIR but on the other hand it clears ALL flags 
+    ** for ALL sockets in Sn_IR registers.
+    ** For the time being let do it manually.
+    */
+    setSIR(0x01);
     setSn_IR(0, Sn_IR_RECV);
 
     // Handle incoming data
