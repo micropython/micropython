@@ -63,12 +63,14 @@ bool mp_obj_is_package(mp_obj_t module) {
 // uses mp_vfs_import_stat) to also search frozen modules. Given an exact
 // path to a file or directory (e.g. "foo/bar", foo/bar.py" or "foo/bar.mpy"),
 // will return whether the path is a file, directory, or doesn't exist.
-STATIC mp_import_stat_t stat_path_or_frozen(const char *path) {
+STATIC mp_import_stat_t stat_path_or_frozen(const char *path, bool allow_frozen) {
     #if MICROPY_MODULE_FROZEN
-    // Only try and load as a frozen module if it starts with .frozen/.
-    const int frozen_path_prefix_len = strlen(MP_FROZEN_PATH_PREFIX);
-    if (strncmp(path, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
-        return mp_find_frozen_module(path + frozen_path_prefix_len, NULL, NULL);
+    if (allow_frozen) {
+        // Only try and load as a frozen module if it starts with .frozen/.
+        const int frozen_path_prefix_len = strlen(MP_FROZEN_PATH_PREFIX);
+        if (strncmp(path, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
+            return mp_find_frozen_module(path + frozen_path_prefix_len, NULL, NULL);
+        }
     }
     #endif
     return mp_import_stat(path);
@@ -76,8 +78,8 @@ STATIC mp_import_stat_t stat_path_or_frozen(const char *path) {
 
 // Given a path to a .py file, try and find this path as either a .py or .mpy
 // in either the filesystem or frozen modules.
-STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
-    mp_import_stat_t stat = stat_path_or_frozen(vstr_null_terminated_str(path));
+STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path, bool allow_frozen) {
+    mp_import_stat_t stat = stat_path_or_frozen(vstr_null_terminated_str(path), allow_frozen);
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -85,7 +87,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
     #if MICROPY_PERSISTENT_CODE_LOAD
     // Didn't find .py -- try the .mpy instead by inserting an 'm' into the '.py'.
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = stat_path_or_frozen(vstr_null_terminated_str(path));
+    stat = mp_import_stat(vstr_null_terminated_str(path));
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -97,7 +99,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
 // Given an import path (e.g. "foo/bar"), try and find "foo/bar" (a directory)
 // or "foo/bar.(m)py" in either the filesystem or frozen modules.
 STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
-    mp_import_stat_t stat = stat_path_or_frozen(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = stat_path_or_frozen(vstr_null_terminated_str(path), true);
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
@@ -105,7 +107,7 @@ STATIC mp_import_stat_t stat_dir_or_file(vstr_t *path) {
 
     // not a directory, add .py and try as a file
     vstr_add_str(path, ".py");
-    return stat_file_py_or_mpy(path);
+    return stat_file_py_or_mpy(path, true);
 }
 
 // Given a top-level module, try and find it in each of the sys.path entries
@@ -207,7 +209,42 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     int frozen_type;
     const int frozen_path_prefix_len = strlen(MP_FROZEN_PATH_PREFIX);
     if (strncmp(file_str, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
-        mp_find_frozen_module(file_str + frozen_path_prefix_len, &frozen_type, &modref);
+        // Remove ".frozen/" from the start of the path.
+        vstr_cut_head_bytes(file, frozen_path_prefix_len);
+        file_str = vstr_null_terminated_str(file);
+
+        #if MICROPY_ENABLE_FROZEN_OVERLAY
+        // If micropython.frozen_overlay() is set, then attempt to load it from the filesystem
+        // at that path.
+        if (MP_STATE_VM(frozen_overlay_path) != MP_OBJ_NULL) {
+            size_t frozen_overlay_path_len;
+            const char *frozen_overlay_path = mp_obj_str_get_data(MP_STATE_VM(frozen_overlay_path), &frozen_overlay_path_len);
+
+            // Prepend the overlay path prefix and see if it exists.
+            if (frozen_overlay_path_len) {
+                vstr_ins_strn(file, 0, frozen_overlay_path, frozen_overlay_path_len);
+                vstr_ins_char(file, frozen_overlay_path_len, PATH_SEP_CHAR[0]);
+            }
+            mp_import_stat_t stat = stat_file_py_or_mpy(file, false);
+            if (stat != MP_IMPORT_STAT_NO_EXIST) {
+                // Found this file (either as .py or .mpy).
+                file_str = vstr_null_terminated_str(file);
+                goto use_overlay;
+            } else {
+                // Remove the overlay prefix.
+                if (frozen_overlay_path_len) {
+                    vstr_cut_head_bytes(file, frozen_overlay_path_len + 1);
+                }
+                #if MICROPY_PERSISTENT_CODE_LOAD
+                // stat_file_py_or_mpy will have attempted to match the .mpy, undo that.
+                vstr_cut_out_bytes(file, file->len - 3, 1);
+                #endif
+                file_str = vstr_null_terminated_str(file);
+            }
+        }
+        #endif // MICROPY_ENABLE_FROZEN_OVERLAY
+
+        mp_find_frozen_module(file_str, &frozen_type, &modref);
 
         // If we support frozen str modules and the compiler is enabled, and we
         // found the filename in the list of frozen files, then load and execute it.
@@ -224,11 +261,17 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         if (frozen_type == MP_FROZEN_MPY) {
             const mp_frozen_module_t *frozen = modref;
             module_obj->constants = frozen->constants;
-            do_execute_raw_code(module_obj, frozen->rc, module_obj, file_str + frozen_path_prefix_len);
+            do_execute_raw_code(module_obj, frozen->rc, module_obj, file_str);
             return;
         }
         #endif
+
+        MP_UNREACHABLE;
     }
+
+    #if MICROPY_ENABLE_FROZEN_OVERLAY
+use_overlay:
+    #endif
 
     #endif // MICROPY_MODULE_FROZEN
 
@@ -439,7 +482,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             mp_store_attr(module_obj, MP_QSTR___path__, mp_obj_new_str(vstr_str(path), vstr_len(path)));
             size_t orig_path_len = path->len;
             vstr_add_str(path, PATH_SEP_CHAR "__init__.py");
-            if (stat_file_py_or_mpy(path) == MP_IMPORT_STAT_FILE) {
+            if (stat_file_py_or_mpy(path, true) == MP_IMPORT_STAT_FILE) {
                 do_load(MP_OBJ_TO_PTR(module_obj), path);
             } else {
                 // No-op. Nothing to load.

@@ -176,6 +176,10 @@ typedef struct _mp_state_vm_t {
     mp_obj_dict_t *mp_module_builtins_override_dict;
     #endif
 
+    #if MICROPY_ENABLE_FROZEN_OVERLAY
+    mp_obj_t frozen_overlay_path;
+    #endif
+
     // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
     #ifndef NO_QSTR
     // Only include root pointer definitions when not doing qstr extraction, because

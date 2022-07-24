@@ -210,6 +210,11 @@ void vstr_ins_char(vstr_t *vstr, size_t char_pos, unichar chr) {
     *s = chr;
 }
 
+void vstr_ins_strn(vstr_t *vstr, size_t char_pos, const char *str, size_t len) {
+    char *s = vstr_ins_blank_bytes(vstr, char_pos, 1);
+    memcpy(s, str, len);
+}
+
 void vstr_cut_head_bytes(vstr_t *vstr, size_t bytes_to_cut) {
     vstr_cut_out_bytes(vstr, 0, bytes_to_cut);
 }
