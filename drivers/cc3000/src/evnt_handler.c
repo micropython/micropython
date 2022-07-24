@@ -604,7 +604,7 @@ INT32 hci_unsol_event_handler(CHAR *event_hdr)
 				{
 					//data[0] represents the socket id, for which FIN was received by remote.
 					//Upon receiving this event, the user can close the socket, or else the 
-					//socket will be closded after inacvitity timeout (by default 60 seconds)
+					//socket will be closed after inacvitity timeout (by default 60 seconds)
 					tSLInformation.sWlanCB(event_type, data, 1);
 				}
 			}
