@@ -306,6 +306,10 @@ static void _send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int l
     }
 }
 
+STATIC void _print_raw(void *env, const char *str, size_t len) {
+    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, (size_t)len);
+}
+
 static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
     _send_raw(socket, (const uint8_t *)str, strlen(str));
 }
@@ -324,12 +328,17 @@ static void _send_strs(socketpool_socket_obj_t *socket, ...) {
 }
 
 static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
-    char encoded_len[sizeof(size_t) * 2 + 1];
-    int len = snprintf(encoded_len, sizeof(encoded_len), "%X", strlen(chunk));
-    _send_raw(socket, (const uint8_t *)encoded_len, len);
-    _send_raw(socket, (const uint8_t *)"\r\n", 2);
+    mp_print_t _socket_print = {socket, _print_raw};
+    mp_printf(&_socket_print, "%X\r\n", strlen(chunk));
     _send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
     _send_raw(socket, (const uint8_t *)"\r\n", 2);
+}
+
+STATIC void _print_chunk(void *env, const char *str, size_t len) {
+    mp_print_t _socket_print = {socket, _print_raw};
+    mp_printf(&_socket_print, "%X\r\n", len);
+    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
+    _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
 }
 
 // A bit of a misnomer because it sends all arguments as one chunk.
@@ -349,9 +358,9 @@ static void _send_chunks(socketpool_socket_obj_t *socket, ...) {
     }
     va_end(strs_to_count);
 
-    char encoded_len[sizeof(size_t) * 2 + 1];
-    snprintf(encoded_len, sizeof(encoded_len), "%X", chunk_len);
-    _send_strs(socket, encoded_len, "\r\n", NULL);
+
+    mp_print_t _socket_print = {socket, _print_raw};
+    mp_printf(&_socket_print, "%X\r\n", chunk_len);
 
     str = va_arg(strs_to_send, const char *);
     while (str != NULL) {
@@ -556,9 +565,8 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
 
     _send_strs(socket, "://", hostname, ".local", NULL);
     if (web_api_port != 80) {
-        char encoded_port[6];
-        snprintf(encoded_port, sizeof(encoded_port), "%d", web_api_port);
-        _send_strs(socket, ":", encoded_port, NULL);
+        mp_print_t _socket_print = {socket, _print_raw};
+        mp_printf(&_socket_print, ":%d", web_api_port);
     }
     _send_strs(socket, path, "\r\n", NULL);
     _cors_header(socket, request);
@@ -569,6 +577,7 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
+    mp_print_t _socket_print = {socket, _print_chunk};
     _send_chunk(socket, "[");
     bool first = true;
 
@@ -589,7 +598,7 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
         }
         // We use nanoseconds past Jan 1, 1970 for consistency with BLE API and
         // LittleFS.
-        _send_chunk(socket, ", \"modified_ns\": ");
+        _send_chunk(socket, ", ");
 
         uint64_t truncated_time = timeutils_mktime(1980 + (file_info.fdate >> 9),
             (file_info.fdate >> 5) & 0xf,
@@ -598,15 +607,13 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
             (file_info.ftime >> 5) & 0x1f,
             (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
 
-        char encoded_number[32];
-        snprintf(encoded_number, sizeof(encoded_number), "%lld", truncated_time);
-        _send_chunks(socket, encoded_number, ", \"file_size\": ", NULL);
+        mp_printf(&_socket_print, "\"modified_ns\": %lld, ", truncated_time);
         size_t file_size = 0;
         if ((file_info.fattrib & AM_DIR) == 0) {
             file_size = file_info.fsize;
         }
-        snprintf(encoded_number, sizeof(encoded_number), "%d", file_size);
-        _send_chunks(socket, encoded_number, "}", NULL);
+        mp_printf(&_socket_print, "\"file_size\": %d }", file_size);
+
         first = false;
         res = f_readdir(dir, &file_info);
     }
@@ -619,9 +626,9 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     char encoded_len[10];
     snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
 
-    _send_strs(socket,
-        "HTTP/1.1 200 OK\r\n",
-        "Content-Length: ", encoded_len, "\r\n", NULL);
+    _send_str(socket, "HTTP/1.1 200 OK\r\n");
+    mp_print_t _socket_print = {socket, _print_raw};
+    mp_printf(&_socket_print, "Content-Length: %d\r\n", total_length);
     // TODO: Make this a table to save space.
     if (_endswith(filename, ".txt") || _endswith(filename, ".py")) {
         _send_str(socket, "Content-Type: text/plain\r\n");
@@ -669,27 +676,23 @@ static void _reply_with_devices_json(socketpool_socket_obj_t *socket, _request *
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
-    char total_encoded[4];
-    snprintf(total_encoded, sizeof(total_encoded), "%d", total_results);
-    _send_chunks(socket, "{\"total\": ", total_encoded, ", \"devices\": [", NULL);
+    mp_print_t _socket_print = {socket, _print_chunk};
+
+    mp_printf(&_socket_print, "{\"total\": %d, \"devices\": [", total_results);
     for (size_t i = 0; i < count; i++) {
         if (i > 0) {
             _send_chunk(socket, ",");
         }
         const char *hostname = common_hal_mdns_remoteservice_get_hostname(&found_devices[i]);
         const char *instance_name = common_hal_mdns_remoteservice_get_instance_name(&found_devices[i]);
-        char port_encoded[6];
         int port = common_hal_mdns_remoteservice_get_port(&found_devices[i]);
-        snprintf(port_encoded, sizeof(port_encoded), "%d", port);
-        char ip_encoded[4 * 4];
         uint32_t ipv4_address = mdns_remoteservice_get_ipv4_address(&found_devices[i]);
         uint8_t *octets = (uint8_t *)&ipv4_address;
-        snprintf(ip_encoded, sizeof(ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
-        _send_chunks(socket,
-            "{\"hostname\": \"", hostname, "\", ",
-            "\"instance_name\": \"", instance_name, "\", ",
-            "\"port\": ", port_encoded, ", ",
-            "\"ip\": \"", ip_encoded, "\"}", NULL);
+        mp_printf(&_socket_print,
+            "{\"hostname\": \"%s\", "
+            "\"instance_name\": \"%s\", "
+            "\"port\": %d, "
+            "\"ip\": \"%d.%d.%d.%d\"}", hostname, instance_name, port, octets[0], octets[1], octets[2], octets[3]);
         common_hal_mdns_remoteservice_deinit(&found_devices[i]);
     }
     _send_chunk(socket, "]}");
@@ -701,26 +704,22 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _send_str(socket, OK_JSON);
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
-    char encoded_creator_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
-    snprintf(encoded_creator_id, sizeof(encoded_creator_id), "%u", CIRCUITPY_CREATOR_ID);
-    char encoded_creation_id[11]; // 2 ** 32 is 10 decimal digits plus one for \0
-    snprintf(encoded_creation_id, sizeof(encoded_creation_id), "%u", CIRCUITPY_CREATION_ID);
+    mp_print_t _socket_print = {socket, _print_chunk};
+
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
-    char encoded_port[6];
-    snprintf(encoded_port, sizeof(encoded_port), "%d", web_api_port);
-    _send_chunks(socket,
-        "{\"web_api_version\": 1, ",
-        "\"version\": \"", MICROPY_GIT_TAG, "\", ",
-        "\"build_date\": \"", MICROPY_BUILD_DATE, "\", ",
-        "\"board_name\": \"", MICROPY_HW_BOARD_NAME, "\", ",
-        "\"mcu_name\": \"", MICROPY_HW_MCU_NAME, "\", ",
-        "\"board_id\": \"", CIRCUITPY_BOARD_ID, "\", ",
-        "\"creator_id\": ", encoded_creator_id, ", ",
-        "\"creation_id\": ", encoded_creation_id, ", ",
-        "\"hostname\": \"", hostname, "\", ",
-        "\"port\": ", encoded_port, ", ",
-        "\"ip\": \"", _our_ip_encoded,
-        "\"}", NULL);
+    // Note: this leverages the fact that C concats consecutive string literals together.
+    mp_printf(&_socket_print,
+        "{\"web_api_version\": 1, "
+        "\"version\": \"" MICROPY_GIT_TAG "\", "
+        "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
+        "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
+        "\"mcu_name\": \"" MICROPY_HW_MCU_NAME "\", "
+        "\"board_id\": \"" CIRCUITPY_BOARD_ID "\", "
+        "\"creator_id\": %u, "
+        "\"creation_id\": %u, "
+        "\"hostname\": \"%s\", "
+        "\"port\": %d, "
+        "\"ip\": \"%s\"}", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
