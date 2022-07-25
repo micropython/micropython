@@ -40,7 +40,7 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 
 //| class StateMachine:
@@ -223,50 +223,31 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
     // We don't validate pin in use here because we may be ok sharing them within a PIO.
     const mcu_pin_obj_t *first_out_pin = validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj);
-    if (args[ARG_out_pin_count].u_int < 1) {
-        mp_raise_ValueError(translate("Pin count must be at least 1"));
-    }
+    mp_int_t out_pin_count = mp_arg_validate_int_min(args[ARG_out_pin_count].u_int, 1, MP_QSTR_out_pin_count);
+
     const mcu_pin_obj_t *first_in_pin = validate_obj_is_pin_or_none(args[ARG_first_in_pin].u_obj);
-    if (args[ARG_in_pin_count].u_int < 1) {
-        mp_raise_ValueError(translate("Pin count must be at least 1"));
-    }
+    mp_int_t in_pin_count = mp_arg_validate_int_min(args[ARG_in_pin_count].u_int, 1, MP_QSTR_in_pin_count);
+
     const mcu_pin_obj_t *first_set_pin = validate_obj_is_pin_or_none(args[ARG_first_set_pin].u_obj);
-    if (args[ARG_set_pin_count].u_int < 1) {
-        mp_raise_ValueError(translate("Pin count must be at least 1"));
-    }
-    if (args[ARG_set_pin_count].u_int > 5) {
-        mp_raise_ValueError(translate("Set pin count must be between 1 and 5"));
-    }
+    mp_int_t set_pin_count = mp_arg_validate_int_range(args[ARG_set_pin_count].u_int, 1, 5, MP_QSTR_set_pin_count);
+
     const mcu_pin_obj_t *first_sideset_pin = validate_obj_is_pin_or_none(args[ARG_first_sideset_pin].u_obj);
-    if (args[ARG_sideset_pin_count].u_int < 1) {
-        mp_raise_ValueError(translate("Pin count must be at least 1"));
-    }
-    if (args[ARG_sideset_pin_count].u_int > 5) {
-        mp_raise_ValueError(translate("Side set pin count must be between 1 and 5"));
-    }
+    mp_int_t sideset_pin_count = mp_arg_validate_int_range(args[ARG_sideset_pin_count].u_int, 1, 5, MP_QSTR_set_pin_count);
 
     const mcu_pin_obj_t *jmp_pin = validate_obj_is_pin_or_none(args[ARG_jmp_pin].u_obj);
     digitalio_pull_t jmp_pin_pull = validate_pull(args[ARG_jmp_pin_pull].u_rom_obj, MP_QSTR_jmp_pull);
 
-    mp_int_t pull_threshold = args[ARG_pull_threshold].u_int;
-    mp_int_t push_threshold = args[ARG_push_threshold].u_int;
-    if (pull_threshold < 1 || pull_threshold > 32) {
-        mp_raise_ValueError(translate("pull_threshold must be between 1 and 32"));
-    }
-    if (push_threshold < 1 || push_threshold > 32) {
-        mp_raise_ValueError(translate("push_threshold must be between 1 and 32"));
-    }
+    mp_int_t pull_threshold =
+        mp_arg_validate_int_range(args[ARG_pull_threshold].u_int, 1, 32, MP_QSTR_pull_threshold);
+    mp_int_t push_threshold =
+        mp_arg_validate_int_range(args[ARG_push_threshold].u_int, 1, 32, MP_QSTR_push_threshold);
 
-    if (bufinfo.len < 2) {
-        mp_raise_ValueError(translate("Program must contain at least one 16-bit instruction."));
-    }
+    mp_arg_validate_length_range(bufinfo.len, 2, 64, MP_QSTR_program);
     if (bufinfo.len % 2 != 0) {
         mp_raise_ValueError(translate("Program size invalid"));
     }
-    if (bufinfo.len > 64) {
-        mp_raise_ValueError(translate("Program too large"));
-    }
 
+    mp_arg_validate_length_range(init_bufinfo.len, 0, 64, MP_QSTR_init);
     if (init_bufinfo.len % 2 != 0) {
         mp_raise_ValueError(translate("Init program size invalid"));
     }

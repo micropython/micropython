@@ -34,7 +34,7 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/compressed_string.h"
 
 // This is the definition of the opaque MicroPython object type.
 // All concrete objects have an encoding within this type and the

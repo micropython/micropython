@@ -32,7 +32,7 @@
 #include "py/parsenum.h"
 #include "py/smallint.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>

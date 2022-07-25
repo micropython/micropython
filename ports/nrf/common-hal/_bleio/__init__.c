@@ -185,7 +185,12 @@ STATIC bool _on_gattc_read_rsp_evt(ble_evt_t *ble_evt, void *param) {
             }
             break;
         }
-
+        case BLE_GAP_EVT_DISCONNECTED: {
+            read->conn_handle = BLE_CONN_HANDLE_INVALID;
+            read->done = true;
+            return false;
+            break;
+        }
         default:
             // For debugging.
             // mp_printf(&mp_plat_print, "Unhandled characteristic event: 0x%04x\n", ble_evt->header.evt_id);
@@ -219,6 +224,8 @@ size_t common_hal_bleio_gattc_read(uint16_t handle, uint16_t conn_handle, uint8_
     while (!read_info.done) {
         RUN_BACKGROUND_TASKS;
     }
+    // Test if we were disconnected while reading
+    common_hal_bleio_check_connected(read_info.conn_handle);
 
     ble_drv_remove_event_handler(_on_gattc_read_rsp_evt, &read_info);
     check_gatt_status(read_info.status);

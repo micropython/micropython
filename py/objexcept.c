@@ -39,7 +39,7 @@
 #include "py/gc.h"
 #include "py/mperrno.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // Number of items per traceback entry (file, line, block)
 #define TRACEBACK_ENTRY_LEN (3)

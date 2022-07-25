@@ -29,7 +29,7 @@
 
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
@@ -156,6 +156,13 @@ NORETURN void mp_arg_error_unimpl_kw(void) {
 #endif
 
 
+mp_int_t mp_arg_validate_int(mp_int_t i, mp_int_t required_i, qstr arg_name) {
+    if (i != required_i) {
+        mp_raise_ValueError_varg(translate("%q must be %d"), arg_name, required_i);
+    }
+    return i;
+}
+
 mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name) {
     if (i < min) {
         mp_raise_ValueError_varg(translate("%q must be >= %d"), arg_name, min);
@@ -194,6 +201,35 @@ mp_uint_t mp_arg_validate_length_range(mp_uint_t length, mp_uint_t min, mp_uint_
     return length;
 }
 
+mp_uint_t mp_arg_validate_length_min(mp_uint_t length, mp_uint_t min, qstr arg_name) {
+    if (length < min) {
+        mp_raise_ValueError_varg(translate("%q length must be >= %d"), arg_name, min);
+    }
+    return length;
+}
+
+mp_uint_t mp_arg_validate_length_max(mp_uint_t length, mp_uint_t max, qstr arg_name) {
+    if (length > max) {
+        mp_raise_ValueError_varg(translate("%q length must be <= %d"), arg_name, max);
+    }
+    return length;
+}
+
+mp_uint_t mp_arg_validate_length(mp_uint_t length, mp_uint_t required_length, qstr arg_name) {
+    if (length != required_length) {
+        mp_raise_ValueError_varg(translate("%q length must be %d"), arg_name, required_length);
+    }
+    return length;
+}
+
+// int instead of uint because an index can be negative in some cases.
+mp_int_t mp_arg_validate_index_range(mp_int_t index, mp_int_t min, mp_int_t max, qstr arg_name) {
+    if (index < min || index > max) {
+        mp_raise_IndexError_varg(translate("%q out of range"), arg_name, min, max);
+    }
+    return index;
+}
+
 mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_name) {
     if (!mp_obj_is_type(obj, type)) {
         mp_raise_TypeError_varg(translate("%q must be of type %q"), arg_name, type->name);
@@ -201,9 +237,21 @@ mp_obj_t mp_arg_validate_type(mp_obj_t obj, const mp_obj_type_t *type, qstr arg_
     return obj;
 }
 
-mp_obj_t mp_arg_validate_string(mp_obj_t obj, qstr arg_name) {
+mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_str(obj)) {
         mp_raise_TypeError_varg(translate("%q must be a string"), arg_name);
     }
     return obj;
+}
+
+mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name) {
+    mp_int_t an_int;
+    if (!mp_obj_get_int_maybe(obj, &an_int)) {
+        mp_raise_TypeError_varg(translate("%q must be an int"), arg_name);
+    }
+    return an_int;
+}
+
+NORETURN void mp_arg_error_invalid(qstr arg_name) {
+    mp_raise_ValueError_varg(translate("Invalid %q"), arg_name);
 }

@@ -48,9 +48,17 @@ void peripherals_touch_init(const touch_pad_t touchpad) {
     // touch_pad_config() must be done before touch_pad_fsm_start() the first time.
     // Otherwise the calibration is wrong and we get maximum raw values if there is
     // a trace of any significant length on the pin.
+    #if defined(CONFIG_IDF_TARGET_ESP32)
+    touch_pad_config(touchpad, 0);
+    #else
     touch_pad_config(touchpad);
+    #endif
     if (!touch_inited) {
+        #if defined(CONFIG_IDF_TARGET_ESP32)
+        touch_pad_sw_start();
+        #else
         touch_pad_fsm_start();
+        #endif
         touch_inited = true;
     }
 }

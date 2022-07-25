@@ -36,45 +36,41 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_b);
 
     // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config = {
+    pcnt_config_t pcnt_config_channel_0 = {
         // Set PCNT input signal and control GPIOs
         .pulse_gpio_num = pin_a->number,
         .ctrl_gpio_num = pin_b->number,
         .channel = PCNT_CHANNEL_0,
         // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,   // Count up on the positive edge
-        .neg_mode = PCNT_COUNT_INC,   // Keep the counter value on the negative edge
+        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
         // What to do when control input is low or high?
         .lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
         .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
     };
 
-    // Initialize PCNT unit
-    const int8_t unit = peripherals_pcnt_get_unit(pcnt_config);
+    // Allocate and initialize PCNT unit, CHANNEL_0.
+    const int8_t unit = peripherals_pcnt_init(&pcnt_config_channel_0);
     if (unit == -1) {
         mp_raise_RuntimeError(translate("All PCNT units in use"));
     }
 
-    pcnt_unit_config(&pcnt_config);
+    pcnt_config_t pcnt_config_channel_1 = {
+        // Set PCNT input signal and control GPIOs
+        .pulse_gpio_num = pin_b->number,  // Pins are reversed from above
+        .ctrl_gpio_num = pin_a->number,
+        .channel = PCNT_CHANNEL_1,
+        // What to do on the positive / negative edge of pulse input?
+        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
+        // What to do when control input is low or high?
+        .lctrl_mode = PCNT_MODE_KEEP,        // Keep the primary counter mode if low
+        .hctrl_mode = PCNT_MODE_REVERSE,     // Reverse counting direction if high
+        .unit = unit,
+    };
 
-    pcnt_config.pulse_gpio_num = pin_b->number;     // What was control is now signal
-    pcnt_config.ctrl_gpio_num = pin_a->number;      // What was signal is now control
-    pcnt_config.channel = PCNT_CHANNEL_1;
-    // What to do on the positive / negative edge of pulse input?
-    pcnt_config.pos_mode = PCNT_COUNT_DEC;       // Count up on the positive edge
-    pcnt_config.neg_mode = PCNT_COUNT_INC;       // Keep the counter value on the negative edge
-    // What to do when control input is low or high?
-    pcnt_config.lctrl_mode = PCNT_MODE_KEEP;         // Keep the primary counter mode if low
-    pcnt_config.hctrl_mode = PCNT_MODE_REVERSE;      // Reverse counting direction if high
-
-    pcnt_unit_config(&pcnt_config);
-
-    // Initialize PCNT's counter
-    pcnt_counter_pause(pcnt_config.unit);
-    pcnt_counter_clear(pcnt_config.unit);
-
-    // Everything is set up, now go to counting
-    pcnt_counter_resume(pcnt_config.unit);
+    // Reinitalize same unit, CHANNEL_1 with different parameters.
+    peripherals_pcnt_reinit(&pcnt_config_channel_1);
 
     self->pin_a = pin_a->number;
     self->pin_b = pin_b->number;

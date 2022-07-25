@@ -436,7 +436,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
                 if (first_in_pin == NULL) {
                     mp_raise_ValueError_varg(translate("Missing first_in_pin. Instruction %d waits based on pin"), i);
                 }
-                if (wait_index > in_pin_count) {
+                if (wait_index >= in_pin_count) {
                     mp_raise_ValueError_varg(translate("Instruction %d waits on input outside of count"), i);
                 }
             }

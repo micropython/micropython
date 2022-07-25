@@ -63,15 +63,12 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
 
     const uint8_t *key = NULL;
     uint32_t key_length = 0;
-    if (mp_get_buffer(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ)) {
-        if ((bufinfo.len != 16) && (bufinfo.len != 24) && (bufinfo.len != 32)) {
-            mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
-        }
-        key = bufinfo.buf;
-        key_length = bufinfo.len;
-    } else {
-        mp_raise_TypeError(translate("No key was specified"));
+    mp_get_buffer_raise(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ);
+    if ((bufinfo.len != 16) && (bufinfo.len != 24) && (bufinfo.len != 32)) {
+        mp_raise_TypeError(translate("Key must be 16, 24, or 32 bytes long"));
     }
+    key = bufinfo.buf;
+    key_length = bufinfo.len;
 
     int mode = args[ARG_mode].u_int;
     switch (args[ARG_mode].u_int) {

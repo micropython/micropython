@@ -95,12 +95,8 @@ STATIC const flash_layout_t flash_layout[] = {
 STATIC uint8_t _flash_cache[0x20000] __attribute__((aligned(4)));
 
 #elif defined(STM32L4)
-// todo - the L4 devices can have different flash sizes and different page sizes
-// depending upon the dual bank configuration
-// This is hardcoded for the Swan R5. When support for other devices is needed more conditionals will be required
-// to differentiate.
 STATIC const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x1000, 256 },
+    { 0x08100000, 0x1000, 256 },
 };
 STATIC uint8_t _flash_cache[0x1000] __attribute__((aligned(4)));
 
@@ -174,6 +170,9 @@ uint32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *si
 }
 
 void supervisor_flash_init(void) {
+    #ifdef STM32L4
+    // todo - check that the device is in dual bank mode
+    #endif
 }
 
 uint32_t supervisor_flash_get_block_size(void) {
@@ -202,7 +201,7 @@ void port_internal_flash_flush(void) {
     FLASH_EraseInitTypeDef EraseInitStruct = {};
     #if CPY_STM32L4
     EraseInitStruct.TypeErase = TYPEERASE_PAGES;
-    EraseInitStruct.Banks = FLASH_BANK_1;
+    EraseInitStruct.Banks = FLASH_BANK_2;       // filesystem stored in upper 1MB of flash in dual bank mode
     #else
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V

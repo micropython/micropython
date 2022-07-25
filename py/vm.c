@@ -37,6 +37,7 @@
 #include "py/profile.h"
 
 #include "supervisor/linker.h"
+#include "supervisor/shared/translate/translate.h"
 
 // *FORMAT-OFF*
 

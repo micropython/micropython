@@ -30,7 +30,7 @@
 #include "py/obj.h"
 #include "py/mperrno.h"
 
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 // This list can be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  If it's not defined then we provide a default.

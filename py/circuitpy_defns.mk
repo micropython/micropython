@@ -67,6 +67,20 @@ else
 CFLAGS += -DCIRCUITPY_DEBUG=0
 endif
 
+CIRCUITPY_LTO ?= 0
+CIRCUITPY_LTO_PARTITION ?= balanced
+ifeq ($(CIRCUITPY_LTO),1)
+CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION) -DCIRCUITPY_LTO=1
+else
+CFLAGS += -DCIRCUITPY_LTO=0
+endif
+
+# Produce an object file for translate.c instead of including it in a header.
+# The header version can be optimized on non-LTO builds *if* inlining is allowed
+# otherwise, it blows up the binary sizes with tons of translate copies.
+CIRCUITPY_TRANSLATE_OBJECT ?= $(CIRCUITPY_LTO)
+CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
+
 ###
 # Handle frozen modules.
 
@@ -158,6 +172,9 @@ endif
 ifeq ($(CIRCUITPY_DISPLAYIO),1)
 SRC_PATTERNS += displayio/%
 endif
+ifeq ($(CIRCUITPY_DOTENV),1)
+SRC_PATTERNS += dotenv/%
+endif
 ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
 SRC_PATTERNS += paralleldisplay/%
 endif
@@ -181,9 +198,6 @@ ifeq ($(CIRCUITPY_FUTURE),1)
 SRC_PATTERNS += __future__/%
 endif
 
-ifeq ($(CIRCUITPY_GAMEPADSHIFT),1)
-SRC_PATTERNS += gamepadshift/%
-endif
 ifeq ($(CIRCUITPY_GETPASS),1)
 SRC_PATTERNS += getpass/%
 endif
@@ -192,6 +206,9 @@ SRC_PATTERNS += gifio/%
 endif
 ifeq ($(CIRCUITPY_GNSS),1)
 SRC_PATTERNS += gnss/%
+endif
+ifeq ($(CIRCUITPY_HASHLIB),1)
+SRC_PATTERNS += hashlib/%
 endif
 ifeq ($(CIRCUITPY_I2CPERIPHERAL),1)
 SRC_PATTERNS += i2cperipheral/%
@@ -405,6 +422,8 @@ SRC_COMMON_HAL_ALL = \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
 	gnss/SatelliteSystem.c \
+	hashlib/__init__.c \
+	hashlib/Hash.c \
 	i2cperipheral/I2CPeripheral.c \
 	i2cperipheral/__init__.c \
 	microcontroller/Pin.c \
@@ -548,13 +567,12 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotenv/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
-	gamepadshift/GamePadShift.c \
-	gamepadshift/__init__.c \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
@@ -757,3 +775,6 @@ endif
 
 check-release-needs-clean-build:
 	@echo "RELEASE_NEEDS_CLEAN_BUILD = $(RELEASE_NEEDS_CLEAN_BUILD)"
+
+# Ignore these errors
+$(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized

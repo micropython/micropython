@@ -41,6 +41,9 @@ void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name);
 void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, qstr arg_name2);
 void validate_list_is_free_pins(qstr what, const mcu_pin_obj_t **pins_out, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out);
 void validate_pins(qstr what, uint8_t *pin_nos, mp_int_t max_pins, mp_obj_t seq, uint8_t *count_out);
+NORETURN void raise_ValueError_invalid_pin(void);
+NORETURN void raise_ValueError_invalid_pins(void);
+NORETURN void raise_ValueError_invalid_pin_name(qstr pin_name);
 
 void assert_pin_free(const mcu_pin_obj_t *pin);
 

@@ -58,7 +58,7 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
 #include "supervisor/workflow.h"
@@ -99,6 +99,10 @@
 
 #if CIRCUITPY_MEMORYMONITOR
 #include "shared-module/memorymonitor/__init__.h"
+#endif
+
+#if CIRCUITPY_SOCKETPOOL
+#include "shared-bindings/socketpool/__init__.h"
 #endif
 
 #if CIRCUITPY_USB_HID
@@ -290,6 +294,16 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     keypad_reset();
     #endif
 
+    // Close user-initiated sockets.
+    #if CIRCUITPY_SOCKETPOOL
+    socketpool_user_reset();
+    #endif
+
+    // Turn off user initiated WiFi connections.
+    #if CIRCUITPY_WIFI
+    wifi_user_reset();
+    #endif
+
     // reset_board_buses() first because it may release pins from the never_reset state, so that
     // reset_port() can reset them.
     #if CIRCUITPY_BOARD
@@ -303,6 +317,9 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, mp_obj_t exception) {
     stop_mp();
     free_memory(heap);
     supervisor_move_memory();
+
+    // Let the workflows know we've reset in case they want to restart.
+    supervisor_workflow_reset();
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
@@ -570,6 +587,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             else if (awoke_from_true_deep_sleep ||
                      port_get_raw_ticks(NULL) > CIRCUITPY_WORKFLOW_CONNECTION_SLEEP_DELAY * 1024) {
                 // OK to start sleeping, real or fake.
+                #if CIRCUITPY_DISPLAYIO
+                common_hal_displayio_release_displays();
+                #endif
                 status_led_deinit();
                 deinit_rxtx_leds();
                 board_deinit();
@@ -684,6 +704,10 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 vstr_t *boot_output;
 
 STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
+    if (safe_mode == NO_HEAP) {
+        return;
+    }
+
     // If not in safe mode, run boot before initing USB and capture output in a file.
 
     // There is USB setup to do even if boot.py is not actually run.
@@ -889,21 +913,7 @@ int __attribute__((used)) main(void) {
 
     run_boot_py(safe_mode);
 
-    // Start USB after giving boot.py a chance to tweak behavior.
-    #if CIRCUITPY_USB
-    // Setup USB connection after heap is available.
-    // It needs the heap to build descriptors.
-    usb_init();
-    #endif
-
-    // Set up any other serial connection.
-    serial_init();
-
-    #if CIRCUITPY_BLEIO
-    bleio_reset();
-    supervisor_bluetooth_enable_workflow();
-    supervisor_start_bluetooth();
-    #endif
+    supervisor_workflow_start();
 
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;

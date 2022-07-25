@@ -41,7 +41,7 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class DigitalInOut:
 //|     """Digital input and output
@@ -207,7 +207,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_direction(mp_obj_t self_in, mp_ob
             mp_raise_NotImplementedError(translate("Pin is input only"));
         }
     } else {
-        mp_raise_ValueError(translate("Invalid direction."));
+        mp_arg_error_invalid(MP_QSTR_direction);
     }
     return mp_const_none;
 }

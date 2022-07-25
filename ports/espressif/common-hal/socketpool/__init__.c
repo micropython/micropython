@@ -23,3 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include "shared-bindings/socketpool/__init__.h"
+
+#include "common-hal/socketpool/Socket.h"
+
+void socketpool_user_reset(void) {
+    socket_user_reset();
+}

@@ -104,7 +104,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
         break;
     }
     if (instance_index == NUM_SPI) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     self->clock = clock;

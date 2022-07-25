@@ -35,13 +35,9 @@
 
 STATIC bool inited = false;
 
-void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
-    if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
-        return;
-    }
+void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
     if (inited) {
-        mp_raise_RuntimeError(translate("mDNS already initialized"));
+        return;
     }
     mdns_init();
 
@@ -50,19 +46,31 @@ void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_
     snprintf(self->default_hostname, sizeof(self->default_hostname), "cpy-%02x%02x%02x", mac[3], mac[4], mac[5]);
     common_hal_mdns_server_set_hostname(self, self->default_hostname);
 
-    // Set a delegated entry to ourselves. This allows us to respond to "circuitpython.local"
-    // queries as well.
-    // TODO: Allow for disabling this with `supervisor.disable_web_workflow()`.
-    mdns_ip_addr_t our_ip;
-    esp_netif_get_ip_info(common_hal_wifi_radio_obj.netif, &common_hal_wifi_radio_obj.ip_info);
-    our_ip.next = NULL;
-    our_ip.addr.type = ESP_IPADDR_TYPE_V4;
-    our_ip.addr.u_addr.ip4 = common_hal_wifi_radio_obj.ip_info.ip;
-    our_ip.addr.u_addr.ip6.addr[1] = 0;
-    our_ip.addr.u_addr.ip6.addr[2] = 0;
-    our_ip.addr.u_addr.ip6.addr[3] = 0;
-    our_ip.addr.u_addr.ip6.zone = 0;
-    mdns_delegate_hostname_add("circuitpython", &our_ip);
+    if (workflow) {
+        // Set a delegated entry to ourselves. This allows us to respond to "circuitpython.local"
+        // queries as well.
+        mdns_ip_addr_t our_ip;
+        esp_netif_get_ip_info(common_hal_wifi_radio_obj.netif, &common_hal_wifi_radio_obj.ip_info);
+        our_ip.next = NULL;
+        our_ip.addr.type = ESP_IPADDR_TYPE_V4;
+        our_ip.addr.u_addr.ip4 = common_hal_wifi_radio_obj.ip_info.ip;
+        our_ip.addr.u_addr.ip6.addr[1] = 0;
+        our_ip.addr.u_addr.ip6.addr[2] = 0;
+        our_ip.addr.u_addr.ip6.addr[3] = 0;
+        our_ip.addr.u_addr.ip6.zone = 0;
+        mdns_delegate_hostname_add("circuitpython", &our_ip);
+    }
+}
+
+void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
+    if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
+        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
+        return;
+    }
+    if (inited) {
+        mp_raise_RuntimeError(translate("mDNS already initialized"));
+    }
+    mdns_server_construct(self, false);
 }
 
 void common_hal_mdns_server_deinit(mdns_server_obj_t *self) {
@@ -82,6 +90,10 @@ const char *common_hal_mdns_server_get_hostname(mdns_server_obj_t *self) {
 
 void common_hal_mdns_server_set_hostname(mdns_server_obj_t *self, const char *hostname) {
     mdns_hostname_set(hostname);
+    // Wait for the mdns task to set the new hostname.
+    while (!mdns_hostname_exists(hostname)) {
+        RUN_BACKGROUND_TASKS;
+    }
     self->hostname = hostname;
 }
 
@@ -95,6 +107,48 @@ const char *common_hal_mdns_server_get_instance_name(mdns_server_obj_t *self) {
 void common_hal_mdns_server_set_instance_name(mdns_server_obj_t *self, const char *instance_name) {
     mdns_instance_name_set(instance_name);
     self->instance_name = instance_name;
+}
+
+size_t mdns_server_find(mdns_server_obj_t *self, const char *service_type, const char *protocol,
+    mp_float_t timeout, mdns_remoteservice_obj_t *out, size_t out_len) {
+    mdns_search_once_t *search = mdns_query_async_new(NULL, service_type, protocol, MDNS_TYPE_PTR, timeout * 1000, 255, NULL);
+    if (search == NULL) {
+        return 0;
+    }
+    mdns_result_t *results;
+    while (!mdns_query_async_get_results(search, 1, &results)) {
+        RUN_BACKGROUND_TASKS;
+    }
+    mdns_query_async_delete(search);
+    // Count how many results we got.
+    // TODO: Remove this loop when moving off 4.4. Newer APIs will give us num_results
+    // back directly.
+    mdns_result_t *next = results;
+    uint8_t num_results = 0;
+    while (next != NULL) {
+        num_results++;
+        next = next->next;
+    }
+
+    next = results;
+    // Don't error if we're out of memory. Instead, truncate the tuple.
+    uint8_t added = 0;
+    while (next != NULL && added < out_len) {
+        mdns_remoteservice_obj_t *service = &out[added];
+
+        service->result = next;
+        service->base.type = &mdns_remoteservice_type;
+        next = next->next;
+        // Break the linked list so we free each result separately.
+        service->result->next = NULL;
+        added++;
+    }
+    if (added < out_len) {
+        // Free the remaining results from the IDF because we don't have
+        // enough space in Python.
+        mdns_query_results_free(next);
+    }
+    return num_results;
 }
 
 mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_float_t timeout) {

@@ -26,3 +26,7 @@ pyelftools
 
 # for stubs and annotations
 adafruit-circuitpython-typing
+
+# for web workflow minify
+minify_html
+jsmin

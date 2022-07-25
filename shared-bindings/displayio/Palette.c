@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 //| class Palette:
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
@@ -160,6 +160,8 @@ STATIC mp_obj_t displayio_palette_obj_make_transparent(mp_obj_t self_in, mp_obj_
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
+
     common_hal_displayio_palette_make_transparent(self, palette_index);
     return mp_const_none;
 }
@@ -175,6 +177,8 @@ STATIC mp_obj_t displayio_palette_obj_make_opaque(mp_obj_t self_in, mp_obj_t pal
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
+
     common_hal_displayio_palette_make_opaque(self, palette_index);
     return mp_const_none;
 }
@@ -191,6 +195,8 @@ STATIC mp_obj_t displayio_palette_obj_is_transparent(mp_obj_t self_in, mp_obj_t 
     if (!mp_obj_get_int_maybe(palette_index_obj, &palette_index)) {
         mp_raise_ValueError(translate("palette_index should be an int"));
     }
+    palette_index = mp_arg_validate_int_range(palette_index, 0, common_hal_displayio_palette_get_len(self) - 1, MP_QSTR_palette_index);
+
     return mp_obj_new_bool(common_hal_displayio_palette_is_transparent(self, palette_index));
 }
 MP_DEFINE_CONST_FUN_OBJ_2(displayio_palette_is_transparent_obj, displayio_palette_obj_is_transparent);

@@ -32,7 +32,7 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate.h"
+#include "supervisor/shared/translate/translate.h"
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
@@ -42,7 +42,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     //
     // 46 is also input-only so it'll never work.
     if (scl->number == 45 || scl->number == 46 || sda->number == 45 || sda->number == 46) {
-        mp_raise_ValueError(translate("Invalid pins"));
+        raise_ValueError_invalid_pins();
     }
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
@@ -113,7 +113,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (err == ESP_FAIL) {
             mp_raise_OSError(MP_EIO);
         } else {
-            mp_raise_ValueError(translate("Invalid argument"));
+            mp_raise_RuntimeError(translate("init I2C"));
         }
     }
 

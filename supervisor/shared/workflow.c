@@ -26,14 +26,69 @@
 
 #include <stdbool.h>
 #include "py/mpconfig.h"
+#include "supervisor/background_callback.h"
 #include "supervisor/workflow.h"
+#include "supervisor/serial.h"
 #include "supervisor/shared/workflow.h"
 
+#if CIRCUITPY_BLEIO
+#include "shared-bindings/_bleio/__init__.h"
+#include "supervisor/shared/bluetooth/bluetooth.h"
+#endif
+
 #if CIRCUITPY_USB
+#include "supervisor/usb.h"
 #include "tusb.h"
 #endif
 
+#if CIRCUITPY_WEB_WORKFLOW
+#include "supervisor/shared/web_workflow/web_workflow.h"
+#endif
+static background_callback_t workflow_background_cb;
+
+#if CIRCUITPY_STATUS_BAR
+static void supervisor_workflow_update_status_bar(void) {
+    // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
+    // doesn't get terminated after two following characters and the value is invalid.
+    // This is the OSC command to set the title and the icon text. It can be up to 255 characters
+    // but some may be cut off.
+    serial_write("\x1b" "]0;");
+    serial_write("🐍 ");
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_web_workflow_status();
+    #endif
+    // Send string terminator
+    serial_write("\x1b" "\\");
+}
+#endif
+
+static void workflow_background(void *data) {
+    #if CIRCUITPY_STATUS_BAR
+    supervisor_workflow_update_status_bar();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_web_workflow_background();
+    #endif
+}
+
+// Called during a VM reset. Doesn't actually reset things.
 void supervisor_workflow_reset(void) {
+    #if CIRCUITPY_BLEIO
+    supervisor_start_bluetooth();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_start_web_workflow();
+    #endif
+
+    workflow_background_cb.fun = workflow_background;
+    workflow_background_cb.data = NULL;
+    supervisor_workflow_request_background();
+}
+
+void supervisor_workflow_request_background(void) {
+    background_callback_add_core(&workflow_background_cb);
 }
 
 // Return true as soon as USB communication with host has started,
@@ -56,5 +111,27 @@ bool supervisor_workflow_active(void) {
     return tud_ready();
     #else
     return false;
+    #endif
+}
+
+void supervisor_workflow_start(void) {
+    // Start USB after giving boot.py a chance to tweak behavior.
+    #if CIRCUITPY_USB
+    // Setup USB connection after heap is available.
+    // It needs the heap to build descriptors.
+    usb_init();
+    #endif
+
+    // Set up any other serial connection.
+    serial_init();
+
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
+    supervisor_bluetooth_enable_workflow();
+    supervisor_start_bluetooth();
+    #endif
+
+    #if CIRCUITPY_WEB_WORKFLOW
+    supervisor_start_web_workflow();
     #endif
 }

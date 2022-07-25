@@ -32,6 +32,8 @@
 #include "py/mpconfig.h"
 #include "py/objmodule.h"
 
+#include "supervisor/shared/translate/translate.h"
+
 #if MICROPY_PY_BUILTINS_HELP
 
 const char mp_help_default_text[] =

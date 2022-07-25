@@ -45,7 +45,10 @@
 //| call :py:meth:`!deinit` or use a context manager. See
 //| :ref:`lifetime-and-contextmanagers` for more info.
 //|
-//| For example::
+//| For more information about working with the `touchio` module in CircuitPython,
+//| see `this Learn guide page <https://learn.adafruit.com/circuitpython-essentials/circuitpython-cap-touch>`_.
+//|
+//| Example::
 //|
 //|   import touchio
 //|   from board import *
