@@ -1,0 +1,7 @@
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="beetle-esp32-c3
+# end of LWIP
+
+
