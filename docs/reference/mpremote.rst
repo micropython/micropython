@@ -42,7 +42,7 @@ The full list of supported commands are:
 
   .. code-block:: bash
 
-      $ mpremote connect <device>
+      $ mpremote connect <device> [command]
 
   ``<device>`` may be one of:
 
@@ -53,6 +53,8 @@ The full list of supported commands are:
     command)
   - ``port:<path>``: connect to the device with the given path
   - any valid device name/path, to connect to that device
+
+  ``[command]`` can be used to run a command on the device, default is ``repl``
 
 - disconnect current device:
 
@@ -226,6 +228,8 @@ Examples
   mpremote a1
 
   mpremote connect /dev/ttyUSB0 repl
+
+  mpremote connect /dev/ttyUSB0 run local_script.py
 
   mpremote ls
 
