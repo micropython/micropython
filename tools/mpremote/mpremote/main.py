@@ -5,16 +5,16 @@ MIT license; Copyright (c) 2019-2022 Damien P. George
 This program provides a set of utilities to interact with and automate a
 MicroPython device over a serial connection.  Commands supported are:
 
-    mpremote                         -- auto-detect, connect and enter REPL
-    mpremote <device-shortcut>       -- connect to given device
-    mpremote connect <device>        -- connect to given device
-    mpremote disconnect              -- disconnect current device
-    mpremote mount <local-dir>       -- mount local directory on device
-    mpremote eval <string>           -- evaluate and print the string
-    mpremote exec <string>           -- execute the string
-    mpremote run <script>            -- run the given local script
-    mpremote fs <command> <args...>  -- execute filesystem commands on the device
-    mpremote repl                    -- enter REPL
+    mpremote                              -- auto-detect, connect and enter REPL
+    mpremote <device-shortcut>            -- connect to given device
+    mpremote connect <device> [command]   -- connect to device and enter REPL or execute command
+    mpremote disconnect                   -- disconnect current device
+    mpremote mount <local-dir>            -- mount local directory on device
+    mpremote eval <string>                -- evaluate and print the string
+    mpremote exec <string>                -- execute the string
+    mpremote run <script>                 -- run the given local script
+    mpremote fs <command> <args...>       -- execute filesystem commands on the device
+    mpremote repl                         -- enter REPL
 """
 
 import os, sys

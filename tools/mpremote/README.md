@@ -11,9 +11,11 @@ This will automatically connect to the device and provide an interactive REPL.
 
 The full list of supported commands are:
 
-    mpremote connect <device>        -- connect to given device
+    mpremote connect <device> [cmd]  -- connect to given device
                                         device may be: list, auto, id:x, port:x
                                         or any valid device name/path
+                                        cmd may be provided to run a command
+                                        on the given device, default is 'repl'
     mpremote disconnect              -- disconnect current device
     mpremote mount <local-dir>       -- mount local directory on device
     mpremote eval <string>           -- evaluate and print the string
@@ -62,6 +64,7 @@ Examples:
     mpremote
     mpremote a1
     mpremote connect /dev/ttyUSB0 repl
+    mpremote connect /dev/ttyUSB0 run local_script.py
     mpremote ls
     mpremote a1 ls
     mpremote exec "import micropython; micropython.mem_info()"
