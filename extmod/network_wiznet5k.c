@@ -61,6 +61,9 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
+#if LWIP_MDNS_RESPONDER
+#include "lwip/apps/mdns.h"
+#endif
 
 #define TRACE_ETH_TX (0x0002)
 #define TRACE_ETH_RX (0x0004)
@@ -99,14 +102,17 @@ typedef struct _wiznet5k_obj_t {
     struct _machine_spi_obj_t *spi;
     mp_hal_pin_obj_t cs;
     mp_hal_pin_obj_t rst;
-    #if WIZNET5K_WITH_LWIP_STACK
+#if WIZNET5K_WITH_LWIP_STACK
     mp_hal_pin_obj_t pin_intn;
     bool use_interrupt;
     uint8_t eth_frame[1514];
     uint32_t trace_flags;
     struct netif netif;
     struct dhcp dhcp_struct;
-    #else // WIZNET5K_PROVIDED_STACK
+    #if LWIP_MDNS_RESPONDER
+    char hostname[MDNS_LABEL_MAXLEN];
+    #endif /* LWIP_NETIF_HOSTNAME */    
+#else // WIZNET5K_PROVIDED_STACK
     wiz_NetInfo netinfo;
     uint8_t socket_used;
     bool active;
@@ -301,7 +307,6 @@ STATIC err_t wiznet5k_netif_init(struct netif *netif) {
 
     // Enable MAC filtering so we only get frames destined for us, to reduce load on lwIP
     setSn_MR(0, getSn_MR(0) | Sn_MR_MFEN);
-
     return ERR_OK;
 }
 
@@ -314,6 +319,13 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     netif_add(&self->netif, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, wiznet5k_netif_init, ethernet_input);
     self->netif.name[0] = 'e';
     self->netif.name[1] = '0';
+#if LWIP_NETIF_HOSTNAME
+    #if LWIP_MDNS_RESPONDER
+    self->netif.hostname = self->hostname;
+    #else
+    self->netif.hostname = NULL;
+    #endif
+#endif
     netif_set_default(&self->netif);
     dns_setserver(0, &ipconfig[3]);
     dhcp_set_struct(&self->netif, &self->dhcp_struct);
@@ -323,6 +335,10 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     self->netif.flags |= NETIF_FLAG_UP;
     dhcp_start(&self->netif);
     self->netif.flags &= ~NETIF_FLAG_UP;
+    #if LWIP_MDNS_RESPONDER
+    strcpy(self->hostname,"pico_w5k");
+    mdns_resp_add_netif(&self->netif, self->hostname, 60);
+    #endif
 }
 
 void wiznet5k_poll(void) {
@@ -345,6 +361,21 @@ void wiznet5k_poll(void) {
         }
     }
 }
+
+#if LWIP_MDNS_RESPONDER
+STATIC mp_obj_t wiznet5k_hostname(size_t n_args, const mp_obj_t *args) {
+    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    if (n_args == 1) {
+        return mp_obj_new_str(self->hostname, strlen(self->hostname));
+    } else {
+        const char* str = mp_obj_str_get_str(args[1]);
+        strncpy(self->hostname, str, MDNS_LABEL_MAXLEN - 1);
+        mdns_resp_rename_netif(&self->netif, self->hostname);
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_hostname_obj, 1, 2, wiznet5k_hostname);
+#endif
 
 #endif // MICROPY_PY_LWIP
 
@@ -1009,6 +1040,9 @@ STATIC const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wiznet5k_config_obj) },
     #if WIZNET5K_WITH_LWIP_STACK
     { MP_ROM_QSTR(MP_QSTR_send_ethernet), MP_ROM_PTR(&send_ethernet_obj) },
+    #if LWIP_MDNS_RESPONDER
+    { MP_ROM_QSTR(MP_QSTR_hostname), MP_ROM_PTR(&wiznet5k_hostname_obj) },
+    #endif
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(wiznet5k_locals_dict, wiznet5k_locals_dict_table);
