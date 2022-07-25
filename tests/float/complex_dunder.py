@@ -1,6 +1,11 @@
 # test __complex__ function support
 
 
+class TestFloat:
+    def __float__(self):
+        return 1.0
+
+
 class TestComplex:
     def __complex__(self):
         return 1j + 10
@@ -20,6 +25,7 @@ class Test:
     pass
 
 
+print(complex(TestFloat()))
 print(complex(TestComplex()))
 
 try:
