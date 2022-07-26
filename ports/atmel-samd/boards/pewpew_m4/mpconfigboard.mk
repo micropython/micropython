@@ -42,6 +42,7 @@ CIRCUITPY_KEYPAD = 1
 CIRCUITPY_MATH = 1
 CIRCUITPY_STAGE = 1
 CIRCUITPY_SYNTHIO = 1
+CIRCUITPY_ZLIB = 1
 
 FROZEN_MPY_DIRS += $(TOP)/frozen/circuitpython-stage/pewpew_m4
 CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
