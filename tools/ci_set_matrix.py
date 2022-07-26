@@ -21,6 +21,7 @@ import json
 import yaml
 
 import build_board_info
+from shared_bindings_matrix import get_settings_from_makefile
 
 PORT_TO_ARCH = {
     "atmel-samd": "arm",
@@ -53,6 +54,7 @@ def set_boards_to_build(build_all):
     all_board_ids = set()
     port_to_boards = {}
     board_to_port = {}
+    board_settings = {}
     for board_id in boards_info_json:
         info = boards_info_json[board_id]
         if info.get("alias", False):
@@ -70,6 +72,9 @@ def set_boards_to_build(build_all):
         boards_to_build = set()
         board_pattern = re.compile(r"^ports/[^/]+/boards/([^/]+)/")
         port_pattern = re.compile(r"^ports/([^/]+)/")
+        module_pattern = re.compile(
+            r"^(ports/[^/]+/common-hal|shared-bindings|shared-module)/([^/]+)/"
+        )
         for p in changed_files:
             # See if it is board specific
             board_matches = board_pattern.search(p)
@@ -80,7 +85,8 @@ def set_boards_to_build(build_all):
 
             # See if it is port specific
             port_matches = port_pattern.search(p)
-            if port_matches:
+            module_matches = module_pattern.search(p)
+            if port_matches and not module_matches:
                 port = port_matches.group(1)
                 if port != "unix":
                     boards_to_build.update(port_to_boards[port])
@@ -94,6 +100,48 @@ def set_boards_to_build(build_all):
             if p.startswith("tests"):
                 continue
 
+            # As a (nearly) last resort, for some certain files, we compute the settings from the
+            # makefile for each board and determine whether to build them that way.
+            if p.startswith("frozen") or p.startswith("supervisor") or module_matches:
+                for board in all_board_ids:
+                    if board not in board_settings:
+                        board_settings[board] = get_settings_from_makefile(
+                            "../ports/" + board_to_port[board], board
+                        )
+                    settings = board_settings[board]
+
+                    # Check frozen files to see if they are in each board.
+                    frozen = settings.get("FROZEN_MPY_DIRS", "")
+                    if frozen and p.startswith("frozen") and p in frozen:
+                        boards_to_build.add(board)
+                        continue
+
+                    # Check supervisor files. This is useful for limiting workflow changes to the
+                    # relevant boards.
+                    supervisor = settings["SRC_SUPERVISOR"]
+                    if p.startswith("supervisor"):
+                        if p in supervisor:
+                            boards_to_build.add(board)
+                            continue
+
+                        web_workflow = settings["CIRCUITPY_WEB_WORKFLOW"]
+                        while web_workflow.startswith("$("):
+                            web_workflow = settings[web_workflow[2:-1]]
+                        if (
+                            p.startswith("supervisor/shared/web_workflow/static/")
+                            and web_workflow != "0"
+                        ):
+                            boards_to_build.add(board)
+                            continue
+
+                    # Check module matches
+                    if module_matches:
+                        module = module_matches.group(2) + "/"
+                        if module in settings["SRC_PATTERNS"]:
+                            boards_to_build.add(board)
+                            continue
+                continue
+
             # Otherwise build it all
             boards_to_build = all_board_ids
             break
@@ -101,7 +149,7 @@ def set_boards_to_build(build_all):
     # Split boards by architecture.
     print("Building boards:")
     arch_to_boards = {"aarch": [], "arm": [], "riscv": [], "espressif": []}
-    for board in boards_to_build:
+    for board in sorted(boards_to_build):
         print(" ", board)
         port = board_to_port.get(board)
         # A board can appear due to its _deletion_ (rare)
