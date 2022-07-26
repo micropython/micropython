@@ -52,8 +52,8 @@ subprocess.check_output(["make", "stubs"])
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 modules_support_matrix_reverse = defaultdict(list)
-for board, modules in modules_support_matrix.items():
-    for module in modules[0]:
+for board, matrix_info in modules_support_matrix.items():
+    for module in matrix_info["modules"]:
         modules_support_matrix_reverse[module].append(board)
 
 modules_support_matrix_reverse = dict(
