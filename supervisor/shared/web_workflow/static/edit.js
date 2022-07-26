@@ -31,3 +31,17 @@ document.querySelector("#save_btn").onclick = function () {
     console.log("Click Save!");
     save();
 }
+
+let isCtrl = false;
+document.onkeyup=function(e){
+    if(e.keyCode === 17) isCtrl=false;
+}
+
+document.onkeydown=function(e){
+    if(e.keyCode === 17) isCtrl=true;
+    if(e.keyCode === 83 && isCtrl === true) {
+        //ctrl-s pressed
+        save();
+        return false;
+    }
+}
