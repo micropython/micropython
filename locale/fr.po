@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-06 05:15+0000\n"
+"PO-Revision-Date: 2022-07-19 23:15+0000\n"
 "Last-Translator: Maxime Leroy <lisacintosh@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -216,6 +216,10 @@ msgstr "%q() prend %d paramètres positionnels mais %d ont été donnés"
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
 msgstr "%q, %q, et %q doivent tous être de la même longueur"
+
+#: py/objint.c
+msgid "%q=%q"
+msgstr ""
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
@@ -2291,7 +2295,7 @@ msgstr "Format non supporté"
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
-msgstr ""
+msgstr "Algorithme de hachage non supporté"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -2459,7 +2463,7 @@ msgstr "la taille de la matrice et de l'index doivent être égaux"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
-msgstr ""
+msgstr "la tableau à trop de dimensions"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2840,7 +2844,7 @@ msgstr "les arguments convolve ne doivent pas être vides"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "corrupted file"
-msgstr ""
+msgstr "fichier corrompu"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -2938,7 +2942,7 @@ msgstr "vide"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "empty file"
-msgstr ""
+msgstr "fichier vide"
 
 #: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
 msgid "empty heap"
@@ -3261,7 +3265,7 @@ msgstr "la matrice d'entrée est singulière"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be 1- or 2-d"
-msgstr ""
+msgstr "l'entrée doit être 1D ou 2D"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
@@ -3479,7 +3483,7 @@ msgstr "max_length doit être 0-%d lorsque fixed_length est %s"
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
-msgstr ""
+msgstr "le nombre maximal de dimensions est "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3883,7 +3887,7 @@ msgstr "pow() avec 3 arguments nécessite des entiers"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
-msgstr ""
+msgstr "presser le bouton SW38 au démarrage.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
@@ -4327,11 +4331,11 @@ msgstr "types non supportés pour %q: '%q', '%q'"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols is too high"
-msgstr ""
+msgstr "usecols est trop grand"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "usecols keyword must be specified"
-msgstr ""
+msgstr "le mot-clé \"usecols\" doit être spécifié"
 
 #: py/objint.c
 #, c-format
@@ -4376,7 +4380,7 @@ msgstr "axe incorrecte spécifiée"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "wrong dtype"
-msgstr ""
+msgstr "dtype invalide"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong index type"
@@ -4394,7 +4398,7 @@ msgstr "mauvaise taille du tableau de condition"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong length of index array"
-msgstr ""
+msgstr "mauvaise longueur du tableau d'indices"
 
 #: extmod/ulab/code/numpy/create.c py/objarray.c py/objstr.c
 msgid "wrong number of arguments"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,17 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/port.h"
-#include "supervisor/shared/stack.h"
+#include "supervisor/board.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
-
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#endif
-
-void port_background_task(void) {
-    // Zero delay in case FreeRTOS wants to switch to something else.
-    vTaskDelay(0);
-    #if CIRCUITPY_PULSEIO
-    pulsein_background();
-    #endif
+void board_init(void) {
 }
 
-void port_start_background_task(void) {
+bool board_requests_safe_mode(void) {
+    return false;
 }
 
-void port_finish_background_task(void) {
+void reset_board(void) {
+}
+
+void board_deinit(void) {
 }

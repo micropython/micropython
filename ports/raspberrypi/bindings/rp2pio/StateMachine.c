@@ -247,7 +247,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         mp_raise_ValueError(translate("Program size invalid"));
     }
 
-    mp_arg_validate_length_range(init_bufinfo.len, 2, 64, MP_QSTR_init);
+    mp_arg_validate_length_range(init_bufinfo.len, 0, 64, MP_QSTR_init);
     if (init_bufinfo.len % 2 != 0) {
         mp_raise_ValueError(translate("Init program size invalid"));
     }

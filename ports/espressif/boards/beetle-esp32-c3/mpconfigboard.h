@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,24 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "supervisor/filesystem.h"
-#include "supervisor/port.h"
-#include "supervisor/shared/stack.h"
+// Board setup
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#define MICROPY_HW_BOARD_NAME       "DFRobot Beetle ESP32-C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3FN4"
 
-#if CIRCUITPY_DISPLAYIO
-#include "shared-module/displayio/__init__.h"
-#endif
+// Status LED
+#define MICROPY_HW_NEOPIXEL         (&pin_GPIO10)
 
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#endif
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO9, .sda = &pin_GPIO8}}
 
-void port_background_task(void) {
-    // Zero delay in case FreeRTOS wants to switch to something else.
-    vTaskDelay(0);
-    #if CIRCUITPY_PULSEIO
-    pulsein_background();
-    #endif
-}
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO4, .mosi = &pin_GPIO6, .miso = &pin_GPIO5}}
 
-void port_start_background_task(void) {
-}
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
 
-void port_finish_background_task(void) {
-}
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing boot button at start up.\n")
+
+#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

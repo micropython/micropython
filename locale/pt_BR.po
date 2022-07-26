@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-07-12 13:10+0000\n"
+"PO-Revision-Date: 2022-07-24 22:22+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -213,6 +213,10 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
 msgstr "todos os %q, %q, e %q devem ter mesmo comprimento"
+
+#: py/objint.c
+msgid "%q=%q"
+msgstr "%q=%q"
 
 #: ports/espressif/bindings/espidf/__init__.c ports/espressif/esp_error.c
 #, c-format
@@ -2273,7 +2277,7 @@ msgstr "Formato não suportado"
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
-msgstr ""
+msgstr "Sem compatibilidade com o algoritmo de hash"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
@@ -3860,7 +3864,7 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
-msgstr ""
+msgstr "pressionando o botão SW38 na inicialização.\n"
 
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
