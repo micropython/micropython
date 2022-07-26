@@ -1265,6 +1265,9 @@ void supervisor_web_workflow_background(void) {
     // If we have a request in progress, continue working on it.
     if (common_hal_socketpool_socket_get_connected(&active)) {
         _process_request(&active, &active_request);
+    } else {
+        // Close the active socket if it is no longer connected.
+        common_hal_socketpool_socket_close(&active);
     }
 }
 

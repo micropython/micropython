@@ -60,32 +60,35 @@ STATIC void socket_select_task(void *arg) {
         FD_SET(socket_change_fd, &errfds);
         int max_fd = socket_change_fd;
         for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
-            if (open_socket_fds[i] < 0) {
+            int sockfd = open_socket_fds[i];
+            if (sockfd < 0) {
                 continue;
             }
-            max_fd = MAX(max_fd, open_socket_fds[i]);
-            FD_SET(open_socket_fds[i], &readfds);
-            FD_SET(open_socket_fds[i], &errfds);
+            max_fd = MAX(max_fd, sockfd);
+            FD_SET(sockfd, &readfds);
+            FD_SET(sockfd, &errfds);
         }
 
         int num_triggered = select(max_fd + 1, &readfds, NULL, &errfds, NULL);
-        if (num_triggered < 0) {
-            // Maybe bad file descriptor
-            for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
-                int sockfd = open_socket_fds[i];
-                if (sockfd < 0) {
-                    continue;
-                }
-                if (FD_ISSET(sockfd, &errfds)) {
-                    int err;
-                    int optlen = sizeof(int);
-                    int ret = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &err, (socklen_t *)&optlen);
-                    if (ret < 0) {
-                        open_socket_fds[i] = -1;
-                        // Try again.
-                        continue;
-                    }
-                }
+        // Check for bad file descriptor and queue up the background task before
+        // circling around.
+        if (num_triggered == -1 && errno == EBADF) {
+            // One for the change fd and one for the closed socket.
+            num_triggered = 2;
+        }
+        // Try and find the bad file and remove it from monitoring.
+        for (size_t i = 0; i < MP_ARRAY_SIZE(open_socket_fds); i++) {
+            int sockfd = open_socket_fds[i];
+            if (sockfd < 0) {
+                continue;
+            }
+            int err;
+            int optlen = sizeof(int);
+            int ret = getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &err, (socklen_t *)&optlen);
+            if (ret < 0) {
+                open_socket_fds[i] = -1;
+                // Raise num_triggered so that we skip the assert and queue the background task.
+                num_triggered = 2;
             }
         }
         assert(num_triggered >= 0);
@@ -117,13 +120,13 @@ void socket_user_reset(void) {
             user_socket[i] = false;
         }
         socket_change_fd = eventfd(0, 0);
-        // This task runs at a lower priority than CircuitPython and is used to wake CircuitPython
-        // up when any open sockets have data to read. It allows us to sleep otherwise.
+        // Run this at the same priority as CP so that the web workflow background task can be
+        // queued while CP is running. Both tasks can still sleep and, therefore, sleep overall.
         (void)xTaskCreateStaticPinnedToCore(socket_select_task,
             "socket_select",
             2 * configMINIMAL_STACK_SIZE,
             NULL,
-            0, // Run this at IDLE priority. We only need it when CP isn't running (at 1).
+            uxTaskPriorityGet(NULL),
             socket_select_stack,
             &socket_select_task_handle,
             xPortGetCoreID());
