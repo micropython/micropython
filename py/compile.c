@@ -3286,12 +3286,13 @@ STATIC void compile_scope_inline_asm(compiler_t *comp, scope_t *scope, pass_kind
             if (pass > MP_PASS_SCOPE) {
                 mp_int_t bytesize = MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[0]);
                 for (uint j = 1; j < n_args; j++) {
-                    if (!MP_PARSE_NODE_IS_SMALL_INT(pn_arg[j])) {
+                    mp_obj_t int_obj;
+                    if (!mp_parse_node_get_int_maybe(pn_arg[j], &int_obj)) {
                         compile_syntax_error(comp, nodes[i], MP_ERROR_TEXT("'data' requires integer arguments"));
                         return;
                     }
                     mp_asm_base_data((mp_asm_base_t *)comp->emit_inline_asm,
-                        bytesize, MP_PARSE_NODE_LEAF_SMALL_INT(pn_arg[j]));
+                        bytesize, mp_obj_int_get_truncated(int_obj));
                 }
             }
         } else {

@@ -62,6 +62,9 @@ class _Remove:
 
 
 async def gather(*aws, return_exceptions=False):
+    if not aws:
+        return []
+
     def done(t, er):
         # Sub-task "t" has finished, with exception "er".
         nonlocal state
