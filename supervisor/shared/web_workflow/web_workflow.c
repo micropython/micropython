@@ -335,7 +335,7 @@ static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
 }
 
 STATIC void _print_chunk(void *env, const char *str, size_t len) {
-    mp_print_t _socket_print = {socket, _print_raw};
+    mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
     _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
     _send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
