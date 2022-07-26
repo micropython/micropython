@@ -1,5 +1,7 @@
 # Micropython + lvgl
 
+**Micropython bindings to LVGL for Embedded devices, Unix and JavaScript**
+
 [![Build lv_micropython unix port](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/unix_port.yml)
 [![Build lv_micropython stm32 port](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/stm32_port.yml)
 [![esp32 port](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/ports_esp32.yml) [![Build lv_micropython rp2 port](https://github.com/lvgl/lv_micropython/actions/workflows/rp2_port.yml/badge.svg)](https://github.com/lvgl/lv_micropython/actions/workflows/rp2_port.yml)
@@ -7,7 +9,7 @@
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/lvgl/lv_micropython)  
 With GitPod you can edit, build and run Micropython + LVGL from your web browser!
 
-To quickly run Micropython + LVGL from your web browser you can also use the [Online Simulator](https://sim.lvgl.io/v8.1/micropython/ports/javascript/index.html).
+To quickly run Micropython + LVGL from your web browser you can also use the [Online Simulator](https://sim.lvgl.io/v9/micropython/ports/javascript/index.html).
 
 **For information abound Micropython lvgl bindings please refer to [lv_binding_micropython/README.md](https://github.com/lvgl/lv_binding_micropython/blob/master/README.md)**
 
@@ -56,22 +58,21 @@ Python 3 is required, but you can install some other version of python3 instead 
 
 ### ESP32 port
 
-Please set `ESPIDF` parameter for the esp-idf install dir.
-It needs to match Micropython expected esp-idf, otherwise a warning will be displayed (and build will probably fail)
+Please run `esp-idf/export.sh` from your ESP-IDF installation directory as explained in the [Micropython ESP32 Getting Started documentation](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/#get-started-export)  
+ESP-IDF version needs to match Micropython expected esp-idf, otherwise a warning will be displayed (and build will probably fail)
 For more details refer to [Setting up the toolchain and ESP-IDF](https://github.com/lvgl/lv_micropython/blob/master/ports/esp32/README.md#setting-up-the-toolchain-and-esp-idf)
 
-When using IL9341 driver, the color depth and swap mode need to be set to match ILI9341. This can be done from the command line.
+When using IL9341 driver, the color depth need to be set to match ILI9341. This can be done from the command line.
 Here is the command to build ESP32 + LVGL which is compatible with ILI9341 driver:
 
 ```
 make -C mpy-cross
-make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16 -DLV_COLOR_16_SWAP=1" BOARD=GENERIC_SPIRAM deploy
+make -C ports/esp32 LV_CFLAGS="-DLV_COLOR_DEPTH=16" BOARD=GENERIC_SPIRAM deploy
 ```
 
 Explanation about the paramters:
-- `LV_CFLAGS` are used to override color depth and swap mode, for ILI9341 compatibility.
+- `LV_CFLAGS` are used to override color depth, for ILI9341 compatibility.
   - `LV_COLOR_DEPTH=16` is needed if you plan to use the ILI9341 driver.
-  - `LV_COLOR_16_SWAP=1` is needed if you plan to use the [Pure Micropython Display Driver](https://blog.lvgl.io/2019-08-05/micropython-pure-display-driver).
 - `BOARD` - I use WROVER board with SPIRAM. You can choose other boards from `ports/esp32/boards/` directory.
 - `deploy` - make command will create ESP32 port of Micropython, and will try to deploy it through USB-UART bridge.
 
