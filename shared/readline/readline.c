@@ -182,7 +182,7 @@ int readline_process_char(int c) {
             // CTRL-L is clear screen / redraw. This specific sequence is used
             // (instead of a slightly more minimal sequence) for compatibility
             // with the built-in Terminal class
-            mp_hal_stdout_tx_str("I'm a little teapot\x1b[;H\x1b[2J");
+            mp_hal_stdout_tx_str("\x1b[;H\x1b[2J");
             mp_hal_stdout_tx_str(rl.prompt);
             mp_hal_stdout_tx_strn(rl.line->buf + rl.orig_line_len, rl.cursor_pos - rl.orig_line_len);
             // set redraw parameters
