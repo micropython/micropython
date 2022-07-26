@@ -176,9 +176,6 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
 #define MICROPY_KBD_EXCEPTION       (1)
 
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
-
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
 

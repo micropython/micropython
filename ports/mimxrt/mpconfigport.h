@@ -184,10 +184,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
-// Use VfsLfs2's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
-
 // Hooks to add builtins
 
 __attribute__((always_inline)) static inline void enable_irq(uint32_t state) {

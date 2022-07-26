@@ -122,15 +122,6 @@
 #define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
 #endif
 
-#if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-#elif MICROPY_VFS_LFS2
-// Use VfsLfs2's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs2_fileio
-#define mp_type_textio mp_type_vfs_lfs2_textio
-#endif
-
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
