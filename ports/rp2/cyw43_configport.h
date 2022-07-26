@@ -93,6 +93,7 @@ static inline void cyw43_delay_ms(uint32_t ms) {
     int32_t start = mp_hal_ticks_us();
     while (mp_hal_ticks_us() - start < us) {
         __WFI();
+        MICROPY_EVENT_POLL_HOOK_FAST;
     }
 }
 
