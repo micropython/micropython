@@ -224,6 +224,9 @@ STATIC void wiznet5k_init(void) {
 
     netif_set_link_up(&wiznet5k_obj.netif);
     netif_set_up(&wiznet5k_obj.netif);
+
+    // register with network module
+    mod_network_register_nic(&wiznet5k_obj);
 }
 
 void wiznet5k_deinit(void) {
