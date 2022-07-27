@@ -198,6 +198,16 @@ STATIC void wiznet5k_config_interrupt(bool enabled) {
         );
 }
 
+void wiznet5k_deinit(void) {
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif == &wiznet5k_obj.netif) {
+            netif_remove(netif);
+            netif->flags = 0;
+            break;
+        }
+    }
+}
+
 STATIC void wiznet5k_init(void) {
     // Configure wiznet for raw ethernet frame usage.
 
@@ -219,6 +229,9 @@ STATIC void wiznet5k_init(void) {
         wiznet5k_config_interrupt(true);
     }
 
+    // Deinit before a new init to clear the state from a previous activation
+    wiznet5k_deinit();
+
     // Hook the Wiznet into lwIP
     wiznet5k_lwip_init(&wiznet5k_obj);
 
@@ -227,16 +240,6 @@ STATIC void wiznet5k_init(void) {
 
     // register with network module
     mod_network_register_nic(&wiznet5k_obj);
-}
-
-void wiznet5k_deinit(void) {
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        if (netif == &wiznet5k_obj.netif) {
-            netif_remove(netif);
-            netif->flags = 0;
-            break;
-        }
-    }
 }
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
