@@ -79,6 +79,11 @@ Methods
            CTS input pin signals that the receiver is running low on buffer space.
          - ``UART.RTS | UART.CTS`` will enable both, for full hardware flow control.
 
+   On the esp32 only the following keyword-only parameter is supported:
+
+     - *half_duplex* if set to true activates the half-duplex driver to control the direction pin (rts).
+       Useful if you want to control a rs485 compatible peripheral device.
+
    On the WiPy only the following keyword-only parameter is supported:
 
      - *pins* is a 4 or 2 item list indicating the TX, RX, RTS and CTS pins (in that order).

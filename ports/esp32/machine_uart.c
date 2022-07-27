@@ -62,6 +62,7 @@ typedef struct _machine_uart_obj_t {
     int8_t rx;
     int8_t rts;
     int8_t cts;
+    bool half_duplex;
     uint16_t txbuf;
     uint16_t rxbuf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
@@ -78,9 +79,9 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     uart_get_baudrate(self->uart_num, &baudrate);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u",
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, rts=%d, cts=%d, half_duplex=%d, txbuf=%u, rxbuf=%u, timeout=%u, timeout_char=%u",
         self->uart_num, baudrate, self->bits, _parity_name[self->parity],
-        self->stop, self->tx, self->rx, self->rts, self->cts, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
+        self->stop, self->tx, self->rx, self->rts, self->cts, self->half_duplex, self->txbuf, self->rxbuf, self->timeout, self->timeout_char);
     if (self->invert) {
         mp_printf(print, ", invert=");
         uint32_t invert_mask = self->invert;
@@ -127,7 +128,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 }
 
 STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow };
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_half_duplex, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
@@ -137,6 +138,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_half_duplex, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -199,6 +201,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_cts].u_int != UART_PIN_NO_CHANGE) {
         self->cts = args[ARG_cts].u_int;
+    }
+
+    if (args[ARG_half_duplex].u_bool) {
+        self->half_duplex = args[ARG_half_duplex].u_bool;
     }
 
     // set data bits
@@ -299,6 +305,11 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         self->flowcontrol = args[ARG_flow].u_int;
     }
     uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4);
+    if(self->half_duplex) {
+        ESP_ERROR_CHECK(uart_set_mode(self->uart_num, UART_MODE_RS485_HALF_DUPLEX));
+    } else {
+        uart_set_mode(self->uart_num, UART_MODE_UART);
+    }
 }
 
 STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -328,6 +339,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->stop = 1;
     self->rts = UART_PIN_NO_CHANGE;
     self->cts = UART_PIN_NO_CHANGE;
+    self->half_duplex = false;
     self->txbuf = 256;
     self->rxbuf = 256; // IDF minimum
     self->timeout = 0;
