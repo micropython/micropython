@@ -177,11 +177,10 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
 STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
-    wizchip_clrinterrupt(IK_SOCK_0);
-    setSn_IR(0, Sn_IR_RECV);
-
-    // Handle incoming data
-    wiznet5k_try_poll();
+    // Handle incoming data, unless the SPI bus is busy
+    if (mp_hal_pin_read(wiznet5k_obj.cs)) {
+        wiznet5k_try_poll();
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_wiznet_read_int_obj, mpy_wiznet_read_int);
@@ -196,6 +195,16 @@ STATIC void wiznet5k_config_interrupt(bool enabled) {
         (enabled)? MP_HAL_PIN_TRIGGER_FALL : MP_HAL_PIN_TRIGGER_NONE,
         true
         );
+}
+
+void wiznet5k_deinit(void) {
+    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
+        if (netif == &wiznet5k_obj.netif) {
+            netif_remove(netif);
+            netif->flags = 0;
+            break;
+        }
+    }
 }
 
 STATIC void wiznet5k_init(void) {
@@ -219,21 +228,17 @@ STATIC void wiznet5k_init(void) {
         wiznet5k_config_interrupt(true);
     }
 
+    // Deinit before a new init to clear the state from a previous activation
+    wiznet5k_deinit();
+
     // Hook the Wiznet into lwIP
     wiznet5k_lwip_init(&wiznet5k_obj);
 
     netif_set_link_up(&wiznet5k_obj.netif);
     netif_set_up(&wiznet5k_obj.netif);
-}
 
-void wiznet5k_deinit(void) {
-    for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
-        if (netif == &wiznet5k_obj.netif) {
-            netif_remove(netif);
-            netif->flags = 0;
-            break;
-        }
-    }
+    // register with network module
+    mod_network_register_nic(&wiznet5k_obj);
 }
 
 STATIC void wiznet5k_send_ethernet(wiznet5k_obj_t *self, size_t len, const uint8_t *buf) {
@@ -320,23 +325,25 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
-    if (!(self->netif.flags & NETIF_FLAG_UP) ||
-        !(self->netif.flags & NETIF_FLAG_LINK_UP)) {
-        return;
-    }
-    uint16_t len;
-    while ((len = wiznet5k_recv_ethernet(self)) > 0) {
-        if (self->trace_flags & TRACE_ETH_RX) {
-            netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
-        }
-        struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-        if (p != NULL) {
-            pbuf_take(p, self->eth_frame, len);
-            if (self->netif.input(p, &self->netif) != ERR_OK) {
-                pbuf_free(p);
+    if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
+        uint16_t len;
+        while ((len = wiznet5k_recv_ethernet(self)) > 0) {
+            if (self->trace_flags & TRACE_ETH_RX) {
+                netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
+            }
+            struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+            if (p != NULL) {
+                pbuf_take(p, self->eth_frame, len);
+                if (self->netif.input(p, &self->netif) != ERR_OK) {
+                    pbuf_free(p);
+                }
             }
         }
     }
+    wizchip_clrinterrupt(IK_SOCK_0);
+    #if _WIZCHIP_ == W5100S
+    setSn_IR(0, Sn_IR_RECV);  // WZ5100S driver bug.
+    #endif
 }
 
 #endif // MICROPY_PY_LWIP
@@ -686,10 +693,8 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     #endif
 
     #ifdef MICROPY_HW_WIZNET_SPI_ID
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
     // Allow auto-configuration of SPI if defined for board and no args passed
-    if (n_args == 0) {
+    if (n_args == 0 && n_kw == 0) {
         // Initialize SPI.
         mp_obj_t spi_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_SCK);
         mp_obj_t miso_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_MISO);
