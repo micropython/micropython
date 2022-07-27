@@ -689,10 +689,8 @@ STATIC mp_obj_t wiznet5k_make_new(const mp_obj_type_t *type, size_t n_args, size
     #endif
 
     #ifdef MICROPY_HW_WIZNET_SPI_ID
-    // check arguments
-    mp_arg_check_num(n_args, n_kw, 0, 3, false);
     // Allow auto-configuration of SPI if defined for board and no args passed
-    if (n_args == 0) {
+    if (n_args == 0 && n_kw == 0) {
         // Initialize SPI.
         mp_obj_t spi_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_SCK);
         mp_obj_t miso_obj = MP_OBJ_NEW_SMALL_INT(MICROPY_HW_WIZNET_SPI_MISO);
