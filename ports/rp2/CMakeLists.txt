@@ -171,6 +171,7 @@ set(PICO_SDK_COMPONENTS
     hardware_uart
     hardware_watchdog
     hardware_xosc
+    hardware_vreg
     pico_base_headers
     pico_binary_info
     pico_bootrom
