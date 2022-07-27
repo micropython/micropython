@@ -7,9 +7,12 @@ To use network / socket based code, connect ethernet port to network with DHCP r
 ```
 >>> import network
 >>> nic = network.WIZNET5K()
+>>> nic.active(True)
 >>> nic.ifconfig()
-('192.168.0.18', '255.255.255.0', '192.168.0.1', '8.8.8.8')
->>> nic.dhcp(True)
+('0.0.0.0', '0.0.0.0', '0.0.0.0', '0.0.0.0')
+>>> nic.ifconfig("dhcp")
 ('192.168.0.10', '255.255.255.0', '192.168.0.1', '192.168.0.1')
+>>> nic.isconnected()
+True
 ```
 At this point standard network communications libraries should work.
