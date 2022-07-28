@@ -178,8 +178,6 @@ jobs:
       with:
         name: mpy-cross-macos-11-x64
         path: mpy-cross/mpy-cross
-    - name: Select SDK for M1 build
-      run: sudo xcode-select -switch /Applications/Xcode_12.3.app
     - name: Build mpy-cross (arm64)
       run: make -C mpy-cross -j2 -f Makefile.m1 V=2
     - uses: actions/upload-artifact@v2
