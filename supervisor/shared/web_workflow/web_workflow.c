@@ -608,7 +608,11 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
             (file_info.ftime >> 5) & 0x1f,
             (file_info.ftime & 0x1f) * 2) * 1000000000ULL;
 
-        mp_printf(&_socket_print, "\"modified_ns\": %lld, ", truncated_time);
+        // Use snprintf because mp_printf doesn't support 64 bit numbers by
+        // default.
+        char encoded_time[32];
+        snprintf(encoded_time, sizeof(encoded_time), "%llu", truncated_time);
+        mp_printf(&_socket_print, "\"modified_ns\": %s, ", encoded_time);
         size_t file_size = 0;
         if ((file_info.fattrib & AM_DIR) == 0) {
             file_size = file_info.fsize;
