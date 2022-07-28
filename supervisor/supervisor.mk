@@ -8,12 +8,14 @@ SRC_SUPERVISOR = \
 	supervisor/shared/lock.c \
 	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
+	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
   supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
+	supervisor/shared/title_bar.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate/translate.c \
   supervisor/shared/workflow.c

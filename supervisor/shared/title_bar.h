@@ -28,10 +28,7 @@
 
 #include <stdbool.h>
 
-// This background function should be called repeatedly. It cannot be done based
-// on events.
-void supervisor_web_workflow_background(void);
-bool supervisor_web_workflow_status_dirty(void);
-void supervisor_web_workflow_status(void);
-void supervisor_start_web_workflow(void);
-void supervisor_stop_web_workflow(void);
+void supervisor_title_bar_start(void);
+void supervisor_title_bar_suspend(void);
+void supervisor_title_bar_resume(void);
+void supervisor_title_bar_request_update(bool force_dirty);

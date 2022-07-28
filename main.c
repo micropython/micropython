@@ -57,6 +57,7 @@
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
+#include "supervisor/shared/title_bar.h"
 #include "supervisor/shared/traceback.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
@@ -822,7 +823,9 @@ STATIC int run_repl(bool first_run) {
     status_led_deinit();
     #endif
     if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+        supervisor_title_bar_suspend();
         exit_code = pyexec_raw_repl();
+        supervisor_title_bar_resume();
     } else {
         exit_code = pyexec_friendly_repl();
     }
@@ -914,6 +917,7 @@ int __attribute__((used)) main(void) {
     run_boot_py(safe_mode);
 
     supervisor_workflow_start();
+    supervisor_title_bar_start();
 
     // Boot script is finished, so now go into REPL or run code.py.
     int exit_code = PYEXEC_FORCED_EXIT;

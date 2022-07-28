@@ -30,7 +30,6 @@
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "py/runtime.h"
-#include "supervisor/esp_port.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -388,6 +387,14 @@ void port_disable_tick(void) {
 
 void port_wake_main_task() {
     xTaskNotifyGive(circuitpython_task);
+}
+
+void port_wake_main_task_from_isr() {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(circuitpython_task, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR();
+    }
 }
 
 void sleep_timer_cb(void *arg) {
