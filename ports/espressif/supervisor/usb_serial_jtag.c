@@ -98,14 +98,23 @@ bool usb_serial_jtag_bytes_available(void) {
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {
-    if (USB_SERIAL_JTAG.fram_num.sof_frame_index > 0) {
-        size_t total_written = 0;
-        uint32_t start_time = supervisor_ticks_ms32();
-        // Time out after 5 milliseconds in case usb isn't actually reading CDC.
-        while (total_written < length && start_time - supervisor_ticks_ms32() < 5) {
-            total_written += usb_serial_jtag_ll_write_txfifo((const uint8_t *)(text + total_written), length - total_written);
-            RUN_BACKGROUND_TASKS;
-        }
-        usb_serial_jtag_ll_txfifo_flush();
+    if (!usb_serial_jtag_connected()) {
+        return;
     }
+    size_t total_written = 0;
+    while (total_written < length) {
+        uint32_t start_time = supervisor_ticks_ms32();
+        // Wait until we can write to the FIFO again. If it takes too long, then
+        // assume we're disconnected.
+        while (!usb_serial_jtag_ll_txfifo_writable()) {
+            uint32_t now = supervisor_ticks_ms32();
+            if (now - start_time > 200) {
+                connected = false;
+                return;
+            }
+        }
+        total_written += usb_serial_jtag_ll_write_txfifo((const uint8_t *)(text + total_written), length - total_written);
+        RUN_BACKGROUND_TASKS;
+    }
+    usb_serial_jtag_ll_txfifo_flush();
 }
