@@ -247,6 +247,7 @@ void supervisor_start_web_workflow(void) {
     port_len = dotenv_get_key("/.env", "CIRCUITPY_WEB_API_PORT", port_encoded, sizeof(port_encoded) - 1);
     #endif
     if (0 < port_len && port_len < sizeof(port_encoded)) {
+        port_encoded[port_len] = '\0';
         new_port = strtoul(port_encoded, NULL, 10);
     }
 
@@ -623,8 +624,6 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
 
 static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request, const char *filename, FIL *active_file) {
     uint32_t total_length = f_size(active_file);
-    char encoded_len[10];
-    snprintf(encoded_len, sizeof(encoded_len), "%d", total_length);
 
     _send_str(socket, "HTTP/1.1 200 OK\r\n");
     mp_print_t _socket_print = {socket, _print_raw};
@@ -1209,9 +1208,12 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         request->authenticated = strncmp(request->header_value, prefix, strlen(prefix)) == 0 &&
                             strcmp(_api_password, request->header_value + strlen(prefix)) == 0;
                     } else if (strcasecmp(request->header_key, "Host") == 0) {
-                        // Do a prefix check so that port is ignored.
+                        // Do a prefix check so that port is ignored. Length must be the same or the
+                        // header ends in :.
                         const char *cp_local = "circuitpython.local";
-                        request->redirect = strncmp(request->header_value, cp_local, strlen(cp_local)) == 0;
+                        request->redirect = strncmp(request->header_value, cp_local, strlen(cp_local)) == 0 &&
+                            (strlen(request->header_value) == strlen(cp_local) ||
+                                request->header_value[strlen(cp_local)] == ':');
                     } else if (strcasecmp(request->header_key, "Content-Length") == 0) {
                         request->content_length = strtoul(request->header_value, NULL, 10);
                     } else if (strcasecmp(request->header_key, "Expect") == 0) {
