@@ -105,8 +105,9 @@ LIBS += -L $(dir $(LIBC_FILE_NAME)) -lc
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
 #Debugging/Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifdef DEBUG
-CFLAGS += -Og -ggdb
+CFLAGS += -Og
 else
 CFLAGS += -Os #-DNDEBUG
 endif

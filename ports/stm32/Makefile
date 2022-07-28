@@ -114,8 +114,9 @@ $(BUILD)/stm32_it.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
 endif
 
 # Debugging/Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -DPENDSV_DEBUG
+CFLAGS += -DPENDSV_DEBUG
 COPT ?= -Og
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0

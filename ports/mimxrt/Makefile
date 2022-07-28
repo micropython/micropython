@@ -297,8 +297,9 @@ SRC_QSTR += \
 # Compiler Flags
 # =============================================================================
 
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
-CFLAGS += -Og -ggdb
+CFLAGS += -Og
 else
 CFLAGS += -Os -DNDEBUG
 endif

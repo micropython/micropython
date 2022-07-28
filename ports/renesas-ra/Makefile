@@ -148,8 +148,9 @@ CFLAGS += -fdata-sections -ffunction-sections
 LDFLAGS += --gc-sections
 
 # Debugging/Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -DPENDSV_DEBUG
+CFLAGS += -DPENDSV_DEBUG
 #COPT = -Og
 COPT = -Os
 # Disable text compression in debug builds

@@ -57,8 +57,9 @@ LDFLAGS += $(LDFLAGS_MOD)
 LIBS = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
 # Tune for Debugging or Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG),1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += --gc-sections
