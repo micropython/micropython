@@ -333,15 +333,14 @@ parse_start:
                 break;
             }
         }
-        //DEBUG_printf("trailing_zeros=%d trailing_frac=%d\n", trailing_zeros, trailing_zeros_frac);
-        
+
         // work out the exponent
         if (exp_neg) {
             exp_val = -exp_val;
         }
 
         // apply the exponent, making sure it's not a subnormal value
-        exp_val += (exp_extra + trailing_zeros_intg);
+        exp_val += exp_extra + trailing_zeros_intg;
         if (exp_val < SMALL_NORMAL_EXP) {
             exp_val -= SMALL_NORMAL_EXP;
             dec_val *= SMALL_NORMAL_VAL;

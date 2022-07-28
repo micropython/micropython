@@ -17,3 +17,11 @@ print("%.2e" % float("9" * 40 + "e-21"))
 # check a case that would render negative digit values, eg ")" characters
 # the string is converted back to a float to check for no illegal characters
 float("%.23e" % 1e-80)
+
+# Check a problem with malformed "e" format numbers on the edge of 1.0e-X.
+for r in range(38):
+    s = "%.12e" % float("1e-" + str(r))
+    # It may format as 1e-r, or 9.999...e-(r+1), both are OK.
+    # But formatting as 0.999...e-r is NOT ok.
+    if s[0] == "0":
+        print("FAIL:", s)

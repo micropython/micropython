@@ -62,26 +62,20 @@
 #define FPMIN_BUF_SIZE 6 // +9e+99
 
 #define FLT_SIGN_MASK   0x80000000
-#define FLT_EXP_MASK    0x7F800000
-#define FLT_MAN_MASK    0x007FFFFF
 
-union floatbits {
-    float f;
-    uint32_t u;
-};
 static inline int fp_signbit(float x) {
-    union floatbits fb = {x};
-    return fb.u & FLT_SIGN_MASK;
+    mp_float_union_t fb = {x};
+    return fb.i & FLT_SIGN_MASK;
 }
 #define fp_isnan(x) isnan(x)
 #define fp_isinf(x) isinf(x)
 static inline int fp_iszero(float x) {
-    union floatbits fb = {x};
-    return fb.u == 0;
+    mp_float_union_t fb = {x};
+    return fb.i == 0;
 }
 static inline int fp_isless1(float x) {
-    union floatbits fb = {x};
-    return fb.u < 0x3f800000;
+    mp_float_union_t fb = {x};
+    return fb.i < 0x3f800000;
 }
 
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
@@ -99,27 +93,10 @@ static inline int fp_isless1(float x) {
 
 #endif // MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT/DOUBLE
 
-static inline int fp_ge_eps(FPTYPE x, FPTYPE y) {
-    mp_float_union_t fb_y = {y};
-    // Back off 2 eps.
-    // This is valid for almost all values, but in practice
-    // it's only used when y = 1eX for X>=0.
-    fb_y.i -= 2;
-    return x >= fb_y.f;
+static inline int fp_expval(FPTYPE x) {
+    mp_float_union_t fb = {x};
+    return (int)((fb.i >> MP_FLOAT_FRAC_BITS) & (~(0xFFFFFFFF << MP_FLOAT_EXP_BITS))) - MP_FLOAT_EXP_OFFSET;
 }
-
-static const FPTYPE g_pos_pow[] = {
-    #if FPDECEXP > 32
-    MICROPY_FLOAT_CONST(1e256), MICROPY_FLOAT_CONST(1e128), MICROPY_FLOAT_CONST(1e64),
-    #endif
-    MICROPY_FLOAT_CONST(1e32), MICROPY_FLOAT_CONST(1e16), MICROPY_FLOAT_CONST(1e8), MICROPY_FLOAT_CONST(1e4), MICROPY_FLOAT_CONST(1e2), MICROPY_FLOAT_CONST(1e1)
-};
-static const FPTYPE g_neg_pow[] = {
-    #if FPDECEXP > 32
-    MICROPY_FLOAT_CONST(1e-256), MICROPY_FLOAT_CONST(1e-128), MICROPY_FLOAT_CONST(1e-64),
-    #endif
-    MICROPY_FLOAT_CONST(1e-32), MICROPY_FLOAT_CONST(1e-16), MICROPY_FLOAT_CONST(1e-8), MICROPY_FLOAT_CONST(1e-4), MICROPY_FLOAT_CONST(1e-2), MICROPY_FLOAT_CONST(1e-1)
-};
 
 int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, char sign) {
 
@@ -177,14 +154,15 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
     if (fmt == 'g' && prec == 0) {
         prec = 1;
     }
-    int e, e1;
+    int e;
     int dec = 0;
     char e_sign = '\0';
     int num_digits = 0;
-    const FPTYPE *pos_pow = g_pos_pow;
-    const FPTYPE *neg_pow = g_neg_pow;
     int signed_e = 0;
 
+    // Approximate power of 10 exponent from binary exponent.
+    // abs(e_guess) is lower bound on abs(power of 10 exponent).
+    int e_guess = (int)(fp_expval(f) * FPCONST(0.3010299956639812));  // 1/log2(10).
     if (fp_iszero(f)) {
         e = 0;
         if (fmt == 'f') {
@@ -203,25 +181,18 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             }
         }
     } else if (fp_isless1(f)) {
-        FPTYPE f_mod = f;
+        FPTYPE f_entry = f;  // Save f in case we go to 'f' format.
         // Build negative exponent
-        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++, neg_pow++) {
-            if (*neg_pow > f_mod) {
-                e += e1;
-                f_mod *= *pos_pow;
-            }
+        e = -e_guess;
+        FPTYPE u_base = MICROPY_FLOAT_C_FUN(pow)(10, -e);
+        while (u_base > f) {
+            ++e;
+            u_base = MICROPY_FLOAT_C_FUN(pow)(10, -e);
         }
-
-        char e_sign_char = '-';
-        if (fp_isless1(f_mod) && f_mod >= FPROUND_TO_ONE) {
-            f_mod = FPCONST(1.0);
-            if (e == 0) {
-                e_sign_char = '+';
-            }
-        } else if (fp_isless1(f_mod)) {
-            e++;
-            f_mod *= FPCONST(10.0);
-        }
+        // Normalize out the inferred unit.  Use divide because
+        // pow(10, e) * pow(10, -e) is slightly < 1 for some e in float32
+        // (e.g. print("%.12f" % ((1e13) * (1e-13))))
+        f /= u_base;
 
         // If the user specified 'g' format, and e is <= 4, then we'll switch
         // to the fixed format ('f')
@@ -241,11 +212,12 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
 
             num_digits = prec;
             signed_e = 0;
+            f = f_entry;
             ++num_digits;
         } else {
             // For e & g formats, we'll be printing the exponent, so set the
             // sign.
-            e_sign = e_sign_char;
+            e_sign = '-';
             dec = 0;
 
             if (prec > (buf_remaining - FPMIN_BUF_SIZE)) {
@@ -262,19 +234,11 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         // scaling it.  Instead, we find the product of powers of 10
         // that is not greater than it, and use that to start the
         // mantissa.
-        FPTYPE u_base = FPCONST(1.0);
-        for (e = 0, e1 = FPDECEXP; e1; e1 >>= 1, pos_pow++) {
-            FPTYPE next_u = u_base * *pos_pow;
-            // fp_ge_eps performs "f >= (next_u - 2eps)" so that if, for
-            // numerical reasons, f is very close to a power of ten but
-            // not strictly equal, we still treat it as that power of 10.
-            // The comparison was failing for maybe 10% of 1eX values, but
-            // although rounding fixed many of them, there were still some
-            // rendering as 9.99999998e(X-1).
-            if (fp_ge_eps(f, next_u)) {
-                u_base = next_u;
-                e += e1;
-            }
+        e = e_guess;
+        FPTYPE next_u = MICROPY_FLOAT_C_FUN(pow)(10, e + 1);
+        while (f >= next_u) {
+            ++e;
+            next_u = MICROPY_FLOAT_C_FUN(pow)(10, e + 1);
         }
 
         // If the user specified fixed format (fmt == 'f') and e makes the
@@ -341,46 +305,22 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         num_digits = prec;
     }
 
-    if (signed_e < 0) {
-        // The algorithm below treats numbers smaller than 1 by scaling them
-        // repeatedly by 10 to bring the new digit to the top.  Our input number
-        // was smaller than 1, so scale it up to be 1 <= f < 10.
-        FPTYPE u_base = FPCONST(1.0);
-        const FPTYPE *pow_u = g_pos_pow;
-        for (int m = FPDECEXP; m; m >>= 1, pow_u++) {
-            if (m & e) {
-                u_base *= *pow_u;
-            }
-        }
-        f *= u_base;
-    }
-
     int d = 0;
-    int num_digits_left = num_digits;
-    for (int digit_index = signed_e; num_digits_left >= 0; --digit_index) {
+    for (int digit_index = signed_e; num_digits >= 0; --digit_index) {
         FPTYPE u_base = FPCONST(1.0);
         if (digit_index > 0) {
             // Generate 10^digit_index for positive digit_index.
-            const FPTYPE *pow_u = g_pos_pow;
-            int target_index = digit_index;
-            for (int m = FPDECEXP; m; m >>= 1, pow_u++) {
-                if (m & target_index) {
-                    u_base *= *pow_u;
-                }
-            }
+            u_base = MICROPY_FLOAT_C_FUN(pow)(10, digit_index);
         }
         for (d = 0; d < 9; ++d) {
-            // This is essentially "if (f < u_base)", but with 2eps margin
-            // so that if f is just a tiny bit smaller, we treat it as
-            // equal (and accept the additional digit value).
-            if (!fp_ge_eps(f, u_base)) {
+            if (f < u_base) {
                 break;
             }
             f -= u_base;
         }
         // We calculate one more digit than we display, to use in rounding
         // below.  So only emit the digit if it's one that we display.
-        if (num_digits_left > 0) {
+        if (num_digits > 0) {
             // Emit this number (the leading digit).
             *s++ = '0' + d;
             if (dec == 0 && prec > 0) {
@@ -388,9 +328,9 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
             }
         }
         --dec;
-        --num_digits_left;
+        --num_digits;
         if (digit_index <= 0) {
-            // Once we get below 1.0, we scale up f instead of calculting
+            // Once we get below 1.0, we scale up f instead of calculating
             // negative powers of 10 in u_base.  This provides better
             // renditions of exact decimals like 1/16 etc.
             f *= FPCONST(10.0);
