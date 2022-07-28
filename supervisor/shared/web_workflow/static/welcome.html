@@ -8,16 +8,26 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+
     <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;Welcome!</h1>
-    Welcome to CircuitPython's Web API. Go to the <a href="/fs/">file browser</a> to work with files in the CIRCUITPY drive. Go to the <a href="/cp/serial/">serial terminal</a> to see code output and interact with the REPL. Make sure you've set <code>CIRCUITPY_WEB_API_PASSWORD='somepassword'</code> in <code>/.env</code>. Provide the password when the browser prompts for it. Leave the username blank.
+
+    <p>Welcome to CircuitPython's Web API. Go to the <a href="/fs/">file browser</a> to work with files in the CIRCUITPY drive. Go to the <a href="/cp/serial/">serial terminal</a> to see code output and interact with the REPL. Make sure you've set <code>CIRCUITPY_WEB_API_PASSWORD='somepassword'</code> in <code>/.env</code>. Provide the password when the browser prompts for it. <strong>Leave the username blank.</strong></p>
+
     <h2>Device Info</h2>
-    Board: <a id="board"></a><br>
-    Version: <span id="version"></span><br>
-    Hostname: <a id="hostname"></a><br>
-    IP: <a id="ip"></a>
-    <h2>Other Devices</h2>
-    Here are other CircuitPython devices on your network:
+
+    <dl>
+        <dt>Board:</dt>
+        <dd><a id="board"></a></dd>
+        <dt>Version:</dt>
+        <dd><span id="version"></span></dd>
+        <dt>Hostname:</dt>
+        <dd><a id="hostname"></a></dd>
+        <dd>IP:</dd>
+        <dt><a id="ip"></a></dt>
+        <dd>Other Devices</dd>
+    </dl>
+    <h2>Here are other CircuitPython devices on your network:</h2>
     <ul id="devices">
-    </ul>
+    </ul>    
 </body>
 </html>
