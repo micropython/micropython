@@ -1072,7 +1072,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(request->path, "/serial.js") == 0) {
             _REPLY_STATIC(socket, request, serial_js);
         } else if (strcmp(request->path, "/style.css") == 0) {
-            _REPLY_STATIC(socket, request, style_css);    
+            _REPLY_STATIC(socket, request, style_css);
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
             // TODO: Autogenerate this based on the blinka bitmap and change the
             // palette based on MAC address.
