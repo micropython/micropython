@@ -112,8 +112,8 @@ To use this feature, build the firmware (see above for details) then gzip it and
 copy the resulting file to the Hub (eg using mpremote):
 
     $ make BOARD=LEGO_HUB_NO6
-    $ gzip boards/LEGO_HUB_NO6/firmware.dfu
-    $ mpremote cp boards/LEGO_HUB_NO6/firmware.dfu.gz :
+    $ gzip build-LEGO_HUB_NO6/firmware.dfu
+    $ mpremote cp build-LEGO_HUB_NO6/firmware.dfu.gz :
 
 Then get a REPL on the Hub and execute:
 
