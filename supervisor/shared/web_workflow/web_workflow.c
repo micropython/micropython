@@ -916,6 +916,8 @@ STATIC_FILE(directory_html);
 STATIC_FILE(directory_js);
 STATIC_FILE(welcome_html);
 STATIC_FILE(welcome_js);
+STATIC_FILE(edit_html);
+STATIC_FILE(edit_js);
 STATIC_FILE(style_css);
 STATIC_FILE(serial_html);
 STATIC_FILE(serial_js);
@@ -1087,6 +1089,16 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 }
             }
         }
+    } else if (strcmp(request->path, "/edit/") == 0) {
+        if (!request->authenticated) {
+            if (_api_password[0] != '\0') {
+                _reply_unauthorized(socket, request);
+            } else {
+                _reply_forbidden(socket, request);
+            }
+        } else {
+            _REPLY_STATIC(socket, request, edit_html);
+        }
     } else if (strncmp(request->path, "/cp/", 4) == 0) {
         const char *path = request->path + 3;
         if (strcasecmp(request->method, "OPTIONS") == 0) {
@@ -1126,6 +1138,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _REPLY_STATIC(socket, request, welcome_js);
         } else if (strcmp(request->path, "/serial.js") == 0) {
             _REPLY_STATIC(socket, request, serial_js);
+        } else if (strcmp(request->path, "/edit.js") == 0) {
+            _REPLY_STATIC(socket, request, edit_js);
         } else if (strcmp(request->path, "/style.css") == 0) {
             _REPLY_STATIC(socket, request, style_css);
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
