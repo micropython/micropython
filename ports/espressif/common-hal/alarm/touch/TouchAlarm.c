@@ -30,7 +30,7 @@
 
 #include "esp_sleep.h"
 #include "peripherals/touch.h"
-#include "supervisor/esp_port.h"
+#include "supervisor/port.h"
 
 static uint16_t touch_channel_mask;
 static volatile bool woke_up = false;
@@ -86,11 +86,7 @@ mp_obj_t alarm_touch_touchalarm_create_wakeup_alarm(void) {
 STATIC void touch_interrupt(void *arg) {
     (void)arg;
     woke_up = true;
-    BaseType_t task_wakeup;
-    vTaskNotifyGiveFromISR(circuitpython_task, &task_wakeup);
-    if (task_wakeup) {
-        portYIELD_FROM_ISR();
-    }
+    port_wake_main_task_from_isr();
 }
 
 void alarm_touch_touchalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, const mp_obj_t *alarms) {

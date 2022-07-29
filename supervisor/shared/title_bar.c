@@ -40,6 +40,9 @@ static bool _forced_dirty = false;
 static bool _suspended = false;
 
 static void title_bar_background(void *data) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
     if (_suspended) {
         return;
     }
@@ -53,7 +56,6 @@ static void title_bar_background(void *data) {
         return;
     }
     _forced_dirty = false;
-    #if CIRCUITPY_STATUS_BAR
     // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.
     // This is the OSC command to set the title and the icon text. It can be up to 255 characters
@@ -67,16 +69,21 @@ static void title_bar_background(void *data) {
     serial_write(MICROPY_GIT_TAG);
     // Send string terminator
     serial_write("\x1b" "\\");
-    #endif
 }
 
 void supervisor_title_bar_start(void) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
     title_bar_background_cb.fun = title_bar_background;
     title_bar_background_cb.data = NULL;
     supervisor_title_bar_request_update(true);
 }
 
 void supervisor_title_bar_request_update(bool force_dirty) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
     if (force_dirty) {
         _forced_dirty = true;
     }
@@ -84,10 +91,16 @@ void supervisor_title_bar_request_update(bool force_dirty) {
 }
 
 void supervisor_title_bar_suspend(void) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
     _suspended = true;
 }
 
 void supervisor_title_bar_resume(void) {
+    #if !CIRCUITPY_STATUS_BAR
+    return;
+    #endif
     _suspended = false;
     supervisor_title_bar_request_update(false);
 }
