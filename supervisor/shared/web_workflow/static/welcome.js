@@ -44,7 +44,7 @@ async function find_devices() {
         li.appendChild(a);
         var port = "";
         if (device.port != 80) {
-            port = ":" + version_info.port;
+            port = ":" + device.port;
         }
         var server;
         if (mdns_works) {

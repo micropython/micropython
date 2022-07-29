@@ -33,25 +33,6 @@ from sphinx import addnodes
 
 tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
-# Monkeypatch autoapi
-def _format_args(args_info, include_annotations=True, ignore_self=None):
-    result = []
-
-    for i, (prefix, name, annotation, default) in enumerate(args_info):
-        if i == 0 and ignore_self is not None and name == ignore_self:
-            continue
-        formatted = "{}{}{}{}".format(
-            prefix or "",
-            name or "",
-            ": {}".format(annotation) if annotation and include_annotations else "",
-            (" = {}" if annotation else "={}").format(default) if default else "",
-        )
-        result.append(formatted)
-    return ", ".join(result)
-
-import autoapi.mappers.python.objects as objects
-objects._format_args = _format_args
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -71,8 +52,8 @@ subprocess.check_output(["make", "stubs"])
 #modules_support_matrix = shared_bindings_matrix.support_matrix_excluded_boards()
 modules_support_matrix = shared_bindings_matrix.support_matrix_by_board()
 modules_support_matrix_reverse = defaultdict(list)
-for board, modules in modules_support_matrix.items():
-    for module in modules[0]:
+for board, matrix_info in modules_support_matrix.items():
+    for module in matrix_info["modules"]:
         modules_support_matrix_reverse[module].append(board)
 
 modules_support_matrix_reverse = dict(

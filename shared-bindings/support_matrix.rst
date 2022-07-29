@@ -21,9 +21,9 @@ capable board, as well as each :term:`frozen module` included on it.
    {% for key, value in support_matrix|dictsort %}
        {{ '.. _' ~ key|replace(" ", "-") ~ ':' }}
    * - {{ key }}
-     - {{ ':py:mod:`' ~ value[0]|join("`, :py:mod:`") ~ '`' }}
+     - {{ ':py:mod:`' ~ value.modules|join("`, :py:mod:`") ~ '`' }}
 
-       {% for module in value[1] %}\
+       {% for module in value.frozen_libraries %}\
        {% if loop.index == 1 %}**Frozen Modules:** {% endif %}\
        {% if loop.index > 1 %}, {% endif %}\
        {% if module[1] %}{{ '`' ~ module[0] ~ ' <' ~ module[1] ~ '>`__' }}\

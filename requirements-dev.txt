@@ -17,6 +17,7 @@ polib
 # For pre-commit
 pyyaml
 black
+pre-commit
 
 # for combining the Nordic SoftDevice with CircuitPython
 intelhex
