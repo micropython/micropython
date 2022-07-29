@@ -28,25 +28,34 @@
 #include "py/ringbuf.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "usb_serial_jtag.h"
+#include "supervisor/port.h"
+#include "supervisor/usb_serial_jtag.h"
 
 #include "hal/usb_serial_jtag_ll.h"
 #include "esp_intr_alloc.h"
 #include "soc/periph_defs.h"
 
-#include "supervisor/esp_port.h"
 
 #define USB_SERIAL_JTAG_BUF_SIZE (64)
 
 STATIC ringbuf_t ringbuf;
 STATIC uint8_t buf[128];
-STATIC bool connected;
+STATIC volatile bool connected;
+
+#if CIRCUITPY_ESP_USB_SERIAL_JTAG && !CONFIG_ESP_PHY_ENABLE_USB
+#error "CONFIG_ESP_PHY_ENABLE_USB must be enabled in sdkconfig"
+#endif
 
 static void usb_serial_jtag_isr_handler(void *arg) {
     uint32_t flags = usb_serial_jtag_ll_get_intsts_mask();
 
     if (flags & USB_SERIAL_JTAG_INTR_SOF) {
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF);
+    }
+
+    if (flags & USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1) {
+        usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
+        connected = true;
     }
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
@@ -64,25 +73,19 @@ static void usb_serial_jtag_isr_handler(void *arg) {
                 ringbuf_put(&ringbuf, rx_buf[i]);
             }
         }
-        vTaskNotifyGiveFromISR(circuitpython_task, NULL);
+        port_wake_main_task_from_isr();
     }
 }
 
 void usb_serial_jtag_init(void) {
     ringbuf_init(&ringbuf, buf, sizeof(buf));
-    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
+    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
         usb_serial_jtag_isr_handler, NULL, NULL));
 }
 
 bool usb_serial_jtag_connected(void) {
-    // Make connected sticky. Otherwise we'll be disconnected every time the SOF
-    // index is 0. (It's only ~15 bits so it wraps around frequently.)
-    if (connected) {
-        return true;
-    }
-    connected = USB_SERIAL_JTAG.fram_num.sof_frame_index > 0;
     return connected;
 }
 

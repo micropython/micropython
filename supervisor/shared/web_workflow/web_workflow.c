@@ -95,7 +95,12 @@ typedef struct {
     char websocket_key[24 + 1];
 } _request;
 
-static wifi_radio_error_t wifi_status = WIFI_RADIO_ERROR_NONE;
+static wifi_radio_error_t _wifi_status = WIFI_RADIO_ERROR_NONE;
+
+// Store last status state to compute dirty.
+static bool _last_enabled = false;
+static uint32_t _last_ip = 0;
+static wifi_radio_error_t _last_wifi_status = WIFI_RADIO_ERROR_NONE;
 
 static mdns_server_obj_t mdns;
 static uint32_t web_api_port = 80;
@@ -108,6 +113,7 @@ static _request active_request;
 
 static char _api_password[64];
 
+// Store the encoded IP so we don't duplicate work.
 static uint32_t _encoded_ip = 0;
 static char _our_ip_encoded[4 * 4];
 
@@ -170,25 +176,41 @@ static bool _base64_in_place(char *buf, size_t in_len, size_t out_len) {
     return true;
 }
 
+STATIC void _update_encoded_ip(void) {
+    uint32_t ipv4_address = 0;
+    if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
+        ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
+    }
+    if (_encoded_ip != ipv4_address) {
+        uint8_t *octets = (uint8_t *)&ipv4_address;
+        snprintf(_our_ip_encoded, sizeof(_our_ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
+        _encoded_ip = ipv4_address;
+    }
+}
+
+bool supervisor_web_workflow_status_dirty(void) {
+    return common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj) != _last_enabled ||
+           _encoded_ip != _last_ip ||
+           _last_wifi_status != _wifi_status;
+}
 
 void supervisor_web_workflow_status(void) {
     serial_write_compressed(translate("Wi-Fi: "));
-    if (common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
+    _last_enabled = common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj);
+    if (_last_enabled) {
         uint32_t ipv4_address = wifi_radio_get_ipv4_address(&common_hal_wifi_radio_obj);
-        if (wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
-            wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
+        _last_wifi_status = _wifi_status;
+        if (_wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
+            _wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
             serial_write_compressed(translate("Authentication failure"));
-        } else if (wifi_status != WIFI_RADIO_ERROR_NONE) {
-            mp_printf(&mp_plat_print, "%d", wifi_status);
+        } else if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
+            mp_printf(&mp_plat_print, "%d", _wifi_status);
         } else if (ipv4_address == 0) {
+            _last_ip = 0;
             serial_write_compressed(translate("No IP"));
         } else {
-            if (_encoded_ip != ipv4_address) {
-                uint8_t *octets = (uint8_t *)&ipv4_address;
-                snprintf(_our_ip_encoded, sizeof(_our_ip_encoded), "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
-                _encoded_ip = ipv4_address;
-            }
-
+            _update_encoded_ip();
+            _last_ip = _encoded_ip;
             mp_printf(&mp_plat_print, "%s", _our_ip_encoded);
             if (web_api_port != 80) {
                 mp_printf(&mp_plat_print, ":%d", web_api_port);
@@ -231,11 +253,11 @@ void supervisor_start_web_workflow(void) {
     // We can all connect again because it will return early if we're already connected to the
     // network. If we are connected to a different network, then it will disconnect before
     // attempting to connect to the given network.
-    wifi_status = common_hal_wifi_radio_connect(
+    _wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, ssid_len, (uint8_t *)password, password_len,
         0, 0.1, NULL, 0);
 
-    if (wifi_status != WIFI_RADIO_ERROR_NONE) {
+    if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
         return;
     }
@@ -290,8 +312,6 @@ void supervisor_start_web_workflow(void) {
     }
 
     // TODO:
-    // GET /cp/serial.txt
-    //   - Most recent 1k of serial output.
     // GET /edit/
     //   - Super basic editor
     #endif
@@ -406,6 +426,7 @@ static bool _origin_ok(const char *origin) {
         return true;
     }
 
+    _update_encoded_ip();
     end = origin + strlen(http) + strlen(_our_ip_encoded);
     if (strncmp(origin + strlen(http), _our_ip_encoded, strlen(_our_ip_encoded)) == 0 &&
         (end[0] == '\0' || end[0] == ':')) {
@@ -710,6 +731,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     mp_print_t _socket_print = {socket, _print_chunk};
 
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
+    _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
         "{\"web_api_version\": 1, "

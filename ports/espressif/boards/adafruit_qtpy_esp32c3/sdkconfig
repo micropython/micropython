@@ -31,6 +31,14 @@ CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-4MB-no-uf2.csv"
 # Component config
 #
 #
+
+#
+# PHY
+#
+CONFIG_ESP_PHY_ENABLE_USB=y
+# end of PHY
+
+#
 # ESP System Settings
 #
 # CONFIG_ESP_SYSTEM_USE_EH_FRAME is not set

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
-#define MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
+#include "supervisor/port.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+MP_WEAK void port_wake_main_task(void) {
+}
 
-extern TaskHandle_t circuitpython_task;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
+MP_WEAK void port_wake_main_task_from_isr(void) {
+}
