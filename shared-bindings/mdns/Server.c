@@ -161,6 +161,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_find_obj, 1, _mdns_server_find);
 //|     def advertise_service(self, *,  service_type: str, protocol: str, port: int) -> None:
 //|         """Respond to queries for the given service with the given port.
 //|
+//|         ``service_type`` and ``protocol`` can only occur on one port. Any call after the first
+//|         will update the entry's port.
+//|
 //|         :param str service_type: The service type such as "_http"
 //|         :param str protocol: The service protocol such as "_tcp"
 //|         :param int port: The port used by the service"""

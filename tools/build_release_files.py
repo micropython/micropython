@@ -12,6 +12,9 @@ import shutil
 import build_board_info as build_info
 import time
 
+sys.path.append("../docs")
+from shared_bindings_matrix import get_settings_from_makefile
+
 for port in build_info.SUPPORTED_PORTS:
     result = subprocess.run("rm -rf ../ports/{port}/build*".format(port=port), shell=True)
 
@@ -39,6 +42,7 @@ for board in build_boards:
     bin_directory = "../bin/{}/".format(board)
     os.makedirs(bin_directory, exist_ok=True)
     board_info = all_boards[board]
+    board_settings = get_settings_from_makefile("../ports/" + board_info["port"], board)
 
     for language in languages:
         bin_directory = "../bin/{board}/{language}".format(board=board, language=language)
@@ -82,8 +86,12 @@ for board in build_boards:
             success = "\033[31mfailed\033[0m"
 
         other_output = ""
+        extensions = [
+            extension.strip()
+            for extension in board_settings["CIRCUITPY_BUILD_EXTENSIONS"].split(",")
+        ]
 
-        for extension in board_info["extensions"]:
+        for extension in extensions:
             temp_filename = "../ports/{port}/{build}/firmware.{extension}".format(
                 port=board_info["port"], build=build_dir, extension=extension
             )

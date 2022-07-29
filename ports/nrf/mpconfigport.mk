@@ -4,6 +4,8 @@ LD_TEMPLATE_FILE = boards/common.template.ld
 
 INTERNAL_LIBM = 1
 
+CIRCUITPY_BUILD_EXTENSIONS ?= uf2
+
 # Number of USB endpoint pairs.
 USB_NUM_ENDPOINT_PAIRS = 8
 

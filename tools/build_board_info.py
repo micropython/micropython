@@ -19,75 +19,11 @@ import adabot.github_requests as github
 sys.path.append("../docs")
 from shared_bindings_matrix import (
     SUPPORTED_PORTS,
-    aliases_by_board,
     support_matrix_by_board,
+    get_board_mapping,
 )
 
-BIN = ("bin",)
-UF2 = ("uf2",)
-BIN_UF2 = ("bin", "uf2")
-HEX = ("hex",)
-HEX_UF2 = ("hex", "uf2")
-SPK = ("spk",)
-DFU = ("dfu",)
-BIN_DFU = ("bin", "dfu")
-COMBINED_HEX = ("combined.hex",)
-KERNEL8_IMG = ("disk.img.zip", "kernel8.img")
-KERNEL_IMG = ("disk.img.zip", "kernel.img")
-
-# Default extensions
-extension_by_port = {
-    "atmel-samd": UF2,
-    "broadcom": KERNEL8_IMG,
-    "cxd56": SPK,
-    "espressif": BIN_UF2,
-    "litex": DFU,
-    "mimxrt10xx": HEX_UF2,
-    "nrf": UF2,
-    "raspberrypi": UF2,
-    "stm": BIN,
-}
-
-# Per board overrides
-extension_by_board = {
-    # samd
-    "arduino_mkr1300": BIN_UF2,
-    "arduino_mkrzero": BIN_UF2,
-    "arduino_nano_33_iot": BIN_UF2,
-    "arduino_zero": BIN_UF2,
-    "feather_m0_adalogger": BIN_UF2,
-    "feather_m0_basic": BIN_UF2,
-    "feather_m0_rfm69": BIN_UF2,
-    "feather_m0_rfm9x": BIN_UF2,
-    "uchip": BIN_UF2,
-    # nRF52840 dev kits that may not have UF2 bootloaders,
-    "makerdiary_nrf52840_mdk": HEX,
-    "makerdiary_nrf52840_mdk_usb_dongle": HEX_UF2,
-    "pca10056": BIN_UF2,
-    "pca10059": BIN_UF2,
-    "electronut_labs_blip": HEX,
-    "microbit_v2": COMBINED_HEX,
-    # stm32
-    "meowbit_v121": UF2,
-    "sparkfun_stm32_thing_plus": BIN_UF2,
-    "swan_r5": BIN_UF2,
-    # esp32
-    "adafruit_feather_esp32_v2": BIN,
-    # esp32c3
-    "adafruit_qtpy_esp32c3": BIN,
-    "ai_thinker_esp32-c3s": BIN,
-    "ai_thinker_esp32-c3s-2m": BIN,
-    "espressif_esp32c3_devkitm_1_n4": BIN,
-    "lilygo_ttgo_t-01c3": BIN,
-    "lolin_c3_mini": BIN,
-    "microdev_micro_c3": BIN,
-    "lilygo_ttgo_t-oi-plus": BIN,
-    # broadcom
-    "raspberrypi_zero": KERNEL_IMG,
-    "raspberrypi_zero_w": KERNEL_IMG,
-}
-
-language_allow_list = set(
+LANGUAGE_ALLOW_LIST = set(
     [
         "ID",
         "de_DE",
@@ -116,36 +52,8 @@ def get_languages(list_all=False):
         if f.name.endswith(".po"):
             languages.add(f.name[:-3])
     if not list_all:
-        languages = languages & language_allow_list
+        languages = languages & LANGUAGE_ALLOW_LIST
     return sorted(list(languages), key=str.casefold)
-
-
-def get_board_mapping():
-    boards = {}
-    for port in SUPPORTED_PORTS:
-        board_path = os.path.join("../ports", port, "boards")
-        for board_path in os.scandir(board_path):
-            if board_path.is_dir():
-                board_files = os.listdir(board_path.path)
-                board_id = board_path.name
-                extensions = extension_by_port[port]
-                extensions = extension_by_board.get(board_path.name, extensions)
-                aliases = aliases_by_board.get(board_path.name, [])
-                boards[board_id] = {
-                    "port": port,
-                    "extensions": extensions,
-                    "download_count": 0,
-                    "aliases": aliases,
-                }
-                for alias in aliases:
-                    boards[alias] = {
-                        "port": port,
-                        "extensions": extensions,
-                        "download_count": 0,
-                        "alias": True,
-                        "aliases": [],
-                    }
-    return boards
 
 
 def get_version_info():
@@ -282,7 +190,7 @@ def generate_download_info():
 
     languages = get_languages()
 
-    support_matrix = support_matrix_by_board(use_branded_name=False)
+    support_matrix = support_matrix_by_board(use_branded_name=False, withurl=False)
 
     new_stable = "-" not in new_tag
 
@@ -309,20 +217,19 @@ def generate_download_info():
                 board_files = os.listdir(board_path.path)
                 board_id = board_path.name
                 board_info = board_mapping[board_id]
-
                 for alias in [board_id] + board_info["aliases"]:
                     alias_info = board_mapping[alias]
                     if alias not in current_info:
                         changes["new_boards"].append(alias)
                         current_info[alias] = {"downloads": 0, "versions": []}
-
                     new_version = {
                         "stable": new_stable,
                         "version": new_tag,
-                        "modules": support_matrix[alias][0],
                         "languages": languages,
-                        "extensions": board_info["extensions"],
-                        "frozen_libraries": [frozen[0] for frozen in support_matrix[alias][1]],
+                        # add modules, extensions, frozen_libraries explicitly
+                        "modules": support_matrix[alias]["modules"],
+                        "extensions": support_matrix[alias]["extensions"],
+                        "frozen_libraries": support_matrix[alias]["frozen_libraries"],
                     }
                     current_info[alias]["downloads"] = alias_info["download_count"]
                     current_info[alias]["versions"].append(new_version)
@@ -332,9 +239,10 @@ def generate_download_info():
     if changes["new_release"] and user:
         create_pr(changes, current_info, git_info, user)
     else:
-        print("No new release to update")
         if "DEBUG" in os.environ:
             print(create_json(current_info).decode("utf8"))
+        else:
+            print("No new release to update")
 
 
 if __name__ == "__main__":
