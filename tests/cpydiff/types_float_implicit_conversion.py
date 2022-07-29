@@ -2,7 +2,7 @@
 categories: Types,float
 description: uPy allows implicit conversion of objects in maths operations while CPython does not.
 cause: Unknown
-workaround: Objects should be wrapped in `float(obj)` for compatibility with CPython.
+workaround: Objects should be wrapped in ``float(obj)`` for compatibility with CPython.
 """
 
 
