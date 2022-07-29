@@ -185,10 +185,6 @@
 #define MICROPY_PY_MACHINE_I2C      (0)
 #endif
 
-#ifndef MICROPY_PY_MACHINE_HW_SPI
-#define MICROPY_PY_MACHINE_HW_SPI   (1)
-#endif
-
 #ifndef MICROPY_PY_MACHINE_HW_PWM
 #define MICROPY_PY_MACHINE_HW_PWM   (0)
 #endif

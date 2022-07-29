@@ -333,8 +333,9 @@ STATIC mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
     return x;
 }
 
-STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t _bits) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    int8_t bits = _bits != -1 ? _bits : self->bits;
 
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("transfer on deinitialized SPI"));
@@ -342,7 +343,7 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     }
 
     // Round to nearest whole set of bits
-    int bits_to_send = len * 8 / self->bits * self->bits;
+    int bits_to_send = len * 8 / bits * bits;
 
     if (!bits_to_send) {
         mp_raise_ValueError(MP_ERROR_TEXT("buffer too short"));
@@ -365,7 +366,7 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
     } else {
         int offset = 0;
         int bits_remaining = bits_to_send;
-        int optimum_word_size = 8 * self->bits / gcd(8, self->bits);
+        int optimum_word_size = 8 * bits / gcd(8, bits);
         int max_transaction_bits = MP_HW_SPI_MAX_XFER_BITS / optimum_word_size * optimum_word_size;
         spi_transaction_t *transaction, *result, transactions[2];
         int i = 0;

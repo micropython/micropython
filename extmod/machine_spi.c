@@ -59,39 +59,48 @@ STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
 
-STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest) {
+STATIC void mp_machine_spi_transfer(mp_obj_t self, size_t len, const void *src, void *dest, int8_t bits) {
     mp_obj_base_t *s = (mp_obj_base_t *)MP_OBJ_TO_PTR(self);
     mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *)s->type->protocol;
-    spi_p->transfer(s, len, src, dest);
+    spi_p->transfer(s, len, src, dest, bits);
 }
 
 STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
     vstr_t vstr;
     vstr_init_len(&vstr, mp_obj_get_int(args[1]));
-    memset(vstr.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
-    mp_machine_spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf);
+    memset(vstr.buf, n_args >= 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
+    uint8_t bits = n_args == 4 ? mp_obj_get_int(args[3]) : 0;
+    mp_machine_spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf, bits);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 4, mp_machine_spi_read);
 
 STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    memset(bufinfo.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, bufinfo.len);
-    mp_machine_spi_transfer(args[0], bufinfo.len, bufinfo.buf, bufinfo.buf);
+    memset(bufinfo.buf, n_args >= 3 ? mp_obj_get_int(args[2]) : 0, bufinfo.len);
+    uint8_t bits = n_args == 4 ? mp_obj_get_int(args[3]) : 0;
+    mp_machine_spi_transfer(args[0], bufinfo.len, bufinfo.buf, bufinfo.buf, bits);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machine_spi_readinto);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 4, mp_machine_spi_readinto);
 
-STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf) {
+STATIC mp_obj_t mp_machine_spi_write(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t self = args[0];
+    mp_obj_t wr_buf = args[1];
+    uint8_t bits = n_args == 3 ? mp_obj_get_int(args[2]) : 0;
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    mp_machine_spi_transfer(self, src.len, (const uint8_t *)src.buf, NULL);
+    mp_machine_spi_transfer(self, src.len, (const uint8_t *)src.buf, NULL, bits);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_write_obj, 2, 3, mp_machine_spi_write);
 
-STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp_obj_t rd_buf) {
+STATIC mp_obj_t mp_machine_spi_write_readinto(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t self = args[0];
+    mp_obj_t wr_buf = args[1];
+    mp_obj_t rd_buf = args[2];
+    uint8_t bits = n_args == 4 ? mp_obj_get_int(args[3]) : 0;
     mp_buffer_info_t src;
     mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
     mp_buffer_info_t dest;
@@ -99,10 +108,10 @@ STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp
     if (src.len != dest.len) {
         mp_raise_ValueError(MP_ERROR_TEXT("buffers must be the same length"));
     }
-    mp_machine_spi_transfer(self, src.len, src.buf, dest.buf);
+    mp_machine_spi_transfer(self, src.len, src.buf, dest.buf, bits);
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_write_readinto_obj, 3, 4, mp_machine_spi_write_readinto);
 
 STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_spi_init_obj) },
@@ -181,8 +190,9 @@ STATIC mp_obj_t mp_machine_soft_spi_make_new(const mp_obj_type_t *type, size_t n
     self->spi.delay_half = baudrate_to_delay_half(args[ARG_baudrate].u_int);
     self->spi.polarity = args[ARG_polarity].u_int;
     self->spi.phase = args[ARG_phase].u_int;
-    if (args[ARG_bits].u_int != 8) {
-        mp_raise_ValueError(MP_ERROR_TEXT("bits must be 8"));
+    self->spi.bits = args[ARG_bits].u_int;
+    if (self->spi.bits == 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bits must be > 0"));
     }
     if (args[ARG_firstbit].u_int != MICROPY_PY_MACHINE_SPI_MSB) {
         mp_raise_ValueError(MP_ERROR_TEXT("firstbit must be MSB"));
@@ -240,9 +250,9 @@ STATIC void mp_machine_soft_spi_init(mp_obj_base_t *self_in, size_t n_args, cons
     mp_soft_spi_ioctl(&self->spi, MP_SPI_IOCTL_INIT);
 }
 
-STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void mp_machine_soft_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     mp_machine_soft_spi_obj_t *self = (mp_machine_soft_spi_obj_t *)self_in;
-    mp_soft_spi_transfer(&self->spi, len, src, dest);
+    mp_soft_spi_transfer(&self->spi, len, src, dest, bits);
 }
 
 const mp_machine_spi_p_t mp_machine_soft_spi_p = {

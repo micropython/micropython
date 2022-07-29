@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2016-2018 Damien P. George
+ * Copyright (c) 2019 "Eric Poulsen" <eric@zyxod.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,7 @@
  */
 
 #include "drivers/bus/spi.h"
+#include "py/runtime.h"
 
 int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
     mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
@@ -44,9 +46,25 @@ int mp_soft_spi_ioctl(void *self_in, uint32_t cmd) {
     return 0;
 }
 
-void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t *dest, uint8_t bits) {
     mp_soft_spi_obj_t *self = (mp_soft_spi_obj_t*)self_in;
     uint32_t delay_half = self->delay_half;
+
+    bits = bits ? bits : self->bits;
+    if (bits == 0) {
+        // Shoudln't be possible with soft SPI, but
+        // just in case.
+        mp_raise_ValueError(MP_ERROR_TEXT("bits cannot be 0"));
+    }
+
+    int bytesPerChunk = (bits + 7) / 8;
+    // round length down as needed (possibly to zero)
+    len = len / bytesPerChunk * bytesPerChunk;
+    if(len == 0) {
+        return;
+    }
+
+    uint8_t remBits = bits;
 
     // only MSB transfer is implemented
 
@@ -54,28 +72,37 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
     // delay_half is equal to this value, then the software SPI implementation
     // will run as fast as possible, limited only by CPU speed and GPIO time.
     #ifdef MICROPY_HW_SOFTSPI_MIN_DELAY
-    if (delay_half == MICROPY_HW_SOFTSPI_MIN_DELAY) {
-        for (size_t i = 0; i < len; ++i) {
-            uint8_t data_out = src[i];
+    if (delay_half == MICROPY_HW_SOFTSPI_MIN_DELAY)
+    {
+        while (len--) {
+            uint8_t bitsThisByte = remBits < 8 ? remBits : 8;
+            uint8_t data_out = *src++;
             uint8_t data_in = 0;
-            for (int j = 0; j < 8; ++j, data_out <<= 1) {
+
+            remBits -= bitsThisByte;
+            for (; bitsThisByte; --bitsThisByte, data_out <<= 1) {
                 mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
                 mp_hal_pin_write(self->sck, 1 - self->polarity);
                 data_in = (data_in << 1) | mp_hal_pin_read(self->miso);
                 mp_hal_pin_write(self->sck, self->polarity);
             }
+            remBits = remBits ? remBits : bits;
             if (dest != NULL) {
-                dest[i] = data_in;
+                *dest++ = data_in;
             }
         }
         return;
     }
-    #endif
+#endif
 
-    for (size_t i = 0; i < len; ++i) {
-        uint8_t data_out = src[i];
+
+    while(len--) {
+        uint8_t bitsThisByte = remBits < 8 ? remBits : 8;
+        uint8_t data_out = *src++;
         uint8_t data_in = 0;
-        for (int j = 0; j < 8; ++j, data_out <<= 1) {
+
+        remBits -= bitsThisByte;
+        for(;bitsThisByte; --bitsThisByte, data_out <<= 1) {
             mp_hal_pin_write(self->mosi, (data_out >> 7) & 1);
             if (self->phase == 0) {
                 mp_hal_delay_us_fast(delay_half);
@@ -93,8 +120,9 @@ void mp_soft_spi_transfer(void *self_in, size_t len, const uint8_t *src, uint8_t
                 mp_hal_delay_us_fast(delay_half);
             }
         }
+        remBits = remBits ? remBits : bits;
         if (dest != NULL) {
-            dest[i] = data_in;
+            *dest++ = data_in;
         }
     }
 }

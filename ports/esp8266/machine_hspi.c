@@ -48,7 +48,7 @@ typedef struct _machine_hspi_obj_t {
     uint8_t phase;
 } machine_hspi_obj_t;
 
-STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     (void)self_in;
 
     if (dest == NULL) {

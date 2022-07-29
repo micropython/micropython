@@ -226,7 +226,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     LPSPI_MasterInit(self->spi_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPSPI_CLK_ROOT);
 }
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest, int8_t bits) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
     // Wait a short while for the previous transfer to finish, but not forever
