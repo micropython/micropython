@@ -177,11 +177,10 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self);
 
 STATIC mp_obj_t mpy_wiznet_read_int(mp_obj_t none_in) {
     (void)none_in;
-    wizchip_clrinterrupt(IK_SOCK_0);
-    setSn_IR(0, Sn_IR_RECV);
-
-    // Handle incoming data
-    wiznet5k_try_poll();
+    // Handle incoming data, unless the SPI bus is busy
+    if (mp_hal_pin_read(wiznet5k_obj.cs)) {
+        wiznet5k_try_poll();
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mpy_wiznet_read_int_obj, mpy_wiznet_read_int);
@@ -343,6 +342,7 @@ void wiznet5k_poll(void) {
             }
         }
     }
+    wizchip_clrinterrupt(IK_SOCK_0);
 }
 
 #endif // MICROPY_PY_LWIP
