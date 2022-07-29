@@ -166,6 +166,7 @@ value_error:
     }
 }
 
+
 enum {
     REAL_IMAG_STATE_START = 0,
     REAL_IMAG_STATE_HAVE_REAL = 1,
@@ -178,6 +179,44 @@ typedef enum {
     PARSE_DEC_IN_EXP,
 } parse_dec_in_t;
 
+#if MICROPY_PY_BUILTINS_FLOAT
+// DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
+// SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
+// EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
+//   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
+//   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
+//   exponent).
+#if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+#define DEC_VAL_MAX 1e20F
+#define SMALL_NORMAL_VAL (1e-37F)
+#define SMALL_NORMAL_EXP (-37)
+#define EXACT_POWER_OF_10 (9)
+#elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+#define DEC_VAL_MAX 1e200
+#define SMALL_NORMAL_VAL (1e-307)
+#define SMALL_NORMAL_EXP (-307)
+#define EXACT_POWER_OF_10 (22)
+#endif
+
+// Break out inner digit accumulation routine to ease trailing zero deferral.
+static void accept_digit(mp_float_t *p_dec_val, int dig, int *p_exp_extra, int in) {
+    // Core routine to ingest an additional digit.
+    if (*p_dec_val < DEC_VAL_MAX) {
+        // dec_val won't overflow so keep accumulating
+        *p_dec_val = 10 * *p_dec_val + dig;
+        if (in == PARSE_DEC_IN_FRAC) {
+            --(*p_exp_extra);
+        }
+    } else {
+        // dec_val might overflow and we anyway can't represent more digits
+        // of precision, so ignore the digit and just adjust the exponent
+        if (in == PARSE_DEC_IN_INTG) {
+            ++(*p_exp_extra);
+        }
+    }
+}
+#endif // MICROPY_BUILTINS_FLOAT
+
 #if MICROPY_PY_BUILTINS_COMPLEX
 mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)
 #else
@@ -185,24 +224,6 @@ mp_obj_t mp_parse_num_float(const char *str, size_t len, bool allow_imag, mp_lex
 #endif
 {
     #if MICROPY_PY_BUILTINS_FLOAT
-
-// DEC_VAL_MAX only needs to be rough and is used to retain precision while not overflowing
-// SMALL_NORMAL_VAL is the smallest power of 10 that is still a normal float
-// EXACT_POWER_OF_10 is the largest value of x so that 10^x can be stored exactly in a float
-//   Note: EXACT_POWER_OF_10 is at least floor(log_5(2^mantissa_length)). Indeed, 10^n = 2^n * 5^n
-//   so we only have to store the 5^n part in the mantissa (the 2^n part will go into the float's
-//   exponent).
-    #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
-#define DEC_VAL_MAX 1e20F
-#define SMALL_NORMAL_VAL (1e-37F)
-#define SMALL_NORMAL_EXP (-37)
-#define EXACT_POWER_OF_10 (9)
-    #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
-#define DEC_VAL_MAX 1e200
-#define SMALL_NORMAL_VAL (1e-307)
-#define SMALL_NORMAL_EXP (-307)
-#define EXACT_POWER_OF_10 (22)
-    #endif
 
     const char *top = str + len;
     mp_float_t dec_val = 0;
@@ -255,6 +276,7 @@ parse_start:
         bool exp_neg = false;
         int exp_val = 0;
         int exp_extra = 0;
+        int trailing_zeros_intg = 0, trailing_zeros_frac = 0;
         while (str < top) {
             unsigned int dig = *str++;
             if ('0' <= dig && dig <= '9') {
@@ -267,18 +289,25 @@ parse_start:
                         exp_val = 10 * exp_val + dig;
                     }
                 } else {
-                    if (dec_val < DEC_VAL_MAX) {
-                        // dec_val won't overflow so keep accumulating
-                        dec_val = 10 * dec_val + dig;
-                        if (in == PARSE_DEC_IN_FRAC) {
-                            --exp_extra;
+                    if (dig == 0 || dec_val >= DEC_VAL_MAX) {
+                        // Defer treatment of zeros in fractional part.  If nothing comes afterwards, ignore them.
+                        // Also, once we reach DEC_VAL_MAX, treat every additional digit as a trailing zero.
+                        if (in == PARSE_DEC_IN_INTG) {
+                            ++trailing_zeros_intg;
+                        } else {
+                            ++trailing_zeros_frac;
                         }
                     } else {
-                        // dec_val might overflow and we anyway can't represent more digits
-                        // of precision, so ignore the digit and just adjust the exponent
-                        if (in == PARSE_DEC_IN_INTG) {
-                            ++exp_extra;
+                        // Time to un-defer any trailing zeros.  Intg zeros first.
+                        while (trailing_zeros_intg) {
+                            accept_digit(&dec_val, 0, &exp_extra, PARSE_DEC_IN_INTG);
+                            --trailing_zeros_intg;
                         }
+                        while (trailing_zeros_frac) {
+                            accept_digit(&dec_val, 0, &exp_extra, PARSE_DEC_IN_FRAC);
+                            --trailing_zeros_frac;
+                        }
+                        accept_digit(&dec_val, dig, &exp_extra, in);
                     }
                 }
             } else if (in == PARSE_DEC_IN_INTG && dig == '.') {
@@ -304,14 +333,15 @@ parse_start:
                 break;
             }
         }
-
+        //DEBUG_printf("trailing_zeros=%d trailing_frac=%d\n", trailing_zeros, trailing_zeros_frac);
+        
         // work out the exponent
         if (exp_neg) {
             exp_val = -exp_val;
         }
 
         // apply the exponent, making sure it's not a subnormal value
-        exp_val += exp_extra;
+        exp_val += (exp_extra + trailing_zeros_intg);
         if (exp_val < SMALL_NORMAL_EXP) {
             exp_val -= SMALL_NORMAL_EXP;
             dec_val *= SMALL_NORMAL_VAL;
