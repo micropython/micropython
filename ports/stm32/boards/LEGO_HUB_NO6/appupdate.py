@@ -23,8 +23,13 @@ def update_app(filename):
     key = struct.pack("<I", _SPIFLASH_UPDATE_KEY_VALUE)
 
     # Create a SPI flash object.
-    spi = machine.SoftSPI(sck="B13", mosi="C3", miso="C2", baudrate=50_000_000)
-    cs = machine.Pin("B12", machine.Pin.OUT, value=1)
+    spi = machine.SoftSPI(
+        sck=machine.Pin.board.FLASH_SCK,
+        mosi=machine.Pin.board.FLASH_MOSI,
+        miso=machine.Pin.board.FLASH_MISO,
+        baudrate=50_000_000,
+    )
+    cs = machine.Pin(machine.Pin.board.FLASH_NSS, machine.Pin.OUT, value=1)
     flash = spiflash.SPIFlash(spi, cs)
 
     # Write the update key and elements to the SPI flash.
