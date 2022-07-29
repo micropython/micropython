@@ -31,7 +31,7 @@ General board control
 
 The MicroPython REPL is on the USB port, configured in VCP mode.
 Tab-completion is useful to find out what methods an object has.
-Paste mode (ctrl-E) is useful to paste a large slab of Python code into
+Paste mode (Ctrl-E) is useful to paste a large slab of Python code into
 the REPL.
 
 The :mod:`machine` module::
@@ -103,7 +103,7 @@ Available Pins follow the ranges and labelling of the respective board.
 
 Notes:
 
-At Adadruit Feather and ItsyBity boards, Pin D5 is conncted to an external gate output
+At Adafruit Feather and ItsyBity boards, Pin D5 is connected to an external gate output
 and can therefore only be used as input.
 
 |
@@ -161,7 +161,7 @@ PWM Constructor
       - *dest* is the Pin object on which the PWM is output.
 
     PWM objects are provided by TCC timer module. The TCC timer modules have up
-    to six channels and eigth outputs. All channels of a module run at the same
+    to six channels and eight outputs. All channels of a module run at the same
     frequency, but allow for different duty cycles. Outputs are assigned to channels
     in modulo(n) fashion, where n is the number of channels. Outputs of a channel
     have the same frequency and duty rate, but may have different polarity.
@@ -209,7 +209,7 @@ ADC Constructor
 .. class:: ADC(dest, *, average=16)
   :noindex:
 
-On the SAMD21/SAMD51 ADC functionality is available on Pins labeled 'Ann'.
+On the SAMD21/SAMD51 ADC functionality is available on Pins labelled 'Ann'.
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
@@ -327,7 +327,7 @@ Hardware I2C bus
 The SAMD21/SAMD51 MCUs have up to eight hardware so called SERCOM devices,
 which can be used as UART, SPI or I2C device, but not every MCU variant
 and board exposes all signal pins for users.
-For the assignment of Pins to deviecs and I2C signals, refer to :ref:`SAMD pinout <samd_pinout>`.
+For the assignment of Pins to devices and I2C signals, refer to :ref:`SAMD pinout <samd_pinout>`.
 
 Hardware I2C is accessed via the :ref:`machine.I2C <machine.I2C>` class and
 has the same methods as software SPI above::
@@ -421,13 +421,13 @@ assigned to an otherwise unused pin.
 Driving a Neopixel LED
 ----------------------
 
-The built-in machine.bitstream() method supports driving neopixel LEDs in combination
-with the neopixel driver from the MicroPython driver library::
+The built-in machine.bitstream() method supports driving Neopixel LEDs in combination
+with the Neopixel driver from the MicroPython driver library::
 
     import neopixel
     import machine
 
-    # 1 LED connected to Pin D8 on Adafruit Faeather boards
+    # 1 LED connected to Pin D8 on Adafruit Feather boards
     p = machine.Pin(8, machine.Pin.OUT)
     n = neopixel.NeoPixel(p, 1)
 

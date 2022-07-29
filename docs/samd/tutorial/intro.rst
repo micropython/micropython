@@ -57,7 +57,7 @@ firmware upload.
 - Connect the board by an USB-A/USB-Micro cable to your PC.
 - Push the reset button twice. Then, a drive should pop up at the 
   PC's file manager. Many boards have a on-board RGB LED, which first lights up
-  red, and then changes it's color to green. The timing of the double push is
+  red, and then changes it's colour to green. The timing of the double push is
   sometimes tricky. So you may have to try to get the proper rhythm.
 - Copy the .uf file to that newly opened drive. A LED on the board may
   flash a while. When the copy is finished, the board drive will disappear and the
