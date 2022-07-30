@@ -27,7 +27,7 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "mbedtls_config.h"
+#include "mbedtls_mpconfig.h"
 
 #include "hardware/rtc.h"
 #include "shared/timeutils/timeutils.h"

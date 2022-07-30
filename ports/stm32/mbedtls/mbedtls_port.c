@@ -25,7 +25,7 @@
  */
 
 #include "rng.h"
-#include "mbedtls_config.h"
+#include "mbedtls_mpconfig.h"
 
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include "rtc.h"

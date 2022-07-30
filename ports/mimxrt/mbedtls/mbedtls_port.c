@@ -26,7 +26,7 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "mbedtls_config.h"
+#include "mbedtls_mpconfig.h"
 void trng_random_data(unsigned char *output, size_t len);
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
