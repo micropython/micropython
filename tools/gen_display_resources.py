@@ -180,51 +180,25 @@ displayio_bitmap_t blinka_bitmap = {{
 _displayio_color_t blinka_colors[7] = {{
     {{
         .rgb888 = 0x000000,
-        .rgb565 = 0x0000,
-        .luma = 0x00,
-        .chroma = 0,
         .transparent = true
     }},
-    {{
-        .rgb888 = 0x8428bc,
-        .rgb565 = 0x8978,
-        .luma = 0xff, // We cheat the luma here. It is actually 0x60
-        .hue = 184,
-        .chroma = 148
+    {{ // Purple
+        .rgb888 = 0x8428bc
     }},
-    {{
-        .rgb888 = 0xff89bc,
-        .rgb565 = 0xFCB8,
-        .luma = 0xb5,
-        .hue = 222,
-        .chroma = 118
+    {{ // Pink
+        .rgb888 = 0xff89bc
     }},
-    {{
-        .rgb888 = 0x7beffe,
-        .rgb565 = 0x869F,
-        .luma = 0xe0,
-        .hue = 124,
-        .chroma = 131
+    {{ // Light blue
+        .rgb888 = 0x7beffe
     }},
-    {{
-        .rgb888 = 0x51395f,
-        .rgb565 = 0x5A0D,
-        .luma = 0x47,
-        .hue = 185,
-        .chroma = 38
+    {{ // Dark purple
+        .rgb888 = 0x51395f
     }},
-    {{
-        .rgb888 = 0xffffff,
-        .rgb565 = 0xffff,
-        .luma = 0xff,
-        .chroma = 0
+    {{ // White
+        .rgb888 = 0xffffff
     }},
-    {{
-        .rgb888 = 0x0736a0,
-        .rgb565 = 0x01f5,
-        .luma = 0x44,
-        .hue = 147,
-        .chroma = 153
+    {{ // Dark Blue
+        .rgb888 = 0x0736a0
     }},
 }};
 
@@ -270,16 +244,10 @@ c_file.write(
 #if CIRCUITPY_TERMINALIO
 _displayio_color_t terminal_colors[2] = {
     {
-        .rgb888 = 0x000000,
-        .rgb565 = 0x0000,
-        .luma = 0x00,
-        .chroma = 0
+        .rgb888 = 0x000000
     },
     {
-        .rgb888 = 0xffffff,
-        .rgb565 = 0xffff,
-        .luma = 0xff,
-        .chroma = 0
+        .rgb888 = 0xffffff
     },
 };
 

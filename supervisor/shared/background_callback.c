@@ -74,6 +74,7 @@ bool PLACE_IN_ITCM(background_callback_pending)(void) {
 
 static bool in_background_callback;
 void PLACE_IN_ITCM(background_callback_run_all)() {
+    port_background_task();
     if (!background_callback_pending()) {
         return;
     }

@@ -406,7 +406,7 @@ bool vectorio_vector_shape_fill_area(vectorio_vector_shape_t *self, const _displ
                 if (self->pixel_shader == mp_const_none) {
                     output_pixel.pixel = input_pixel.pixel;
                 } else if (mp_obj_is_type(self->pixel_shader, &displayio_palette_type)) {
-                    output_pixel.opaque = displayio_palette_get_color(self->pixel_shader, colorspace, input_pixel.pixel, &output_pixel.pixel);
+                    displayio_palette_get_color(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
                 } else if (mp_obj_is_type(self->pixel_shader, &displayio_colorconverter_type)) {
                     displayio_colorconverter_convert(self->pixel_shader, colorspace, &input_pixel, &output_pixel);
                 }

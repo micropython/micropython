@@ -25,6 +25,7 @@ jobs:
       boards-aarch: ${{ steps.set-matrix.outputs.boards-aarch }}
       boards-arm: ${{ steps.set-matrix.outputs.boards-arm }}
       boards-esp: ${{ steps.set-matrix.outputs.boards-esp }}
+      boards-nrf: ${{ steps.set-matrix.outputs.boards-nrf }}
       boards-riscv: ${{ steps.set-matrix.outputs.boards-riscv }}
       boards-rpi: ${{ steps.set-matrix.outputs.boards-rpi }}
       cp-version: ${{ steps.set-up-submodules.outputs.version }}
@@ -250,6 +251,16 @@ jobs:
     with:
       platform: esp
       boards: ${{ needs.scheduler.outputs.boards-esp }}
+      cp-version: ${{ needs.scheduler.outputs.cp-version }}
+
+  nrf:
+    needs: [scheduler, mpy-cross, tests]
+    if: ${{ needs.scheduler.outputs.boards-nrf != '[]' }}
+    uses: ./.github/workflows/build-boards.yml
+    secrets: inherit
+    with:
+      platform: nrf
+      boards: ${{ needs.scheduler.outputs.boards-nrf }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
 
   riscv:

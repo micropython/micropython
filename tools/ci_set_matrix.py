@@ -42,14 +42,14 @@ from shared_bindings_matrix import (
     all_ports_all_boards,
 )
 
-PORT_TO_ARCH = {
+PORT_TO_BUILD_JOB = {
     "atmel-samd": "arm",
     "broadcom": "aarch",
     "cxd56": "arm",
     "espressif": "esp",
     "litex": "riscv",
     "mimxrt10xx": "arm",
-    "nrf": "arm",
+    "nrf": "nrf",
     "raspberrypi": "rpi",
     "stm": "arm",
 }
@@ -203,14 +203,14 @@ def set_boards_to_build(build_all: bool):
             boards_to_build = all_board_ids
             break
 
-    # Split boards by architecture.
-    arch_to_boards = {"aarch": [], "arm": [], "esp": [], "riscv": [], "rpi": []}
+    # Split boards by build job.
+    build_job_to_boards = {"aarch": [], "arm": [], "esp": [], "nrf": [], "riscv": [], "rpi": []}
 
     # Append previously failed boards
-    for arch in arch_to_boards:
-        arch_to_job = f"build-{arch}"
-        if arch_to_job in last_failed_jobs:
-            for board in last_failed_jobs[arch_to_job]:
+    for build_job in build_job_to_boards:
+        job_name = f"build-{build_job}"
+        if job_name in last_failed_jobs:
+            for board in last_failed_jobs[job_name]:
                 if not board in boards_to_build:
                     boards_to_build.append(board)
 
@@ -225,12 +225,12 @@ def set_boards_to_build(build_all: bool):
         # if this happens it's not in `board_to_port`.
         if not port:
             continue
-        arch_to_boards[PORT_TO_ARCH[port]].append(board)
+        build_job_to_boards[PORT_TO_BUILD_JOB[port]].append(board)
         print(" ", board)
 
     # Set the step outputs for each architecture
-    for arch in arch_to_boards:
-        set_output(f"boards-{arch}", json.dumps(arch_to_boards[arch]))
+    for build_job in build_job_to_boards:
+        set_output(f"boards-{build_job}", json.dumps(build_job_to_boards[build_job]))
 
 
 def set_docs_to_build(build_doc: bool):

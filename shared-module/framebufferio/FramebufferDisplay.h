@@ -66,7 +66,7 @@ typedef bool (*framebuffer_set_brightness_fun)(mp_obj_t, mp_float_t);
 typedef int (*framebuffer_get_bytes_per_cell_fun)(mp_obj_t);
 typedef int (*framebuffer_get_color_depth_fun)(mp_obj_t);
 typedef int (*framebuffer_get_first_pixel_offset_fun)(mp_obj_t);
-typedef int (*framebuffer_get_grayscale_fun)(mp_obj_t);
+typedef bool (*framebuffer_get_grayscale_fun)(mp_obj_t);
 typedef int (*framebuffer_get_height_fun)(mp_obj_t);
 typedef int (*framebuffer_get_native_frames_per_second_fun)(mp_obj_t);
 typedef bool (*framebuffer_get_pixels_in_byte_share_row_fun)(mp_obj_t);

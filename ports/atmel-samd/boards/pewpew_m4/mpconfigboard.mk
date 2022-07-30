@@ -53,3 +53,10 @@ CIRCUITPY_DISPLAY_FONT = $(TOP)/ports/atmel-samd/boards/ugame10/brutalist-6.bdf
 
 # Override optimization to keep binary small
 OPTIMIZATION_FLAGS = -Os
+
+# We don't have room for the fonts for terminalio for certain languages,
+# so turn off terminalio and force a clean build.
+ifneq (,$(filter $(TRANSLATION),ja ko ru))
+CIRCUITPY_TERMINALIO = 0
+RELEASE_NEEDS_CLEAN_BUILD = 1
+endif
