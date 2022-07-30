@@ -325,20 +325,18 @@ STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
 
 void wiznet5k_poll(void) {
     wiznet5k_obj_t *self = &wiznet5k_obj;
-    if (!(self->netif.flags & NETIF_FLAG_UP) ||
-        !(self->netif.flags & NETIF_FLAG_LINK_UP)) {
-        return;
-    }
-    uint16_t len;
-    while ((len = wiznet5k_recv_ethernet(self)) > 0) {
-        if (self->trace_flags & TRACE_ETH_RX) {
-            netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
-        }
-        struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-        if (p != NULL) {
-            pbuf_take(p, self->eth_frame, len);
-            if (self->netif.input(p, &self->netif) != ERR_OK) {
-                pbuf_free(p);
+    if ((self->netif.flags & (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) == (NETIF_FLAG_UP | NETIF_FLAG_LINK_UP)) {
+        uint16_t len;
+        while ((len = wiznet5k_recv_ethernet(self)) > 0) {
+            if (self->trace_flags & TRACE_ETH_RX) {
+                netutils_ethernet_trace(MP_PYTHON_PRINTER, len, self->eth_frame, NETUTILS_TRACE_NEWLINE);
+            }
+            struct pbuf *p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+            if (p != NULL) {
+                pbuf_take(p, self->eth_frame, len);
+                if (self->netif.input(p, &self->netif) != ERR_OK) {
+                    pbuf_free(p);
+                }
             }
         }
     }
