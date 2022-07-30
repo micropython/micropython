@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018-2023 Damien P. George
+ * Copyright (c) 2018-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,9 @@
 
 // Time hook.
 #include <time.h>
-extern time_t ra_rtctime_seconds(time_t *timer);
-#define MBEDTLS_PLATFORM_TIME_MACRO ra_rtctime_seconds
+extern time_t stm32_rtctime_seconds(time_t *timer);
+#define MBEDTLS_PLATFORM_TIME_MACRO stm32_rtctime_seconds
+#define MBEDTLS_PLATFORM_MS_TIME_ALT mbedtls_ms_time
 
 // Set MicroPython-specific options.
 #define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
