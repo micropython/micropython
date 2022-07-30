@@ -12,7 +12,7 @@ PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
 cert = cafile = "expired_cert.der"
-key = "rsa_key.der"
+key = "ec_key.der"
 
 try:
     os.stat(cafile)
