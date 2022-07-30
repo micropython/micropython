@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,60 +26,55 @@
 
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
-#include "hal/include/hal_gpio.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/displayio/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
-#include "supervisor/shared/board.h"
+
+#include "common-hal/microcontroller/Pin.h"
 
 #define DELAY 0x80
 
 uint8_t display_init_sequence[] = {
-    0x01, 0 | DELAY, 150, // SWRESET
-    0x11, 0 | DELAY, 255, // SLPOUT
-    0xb1, 3, 0x01, 0x2C, 0x2D, // _FRMCTR1
-    0xb2, 3, 0x01, 0x2C, 0x2D, //
-    0xb3, 6, 0x01, 0x2C, 0x2D, 0x01, 0x2C, 0x2D,
-    0xb4, 1, 0x07, // _INVCTR line inversion
-    0xc0, 3, 0xa2, 0x02, 0x84, // _PWCTR1 GVDD = 4.7V, 1.0uA
-    0xc1, 1, 0xc5, // _PWCTR2 VGH=14.7V, VGL=-7.35V
-    0xc2, 2, 0x0a, 0x00, // _PWCTR3 Opamp current small, Boost frequency
-    0xc3, 2, 0x8a, 0x2a,
-    0xc4, 2, 0x8a, 0xee,
-    0xc5, 1, 0x0e, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
-    0x2a, 0, // _INVOFF
-    0x36, 1, 0b10100000,  // _MADCTL for rotation 0
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
-    // fix on VTL
-    0x3a, 1, 0x05, // COLMOD - 16bit color
-    0xe0, 16, 0x02, 0x1c, 0x07, 0x12, // _GMCTRP1 Gamma
-    0x37, 0x32, 0x29, 0x2d,
-    0x29, 0x25, 0x2B, 0x39,
-    0x00, 0x01, 0x03, 0x10,
-    0xe1, 16, 0x03, 0x1d, 0x07, 0x06, // _GMCTRN1
-    0x2E, 0x2C, 0x29, 0x2D,
-    0x2E, 0x2E, 0x37, 0x3F,
-    0x00, 0x00, 0x02, 0x10,
-    0x2a, 3, 0x02, 0x00, 0x81, // _CASET XSTART = 2, XEND = 129
-    0x2b, 3, 0x02, 0x00, 0x81, // _RASET XSTART = 2, XEND = 129
-    0x13, 0 | DELAY, 10, // _NORON
+    0x0f, 3, 0x03, 0x80, 0x02, // RDDSDR
+    0xcf, 3, 0x00, 0xcf, 0x30, // PWCRTLB
+    0xed, 4, 0x64, 0x03, 0x12, 0x81, // PWRONCTRL, b"\x64\x03\x12\x81"),
+    0xe8, 3, 0x85, 0x00, 0x78, //        (_DTCTRLA, b"\x85\x00\x78"),
+    0xcb, 5, 0x39, 0x2c, 0x00, 0x34, 0x02, //        (_PWCTRLA, b"\x39\x2c\x00\x34\x02"),
+    0xf7, 1, 0x20, //        (_PRCTRL, b"\x20"),
+    0xea, 2, 0x00, 0x00, //        (_DTCTRLB, b"\x00\x00"),
+    0xc0, 1, 0x1b, //        (_PWCTRL1, b"\x1b"),
+    0xc1, 1, 0x12, //        (_PWCTRL2, b"\x12"),
+    0xc5, 2, 0x3e, 0x3c, //        (_VMCTRL1, b"\x3e\x3c"),
+    0xc7, 1, 0x91, //        (_VMCTRL2, b"\x91"),
+    0x36, 1, 0xa8, //        (_MADCTL, b"\xa8"),
+    0x3a, 1, 0x55, //        (_PIXSET, b"\x55"),
+    0xb1, 2, 0x00, 0x1b, //        (_FRMCTR1, b"\x00\x1b"),
+    0xb6, 3, 0x0a, 0xa2, 0x27, //        (_DISCTRL, b"\x0a\xa2\x27"),
+    0xf6, 2, 0x01, 0x30, //        (_INTFACE, b"\x01\x30"),
+    0xf2, 1, 0x00, //        (_ENA3G, b"\x00"),
+    0x26, 1, 0x01, //        (_GAMSET, b"\x01"),
+    0xe0, 15, 0x0f, 0x31, 0x2b, 0x0c, 0x0e, 0x08, 0x4e, 0xf1, 0x37, 0x07, 0x10, 0x03, 0x0e, 0x09, 0x00,
+    //        (_PGAMCTRL, b"\x0f\x31\x2b\x0c\x0e\x08\x4e\xf1\x37\x07\x10\x03\x0e\x09\x00"),
+    0xe1, 15, 0x00, 0x0e, 0x14, 0x03, 0x11, 0x07, 0x31, 0xc1, 0x48, 0x08, 0x0f, 0x0c, 0x31, 0x36, 0x0f,
+    //        (_NGAMCTRL, b"\x00\x0e\x14\x03\x11\x07\x31\xc1\x48\x08\x0f\x0c\x31\x36\x0f")):
+    0x11, 0 | DELAY, 10, // _SLPOUT
     0x29, 0 | DELAY, 100, // _DISPON
 };
 
 void board_init(void) {
     busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
-    common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL, false);
+    common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO23, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
     displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
     common_hal_displayio_fourwire_construct(bus,
         spi,
-        &pin_PB05, // TFT_DC Command or data
-        &pin_PB07, // TFT_CS Chip select
-        &pin_PA00, // TFT_RST Reset
-        60000000, // Baudrate
+        &pin_GPIO21, // TFT_DC Command or data
+        &pin_GPIO5, // TFT_CS Chip select
+        NULL, // TFT_RST Reset
+        40000000, // Baudrate
         0, // Polarity
         0); // Phase
 
@@ -87,8 +82,8 @@ void board_init(void) {
     display->base.type = &displayio_display_type;
     common_hal_displayio_display_construct(display,
         bus,
-        160, // Width (after rotation)
-        128, // Height (after rotation)
+        320, // Width (after rotation)
+        240, // Height (after rotation)
         0, // column start
         0, // row start
         0, // rotation
@@ -103,7 +98,7 @@ void board_init(void) {
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
         sizeof(display_init_sequence),
-        &pin_PA01,  // backlight pin
+        &pin_GPIO14,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness (ignored)
         true, // auto_brightness
@@ -121,8 +116,23 @@ bool board_requests_safe_mode(void) {
 }
 
 void reset_board(void) {
-    board_reset_user_neopixels(&pin_PA15, 5);
 }
 
 void board_deinit(void) {
+}
+
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    // Pull LED down on reset rather than the default up
+    if (pin_number == 2) {
+        gpio_config_t cfg = {
+            .pin_bit_mask = BIT64(pin_number),
+            .mode = GPIO_MODE_DISABLE,
+            .pull_up_en = false,
+            .pull_down_en = true,
+            .intr_type = GPIO_INTR_DISABLE,
+        };
+        gpio_config(&cfg);
+        return true;
+    }
+    return false;
 }
