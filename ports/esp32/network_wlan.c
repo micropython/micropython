@@ -476,6 +476,10 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         esp_exceptions(esp_wifi_set_max_tx_power(power));
                         break;
                     }
+                    case MP_QSTR_protocol: {
+                        esp_exceptions(esp_wifi_set_protocol(self->if_id, mp_obj_get_int(kwargs->table[i].value)));
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -559,6 +563,12 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
             int8_t power;
             esp_exceptions(esp_wifi_get_max_tx_power(&power));
             val = mp_obj_new_float(power * 0.25);
+            break;
+        }
+        case MP_QSTR_protocol: {
+            uint8_t protocol_bitmap;
+            esp_exceptions(esp_wifi_get_protocol(self->if_id, &protocol_bitmap));
+            val = MP_OBJ_NEW_SMALL_INT(protocol_bitmap);
             break;
         }
         default:
