@@ -341,6 +341,9 @@ void wiznet5k_poll(void) {
         }
     }
     wizchip_clrinterrupt(IK_SOCK_0);
+    #if _WIZCHIP_ == W5100S
+    setSn_IR(0, Sn_IR_RECV);  // WZ5100S driver bug.
+    #endif
 }
 
 #endif // MICROPY_PY_LWIP
