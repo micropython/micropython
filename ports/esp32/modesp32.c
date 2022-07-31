@@ -63,6 +63,46 @@ STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_touch_obj, esp32_wake_on_touch);
 
+#if CONFIG_IDF_TARGET_ESP32C3
+
+STATIC mp_obj_t esp32_wake_on_pins(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_pins, ARG_level};
+    const mp_arg_t allowed_args[] = {
+        { MP_QSTR_pins, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_level, MP_ARG_BOOL, {.u_bool = machine_rtc_config.wake_level} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    uint64_t wake_pins = machine_rtc_config.wake_pins;
+
+
+    // Check that all pins are allowed
+    if (args[ARG_pins].u_obj != mp_const_none) {
+        size_t len = 0;
+        mp_obj_t *elem;
+        mp_obj_get_array(args[ARG_pins].u_obj, &len, &elem);
+        wake_pins = 0;
+
+        for (int i = 0; i < len; i++) {
+
+            gpio_num_t pin_id = machine_pin_get_id(elem[i]);
+            if (!RTC_IS_VALID_EXT_PIN(pin_id)) {
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
+                break;
+            }
+            wake_pins |= (1ll << pin_id);
+        }
+    }
+
+    machine_rtc_config.wake_level = args[ARG_level].u_bool;
+    machine_rtc_config.wake_pins = wake_pins;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(esp32_wake_on_pins_obj, 0, esp32_wake_on_pins);
+
+#else
+
 STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     if (machine_rtc_config.wake_on_touch) {
@@ -140,6 +180,8 @@ STATIC mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
 
+#endif
+
 STATIC mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
         gpio_deep_sleep_hold_en();
@@ -204,9 +246,13 @@ STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32) },
 
     { MP_ROM_QSTR(MP_QSTR_wake_on_touch), MP_ROM_PTR(&esp32_wake_on_touch_obj) },
+    #if CONFIG_IDF_TARGET_ESP32C3
+    { MP_ROM_QSTR(MP_QSTR_wake_on_pins), MP_ROM_PTR(&esp32_wake_on_pins_obj) },
+    #else
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },

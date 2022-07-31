@@ -73,7 +73,8 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 machine_rtc_config_t machine_rtc_config = {
     .ext1_pins = 0,
-    .ext0_pin = -1
+    .ext0_pin = -1,
+    .wake_pins = 0
 };
 
 STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

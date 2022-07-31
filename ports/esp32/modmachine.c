@@ -160,6 +160,18 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
     #endif
 
+    #if CONFIG_IDF_TARGET_ESP32C3
+
+    if (machine_rtc_config.wake_pins != 0) {
+        if (esp_deep_sleep_enable_gpio_wakeup(
+            machine_rtc_config.wake_pins,
+            machine_rtc_config.wake_level ? ESP_GPIO_WAKEUP_GPIO_HIGH : ESP_GPIO_WAKEUP_GPIO_LOW) != ESP_OK) {
+                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("esp_sleep_enable_gpio_wakeup() failed"));
+            }
+    }
+
+    #endif
+
     switch (wake_type) {
         case MACHINE_WAKE_SLEEP:
             esp_light_sleep_start();
