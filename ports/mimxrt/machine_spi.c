@@ -77,7 +77,7 @@ static const iomux_table_t iomux_table[] = {
     IOMUX_TABLE_SPI
 };
 
-bool lpspi_set_iomux(int8_t spi, uint8_t drive, uint8_t cs) {
+bool lpspi_set_iomux(int8_t spi, uint8_t drive, int8_t cs) {
     int index = (spi - 1) * 5;
 
     if (SCK.muxRegister != 0) {
@@ -93,7 +93,7 @@ bool lpspi_set_iomux(int8_t spi, uint8_t drive, uint8_t cs) {
             IOMUXC_SetPinMux(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister, 0U);
             IOMUXC_SetPinConfig(CS1.muxRegister, CS1.muxMode, CS1.inputRegister, CS1.inputDaisy, CS1.configRegister,
                 pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, drive, CS1.configRegister));
-        } else {
+        } else if (cs != -1) {
             mp_raise_ValueError(MP_ERROR_TEXT("The chosen CS is not available"));
         }
 
@@ -173,8 +173,9 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     }
     self->master_config->lastSckToPcsDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
     self->master_config->pcsToSckDelayInNanoSec = self->master_config->betweenTransferDelayInNanoSec;
-    uint8_t cs = args[ARG_cs].u_int;
-    if (cs <= 1) {
+    int8_t cs = args[ARG_cs].u_int;
+    // The default value 0 is set already, so only cs=1 has to be set.
+    if (cs == 1) {
         self->master_config->whichPcs = cs;
     }
     LPSPI_MasterInit(self->spi_inst, self->master_config, BOARD_BOOTCLOCKRUN_LPSPI_CLK_ROOT);

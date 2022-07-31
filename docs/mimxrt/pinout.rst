@@ -322,7 +322,8 @@ Olimex RT1010Py             -                 CS0/-/SDO/SDI/SCK        SDCARD wi
 Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
 =================  =========================  =======================  ===============
 
-Pins denoted with (*) are by default not wired at the board.
+Pins denoted with (*) are by default not wired at the board. The CS0 and CS1 signals
+are enabled with the keyword option cs=0 or cs=1 of the SPI object constructor.
 
 .. _mimxrt_i2c_pinout:
 
