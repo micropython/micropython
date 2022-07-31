@@ -301,13 +301,19 @@ There are up to four hardware SPI channels that allow faster transmission
 rates (up to 30Mhz).  Hardware SPI is accessed via the
 :ref:`machine.SPI <machine.SPI>` class and has the same methods as software SPI above::
 
-    from machine import SPI
+    from machine import SPI, Pin
 
     spi = SPI(0, 10000000)
+    cs_pin = Pin(6, Pin.OUT, value=1)
+    cs_pin(0)
     spi.write('Hello World')
+    cs_pin(1)
 
 For the assignment of Pins to SPI signals, refer to
 :ref:`Hardware SPI pinout <mimxrt_spi_pinout>`.
+The keyword option cs=n can be used to enable the cs pin 0 or 1 for an automatic cs signal. The
+default is cs=-1. Using cs=-1 the automatic cs signal is not created. 
+In that case, cs has to be set by the script. Clearing that assignment requires a power cycle.
 
 Notes:
 
