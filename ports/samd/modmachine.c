@@ -50,6 +50,10 @@
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 
+#define LIGHTSLEEP_CPU_FREQ 200000
+
+extern bool EIC_occured;
+
 STATIC mp_obj_t machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     NVIC_SystemReset();
@@ -71,7 +75,6 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         uint32_t freq = mp_obj_get_int(args[0]);
         if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
             set_cpu_freq(freq);
-            SysTick_Config(get_cpu_freq() / 1000);
         }
         return mp_const_none;
     }
@@ -151,6 +154,60 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    int32_t duration = -1;
+    uint32_t freq = get_cpu_freq();
+    if (n_args > 0) {
+        duration = mp_obj_get_int(args[0]);
+    }
+    EIC_occured = false;
+    // Slow down
+    set_cpu_freq(LIGHTSLEEP_CPU_FREQ);
+    #if defined(MCU_SAMD21)
+    // Switch the peripheral clock off
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(2);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    // Switch the EIC temporarily to GCLK3, since GCLK2 is off
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | EIC_GCLK_ID;
+    if (duration > 0) {
+        uint32_t t0 = systick_ms;
+        while ((systick_ms - t0 < duration) && (EIC_occured == false)) {
+            __WFI();
+        }
+    } else {
+        while (EIC_occured == false) {
+            __WFI();
+        }
+    }
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | EIC_GCLK_ID;
+
+    #elif defined(MCU_SAMD51)
+    // Switch the peripheral clock off
+    GCLK->GENCTRL[2].reg = 0;
+    while (GCLK->SYNCBUSY.bit.GENCTRL2) {
+    }
+    // Switch the EIC temporarily to GCLK3, since GCLK2 is off
+    GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK3;
+    if (duration > 0) {
+        uint32_t t0 = systick_ms;
+        while ((systick_ms - t0 < duration) && (EIC_occured == false)) {
+            __WFI();
+        }
+    } else {
+        while (EIC_occured == false) {
+            __WFI();
+        }
+    }
+    GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
+
+    #endif
+    // Speed up again
+    set_cpu_freq(freq);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -179,6 +236,8 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
+
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
     #if MICROPY_PY_MACHINE_DHT_READINTO
     { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },

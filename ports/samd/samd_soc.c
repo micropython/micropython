@@ -108,7 +108,6 @@ void init_us_counter(void) {
 
 void samd_init(void) {
     init_clocks(get_cpu_freq());
-    SysTick_Config(get_cpu_freq() / 1000);
     init_us_counter();
     usb_init();
     check_usb_recovery_mode();

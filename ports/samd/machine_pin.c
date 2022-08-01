@@ -57,6 +57,8 @@ typedef struct _machine_pin_irq_obj_t {
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
+bool EIC_occured;
+
 uint32_t machine_pin_open_drain_mask[4];
 
 // Open drain behaviour is simulated.
@@ -410,6 +412,7 @@ void EIC_Handler() {
     for (int eic_id = 0; eic_id < 16; eic_id++, mask <<= 1) {
         // Did the ISR fire?
         if (isr & mask) {
+            EIC_occured = true;
             EIC->INTFLAG.reg |= mask; // clear the ISR flag
             machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[eic_id]);
             if (irq != NULL) {
