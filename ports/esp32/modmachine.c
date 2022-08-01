@@ -57,6 +57,7 @@
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
 #include "modmachine.h"
+#include "modnetwork.h"
 #include "machine_rtc.h"
 
 #if MICROPY_PY_MACHINE
@@ -172,11 +173,13 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 }
 
 STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    network_wlan_stop_wifi();  // Else wlan may be unusable after wakeup
     return machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, pos_args, kw_args);
 };
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_lightsleep_obj, 0, machine_lightsleep);
 
 STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    network_wlan_stop_wifi();  // Else wlan may be unusable after wakeup
     return machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, pos_args, kw_args);
 };
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
