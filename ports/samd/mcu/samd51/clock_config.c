@@ -112,6 +112,7 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
         while (GCLK->SYNCBUSY.bit.GENCTRL5) {
         }
     }
+    SysTick_Config(cpu_freq / 1000);
 }
 
 void check_usb_recovery_mode(void) {

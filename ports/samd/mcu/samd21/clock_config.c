@@ -81,6 +81,7 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     }
     // Set 0 waitstates for slower CPU clock
     NVMCTRL->CTRLB.reg = NVMCTRL_CTRLB_MANW | NVMCTRL_CTRLB_RWS(cpu_freq > 24000000 ? 1 : 0);
+    SysTick_Config(cpu_freq / 1000);
 }
 
 void check_usb_recovery_mode(void) {
