@@ -190,6 +190,8 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
+    network_wlan_deinit_wifi();
+
     machine_timer_deinit_all();
 
     #if MICROPY_PY_THREAD
