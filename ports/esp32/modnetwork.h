@@ -60,5 +60,8 @@ static inline void esp_exceptions(esp_err_t e) {
 
 void usocket_events_deinit(void);
 void network_wlan_event_handler(system_event_t *event);
+void network_wlan_init_wifi();
+void network_wlan_deinit_wifi();
+void network_wlan_stop_wifi();
 
 #endif

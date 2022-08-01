@@ -35,6 +35,7 @@
 
 #include "py/objlist.h"
 #include "py/runtime.h"
+#include "py/mphal.h"
 #include "modnetwork.h"
 
 #include "esp_wifi.h"
@@ -53,6 +54,9 @@ STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 // Set to "true" if esp_wifi_start() was called
 static bool wifi_started = false;
+
+// Set to true if esp_wifi_init() has been called
+static bool wifi_initialized = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -162,17 +166,60 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
-    static int initialized = 0;
-    if (!initialized) {
+void network_wlan_init_wifi() {
+    if (!wifi_initialized) {
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_LOGD("modnetwork", "Initializing WiFi");
         esp_exceptions(esp_wifi_init(&cfg));
         esp_exceptions(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_LOGD("modnetwork", "Initialized");
-        initialized = 1;
+        wifi_initialized = true;
     }
+}
 
+void network_wlan_stop_wifi() {
+    if (!wifi_initialized) {
+        return;
+    }
+    if (wifi_sta_connect_requested) {
+        esp_exceptions(esp_wifi_disconnect());
+        // Wait up to 5 seconds to actually disconnect.
+        for (int i = 0; i < 50; i++) {
+            if (!wifi_sta_connected) {
+                break;
+            }
+            mp_hal_delay_ms(100);
+        }
+        wifi_sta_connect_requested = false;
+    }
+    wifi_sta_connected = false;
+    wifi_sta_disconn_reason = 0;
+    wifi_sta_reconnects = 0;
+    esp_wifi_set_mode(WIFI_MODE_NULL);
+    if (wifi_started) {
+        esp_exceptions(esp_wifi_stop());
+        wifi_started = false;
+    }
+}
+
+void network_wlan_deinit_wifi() {
+    // Besides de-initialising the wifi peripheral, we also need to reset all
+    // the static state variables after/before soft reset.
+    if (!wifi_initialized) {
+        return;
+    }
+    network_wlan_stop_wifi();
+    conf_wifi_sta_reconnects = 0;
+    if (mdns_initialised) {
+        mdns_free();
+        mdns_initialised = false;
+    }
+    esp_exceptions(esp_wifi_deinit());
+    wifi_initialized = false;
+}
+
+STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+    network_wlan_init_wifi();
     int idx = (n_args > 0) ? mp_obj_get_int(args[0]) : WIFI_IF_STA;
     if (idx == WIFI_IF_STA) {
         return MP_OBJ_FROM_PTR(&wlan_sta_obj);
@@ -184,8 +231,15 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
 
+STATIC mp_obj_t network_wlan_deinit(mp_obj_t _) {
+    network_wlan_deinit_wifi();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_wlan_deinit_obj, network_wlan_deinit);
+
 STATIC mp_obj_t network_wlan_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    network_wlan_init_wifi();      // In case we have called deinit()
 
     wifi_mode_t mode;
     if (!wifi_started) {
@@ -586,6 +640,7 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&network_wlan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_wlan_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&network_wlan_deinit_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
