@@ -46,7 +46,8 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
-#include "mdns.h"
+// #include "mdns.h"
+#include "lwip/apps/mdns.h"
 #include "modnetwork.h"
 
 #include "lwip/sockets.h"

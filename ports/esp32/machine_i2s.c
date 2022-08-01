@@ -40,7 +40,8 @@
 
 #if MICROPY_PY_MACHINE_I2S
 
-#include "driver/i2s.h"
+//#include "driver/i2s.h"
+#include "driver/i2s_std.h"
 #include "soc/i2s_reg.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

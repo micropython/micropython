@@ -43,7 +43,7 @@
 #include "esp_log.h"
 
 #if CONFIG_IDF_TARGET_ESP32
-#include "esp32/spiram.h"
+// #include "esp32/spiram.h"
 #elif CONFIG_IDF_TARGET_ESP32S2
 #include "esp32s2/spiram.h"
 #elif CONFIG_IDF_TARGET_ESP32S3

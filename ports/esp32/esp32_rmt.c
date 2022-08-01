@@ -30,7 +30,9 @@
 #include "modesp32.h"
 
 #include "esp_task.h"
-#include "driver/rmt.h"
+// #include "driver/rmt.h"
+#include "driver/rmt_tx.h"
+// #include "driver/rmt_tx.h"
 
 // This exposes the ESP32's RMT module to MicroPython. RMT is provided by the Espressif ESP-IDF:
 //

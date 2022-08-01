@@ -30,7 +30,8 @@
 #include <stdio.h>
 
 #include "esp_log.h"
-#include "esp_spi_flash.h"
+//#include "esp_spi_flash.h"
+#include "spi_flash_mmap.h"
 
 #include "py/runtime.h"
 #include "py/mperrno.h"

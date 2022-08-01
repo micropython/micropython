@@ -94,7 +94,9 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
 /******************************************************************************/
 // RMT implementation
 
-#include "driver/rmt.h"
+//#include "driver/rmt.h"
+#include "driver/rmt_tx.h"
+// #include "driver/rmt_tx.h"
 
 #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
 // This convenience macro was not available in earlier IDF versions.

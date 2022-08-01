@@ -39,7 +39,8 @@
 
 #include "esp_wifi.h"
 #include "esp_log.h"
-#include "mdns.h"
+// #include "mdns.h"
+#include "lwip/apps/mdns.h"
 
 #if MICROPY_PY_NETWORK_WLAN
 

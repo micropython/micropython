@@ -31,7 +31,8 @@
 
 //#include "driver/gpio.h"
 #include "rom/gpio.h"
-#include "driver/adc.h"
+//#include "driver/adc.h"
+#include "esp_adc/adc_oneshot.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"

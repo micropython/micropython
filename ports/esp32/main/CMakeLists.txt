@@ -102,7 +102,8 @@ set(IDF_COMPONENTS
     bootloader_support
     bt
     driver
-    esp_adc_cal
+    # esp_adc_cal
+    esp_adc
     esp_common
     esp_eth
     esp_event
@@ -114,7 +115,7 @@ set(IDF_COMPONENTS
     log
     lwip
     mbedtls
-    mdns
+    #mdns
     newlib
     nvs_flash
     sdmmc
