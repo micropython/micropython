@@ -63,6 +63,7 @@ async function refresh_list() {
         var icon = "⬇";
         var file_path = current_path + f.name;
         let api_url = new URL("/fs" + file_path, url_base);
+        let edit_url = "/edit/#" + file_path;
         if (f.directory) {
             file_path = "#" + file_path + "/";
             api_url += "/";
@@ -91,7 +92,7 @@ async function refresh_list() {
         delete_button.disabled = !editable;
         delete_button.onclick = del;
 
-        let edit_url = new URL("/edit/#" + f.name, url_base);
+        edit_url = new URL(edit_url, url_base);
         let edit_link = clone.querySelector(".edit_link");
         edit_link.href = edit_url
 
