@@ -7,7 +7,7 @@ ECHO = @echo
 RM = /bin/rm
 MKDIR = /bin/mkdir
 PYTHON = python3
-MPY_CROSS = $(MPY_DIR)/mpy-cross/mpy-cross
+MPY_CROSS = $(MPY_DIR)/mpy-cross/build/mpy-cross
 MPY_TOOL = $(PYTHON) $(MPY_DIR)/tools/mpy-tool.py
 MPY_LD = $(PYTHON) $(MPY_DIR)/tools/mpy_ld.py
 

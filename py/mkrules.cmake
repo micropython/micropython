@@ -193,7 +193,7 @@ if(MICROPY_FROZEN_MANIFEST)
     # to automatically build mpy-cross if needed.
     set(MICROPY_MPYCROSS $ENV{MICROPY_MPYCROSS})
     if(NOT MICROPY_MPYCROSS)
-        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/mpy-cross)
+        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/build/mpy-cross)
         if(NOT MICROPY_MAKE_EXECUTABLE)
             set(MICROPY_MAKE_EXECUTABLE make)
         endif()

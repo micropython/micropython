@@ -61,8 +61,8 @@ MPY_LIB_SUBMODULE_DIR = $(TOP)/lib/micropython-lib
 MPY_LIB_DIR = $(MPY_LIB_SUBMODULE_DIR)
 
 ifeq ($(MICROPY_MPYCROSS),)
-MICROPY_MPYCROSS = $(TOP)/mpy-cross/mpy-cross
-MICROPY_MPYCROSS_DEPENDENCY = $(MICROPY_MPYCROSS)
+MICROPY_MPYCROSS = $(TOP)/mpy-cross/build/mpy-cross
+MICROPY_MPYCROSS_DEPENDENCY = $(TOP)/mpy-cross/build/mpy-cross
 endif
 
 all:

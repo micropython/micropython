@@ -409,9 +409,9 @@ function ci_unix_run_tests_full_helper {
     variant=$1
     shift
     if [ $variant = standard ]; then
-        micropython=micropython
+        micropython=build-$variant/micropython
     else
-        micropython=micropython-$variant
+        micropython=build-$variant/micropython-$variant
     fi
     make -C ports/unix VARIANT=$variant "$@" test_full
     (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/$micropython ./run-multitests.py multi_net/*.py)
@@ -444,7 +444,7 @@ function ci_unix_minimal_build {
 }
 
 function ci_unix_minimal_run_tests {
-    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython-minimal ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+    (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/build-minimal/micropython-minimal ./run-tests.py -e exception_chain -e self_type_check -e subclass_native_init -d basics)
 }
 
 function ci_unix_standard_build {
@@ -491,21 +491,21 @@ function ci_unix_coverage_run_mpy_merge_tests {
         test=$(basename $inpy .py)
         echo $test
         outmpy=$outdir/$test.mpy
-        $mptop/mpy-cross/mpy-cross -o $outmpy $inpy
-        (cd $outdir && $mptop/ports/unix/micropython-coverage -m $test >> out-individual)
+        $mptop/mpy-cross/build/mpy-cross -o $outmpy $inpy
+        (cd $outdir && $mptop/ports/unix/build-coverage/micropython-coverage -m $test >> out-individual)
         allmpy+=($outmpy)
     done
 
     # Merge all the tests into one .mpy file, and then execute it.
     python3 $mptop/tools/mpy-tool.py --merge -o $outdir/merged.mpy ${allmpy[@]}
-    (cd $outdir && $mptop/ports/unix/micropython-coverage -m merged > out-merged)
+    (cd $outdir && $mptop/ports/unix/build-coverage/micropython-coverage -m merged > out-merged)
 
     # Make sure the outputs match.
     diff $outdir/out-individual $outdir/out-merged && /bin/rm -rf $outdir
 }
 
 function ci_unix_coverage_run_native_mpy_tests {
-    MICROPYPATH=examples/natmod/features2 ./ports/unix/micropython-coverage -m features2
+    MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython-coverage -m features2
     (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,uheapq*,urandom*,ure*,uzlib*}.py)
 }
 
@@ -614,7 +614,7 @@ function ci_unix_macos_run_tests {
     # Issues with macOS tests:
     # - import_pkg7 has a problem with relative imports
     # - urandom_basic has a problem with getrandbits(0)
-    (cd tests && ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-standard/micropython ./run-tests.py --exclude 'import_pkg7.py' --exclude 'urandom_basic.py')
 }
 
 function ci_unix_qemu_mips_setup {
@@ -634,7 +634,7 @@ function ci_unix_qemu_mips_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     # - ffi tests do not work
     file ./ports/unix/micropython-coverage
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
 }
 
 function ci_unix_qemu_arm_setup {
@@ -654,7 +654,7 @@ function ci_unix_qemu_arm_run_tests {
     # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
     export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
     file ./ports/unix/micropython-coverage
-    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py')
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/build-coverage/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py')
 }
 
 ########################################################################################

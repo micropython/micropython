@@ -159,11 +159,9 @@ $(OBJ_DIRS):
 $(HEADER_BUILD):
 	$(MKDIR) -p $@
 
-ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
-$(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(dir $@)
-endif
+$(TOP)/mpy-cross/build/mpy-cross:
+	$(MAKE) -C $(TOP)/mpy-cross
 
 ifneq ($(FROZEN_DIR),)
 $(error Support for FROZEN_DIR was removed. Please use manifest.py instead, see https://docs.micropython.org/en/latest/reference/manifest.html)
