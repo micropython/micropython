@@ -162,7 +162,7 @@ $(HEADER_BUILD):
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(dir $@)
+	$(MAKE) -C $(dir $@)..
 endif
 
 ifneq ($(FROZEN_DIR),)

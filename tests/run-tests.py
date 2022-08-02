@@ -33,14 +33,16 @@ if os.name == "nt":
     MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/windows/micropython.exe"))
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/unix/micropython"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/unix/build-standard/micropython")
+    )
 
 # Use CPython options to not save .pyc files, to only access the core standard library
 # (not site packages which may clash with u-module names), and improve start up time.
 CPYTHON3_CMD = [CPYTHON3, "-BS"]
 
 # mpy-cross is only needed if --via-mpy command-line arg is passed
-MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross"))
+MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross"))
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
