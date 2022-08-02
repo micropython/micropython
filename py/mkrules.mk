@@ -196,9 +196,9 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 PROG := $(PROG).exe
 endif
 
-all: $(PROG)
+all: $(BUILD)/$(PROG)
 
-$(PROG): $(OBJ)
+$(BUILD)/$(PROG): $(OBJ)
 	$(ECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
@@ -210,8 +210,8 @@ endif
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)
-	$(RM) -f $(PROG).map
+	$(RM) -f $(BUILD)/$(PROG)
+	$(RM) -f $(BUILD)/$(PROG).map
 
 .PHONY: clean-prog
 endif
@@ -231,8 +231,8 @@ LIBMICROPYTHON = libmicropython.a
 # with 3rd-party projects which don't have proper dependency
 # tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
 # other file to cause needed effect, e.g. relinking with new lib.
-lib $(LIBMICROPYTHON): $(OBJ)
-	$(Q)$(AR) rcs $(LIBMICROPYTHON) $^
+lib $(BUILD)/$(LIBMICROPYTHON): $(OBJ)
+	$(Q)$(AR) rcs $(BUILD)/$(LIBMICROPYTHON) $^
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
