@@ -26,3 +26,11 @@
 
 // Allocation free version that returns the full length of the value.
 mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t value_len);
+
+// Returns true and sets value to a '\0'-terminated string if key is present
+// and the value (including the terminating '\0') fits strictly within
+// value_len bytes.
+bool dotenv_get_key_terminated(const char *path, const char *key, char *value, mp_int_t value_len);
+
+// Returns true and sets value to the read value.  Returns false if the value was not numeric.
+bool dotenv_get_key_int(const char *path, const char *key, mp_int_t *value);

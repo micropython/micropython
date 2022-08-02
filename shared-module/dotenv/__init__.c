@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "shared-bindings/dotenv/__init__.h"
@@ -222,4 +223,27 @@ mp_obj_t common_hal_dotenv_get_key(const char *path, const char *key) {
         return MP_OBJ_FROM_PTR(str);
     }
     return mp_obj_new_str(value, actual_len);
+}
+
+bool dotenv_get_key_terminated(const char *path, const char *key, char *value, mp_int_t value_len) {
+    mp_int_t actual_len = dotenv_get_key(path, key, value, value_len - 1);
+    if (actual_len >= value_len) {
+        return false;
+    }
+    value[actual_len] = '\0'; // terminate string
+    return true;
+}
+
+bool dotenv_get_key_int(const char *path, const char *key, mp_int_t *value) {
+    char buf[16];
+    if (!dotenv_get_key_terminated(path, key, buf, (mp_int_t)sizeof(buf))) {
+        return false;
+    }
+    char *end;
+    long result = strtol(buf, &end, 0);
+    if (end == buf || *end) { // If the whole buffer was not consumed it's an error
+        return false;
+    }
+    *value = (mp_int_t)result;
+    return true;
 }

@@ -29,11 +29,13 @@
 #include <sys/time.h>
 #include "supervisor/board.h"
 #include "supervisor/port.h"
+#include "supervisor/filesystem.h"
 #include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "bindings/espidf/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/analogio/AnalogOut.h"
 #include "common-hal/busio/I2C.h"
@@ -53,6 +55,7 @@
 #include "shared-bindings/microcontroller/RunMode.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/socketpool/__init__.h"
+#include "shared-module/dotenv/__init__.h"
 
 #include "peripherals/rmt.h"
 #include "peripherals/timer.h"
@@ -95,20 +98,8 @@
 #include "esp32/rom/efuse.h"
 #endif
 
-#ifdef CONFIG_SPIRAM
-#include "esp32/spiram.h"
-#ifdef CONFIG_IDF_TARGET_ESP32
-#include "esp32/himem.h"
-#else
-#define esp_himem_reserved_area_size() (0)
-#endif
-
-static size_t spiram_size_usable(void) {
-    /* SPIRAM chip may be larger than the size we can map into address space */
-    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
-    return s - esp_himem_reserved_area_size();
-}
-#endif
+#include "esp_log.h"
+#define TAG "port"
 
 uint32_t *heap;
 uint32_t heap_size;
@@ -298,14 +289,16 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
-        size_t spiram_size = spiram_size_usable();
-        #ifdef CONFIG_IDF_TARGET_ESP32
-        heap = (uint32_t *)SOC_EXTRAM_DATA_LOW;
-        #else
-        heap = (uint32_t *)(SOC_EXTRAM_DATA_HIGH - spiram_size);
-        #endif
-        heap_size = spiram_size / sizeof(uint32_t);
+    {
+        intptr_t heap_start = common_hal_espidf_get_psram_start();
+        intptr_t heap_end = common_hal_espidf_get_psram_end();
+        size_t spiram_size = heap_end - heap_start;
+        if (spiram_size > 0) {
+            heap = (uint32_t *)heap_start;
+            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
+        } else {
+            ESP_LOGE(TAG, "CONFIG_SPIRAM enabled but no spiram heap available");
+        }
     }
     #endif
 
@@ -511,6 +504,16 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 void port_idle_until_interrupt(void) {
     if (!background_callback_pending()) {
         xTaskNotifyWait(0x01, 0x01, NULL, portMAX_DELAY);
+    }
+}
+
+void port_post_boot_py(bool heap_valid) {
+    if (!heap_valid && filesystem_present()) {
+        mp_int_t reserved;
+        if (dotenv_get_key_int("/.env", "CIRCUITPY_RESERVED_PSRAM", &reserved)) {
+            common_hal_espidf_set_reserved_psram(reserved);
+        }
+        common_hal_espidf_reserve_psram();
     }
 }
 
