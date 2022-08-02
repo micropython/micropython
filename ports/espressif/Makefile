@@ -98,6 +98,8 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/efuse/include \
+	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/esp_adc_cal/include \
 	-isystem esp-idf/components/esp_common/include \
