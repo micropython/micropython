@@ -293,6 +293,7 @@ function ci_samd_setup {
 }
 
 function ci_samd_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/samd submodules
     make ${MAKEOPTS} -C ports/samd
 }
@@ -356,6 +357,7 @@ function ci_teensy_setup {
 }
 
 function ci_teensy_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/teensy submodules
     make ${MAKEOPTS} -C ports/teensy
 }
