@@ -1,5 +1,5 @@
-USB_VID = 0x2E8A
-USB_PID = 0x101F
+USB_VID = 0x239a
+USB_PID = 0x00a5
 USB_PRODUCT = "ESP32-S2-Pico"
 USB_MANUFACTURER = "Waveshare Electronics"
 
