@@ -261,9 +261,11 @@ async function refresh_list() {
         delete_button.disabled = !editable;
         delete_button.onclick = del;
 
-        edit_url = new URL(edit_url, url_base);
-        let edit_link = clone.querySelector(".edit_link");
-        edit_link.href = edit_url
+        if (editable) {
+            edit_url = new URL(edit_url, url_base);
+            let edit_link = clone.querySelector(".edit_link");
+            edit_link.href = edit_url
+        }
 
         new_children.push(clone);
     }
