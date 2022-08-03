@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,42 +24,26 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
-#include "components/hal/include/hal/gpio_hal.h"
-#include "common-hal/microcontroller/Pin.h"
+#define MICROPY_HW_BOARD_NAME       "Adafruit QT Py ESP32 PICO"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-void board_init(void) {
-    reset_board();
-}
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO5)
 
-bool board_requests_safe_mode(void) {
-    return false;
-}
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO33, .sda = &pin_GPIO4}, \
+                                     {.scl = &pin_GPIO19, .sda = &pin_GPIO22}}
 
-void reset_board(void) {
-    // Turn on NeoPixel and I2C power by default.
-    gpio_set_direction(2, GPIO_MODE_DEF_OUTPUT);
-    gpio_set_level(2, true);
-}
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO14, .mosi = &pin_GPIO13, .miso = &pin_GPIO12}}
 
-void board_deinit(void) {
-}
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO32, .rx = &pin_GPIO7}}
 
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    // Pull LED down on reset rather than the default up
-    if (pin_number == 13) {
-        gpio_config_t cfg = {
-            .pin_bit_mask = BIT64(pin_number),
-            .mode = GPIO_MODE_DISABLE,
-            .pull_up_en = false,
-            .pull_down_en = true,
-            .intr_type = GPIO_INTR_DISABLE,
-        };
-        gpio_config(&cfg);
-        return true;
-    }
-    return false;
-}
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION translate("pressing BOOT button at start up.\n")
+
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)
