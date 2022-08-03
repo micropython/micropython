@@ -46,6 +46,29 @@ STATIC volatile bool connected;
 #error "CONFIG_ESP_PHY_ENABLE_USB must be enabled in sdkconfig"
 #endif
 
+// Make sure the recv interrupt is disabled during this. Otherwise, it could reorder data if it
+// interrupts itself.
+static void _copy_out_of_fifo(void) {
+    size_t req_len = ringbuf_num_empty(&ringbuf);
+    if (req_len == 0) {
+        // Disable the interrupt so that CircuitPython can run and process the ringbuf. It will
+        // re-enable the interrupt once the ringbuf is empty.
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    }
+    if (req_len > USB_SERIAL_JTAG_BUF_SIZE) {
+        req_len = USB_SERIAL_JTAG_BUF_SIZE;
+    }
+    uint8_t rx_buf[USB_SERIAL_JTAG_BUF_SIZE];
+    size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
+    for (size_t i = 0; i < len; ++i) {
+        if (rx_buf[i] == mp_interrupt_char) {
+            mp_sched_keyboard_interrupt();
+        } else {
+            ringbuf_put(&ringbuf, rx_buf[i]);
+        }
+    }
+}
+
 static void usb_serial_jtag_isr_handler(void *arg) {
     uint32_t flags = usb_serial_jtag_ll_get_intsts_mask();
 
@@ -60,25 +83,13 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 
     if (flags & USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT) {
         usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
-        size_t req_len = ringbuf_num_empty(&ringbuf);
-        if (req_len > USB_SERIAL_JTAG_BUF_SIZE) {
-            req_len = USB_SERIAL_JTAG_BUF_SIZE;
-        }
-        uint8_t rx_buf[USB_SERIAL_JTAG_BUF_SIZE];
-        size_t len = usb_serial_jtag_ll_read_rxfifo(rx_buf, req_len);
-        for (size_t i = 0; i < len; ++i) {
-            if (rx_buf[i] == mp_interrupt_char) {
-                mp_sched_keyboard_interrupt();
-            } else {
-                ringbuf_put(&ringbuf, rx_buf[i]);
-            }
-        }
+        _copy_out_of_fifo();
         port_wake_main_task_from_isr();
     }
 }
 
 void usb_serial_jtag_init(void) {
-    ringbuf_init(&ringbuf, buf, sizeof(buf));
+    ringbuf_init(&ringbuf, buf, sizeof(buf) - 1);
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
@@ -93,11 +104,18 @@ char usb_serial_jtag_read_char(void) {
     if (ringbuf_num_filled(&ringbuf) == 0) {
         return -1;
     }
-    return ringbuf_get(&ringbuf);
+    char c = ringbuf_get(&ringbuf);
+    // Maybe re-enable the recv interrupt if we've emptied the ringbuf.
+    if (ringbuf_num_filled(&ringbuf) == 0) {
+        usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        _copy_out_of_fifo();
+        usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    }
+    return c;
 }
 
 bool usb_serial_jtag_bytes_available(void) {
-    return ringbuf_num_filled(&ringbuf);
+    return ringbuf_num_filled(&ringbuf) > 0;
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {
