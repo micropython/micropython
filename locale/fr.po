@@ -993,10 +993,6 @@ msgstr "Impossible de se connecter : erreur interne"
 msgid "Failed to connect: timeout"
 msgstr "Impossible de se connecter: délai dépassé"
 
-#: ports/espressif/common-hal/wifi/__init__.c
-msgid "Failed to init wifi"
-msgstr "Echec de l'initialisation du Wifi"
-
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
 msgstr "Impossible d'analyser le fichier MP3"
@@ -1608,7 +1604,7 @@ msgstr "Uniquement 8 ou 16 bit mono avec "
 msgid "Only IPv4 addresses supported"
 msgstr "Seulement les adresses IPv4 sont supportées"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Seulement les sockets IPv4 sont supportés"
 
@@ -1680,7 +1676,7 @@ msgstr "Timeout de l'opération"
 msgid "Out of memory"
 msgstr "Hors de mémoire"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Plus de sockets"
 
@@ -3885,11 +3881,20 @@ msgstr "le 3e argument de pow() ne peut être 0"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() avec 3 arguments nécessite des entiers"
 
+#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
+msgid "pressing BOOT button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
 msgstr "presser le bouton SW38 au démarrage.\n"
 
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "pressing VOLUME button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
@@ -4443,6 +4448,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Echec de l'initialisation du Wifi"
 
 #~ msgid "input must be a tensor of rank 2"
 #~ msgstr "l'entrée doit être un tenseur de rang 2"
