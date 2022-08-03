@@ -52,6 +52,8 @@ static void title_bar_background(void *data) {
     dirty = dirty || supervisor_web_workflow_status_dirty();
     #endif
 
+    dirty = dirty || supervisor_execution_status_dirty();
+
     if (!dirty) {
         return;
     }
@@ -64,8 +66,10 @@ static void title_bar_background(void *data) {
     serial_write("🐍 ");
     #if CIRCUITPY_WEB_WORKFLOW
     supervisor_web_workflow_status();
+    serial_write(" | ");
     #endif
-    serial_write("|");
+    supervisor_execution_status();
+    serial_write(" | ");
     serial_write(MICROPY_GIT_TAG);
     // Send string terminator
     serial_write("\x1b" "\\");

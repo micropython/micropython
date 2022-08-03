@@ -204,6 +204,32 @@ STATIC void stop_mp(void) {
     gc_deinit();
 }
 
+STATIC const char *_last_executing_filename = NULL;
+STATIC const char *_current_executing_filename = NULL;
+
+STATIC pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
+STATIC int _last_return_code = 0;
+STATIC int _last_exception_line = 0;
+
+bool supervisor_execution_status_dirty(void) {
+    return _last_executing_filename != _current_executing_filename ||
+           _last_return_code != _exec_result.return_code ||
+           _last_exception_line != _exec_result.exception_line;
+}
+
+void supervisor_execution_status(void) {
+    mp_obj_exception_t *exception = MP_OBJ_TO_PTR(_exec_result.exception);
+    if ((_exec_result.return_code & PYEXEC_EXCEPTION) != 0 &&
+        exception != NULL) {
+        mp_printf(&mp_plat_print, "@%d %q", _exec_result.exception_line, exception->base.type->name);
+    } else if (_current_executing_filename != NULL) {
+        serial_write(_current_executing_filename);
+    }
+    _last_executing_filename = _current_executing_filename;
+    _last_return_code = _exec_result.return_code;
+    _last_exception_line = _exec_result.exception_line;
+}
+
 #define STRING_LIST(...) {__VA_ARGS__, ""}
 
 // Look for the first file that exists in the list of filenames, using mp_import_stat().
@@ -218,17 +244,23 @@ STATIC const char *first_existing_file_in_list(const char *const *filenames) {
     return NULL;
 }
 
-STATIC bool maybe_run_list(const char *const *filenames, pyexec_result_t *exec_result) {
-    const char *filename = first_existing_file_in_list(filenames);
-    if (filename == NULL) {
+STATIC bool maybe_run_list(const char *const *filenames) {
+    _exec_result.return_code = 0;
+    _exec_result.exception = MP_OBJ_NULL;
+    _exec_result.exception_line = 0;
+    _current_executing_filename = first_existing_file_in_list(filenames);
+    if (_current_executing_filename == NULL) {
         return false;
     }
-    mp_hal_stdout_tx_str(filename);
+    mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(translate(" output:\n"));
-    pyexec_file(filename, exec_result);
+    supervisor_title_bar_request_update(false);
+    pyexec_file(_current_executing_filename, &_exec_result);
     #if CIRCUITPY_ATEXIT
-    shared_module_atexit_execute(exec_result);
+    shared_module_atexit_execute(&_exec_result);
     #endif
+    _current_executing_filename = "Done";
+    supervisor_title_bar_request_update(false);
     return true;
 }
 
@@ -347,12 +379,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     }
     #endif
 
-    pyexec_result_t result;
-
-    result.return_code = 0;
-    result.exception = MP_OBJ_NULL;
-    result.exception_line = 0;
-
     bool skip_repl = false;
     bool skip_wait = false;
     bool found_main = false;
@@ -391,7 +417,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             if (((next_code_info_t *)next_code_allocation->ptr)->filename[0] != '\0') {
                 const char *next_list[] = {((next_code_info_t *)next_code_allocation->ptr)->filename, ""};
                 // This is where the user's python code is actually executed:
-                found_main = maybe_run_list(next_list, &result);
+                found_main = maybe_run_list(next_list);
                 if (!found_main) {
                     serial_write(((next_code_info_t *)next_code_allocation->ptr)->filename);
                     serial_write_compressed(translate(" not found.\n"));
@@ -401,11 +427,11 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
         // Otherwise, default to the standard list of filenames
         if (!found_main) {
             // This is where the user's python code is actually executed:
-            found_main = maybe_run_list(supported_filenames, &result);
+            found_main = maybe_run_list(supported_filenames);
             // If that didn't work, double check the extensions
             #if CIRCUITPY_FULL_BUILD
             if (!found_main) {
-                found_main = maybe_run_list(double_extension_filenames, &result);
+                found_main = maybe_run_list(double_extension_filenames);
                 if (found_main) {
                     serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
                 }
@@ -417,7 +443,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
-        if ((result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
+        if ((_exec_result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
             serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
             serial_write_compressed(translate("\nCode done running.\n"));
@@ -425,7 +451,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
-        cleanup_after_vm(heap, result.exception);
+        cleanup_after_vm(heap, _exec_result.exception);
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
         // the options because it can be treated like any other reason-for-stickiness bit. The
@@ -436,7 +462,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
-        if (result.return_code & PYEXEC_RELOAD) {
+        if (_exec_result.return_code & PYEXEC_RELOAD) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_RELOAD;
             // Reload immediately unless the reload is due to autoreload. In that
             // case, we wait below to see if any other writes occur.
@@ -444,7 +470,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
                 skip_repl = true;
                 skip_wait = true;
             }
-        } else if (result.return_code == 0) {
+        } else if (_exec_result.return_code == 0) {
             next_code_stickiness_situation |= SUPERVISOR_NEXT_CODE_OPT_STICKY_ON_SUCCESS;
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_SUCCESS) {
                 skip_repl = true;
@@ -455,12 +481,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
             // Deep sleep cannot be skipped
             // TODO: settings in deep sleep should persist, using a new sleep memory API
             if (next_code_options & SUPERVISOR_NEXT_CODE_OPT_RELOAD_ON_ERROR
-                && !(result.return_code & PYEXEC_DEEP_SLEEP)) {
+                && !(_exec_result.return_code & PYEXEC_DEEP_SLEEP)) {
                 skip_repl = true;
                 skip_wait = true;
             }
         }
-        if (result.return_code & PYEXEC_FORCED_EXIT) {
+        if (_exec_result.return_code & PYEXEC_FORCED_EXIT) {
             skip_repl = false;
             skip_wait = true;
         }
@@ -478,12 +504,12 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
     uint8_t blink_count;
     bool led_active = false;
     #if CIRCUITPY_ALARM
-    if (result.return_code & PYEXEC_DEEP_SLEEP) {
+    if (_exec_result.return_code & PYEXEC_DEEP_SLEEP) {
         color = BLACK;
         blink_count = 0;
     } else
     #endif
-    if (result.return_code != PYEXEC_EXCEPTION) {
+    if (_exec_result.return_code != PYEXEC_EXCEPTION) {
         if (safe_mode == NO_SAFE_MODE) {
             color = ALL_DONE;
             blink_count = ALL_DONE_BLINKS;
@@ -568,7 +594,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool first_run, bool *simulate_re
 
         // Sleep until our next interrupt.
         #if CIRCUITPY_ALARM
-        if (result.return_code & PYEXEC_DEEP_SLEEP) {
+        if (_exec_result.return_code & PYEXEC_DEEP_SLEEP) {
             const bool awoke_from_true_deep_sleep =
                 common_hal_mcu_processor_get_reset_reason() == RESET_REASON_DEEP_SLEEP_ALARM;
 
@@ -730,8 +756,6 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_set_defaults();
     #endif
 
-    pyexec_result_t result = {0, MP_OBJ_NULL, 0};
-
     if (ok_to_run) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
         vstr_t boot_text;
@@ -742,7 +766,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         // Write version info
         mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
 
-        bool found_boot = maybe_run_list(boot_py_filenames, &result);
+        bool found_boot = maybe_run_list(boot_py_filenames);
         (void)found_boot;
 
 
@@ -792,7 +816,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_get_boot_py_data(usb_boot_py_data, size);
     #endif
 
-    cleanup_after_vm(heap, result.exception);
+    cleanup_after_vm(heap, _exec_result.exception);
 
     #if CIRCUITPY_USB
     // Now give back the data we saved from the heap going away.

@@ -32,3 +32,7 @@ void supervisor_title_bar_start(void);
 void supervisor_title_bar_suspend(void);
 void supervisor_title_bar_resume(void);
 void supervisor_title_bar_request_update(bool force_dirty);
+
+// Provided by main.c
+bool supervisor_execution_status_dirty(void);
+void supervisor_execution_status(void);
