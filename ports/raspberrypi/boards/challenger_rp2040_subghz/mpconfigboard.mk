@@ -1,5 +1,5 @@
 USB_VID = 0x2e8a
-USB_PID = 0x1030
+USB_PID = 0x1032
 USB_PRODUCT = "Challenger RP2040 SubGHz"
 USB_MANUFACTURER = "Invector Labs"
 
