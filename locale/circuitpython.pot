@@ -958,10 +958,6 @@ msgstr ""
 msgid "Failed to connect: timeout"
 msgstr ""
 
-#: ports/espressif/common-hal/wifi/__init__.c
-msgid "Failed to init wifi"
-msgstr ""
-
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
 msgstr ""
@@ -1548,7 +1544,7 @@ msgstr ""
 msgid "Only IPv4 addresses supported"
 msgstr ""
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr ""
 
@@ -1616,7 +1612,7 @@ msgstr ""
 msgid "Out of memory"
 msgstr ""
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr ""
 
