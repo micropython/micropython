@@ -49,6 +49,10 @@ void supervisor_title_bar_update(void) {
     #if !CIRCUITPY_STATUS_BAR
     return;
     #endif
+    if (_suspended) {
+        supervisor_title_bar_request_update(true);
+        return;
+    }
     _forced_dirty = false;
     // Neighboring "" "" are concatenated by the compiler. Without this separation, the hex code
     // doesn't get terminated after two following characters and the value is invalid.

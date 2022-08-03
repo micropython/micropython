@@ -166,8 +166,6 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
             circuitpython_scan_response_data[1] = 0x9;
         }
         scan_response_len = circuitpython_scan_response_data[0] + 1;
-        assert(scan_response_len < 32);
-        mp_printf(&mp_plat_print, "sr len %d\n", scan_response_len);
         _private_advertising = false;
     }
     uint32_t status = _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
@@ -282,6 +280,8 @@ void supervisor_bluetooth_background(void) {
     if (!is_connected) {
         supervisor_bluetooth_start_advertising();
         return;
+    } else {
+        advertising = false;
     }
 
     #if CIRCUITPY_BLE_FILE_SERVICE
@@ -293,7 +293,7 @@ void supervisor_bluetooth_background(void) {
 void supervisor_start_bluetooth(void) {
     #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
 
-    if (workflow_state != WORKFLOW_ENABLED) {
+    if (workflow_state != WORKFLOW_ENABLED || ble_started) {
         return;
     }
 
@@ -323,6 +323,8 @@ void supervisor_stop_bluetooth(void) {
     if (!ble_started && workflow_state != WORKFLOW_ENABLED) {
         return;
     }
+
+    ble_started = false;
 
     #if CIRCUITPY_SERIAL_BLE
     supervisor_stop_bluetooth_serial();

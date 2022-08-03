@@ -748,6 +748,8 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     if (ok_to_run) {
         #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
+        // Turn off title bar updates when writing out to boot_out.txt.
+        supervisor_title_bar_suspend();
         vstr_t boot_text;
         vstr_init(&boot_text, 512);
         boot_output = &boot_text;
@@ -755,6 +757,15 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
         // Write version info
         mp_printf(&mp_plat_print, "%s\nBoard ID:%s\n", MICROPY_FULL_VERSION_INFO, CIRCUITPY_BOARD_ID);
+        #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
+        uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
+        common_hal_mcu_processor_get_uid(raw_id);
+        mp_printf(&mp_plat_print, "UID:");
+        for (uint8_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
+            mp_printf(&mp_plat_print, "%02X", raw_id[i]);
+        }
+        mp_printf(&mp_plat_print, "\n");
+        #endif
 
         bool found_boot = maybe_run_list(boot_py_filenames);
         (void)found_boot;
@@ -766,6 +777,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         FATFS *fs = &vfs->fatfs;
 
         boot_output = NULL;
+        supervisor_title_bar_resume();
         bool write_boot_output = true;
         FIL boot_output_file;
         if (f_open(fs, &boot_output_file, CIRCUITPY_BOOT_OUTPUT_FILE, FA_READ) == FR_OK) {
@@ -855,6 +867,13 @@ STATIC int run_repl(bool first_run) {
     }
     #endif
     cleanup_after_vm(heap, MP_OBJ_SENTINEL);
+
+    // Also reset bleio. The above call omits it in case workflows should continue. In this case,
+    // we're switching straight to another VM so we want to reset.
+    #if CIRCUITPY_BLEIO
+    bleio_reset();
+    #endif
+
     #if CIRCUITPY_STATUS_LED
     status_led_init();
     new_status_color(BLACK);
