@@ -110,6 +110,160 @@ c_file.write(
 """
 )
 
+
+c_file.write(
+    """\
+#if CIRCUITPY_REPL_LOGO
+"""
+)
+if tile_y == 16:
+    blinka_size = 16
+    c_file.write(
+        """\
+uint32_t blinka_bitmap_data[32] = {
+    0x00000011, 0x11000000,
+    0x00000111, 0x53100000,
+    0x00000111, 0x56110000,
+    0x00000111, 0x11140000,
+    0x00000111, 0x20002000,
+    0x00000011, 0x13000000,
+    0x00000001, 0x11200000,
+    0x00000000, 0x11330000,
+    0x00000000, 0x01122000,
+    0x00001111, 0x44133000,
+    0x00032323, 0x24112200,
+    0x00111114, 0x44113300,
+    0x00323232, 0x34112200,
+    0x11111144, 0x44443300,
+    0x11111111, 0x11144401,
+    0x23232323, 0x21111110
+};
+"""
+    )
+else:
+    blinka_size = 12
+    c_file.write(
+        """\
+uint32_t blinka_bitmap_data[28] = {
+    0x00000111, 0x00000000,
+    0x00001153, 0x10000000,
+    0x00001156, 0x11000000,
+    0x00001111, 0x14000000,
+    0x00000112, 0x00200000,
+    0x00000011, 0x30000000,
+    0x00000011, 0x20000000,
+    0x00011144, 0x13000000,
+    0x00232324, 0x12000000,
+    0x01111444, 0x13000000,
+    0x32323234, 0x12010000,
+    0x11111144, 0x44100000
+};
+"""
+    )
+
+c_file.write(
+    """\
+displayio_bitmap_t blinka_bitmap = {{
+    .base = {{.type = &displayio_bitmap_type }},
+    .width = {0},
+    .height = {0},
+    .data = blinka_bitmap_data,
+    .stride = 2,
+    .bits_per_value = 4,
+    .x_shift = 3,
+    .x_mask = 0x7,
+    .bitmask = 0xf,
+    .read_only = true
+}};
+
+_displayio_color_t blinka_colors[7] = {{
+    {{
+        .rgb888 = 0x000000,
+        .rgb565 = 0x0000,
+        .luma = 0x00,
+        .chroma = 0,
+        .transparent = true
+    }},
+    {{
+        .rgb888 = 0x8428bc,
+        .rgb565 = 0x8978,
+        .luma = 0xff, // We cheat the luma here. It is actually 0x60
+        .hue = 184,
+        .chroma = 148
+    }},
+    {{
+        .rgb888 = 0xff89bc,
+        .rgb565 = 0xFCB8,
+        .luma = 0xb5,
+        .hue = 222,
+        .chroma = 118
+    }},
+    {{
+        .rgb888 = 0x7beffe,
+        .rgb565 = 0x869F,
+        .luma = 0xe0,
+        .hue = 124,
+        .chroma = 131
+    }},
+    {{
+        .rgb888 = 0x51395f,
+        .rgb565 = 0x5A0D,
+        .luma = 0x47,
+        .hue = 185,
+        .chroma = 38
+    }},
+    {{
+        .rgb888 = 0xffffff,
+        .rgb565 = 0xffff,
+        .luma = 0xff,
+        .chroma = 0
+    }},
+    {{
+        .rgb888 = 0x0736a0,
+        .rgb565 = 0x01f5,
+        .luma = 0x44,
+        .hue = 147,
+        .chroma = 153
+    }},
+}};
+
+displayio_palette_t blinka_palette = {{
+    .base = {{.type = &displayio_palette_type }},
+    .colors = blinka_colors,
+    .color_count = 7,
+    .needs_refresh = false
+}};
+
+displayio_tilegrid_t supervisor_blinka_sprite = {{
+    .base = {{.type = &displayio_tilegrid_type }},
+    .bitmap = &blinka_bitmap,
+    .pixel_shader = &blinka_palette,
+    .x = 0,
+    .y = 0,
+    .pixel_width = {0},
+    .pixel_height = {0},
+    .bitmap_width_in_tiles = 1,
+    .width_in_tiles = 1,
+    .height_in_tiles = 1,
+    .tile_width = {0},
+    .tile_height = {0},
+    .top_left_x = {0},
+    .top_left_y = {0},
+    .tiles = 0,
+    .partial_change = false,
+    .full_change = false,
+    .hidden = false,
+    .hidden_by_parent = false,
+    .moved = false,
+    .inline_tiles = true,
+    .in_group = true
+}};
+#endif
+""".format(
+        blinka_size
+    )
+)
+
 c_file.write(
     """\
 _displayio_color_t terminal_colors[2] = {

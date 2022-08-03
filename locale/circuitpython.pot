@@ -863,6 +863,10 @@ msgstr ""
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr ""

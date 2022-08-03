@@ -31,8 +31,14 @@
 void supervisor_title_bar_start(void);
 void supervisor_title_bar_suspend(void);
 void supervisor_title_bar_resume(void);
+
+// Update the title bar immediately. Useful from main.c where we know state has changed and the code
+// will only be run once.
+void supervisor_title_bar_update(void);
+
+// Use this if requesting from the background, as code is executing or if the status may not have
+// changed.
 void supervisor_title_bar_request_update(bool force_dirty);
 
 // Provided by main.c
-bool supervisor_execution_status_dirty(void);
 void supervisor_execution_status(void);

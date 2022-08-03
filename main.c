@@ -204,30 +204,20 @@ STATIC void stop_mp(void) {
     gc_deinit();
 }
 
-STATIC const char *_last_executing_filename = NULL;
 STATIC const char *_current_executing_filename = NULL;
 
 STATIC pyexec_result_t _exec_result = {0, MP_OBJ_NULL, 0};
-STATIC int _last_return_code = 0;
-STATIC int _last_exception_line = 0;
-
-bool supervisor_execution_status_dirty(void) {
-    return _last_executing_filename != _current_executing_filename ||
-           _last_return_code != _exec_result.return_code ||
-           _last_exception_line != _exec_result.exception_line;
-}
 
 void supervisor_execution_status(void) {
     mp_obj_exception_t *exception = MP_OBJ_TO_PTR(_exec_result.exception);
-    if ((_exec_result.return_code & PYEXEC_EXCEPTION) != 0 &&
-        exception != NULL) {
-        mp_printf(&mp_plat_print, "@%d %q", _exec_result.exception_line, exception->base.type->name);
-    } else if (_current_executing_filename != NULL) {
+    if (_current_executing_filename != NULL) {
         serial_write(_current_executing_filename);
+    } else if ((_exec_result.return_code & PYEXEC_EXCEPTION) != 0 &&
+               exception != NULL) {
+        mp_printf(&mp_plat_print, "@%d %q", _exec_result.exception_line, exception->base.type->name);
+    } else {
+        serial_write_compressed(translate("Done"));
     }
-    _last_executing_filename = _current_executing_filename;
-    _last_return_code = _exec_result.return_code;
-    _last_exception_line = _exec_result.exception_line;
 }
 
 #define STRING_LIST(...) {__VA_ARGS__, ""}
@@ -254,13 +244,13 @@ STATIC bool maybe_run_list(const char *const *filenames) {
     }
     mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(translate(" output:\n"));
-    supervisor_title_bar_request_update(false);
+    supervisor_title_bar_update();
     pyexec_file(_current_executing_filename, &_exec_result);
     #if CIRCUITPY_ATEXIT
     shared_module_atexit_execute(&_exec_result);
     #endif
-    _current_executing_filename = "Done";
-    supervisor_title_bar_request_update(false);
+    _current_executing_filename = NULL;
+    supervisor_title_bar_update();
     return true;
 }
 
@@ -851,7 +841,11 @@ STATIC int run_repl(bool first_run) {
         exit_code = pyexec_raw_repl();
         supervisor_title_bar_resume();
     } else {
+        _current_executing_filename = "REPL";
+        supervisor_title_bar_update();
         exit_code = pyexec_friendly_repl();
+        _current_executing_filename = NULL;
+        supervisor_title_bar_update();
     }
     #if CIRCUITPY_ATEXIT
     pyexec_result_t result;
