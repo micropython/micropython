@@ -28,3 +28,8 @@ try:
     A().f.x = 1
 except AttributeError:
     print('AttributeError')
+
+# bound method comparison
+m = A()
+print(m.f == m.f)  # should result in True
+print(m.f != m.g)  # should result in False
