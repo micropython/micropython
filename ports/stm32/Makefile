@@ -460,19 +460,22 @@ LIBS += $(TOP)/drivers/cyw43/libcyw43.a
 endif
 
 ifneq ($(MICROPY_PY_NETWORK_WIZNET5K),0)
-WIZNET5K_DIR=drivers/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR)
+WIZNET5K_DIR=lib/wiznet5k
+GIT_SUBMODULES += lib/wiznet5k
+INC += -I$(TOP)/$(WIZNET5K_DIR) -I$(TOP)/$(WIZNET5K_DIR)/Ethernet
 CFLAGS_MOD += -DMICROPY_PY_NETWORK_WIZNET5K=$(MICROPY_PY_NETWORK_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_NETWORK_WIZNET5K)
+CFLAGS_MOD += -DWIZCHIP_PREFIXED_EXPORTS=1
 ifeq ($(MICROPY_PY_LWIP),1)
 # When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
 CFLAGS_MOD += -DWIZCHIP_USE_MAX_BUFFER
 endif
-SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
+SRC_MOD += extmod/network_wiznet5k.c
 SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-	ethernet/w$(MICROPY_PY_NETWORK_WIZNET5K)/w$(MICROPY_PY_NETWORK_WIZNET5K).c \
-	ethernet/wizchip_conf.c \
-	ethernet/socket.c \
-	internet/dns/dns.c \
+	Ethernet/W$(MICROPY_PY_NETWORK_WIZNET5K)/w$(MICROPY_PY_NETWORK_WIZNET5K).c \
+	Ethernet/wizchip_conf.c \
+	Ethernet/socket.c \
+	Internet/DNS/dns.c \
+	Internet/DHCP/dhcp.c \
 	)
 endif
 
