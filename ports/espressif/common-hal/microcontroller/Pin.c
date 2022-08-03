@@ -48,6 +48,10 @@ static const uint64_t pin_mask_reset_forbidden =
     GPIO_SEL_3 |          // RXD0
     // Never ever reset pins used to communicate with SPI flash and PSRAM.
     GPIO_SEL_6 |          // CLK
+    /////////TEMP
+    GPIO_SEL_7 |          // SD0
+    GPIO_SEL_8 |          // SD1
+    ////////END TEMP
     GPIO_SEL_9 |          // (PSRAM) SD2
     GPIO_SEL_10 |         // (PSRAM) SD3
     GPIO_SEL_11 |         // CMD
