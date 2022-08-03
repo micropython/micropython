@@ -34,6 +34,11 @@
 #if CIRCUITPY_WEB_WORKFLOW
 #include "supervisor/shared/web_workflow/web_workflow.h"
 #endif
+
+#if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+#include "supervisor/shared/bluetooth/bluetooth.h"
+#endif
+
 static background_callback_t title_bar_background_cb;
 
 static bool _forced_dirty = false;
@@ -55,6 +60,10 @@ void supervisor_title_bar_update(void) {
     supervisor_web_workflow_status();
     serial_write(" | ");
     #endif
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    supervisor_bluetooth_status();
+    serial_write(" | ");
+    #endif
     supervisor_execution_status();
     serial_write(" | ");
     serial_write(MICROPY_GIT_TAG);
@@ -73,6 +82,10 @@ static void title_bar_background(void *data) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     dirty = dirty || supervisor_web_workflow_status_dirty();
+    #endif
+
+    #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
+    dirty = dirty || supervisor_bluetooth_status_dirty();
     #endif
 
     if (!dirty) {

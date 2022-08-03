@@ -39,8 +39,11 @@
 
 #include "common-hal/_bleio/__init__.h"
 
+#include "supervisor/serial.h"
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
+#include "supervisor/shared/title_bar.h"
+#include "supervisor/shared/translate/translate.h"
 
 #include "py/mpstate.h"
 
@@ -75,18 +78,13 @@ const uint8_t public_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
 const uint8_t private_advertising_data[] = { 0x02, 0x01, 0x06, // 0-2 Flags
                                              0x02, 0x0a, 0x00 // 3-5 TX power level 0
 };
-// This scan response advertises the full CIRCPYXXXX device name.
-uint8_t circuitpython_scan_response_data[] = {
-    0x0a, 0x09, 0x43, 0x49, 0x52, 0x50, 0x59, 0x00, 0x00, 0x00, 0x00,
-    #if CIRCUITPY_SERIAL_BLE
-    0x11, 0x06, 0x6e, 0x68, 0x74, 0x79, 0x50, 0x74, 0x69, 0x75, 0x63, 0x72, 0x69, 0x43, 0x01, 0x00, 0xaf, 0xad
-    #endif
-};
-
+// This scan response advertises the full device name (if it fits.)
+uint8_t circuitpython_scan_response_data[31];
 
 #if CIRCUITPY_BLE_FILE_SERVICE || CIRCUITPY_SERIAL_BLE
 STATIC bool boot_in_discovery_mode = false;
 STATIC bool advertising = false;
+STATIC bool _private_advertising = false;
 STATIC bool ble_started = false;
 
 #define WORKFLOW_UNSET 0
@@ -95,6 +93,36 @@ STATIC bool ble_started = false;
 
 STATIC uint8_t workflow_state = WORKFLOW_UNSET;
 STATIC bool was_connected = false;
+
+// To detect when the title bar changes.
+STATIC bool _last_connected = false;
+STATIC bool _last_advertising = false;
+
+// Title bar status
+bool supervisor_bluetooth_status_dirty(void) {
+    return _last_advertising != advertising ||
+           _last_connected != was_connected;
+}
+
+void supervisor_bluetooth_status(void) {
+    serial_write("BLE:");
+    if (advertising) {
+        if (_private_advertising) {
+            serial_write_compressed(translate("Reconnecting"));
+        } else {
+            const char *name = (char *)circuitpython_scan_response_data + 2;
+            int len = MIN(strlen(name), sizeof(circuitpython_scan_response_data) - 2);
+            serial_write_substring(name, len);
+        }
+    } else if (was_connected) {
+        serial_write_compressed(translate("Ok"));
+    } else {
+        serial_write_compressed(translate("Off"));
+    }
+
+    _last_connected = was_connected;
+    _last_advertising = advertising;
+}
 
 STATIC void supervisor_bluetooth_start_advertising(void) {
     if (workflow_state != WORKFLOW_ENABLED) {
@@ -118,6 +146,7 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
     size_t adv_len = sizeof(private_advertising_data);
     const uint8_t *scan_response = NULL;
     size_t scan_response_len = 0;
+    _private_advertising = true;
     // Advertise with less power when doing so publicly to reduce who can hear us. This will make it
     // harder for someone with bad intentions to pair from a distance.
     if (!bonded) {
@@ -126,6 +155,20 @@ STATIC void supervisor_bluetooth_start_advertising(void) {
         adv_len = sizeof(public_advertising_data);
         scan_response = circuitpython_scan_response_data;
         scan_response_len = sizeof(circuitpython_scan_response_data);
+        uint16_t max_name_len = sizeof(circuitpython_scan_response_data) - 2;
+        uint16_t name_len = bleio_adapter_get_name((char *)circuitpython_scan_response_data + 2,
+            max_name_len);
+        if (name_len > max_name_len) {
+            circuitpython_scan_response_data[0] = max_name_len + 1;
+            circuitpython_scan_response_data[1] = 0x8;
+        } else {
+            circuitpython_scan_response_data[0] = name_len + 1;
+            circuitpython_scan_response_data[1] = 0x9;
+        }
+        scan_response_len = circuitpython_scan_response_data[0] + 1;
+        assert(scan_response_len < 32);
+        mp_printf(&mp_plat_print, "sr len %d\n", scan_response_len);
+        _private_advertising = false;
     }
     uint32_t status = _common_hal_bleio_adapter_start_advertising(&common_hal_bleio_adapter_obj,
         true,
@@ -232,6 +275,9 @@ void supervisor_bluetooth_background(void) {
         supervisor_bluetooth_file_transfer_disconnected();
         #endif
     }
+    if (was_connected != is_connected) {
+        supervisor_title_bar_request_update(false);
+    }
     was_connected = is_connected;
     if (!is_connected) {
         supervisor_bluetooth_start_advertising();
@@ -266,6 +312,7 @@ void supervisor_start_bluetooth(void) {
 
     // Kick off advertisements
     supervisor_bluetooth_background();
+    supervisor_title_bar_request_update(false);
 
     #endif
 }
