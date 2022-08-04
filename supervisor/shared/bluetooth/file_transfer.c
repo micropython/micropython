@@ -43,6 +43,7 @@
 #include "common-hal/_bleio/__init__.h"
 
 #include "supervisor/fatfs_port.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/bluetooth/file_transfer.h"
 #include "supervisor/shared/bluetooth/file_transfer_protocol.h"
@@ -172,7 +173,7 @@ STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     FRESULT result = f_open(fs, &active_file, path, FA_READ);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
@@ -289,7 +290,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         return ANY_COMMAND;
     }
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     DWORD fattime;
     _truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
@@ -438,7 +439,7 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)((uint8_t *)command) + header_size;
     path[command->path_length] = '\0';
     FILINFO file;
@@ -495,7 +496,7 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)command->path;
     _terminate_path(path, command->path_length);
 
@@ -552,7 +553,7 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
         return THIS_COMMAND;
     }
 
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *path = (char *)&command->path;
     _terminate_path(path, command->path_length);
     // mp_printf(&mp_plat_print, "list %s\n", path);
@@ -640,7 +641,7 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
     if (command_len < header_size + total_path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     char *old_path = (char *)command->paths;
     old_path[command->old_path_length] = '\0';
 
