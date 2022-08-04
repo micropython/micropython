@@ -98,3 +98,11 @@ DECLARE_SENSOR_STATUS_GETSET(bool, bpc, bpc, set_bpc);
 DECLARE_SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
 DECLARE_SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
 DECLARE_SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);
+
+// From camera_sensor_info_t
+extern int common_hal_esp32_camera_camera_get_address(esp32_camera_camera_obj_t *self);
+extern const char *common_hal_esp32_camera_camera_get_sensor_name(esp32_camera_camera_obj_t *self);
+extern const bool common_hal_esp32_camera_camera_get_supports_jpeg(esp32_camera_camera_obj_t *self);
+extern framesize_t common_hal_esp32_camera_camera_get_max_frame_size(esp32_camera_camera_obj_t *self);
+extern int common_hal_esp32_camera_camera_get_width(esp32_camera_camera_obj_t *self);
+extern int common_hal_esp32_camera_camera_get_height(esp32_camera_camera_obj_t *self);

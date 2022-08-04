@@ -816,9 +816,91 @@ MP_PROPERTY_GETSET(esp32_camera_camera_lenc_obj,
     (mp_obj_t)&esp32_camera_camera_get_lenc_obj,
     (mp_obj_t)&esp32_camera_camera_set_lenc_obj);
 
+//|     max_frame_size: FrameSize
+//|     """The maximum frame size that can be captured"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_max_frame_size(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return cp_enum_find(&esp32_camera_frame_size_type, common_hal_esp32_camera_camera_get_max_frame_size(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_max_frame_size_obj, esp32_camera_camera_get_max_frame_size);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_max_frame_size_obj,
+    (mp_obj_t)&esp32_camera_camera_get_max_frame_size_obj);
+
+
+//|     address: int
+//|     """The I2C (SCCB) address of the sensor"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_address(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_address(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_address_obj, esp32_camera_camera_get_address);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_address_obj,
+    (mp_obj_t)&esp32_camera_camera_get_address_obj);
+
+
+//|     sensor_name: str
+//|     """The name of the sensor"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_sensor_name(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    const char *sensor_name = common_hal_esp32_camera_camera_get_sensor_name(self);
+    return mp_obj_new_str(sensor_name, strlen(sensor_name));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_sensor_name_obj, esp32_camera_camera_get_sensor_name);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_sensor_name_obj,
+    (mp_obj_t)&esp32_camera_camera_get_sensor_name_obj);
+
+
+//|     supports_jpeg: bool
+//|     """True if the sensor can capture images in JPEG format"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_supports_jpeg(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_supports_jpeg(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_supports_jpeg_obj, esp32_camera_camera_get_supports_jpeg);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_supports_jpeg_obj,
+    (mp_obj_t)&esp32_camera_camera_get_supports_jpeg_obj);
+
+//|     height: int
+//|     """The height of the image being captured"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_height(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_height(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_height_obj, esp32_camera_camera_get_height);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_height_obj,
+    (mp_obj_t)&esp32_camera_camera_get_height_obj);
+
+//|     width: int
+//|     """The width of the image being captured"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_width(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_width(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_width_obj, esp32_camera_camera_get_width);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_width_obj,
+    (mp_obj_t)&esp32_camera_camera_get_width_obj);
 
 
 STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&esp32_camera_camera_address_obj) },
     { MP_ROM_QSTR(MP_QSTR_aec2), MP_ROM_PTR(&esp32_camera_camera_aec2_obj) },
     { MP_ROM_QSTR(MP_QSTR_aec_value), MP_ROM_PTR(&esp32_camera_camera_aec_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_ae_level), MP_ROM_PTR(&esp32_camera_camera_ae_level_obj) },
@@ -838,17 +920,22 @@ STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frame_size), MP_ROM_PTR(&esp32_camera_camera_frame_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_gain_ceiling), MP_ROM_PTR(&esp32_camera_camera_gain_ceiling_obj) },
     { MP_ROM_QSTR(MP_QSTR_gain_ctrl), MP_ROM_PTR(&esp32_camera_camera_gain_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&esp32_camera_camera_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_hmirror), MP_ROM_PTR(&esp32_camera_camera_hmirror_obj) },
     { MP_ROM_QSTR(MP_QSTR_lenc), MP_ROM_PTR(&esp32_camera_camera_lenc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_frame_size), MP_ROM_PTR(&esp32_camera_camera_max_frame_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel_format), MP_ROM_PTR(&esp32_camera_camera_pixel_format_obj) },
     { MP_ROM_QSTR(MP_QSTR_quality), MP_ROM_PTR(&esp32_camera_camera_quality_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_gma), MP_ROM_PTR(&esp32_camera_camera_raw_gma_obj) },
     { MP_ROM_QSTR(MP_QSTR_saturation), MP_ROM_PTR(&esp32_camera_camera_saturation_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sensor_name), MP_ROM_PTR(&esp32_camera_camera_sensor_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_sharpness), MP_ROM_PTR(&esp32_camera_camera_sharpness_obj) },
     { MP_ROM_QSTR(MP_QSTR_special_effect), MP_ROM_PTR(&esp32_camera_camera_special_effect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_supports_jpeg), MP_ROM_PTR(&esp32_camera_camera_supports_jpeg_obj) },
     { MP_ROM_QSTR(MP_QSTR_take), MP_ROM_PTR(&esp32_camera_camera_take_obj) },
     { MP_ROM_QSTR(MP_QSTR_vflip), MP_ROM_PTR(&esp32_camera_camera_vflip_obj) },
     { MP_ROM_QSTR(MP_QSTR_wb_mode), MP_ROM_PTR(&esp32_camera_camera_wb_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&esp32_camera_camera_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_whitebal), MP_ROM_PTR(&esp32_camera_camera_whitebal_obj) },
     { MP_ROM_QSTR(MP_QSTR_wpc), MP_ROM_PTR(&esp32_camera_camera_wpc_obj) },
 };

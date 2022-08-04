@@ -199,3 +199,39 @@ SENSOR_STATUS_GETSET(bool, bpc, bpc, set_bpc);
 SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
 SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
 SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);
+
+const char *common_hal_esp32_camera_camera_get_sensor_name(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
+    return sensor_info->name;
+}
+
+const bool common_hal_esp32_camera_camera_get_supports_jpeg(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
+    return sensor_info->support_jpeg;
+}
+
+const framesize_t common_hal_esp32_camera_camera_get_max_frame_size(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
+    return sensor_info->max_size;
+}
+
+const int common_hal_esp32_camera_camera_get_address(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
+    return sensor_info->sccb_addr;
+}
+
+const int common_hal_esp32_camera_camera_get_width(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    framesize_t framesize = sensor->status.framesize;
+    return resolution[framesize].width;
+}
+
+const int common_hal_esp32_camera_camera_get_height(esp32_camera_camera_obj_t *self) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    framesize_t framesize = sensor->status.framesize;
+    return resolution[framesize].height;
+}
