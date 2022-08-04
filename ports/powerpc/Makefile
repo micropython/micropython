@@ -10,6 +10,8 @@ include $(TOP)/extmod/extmod.mk
 # potato or lpc_serial
 UART ?= potato
 
+GIT_SUBMODULES += lib/dtc
+
 ARCH = $(shell uname -m)
 ifneq ("$(ARCH)", "ppc64")
 ifneq ("$(ARCH)", "ppc64le")
@@ -20,6 +22,7 @@ endif
 INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
+INC += -I$(TOP)/lib/dtc/libfdt
 
 CFLAGS = $(INC) -g -Wall -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
 CFLAGS += -mno-string -mno-multiple -mno-vsx -mno-altivec -nostdlib
@@ -35,6 +38,8 @@ LIBS =
 SRC_C = \
 	main.c \
 	uart_$(UART).c \
+	lib/dtc/libfdt/fdt.c \
+	lib/dtc/libfdt/fdt_ro.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
 	shared/readline/readline.c \

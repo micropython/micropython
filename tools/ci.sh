@@ -229,6 +229,7 @@ function ci_powerpc_setup {
 }
 
 function ci_powerpc_build {
+    make ${MAKEOPTS} -C ports/powerpc submodules
     make ${MAKEOPTS} -C ports/powerpc UART=potato
     make ${MAKEOPTS} -C ports/powerpc UART=lpc_serial
 }
