@@ -58,7 +58,7 @@
 //|         frame_size: FrameSize=FrameSize.QQVGA,
 //|         jpeg_quality: int=15,
 //|         double_buffered: bool = True,
-//|         grab_mode: GrabMode = GrabMode.WhenEmpty,
+//|         grab_mode: GrabMode = GrabMode.WHEN_EMPTY,
 //|     ) -> None:
 //|         """
 //|         Configure and initialize a camera with the given properties
@@ -191,7 +191,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_frame_available_get_obj, es
 MP_PROPERTY_GETTER(esp32_camera_camera_frame_available_obj,
     (mp_obj_t)&esp32_camera_camera_frame_available_get_obj);
 
-//|     def take(timeout: Optional[float]=0.25) -> Optional[displayio.Bitmap | ReadableBuffer]:
+//|     def take(self, timeout: Optional[float]=0.25) -> Optional[displayio.Bitmap | ReadableBuffer]:
 //|         """Record a frame. Wait up to 'timeout' seconds for a frame to be captured.
 //|
 //|         In the case of timeout, `None` is returned.
