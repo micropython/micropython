@@ -112,3 +112,14 @@ enum {
 void mp_hal_generate_laa_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac(int idx, uint8_t buf[6]);
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest);
+
+enum mp_hal_pin_interrupt_trigger {
+    MP_HAL_PIN_TRIGGER_NONE,
+    MP_HAL_PIN_TRIGGER_FALL = GPIO_MODE_IT_FALLING,
+    MP_HAL_PIN_TRIGGER_RISE = GPIO_MODE_IT_RISING,
+};
+
+void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj);
+
+#define mp_hal_pin_interrupt(pin, handler, trigger, hard) \
+    extint_register_pin(pin, trigger, hard, handler)
