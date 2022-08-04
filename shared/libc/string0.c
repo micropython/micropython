@@ -141,6 +141,15 @@ size_t strlen(const char *str) {
     return len;
 }
 
+size_t strnlen(const char *str, size_t maxlen) {
+    int len = 0;
+    for (const char *s = str; *s && maxlen; s++) {
+        len += 1;
+	maxlen--;
+    }
+    return len;
+}
+
 int strcmp(const char *s1, const char *s2) {
     while (*s1 && *s2) {
         char c1 = *s1++; // XXX UTF8 get char, next char
