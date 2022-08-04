@@ -38,4 +38,10 @@
 #define DEFAULT_SPI_BUS_MISO        (&pin_GPIO40)
 #define DEFAULT_SPI_BUS_MOSI        (&pin_GPIO38)
 
+#define CIRCUITPY_BOARD_SPI         (2)
+#define CIRCUITPY_BOARD_SPI_PIN     { \
+        {.clock = &pin_GPIO39, .mosi = &pin_GPIO40, .miso = &pin_GPIO38}, \
+        {.clock = &pin_GPIO21, .mosi = &pin_GPIO47, .miso = NULL}, \
+}
+
 #define DEFAULT_RESERVED_PSRAM      (1048576)
