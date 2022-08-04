@@ -287,7 +287,6 @@ SRC_CAMERA := \
 	$(wildcard common-hal/esp32_camera/*.c) \
 	$(wildcard bindings/esp32_camera/*.c)
 SRC_C += $(SRC_CAMERA)
-$(info SRC_CAMERA = $(SRC_CAMERA))
 CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
 endif
