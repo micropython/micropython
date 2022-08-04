@@ -104,6 +104,7 @@ c_file = args.output_c_file
 c_file.write(
     """\
 
+#include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "supervisor/shared/display.h"
 
@@ -266,6 +267,7 @@ displayio_tilegrid_t supervisor_blinka_sprite = {{
 
 c_file.write(
     """\
+#if CIRCUITPY_TERMINALIO
 _displayio_color_t terminal_colors[2] = {
     {
         .rgb888 = 0x000000,
@@ -414,5 +416,7 @@ terminalio_terminal_obj_t supervisor_terminal = {
     .scroll_area = NULL,
     .title_bar = NULL
 };
+
+#endif
 """
 )
