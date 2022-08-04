@@ -59,27 +59,27 @@
 //|         jpeg_quality: int=15,
 //|         double_buffered: bool = True,
 //|         grab_mode: GrabMode = GrabMode.WhenEmpty,
-//|     ):
-//|     """
-//|     Configure and initialize a camera with the given properties
+//|     ) -> None:
+//|         """
+//|         Configure and initialize a camera with the given properties
 //|
-//|     This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError, this probably indicates the setting is too small and should be increased.
+//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``/.env`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError, this probably indicates the setting is too small and should be increased.
 //|
-//|     :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
-//|     :param pixel_clock: The pixel clock output from the camera module
-//|     :param vsync: The vertical sync pulse output from the camera module
-//|     :param href: The horizontal reference output from the camera module
-//|     :param i2c: The I2C bus connected to the camera module
-//|     :param external_clock_frequency: The frequency generated on the external clock pin
-//|     :param external_clock_pin: The pin on which to generate the external clock
-//|     :param powerdown_pin: The powerdown input to the camera module
-//|     :param reset_pin: The reset input to the camera module
-//|     :param pixel_format: The pixel format of the captured image
-//|     :param frame_size: The size of captured image
-//|     :param jpeg_quality: For `PixelFormat.JPEG`, the quality. Higher numbers increase quality. If the quality is too high, the JPEG data will be larger than the availalble buffer size and the image will be unusable or truncated. The exact range of appropriate values depends on the sensor and must be determined empirically.
-//|     :param framebuffer_count: The number of framebuffers
-//|     :param grab_mode: When to grab a new frame
-//|     """
+//|         :param data_pins: The 8 data data_pins used for image data transfer from the camera module, least significant bit first
+//|         :param pixel_clock: The pixel clock output from the camera module
+//|         :param vsync: The vertical sync pulse output from the camera module
+//|         :param href: The horizontal reference output from the camera module
+//|         :param i2c: The I2C bus connected to the camera module
+//|         :param external_clock_frequency: The frequency generated on the external clock pin
+//|         :param external_clock_pin: The pin on which to generate the external clock
+//|         :param powerdown_pin: The powerdown input to the camera module
+//|         :param reset_pin: The reset input to the camera module
+//|         :param pixel_format: The pixel format of the captured image
+//|         :param frame_size: The size of captured image
+//|         :param jpeg_quality: For `PixelFormat.JPEG`, the quality. Higher numbers increase quality. If the quality is too high, the JPEG data will be larger than the availalble buffer size and the image will be unusable or truncated. The exact range of appropriate values depends on the sensor and must be determined empirically.
+//|         :param framebuffer_count: The number of framebuffers
+//|         :param grab_mode: When to grab a new frame
+//|         """
 //|
 STATIC mp_obj_t esp32_camera_camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_data_pins, ARG_pixel_clock_pin, ARG_vsync_pin, ARG_href_pin, ARG_i2c, ARG_external_clock_pin, ARG_external_clock_frequency, ARG_powerdown_pin, ARG_reset_pin, ARG_pixel_format, ARG_frame_size, ARG_jpeg_quality, ARG_framebuffer_count, ARG_grab_mode, NUM_ARGS };
