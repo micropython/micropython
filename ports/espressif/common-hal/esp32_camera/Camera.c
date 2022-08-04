@@ -140,5 +140,5 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
         esp_camera_fb_return(self->buffer_to_return);
         self->buffer_to_return = NULL;
     }
-    return esp_camera_fb_get_timeout(timeout_ms);
+    return self->buffer_to_return = esp_camera_fb_get_timeout(timeout_ms);
 }
