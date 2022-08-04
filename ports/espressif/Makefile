@@ -292,12 +292,6 @@ CFLAGS += -isystem esp32-camera/driver/include
 CFLAGS += -isystem esp32-camera/conversions/include
 endif
 
-ifneq ($(CIRCUITPY_IMAGECAPTURE),0)
-$(error IMAGECAPTURE)
-SRC_C += cam.c
-endif
-
-
 SRC_COMMON_HAL_EXPANDED = \
 	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 	$(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
