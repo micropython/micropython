@@ -334,6 +334,7 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    // TODO deinit for esp32-camera
     #if CIRCUITPY_IMAGECAPTURE
     cam_deinit();
     #endif
