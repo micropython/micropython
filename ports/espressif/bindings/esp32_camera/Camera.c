@@ -35,6 +35,7 @@
 #include "bindings/esp32_camera/Camera.h"
 #include "common-hal/esp32_camera/Camera.h"
 
+#include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "esp_camera.h"
@@ -190,8 +191,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_frame_available_get_obj, es
 MP_PROPERTY_GETTER(esp32_camera_camera_frame_available_obj,
     (mp_obj_t)&esp32_camera_camera_frame_available_get_obj);
 
-//|     def take(timeout: Optional[float]=0.25) -> Optional[ReadableBuffer]:
-//|         """Record a frame. Wait up to 'timeout' seconds for a frame to be captured."""
+//|     def take(timeout: Optional[float]=0.25) -> Optional[displayio.Bitmap | ReadableBuffer]:
+//|         """Record a frame. Wait up to 'timeout' seconds for a frame to be captured.
+//|
+//|         In the case of timeout, `None` is returned.
+//|         If `pixel_format` is `PixelFormat.JPEG`, the returned value is a `ReadableBuffer`.
+//|         Otherwise, the returned value is a `displayio.Bitmap`.
+//|         """
 //|
 STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
     esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -201,7 +207,18 @@ STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
     if (!result) {
         return mp_const_none;
     }
-    return mp_obj_new_memoryview('b', result->len, result->buf);
+    pixformat_t format = common_hal_esp32_camera_camera_get_pixel_format(self);
+    if (format == PIXFORMAT_JPEG) {
+        return mp_obj_new_memoryview('b', result->len, result->buf);
+    } else {
+        int width = common_hal_esp32_camera_camera_get_width(self);
+        int height = common_hal_esp32_camera_camera_get_height(self);
+        displayio_bitmap_t *bitmap = m_new_obj(displayio_bitmap_t);
+        bitmap->base.type = &displayio_bitmap_type;
+        mp_printf(&mp_plat_print, "construct bitmap %dx%d @%p\n", width, height, result->buf);
+        common_hal_displayio_bitmap_construct_from_buffer(bitmap, width, height, (format == PIXFORMAT_RGB565) ? 16 : 8, (uint32_t *)(void *)result->buf, true);
+        return bitmap;
+    }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, esp32_camera_camera_take);
 
