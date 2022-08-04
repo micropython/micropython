@@ -77,7 +77,7 @@
 //|         :param pixel_format: The pixel format of the captured image
 //|         :param frame_size: The size of captured image
 //|         :param jpeg_quality: For `PixelFormat.JPEG`, the quality. Higher numbers increase quality. If the quality is too high, the JPEG data will be larger than the availalble buffer size and the image will be unusable or truncated. The exact range of appropriate values depends on the sensor and must be determined empirically.
-//|         :param framebuffer_count: The number of framebuffers
+//|         :param framebuffer_count: The number of framebuffers (1 for single-buffered and 2 for double-buffered)
 //|         :param grab_mode: When to grab a new frame
 //|         """
 //|
@@ -175,8 +175,7 @@ STATIC void check_for_deinit(esp32_camera_camera_obj_t *self) {
 //|
 STATIC mp_obj_t esp32_camera_camera_obj___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_esp32_camera_camera_deinit(args[0]);
-    return mp_const_none;
+    return esp32_camera_camera_deinit(args[0]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera___exit___obj, 4, 4, esp32_camera_camera_obj___exit__);
 
@@ -184,7 +183,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera___exit___obj, 4, 
 //|     """True if a frame is available, False otherwise"""
 
 STATIC mp_obj_t esp32_camera_camera_frame_available_get(const mp_obj_t self_in) {
-    return mp_obj_new_bool(false);
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(esp_camera_fb_available());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_frame_available_get_obj, esp32_camera_camera_frame_available_get);
 
@@ -215,13 +216,65 @@ STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
         int height = common_hal_esp32_camera_camera_get_height(self);
         displayio_bitmap_t *bitmap = m_new_obj(displayio_bitmap_t);
         bitmap->base.type = &displayio_bitmap_type;
-        mp_printf(&mp_plat_print, "construct bitmap %dx%d @%p\n", width, height, result->buf);
         common_hal_displayio_bitmap_construct_from_buffer(bitmap, width, height, (format == PIXFORMAT_RGB565) ? 16 : 8, (uint32_t *)(void *)result->buf, true);
         return bitmap;
     }
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, esp32_camera_camera_take);
 
+
+//|     def reconfigure(
+//|         self,
+//|         frame_size: Optional[FrameSize] = None,
+//|         pixel_format: Optional[PixelFormat] = None,
+//|         grab_mode: Optional[GrabMode] = None,
+//|         framebuffer_count: Optional[int] = None,
+//|     ) -> None:
+//|         """Set the frame size and pixel format
+//|
+//|         Because these settings interact in complex ways, and take longer than
+//|         the other properties to set, they are set together in a single function call.
+//|
+//|         If an argument is unspecified or None, then the setting is unchanged."""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_reconfigure(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    check_for_deinit(self);
+
+    enum { ARG_frame_size, ARG_pixel_format, ARG_grab_mode, ARG_framebuffer_count };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_frame_size, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+        { MP_QSTR_pixel_format, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+        { MP_QSTR_grab_mode, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+        { MP_QSTR_framebuffer_count, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    framesize_t frame_size =
+        args[ARG_frame_size].u_obj != MP_ROM_NONE
+        ?  validate_frame_size(args[ARG_frame_size].u_obj, MP_QSTR_frame_size)
+        : common_hal_esp32_camera_camera_get_frame_size(self);
+    pixformat_t pixel_format =
+        args[ARG_pixel_format].u_obj != MP_ROM_NONE
+        ?  validate_pixel_format(args[ARG_pixel_format].u_obj, MP_QSTR_pixel_format)
+        : common_hal_esp32_camera_camera_get_pixel_format(self);
+    camera_grab_mode_t grab_mode =
+        args[ARG_grab_mode].u_obj != MP_ROM_NONE
+        ?  validate_grab_mode(args[ARG_grab_mode].u_obj, MP_QSTR_grab_mode)
+        : common_hal_esp32_camera_camera_get_grab_mode(self);
+    bool framebuffer_count =
+        args[ARG_framebuffer_count].u_obj != MP_ROM_NONE
+        ?  mp_obj_get_int(args[ARG_framebuffer_count].u_obj)
+        : common_hal_esp32_camera_camera_get_framebuffer_count(self);
+
+    common_hal_esp32_camera_camera_reconfigure(self, frame_size, pixel_format, grab_mode, framebuffer_count);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp32_camera_camera_reconfigure_obj, 1, esp32_camera_camera_reconfigure);
 
 //|     pixel_format: PixelFormat
 //|     """The pixel format of captured frames"""
@@ -233,16 +286,8 @@ STATIC mp_obj_t esp32_camera_camera_get_pixel_format(const mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_pixel_format_obj, esp32_camera_camera_get_pixel_format);
 
-STATIC mp_obj_t esp32_camera_camera_set_pixel_format(const mp_obj_t self_in, const mp_obj_t arg) {
-    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-    common_hal_esp32_camera_camera_set_pixel_format(self, validate_pixel_format(arg, MP_QSTR_pixel_format));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_pixel_format_obj, esp32_camera_camera_set_pixel_format);
-MP_PROPERTY_GETSET(esp32_camera_camera_pixel_format_obj,
-    (mp_obj_t)&esp32_camera_camera_get_pixel_format_obj,
-    (mp_obj_t)&esp32_camera_camera_set_pixel_format_obj);
+MP_PROPERTY_GETTER(esp32_camera_camera_pixel_format_obj,
+    (mp_obj_t)&esp32_camera_camera_get_pixel_format_obj);
 
 
 //|     frame_size: FrameSize
@@ -255,16 +300,8 @@ STATIC mp_obj_t esp32_camera_camera_get_frame_size(const mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_frame_size_obj, esp32_camera_camera_get_frame_size);
 
-STATIC mp_obj_t esp32_camera_camera_set_frame_size(const mp_obj_t self_in, const mp_obj_t arg) {
-    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    check_for_deinit(self);
-    common_hal_esp32_camera_camera_set_frame_size(self, validate_frame_size(arg, MP_QSTR_frame_size));
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_frame_size_obj, esp32_camera_camera_set_frame_size);
-MP_PROPERTY_GETSET(esp32_camera_camera_frame_size_obj,
-    (mp_obj_t)&esp32_camera_camera_get_frame_size_obj,
-    (mp_obj_t)&esp32_camera_camera_set_frame_size_obj);
+MP_PROPERTY_GETTER(esp32_camera_camera_frame_size_obj,
+    (mp_obj_t)&esp32_camera_camera_get_frame_size_obj);
 
 //|     contrast: int
 //|     """Access the contrast property of the camera sensor"""
@@ -898,6 +935,33 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_width_obj, esp32_camera
 MP_PROPERTY_GETTER(esp32_camera_camera_width_obj,
     (mp_obj_t)&esp32_camera_camera_get_width_obj);
 
+//|     grab_mode: GrabMode
+//|     """The grab mode of the camera"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_grab_mode(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return cp_enum_find(&esp32_camera_grab_mode_type, common_hal_esp32_camera_camera_get_grab_mode(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_grab_mode_obj, esp32_camera_camera_get_grab_mode);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_grab_mode_obj,
+    (mp_obj_t)&esp32_camera_camera_get_grab_mode_obj);
+
+
+//|     framebuffer_count: int
+//|     """True if double buffering is used"""
+//|
+STATIC mp_obj_t esp32_camera_camera_get_framebuffer_count(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_framebuffer_count(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_framebuffer_count_obj, esp32_camera_camera_get_framebuffer_count);
+
+MP_PROPERTY_GETTER(esp32_camera_camera_framebuffer_count_obj,
+    (mp_obj_t)&esp32_camera_camera_get_framebuffer_count_obj);
+
 
 STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_address), MP_ROM_PTR(&esp32_camera_camera_address_obj) },
@@ -913,6 +977,7 @@ STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dcw), MP_ROM_PTR(&esp32_camera_camera_dcw_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_camera_camera_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_denoise), MP_ROM_PTR(&esp32_camera_camera_denoise_obj) },
+    { MP_ROM_QSTR(MP_QSTR_framebuffer_count), MP_ROM_PTR(&esp32_camera_camera_framebuffer_count_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&esp32_camera_camera___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_exposure_ctrl), MP_ROM_PTR(&esp32_camera_camera_exposure_ctrl_obj) },
@@ -920,6 +985,7 @@ STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_frame_size), MP_ROM_PTR(&esp32_camera_camera_frame_size_obj) },
     { MP_ROM_QSTR(MP_QSTR_gain_ceiling), MP_ROM_PTR(&esp32_camera_camera_gain_ceiling_obj) },
     { MP_ROM_QSTR(MP_QSTR_gain_ctrl), MP_ROM_PTR(&esp32_camera_camera_gain_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_grab_mode), MP_ROM_PTR(&esp32_camera_camera_grab_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&esp32_camera_camera_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_hmirror), MP_ROM_PTR(&esp32_camera_camera_hmirror_obj) },
     { MP_ROM_QSTR(MP_QSTR_lenc), MP_ROM_PTR(&esp32_camera_camera_lenc_obj) },
@@ -927,6 +993,7 @@ STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pixel_format), MP_ROM_PTR(&esp32_camera_camera_pixel_format_obj) },
     { MP_ROM_QSTR(MP_QSTR_quality), MP_ROM_PTR(&esp32_camera_camera_quality_obj) },
     { MP_ROM_QSTR(MP_QSTR_raw_gma), MP_ROM_PTR(&esp32_camera_camera_raw_gma_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reconfigure), MP_ROM_PTR(&esp32_camera_camera_reconfigure_obj) },
     { MP_ROM_QSTR(MP_QSTR_saturation), MP_ROM_PTR(&esp32_camera_camera_saturation_obj) },
     { MP_ROM_QSTR(MP_QSTR_sensor_name), MP_ROM_PTR(&esp32_camera_camera_sensor_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_sharpness), MP_ROM_PTR(&esp32_camera_camera_sharpness_obj) },
@@ -935,8 +1002,8 @@ STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_take), MP_ROM_PTR(&esp32_camera_camera_take_obj) },
     { MP_ROM_QSTR(MP_QSTR_vflip), MP_ROM_PTR(&esp32_camera_camera_vflip_obj) },
     { MP_ROM_QSTR(MP_QSTR_wb_mode), MP_ROM_PTR(&esp32_camera_camera_wb_mode_obj) },
-    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&esp32_camera_camera_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_whitebal), MP_ROM_PTR(&esp32_camera_camera_whitebal_obj) },
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&esp32_camera_camera_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_wpc), MP_ROM_PTR(&esp32_camera_camera_wpc_obj) },
 };
 

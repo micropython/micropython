@@ -57,6 +57,7 @@ extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *sel
 extern bool common_hal_esp32_camera_camera_deinited(esp32_camera_camera_obj_t *self);
 extern bool common_hal_esp32_camera_camera_available(esp32_camera_camera_obj_t *self);
 extern camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self, int timeout_ms);
+extern void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count);
 
 #define DECLARE_SENSOR_GETSET(type, name, field_name, setter_function_name) \
     DECLARE_SENSOR_GET(type, name, field_name, setter_function_name) \
@@ -65,14 +66,17 @@ extern camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_
 #define DECLARE_SENSOR_STATUS_GETSET(type, name, status_field_name, setter_function_name) \
     DECLARE_SENSOR_GETSET(type, name, status.status_field_name, setter_function_name)
 
+#define DECLARE_SENSOR_STATUS_GET(type, name, status_field_name, setter_function_name) \
+    DECLARE_SENSOR_GET(type, name, status.status_field_name, setter_function_name)
+
 #define DECLARE_SENSOR_GET(type, name, status_field_name, setter_function_name) \
     extern type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self);
 
 #define DECLARE_SENSOR_SET(type, name, setter_function_name) \
     extern void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value);
 
-DECLARE_SENSOR_GETSET(pixformat_t, pixel_format, pixformat, set_pixformat)
-DECLARE_SENSOR_STATUS_GETSET(framesize_t, frame_size, framesize, set_framesize)
+DECLARE_SENSOR_GET(pixformat_t, pixel_format, pixformat, set_pixformat)
+DECLARE_SENSOR_STATUS_GET(framesize_t, frame_size, framesize, set_framesize)
 DECLARE_SENSOR_STATUS_GETSET(int, contrast, contrast, set_contrast);
 DECLARE_SENSOR_STATUS_GETSET(int, brightness, brightness, set_brightness);
 DECLARE_SENSOR_STATUS_GETSET(int, saturation, saturation, set_saturation);
@@ -98,6 +102,10 @@ DECLARE_SENSOR_STATUS_GETSET(bool, bpc, bpc, set_bpc);
 DECLARE_SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
 DECLARE_SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
 DECLARE_SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);
+
+// From settings
+extern camera_grab_mode_t common_hal_esp32_camera_camera_get_grab_mode(esp32_camera_camera_obj_t *self);
+extern int common_hal_esp32_camera_camera_get_framebuffer_count(esp32_camera_camera_obj_t *self);
 
 // From camera_sensor_info_t
 extern int common_hal_esp32_camera_camera_get_address(esp32_camera_camera_obj_t *self);

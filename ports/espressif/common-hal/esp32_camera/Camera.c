@@ -32,6 +32,8 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "common-hal/microcontroller/Pin.h"
 
+#include "esp32-camera/driver/private_include/cam_hal.h"
+
 static void maybe_claim_pin(const mcu_pin_obj_t *pin) {
     if (pin) {
         claim_pin(pin);
@@ -172,8 +174,40 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
         } \
     }
 
-SENSOR_GETSET(pixformat_t, pixel_format, pixformat, set_pixformat);
-SENSOR_STATUS_GETSET(framesize_t, frame_size, framesize, set_framesize);
+pixformat_t common_hal_esp32_camera_camera_get_pixel_format(esp32_camera_camera_obj_t *self) {
+    return self->camera_config.pixel_format;
+}
+
+framesize_t common_hal_esp32_camera_camera_get_frame_size(esp32_camera_camera_obj_t *self) {
+    return self->camera_config.frame_size;
+}
+
+#include "esp_log.h"
+
+void common_hal_esp32_camera_camera_reconfigure(esp32_camera_camera_obj_t *self, framesize_t frame_size, pixformat_t pixel_format, camera_grab_mode_t grab_mode, mp_int_t framebuffer_count) {
+    sensor_t *sensor = esp_camera_sensor_get();
+    camera_sensor_info_t *sensor_info = esp_camera_sensor_get_info(&sensor->id);
+
+    if (PIXFORMAT_JPEG == pixel_format && (!sensor_info->support_jpeg)) {
+        raise_esp_error(ESP_ERR_NOT_SUPPORTED);
+    }
+
+    if (frame_size > sensor_info->max_size) {
+        frame_size = sensor_info->max_size;
+    }
+
+    cam_deinit();
+    self->camera_config.pixel_format = pixel_format;
+    self->camera_config.frame_size = frame_size;
+    self->camera_config.grab_mode = grab_mode;
+    self->camera_config.fb_count = framebuffer_count;
+    sensor->set_pixformat(sensor, self->camera_config.pixel_format);
+    sensor->set_framesize(sensor, self->camera_config.frame_size);
+    cam_init(&self->camera_config);
+    cam_config(&self->camera_config, frame_size, sensor_info->pid);
+    cam_start();
+}
+
 SENSOR_STATUS_GETSET(int, contrast, contrast, set_contrast);
 SENSOR_STATUS_GETSET(int, brightness, brightness, set_brightness);
 SENSOR_STATUS_GETSET(int, saturation, saturation, set_saturation);
@@ -234,4 +268,12 @@ const int common_hal_esp32_camera_camera_get_height(esp32_camera_camera_obj_t *s
     sensor_t *sensor = esp_camera_sensor_get();
     framesize_t framesize = sensor->status.framesize;
     return resolution[framesize].height;
+}
+
+const camera_grab_mode_t common_hal_esp32_camera_camera_get_grab_mode(esp32_camera_camera_obj_t *self) {
+    return self->camera_config.grab_mode;
+}
+
+const int common_hal_esp32_camera_camera_get_framebuffer_count(esp32_camera_camera_obj_t *self) {
+    return self->camera_config.fb_count;
 }
