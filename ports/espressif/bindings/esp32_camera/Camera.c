@@ -205,21 +205,635 @@ STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, esp32_camera_camera_take);
 
-//|     pixel_format: PixelFormat
-//|     """The pixel format of the camera"""
-//|
-//|     frame_size: FrameSize
-//|     """The size of the captured image"""
-//|
+
+//|     pixel_format: pixformat_t
+//|     """The pixel format of captured frames"""
+
+STATIC mp_obj_t esp32_camera_camera_get_pixel_format(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return cp_enum_find(&esp32_camera_pixel_format_type, common_hal_esp32_camera_camera_get_pixel_format(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_pixel_format_obj, esp32_camera_camera_get_pixel_format);
+
+STATIC mp_obj_t esp32_camera_camera_set_pixel_format(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_pixel_format(self, validate_pixel_format(arg, MP_QSTR_pixel_format));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_pixel_format_obj, esp32_camera_camera_set_pixel_format);
+MP_PROPERTY_GETSET(esp32_camera_camera_pixel_format_obj,
+    (mp_obj_t)&esp32_camera_camera_get_pixel_format_obj,
+    (mp_obj_t)&esp32_camera_camera_set_pixel_format_obj);
+
+
+//|     frame_size: framesize_t
+//|     """The size of captured frames"""
+
+STATIC mp_obj_t esp32_camera_camera_get_frame_size(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return cp_enum_find(&esp32_camera_frame_size_type, common_hal_esp32_camera_camera_get_frame_size(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_frame_size_obj, esp32_camera_camera_get_frame_size);
+
+STATIC mp_obj_t esp32_camera_camera_set_frame_size(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_frame_size(self, validate_frame_size(arg, MP_QSTR_frame_size));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_frame_size_obj, esp32_camera_camera_set_frame_size);
+MP_PROPERTY_GETSET(esp32_camera_camera_frame_size_obj,
+    (mp_obj_t)&esp32_camera_camera_get_frame_size_obj,
+    (mp_obj_t)&esp32_camera_camera_set_frame_size_obj);
+
 //|     contrast: int
-//|     """The contrast of the sensor"""
+//|     """Access the contrast property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_contrast(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_contrast(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_contrast_obj, esp32_camera_camera_get_contrast);
+
+STATIC mp_obj_t esp32_camera_camera_set_contrast(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_contrast(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_contrast_obj, esp32_camera_camera_set_contrast);
+MP_PROPERTY_GETSET(esp32_camera_camera_contrast_obj,
+    (mp_obj_t)&esp32_camera_camera_get_contrast_obj,
+    (mp_obj_t)&esp32_camera_camera_set_contrast_obj);
+
+//|     brightness: int
+//|     """Access the brightness property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_brightness(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_brightness(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_brightness_obj, esp32_camera_camera_get_brightness);
+
+STATIC mp_obj_t esp32_camera_camera_set_brightness(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_brightness(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_brightness_obj, esp32_camera_camera_set_brightness);
+MP_PROPERTY_GETSET(esp32_camera_camera_brightness_obj,
+    (mp_obj_t)&esp32_camera_camera_get_brightness_obj,
+    (mp_obj_t)&esp32_camera_camera_set_brightness_obj);
+
+//|     saturation: int
+//|     """Access the saturation property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_saturation(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_saturation(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_saturation_obj, esp32_camera_camera_get_saturation);
+
+STATIC mp_obj_t esp32_camera_camera_set_saturation(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_saturation(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_saturation_obj, esp32_camera_camera_set_saturation);
+MP_PROPERTY_GETSET(esp32_camera_camera_saturation_obj,
+    (mp_obj_t)&esp32_camera_camera_get_saturation_obj,
+    (mp_obj_t)&esp32_camera_camera_set_saturation_obj);
+
+//|     sharpness: int
+//|     """Access the sharpness property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_sharpness(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_sharpness(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_sharpness_obj, esp32_camera_camera_get_sharpness);
+
+STATIC mp_obj_t esp32_camera_camera_set_sharpness(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_sharpness(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_sharpness_obj, esp32_camera_camera_set_sharpness);
+MP_PROPERTY_GETSET(esp32_camera_camera_sharpness_obj,
+    (mp_obj_t)&esp32_camera_camera_get_sharpness_obj,
+    (mp_obj_t)&esp32_camera_camera_set_sharpness_obj);
+
+//|     denoise: int
+//|     """Access the denoise property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_denoise(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_denoise(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_denoise_obj, esp32_camera_camera_get_denoise);
+
+STATIC mp_obj_t esp32_camera_camera_set_denoise(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_denoise(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_denoise_obj, esp32_camera_camera_set_denoise);
+MP_PROPERTY_GETSET(esp32_camera_camera_denoise_obj,
+    (mp_obj_t)&esp32_camera_camera_get_denoise_obj,
+    (mp_obj_t)&esp32_camera_camera_set_denoise_obj);
+
+//|     gain_ceiling: GainCeiling
+//|     """Access the gain ceiling property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_gain_ceiling(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return cp_enum_find(&esp32_camera_gain_ceiling_type, common_hal_esp32_camera_camera_get_gainceiling(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_gain_ceiling_obj, esp32_camera_camera_get_gain_ceiling);
+
+STATIC mp_obj_t esp32_camera_camera_set_gain_ceiling(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_gainceiling(self, validate_gain_ceiling(arg, MP_QSTR_gain_ceiling));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_gain_ceiling_obj, esp32_camera_camera_set_gain_ceiling);
+MP_PROPERTY_GETSET(esp32_camera_camera_gain_ceiling_obj,
+    (mp_obj_t)&esp32_camera_camera_get_gain_ceiling_obj,
+    (mp_obj_t)&esp32_camera_camera_set_gain_ceiling_obj);
+
+//|     quality: int
+//|     """Access the quality property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_quality(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_quality(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_quality_obj, esp32_camera_camera_get_quality);
+
+STATIC mp_obj_t esp32_camera_camera_set_quality(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_quality(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_quality_obj, esp32_camera_camera_set_quality);
+MP_PROPERTY_GETSET(esp32_camera_camera_quality_obj,
+    (mp_obj_t)&esp32_camera_camera_get_quality_obj,
+    (mp_obj_t)&esp32_camera_camera_set_quality_obj);
+
+//|     colorbar: bool
+//|     """Access the colorbar property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_colorbar(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_colorbar(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_colorbar_obj, esp32_camera_camera_get_colorbar);
+
+STATIC mp_obj_t esp32_camera_camera_set_colorbar(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_colorbar(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_colorbar_obj, esp32_camera_camera_set_colorbar);
+MP_PROPERTY_GETSET(esp32_camera_camera_colorbar_obj,
+    (mp_obj_t)&esp32_camera_camera_get_colorbar_obj,
+    (mp_obj_t)&esp32_camera_camera_set_colorbar_obj);
+
+//|     whitebal: bool
+//|     """Access the whitebal property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_whitebal(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_whitebal(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_whitebal_obj, esp32_camera_camera_get_whitebal);
+
+STATIC mp_obj_t esp32_camera_camera_set_whitebal(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_whitebal(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_whitebal_obj, esp32_camera_camera_set_whitebal);
+MP_PROPERTY_GETSET(esp32_camera_camera_whitebal_obj,
+    (mp_obj_t)&esp32_camera_camera_get_whitebal_obj,
+    (mp_obj_t)&esp32_camera_camera_set_whitebal_obj);
+
+//|     gain_ctrl: bool
+//|     """Access the gain_ctrl property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_gain_ctrl(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_gain_ctrl(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_gain_ctrl_obj, esp32_camera_camera_get_gain_ctrl);
+
+STATIC mp_obj_t esp32_camera_camera_set_gain_ctrl(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_gain_ctrl(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_gain_ctrl_obj, esp32_camera_camera_set_gain_ctrl);
+MP_PROPERTY_GETSET(esp32_camera_camera_gain_ctrl_obj,
+    (mp_obj_t)&esp32_camera_camera_get_gain_ctrl_obj,
+    (mp_obj_t)&esp32_camera_camera_set_gain_ctrl_obj);
+
+//|     exposure_ctrl: bool
+//|     """Access the exposure_ctrl property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_exposure_ctrl(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_exposure_ctrl(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_exposure_ctrl_obj, esp32_camera_camera_get_exposure_ctrl);
+
+STATIC mp_obj_t esp32_camera_camera_set_exposure_ctrl(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_exposure_ctrl(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_exposure_ctrl_obj, esp32_camera_camera_set_exposure_ctrl);
+MP_PROPERTY_GETSET(esp32_camera_camera_exposure_ctrl_obj,
+    (mp_obj_t)&esp32_camera_camera_get_exposure_ctrl_obj,
+    (mp_obj_t)&esp32_camera_camera_set_exposure_ctrl_obj);
+
+//|     hmirror: bool
+//|     """Access the hmirror property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_hmirror(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_hmirror(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_hmirror_obj, esp32_camera_camera_get_hmirror);
+
+STATIC mp_obj_t esp32_camera_camera_set_hmirror(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_hmirror(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_hmirror_obj, esp32_camera_camera_set_hmirror);
+MP_PROPERTY_GETSET(esp32_camera_camera_hmirror_obj,
+    (mp_obj_t)&esp32_camera_camera_get_hmirror_obj,
+    (mp_obj_t)&esp32_camera_camera_set_hmirror_obj);
+
+//|     vflip: bool
+//|     """Access the vflip property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_vflip(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_vflip(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_vflip_obj, esp32_camera_camera_get_vflip);
+
+STATIC mp_obj_t esp32_camera_camera_set_vflip(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_vflip(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_vflip_obj, esp32_camera_camera_set_vflip);
+MP_PROPERTY_GETSET(esp32_camera_camera_vflip_obj,
+    (mp_obj_t)&esp32_camera_camera_get_vflip_obj,
+    (mp_obj_t)&esp32_camera_camera_set_vflip_obj);
+
+//|     aec2: bool
+//|     """Access the aec2 property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_aec2(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_aec2(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_aec2_obj, esp32_camera_camera_get_aec2);
+
+STATIC mp_obj_t esp32_camera_camera_set_aec2(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_aec2(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_aec2_obj, esp32_camera_camera_set_aec2);
+MP_PROPERTY_GETSET(esp32_camera_camera_aec2_obj,
+    (mp_obj_t)&esp32_camera_camera_get_aec2_obj,
+    (mp_obj_t)&esp32_camera_camera_set_aec2_obj);
+
+//|     awb_gain: bool
+//|     """Access the awb_gain property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_awb_gain(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_awb_gain(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_awb_gain_obj, esp32_camera_camera_get_awb_gain);
+
+STATIC mp_obj_t esp32_camera_camera_set_awb_gain(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_awb_gain(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_awb_gain_obj, esp32_camera_camera_set_awb_gain);
+MP_PROPERTY_GETSET(esp32_camera_camera_awb_gain_obj,
+    (mp_obj_t)&esp32_camera_camera_get_awb_gain_obj,
+    (mp_obj_t)&esp32_camera_camera_set_awb_gain_obj);
+
+//|     agc_gain: int
+//|     """Access the agc_gain property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_agc_gain(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_agc_gain(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_agc_gain_obj, esp32_camera_camera_get_agc_gain);
+
+STATIC mp_obj_t esp32_camera_camera_set_agc_gain(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_agc_gain(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_agc_gain_obj, esp32_camera_camera_set_agc_gain);
+MP_PROPERTY_GETSET(esp32_camera_camera_agc_gain_obj,
+    (mp_obj_t)&esp32_camera_camera_get_agc_gain_obj,
+    (mp_obj_t)&esp32_camera_camera_set_agc_gain_obj);
+
+//|     aec_value: int
+//|     """Access the aec_value property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_aec_value(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_aec_value(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_aec_value_obj, esp32_camera_camera_get_aec_value);
+
+STATIC mp_obj_t esp32_camera_camera_set_aec_value(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_aec_value(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_aec_value_obj, esp32_camera_camera_set_aec_value);
+MP_PROPERTY_GETSET(esp32_camera_camera_aec_value_obj,
+    (mp_obj_t)&esp32_camera_camera_get_aec_value_obj,
+    (mp_obj_t)&esp32_camera_camera_set_aec_value_obj);
+
+//|     special_effect: int
+//|     """Access the special_effect property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_special_effect(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_special_effect(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_special_effect_obj, esp32_camera_camera_get_special_effect);
+
+STATIC mp_obj_t esp32_camera_camera_set_special_effect(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_special_effect(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_special_effect_obj, esp32_camera_camera_set_special_effect);
+MP_PROPERTY_GETSET(esp32_camera_camera_special_effect_obj,
+    (mp_obj_t)&esp32_camera_camera_get_special_effect_obj,
+    (mp_obj_t)&esp32_camera_camera_set_special_effect_obj);
+
+//|     wb_mode: int
+//|     """Access the wb_mode property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_wb_mode(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_wb_mode(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_wb_mode_obj, esp32_camera_camera_get_wb_mode);
+
+STATIC mp_obj_t esp32_camera_camera_set_wb_mode(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_wb_mode(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_wb_mode_obj, esp32_camera_camera_set_wb_mode);
+MP_PROPERTY_GETSET(esp32_camera_camera_wb_mode_obj,
+    (mp_obj_t)&esp32_camera_camera_get_wb_mode_obj,
+    (mp_obj_t)&esp32_camera_camera_set_wb_mode_obj);
+
+//|     ae_level: int
+//|     """Access the ae_level property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_ae_level(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_esp32_camera_camera_get_ae_level(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_ae_level_obj, esp32_camera_camera_get_ae_level);
+
+STATIC mp_obj_t esp32_camera_camera_set_ae_level(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_ae_level(self, mp_obj_get_int(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_ae_level_obj, esp32_camera_camera_set_ae_level);
+MP_PROPERTY_GETSET(esp32_camera_camera_ae_level_obj,
+    (mp_obj_t)&esp32_camera_camera_get_ae_level_obj,
+    (mp_obj_t)&esp32_camera_camera_set_ae_level_obj);
+
+//|     dcw: bool
+//|     """Access the dcw property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_dcw(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_dcw(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_dcw_obj, esp32_camera_camera_get_dcw);
+
+STATIC mp_obj_t esp32_camera_camera_set_dcw(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_dcw(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_dcw_obj, esp32_camera_camera_set_dcw);
+MP_PROPERTY_GETSET(esp32_camera_camera_dcw_obj,
+    (mp_obj_t)&esp32_camera_camera_get_dcw_obj,
+    (mp_obj_t)&esp32_camera_camera_set_dcw_obj);
+
+//|     bpc: bool
+//|     """Access the bpc property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_bpc(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_bpc(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_bpc_obj, esp32_camera_camera_get_bpc);
+
+STATIC mp_obj_t esp32_camera_camera_set_bpc(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_bpc(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_bpc_obj, esp32_camera_camera_set_bpc);
+MP_PROPERTY_GETSET(esp32_camera_camera_bpc_obj,
+    (mp_obj_t)&esp32_camera_camera_get_bpc_obj,
+    (mp_obj_t)&esp32_camera_camera_set_bpc_obj);
+
+//|     wpc: bool
+//|     """Access the wpc property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_wpc(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_wpc(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_wpc_obj, esp32_camera_camera_get_wpc);
+
+STATIC mp_obj_t esp32_camera_camera_set_wpc(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_wpc(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_wpc_obj, esp32_camera_camera_set_wpc);
+MP_PROPERTY_GETSET(esp32_camera_camera_wpc_obj,
+    (mp_obj_t)&esp32_camera_camera_get_wpc_obj,
+    (mp_obj_t)&esp32_camera_camera_set_wpc_obj);
+
+//|     raw_gma: bool
+//|     """Access the raw_gma property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_raw_gma(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_raw_gma(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_raw_gma_obj, esp32_camera_camera_get_raw_gma);
+
+STATIC mp_obj_t esp32_camera_camera_set_raw_gma(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_raw_gma(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_raw_gma_obj, esp32_camera_camera_set_raw_gma);
+MP_PROPERTY_GETSET(esp32_camera_camera_raw_gma_obj,
+    (mp_obj_t)&esp32_camera_camera_get_raw_gma_obj,
+    (mp_obj_t)&esp32_camera_camera_set_raw_gma_obj);
+
+//|     lenc: bool
+//|     """Access the lenc property of the camera sensor"""
+//|
+
+STATIC mp_obj_t esp32_camera_camera_get_lenc(const mp_obj_t self_in) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    return mp_obj_new_bool(common_hal_esp32_camera_camera_get_lenc(self));
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_camera_camera_get_lenc_obj, esp32_camera_camera_get_lenc);
+
+STATIC mp_obj_t esp32_camera_camera_set_lenc(const mp_obj_t self_in, const mp_obj_t arg) {
+    esp32_camera_camera_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    common_hal_esp32_camera_camera_set_lenc(self, mp_obj_is_true(arg));
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_camera_camera_set_lenc_obj, esp32_camera_camera_set_lenc);
+MP_PROPERTY_GETSET(esp32_camera_camera_lenc_obj,
+    (mp_obj_t)&esp32_camera_camera_get_lenc_obj,
+    (mp_obj_t)&esp32_camera_camera_set_lenc_obj);
+
+
 
 STATIC const mp_rom_map_elem_t esp32_camera_camera_locals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_take), MP_ROM_PTR(&esp32_camera_camera_take_obj) },
-    { MP_ROM_QSTR(MP_QSTR_frame_available), MP_ROM_PTR(&esp32_camera_camera_frame_available_obj) },
+    { MP_ROM_QSTR(MP_QSTR_aec2), MP_ROM_PTR(&esp32_camera_camera_aec2_obj) },
+    { MP_ROM_QSTR(MP_QSTR_aec_value), MP_ROM_PTR(&esp32_camera_camera_aec_value_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ae_level), MP_ROM_PTR(&esp32_camera_camera_ae_level_obj) },
+    { MP_ROM_QSTR(MP_QSTR_agc_gain), MP_ROM_PTR(&esp32_camera_camera_agc_gain_obj) },
+    { MP_ROM_QSTR(MP_QSTR_awb_gain), MP_ROM_PTR(&esp32_camera_camera_awb_gain_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bpc), MP_ROM_PTR(&esp32_camera_camera_bpc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_brightness), MP_ROM_PTR(&esp32_camera_camera_brightness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_colorbar), MP_ROM_PTR(&esp32_camera_camera_colorbar_obj) },
+    { MP_ROM_QSTR(MP_QSTR_contrast), MP_ROM_PTR(&esp32_camera_camera_contrast_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dcw), MP_ROM_PTR(&esp32_camera_camera_dcw_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_camera_camera_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_denoise), MP_ROM_PTR(&esp32_camera_camera_denoise_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&esp32_camera_camera___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_exposure_ctrl), MP_ROM_PTR(&esp32_camera_camera_exposure_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frame_available), MP_ROM_PTR(&esp32_camera_camera_frame_available_obj) },
+    { MP_ROM_QSTR(MP_QSTR_frame_size), MP_ROM_PTR(&esp32_camera_camera_frame_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gain_ceiling), MP_ROM_PTR(&esp32_camera_camera_gain_ceiling_obj) },
+    { MP_ROM_QSTR(MP_QSTR_gain_ctrl), MP_ROM_PTR(&esp32_camera_camera_gain_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hmirror), MP_ROM_PTR(&esp32_camera_camera_hmirror_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lenc), MP_ROM_PTR(&esp32_camera_camera_lenc_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pixel_format), MP_ROM_PTR(&esp32_camera_camera_pixel_format_obj) },
+    { MP_ROM_QSTR(MP_QSTR_quality), MP_ROM_PTR(&esp32_camera_camera_quality_obj) },
+    { MP_ROM_QSTR(MP_QSTR_raw_gma), MP_ROM_PTR(&esp32_camera_camera_raw_gma_obj) },
+    { MP_ROM_QSTR(MP_QSTR_saturation), MP_ROM_PTR(&esp32_camera_camera_saturation_obj) },
+    { MP_ROM_QSTR(MP_QSTR_sharpness), MP_ROM_PTR(&esp32_camera_camera_sharpness_obj) },
+    { MP_ROM_QSTR(MP_QSTR_special_effect), MP_ROM_PTR(&esp32_camera_camera_special_effect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_take), MP_ROM_PTR(&esp32_camera_camera_take_obj) },
+    { MP_ROM_QSTR(MP_QSTR_vflip), MP_ROM_PTR(&esp32_camera_camera_vflip_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wb_mode), MP_ROM_PTR(&esp32_camera_camera_wb_mode_obj) },
+    { MP_ROM_QSTR(MP_QSTR_whitebal), MP_ROM_PTR(&esp32_camera_camera_whitebal_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wpc), MP_ROM_PTR(&esp32_camera_camera_wpc_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(esp32_camera_camera_locals_dict, esp32_camera_camera_locals_table);

@@ -57,3 +57,44 @@ extern void common_hal_esp32_camera_camera_deinit(esp32_camera_camera_obj_t *sel
 extern bool common_hal_esp32_camera_camera_deinited(esp32_camera_camera_obj_t *self);
 extern bool common_hal_esp32_camera_camera_available(esp32_camera_camera_obj_t *self);
 extern camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self, int timeout_ms);
+
+#define DECLARE_SENSOR_GETSET(type, name, field_name, setter_function_name) \
+    DECLARE_SENSOR_GET(type, name, field_name, setter_function_name) \
+    DECLARE_SENSOR_SET(type, name, setter_function_name)
+
+#define DECLARE_SENSOR_STATUS_GETSET(type, name, status_field_name, setter_function_name) \
+    DECLARE_SENSOR_GETSET(type, name, status.status_field_name, setter_function_name)
+
+#define DECLARE_SENSOR_GET(type, name, status_field_name, setter_function_name) \
+    extern type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self);
+
+#define DECLARE_SENSOR_SET(type, name, setter_function_name) \
+    extern void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value);
+
+DECLARE_SENSOR_GETSET(pixformat_t, pixel_format, pixformat, set_pixformat)
+DECLARE_SENSOR_STATUS_GETSET(framesize_t, frame_size, framesize, set_framesize)
+DECLARE_SENSOR_STATUS_GETSET(int, contrast, contrast, set_contrast);
+DECLARE_SENSOR_STATUS_GETSET(int, brightness, brightness, set_brightness);
+DECLARE_SENSOR_STATUS_GETSET(int, saturation, saturation, set_saturation);
+DECLARE_SENSOR_STATUS_GETSET(int, sharpness, sharpness, set_sharpness);
+DECLARE_SENSOR_STATUS_GETSET(int, denoise, denoise, set_denoise);
+DECLARE_SENSOR_STATUS_GETSET(gainceiling_t, gainceiling, gainceiling, set_gainceiling);
+DECLARE_SENSOR_STATUS_GETSET(int, quality, quality, set_quality);
+DECLARE_SENSOR_STATUS_GETSET(bool, colorbar, colorbar, set_colorbar);
+DECLARE_SENSOR_STATUS_GETSET(bool, whitebal, whitebal, set_whitebal);
+DECLARE_SENSOR_STATUS_GETSET(bool, gain_ctrl, gain_ctrl, set_gain_ctrl);
+DECLARE_SENSOR_STATUS_GETSET(bool, exposure_ctrl, exposure_ctrl, set_exposure_ctrl);
+DECLARE_SENSOR_STATUS_GETSET(bool, hmirror, hmirror, set_hmirror);
+DECLARE_SENSOR_STATUS_GETSET(bool, vflip, vflip, set_vflip);
+DECLARE_SENSOR_STATUS_GETSET(bool, aec2, aec2, set_aec2);
+DECLARE_SENSOR_STATUS_GETSET(bool, awb_gain, awb_gain, set_awb_gain);
+DECLARE_SENSOR_STATUS_GETSET(int, agc_gain, agc_gain, set_agc_gain);
+DECLARE_SENSOR_STATUS_GETSET(int, aec_value, aec_value, set_aec_value);
+DECLARE_SENSOR_STATUS_GETSET(int, special_effect, special_effect, set_special_effect);
+DECLARE_SENSOR_STATUS_GETSET(int, wb_mode, wb_mode, set_wb_mode);
+DECLARE_SENSOR_STATUS_GETSET(int, ae_level, ae_level, set_ae_level);
+DECLARE_SENSOR_STATUS_GETSET(bool, dcw, dcw, set_dcw);
+DECLARE_SENSOR_STATUS_GETSET(bool, bpc, bpc, set_bpc);
+DECLARE_SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
+DECLARE_SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
+DECLARE_SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);

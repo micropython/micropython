@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
 #include "bindings/esp32_camera/Camera.h"
 #include "bindings/espidf/__init__.h"
 #include "common-hal/esp32_camera/Camera.h"
@@ -142,3 +144,58 @@ camera_fb_t *common_hal_esp32_camera_camera_take(esp32_camera_camera_obj_t *self
     }
     return self->buffer_to_return = esp_camera_fb_get_timeout(timeout_ms);
 }
+
+#define SENSOR_GETSET(type, name, field_name, setter_function_name) \
+    SENSOR_GET(type, name, field_name, setter_function_name) \
+    SENSOR_SET(type, name, setter_function_name)
+
+#define SENSOR_STATUS_GETSET(type, name, status_field_name, setter_function_name) \
+    SENSOR_GETSET(type, name, status.status_field_name, setter_function_name)
+
+#define SENSOR_GET(type, name, status_field_name, setter_function_name) \
+    type common_hal_esp32_camera_camera_get_##name(esp32_camera_camera_obj_t * self) { \
+        sensor_t *sensor = esp_camera_sensor_get(); \
+        if (!sensor->setter_function_name) { \
+            mp_raise_AttributeError(translate("no such attribute")); \
+        } \
+        return sensor->status_field_name; \
+    }
+
+#define SENSOR_SET(type, name, setter_function_name) \
+    void common_hal_esp32_camera_camera_set_##name(esp32_camera_camera_obj_t * self, type value) { \
+        sensor_t *sensor = esp_camera_sensor_get(); \
+        if (!sensor->setter_function_name) { \
+            mp_raise_AttributeError(translate("no such attribute")); \
+        } \
+        if (sensor->setter_function_name(sensor, value) < 0) { \
+            mp_raise_ValueError(translate("invalid setting")); \
+        } \
+    }
+
+SENSOR_GETSET(pixformat_t, pixel_format, pixformat, set_pixformat);
+SENSOR_STATUS_GETSET(framesize_t, frame_size, framesize, set_framesize);
+SENSOR_STATUS_GETSET(int, contrast, contrast, set_contrast);
+SENSOR_STATUS_GETSET(int, brightness, brightness, set_brightness);
+SENSOR_STATUS_GETSET(int, saturation, saturation, set_saturation);
+SENSOR_STATUS_GETSET(int, sharpness, sharpness, set_sharpness);
+SENSOR_STATUS_GETSET(int, denoise, denoise, set_denoise);
+SENSOR_STATUS_GETSET(gainceiling_t, gainceiling, gainceiling, set_gainceiling);
+SENSOR_STATUS_GETSET(int, quality, quality, set_quality);
+SENSOR_STATUS_GETSET(bool, colorbar, colorbar, set_colorbar);
+SENSOR_STATUS_GETSET(bool, whitebal, awb, set_whitebal);
+SENSOR_STATUS_GETSET(bool, gain_ctrl, agc, set_gain_ctrl);
+SENSOR_STATUS_GETSET(bool, exposure_ctrl, aec, set_exposure_ctrl);
+SENSOR_STATUS_GETSET(bool, hmirror, hmirror, set_hmirror);
+SENSOR_STATUS_GETSET(bool, vflip, vflip, set_vflip);
+SENSOR_STATUS_GETSET(bool, aec2, aec2, set_aec2);
+SENSOR_STATUS_GETSET(bool, awb_gain, awb_gain, set_awb_gain);
+SENSOR_STATUS_GETSET(int, agc_gain, agc_gain, set_agc_gain);
+SENSOR_STATUS_GETSET(int, aec_value, aec_value, set_aec_value);
+SENSOR_STATUS_GETSET(int, special_effect, special_effect, set_special_effect);
+SENSOR_STATUS_GETSET(int, wb_mode, wb_mode, set_wb_mode);
+SENSOR_STATUS_GETSET(int, ae_level, ae_level, set_ae_level);
+SENSOR_STATUS_GETSET(bool, dcw, dcw, set_dcw);
+SENSOR_STATUS_GETSET(bool, bpc, bpc, set_bpc);
+SENSOR_STATUS_GETSET(bool, wpc, wpc, set_wpc);
+SENSOR_STATUS_GETSET(bool, raw_gma, raw_gma, set_raw_gma);
+SENSOR_STATUS_GETSET(bool, lenc, lenc, set_lenc);

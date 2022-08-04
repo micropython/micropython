@@ -35,8 +35,6 @@
 #include "esp_camera.h"
 #include "sensor.h"
 
-int oooo;
-
 //| """Wrapper for the esp32_camera library
 //|
 //| This library enables access to any camera sensor supported by the library,
@@ -225,10 +223,51 @@ framesize_t validate_frame_size(mp_obj_t obj, qstr arg_name) {
     return cp_enum_value(&esp32_camera_frame_size_type, mp_arg_validate_type(obj, &esp32_camera_frame_size_type, arg_name));
 }
 
+//| class GainCeiling:
+//|     """The maximum amount of gain applied to raw sensor data.
+//|
+//|     Higher values are useful in darker conditions, but increase image noise."""
+//|
+//|     GAIN_2X: GainCeiling
+//|     GAIN_4X: GainCeiling
+//|     GAIN_8X: GainCeiling
+//|     GAIN_16X: GainCeiling
+//|     GAIN_32X: GainCeiling
+//|     GAIN_64X: GainCeiling
+//|     GAIN_128X: GainCeiling
+//|
+
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_2X, GAINCEILING_2X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_4X, GAINCEILING_4X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_8X, GAINCEILING_8X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_16X, GAINCEILING_16X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_32X, GAINCEILING_32X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_64X, GAINCEILING_64X);
+MAKE_ENUM_VALUE(esp32_camera_gain_ceiling_type, gain_ceiling, GAIN_128X, GAINCEILING_128X);
+
+MAKE_ENUM_MAP(esp32_camera_gain_ceiling) {
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_2X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_4X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_8X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_16X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_32X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_64X),
+    MAKE_ENUM_MAP_ENTRY(gain_ceiling, GAIN_128X)
+};
+
+STATIC MP_DEFINE_CONST_DICT(esp32_camera_gain_ceiling_locals_dict, esp32_camera_gain_ceiling_locals_table);
+MAKE_PRINTER(esp32_camera, esp32_camera_gain_ceiling);
+MAKE_ENUM_TYPE(esp32_camera, GainCeiling, esp32_camera_gain_ceiling);
+
+gainceiling_t validate_gain_ceiling(mp_obj_t obj, qstr arg_name) {
+    return cp_enum_value(&esp32_camera_gain_ceiling_type, mp_arg_validate_type(obj, &esp32_camera_gain_ceiling_type, arg_name));
+}
+
 STATIC const mp_rom_map_elem_t esp32_camera_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp32_camera) },
     { MP_ROM_QSTR(MP_QSTR_Camera), MP_ROM_PTR(&esp32_camera_camera_type), },
     { MP_ROM_QSTR(MP_QSTR_FrameSize), &esp32_camera_frame_size_type },
+    { MP_ROM_QSTR(MP_QSTR_GainCeiling), &esp32_camera_gain_ceiling_type },
     { MP_ROM_QSTR(MP_QSTR_GrabMode), &esp32_camera_grab_mode_type },
     { MP_ROM_QSTR(MP_QSTR_PixelFormat), &esp32_camera_pixel_format_type },
 };
