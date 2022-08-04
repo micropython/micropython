@@ -37,3 +37,5 @@
 #define DEFAULT_SPI_BUS_SCK         (&pin_GPIO39)
 #define DEFAULT_SPI_BUS_MISO        (&pin_GPIO40)
 #define DEFAULT_SPI_BUS_MOSI        (&pin_GPIO38)
+
+#define DEFAULT_RESERVED_PSRAM      (1048576)
