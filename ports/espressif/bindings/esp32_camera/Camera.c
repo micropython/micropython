@@ -195,8 +195,8 @@ MP_PROPERTY_GETTER(esp32_camera_camera_frame_available_obj,
 //|         """Record a frame. Wait up to 'timeout' seconds for a frame to be captured.
 //|
 //|         In the case of timeout, `None` is returned.
-//|         If `pixel_format` is `PixelFormat.JPEG`, the returned value is a `ReadableBuffer`.
-//|         Otherwise, the returned value is a `displayio.Bitmap`.
+//|         If `pixel_format` is `PixelFormat.JPEG`, the returned value is a read-only `memoryview`.
+//|         Otherwise, the returned value is a read-only `displayio.Bitmap`.
 //|         """
 //|
 STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
