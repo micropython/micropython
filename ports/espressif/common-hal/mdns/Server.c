@@ -204,5 +204,9 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
 }
 
 void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port) {
-    mdns_service_add(NULL, service_type, protocol, port, NULL, 0);
+    if (mdns_service_exists(service_type, protocol, NULL)) {
+        mdns_service_port_set(service_type, protocol, port);
+    } else {
+        mdns_service_add(NULL, service_type, protocol, port, NULL, 0);
+    }
 }

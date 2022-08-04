@@ -63,10 +63,12 @@ input.addEventListener("beforeinput", function(e) {
     input.value = "";
     input.focus();
     e.preventDefault();
-  } else if (e.inputType == "insertText") {
+  } else if (e.inputType == "insertText" || e.inputType == "insertFromPaste") {
     ws.send(e.data);
   } else if (e.inputType == "deleteContentBackward") {
     ws.send("\b");
+  } else {
+    console.log(e);
   }
 });
 

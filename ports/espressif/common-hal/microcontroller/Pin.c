@@ -46,19 +46,7 @@ static const uint64_t pin_mask_reset_forbidden =
     // Never ever reset serial pins for bootloader and possibly USB-serial converter.
     GPIO_SEL_1 |          // TXD0
     GPIO_SEL_3 |          // RXD0
-    // Never ever reset pins used to communicate with SPI flash and PSRAM.
-    GPIO_SEL_6 |          // CLK
-    /////////TEMP
-    GPIO_SEL_7 |          // SD0
-    GPIO_SEL_8 |          // SD1
-    ////////END TEMP
-    GPIO_SEL_9 |          // (PSRAM) SD2
-    GPIO_SEL_10 |         // (PSRAM) SD3
-    GPIO_SEL_11 |         // CMD
-    GPIO_SEL_16 |         // SPIHD
-    GPIO_SEL_17 |         // SPIDO
-    GPIO_SEL_18 |         // SPIWP
-    GPIO_SEL_23 |         // SPIDI
+    // SPI flash and PSRAM pins are protected at runtime in supervisor/port.c.
     #endif // ESP32
 
     #if defined(CONFIG_IDF_TARGET_ESP32C3)

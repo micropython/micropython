@@ -72,7 +72,7 @@ Read-only characteristic that returns the UTF-8 encoded version string.
 The web workflow is depends on adding Wi-Fi credentials into the `/.env` file. The keys are
 `CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD`. Once these are defined, CircuitPython will
 automatically connect to the network and start the webserver used for the workflow. The webserver
-is on port 80. It also enables MDNS.
+is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
 
 Here is an example `/.env`:
 
@@ -82,7 +82,10 @@ CIRCUITPY_WIFI_SSID='scottswifi'
 CIRCUITPY_WIFI_PASSWORD='secretpassword'
 
 # To enable modifying files from the web. Change this too!
+# Leave the User field blank in the browser.
 CIRCUITPY_WEB_API_PASSWORD='passw0rd'
+
+CIRCUITPY_WEB_API_PORT=80
 ```
 
 MDNS is used to resolve [`circuitpython.local`](http://circuitpython.local) to a device specific
@@ -119,7 +122,7 @@ The web server will allow requests from `cpy-XXXXXX.local`, `127.0.0.1`, the dev
 ### File REST API
 All file system related APIs are protected by HTTP basic authentication. It is *NOT* secure but will
 hopefully prevent some griefing in shared settings. The password is sent unencrypted so do not reuse
-a password with something important.
+a password with something important. The user field is left blank.
 
 The password is taken from `/.env` with the key `CIRCUITPY_WEB_API_PASSWORD`. If this is unset, the
 server will respond with `403 Forbidden`. When a password is set, but not provided in a request, it

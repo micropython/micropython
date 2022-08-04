@@ -207,9 +207,16 @@ char serial_read(void) {
 
     #if CIRCUITPY_WEB_WORKFLOW
     if (websocket_available()) {
-        return websocket_read_char();
+        char c = websocket_read_char();
+        if (c != -1) {
+            return c;
+        }
     }
     #endif
+
+    if (port_serial_bytes_available() > 0) {
+        return port_serial_read();
+    }
 
     #if CIRCUITPY_USB_CDC
     if (!usb_cdc_console_enabled()) {
@@ -220,9 +227,6 @@ char serial_read(void) {
     return (char)tud_cdc_read_char();
     #endif
 
-    if (port_serial_bytes_available() > 0) {
-        return port_serial_read();
-    }
     return -1;
 }
 

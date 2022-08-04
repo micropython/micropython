@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
-#define MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+void board_init(void) {
+    reset_board();
+}
 
-extern TaskHandle_t circuitpython_task;
+bool board_requests_safe_mode(void) {
+    return false;
+}
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_SUPERVISOR_PORT_H
+void reset_board(void) {
+    // Turn on NeoPixel power by default.
+    gpio_set_direction(8, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(8, true);
+}
+
+void board_deinit(void) {
+    // Turn off NeoPixel
+    gpio_set_direction(8, GPIO_MODE_DEF_OUTPUT);
+    gpio_set_level(8, false);
+}

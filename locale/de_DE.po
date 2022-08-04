@@ -976,10 +976,6 @@ msgstr "Verbindung fehlgeschlagen: interner Fehler"
 msgid "Failed to connect: timeout"
 msgstr "Verbindung nicht erfolgreich: timeout"
 
-#: ports/espressif/common-hal/wifi/__init__.c
-msgid "Failed to init wifi"
-msgstr "Wifi Initialisierung ist fehlgeschlagen"
-
 #: shared-module/audiomp3/MP3Decoder.c
 msgid "Failed to parse MP3 file"
 msgstr "MP3-Datei konnte nicht analysiert werden"
@@ -1579,7 +1575,7 @@ msgstr "Nur 8 oder 16 bit mono mit "
 msgid "Only IPv4 addresses supported"
 msgstr "Nur IPv4-Adressen werden unterstützt"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Only IPv4 sockets supported"
 msgstr "Nur IPv4-Sockets werden unterstützt"
 
@@ -1651,7 +1647,7 @@ msgstr "Zeit für Vorgang abgelaufen"
 msgid "Out of memory"
 msgstr "Kein Speicher mehr verfügbar"
 
-#: ports/espressif/common-hal/socketpool/SocketPool.c
+#: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
 msgstr "Keine Sockets mehr verfügbar"
 
@@ -3854,11 +3850,20 @@ msgstr "pow() drittes Argument darf nicht 0 sein"
 msgid "pow() with 3 arguments requires integers"
 msgstr "pow() mit 3 Argumenten erfordert Integer"
 
+#: ports/espressif/boards/adafruit_qtpy_esp32_pico/mpconfigboard.h
+msgid "pressing BOOT button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "pressing SW38 button at start up.\n"
 msgstr ""
 
+#: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
+msgid "pressing VOLUME button at start up.\n"
+msgstr ""
+
 #: ports/espressif/boards/adafruit_qtpy_esp32c3/mpconfigboard.h
+#: ports/espressif/boards/beetle-esp32-c3/mpconfigboard.h
 #: ports/espressif/boards/lolin_c3_mini/mpconfigboard.h
 #: supervisor/shared/safe_mode.c
 msgid "pressing boot button at start up.\n"
@@ -4414,6 +4419,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Wifi Initialisierung ist fehlgeschlagen"
 
 #~ msgid "input must be a tensor of rank 2"
 #~ msgstr "Eingabe muss ein Tensor von Rang 2 sein"

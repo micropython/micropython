@@ -27,7 +27,7 @@
 
 #include "py/runtime.h"
 
-#include "supervisor/esp_port.h"
+#include "supervisor/port.h"
 #include "shared-bindings/alarm/pin/PinAlarm.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
@@ -90,11 +90,7 @@ STATIC void gpio_interrupt(void *arg) {
             gpio_ll_intr_disable(&GPIO, 32 + i);
         }
     }
-    BaseType_t high_task_wakeup;
-    vTaskNotifyGiveFromISR(circuitpython_task, &high_task_wakeup);
-    if (high_task_wakeup) {
-        portYIELD_FROM_ISR();
-    }
+    port_wake_main_task_from_isr();
 }
 
 bool alarm_pin_pinalarm_woke_this_cycle(void) {

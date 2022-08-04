@@ -26,6 +26,8 @@
 
 #include "supervisor/shared/web_workflow/websocket.h"
 
+#include "supervisor/shared/title_bar.h"
+
 // TODO: Remove ESP specific stuff. For now, it is useful as we refine the server.
 #include "esp_log.h"
 
@@ -59,6 +61,9 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
     // Mark the original socket object as closed without telling the lower level.
     socket->connected = false;
     socket->num = -1;
+
+    // Send the title bar for the new client.
+    supervisor_title_bar_request_update(true);
 }
 
 bool websocket_connected(void) {
@@ -94,7 +99,7 @@ static void _read_next_frame_header(void) {
     }
     if (cp_serial.frame_index == 1 && _read_byte(&h)) {
         cp_serial.frame_index++;
-        uint8_t len = h & 0xf;
+        uint8_t len = h & 0x7f;
         cp_serial.masked = (h >> 7) == 1;
         if (len <= 125) {
             cp_serial.payload_remaining = len;
@@ -194,7 +199,9 @@ bool websocket_available(void) {
 
 char websocket_read_char(void) {
     uint8_t c;
-    _read_next_payload_byte(&c);
+    if (!_read_next_payload_byte(&c)) {
+        c = -1;
+    }
     return c;
 }
 
@@ -215,13 +222,20 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
     }
     frame_header[1] = payload_len;
     _send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
+    uint8_t extended_len[4];
     if (payload_len == 126) {
-        _send_raw(&ws->socket, (const uint8_t *)&len, 2);
+        extended_len[0] = (len >> 8) & 0xff;
+        extended_len[1] = len & 0xff;
+        _send_raw(&ws->socket, extended_len, 2);
     } else if (payload_len == 127) {
         uint32_t zero = 0;
         // 64 bits where top four bytes are zero.
         _send_raw(&ws->socket, (const uint8_t *)&zero, 4);
-        _send_raw(&ws->socket, (const uint8_t *)&len, 4);
+        extended_len[0] = (len >> 24) & 0xff;
+        extended_len[1] = (len >> 16) & 0xff;
+        extended_len[2] = (len >> 8) & 0xff;
+        extended_len[3] = len & 0xff;
+        _send_raw(&ws->socket, extended_len, 4);
     }
     _send_raw(&ws->socket, (const uint8_t *)text, len);
     char copy[len];
