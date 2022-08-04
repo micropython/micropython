@@ -48,7 +48,7 @@
 //|     """Fills buffers when they are empty. Less resources but first ``fb_count`` frames might be old"""
 //|
 //|     LATEST: GrabMode
-//|     """Except when 1 frame buffer is used, queue will always contain the last `fb_count` frames"""
+//|     """Except when 1 frame buffer is used, queue will always contain the last ``fb_count`` frames"""
 //|
 
 MAKE_ENUM_VALUE(esp32_camera_grab_mode_type, grab_mode, WHEN_EMPTY, CAMERA_GRAB_WHEN_EMPTY);
