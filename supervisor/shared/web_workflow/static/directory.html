@@ -9,7 +9,7 @@
 </head>
 <body>
     <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;<span id="path"></span></h1>
-    <div id="usbwarning" style="display: none;">🛈 USB is using the storage. Only allowing reads. See <a href="https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage">the CircuitPython Essentials: Storage guide</a> for details.</div>
+    <div id="usbwarning" style="display: none;">ℹ️ USB is using the storage. Only allowing reads. See <a href="https://learn.adafruit.com/circuitpython-essentials/circuitpython-storage">the CircuitPython Essentials: Storage guide</a> for details.</div>
     <template id="row"><tr><td></td><td></td><td><a></a></td><td></td><td><button class="delete">🗑️</button></td><td><a class="edit_link" href="">Edit</a></td></tr></template>
     <table>
         <thead><tr><th>Type</th><th>Size</th><th>Path</th><th>Modified</th><th></th></tr></thead>
@@ -18,5 +18,5 @@
     <hr>
     <input type="file" id="files" multiple><button type="submit" id="upload">Upload</button>
     <hr>
-    +🗀&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
+    +📁&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
 </body></html>

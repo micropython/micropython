@@ -46,7 +46,7 @@ async function refresh_list() {
     if (window.location.path != "/fs/") {
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
-        td[0].textContent = "🗀";
+        td[0].textContent = "📁";
         var path = clone.querySelector("a");
         let parent = new URL("..", "file://" + current_path);
         path.href = "#" + parent.pathname;
@@ -60,7 +60,7 @@ async function refresh_list() {
         // Clone the new row and insert it into the table
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
-        var icon = "⬇";
+        var icon = "⬇️";
         var file_path = current_path + f.name;
         let api_url = new URL("/fs" + file_path, url_base);
         let edit_url = "/edit/#" + file_path;
@@ -72,12 +72,12 @@ async function refresh_list() {
         }
 
         if (f.directory) {
-            icon = "🗀";
+            icon = "📁";
         } else if(f.name.endsWith(".txt") ||
                   f.name.endsWith(".py") ||
                   f.name.endsWith(".js") ||
                   f.name.endsWith(".json")) {
-            icon = "🖹";
+            icon = "📄";
         } else if (f.name.endsWith(".html")) {
             icon = "🌐";
         }
