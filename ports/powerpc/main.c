@@ -35,6 +35,8 @@
 #include "py/stackctrl.h"
 #include "shared/runtime/pyexec.h"
 
+#include "libfdt.h"
+
 #include "io.h"
 #include "microwatt_soc.h"
 #include "uart_std.h"
@@ -109,12 +111,39 @@ static void init_microwatt(void) {
     }
 }
 
-static void init_devicetree(const void *devtree) {
+static void init_powernv(void) {
 #define QEMU_UART_BASE 0x60300d00103f8
-    /* TODO: Use libfdt to parse the device-tree, in the meantime
-     * we assume POWER9 powernv (as provided by qemu)
-     */
     std_uart_init(QEMU_UART_BASE, 0, 1843200, UART_BAUDS);
+}
+
+static void init_devicetree(const void *devtree) {
+    const char *machine;
+
+    machine = fdt_getprop(devtree, 0, "compatible", NULL);
+    if (machine == NULL) {
+        goto fallback;
+    }
+
+    if (strcmp(machine, "ibm,microwatt") == 0) {
+        init_microwatt();
+    }
+
+    if (strcmp(machine, "qemu,powernv9") == 0) {
+        init_powernv();
+    }
+
+    if (strcmp(machine, "qemu,powernv10") == 0) {
+        init_powernv();
+    }
+
+fallback:
+    if (!machine) {
+        init_powernv();
+    }
+
+    #ifdef DEBUG
+    printf("Running on '%s' (devtree: '%p')\n", machine, devtree);
+    #endif
 }
 
 int main(const void *devtree) {
@@ -122,9 +151,9 @@ int main(const void *devtree) {
     stack_top = (char *)&stack_dummy;
 
     /*
-     * Platform detection. Eventually assume r3 will contain
-     * a device-tree pointer and use libfdt to parse it, in
-     * the meantime, if r3 is 0, assume standalone microwatt
+     * Platform detection. On systems with firmware, r3 will
+     * contain a device-tree pointer so we use libfdt to parse
+     * it. If r3 is 0, assume standalone microwatt.
      */
     if (devtree == 0) {
         init_microwatt();

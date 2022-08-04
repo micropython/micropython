@@ -29,6 +29,10 @@ CFLAGS += -mlittle-endian -mstrict-align -msoft-float
 CFLAGS += -fdata-sections -ffunction-sections -fno-stack-protector -ffreestanding
 CFLAGS += -U_FORTIFY_SOURCE
 
+ifneq ($(DEBUG),)
+CFLAGS += -DDEBUG=1
+endif
+
 LDFLAGS = -N -T powerpc.lds -nostdlib
 
 LIBS =
