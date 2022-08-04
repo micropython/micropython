@@ -223,7 +223,7 @@ STATIC mp_obj_t esp32_camera_camera_take(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp32_camera_camera_take_obj, 1, 2, esp32_camera_camera_take);
 
 
-//|     pixel_format: pixformat_t
+//|     pixel_format: PixelFormat
 //|     """The pixel format of captured frames"""
 
 STATIC mp_obj_t esp32_camera_camera_get_pixel_format(const mp_obj_t self_in) {
@@ -245,7 +245,7 @@ MP_PROPERTY_GETSET(esp32_camera_camera_pixel_format_obj,
     (mp_obj_t)&esp32_camera_camera_set_pixel_format_obj);
 
 
-//|     frame_size: framesize_t
+//|     frame_size: FrameSize
 //|     """The size of captured frames"""
 
 STATIC mp_obj_t esp32_camera_camera_get_frame_size(const mp_obj_t self_in) {
