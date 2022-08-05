@@ -243,14 +243,14 @@ qstr qstr_find_strn(const char *str, size_t str_len) {
             while (high - low > MP_QSTR_SEARCH_THRESHOLD) {
                 size_t mid = (low + high + 1) / 2;
                 int cmp = pool->hashes[mid] - str_hash;
-                if (cmp == 0) {
-                    cmp = pool->lengths[mid] - str_len;
-                }
                 if (cmp > 0) {
                     high = mid;
                 } else {
                     low = mid;
                     if (cmp == 0) {
+                        while (low > 0 && pool->hashes[low - 1] == str_hash) {
+                            low--;
+                        }
                         break;
                     }
                 }
