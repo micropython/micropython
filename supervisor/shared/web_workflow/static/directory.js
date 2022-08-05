@@ -58,12 +58,6 @@ class SortableTable {
       tbodyNode.appendChild(rowNodes[dataCells[i].index]);
     }
   }
-
-  /* EVENT HANDLERS */
-
-  handleSort(event) {
-    this.setColumnHeaderSort(tgt.getAttribute(columnIndex));
-  }
 }
 
 var sortable_directory = document.querySelector('table.sortable');
