@@ -575,7 +575,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
     _send_strs(socket,
-        "HTTP/1.1 301 Moved Permanently\r\n",
+        "HTTP/1.1 307 Temporary Redirect\r\n",
         "Connection: close\r\n",
         "Content-Length: 0\r\n",
         "Location: ", NULL);
