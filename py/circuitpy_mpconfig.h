@@ -564,6 +564,10 @@ void supervisor_run_background_tasks_if_tick(void);
 #error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
+#ifndef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
+#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (0)
+#endif
+
 #ifndef USB_MIDI_EP_NUM_OUT
 #define USB_MIDI_EP_NUM_OUT (0)
 #endif

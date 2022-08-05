@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-04-23 21:13+0000\n"
-"Last-Translator: hexthat <hexthat@gmail.com>\n"
+"PO-Revision-Date: 2022-08-05 14:18+0000\n"
+"Last-Translator: River Wang <urfdvw@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.12.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: main.c
 msgid ""
@@ -634,9 +634,9 @@ msgid "Buffer must be a multiple of 512 bytes"
 msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 
 #: shared-bindings/_bleio/PacketBuffer.c
-#, fuzzy, c-format
+#, c-format
 msgid "Buffer too short by %d bytes"
-msgstr "Huǎn chōng qū tài duǎn , àn %d zì jié"
+msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -742,15 +742,15 @@ msgstr "tōng guò USB kě jiàn shí wú fǎ chóng xīn ān zhuāng '/'."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
+msgstr "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài."
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr "wú fǎ shè zhì tào jiē zì xuǎn xiàng"
+msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
-msgstr "Dāng fāngxiàng xiàng nèi shí, bùnéng shèzhì gāi zhí."
+msgstr "Dāng fāngxiàng wéi shūrù shí, bùnéng shèzhì zhí."
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c

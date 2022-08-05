@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * SPDX-FileCopyrightText: Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "stdbool.h"
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
-#define MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+#include "supervisor/port.h"
+#include "py/mpconfig.h"
 
-#include <stdbool.h>
 
-#include "extmod/vfs_fat.h"
-
-extern volatile bool filesystem_flush_requested;
-
-void filesystem_background(void);
-void filesystem_tick(void);
-bool filesystem_init(bool create_allowed, bool force_create);
-void filesystem_flush(void);
-bool filesystem_present(void);
-void filesystem_set_internal_writable_by_usb(bool usb_writable);
-void filesystem_set_internal_concurrent_write_protection(bool concurrent_write_protection);
-void filesystem_set_writable_by_usb(fs_user_mount_t *vfs, bool usb_writable);
-void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concurrent_write_protection);
-bool filesystem_is_writable_by_python(fs_user_mount_t *vfs);
-bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs);
-
-FATFS *filesystem_circuitpy(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+MP_WEAK void port_post_boot_py(bool heap_valid) {
+}
