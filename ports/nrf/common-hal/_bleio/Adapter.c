@@ -449,15 +449,23 @@ bool common_hal_bleio_adapter_set_address(bleio_adapter_obj_t *self, bleio_addre
     return sd_ble_gap_addr_set(&local_address) == NRF_SUCCESS;
 }
 
+uint16_t bleio_adapter_get_name(char *buf, uint16_t len) {
+    uint16_t full_len = 0;
+    sd_ble_gap_device_name_get(NULL, &full_len);
+
+    uint32_t err_code = sd_ble_gap_device_name_get((uint8_t *)buf, &len);
+    if (err_code != NRF_SUCCESS) {
+        return 0;
+    }
+    return full_len;
+}
+
 mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
     uint16_t len = 0;
     sd_ble_gap_device_name_get(NULL, &len);
-    uint8_t buf[len];
-    uint32_t err_code = sd_ble_gap_device_name_get(buf, &len);
-    if (err_code != NRF_SUCCESS) {
-        return NULL;
-    }
-    return mp_obj_new_str((char *)buf, len);
+    char buf[len];
+    bleio_adapter_get_name(buf, len);
+    return mp_obj_new_str(buf, len);
 }
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {

@@ -185,9 +185,8 @@ ifeq ($(CIRCUITPY_DISPLAYIO), 1)
   SRC_SUPERVISOR += \
     supervisor/shared/display.c
 
-  ifeq ($(CIRCUITPY_TERMINALIO), 1)
-    SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
-  endif
+  # Include the display resources because it includes the Blinka logo as well.
+  SUPERVISOR_O += $(BUILD)/autogen_display_resources-$(TRANSLATION).o
 endif
 
 # Preserve double quotes in these values by single-quoting them.
