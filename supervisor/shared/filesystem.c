@@ -92,6 +92,9 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     vfs_fat->blockdev.flags = 0;
     supervisor_flash_init_vfs(vfs_fat);
 
+    mp_vfs_mount_t *vfs = &_mp_vfs;
+    vfs->len = 0;
+
     // try to mount the flash
     FRESULT res = f_mount(&vfs_fat->fatfs);
     if ((res == FR_NO_FILESYSTEM && create_allowed) || force_create) {
@@ -140,7 +143,6 @@ bool filesystem_init(bool create_allowed, bool force_create) {
     } else if (res != FR_OK) {
         return false;
     }
-    mp_vfs_mount_t *vfs = &_mp_vfs;
     vfs->str = "/";
     vfs->len = 1;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
@@ -199,5 +201,12 @@ void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concu
 }
 
 bool filesystem_present(void) {
-    return true;
+    return _mp_vfs.len > 0;
+}
+
+FATFS *filesystem_circuitpy(void) {
+    if (!filesystem_present()) {
+        return NULL;
+    }
+    return &_internal_vfs.fatfs;
 }

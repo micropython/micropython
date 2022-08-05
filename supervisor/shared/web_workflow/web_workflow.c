@@ -36,6 +36,7 @@
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs_port.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -979,7 +980,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else {
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
-            FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+            FATFS *fs = filesystem_circuitpy();
             // Trailing / is a directory.
             bool directory = false;
             if (path[pathlen - 1] == '/') {
