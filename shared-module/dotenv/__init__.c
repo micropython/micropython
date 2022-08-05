@@ -33,6 +33,7 @@
 #include "extmod/vfs_fat.h"
 #include "py/mpstate.h"
 #include "py/objstr.h"
+#include "supervisor/filesystem.h"
 
 STATIC uint8_t consume_spaces(FIL *active_file) {
     uint8_t character = ' ';
@@ -189,7 +190,7 @@ STATIC mp_int_t read_value(FIL *active_file, char *value, size_t value_len) {
 
 mp_int_t dotenv_get_key(const char *path, const char *key, char *value, mp_int_t value_len) {
     FIL active_file;
-    FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+    FATFS *fs = filesystem_circuitpy();
     FRESULT result = f_open(fs, &active_file, path, FA_READ);
     if (result != FR_OK) {
         return -1;

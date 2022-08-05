@@ -151,6 +151,7 @@ void sleep_timer_cb(void *arg);
 #define PSRAM_HSPI_SPIWP_SD3_IO    2
 #define PSRAM_HSPI_SPIHD_SD2_IO    4
 
+#ifdef CONFIG_SPIRAM
 // PSRAM clock and cs IO should be configured based on hardware design.
 // For ESP32-WROVER or ESP32-WROVER-B module, the clock IO is IO17, the cs IO is IO16,
 // they are the default value for these two configs.
@@ -171,9 +172,11 @@ void sleep_timer_cb(void *arg);
 
 #define PICO_V3_02_PSRAM_CLK_IO    10
 #define PICO_V3_02_PSRAM_CS_IO     9
+#endif // CONFIG_SPIRAM
 
 static void _never_reset_spi_ram_flash(void) {
     #if defined(CONFIG_IDF_TARGET_ESP32)
+    #if defined(CONFIG_SPIRAM)
     uint32_t pkg_ver = esp_efuse_get_pkg_ver();
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
         never_reset_pin_number(D2WD_PSRAM_CLK_IO);
@@ -193,6 +196,7 @@ static void _never_reset_spi_ram_flash(void) {
         never_reset_pin_number(D0WDR2_V3_PSRAM_CLK_IO);
         never_reset_pin_number(D0WDR2_V3_PSRAM_CS_IO);
     }
+    #endif // CONFIG_SPIRAM
 
     const uint32_t spiconfig = esp_rom_efuse_get_flash_gpio_info();
     if (spiconfig == ESP_ROM_EFUSE_FLASH_DEFAULT_SPI) {
@@ -217,7 +221,7 @@ static void _never_reset_spi_ram_flash(void) {
         never_reset_pin_number(EFUSE_SPICONFIG_RET_SPIHD(spiconfig));
         never_reset_pin_number(bootloader_flash_get_wp_pin());
     }
-    #endif
+    #endif // CONFIG_IDF_TARGET_ESP32
 }
 
 safe_mode_t port_init(void) {

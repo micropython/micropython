@@ -1,11 +1,4 @@
 #
-# Partition Table
-#
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="esp-idf-config/partitions-8MB-no-uf2.csv"
-CONFIG_PARTITION_TABLE_FILENAME="esp-idf-config/partitions-8MB-no-uf2.csv"
-# end of Partition Table
-
-#
 # SPI RAM config
 #
 # CONFIG_SPIRAM_TYPE_AUTO is not set
@@ -33,7 +26,7 @@ CONFIG_ESP32_SPIRAM_SUPPORT=y
 # CONFIG_SPIRAM_TYPE_ESPPSRAM32 is not set
 # CONFIG_SPIRAM_TYPE_ESPPSRAM64 is not set
 
-### # Uncomment to send log output to TX/RX pins on Feather ESP32V2
+### # Uncomment (remove ###) to send ESP_LOG output to TX/RX pins
 ### #
 ### # ESP System Settings
 ### #
@@ -45,7 +38,7 @@ CONFIG_ESP32_SPIRAM_SUPPORT=y
 ### CONFIG_ESP_CONSOLE_UART_CUSTOM_NUM_0=y
 ### # CONFIG_ESP_CONSOLE_UART_CUSTOM_NUM_1 is not set
 ### CONFIG_ESP_CONSOLE_UART_NUM=0
-### CONFIG_ESP_CONSOLE_UART_TX_GPIO=8
+### CONFIG_ESP_CONSOLE_UART_TX_GPIO=32
 ### CONFIG_ESP_CONSOLE_UART_RX_GPIO=7
 ### CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
 ### # CONFIG_ESP_SYSTEM_CHECK_INT_LEVEL_5 is not set

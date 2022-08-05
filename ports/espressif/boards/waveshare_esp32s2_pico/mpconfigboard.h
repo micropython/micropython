@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
-#define MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+// Micropython setup
 
-#include <stdbool.h>
+#define MICROPY_HW_BOARD_NAME       "Waveshare ESP32-S2-Pico"
+#define MICROPY_HW_MCU_NAME         "ESP32S2"
 
-#include "extmod/vfs_fat.h"
-
-extern volatile bool filesystem_flush_requested;
-
-void filesystem_background(void);
-void filesystem_tick(void);
-bool filesystem_init(bool create_allowed, bool force_create);
-void filesystem_flush(void);
-bool filesystem_present(void);
-void filesystem_set_internal_writable_by_usb(bool usb_writable);
-void filesystem_set_internal_concurrent_write_protection(bool concurrent_write_protection);
-void filesystem_set_writable_by_usb(fs_user_mount_t *vfs, bool usb_writable);
-void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concurrent_write_protection);
-bool filesystem_is_writable_by_python(fs_user_mount_t *vfs);
-bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs);
-
-FATFS *filesystem_circuitpy(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO9)

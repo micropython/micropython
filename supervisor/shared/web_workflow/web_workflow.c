@@ -36,6 +36,7 @@
 #include "shared-module/storage/__init__.h"
 #include "shared/timeutils/timeutils.h"
 #include "supervisor/fatfs_port.h"
+#include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/web_workflow/web_workflow.h"
@@ -575,7 +576,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     lwip_setsockopt(socket->num, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
     const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
     _send_strs(socket,
-        "HTTP/1.1 301 Moved Permanently\r\n",
+        "HTTP/1.1 307 Temporary Redirect\r\n",
         "Connection: close\r\n",
         "Content-Length: 0\r\n",
         "Location: ", NULL);
@@ -979,7 +980,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else {
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
-            FATFS *fs = &((fs_user_mount_t *)MP_STATE_VM(vfs_mount_table)->obj)->fatfs;
+            FATFS *fs = filesystem_circuitpy();
             // Trailing / is a directory.
             bool directory = false;
             if (path[pathlen - 1] == '/') {
