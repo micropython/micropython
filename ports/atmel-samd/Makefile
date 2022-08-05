@@ -164,6 +164,9 @@ CFLAGS += \
 	-msoft-float \
 	-mfloat-abi=soft \
 	-DSAMD21
+LIBS := libs/libgcc-12.1.0-Os-v6-m-nofp.a -lc
+else
+LIBS := -lgcc -lc
 endif
 ifeq ($(CHIP_FAMILY), samd51)
 CFLAGS += \
@@ -200,7 +203,6 @@ endif
 CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
-LIBS := -lgcc -lc
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM

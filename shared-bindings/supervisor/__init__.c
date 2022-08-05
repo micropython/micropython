@@ -53,27 +53,6 @@
 //| This object is the sole instance of `supervisor.Runtime`."""
 //|
 
-//| def enable_autoreload() -> None:
-//|     """Enable autoreload based on USB file write activity."""
-//|     ...
-//|
-STATIC mp_obj_t supervisor_enable_autoreload(void) {
-    autoreload_enable();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(supervisor_enable_autoreload_obj, supervisor_enable_autoreload);
-
-//| def disable_autoreload() -> None:
-//|     """Disable autoreload based on USB file write activity until
-//|     `enable_autoreload` is called."""
-//|     ...
-//|
-STATIC mp_obj_t supervisor_disable_autoreload(void) {
-    autoreload_disable();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(supervisor_disable_autoreload_obj, supervisor_disable_autoreload);
-
 //| def set_rgb_status_brightness(brightness: int) -> None:
 //|     """Set brightness of status RGB LED from 0-255. This will take effect
 //|        after the current code finishes and the status LED is used to show
@@ -312,8 +291,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(supervisor_reset_terminal_obj, supervisor_reset_termin
 
 STATIC const mp_rom_map_elem_t supervisor_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_supervisor) },
-    { MP_ROM_QSTR(MP_QSTR_enable_autoreload),  MP_ROM_PTR(&supervisor_enable_autoreload_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disable_autoreload),  MP_ROM_PTR(&supervisor_disable_autoreload_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_rgb_status_brightness),  MP_ROM_PTR(&supervisor_set_rgb_status_brightness_obj) },
     { MP_ROM_QSTR(MP_QSTR_runtime),  MP_ROM_PTR(&common_hal_supervisor_runtime_obj) },
     { MP_ROM_QSTR(MP_QSTR_reload),  MP_ROM_PTR(&supervisor_reload_obj) },
