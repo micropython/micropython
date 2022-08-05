@@ -7,101 +7,30 @@
  *   Desc:   Adds sorting to a HTML data table that implements ARIA Authoring Practices
  */
 
-'use strict';
+// 'use strict';
+
+var columnIndex = 2;
+const sortEvent = new Event('sort');
 
 class SortableTable {
   constructor(tableNode) {
     this.tableNode = tableNode;
 
     this.columnHeaders = tableNode.querySelectorAll('thead th');
-
-    this.sortColumns = [];
-
-    for (var i = 0; i < this.columnHeaders.length; i++) {
-      var ch = this.columnHeaders[i];
-      var buttonNode = ch.querySelector('button');
-      if (buttonNode) {
-        this.sortColumns.push(i);
-        buttonNode.setAttribute('data-column-index', i);
-        buttonNode.addEventListener('click', this.handleClick.bind(this));
-      }
-    }
-
-    this.optionCheckbox = document.querySelector(
-      'input[type="checkbox"][value="show-unsorted-icon"]'
-    );
-
-    if (this.optionCheckbox) {
-      this.optionCheckbox.addEventListener(
-        'change',
-        this.handleOptionChange.bind(this)
-      );
-      if (this.optionCheckbox.checked) {
-        this.tableNode.classList.add('show-unsorted-icon');
-      }
-    }
   }
 
   setColumnHeaderSort(columnIndex) {
-    if (typeof columnIndex === 'string') {
-      columnIndex = parseInt(columnIndex);
-    }
-
-    for (var i = 0; i < this.columnHeaders.length; i++) {
-      var ch = this.columnHeaders[i];
-      var buttonNode = ch.querySelector('button');
-      if (i === columnIndex) {
-        var value = ch.getAttribute('aria-sort');
-        if (value === 'descending') {
-          ch.setAttribute('aria-sort', 'ascending');
-          this.sortColumn(
-            columnIndex,
-            'ascending',
-            ch.classList.contains('num')
-          );
-        } else {
-          ch.setAttribute('aria-sort', 'descending');
-          this.sortColumn(
-            columnIndex,
-            'descending',
-            ch.classList.contains('num')
-          );
-        }
-      } else {
-        if (ch.hasAttribute('aria-sort') && buttonNode) {
-          ch.removeAttribute('aria-sort');
-        }
-      }
-    }
+      var ch = this.columnHeaders[columnIndex];
+      this.sortColumn(columnIndex);
   }
 
-  sortColumn(columnIndex, sortValue, isNumber) {
+  sortColumn(columnIndex) {
     function compareValues(a, b) {
-      if (sortValue === 'ascending') {
         if (a.value === b.value) {
           return 0;
         } else {
-          if (isNumber) {
-            return a.value - b.value;
-          } else {
-            return a.value < b.value ? -1 : 1;
-          }
+          return a.value < b.value ? -1 : 1;
         }
-      } else {
-        if (a.value === b.value) {
-          return 0;
-        } else {
-          if (isNumber) {
-            return b.value - a.value;
-          } else {
-            return a.value > b.value ? -1 : 1;
-          }
-        }
-      }
-    }
-
-    if (typeof isNumber !== 'boolean') {
-      isNumber = false;
     }
 
     var tbodyNode = this.tableNode.querySelector('tbody');
@@ -119,9 +48,6 @@ class SortableTable {
       var data = {};
       data.index = index;
       data.value = dataCell.textContent.toLowerCase().trim();
-      if (isNumber) {
-        data.value = parseFloat(data.value);
-      }
       dataCells.push(data);
       rowNode = rowNode.nextElementSibling;
       index += 1;
@@ -142,30 +68,14 @@ class SortableTable {
 
   /* EVENT HANDLERS */
 
-  handleClick(event) {
-    var tgt = event.currentTarget;
-    this.setColumnHeaderSort(tgt.getAttribute('data-column-index'));
-  }
-
-  handleOptionChange(event) {
-    var tgt = event.currentTarget;
-
-    if (tgt.checked) {
-      this.tableNode.classList.add('show-unsorted-icon');
-    } else {
-      this.tableNode.classList.remove('show-unsorted-icon');
-    }
+  handleSort(event) {
+    this.setColumnHeaderSort(tgt.getAttribute(columnIndex));
   }
 }
 
-// Initialize sortable table buttons
-window.addEventListener('load', function () {
-  var sortableTables = document.querySelectorAll('table.sortable');
-  for (var i = 0; i < sortableTables.length; i++) {
-    new SortableTable(sortableTables[i]);
-  }
-});
-
+var sortable_directory = document.querySelector('table.sortable');
+const sd_class = {sortable_dir: new SortableTable(sortable_directory)};
+sortable_directory.addEventListener('sort', function () { sd_class["sortable_dir"].setColumnHeaderSort(columnIndex); } );
 
 let new_directory_name = document.getElementById("name");
 let files = document.getElementById("files");
@@ -271,6 +181,8 @@ async function refresh_list() {
     }
     var tbody = document.querySelector("tbody");
     tbody.replaceChildren(...new_children);
+
+    sortable_directory.dispatchEvent(sortEvent);
 }
 
 async function find_devices() {
