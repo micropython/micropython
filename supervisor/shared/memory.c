@@ -56,6 +56,8 @@ enum {
         #if CIRCUITPY_USB_VENDOR
         + 1  // usb_vendor_add_descriptor
         #endif
+
+        + CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
     ,
 
     CIRCUITPY_SUPERVISOR_MOVABLE_ALLOC_COUNT =

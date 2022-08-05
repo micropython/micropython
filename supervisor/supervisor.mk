@@ -11,14 +11,15 @@ SRC_SUPERVISOR = \
 	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
 	supervisor/shared/safe_mode.c \
-  supervisor/shared/serial.c \
+	supervisor/shared/serial.c \
 	supervisor/shared/stack.c \
 	supervisor/shared/status_leds.c \
 	supervisor/shared/tick.c \
 	supervisor/shared/title_bar.c \
 	supervisor/shared/traceback.c \
 	supervisor/shared/translate/translate.c \
-  supervisor/shared/workflow.c
+	supervisor/shared/workflow.c \
+	supervisor/stub/misc.c \
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 

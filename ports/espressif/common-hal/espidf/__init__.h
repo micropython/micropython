@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H
-#define MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H
+#pragma once
 
-#include "esp_err.h"
-#include "py/mpconfig.h"
-#include "py/obj.h"
-
-extern const mp_obj_type_t mp_type_espidf_IDFError;
-extern const mp_obj_type_t mp_type_espidf_MemoryError;
-
-NORETURN void mp_raise_espidf_MemoryError(void);
-
-void raise_esp_error(esp_err_t err) NORETURN;
-#define CHECK_ESP_RESULT(x) do { int res = (x); if (res != ESP_OK) raise_esp_error(res); } while (0)
-
-void common_hal_espidf_reserve_psram(void);
-bool common_hal_espidf_set_reserved_psram(size_t amount);
-size_t common_hal_espidf_get_reserved_psram(void);
-size_t common_hal_espidf_get_total_psram(void);
-intptr_t common_hal_espidf_get_psram_start(void);
-intptr_t common_hal_espidf_get_psram_end(void);
-
-#endif  // MICROPY_INCLUDED_ESPRESSIF_BINDINGS_ESPIDF___INIT___H
+#include "bindings/espidf/__init__.h"

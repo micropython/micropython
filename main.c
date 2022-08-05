@@ -792,7 +792,11 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
     usb_get_boot_py_data(usb_boot_py_data, size);
     #endif
 
+    port_post_boot_py(true);
+
     cleanup_after_vm(heap, result.exception);
+
+    port_post_boot_py(false);
 
     #if CIRCUITPY_USB
     // Now give back the data we saved from the heap going away.

@@ -281,6 +281,8 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
+SRC_C += $(wildcard common-hal/espidf/*.c)
+
 SRC_COMMON_HAL_EXPANDED = \
 	$(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
 	$(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \

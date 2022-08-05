@@ -120,6 +120,20 @@ const mp_obj_type_t mp_type_espidf_MemoryError = {
     .parent = &mp_type_MemoryError,
 };
 
+//| def get_total_psram() -> int:
+//|     """Returns the number of bytes of psram detected, or 0 if psram is not present or not configured"""
+STATIC mp_obj_t espidf_get_total_psram(void) {
+    return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_total_psram());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
+
+//| def get_reserved_psram() -> int:
+//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``/.env``."""
+STATIC mp_obj_t espidf_get_reserved_psram(void) {
+    return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_reserved_psram());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_reserved_psram_obj, espidf_get_reserved_psram);
+
 STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espidf) },
 
@@ -129,6 +143,8 @@ STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_erase_nvs), MP_ROM_PTR(&espidf_erase_nvs_obj)},
 
+    { MP_ROM_QSTR(MP_QSTR_get_total_psram), MP_ROM_PTR(&espidf_get_total_psram_obj)},
+    { MP_ROM_QSTR(MP_QSTR_get_reserved_psram), MP_ROM_PTR(&espidf_get_reserved_psram_obj)},
     { MP_ROM_QSTR(MP_QSTR_IDFError), MP_ROM_PTR(&mp_type_espidf_IDFError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },
 };
@@ -139,66 +155,3 @@ const mp_obj_module_t espidf_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&espidf_module_globals,
 };
-
-void raise_esp_error(esp_err_t err) {
-    const compressed_string_t *msg = NULL;
-    const mp_obj_type_t *exception_type = &mp_type_espidf_IDFError;
-    switch (err) {
-        case ESP_FAIL:
-            msg = translate("Generic Failure");
-            break;
-        case ESP_ERR_NO_MEM:
-            exception_type = &mp_type_espidf_MemoryError;
-            msg = translate("Out of memory");
-            break;
-        case ESP_ERR_INVALID_ARG:
-            msg = translate("Invalid argument");
-            break;
-        case ESP_ERR_INVALID_STATE:
-            msg = translate("Invalid state");
-            break;
-        case ESP_ERR_INVALID_SIZE:
-            msg = translate("Invalid size");
-            break;
-        case ESP_ERR_NOT_FOUND:
-            msg = translate("Requested resource not found");
-            break;
-        case ESP_ERR_NOT_SUPPORTED:
-            msg = translate("Operation or feature not supported");
-            break;
-        case ESP_ERR_TIMEOUT:
-            msg = translate("Operation timed out");
-            break;
-        case ESP_ERR_INVALID_RESPONSE:
-            msg = translate("Received response was invalid");
-            break;
-        case ESP_ERR_INVALID_CRC:
-            msg = translate("CRC or checksum was invalid");
-            break;
-        case ESP_ERR_INVALID_VERSION:
-            msg = translate("Version was invalid");
-            break;
-        case ESP_ERR_INVALID_MAC:
-            msg = translate("MAC address was invalid");
-            break;
-    }
-    if (msg) {
-        mp_raise_msg(exception_type, msg);
-    }
-
-    const char *group = "ESP-IDF";
-
-    // tests must be in descending order
-    MP_STATIC_ASSERT(ESP_ERR_FLASH_BASE > ESP_ERR_MESH_BASE);
-    MP_STATIC_ASSERT(ESP_ERR_MESH_BASE > ESP_ERR_WIFI_BASE);
-    if (err >= ESP_ERR_FLASH_BASE) {
-        group = "Flash";
-    } else if (err >= ESP_ERR_MESH_BASE) {
-        group = "Mesh";
-    } else if (err >= ESP_ERR_WIFI_BASE) {
-        group = "WiFi";
-    }
-    mp_raise_msg_varg(exception_type, translate("%s error 0x%x"), group, err);
-}
-
-MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module, CIRCUITPY_ESPIDF);
