@@ -15,16 +15,9 @@ const sortEvent = new Event('sort');
 class SortableTable {
   constructor(tableNode) {
     this.tableNode = tableNode;
-
-    this.columnHeaders = tableNode.querySelectorAll('thead th');
   }
 
   setColumnHeaderSort(columnIndex) {
-      var ch = this.columnHeaders[columnIndex];
-      this.sortColumn(columnIndex);
-  }
-
-  sortColumn(columnIndex) {
     function compareValues(a, b) {
         if (a.value === b.value) {
           return 0;
