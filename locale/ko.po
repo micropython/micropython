@@ -866,6 +866,10 @@ msgstr ""
 msgid "Display rotation must be in 90 degree increments"
 msgstr ""
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr ""
@@ -1538,6 +1542,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr ""
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1788,6 +1800,10 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
 msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c

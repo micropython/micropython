@@ -872,6 +872,10 @@ msgstr "Wyświetlacz musi mieć 16-bitową przestrzeń kolorów."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Wyświetlacz można obracać co 90 stopni"
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Tryb sterowania nieużywany w trybie wejścia."
@@ -1546,6 +1550,14 @@ msgstr "Obiekt został zwolniony i nie można go już używać. Utwórz nowy obi
 msgid "Odd parity is not supported"
 msgstr "Nieparzysta parzystość nie jest wspierana"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1797,6 +1809,10 @@ msgstr "Obiekt tylko do odczytu"
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "Otrzymana odpowiedź była nieprawidłowa"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"

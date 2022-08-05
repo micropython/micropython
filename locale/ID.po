@@ -876,6 +876,10 @@ msgstr "Tampilan harus memiliki ruang warna 16 bit."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Rotasi tampilan harus dalam kelipatan 90 derajat"
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Mode kendara tidak digunakan saat arah input."
@@ -1551,6 +1555,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Parity ganjil tidak didukung"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1812,6 +1824,10 @@ msgstr "Objek Read-only"
 
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
 msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c

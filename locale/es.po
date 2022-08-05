@@ -884,6 +884,10 @@ msgstr "La pantalla debe tener un espacio de color de 16 bits."
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Rotación de display debe ser en incrementos de 90 grados"
 
+#: main.c
+msgid "Done"
+msgstr ""
+
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
 msgstr "Modo Drive no se usa cuando la dirección es input."
@@ -1572,6 +1576,14 @@ msgstr ""
 msgid "Odd parity is not supported"
 msgstr "Paridad impar no soportada"
 
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Off"
+msgstr ""
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Ok"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "Only 8 or 16 bit mono with "
@@ -1835,6 +1847,10 @@ msgstr "Objeto de solo-lectura"
 #: ports/espressif/common-hal/espidf/__init__.c ports/espressif/esp_error.c
 msgid "Received response was invalid"
 msgstr "La respuesta recibida es invalida"
+
+#: supervisor/shared/bluetooth/bluetooth.c
+msgid "Reconnecting"
+msgstr ""
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
