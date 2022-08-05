@@ -89,9 +89,7 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 
     busio_spi_obj_t *spi = args[ARG_spi].u_obj;
 
-    if (!mp_obj_is_type(args[ARG_chip_select].u_obj, &digitalio_digitalinout_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), digitalio_digitalinout_type.name);
-    }
+    mp_arg_validate_type(args[ARG_chip_select].u_obj, &digitalio_digitalinout_type, MP_QSTR_chip_select);
 
     common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_cs_active_value].u_bool, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
         args[ARG_phase].u_int, args[ARG_extra_clocks].u_int);
