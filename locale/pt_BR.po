@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2022-08-05 14:18+0000\n"
+"PO-Revision-Date: 2022-08-07 15:16+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -892,7 +892,7 @@ msgstr "A rotação da tela deve estar em incrementos de 90 graus"
 
 #: main.c
 msgid "Done"
-msgstr ""
+msgstr "Feito"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -1583,11 +1583,11 @@ msgstr "A paridade ímpar não é compatível"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Off"
-msgstr ""
+msgstr "Desligado"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -1857,7 +1857,7 @@ msgstr "A resposta recebida foi inválida"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Reconnecting"
-msgstr ""
+msgstr "Reconectando"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
