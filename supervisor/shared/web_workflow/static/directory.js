@@ -71,10 +71,8 @@ async function refresh_list() {
         // Remove the delete button
         td[4].replaceChildren();
 
-        var dataCell = td[sort_column];
-
         var sortdata = {};
-        sortdata.value = dataCell.textContent.toLowerCase().trim();
+        sortdata.value = "..";
         sortdata.index = index;
         dirCells.push(sortdata);
         index += 1;
@@ -86,8 +84,6 @@ async function refresh_list() {
         // Clone the new row and insert it into the table
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
-        var dataCell = td[sort_column];
-
         var icon = "⬇";
         var file_path = current_path + f.name;
         let api_url = new URL("/fs" + file_path, url_base);
